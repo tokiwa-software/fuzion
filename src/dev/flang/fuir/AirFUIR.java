@@ -1396,7 +1396,7 @@ public class AirFUIR extends FUIR
    *
    * @param s site of the access
    *
-   * @return the clazz that has to be accessed or -1 if the access is an
+   * @return the clazz that has to be accessed or NO_CLAZZ if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
@@ -1417,7 +1417,7 @@ public class AirFUIR extends FUIR
       (e instanceof Clazz          fld ) ? fld :
       (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
 
-    return innerClazz == null ? -1 : id(innerClazz);
+    return innerClazz == null ? NO_CLAZZ : id(innerClazz);
   }
 
 

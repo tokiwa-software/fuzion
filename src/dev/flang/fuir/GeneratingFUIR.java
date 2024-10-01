@@ -31,6 +31,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -258,20 +259,15 @@ public class GeneratingFUIR extends FUIR
           AbstractType type,
           int id)
     {
-      // if (outer != null) type = outer.replaceThisType(type);
       if (PRECONDITIONS) require
-        (/* NYI */ true || !type.dependsOnGenerics(),
-         /* NYI */ true || !type.containsThisType());
+        (!type.dependsOnGenerics(),
+         !type.containsThisType());
 
       outer = normalizeOuter(type, outer);
       this._type = outer != null
         ? ResolvedNormalType.newType(type, outer._type)
         : type;
 
-      if (type.dependsOnGenerics()) { dev.flang.util.Debug.umprintln("Clazz(): PROBLEM 1 FOR "+type);
-        // Thread.dumpStack();
-      }
-      if (type.containsThisType() ) dev.flang.util.Debug.umprintln("Clazz(): PROBLEM 2 FOR "+type);
       _outer = outer == null ? NO_CLAZZ : outer._id;
       _id = id;
       _feature = (LibraryFeature) type.feature();
@@ -286,18 +282,13 @@ public class GeneratingFUIR extends FUIR
     {
       _choiceGenerics = determineChoiceGenerics();
       var vas = feature().valueArguments();
-      if (vas.size() == 0)
+      if (vas.size() == 0 || _isBoxed)
         {
           _argumentFields = NO_CLAZZES;
         }
       else
         {
-          _argumentFields = new Clazz[vas.size()];
-          int i = 0;
-          for (var va : vas)
-            {
-              _argumentFields[i++] = newClazz(this, va.selfType());
-            }
+          _argumentFields = determineArgumentFields();
         }
 
       var gs = _type.generics();
@@ -335,6 +326,17 @@ public class GeneratingFUIR extends FUIR
 
       inspectCode(new List<>(), _feature);
     }
+
+
+  /**
+   * Determine the argument fields of this routine.
+   *
+   * @return the argument fields array or NO_CLAZZES if this is not a routine.
+   */
+  private Clazz[] determineArgumentFields()
+  {
+    return actualFields(feature().valueArguments());
+  }
 
 
     void addInner(Clazz i)
@@ -1879,6 +1881,66 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * For an open generic type ft find the actual type parameters within this
+   * clazz.  The resulting list could be empty.
+   *
+   * @param ft the type that is an open generic
+   *
+   * @param fouter the outer feature where ft is used. This might be an heir of
+   * _outer.feature() in case ft is the result type of an inherited feature.
+   */
+  List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || ft.isOpenGeneric());
+
+    List<AbstractType> types;
+    var inh = outer() == null ? null : outer().feature().tryFindInheritanceChain(fouter.outer());
+    if (inh != null &&
+        inh.size() > 0)
+      {
+        var typesa = new AbstractType[] { ft };
+        typesa = fouter.handDown(null, typesa, outer().feature());
+        types = new List<AbstractType>();
+        for (var t : typesa)
+          {
+            types.add(t);
+          }
+      }
+    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().formalGenerics())
+      {
+        types = ft.genericArgument().replaceOpen(_type.generics());
+      }
+    else if (outer() != null)
+      {
+        types = outer().replaceOpen(ft, fouter);
+      }
+    else
+      {
+        if (CHECKS) check
+          (Errors.any());
+        types = new List<>();
+      }
+    return types;
+  }
+
+
+  /**
+   * For a feature with an open generic result type, find the number of actual
+   * instances existing in this clazz.
+   *
+   * @param a an inner feature of this of open generic type.
+   */
+  public int replaceOpenCount(AbstractFeature a)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || a != Types.f_ERROR || a.resultType().isOpenGeneric());
+
+    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType(), a.outer()).size();
+  }
+
+
+  /**
    * From a set of inner features of this clazz, extract used fields and create
    * the corresponding clazzes for these fields.
    *
@@ -1909,6 +1971,50 @@ public class GeneratingFUIR extends FUIR
     var result = fields.size() == 0 ? NO_CLAZZES : fields.toArray(new Clazz[fields.size()]);
     return result;
   }
+
+
+
+  /**
+   * From a set of inner features of this clazz, extract used fields and create
+   * the corresponding clazzes for these fields.
+   *
+   * Fields with open generic result type will be replaced by 0 or more clazzes
+   * depending on the number of actual type parameters the open generic is
+   * replaced with.
+   *
+   * @param feats a collection of features the fields will be extracted from.
+   *
+   * @return NO_CLAZZES in case there are no fields remaining, an array of
+   * fields otherwise.
+   */
+  Clazz[] actualFields(Collection<AbstractFeature> feats)
+  {
+    var fields = new List<Clazz>();
+    for (var field: feats)
+      {
+        if (!this.isVoidOrUndefined() &&
+            field.isField()
+            // NYI: needed?  field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
+            // (true || _clazzes.isUsed(field))
+            )
+          {
+            if (field.isOpenGenericField())
+              {
+                var n = replaceOpenCount(field);
+                for (var i = 0; i < n; i++)
+                  {
+                    fields.add(id2clazz(lookup(new FeatureAndActuals(field), i, SourcePosition.builtIn, false)));
+                  }
+              }
+            else
+              {
+                fields.add(id2clazz(lookup(field)));
+              }
+          }
+      }
+    return fields.size() == 0 ? NO_CLAZZES : fields.toArray(new Clazz[fields.size()]);
+  }
+
 
 
   /**
@@ -3653,7 +3759,6 @@ public class GeneratingFUIR extends FUIR
   public int clazz_array_u8()
   {
     var utf8_data = clazz_Const_String_utf8_data();
-    dev.flang.util.Debug.umprintln("result is "+id2clazz(clazzResultClazz(utf8_data)));
     return clazzResultClazz(utf8_data);
   }
 
@@ -4375,27 +4480,10 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
 
-    var cl = clazzAt(s);
-    var outerClazz = id2clazz(cl);
-    var e = getExpr(s);
-
-    Clazz innerClazz = switch (e)
-      {
-      case AbstractCall   call -> calledInner(call, outerClazz._feature, outerClazz, NO_INH);
-      case AbstractAssign a    -> assignedField(outerClazz, a, NO_INH);
-      case Clazz          fld  -> fld;
-      default -> (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } }; /* Java is ugly... */
-      };
-    if (innerClazz == null) {
-      dev.flang.util.Debug.umprintln("NYI! "+e+" "+e.getClass()+" "+sitePos(s).show());
-    } else if (clazzKind(innerClazz._id) == FeatureKind.Abstract)
-      {
-        System.out.println("accessedClazz is "+innerClazz+" for "+e.getClass());
-      }
-    return innerClazz == null ? NO_CLAZZ : innerClazz._id;
+    return accessedClazz(s, null);
   }
 
-  public int accessedClazz(int s, Clazz tclazz)
+  private int accessedClazz(int s, Clazz tclazz)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -4415,12 +4503,6 @@ public class GeneratingFUIR extends FUIR
       case Clazz          fld  -> fld;
       default -> (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } }; /* Java is ugly... */
       };
-    if (innerClazz == null) {
-      dev.flang.util.Debug.umprintln("NYI! "+e+" "+e.getClass()+" "+sitePos(s).show());
-    } else if (clazzKind(innerClazz._id) == FeatureKind.Abstract)
-      {
-        System.out.println("accessedClazz is "+innerClazz+" for "+e.getClass());
-      }
     return innerClazz == null ? NO_CLAZZ : innerClazz._id;
   }
 
@@ -4439,7 +4521,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  public Clazz calledInner(AbstractCall c, AbstractFeature outer, Clazz outerClazz, List<AbstractCall> inh)
+  public Clazz calledInner(AbstractCall c, AbstractFeature outer, Clazz outerClazz, Clazz tclazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -4449,19 +4531,9 @@ public class GeneratingFUIR extends FUIR
         return error();  // previous errors, give up
       }
 
-    Clazz innerClazz = null;
-    var tclazz  = calledTarget(c, outerClazz, inh);
-    return calledInner(c, outer, outerClazz, tclazz, inh);
-  }
-
-  public Clazz calledInner(AbstractCall c, AbstractFeature outer, Clazz outerClazz, Clazz tclazz, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (Errors.any() || c.calledFeature() != null && c.target() != null);
-
-    if (c.calledFeature() == null  || c.target() == null)
+    if (tclazz == null)
       {
-        return error();  // previous errors, give up
+        tclazz  = calledTarget(c, outerClazz, inh);
       }
 
     Clazz innerClazz = null;
@@ -4541,13 +4613,12 @@ public class GeneratingFUIR extends FUIR
 
 
 
-  private Clazz assignedField(Clazz outerClazz, AbstractAssign a, List<AbstractCall> inh)
-  {
-    Clazz sClazz = clazz(a._target, outerClazz, inh);
-    return assignedField(outerClazz, sClazz, a, inh);
-  }
   private Clazz assignedField(Clazz outerClazz, Clazz tclazz, AbstractAssign a, List<AbstractCall> inh)
   {
+    if (tclazz == null)
+      {
+        tclazz = clazz(a._target, outerClazz, inh);
+      }
     var vc = tclazz.asValue();
     var fc = id2clazz(vc.lookup(a._assignedField, a));
     if (false) System.out.println(dev.flang.util.Terminal.PURPLE +
