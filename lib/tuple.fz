@@ -119,4 +119,7 @@
 # is a type that has only one single value: '()'.
 #
 public tuple(public A type...,
-             public values A) is
+             public values A)
+  /* NYI: WORKAROUND: ensure-condition failed: AbstractFeature.java:1523 "(this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.any() || result != null);" */
+  : property.equatable
+is
