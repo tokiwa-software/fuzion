@@ -93,4 +93,4 @@ is
       for i2 in (i64 0)..length1-1 do
         data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init2 i1 i2
 
-    LM.env.array2 T length0 length1 data unit
+    LM.env.array2 length0 length1 data unit
