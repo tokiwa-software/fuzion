@@ -27,12 +27,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -108,7 +110,7 @@ public class GeneratingFUIR extends FUIR
     Clazz[] _actualTypeParameters = NO_CLAZZES;
     Clazz[] actualTypeParameters() { return _actualTypeParameters; }
     final AbstractType _type;
-    final int _select = -1;
+    /* final */ int _select = -1;
 
   /**
    * Cached result of choiceGenerics(), only used if isChoice() and
@@ -121,7 +123,7 @@ public class GeneratingFUIR extends FUIR
     boolean _needsCode;
     int _code; // site of the code block of this clazz
     Clazz _outerRef = null;
-    boolean _isBoxed = false;  // NYI: not initialized yet!
+    boolean isBoxed() { return isRef() && !_feature.isThisRef(); }
     Clazz[] _fields = null;
     Clazz[] _argumentFields = null;
 
@@ -131,7 +133,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Will instances of this class be created?
    */
-  private boolean _isInstantiated = false;
+    private boolean _isInstantiated = true; // NYI: false;
 
   /**
    * Is this a normalized outer clazz? If so, there might be calls on this as an
@@ -216,7 +218,7 @@ public class GeneratingFUIR extends FUIR
    */
   public boolean isRef()
   {
-    return _isBoxed || _type.isRef();
+    return _type.isRef();
   }
 
 
@@ -224,7 +226,7 @@ public class GeneratingFUIR extends FUIR
     /**
      * Set of all heirs of this clazz.
      */
-    TreeSet<Clazz> _heirs = null;
+    Set<Clazz> _heirs = null;
 
 
     IntArray _inner = EMPTY_INT_ARRAY;
@@ -282,7 +284,7 @@ public class GeneratingFUIR extends FUIR
     {
       _choiceGenerics = determineChoiceGenerics();
       var vas = feature().valueArguments();
-      if (vas.size() == 0 || _isBoxed)
+      if (vas.size() == 0 || isBoxed())
         {
           _argumentFields = NO_CLAZZES;
         }
@@ -319,10 +321,6 @@ public class GeneratingFUIR extends FUIR
         {
           _outerRef = id2clazz(lookup(new FeatureAndActuals(or, new List<>()), _feature));
         }
-
-      _asValue =  isRef() && _type != Types.t_ADDRESS
-        ? newClazz(outer(), _type.asValue())
-        : this;
 
       inspectCode(new List<>(), _feature);
     }
@@ -486,7 +484,7 @@ public class GeneratingFUIR extends FUIR
   {
     if (_heirs == null)
       {
-        _heirs = new TreeSet<>();
+        _heirs = new HashSet<>();
       }
     return _heirs;
   }
@@ -497,7 +495,7 @@ public class GeneratingFUIR extends FUIR
    */
   private Set<Clazz> directParents()
   {
-    var result = new TreeSet<Clazz>();
+    var result = new HashSet<Clazz>();
     result.add(this);
     for (var p: feature().inherits())
       {
@@ -523,7 +521,7 @@ public class GeneratingFUIR extends FUIR
     var result = _parents;
     if (result == null)
       {
-        result = new TreeSet<Clazz>();
+        result = new HashSet<Clazz>();
         result.add(this);
         for (var p : directParents())
           {
@@ -556,12 +554,84 @@ public class GeneratingFUIR extends FUIR
     }
 
 
+
+
+  /**
+   * Helper routine for compareTo: compare the outer classes.  If outer are refs
+   * for both clazzes, they can be considered the same as long as their outer
+   * classes (recursively) are the same. If they are values, they need to be
+   * exactly equal.
+   */
+  private int compareOuter(Clazz other)
+  {
+    var to = this .outer();
+    var oo = other.outer();
+    int result = 0;
+    if (to != oo)
+      {
+        result =
+          to == null ? -1 :
+          oo == null ? +1 : 0;
+        if (result == 0)
+          {
+            if (to.isRef() && oo.isRef())
+              { // NYI: If outer is normalized for refs as described in the
+                // constructor, there should be no need for special handling of
+                // ref types here.
+                result = to._type.compareToIgnoreOuter(oo._type);
+                if (result == 0)
+                  {
+                    result = to.compareOuter(oo);
+                  }
+              }
+            else
+              {
+                result =
+                  !to.isRef() && !oo.isRef() ? to.compareTo(oo) :
+                  to.isRef() ? +1
+                             : -1;
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Compare this to other for creating unique clazzes.
+   */
+  public int compareTo(Clazz other)
+  {
+    if (PRECONDITIONS) require
+      (other != null,
+       this .getClass() == Clazz.class,
+       other.getClass() == Clazz.class);
+
+    var result = compareToIgnoreOuter(other);
+    if (result == 0)
+      {
+        result = compareOuter(other);
+      }
+    return result;
+  }
+
+
+  /**
+   * Compare this to other ignoring outer.
+   */
+  public int compareToIgnoreOuter(Clazz other)
+  {
+    var result =
+      this._select < other._select ? -1 :
+      this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
+    return result;
+  }
+
+
     @Override
     public boolean equals(Object other)
     {
-      return
-        isRef() == ((Clazz)other).isRef() &&
-        _type.compareTo(((Clazz)other)._type)==0 && gix() == ((Clazz) other).gix();  // NYI: outer and type parameters!
+      return compareTo((Clazz)other)==0;
     }
     @Override
     public int hashCode()
@@ -607,7 +677,7 @@ public class GeneratingFUIR extends FUIR
         {
           res = YesNo.yes;
         }
-      else if ( _lookupDone && (!_isBoxed                      &&
+      else if ( _lookupDone && (!isBoxed()                     &&
                                 !_feature.isThisRef()          &&
                                 !_feature.isBuiltInPrimitive() &&
                                 !clazzIsVoidType(_id)          &&
@@ -819,7 +889,7 @@ public class GeneratingFUIR extends FUIR
             (Errors.any() || iCs == null || iCs instanceof Clazz[]);
           if (iCs == null || !(iCs instanceof Clazz[] iCA))
             {
-              // NYI: innerClazzes = new Clazz[replaceOpenCount(fa._f)];
+              innerClazzes = new Clazz[replaceOpenCount(fa._f)];
               _innerFromAir.put(fa, innerClazzes);
             }
           else
@@ -955,8 +1025,9 @@ public class GeneratingFUIR extends FUIR
 
  */
 
-              var outerUnboxed = _isBoxed && !f.isConstructor() ? asValue() : this;
+              var outerUnboxed = isBoxed() && !f.isConstructor() ? asValue() : this;
               innerClazz = newClazz(outerUnboxed, t);
+              innerClazz._select = select; // NYI: pass through newClazz to constructor for Clazz
               if (select < 0)
                 {
                   _innerFromAir.put(fa, innerClazz);
@@ -967,7 +1038,7 @@ public class GeneratingFUIR extends FUIR
                 }
               else
                 {
-                  // NYI: innerClazzes[select] = innerClazz;
+                  innerClazzes[select] = innerClazz;
                 }
             }
         }
@@ -1053,7 +1124,14 @@ public class GeneratingFUIR extends FUIR
 
     Clazz asValue()
     {
-      check(!_asValue.isRef());
+      if (_asValue == null)
+        {
+          _asValue = isRef() && _type != Types.t_ADDRESS
+            ? newClazz(outer(), _type.asValue())
+            : this;
+        }
+      if (CHECKS) check
+        (!_asValue.isRef());
       return _asValue;
     }
 
@@ -2202,6 +2280,7 @@ public class GeneratingFUIR extends FUIR
     doesNeedCode(_universe);
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
+    _accessedClazzes = new IntMap<>();
   }
 
 
@@ -2225,6 +2304,7 @@ public class GeneratingFUIR extends FUIR
     _universe = original._universe;
     _clazzes = original._clazzes;
     _specialClazzes = original._specialClazzes;
+    _accessedClazzes = original._accessedClazzes;
   }
 
 
@@ -2297,6 +2377,61 @@ public class GeneratingFUIR extends FUIR
         o = o.outer();
       }
 
+
+
+    var t = actualType;
+
+    var cl = new Clazz(outerR, t, CLAZZ_BASE + _clazzes.size());
+    var existing = _clazzesHM.get(cl);
+    if (existing != null)
+      {
+        result = existing;
+      }
+    else
+      {
+        result = cl;
+        _clazzes.add(cl);
+        _clazzesHM.put(cl, cl);
+
+        if (outerR != null)
+          {
+            outerR.addInner(result);
+          }
+
+        var s = SpecialClazzes.c_NOT_FOUND;
+        if (cl.isRef() == cl._feature.isThisRef())  // not an boxed or explicit value clazz
+          {
+            // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
+            s = switch (cl._feature.qualifiedName())
+              {
+              case "i8"                -> SpecialClazzes.c_i8          ;
+              case "i16"               -> SpecialClazzes.c_i16         ;
+              case "i32"               -> SpecialClazzes.c_i32         ;
+              case "i64"               -> SpecialClazzes.c_i64         ;
+              case "u8"                -> SpecialClazzes.c_u8          ;
+              case "u16"               -> SpecialClazzes.c_u16         ;
+              case "u32"               -> SpecialClazzes.c_u32         ;
+              case "u64"               -> SpecialClazzes.c_u64         ;
+              case "f32"               -> SpecialClazzes.c_f32         ;
+              case "f64"               -> SpecialClazzes.c_f64         ;
+              case "bool"              -> SpecialClazzes.c_bool        ;
+              case "TRUE"              -> SpecialClazzes.c_TRUE        ;
+              case "FALSE"             -> SpecialClazzes.c_FALSE       ;
+              case "Const_String"      -> SpecialClazzes.c_Const_String;
+              case "String"            -> SpecialClazzes.c_String      ;
+              case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ; // NYI: does not work, must handle outer correctly
+              case "unit"              -> SpecialClazzes.c_unit        ;
+              default                  -> SpecialClazzes.c_NOT_FOUND   ;
+              };
+            if (s != SpecialClazzes.c_NOT_FOUND && cl.isRef() == cl._feature.isThisRef())
+              {
+                _specialClazzes[s.ordinal()] = result;
+              }
+          }
+        cl._s = s;
+        System.out.println("NEW CLAZZ "+cl);
+        cl.init();
+
     /*
     // NYI: We currently create new clazzes for every different outer
     // context. This gives us plenty of opportunity to specialize the code,
@@ -2358,16 +2493,11 @@ public class GeneratingFUIR extends FUIR
             result = intern(newcl);
           }
       }
-
-    if (result == newcl)
+    */
+        //if (result == newcl)
       {
-        if (CHECKS) check
-          (Errors.any() || result.feature().state().atLeast(State.RESOLVED));
-        if (result.feature().state().atLeast(State.RESOLVED))
-          {
-            clazzesToBeVisited.add(result);
-          }
         result.registerAsHeir();
+        /*
         if (_options_.verbose(5))
           {
             _options_.verbosePrintln(5, "GLOBAL CLAZZ: " + result);
@@ -2377,68 +2507,15 @@ public class GeneratingFUIR extends FUIR
               }
           }
         result.dependencies();
+        */
       }
-
+     /*
     if (POSTCONDITIONS) ensure
       (Errors.any() || actualType == Types.t_ADDRESS || actualType.compareToIgnoreOuter(result._type) == 0 || true,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold //);
 
     return result;
     */
-
-
-    var t = actualType;
-
-    var cl = new Clazz(outerR, t, CLAZZ_BASE + _clazzes.size());
-    var existing = _clazzesHM.get(cl);
-    if (existing != null)
-      {
-        result = existing;
-      }
-    else
-      {
-        result = cl;
-        _clazzes.add(cl);
-        _clazzesHM.put(cl, cl);
-
-        if (outerR != null)
-          {
-            outerR.addInner(result);
-          }
-
-        var s = SpecialClazzes.c_NOT_FOUND;
-        if (cl.isRef() == cl._feature.isThisRef())  // not an boxed or explicit value clazz
-          {
-            // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
-            s = switch (cl._feature.qualifiedName())
-              {
-              case "i8"                -> SpecialClazzes.c_i8          ;
-              case "i16"               -> SpecialClazzes.c_i16         ;
-              case "i32"               -> SpecialClazzes.c_i32         ;
-              case "i64"               -> SpecialClazzes.c_i64         ;
-              case "u8"                -> SpecialClazzes.c_u8          ;
-              case "u16"               -> SpecialClazzes.c_u16         ;
-              case "u32"               -> SpecialClazzes.c_u32         ;
-              case "u64"               -> SpecialClazzes.c_u64         ;
-              case "f32"               -> SpecialClazzes.c_f32         ;
-              case "f64"               -> SpecialClazzes.c_f64         ;
-              case "bool"              -> SpecialClazzes.c_bool        ;
-              case "TRUE"              -> SpecialClazzes.c_TRUE        ;
-              case "FALSE"             -> SpecialClazzes.c_FALSE       ;
-              case "Const_String"      -> SpecialClazzes.c_Const_String;
-              case "String"            -> SpecialClazzes.c_String      ;
-              case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ; // NYI: does not work, must handle outer correctly
-              case "unit"              -> SpecialClazzes.c_unit        ;
-              default                  -> SpecialClazzes.c_NOT_FOUND   ;
-              };
-            if (s != SpecialClazzes.c_NOT_FOUND && cl.isRef() == cl._feature.isThisRef())
-              {
-                _specialClazzes[s.ordinal()] = result;
-              }
-          }
-        cl._s = s;
-        System.out.println("NEW CLAZZ "+cl);
-        cl.init();
       }
     return result;
   }
@@ -2674,12 +2751,12 @@ public class GeneratingFUIR extends FUIR
         result = resExpr != null ? clazz(resExpr, outerClazz, inh)
                                  : id2clazz(clazz(SpecialClazzes.c_unit));
       }
-    /*
+
     else if (e instanceof Box b)
       {
         result = outerClazz.handDown(b.type(), inh, e);
       }
-    */
+
     else if (e instanceof AbstractCall c)
       {
         var tclazz = clazz(c.target(), outerClazz, inh);
@@ -2703,12 +2780,12 @@ public class GeneratingFUIR extends FUIR
       {
         result = outerClazz;
       }
-    /*
+
     else if (e instanceof AbstractMatch m)
       {
         result = outerClazz.handDown(m.type(), inh, e);
       }
-    */
+
     else if (e instanceof Universe)
       {
         result = id2clazz(_universe);
@@ -2718,7 +2795,7 @@ public class GeneratingFUIR extends FUIR
       {
         result = outerClazz.handDown(c.typeOfConstant(), inh, e);
       }
-    /*
+
     else if (e instanceof Tag tg)
       {
         result = outerClazz.handDown(tg._taggedType, inh, e);
@@ -2728,7 +2805,6 @@ public class GeneratingFUIR extends FUIR
       {
         result = outerClazz.handDown(ia.type(), inh, e);
       }
-    */
 
     else if (e instanceof Env v)
       {
@@ -3015,7 +3091,13 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzField(int cl, int i)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size(),
+       0 <= i,
+       i < clazzNumFields(cl));
+
+    return id2clazz(cl).fields()[i]._id;
   }
 
 
@@ -3118,7 +3200,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c._feature.choiceGenerics().size();
+    return c.choiceGenerics().size();
   }
 
 
@@ -3360,7 +3442,7 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size(),
-       clazzNeedsCode(cl) ||
+       true || clazzNeedsCode(cl) ||
        cl == clazz_Const_String() ||
        cl == clazz_Const_String_utf8_data() ||
        cl == clazz_array_u8() ||
@@ -3535,7 +3617,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c._isBoxed || c._type.isRef();
+    return c.isRef();
   }
 
 
@@ -3872,7 +3954,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int lookupCall(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    return id2clazz(cl).lookup(Types.resolved.f_Function_call);
   }
 
 
@@ -3888,7 +3974,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int lookup_static_finally(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    return id2clazz(cl).lookup(Types.resolved.f_effect_static_finally);
   }
 
 
@@ -4121,7 +4211,8 @@ public class GeneratingFUIR extends FUIR
     else if (s >= SITE_BASE && (s - SITE_BASE < _allCode.size()))
       {
         var cl = clazzAt(s);
-        res = clazzAsString(cl) + "(" + clazzArgCount(cl) + " args) at " + s;
+        var p = sitePos(s);
+        res = clazzAsString(cl) + "(" + clazzArgCount(cl) + " args)" + (p == null ? "" : " at " + sitePos(s).show());
       }
     else
       {
@@ -4620,8 +4711,7 @@ public class GeneratingFUIR extends FUIR
       {
         tclazz = clazz(a._target, outerClazz, inh);
       }
-    var vc = tclazz.asValue();
-    var fc = id2clazz(vc.lookup(a._assignedField, a));
+    var fc = id2clazz(tclazz.lookup(a._assignedField, a));
     if (false) System.out.println(dev.flang.util.Terminal.PURPLE +
                        "ASSIGN TO "+ fc + " "+fc.resultClazz()+" ref: "+fc.resultClazz().isRef()+" unit: "+fc.resultClazz().isUnitType()+
                        dev.flang.util.Terminal.RESET);
@@ -4685,7 +4775,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  IntMap<int[]> _accessedClazzes = new IntMap<>();
+  final IntMap<int[]> _accessedClazzes;
 
 
   private void addToAccessedClazzed(int s, int tclazz, int innerClazz)
@@ -4711,8 +4801,8 @@ public class GeneratingFUIR extends FUIR
           {
             var n = new int[a.length+2];
             System.arraycopy(a, 0, n, 0, a.length);
-            a[n.length  ] = tclazz;
-            a[n.length+1] = innerClazz;
+            n[a.length  ] = tclazz;
+            n[a.length+1] = innerClazz;
             _accessedClazzes.put(s, a);
           }
       }
@@ -4879,6 +4969,7 @@ public class GeneratingFUIR extends FUIR
     if (accessIsDynamic(s))
       {
         innerClazz = accessedClazz(s, id2clazz(tclazz));
+        //        dev.flang.util.Debug.umprintln("lookup for "+id2clazz(tclazz)+" is "+id2clazz(innerClazz)+" at "+sitePos(s).show());
         addToAccessedClazzed(s, tclazz, innerClazz);
 
         /*
@@ -5136,10 +5227,7 @@ public class GeneratingFUIR extends FUIR
       {
         // NYI: Check if this works for a case that is part of an inherits clause, do
         // we need to store in outerClazz.outer?
-        var t = mc.types();
-        result =  true //  NYI: isUsed(f)
-              ? newClazz(outerClazz, f.selfType())._id
-              : clazz(SpecialClazzes.c_void);
+        result = outerClazz.lookup(f);
       }
     return result;
   }
@@ -5367,16 +5455,68 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Is `constCl` an array?
+   * Is `cl` an array?
    */
   @Override
-  public boolean clazzIsArray(int constCl)
+  public boolean clazzIsArray(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    return clazz(cl)._feature == Types.resolved.f_array;
   }
 
 
   /*----------------------------  constants  ----------------------------*/
+
+
+
+
+  /**
+   * Extract bytes from `bb` that should be used when deserializing for `cl`.
+   *
+   * @param cl the constants clazz
+   *
+   * @param bb the bytes to be used when deserializing this constant.
+   *           May be more than necessary for variable length constants
+   *           like strings, arrays, etc.
+   */
+  private ByteBuffer deserializeClazz(int cl, ByteBuffer bb)
+  {
+    return switch (getSpecialClazz(cl))
+      {
+      case c_Const_String, c_String :
+        var len = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
+        yield bb.slice(bb.position(), 4+len);
+      case c_bool :
+        yield bb.slice(bb.position(), 1);
+      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
+        var bytes = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
+        yield bb.slice(bb.position(), 4+bytes);
+      default:
+        yield this.clazzIsArray(cl)
+          ? deserializeArray(this.inlineArrayElementClazz(cl), bb)
+          : deserializeValueConst(cl, bb);
+      };
+  }
+
+
+  /**
+   * bytes used when serializing call that results in this type.
+   */
+  private ByteBuffer deserializeValueConst(int cl, ByteBuffer bb)
+  {
+    var args = clazzArgCount(cl);
+    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
+    var argBytes = 0;
+    for (int i = 0; i < args; i++)
+      {
+        var rt = clazzArgClazz(cl, i);
+        argBytes += deseralizeConst(rt, bbb).length;
+      }
+    return bb.slice(bb.position(), argBytes);
+  }
 
 
   /**
@@ -5391,7 +5531,36 @@ public class GeneratingFUIR extends FUIR
   @Override
   public byte[] deseralizeConst(int cl, ByteBuffer bb)
   {
-    throw new Error("NYI");
+    var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
+    bb.position(bb.position()+elBytes.remaining());
+    var b = new byte[elBytes.remaining()];
+    elBytes.get(b);
+    return b;
+  }
+
+
+
+  /**
+   * Extract bytes from `bb` that should be used when deserializing this inline array.
+   *
+   * @param elementClazz the elements clazz
+   *
+   * @elementCount the count of elements in this array.
+   *
+   * @param bb the bytes to be used when deserializing this constant.
+   *           May be more than necessary for variable length constants
+   *           like strings, arrays, etc.
+   */
+  private ByteBuffer deserializeArray(int elementClazz, ByteBuffer bb)
+  {
+    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
+    var elCount = bbb.getInt();
+    var elBytes = 0;
+    for (int i = 0; i < elCount; i++)
+      {
+        elBytes += deseralizeConst(elementClazz, bbb).length;
+      }
+    return bb.slice(bb.position(), 4+elBytes);
   }
 
 
