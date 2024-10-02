@@ -780,8 +780,7 @@ public class Html extends ANY
     var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + htmlEncodedBasename(start) + args(start) + "</a>";
 
     var constructors = declaredFeatures.values().stream()
-                        .filter(ft->ft.isConstructor()
-                                    && !ft.isTypeFeature()
+                        .filter(ft -> ft.definesType()
                                     && ft.visibility().typeVisibility() == Visi.PUB)
                         .collect(Collectors.toList());
 
