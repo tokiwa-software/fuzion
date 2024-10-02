@@ -778,11 +778,21 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this a type feature?
+   * Is this a cotype?
    */
-  public boolean isTypeFeature()
+  public boolean isTypeFeature() // NYI: this should be renamed to isCotype()
   {
     return _typeFeatureOrigin != null;
+  }
+
+
+  /**
+   * Is this a type feature?
+   */
+  public boolean isTypeFeatureNewTerminology() // NYI: this should be renamed to isTypeFeature() once the current isTypeFeature() has been renamed to isCotype()
+  {
+    // NYI: BUG: wrongly returns false for features that a cotype inherits from Type but which are implemented in Any i.e. its outer feature is Any
+    return outer() != null && (outer().isTypeFeature() || outer().compareTo(Types.resolved.f_Type) == 0);
   }
 
 
