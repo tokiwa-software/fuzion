@@ -106,16 +106,22 @@ is
   public fixed redef type.return (a T) => option a
 
 
+  # option is equatable only if T is
+  #
+  public redef type.is_equatable => T : property.equatable
+
+
   # equality
   #
   # NYI: UNDER DEVELOPMENT: (how) move this to switch?
   #
-  public fixed redef type.equality(x, y option T)
-    pre else
-      T : property.equatable
-  =>
-    x ? v T => y.exists && v = y.val
-      | nil => y.is_nil
+  public fixed redef type.equality(x, y option T) =>
+    if T : property.equatable
+      x ? v T => y.exists && v = y.val
+        | nil => y.is_nil
+    else
+      panic "***"
+
 
 
 

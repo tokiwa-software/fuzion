@@ -128,10 +128,11 @@ public Set(public E type : property.equatable) ref : Sequence E is
   #
   # NYI: remove this, since we inherit from Sequence?
   #
-  public fixed redef type.equality(a, b container.Set E) bool
-  pre else
-      debug: a.finite
-      debug: b.finite
+  public fixed redef type.equality(a, b container.Set E)
+  # NYI: BUG: #3888
+  # pre else
+  #     debug: a.finite
+  #     debug: b.finite
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val

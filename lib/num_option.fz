@@ -108,10 +108,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: (how) move this to switch?
   #
-  public fixed redef type.equality(x, y num_option T)
-    pre else
-      T : property.equatable
-  =>
+  public fixed redef type.equality(x, y num_option T) =>
     x ? v T => y.exists && v = y.val
       | nil => !y.exists
 
