@@ -31,17 +31,17 @@ public equals(T type : property.equatable, a, b T) => T.equality a b
 
 # infix ≟ -- infix operation as short-hand for 'equals'
 #
-public infix ≟(T type : property.equatable, a, b T) => equals T a b
+public infix ≟(T type : property.equatable, a, b T) => equals a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-public infix =(T type : property.equatable, a, b T) => equals T a b
+public infix =(T type : property.equatable, a, b T) => equals a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-public infix !=(T type : property.equatable, a, b T) => !equals T a b
+public infix !=(T type : property.equatable, a, b T) => !equals a b
 
 
 # is `a` contained in `Set` `s`?
@@ -82,25 +82,25 @@ public lteq(T type : property.partially_orderable, a, b T) => T.lteq a b
 
 # infix ≤ -- infix operation as short-hand for 'lteq'
 #
-public infix ≤(T type : property.partially_orderable, a, b T) => lteq T a b
+public infix ≤(T type : property.partially_orderable, a, b T) => lteq a b
 
 
 # does this come after other?
 #
 public infix ≥(T type : property.orderable, a, b T) bool =>
-  lteq T b a
+  lteq b a
 
 
 # does this come strictly after other?
 #
 public infix ⩼(T type : property.orderable, a, b T) bool =>
-  !(lteq T a b)
+  !(lteq a b)
 
 
 # does this come strictly before other?
 #
 public infix ⩻(T type : property.orderable, a, b T) bool =>
-  !(lteq T b a)
+  !(lteq b a)
 
 
 # three-way comparison between this and other.
@@ -117,25 +117,25 @@ public infix ⋄(T type : property.orderable, a, b T) i32 =>
 
 # infix <= -- infix operation as short-hand for 'lteq'
 #
-public infix <=(T type : property.partially_orderable, a, b T) => lteq T a b
+public infix <=(T type : property.partially_orderable, a, b T) => lteq a b
 
 
 # does this come after other?
 #
 public infix >=(T type : property.orderable, a, b T) bool =>
-  lteq T b a
+  lteq b a
 
 
 # does this come strictly after other?
 #
 public infix >(T type : property.orderable, a, b T) bool =>
-  !(lteq T a b)
+  !lteq a b
 
 
 # does this come strictly before other?
 #
 public infix <(T type : property.orderable, a, b T) bool =>
-  !(lteq T b a)
+  !lteq b a
 
 
 # three-way comparison between this and other.
