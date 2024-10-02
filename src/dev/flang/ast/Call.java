@@ -2604,6 +2604,10 @@ public class Call extends AbstractCall
           {
             var ignore = _target.type();
           }
+
+        if (CHECKS) check
+          (Errors.any());
+
         result = Call.ERROR; // short circuit this call
       }
 
