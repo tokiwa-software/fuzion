@@ -5403,7 +5403,7 @@ public class GeneratingFUIR extends FUIR
           }
         else if (sc.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
-            dev.flang.util.Debug.umprintln("matchCaseCode for infix :");
+            // NYI: dev.flang.util.Debug.umprintln("matchCaseCode for infix :");
             return NO_SITE;
             /*
             var innerClazz = id2clazz(clazzAt(s)).actualClazzes(sc, null)[0];
