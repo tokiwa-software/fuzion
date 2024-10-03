@@ -527,7 +527,7 @@ public class Fuzion extends Tool
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
 
-  static boolean FUM_FUIR = FuzionOptions.boolPropertyOrEnv("FUM_FUIR");
+  static boolean FUM_FUIR = FuzionOptions.boolPropertyOrEnv("FUM_FUIR", true);
 
 
   /*----------------------------  variables  ----------------------------*/
