@@ -3957,7 +3957,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int lookupJavaRef(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    return id2clazz(cl).lookup(Types.resolved.f_fuzion_Java_Object_Ref);
   }
 
 
@@ -4011,7 +4015,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int lookupAtomicValue(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    return id2clazz(cl).lookup(Types.resolved.f_concur_atomic_v);
   }
 
 
@@ -4084,7 +4092,11 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int lookup_error_msg(int cl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    return id2clazz(cl).lookup(Types.resolved.f_error_msg);
   }
 
 
