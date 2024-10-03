@@ -263,7 +263,7 @@ public class GeneratingFUIR extends FUIR
           int id)
     {
       if (PRECONDITIONS) require
-        (!type.dependsOnGenerics(),
+                           (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
          !type.containsThisType());
 
       outer = normalizeOuter(type, outer);
@@ -835,6 +835,22 @@ public class GeneratingFUIR extends FUIR
     public int lookup(dev.flang.air.FeatureAndActuals fa, HasSourcePosition p)
     {
       return lookup(fa, -1, p, false);
+    }
+
+
+    Clazz lookup(AbstractCall c, List<AbstractType> typePars)
+    {
+      Clazz result = null;
+      if (!isVoidOrUndefined())
+        {
+          result = id2clazz(lookup(new FeatureAndActuals(c.calledFeature(),
+                                                         typePars),
+                                   c.select(),
+                                   c,
+                                   c.isInheritanceCall()
+                                   ));
+        }
+      return result;
     }
 
 
@@ -1508,10 +1524,10 @@ public class GeneratingFUIR extends FUIR
         */
         var oc = outer();
 
-        /* NYI;
-        o = oc.actualClazzes(call, null)[0];
-        */
-        o = error();
+        var tclazz  = clazz(call.target(), this, inh);
+        var typePars = actualGenerics(call.actualTypeParameters());
+        check(call.isInheritanceCall());
+        o = tclazz.lookup(call, typePars);
       }
     var ix = f.typeParameterIndex();
     var oag = o.actualTypeParameters();
@@ -2780,12 +2796,8 @@ public class GeneratingFUIR extends FUIR
         if (!tclazz.isVoidOrUndefined())
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
-            var inner = tclazz.lookup(new FeatureAndActuals(c.calledFeature(),
-                                                            outerClazz.actualGenerics(at)),
-                                      c.select(),
-                                      c,
-                                      false);
-            result = id2clazz(inner).resultClazz();
+            var typePars = outerClazz.actualGenerics(at);
+            result = tclazz.lookup(c, typePars).resultClazz();
           }
         else
           {
