@@ -2437,6 +2437,7 @@ public class GeneratingFUIR extends FUIR
             // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
             s = switch (cl._feature.qualifiedName())
               {
+              case "Any"               -> SpecialClazzes.c_Any         ;
               case "i8"                -> SpecialClazzes.c_i8          ;
               case "i16"               -> SpecialClazzes.c_i16         ;
               case "i32"               -> SpecialClazzes.c_i32         ;
@@ -2447,13 +2448,16 @@ public class GeneratingFUIR extends FUIR
               case "u64"               -> SpecialClazzes.c_u64         ;
               case "f32"               -> SpecialClazzes.c_f32         ;
               case "f64"               -> SpecialClazzes.c_f64         ;
+              case "unit"              -> SpecialClazzes.c_unit        ;
+              case "void"              -> SpecialClazzes.c_void        ;
               case "bool"              -> SpecialClazzes.c_bool        ;
               case "TRUE"              -> SpecialClazzes.c_TRUE        ;
               case "FALSE"             -> SpecialClazzes.c_FALSE       ;
               case "Const_String"      -> SpecialClazzes.c_Const_String;
               case "String"            -> SpecialClazzes.c_String      ;
-              case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ; // NYI: does not work, must handle outer correctly
-              case "unit"              -> SpecialClazzes.c_unit        ;
+              case "fuzion"            -> SpecialClazzes.c_fuzion      ;
+              case "fuzion.sys"        -> SpecialClazzes.c_fuzion_sys  ;
+              case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ;
               default                  -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND && cl.isRef() == cl._feature.isThisRef())
@@ -5047,10 +5051,6 @@ public class GeneratingFUIR extends FUIR
     if (innerClazz != NO_CLAZZ)
       {
         doesNeedCode(innerClazz);
-      }
-    if (innerClazz == NO_CLAZZ)
-      {
-        System.out.println("lookup failed for "+clazzAsString(tclazz)+" "+accessIsDynamic(s)+" at "+sitePos(s).show()+"\n from "+id2clazz(innerClazz0).feature().pos().show());
       }
 
     // System.out.println("LOOKUP for "+clazzAsString(tclazz)+" is "+clazzAsString(innerClazz)+" at "+sitePos(s).show());
