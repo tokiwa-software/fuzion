@@ -2276,6 +2276,7 @@ public class GeneratingFUIR extends FUIR
    */
   private final IntArray _siteClazzes;
   private final IntMap<Clazz> _accessedClazz;
+  private final IntMap<Clazz> _accessedTarget;
   final IntMap<int[]> _accessedClazzes;
 
 
@@ -2311,6 +2312,8 @@ public class GeneratingFUIR extends FUIR
     _clazzesHM = new HashMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
     _accessedClazz = new IntMap<>();
+    _accessedClazzes = new IntMap<>();
+    _accessedTarget = new IntMap<>();
     _mainModule = fe.mainModule();
     _clazzes = new List<>();
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
@@ -2318,7 +2321,6 @@ public class GeneratingFUIR extends FUIR
     doesNeedCode(_universe);
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
-    _accessedClazzes = new IntMap<>();
     _inh = new List<>();
     _clazzesForTypes = new TreeMap<>();
   }
@@ -2340,12 +2342,13 @@ public class GeneratingFUIR extends FUIR
     _clazzesHM = original._clazzesHM;
     _siteClazzes = original._siteClazzes;
     _accessedClazz = original._accessedClazz;
+    _accessedClazzes = original._accessedClazzes;
+    _accessedTarget = original._accessedTarget;
     _mainModule = original._mainModule;
     _mainClazz = original._mainClazz;
     _universe = original._universe;
     _clazzes = original._clazzes;
     _specialClazzes = original._specialClazzes;
-    _accessedClazzes = original._accessedClazzes;
     _inh = original._inh;
     _clazzesForTypes = original._clazzesForTypes;
   }
@@ -3317,8 +3320,14 @@ public class GeneratingFUIR extends FUIR
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size(),
-       clazzIsRef(cl));
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    if (!clazzIsRef(cl))
+      {
+        // NYI: this is sometimes (e.g. in tests/inheritance) called for non-ref
+        // clazzes. Check what this is needed for, seems not to make not so much
+        // sense.
+      }
 
     var c = id2clazz(cl);
     var result = new List<Clazz>();
@@ -5137,17 +5146,22 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Assign ||
        codeAt(s) == ExprKind.Call  );
 
-    var cl = clazzAt(s);
-    var outerClazz = id2clazz(cl);
-    var e = getExpr(s);
-    var tclazz = switch (e)
+    var tclazz = _accessedTarget.get(s);
+    if (tclazz == null)
       {
-      case AbstractAssign ass  -> clazz(ass._target, outerClazz, _inh.get(s - SITE_BASE)); // NYI: This should be the same as assignedField._outer
-      case Clazz          arg  -> outerClazz; // assignment to arg field in inherits call, so outer clazz is current instance
-      case AbstractCall   call -> calledTarget(call, outerClazz, _inh.get(s - SITE_BASE));
-      default ->
-      (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
-      };
+        var cl = clazzAt(s);
+        var outerClazz = id2clazz(cl);
+        var e = getExpr(s);
+        tclazz = switch (e)
+          {
+          case AbstractAssign ass  -> clazz(ass._target, outerClazz, _inh.get(s - SITE_BASE)); // NYI: This should be the same as assignedField._outer
+          case Clazz          arg  -> outerClazz; // assignment to arg field in inherits call, so outer clazz is current instance
+          case AbstractCall   call -> calledTarget(call, outerClazz, _inh.get(s - SITE_BASE));
+          default ->
+          (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
+          };
+        _accessedTarget.put(s, tclazz);
+      }
 
     return tclazz._id;
   }
