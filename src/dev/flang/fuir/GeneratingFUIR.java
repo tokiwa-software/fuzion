@@ -4654,7 +4654,7 @@ public class GeneratingFUIR extends FUIR
 
     Clazz innerClazz = switch (e)
       {
-      case AbstractCall   call -> calledInner(call, outerClazz._feature, outerClazz, tclazz, _inh.get(s - SITE_BASE));
+      case AbstractCall   call -> calledInner(call, outerClazz, tclazz, _inh.get(s - SITE_BASE));
       case AbstractAssign a    -> assignedField(outerClazz, tclazz, a, _inh.get(s - SITE_BASE));
       case Clazz          fld  -> fld;
       default -> (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } }; /* Java is ugly... */
@@ -4677,11 +4677,12 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  public Clazz calledInner(AbstractCall c, AbstractFeature outer, Clazz outerClazz, Clazz tclazz, List<AbstractCall> inh)
+  public Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz tclazz, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
 
+    var outer = outerClazz._feature;
     if (c.calledFeature() == null  || c.target() == null)
       {
         return error();  // previous errors, give up
@@ -5396,26 +5397,23 @@ public class GeneratingFUIR extends FUIR
         m.subject() instanceof AbstractCall sc)
       {
         var c = m.cases().get(cix);
-        if (sc.calledFeature() == Types.resolved.f_Type_infix_colon_true  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
-            sc.calledFeature() == Types.resolved.f_Type_infix_colon_false && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+        var cf = sc.calledFeature();
+        if (cf == Types.resolved.f_Type_infix_colon_true  ||
+            cf == Types.resolved.f_Type_infix_colon_false ||
+            cf == Types.resolved.f_Type_infix_colon          )
           {
-            return NO_SITE;
-          }
-        else if (sc.calledFeature() == Types.resolved.f_Type_infix_colon)
-          {
-            // NYI: dev.flang.util.Debug.umprintln("matchCaseCode for infix :");
-            return NO_SITE;
-            /*
-            var innerClazz = id2clazz(clazzAt(s)).actualClazzes(sc, null)[0];
-            var tclazz = innerClazz._outer;
-            var T = innerClazz.actualGenerics()[0];
-            var pos = T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR //, tclazz._type.generics().get(0));
-            if (pos  && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0) ||
-                !pos && !c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_FALSE.selfType())==0)    )
+            var outer = id2clazz(clazzAt(s));
+            var innerClazz = calledInner(sc, outer, null, _inh.get(s - SITE_BASE));
+            var tclazz = innerClazz.outer();
+            var T = innerClazz.actualTypeParameters()[0];
+            var pos = cf == Types.resolved.f_Type_infix_colon_true ||
+              cf == Types.resolved.f_Type_infix_colon  &&
+              T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, tclazz._type.generics().get(0));
+            var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
+            if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
               {
                 return NO_SITE;
               }
-            */
           }
       }
 
