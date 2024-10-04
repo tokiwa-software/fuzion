@@ -2461,12 +2461,13 @@ public class GeneratingFUIR extends FUIR
               case "FALSE"             -> SpecialClazzes.c_FALSE       ;
               case "Const_String"      -> SpecialClazzes.c_Const_String;
               case "String"            -> SpecialClazzes.c_String      ;
+              case "error"             -> SpecialClazzes.c_error       ;
               case "fuzion"            -> SpecialClazzes.c_fuzion      ;
               case "fuzion.sys"        -> SpecialClazzes.c_fuzion_sys  ;
               case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ;
               default                  -> SpecialClazzes.c_NOT_FOUND   ;
               };
-            if (s != SpecialClazzes.c_NOT_FOUND && cl.isRef() == cl._feature.isThisRef())
+            if (s != SpecialClazzes.c_NOT_FOUND)
               {
                 _specialClazzes[s.ordinal()] = result;
               }
@@ -3971,9 +3972,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_error()
   {
-    dev.flang.util.Debug.umprintln("NYI!");
-    if (true) return -1;
-    throw new Error("NYI");
+    return clazz(SpecialClazzes.c_error);
   }
 
 

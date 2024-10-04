@@ -74,6 +74,7 @@ public abstract class FUIR extends IR
     c_Const_String("Const_String"               , 0, c_universe  ),
     c_CS_utf8_data("utf8_data"                  , 0, c_Const_String),
     c_String      ("String"                     , 0, c_universe  ),
+    c_error       ("error"                      , 1, c_universe  ),
     c_fuzion      ("fuzion"                     , 0, c_universe  ),
     c_fuzion_sys  ("sys"                        , 0, c_fuzion    ),
     c_sys_ptr     ("Pointer"                    , 0, c_fuzion_sys),
