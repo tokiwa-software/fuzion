@@ -2735,7 +2735,7 @@ public class AirFUIR extends FUIR
    * `NO_SITE` if unknown.
    */
   @Override
-  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
+  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     var cc = clazz(cl);
     var cf = clazz(f);

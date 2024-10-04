@@ -1492,7 +1492,7 @@ public abstract class FUIR extends IR
    * @param instantiationPos if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
-  public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context);
+  public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite);
 
 
   /**

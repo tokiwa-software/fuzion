@@ -26,7 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.air;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
@@ -78,6 +80,22 @@ public class AirErrors extends AstErrors
                                                    String context,
                                                    IClazzes clazzes)
   {
+    var m = new TreeMap<AbstractFeature, String>();
+    for (var af : abstractFeature)
+      {
+        m.put(af,
+              clazzes.isUsedAt(af).sourceRange().show());
+      }
+    abstractFeatureNotImplemented(featureThatDoesNotImplementAbstract,
+                                  m,
+                                  instantiatedAt,
+                                  context);
+  }
+  public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
+                                                   Map<AbstractFeature, String> abstractFeature,
+                                                   HasSourcePosition instantiatedAt,
+                                                   String context)
+  {
     if (PRECONDITIONS) require
       (!abstractFeature.isEmpty());
 
@@ -85,7 +103,7 @@ public class AirErrors extends AstErrors
     var abstracts = new StringBuilder();
     var foundAbstract = false;
     var foundFixed = false;
-    for (var af : abstractFeature)
+    for (var af : abstractFeature.keySet())
       {
         foundAbstract |= af.isAbstract();
         foundFixed    |= (af.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
@@ -96,13 +114,14 @@ public class AirErrors extends AstErrors
       foundAbstract && foundFixed ? "abstract or fixed" :
       foundAbstract               ? "abstract"          :
       foundFixed                  ? "fixed"             : Errors.ERROR_STRING;
-    for (var af : abstractFeature)
+    for (var af : abstractFeature.keySet())
       {
+        var calledAt = abstractFeature.get(af);
         abs.append(abs.length() == 0 ? "" : ", ").append(s(af));
         var afKind = af.isAbstract() ? "abstract" : "fixed";
         abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " " + afKind + " feature " +
                          s(af) + " declared at " + af.pos().show() + "\n" +
-                         "which is called at " + (clazzes == null ? "NYI" : clazzes.isUsedAt(af).sourceRange().show()) + "\n");
+                         "which is called at " + calledAt + "\n");
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos(),

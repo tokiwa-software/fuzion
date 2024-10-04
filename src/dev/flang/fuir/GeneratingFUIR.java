@@ -5698,7 +5698,7 @@ public class GeneratingFUIR extends FUIR
    * instantiated.
    */
   record AbsMissing(Clazz clazz,
-                    TreeSet<AbstractFeature> called,
+                    TreeMap<AbstractFeature, String> called,
                     SourcePosition instantiationPos,
                     String context)
   {
@@ -5726,12 +5726,12 @@ public class GeneratingFUIR extends FUIR
    * `NO_SITE` if unknown.
    */
   @Override
-  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
+  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     var cc = id2clazz(cl);
     var cf = id2clazz(f);
-    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeSet<>(), sitePos(instantiationSite), context));
-    r.called.add(cf.feature());
+    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeMap<>(), sitePos(instantiationSite), context));
+    r.called.put(cf.feature(), sitePos(callSite).show());
     if (CHECKS) check
       (cf.feature().isAbstract() ||
        (cf.feature().modifiers() & FuzionConstants.MODIFIER_FIXED) != 0);
@@ -5752,8 +5752,7 @@ public class GeneratingFUIR extends FUIR
       .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
                                                             r.called,
                                                             r.instantiationPos,
-                                                            r.context,
-                                                            null /* NYI: _clazzes */));
+                                                            r.context));
   }
 
 
