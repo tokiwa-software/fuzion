@@ -2275,6 +2275,8 @@ public class GeneratingFUIR extends FUIR
    * For each site, this gives the clazz id of the clazz that contains the code at that site.
    */
   private final IntArray _siteClazzes;
+  private final IntMap<Clazz> _accessedClazz;
+  final IntMap<int[]> _accessedClazzes;
 
 
   private final LibraryModule _mainModule;
@@ -2308,6 +2310,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = false;
     _clazzesHM = new HashMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
+    _accessedClazz = new IntMap<>();
     _mainModule = fe.mainModule();
     _clazzes = new List<>();
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
@@ -2336,6 +2339,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = true;
     _clazzesHM = original._clazzesHM;
     _siteClazzes = original._siteClazzes;
+    _accessedClazz = original._accessedClazz;
     _mainModule = original._mainModule;
     _mainClazz = original._mainClazz;
     _universe = original._universe;
@@ -4628,17 +4632,21 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
 
-    var res = _accessedClazz;
-    if (res == NO_CLAZZ)
+    var res = _accessedClazz.get(s);
+    if (res == null)
       {
         res = accessedClazz(s, null);
+        if (res != null)
+          {
+            _accessedClazz.put(s, res);
+          }
         // _accessedClazz = res; -- NYI: need Map from s to res
       }
-    return res;
+    return res == null ? NO_CLAZZ : res._id;
   }
-  int _accessedClazz = NO_CLAZZ;
+  //int _accessedClazz = NO_CLAZZ;
 
-  private int accessedClazz(int s, Clazz tclazz)
+  private Clazz accessedClazz(int s, Clazz tclazz)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -4658,7 +4666,7 @@ public class GeneratingFUIR extends FUIR
       case Clazz          fld  -> fld;
       default -> (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } }; /* Java is ugly... */
       };
-    return innerClazz == null ? NO_CLAZZ : innerClazz._id;
+    return innerClazz == null ? null : innerClazz;
   }
 
 
@@ -4837,9 +4845,6 @@ public class GeneratingFUIR extends FUIR
 
     return field.resultClazz()._id;
   }
-
-
-  final IntMap<int[]> _accessedClazzes;
 
 
   private void addToAccessedClazzes(int s, int tclazz, int innerClazz)
@@ -5032,7 +5037,7 @@ public class GeneratingFUIR extends FUIR
     int innerClazz;
     if (accessIsDynamic(s))
       {
-        innerClazz = accessedClazz(s, id2clazz(tclazz));
+        innerClazz = accessedClazz(s, id2clazz(tclazz))._id;
         //        dev.flang.util.Debug.umprintln("lookup for "+id2clazz(tclazz)+" is "+id2clazz(innerClazz)+" at "+sitePos(s).show());
         addToAccessedClazzes(s, tclazz, innerClazz);
 
