@@ -4423,9 +4423,6 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = clazz(cl);
     var v = (Env) getExpr(s);
     Clazz vcl = clazz(v, outerClazz, _inh.get(s - SITE_BASE));
-    if (false) System.out.println(dev.flang.util.Terminal.GREEN +
-                       "ENV clazz " + vcl + " unit: "+vcl.isUnitType() +
-                       dev.flang.util.Terminal.RESET);
     return vcl == null ? -1 : vcl._id;
   }
 
@@ -4793,9 +4790,6 @@ public class GeneratingFUIR extends FUIR
         tclazz = clazz(a._target, outerClazz, inh);
       }
     var fc = id2clazz(tclazz.lookup(a._assignedField, a));
-    if (false) System.out.println(dev.flang.util.Terminal.PURPLE +
-                       "ASSIGN TO "+ fc + " "+fc.resultClazz()+" ref: "+fc.resultClazz().isRef()+" unit: "+fc.resultClazz().isUnitType()+
-                       dev.flang.util.Terminal.RESET);
     if (fc.resultClazz().isUnitType())
       {
         fc = null;
@@ -5091,6 +5085,21 @@ public class GeneratingFUIR extends FUIR
 
     // System.out.println("LOOKUP for "+clazzAsString(tclazz)+" is "+clazzAsString(innerClazz)+" at "+sitePos(s).show());
     return innerClazz;
+  }
+
+
+  /**
+   * Inform the FUIR instance that lookup for new clazzes is finished.  This
+   * means that clazzIsUnitType will be able to produce correct results since no
+   * more features will be added.
+   */
+  @Override
+  public void lookupDone()
+  {
+    if (CHECKS) check
+      (!_lookupDone);
+
+    _lookupDone = true;
   }
 
 

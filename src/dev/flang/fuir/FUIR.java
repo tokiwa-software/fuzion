@@ -1002,6 +1002,16 @@ public abstract class FUIR extends IR
 
 
   /**
+   * Inform the FUIR instance that lookup for new clazzes is finished.  This
+   * means that clazzIsUnitType will be able to produce correct results since no
+   * more features will be added.
+   */
+  public void lookupDone()
+  {
+  }
+
+
+  /**
    * Is an access to a feature (assignment, call) dynamic?
    *
    * @param s site of the access

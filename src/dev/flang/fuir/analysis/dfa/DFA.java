@@ -1433,6 +1433,7 @@ public class DFA extends ANY
           }
       }
     _reportResults = true;
+    _fuir.lookupDone();  // once we are done, FUIR.isUnitType() will work since it can be sure nothing will be added.
     iteration();
 
     showCallStatistics();
