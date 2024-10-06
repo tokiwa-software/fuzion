@@ -323,7 +323,13 @@ public class Value extends Val
    */
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
-    throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class);
+    var rt = dfa._fuir.clazzResultClazz(field);
+    if (!dfa._fuir.clazzIsUnitType(rt) && !Errors.any())
+      {
+        throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class +
+                        " field type " + dfa._fuir.clazzAsString(rt) + " in "+this);
+      }
+    return Value.UNIT;
   }
 
 
