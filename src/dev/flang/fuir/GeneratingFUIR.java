@@ -840,17 +840,14 @@ public class GeneratingFUIR extends FUIR
 
     Clazz lookup(AbstractCall c, List<AbstractType> typePars)
     {
-      Clazz result = null;
-      if (!isVoidOrUndefined())
-        {
-          result = id2clazz(lookup(new FeatureAndActuals(c.calledFeature(),
-                                                         typePars),
-                                   c.select(),
-                                   c,
-                                   c.isInheritanceCall()
-                                   ));
-        }
-      return result;
+      return isVoidOrUndefined()
+        ? this
+        : id2clazz(lookup(new FeatureAndActuals(c.calledFeature(),
+                                                typePars),
+                          c.select(),
+                          c,
+                          c.isInheritanceCall()
+                          ));
     }
 
 
@@ -1523,8 +1520,7 @@ public class GeneratingFUIR extends FUIR
                                                              : _outer.asRef();
         */
         var oc = outer();
-
-        var tclazz  = clazz(call.target(), this, inh);
+        var tclazz  = clazz(call.target(), oc, inh);
         var typePars = actualGenerics(call.actualTypeParameters());
         check(call.isInheritanceCall());
         o = tclazz.lookup(call, typePars);
