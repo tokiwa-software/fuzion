@@ -53,6 +53,7 @@ public class AirErrors extends AstErrors
    * Error count of only those errors that occurred in the IR.
    */
   static int count = 0;
+  public static int count() { return count; }
 
 
   /*-----------------------------  methods  -----------------------------*/

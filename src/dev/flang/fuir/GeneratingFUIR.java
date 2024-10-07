@@ -119,6 +119,14 @@ public class GeneratingFUIR extends FUIR
   public List<Clazz> _choiceGenerics;
 
 
+  /**
+   * Flag that is set while the layout of objects of this clazz is determined.
+   * This is used to detect recursive clazzes that contain value type fields of
+   * the same type as the clazz itself.
+   */
+  LayoutStatus _layouting = LayoutStatus.Before;
+
+
     SpecialClazzes _s = SpecialClazzes.c_NOT_FOUND;
     boolean _needsCode;
     int _code; // site of the code block of this clazz
@@ -147,6 +155,18 @@ public class GeneratingFUIR extends FUIR
    */
   private TreeMap<Integer, Clazz[]> _actualClazzData = new TreeMap<Integer, Clazz[]>();
 
+
+
+  /**
+   * Enum to record that we have checked the layout of this clazz and to detect
+   * recursive value fields during layout.
+   */
+  enum LayoutStatus
+  {
+    Before,
+    During,
+    After,
+  }
 
 
 
@@ -734,6 +754,106 @@ public class GeneratingFUIR extends FUIR
   {
     return isVoidType() /* NYI:  ||
                             this == _clazzes.undefined.getIfCreated() */;
+  }
+
+
+  /**
+   * Layout this clazz. In case a cyclic nesting of value fields is detected,
+   * report an error.
+   */
+  void layoutAndHandleCycle()
+  {
+    var cycle = layout();
+    if (cycle != null && Errors.count() <= AirErrors.count())
+      {
+        StringBuilder cycleString = new StringBuilder();
+        var tp = _type.declarationPos();
+        for (SourcePosition p : cycle)
+          {
+            if (!p.equals(tp))
+              {
+                cycleString.append(p.show()).append("\n");
+              }
+          }
+        AirErrors.error(tp,
+                        "Cyclic field nesting is not permitted",
+                        "Cyclic value field nesting would result in infinitely large objects.\n" +
+                        "Cycle of nesting found during clazz layout:\n" +
+                        cycleString + "\n" +
+                        "To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.");
+      }
+  }
+
+
+
+  /**
+   * layout this clazz.  This does not really do the layout, but it checks that
+   * the layout is possible and there are no recursively nested value types.
+   *
+   * @return null in case of success, a list of source code positions that shows
+   * the recursively nested value types otherwise.
+   */
+  private TreeSet<SourcePosition> layout()
+  {
+    TreeSet<SourcePosition> result = null;
+    switch (_layouting)
+      {
+      case During:
+        result = new TreeSet<>();
+        result.add(this.feature().pos());
+        break;
+      case Before:
+        {
+          _layouting = LayoutStatus.During;
+          if (isChoice())
+            {
+              for (Clazz c : choiceGenerics())
+                {
+                  if (result == null && !c.isRef())
+                    {
+                      result = c.layout();
+                      if (result != null)
+                        {
+                          result.add(c.feature().pos());
+                        }
+                    }
+                }
+            }
+          for (var fc : fields())
+            {
+              if (result == null && !fc.feature().isOuterRef())
+                {
+                  result = layoutFieldType(fc);
+                }
+            }
+          _layouting = LayoutStatus.After;
+        }
+      case After: break;
+      }
+    return result;
+  }
+
+
+  /**
+   * Helper for layout() to layout type of given field.
+   *
+   * @param field to be added to this.
+   */
+  private TreeSet<SourcePosition> layoutFieldType(Clazz field)
+  {
+    TreeSet<SourcePosition> result = null;
+    var fieldClazz = field.resultClazz();
+    if (!fieldClazz.isRef() &&
+        !fieldClazz.feature().isBuiltInPrimitive() &&
+        !fieldClazz.isVoidType())
+      {
+        result = fieldClazz.layout();
+        if (result != null)
+          {
+            result.add(field.feature().pos());
+          }
+      }
+    return result;
   }
 
 
@@ -5106,6 +5226,15 @@ public class GeneratingFUIR extends FUIR
       (!_lookupDone);
 
     _lookupDone = true;
+
+    // NYI: layout phase creates new clazzes, which is why we cannot iterate like this. Need to check why and remove this!
+    //
+    // for(var c : _clazzes)
+    for (var i = 0; i < _clazzes.size(); i++)
+      {
+        var c = _clazzes.get(i);
+        c.layoutAndHandleCycle();
+      }
   }
 
 
