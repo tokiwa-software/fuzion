@@ -171,7 +171,7 @@ public class Html extends ANY
    */
   private String summary(AbstractFeature af)
   {
-    return summary(af, true, null);
+    return summary(af, null);
   }
 
   /**
@@ -180,14 +180,14 @@ public class Html extends ANY
    * @param printArgs whether or not arguments of the feature should be included in output
    * @return
    */
-  private String summary(AbstractFeature af, boolean printArgs, AbstractFeature outer)
+  private String summary(AbstractFeature af, AbstractFeature outer)
   {
     return "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
       + "<div class='d-flex flex-wrap word-break-break-word'>"
       + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
       + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
       + anchor(af)
-      + arguments(af, printArgs)
+      + arguments(af)
       + (af.isThisRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
       + (af.signatureWithArrow() ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
@@ -430,45 +430,13 @@ public class Html extends ANY
   /**
    * The summaries and the comments of the features
    * @param set the features to be included in the summary
+   * @param printArgs whether or not arguments of the feature should be included in output
+   * @param outer the outer feature of the features in the summary
    * @return
    */
   private String mainSection0(TreeSet<AbstractFeature> set, AbstractFeature outer)
   {
-    return mainSection0(set.stream(), true, outer);
-  }
-
-  /**
-   * The summaries and the comments of the features
-   * @param set the features to be included in the summary
-   * @return
-   */
-  private String mainSection0(Stream<AbstractFeature> set, AbstractFeature outer)
-  {
-    return mainSection0(set, true, outer);
-  }
-
-  /**
-   * The summaries and the comments of the features
-   * @param set the features to be included in the summary
-   * @param printArgs whether or not arguments of the feature should be included in output
-   * @param outer the outer feature of the features in the summary
-   * @return
-   */
-  private String mainSection0(TreeSet<AbstractFeature> set, boolean printArgs, AbstractFeature outer)
-  {
-    return mainSection0(set.stream(), printArgs, outer);
-  }
-
-  /**
-   * The summaries and the comments of the features
-   * @param set the features to be included in the summary
-   * @param printArgs whether or not arguments of the feature should be included in output
-   * @param outer the outer feature of the features in the summary
-   * @return
-   */
-  private String mainSection0(Stream<AbstractFeature> set, boolean printArgs, AbstractFeature outer)
-  {
-    return set
+    return set.stream()
       .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()))
       .map(af -> {
         // NYI summary tag must not contain div
@@ -477,7 +445,7 @@ public class Html extends ANY
             // NYI rename fd-private?
             .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
             .replace("$1",
-              summary(af, printArgs, outer))
+              summary(af, outer))
             .replace("$2", Util.commentOf(af))
             .replace("$3", redefines(af));
       })
@@ -753,18 +721,18 @@ public class Html extends ANY
    * @param f
    * @return
    */
-  private String arguments(AbstractFeature f, boolean printArgs)
+  private String arguments(AbstractFeature f)
   {
     if (f.arguments()
          .stream()
-         .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
+         .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
          .count() == 0)
       {
         return "";
       }
     return "(" + f.arguments()
       .stream()
-      .filter(a -> a.isTypeParameter() || (printArgs && f.visibility().eraseTypeVisibility() == Visi.PUB))
+      .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a) : anchor(a.resultType(), f)))
