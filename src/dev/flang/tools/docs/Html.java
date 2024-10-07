@@ -320,9 +320,21 @@ public class Html extends ANY
 
   private String anchor(AbstractFeature af) {
     return "<div class='font-weight-600'>"
-            + "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>"
+            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
-            + "</a></div>";
+            + (noFeatureLink(af) ? "" : "</a>")
+            + "</div>";
+  }
+
+  /**
+   * Should a hyperlink be created for feature af?
+   * Fields and type parameters don't have their own page in the docs.
+   * @param af the feature which should be checked
+   * @return true iff there is no doc page for this feature and no hyperlink should be created
+   */
+  private boolean noFeatureLink(AbstractFeature af)
+  {
+    return af.isArgument() || af.isTypeParameter() || af.isOpenTypeParameter();
   }
 
 
