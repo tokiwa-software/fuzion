@@ -386,23 +386,32 @@ public class Html extends ANY
     fields.addAll(normalArguments);
 
     // Constructors
-    var constructors =  new TreeSet<AbstractFeature>();
-    constructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    constructors.removeIf(f->!f.isConstructor());
+    var allConstructors =  new TreeSet<AbstractFeature>();
+    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+    allConstructors.removeIf(f->!f.isConstructor());
+
+    var normalConstructors = allConstructors.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+    var typeConstructors   = allConstructors.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
 
     // Functions
-    var functions = new TreeSet<AbstractFeature>();
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    functions.removeIf(f->f.isConstructor());
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+    var allFunctions = new TreeSet<AbstractFeature>();
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+    allFunctions.removeIf(f->f.isConstructor());
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
 
-    return (typeParameters.isEmpty()                ? "" : "<h4>Type Parameters</h4>" + mainSection0(typeParameters, outer))
-    + (fields.isEmpty()                             ? "" : "<h4>Fields</h4>"          + mainSection0(fields, outer))
-    + (constructors.isEmpty()                       ? "" : "<h4>Constructors</h4>"    + mainSection0(constructors, outer))
-    + (functions.isEmpty()                          ? "" : "<h4>Functions</h4>"       + mainSection0(functions, outer))
-    + (map.get(AbstractFeature.Kind.Choice) == null ? "" : "<h4>Choice Types</h4>"    + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
+    var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+
+
+    return (typeParameters.isEmpty()                ? "" : "<h4>Type Parameters</h4>"   + mainSection0(typeParameters, outer))
+    + (fields.isEmpty()                             ? "" : "<h4>Fields</h4>"            + mainSection0(fields, outer))
+    + (normalConstructors.isEmpty()                 ? "" : "<h4>Constructors</h4>"      + mainSection0(normalConstructors, outer))
+    + (typeConstructors.isEmpty()                   ? "" : "<h4>Type Constructors</h4>" + mainSection0(typeConstructors, outer))
+    + (normalFunctions.isEmpty()                    ? "" : "<h4>Functions</h4>"         + mainSection0(normalFunctions, outer))
+    + (typeFunctions.isEmpty()                      ? "" : "<h4>Type Functions</h4>"    + mainSection0(typeFunctions, outer))
+    + (map.get(AbstractFeature.Kind.Choice) == null ? "" : "<h4>Choice Types</h4>"      + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
   }
 
 
