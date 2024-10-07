@@ -4789,7 +4789,7 @@ public class GeneratingFUIR extends FUIR
         //
         // NYI: CLEANUP: We might reconsider this and permit `ref` here the same
         // way that `ref` can be the target to a call that reads a
-        // field. Currently, backens rely on this being a value, though.
+        // field. Currently, back-ends (JVM) rely on this being a value, though.
         tclazz = tclazz.asValue();
       }
     var fc = id2clazz(tclazz.lookup(a._assignedField, a));
