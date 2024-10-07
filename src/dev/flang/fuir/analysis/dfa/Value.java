@@ -28,6 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 import static dev.flang.ir.IR.NO_SITE;
 
+import dev.flang.util.Errors;
 import dev.flang.util.IntMap;
 
 import java.util.Comparator;
