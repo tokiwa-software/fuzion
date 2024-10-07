@@ -4784,6 +4784,13 @@ public class GeneratingFUIR extends FUIR
     if (tclazz == null)
       {
         tclazz = clazz(a._target, outerClazz, inh);
+        // target clazz of an assignment is always the value counterpart, even
+        // if `tclazz` is a `ref` that itself is never instantiated.
+        //
+        // NYI: CLEANUP: We might reconsider this and permit `ref` here the same
+        // way that `ref` can be the target to a call that reads a
+        // field. Currently, backens rely on this being a value, though.
+        tclazz = tclazz.asValue();
       }
     var fc = id2clazz(tclazz.lookup(a._assignedField, a));
     if (fc.resultClazz().isUnitType())
