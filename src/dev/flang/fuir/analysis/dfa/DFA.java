@@ -369,11 +369,8 @@ public class DFA extends ANY
             .map(c -> c._site)
             .findAny()
             .orElse(NO_SITE);
-          if (instantiatedAt != NO_SITE)
-            {
-              _fuir.recordAbstractMissing(t_cl, _fuir.accessedClazz(s), instantiatedAt, _call.contextString(),
-                                          s);
-            }
+          _fuir.recordAbstractMissing(t_cl, _fuir.accessedClazz(s), instantiatedAt, _call.contextString(),
+                                      s);
         }
       return res;
     }

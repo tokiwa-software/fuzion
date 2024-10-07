@@ -5737,7 +5737,9 @@ public class GeneratingFUIR extends FUIR
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     // we might have an assignment to a field that was removed:
-    if (codeAt(callSite) == FUIR.ExprKind.Call)
+    if (codeAt(callSite) == FUIR.ExprKind.Call &&
+        // if there is no instantiation (while cotypes are implicitly instantiated), no need to report
+        (instantiationSite != NO_SITE || id2clazz(f)._feature.outer().isTypeFeature()))
       {
         var cc = id2clazz(cl);
         var cf = id2clazz(f);
