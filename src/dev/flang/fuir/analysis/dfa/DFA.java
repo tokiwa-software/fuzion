@@ -322,7 +322,7 @@ public class DFA extends ANY
     Val accessSingleTarget(int s, Value tvalue, List<Val> args, Val res, Val original_tvalue)
     {
       if (PRECONDITIONS) require
-        (tvalue != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s)),
+        (Errors.any() || tvalue != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s)),
 
          !(tvalue instanceof ValueSet));
       var t_cl = tvalue == Value.UNIT ? _fuir.accessTargetClazz(s) : tvalue._clazz;
@@ -369,8 +369,11 @@ public class DFA extends ANY
             .map(c -> c._site)
             .findAny()
             .orElse(NO_SITE);
-          _fuir.recordAbstractMissing(t_cl, _fuir.accessedClazz(s), instantiatedAt, _call.contextString(),
-                                      s);
+          if (instantiatedAt != NO_SITE)
+            {
+              _fuir.recordAbstractMissing(t_cl, _fuir.accessedClazz(s), instantiatedAt, _call.contextString(),
+                                          s);
+            }
         }
       return res;
     }
