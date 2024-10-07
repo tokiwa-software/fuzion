@@ -27,7 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import java.util.TreeMap;
+
 import dev.flang.ir.IR;
+
+import dev.flang.util.Errors;
 
 
 /**
@@ -188,7 +191,7 @@ public class Instance extends Value
     Val res = v;
     if (v == null)
       {
-        if (dfa._reportResults)
+        if (dfa._reportResults && !Errors.any())
           {
             DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
                                                 site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),

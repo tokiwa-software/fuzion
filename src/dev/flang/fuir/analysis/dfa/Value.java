@@ -277,8 +277,12 @@ public class Value extends Val
    */
   public void setField(DFA dfa, int field, Value v)
   {
-    throw new Error("Value.setField for '"+dfa._fuir.clazzAsString(field)+"' called on class " +
-                    this + " (" + getClass() + "), expected " + Instance.class);
+    var rt = dfa._fuir.clazzResultClazz(field);
+    if (!dfa._fuir.clazzIsUnitType(rt) && !Errors.any())
+      {
+        throw new Error("Value.setField for '"+dfa._fuir.clazzAsString(field)+"' called on class " +
+                        this + " (" + getClass() + "), expected " + Instance.class);
+      }
   }
 
 
