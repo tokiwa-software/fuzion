@@ -5036,10 +5036,12 @@ public class GeneratingFUIR extends FUIR
     int innerClazz;
     if (accessIsDynamic(s))
       {
-        innerClazz = accessedClazz(s, id2clazz(tclazz))._id;
-        //        dev.flang.util.Debug.umprintln("lookup for "+id2clazz(tclazz)+" is "+id2clazz(innerClazz)+" at "+sitePos(s).show());
-        addToAccessedClazzes(s, tclazz, innerClazz);
-
+        var inner = accessedClazz(s, id2clazz(tclazz));
+        innerClazz = inner == null ? NO_CLAZZ : inner._id;
+        if (inner != null)
+          {
+            addToAccessedClazzes(s, tclazz, innerClazz);
+          }
         /*
         innerClazz = NO_CLAZZ;
         var ccs = accessedClazzes(s);
@@ -5067,13 +5069,14 @@ public class GeneratingFUIR extends FUIR
           (tclazz == clazzOuterClazz(innerClazz));
         //    System.out.println("static : tclazz "+clazzAsString(tclazz)+" vs inner "+clazzAsString(innerClazz)+" "+clazzKind(innerClazz)+" from "+id2clazz(innerClazz).feature().pos().show());
       }
-    var innerClazz0 = innerClazz;
-    innerClazz = switch (clazzKind(innerClazz))
+    if (innerClazz != NO_CLAZZ)
       {
-      case Routine, Intrinsic, Native, Field -> innerClazz;
-      case Abstract, Choice -> NO_CLAZZ;
-      };
-
+        innerClazz = switch (clazzKind(innerClazz))
+          {
+          case Routine, Intrinsic, Native, Field -> innerClazz;
+          case Abstract, Choice -> NO_CLAZZ;
+          };
+      }
     if (innerClazz != NO_CLAZZ)
       {
         doesNeedCode(innerClazz);
@@ -5733,13 +5736,17 @@ public class GeneratingFUIR extends FUIR
   @Override
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
-    var cc = id2clazz(cl);
-    var cf = id2clazz(f);
-    var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeMap<>(), sitePos(instantiationSite), context));
-    r.called.put(cf.feature(), sitePos(callSite).show());
-    if (CHECKS) check
-      (cf.feature().isAbstract() ||
-       (cf.feature().modifiers() & FuzionConstants.MODIFIER_FIXED) != 0);
+    // we might have an assignment to a field that was removed:
+    if (codeAt(callSite) == FUIR.ExprKind.Call)
+      {
+        var cc = id2clazz(cl);
+        var cf = id2clazz(f);
+        var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeMap<>(), sitePos(instantiationSite), context));
+        r.called.put(cf.feature(), sitePos(callSite).show());
+        if (CHECKS) check
+          (cf.feature().isAbstract() ||
+           (cf.feature().modifiers() & FuzionConstants.MODIFIER_FIXED) != 0);
+      }
   }
 
 
