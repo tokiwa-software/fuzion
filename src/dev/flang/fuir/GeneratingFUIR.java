@@ -4312,6 +4312,112 @@ public class GeneratingFUIR extends FUIR
   }
 
 
+  /**
+   * Add entries of type ExprKind created from the given expression (and its
+   * nested expressions) to list l. pop the result in case dumpResult==true.
+   *
+   * @param l list of ExprKind that should be extended by s's expressions
+   *
+   * @param e a expression.
+   *
+   * @param dumpResult flag indicating that we are not interested in the result.
+   */
+  @Override
+  protected void toStack(List<Object> l, Expr e, boolean dumpResult)
+  {
+    if ((e instanceof AbstractCall ||
+         e instanceof InlineArray    ) && isConst(e))
+      {
+        if (!dumpResult)
+          {
+            l.add(e.asCompileTimeConstant());
+          }
+      }
+    else
+      {
+        super.toStack(l, e, dumpResult);
+      }
+  }
+
+
+  /**
+   * Is this a compile-time constant?
+   *
+   * @param o an Object from the IR-Stack.
+   *
+   * @return true iff `o` is an Expr and can be turned into a compile-time constant.
+   */
+  private boolean isConst(Object o)
+  {
+    if (PRECONDITIONS) require
+      (o instanceof Expr || o instanceof ExprKind);
+
+    return o instanceof InlineArray iai && isConst(iai)
+        || o instanceof Constant
+        || o instanceof AbstractCall ac && isConst(ac)
+        || o instanceof AbstractBlock ab && ab._expressions.size() == 1 && isConst(ab.resultExpression());
+  }
+
+
+  /**
+   * Can this array be turned into a compile-time constant?
+   */
+  private boolean isConst(InlineArray ia)
+  {
+    return
+      !ia.type().dependsOnGenerics() &&
+      !ia.type().containsThisType() &&
+      // some backends have special handling for array void.
+      !ia.elementType().isVoid() &&
+      ia._elements
+        .stream()
+        .allMatch(el -> {
+          var s = new List<>();
+          super.toStack(s, el);
+          return s
+            .stream()
+            .allMatch(x -> isConst(x));
+        });
+  }
+
+
+  /**
+   * Can this call be turned into a constant?
+   *
+   * @param ac the call to be analyzed.
+   *
+   * @return true iff the call is suitable to be turned into
+   * a compile time constant.
+   */
+  private boolean isConst(AbstractCall ac)
+  {
+    var result =
+      !ac.isInheritanceCall() &&
+      ac.calledFeature().isConstructor() &&
+      // contains no fields
+      ac.calledFeature().code().containsOnlyDeclarations() &&
+      // we are calling a value type feature
+      !ac.calledFeature().selfType().isRef() &&
+      // only features without args and no fields may be inherited
+      ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
+      // no unit   // NYI we could allow units that does not contain declarations
+      ac.actuals().size() > 0 &&
+      ac.actuals().stream().allMatch(x -> isConst(x));
+
+    if (result)
+      {
+        var s = new List<>();
+        super.toStack(s, ac, false);
+        result = s
+          .stream()
+          .allMatch(x -> x == ac || isConst(x));
+      }
+    return result;
+  }
+
+
+
+
   /*----------------------  type parameters  ---------------------*/
 
 
@@ -5365,8 +5471,8 @@ public class GeneratingFUIR extends FUIR
         yield const_clazz;
       }
 
-      case AbstractCall c -> null;  // NYI
-      case InlineArray  ia -> null; // NYI
+      case AbstractCall c -> id2clazz(accessedClazz(s));
+      case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE), ia);
       default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
       };
 
@@ -5682,7 +5788,15 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int inlineArrayElementClazz(int constCl)
   {
-    throw new Error("NYI");
+    if (PRECONDITIONS) require
+      (clazzIsArray(constCl));
+
+    var result = type2clazz(id2clazz(constCl)._type.generics().get(0))._id;
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0);
+
+    return result;
   }
 
 
