@@ -1270,23 +1270,6 @@ public class DFA extends ANY
     };
     return new GeneratingFUIR((GeneratingFUIR) _fuir)
       {
-        public boolean clazzNeedsCode(int cl)
-        {
-          return super.clazzNeedsCode(cl) &&
-            switch (_fuir.clazzKind(cl))
-            {
-            case Routine, Intrinsic,
-                 Native             -> called.contains(cl);
-            case Field              -> isBuiltInNumeric(_fuir.clazzOuterClazz(cl)) ||
-                                       _readFields.get(cl) ||
-                                       // main result field
-                                       _fuir.clazzResultField(_fuir.mainClazzId()) == cl;
-            case Abstract           -> true;
-            case Choice             -> true;
-            };
-        }
-
-
         /**
          * Determine the lifetime of the instance of a call to clazz cl.
          *
@@ -1333,28 +1316,6 @@ public class DFA extends ANY
         {
           return _escapesCode.contains(s);
         }
-
-
-        @Override
-        public int[] accessedClazzes(int s)
-        {
-          var ccs = super.accessedClazzes(s);
-          var cs = site(s);
-          var nr = new int[ccs.length];
-          int j = 0;
-          for (var cci = 0; cci < ccs.length; cci += 2)
-            {
-              var tt = ccs[cci+0];
-              var cc = ccs[cci+1];
-              if (cs._accesses.contains(cc))
-                {
-                  nr[j++] = tt;
-                  nr[j++] = cc;
-                }
-            }
-          return java.util.Arrays.copyOfRange(nr, 0, j);
-        }
-
 
         @Override
         public boolean alwaysResultsInVoid(int s)
