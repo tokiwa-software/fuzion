@@ -304,7 +304,7 @@ public class Docs extends ANY
         feature,
         Stream
           .concat(s, st)
-          .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(() -> new TreeSet<>(byFeatureName))))
+          .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(TreeSet::new)))
       );
 
     }, universe);
