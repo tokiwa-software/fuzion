@@ -5476,7 +5476,7 @@ public class GeneratingFUIR extends FUIR
         yield const_clazz;
       }
 
-      case AbstractCall c -> id2clazz(accessedClazz(s));
+      case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
       case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE), ia);
       default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
       };
