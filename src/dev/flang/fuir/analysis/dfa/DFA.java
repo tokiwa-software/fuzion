@@ -2306,6 +2306,7 @@ public class DFA extends ANY
         cl._dfa._readFields.set(data4);
         return newFuzionJavaCall(cl);
       });
+    put("fuzion.java.cast0", cl -> newFuzionJavaCall(cl));
     put("fuzion.java.get_static_field0"     , cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);

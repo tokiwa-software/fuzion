@@ -2034,9 +2034,6 @@ public class C extends ANY
    */
   public CStmnt returnJavaObject(int cl, CExpr expr, boolean complexResult)
   {
-    if (PRECONDITIONS) require
-      (!_fuir.clazzIsChoice(cl) || complexResult || _fuir.clazzIs(cl, SpecialClazzes.c_bool));
-
     var jv = complexResult
                            ? expr
                              .field(CNames.CHOICE_UNION_NAME)
@@ -2087,6 +2084,7 @@ public class C extends ANY
         var val = javaValue2Fuzion(complexResult, tmp, innerCl);
 
         var result =  _fuir.clazzIsChoice(cl)
+          ? complexResult
           ? CExpr.iff(
               tmp.field(CNames.TAG_NAME).eq(CExpr.int32const(0)),
                 // normal result
@@ -2101,6 +2099,7 @@ public class C extends ANY
                     ),
                   cl,
                   1))
+          : returnOutcome(innerCl, val, cl, 0)
           : val.ret();
 
         return CExpr.seq(sideEffect, result);

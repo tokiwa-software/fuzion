@@ -1119,6 +1119,16 @@ public class Intrinsics extends ANY
                     A2.field(c._names.fieldName(c._fuir.clazz_fuzionSysArray_u8_data())).castTo("jvalue *"))), true));
         }
     });
+    put("fuzion.java.cast0", (c, cl, outer, in) -> {
+      if (C.JAVA_HOME == null)
+        {
+          return noJava;
+        }
+      else
+        {
+          return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr.compoundLiteral("jvalue", ".l="+A0.castTo("jobject").code()), false);
+        }
+    });
     put("fuzion.java.call_s0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {

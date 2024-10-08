@@ -212,6 +212,17 @@ public fuzion.java is
                  args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
 
+  # cast this to some other class
+  #
+  public cast(T type : Java_Object, thiz Java_Object)
+  =>
+    cast0 T thiz.Java_Ref
+
+  # intrinsic to rewrap thiz in T
+  #
+  cast0(T type : Java_Object, thiz fuzion.sys.Pointer) outcome T => intrinsic
+
+
   # intrinsic to get the length of a Java array of arbitrary type
   #
   array_length(T type, a Array T) i32 => intrinsic
