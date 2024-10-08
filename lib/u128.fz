@@ -133,12 +133,12 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   # equality
   #
-  fixed redef type.equality(a, b u128) =>
+  public fixed redef type.equality(a, b u128) =>
     a.hi = b.hi && a.lo = b.lo
 
   # total order
   #
-  fixed redef type.lteq(a, b u128) =>
+  public fixed redef type.lteq(a, b u128) =>
     a.hi < b.hi || (a.hi = b.hi) && (a.lo ≤ b.lo)
 
   # does this u128 fit into an u8?

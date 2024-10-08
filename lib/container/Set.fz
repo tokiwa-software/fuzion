@@ -57,37 +57,37 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # create a union of these two Sets
   #
-  public union(other Set E) Set E =>
+  public union(other container.Set E) Set E =>
     Set.this.new (Set.this ++ other)
 
 
   # infix variant for Set.union
   #
-  public infix ∪ (other Set E) =>
+  public infix ∪ (other container.Set E) =>
     Set.this.union other
 
 
   # create an intersection of these two Sets
   #
-  public intersection(other Set E) Set E =>
+  public intersection(other container.Set E) Set E =>
     Set.this.new (Set.this ++ other).filter(el -> Set.this.contains el && other.contains el)
 
 
   # infix variant for Set.intersection
   #
-  public infix ∩ (other Set E) =>
+  public infix ∩ (other container.Set E) =>
     Set.this.intersection other
 
 
   # this Set except all elements in other
   #
-  public except(other Set E) Set E =>
+  public except(other container.Set E) Set E =>
     Set.this.new filter(el -> !other.contains el)
 
 
   # infix variant for Set.except
   #
-  public infix ∖ (other Set E) =>
+  public infix ∖ (other container.Set E) =>
     Set.this.except other
 
 
@@ -96,7 +96,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # true, iff other contains all
   # elements that this Set contains.
   #
-  public is_subset_of(other Set E) =>
+  public is_subset_of(other container.Set E) =>
     Set.this ∀ (el -> other.contains el)
 
 
@@ -104,7 +104,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # true, iff this Set contains all
   # elements that other contains.
   #
-  public is_superset_of(other Set E) =>
+  public is_superset_of(other container.Set E) =>
     other ∀ contains
 
 
@@ -126,9 +126,13 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # equality
   #
-  public fixed type.equality(a, b container.Set E) bool
-  pre debug: a.finite
-      debug: b.finite
+  # NYI: remove this, since we inherit from Sequence?
+  #
+  public fixed redef type.equality(a, b container.Set E)
+  # NYI: BUG: #3888
+  # pre else
+  #     debug: a.finite
+  #     debug: b.finite
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val

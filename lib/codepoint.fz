@@ -74,7 +74,7 @@ is
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  public type.latin_alphabet => codepoint.A_to_Z.concat_sequences a_to_z # NYI It would be better to use union of those two sets
+  public type.latin_alphabet => A_to_Z ∪ a_to_z
 
   # range of values encoded in one byte
   #
@@ -127,11 +127,11 @@ is
   #
   # result is true iff the codepoints have the same value
   #
-  fixed redef type.equality(a, b codepoint) => a.val = b.val
+  public fixed redef type.equality(a, b codepoint) => a.val = b.val
 
 
   # compare two codepoints
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
-  fixed redef type.lteq(a, b codepoint) => a.val <= b.val
+  public fixed redef type.lteq(a, b codepoint) => a.val <= b.val

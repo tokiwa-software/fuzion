@@ -50,7 +50,8 @@
 # is fine.
 #
 public outcome(public T type) : switch T error,
-                                monad T (outcome T)
+                                monad T (outcome T),
+                                property.equatable
 is
 
   # Does this outcome contain an error
@@ -140,6 +141,24 @@ is
   # return function
   #
   public fixed redef type.return (a T) => outcome a
+
+
+  # option is equatable only if T is
+  #
+  public redef type.is_equatable => T : property.equatable
+
+
+  # equality
+  #
+  # NYI: UNDER DEVELOPMENT: (how) move this to switch?
+  #
+  public fixed redef type.equality(x, y outcome T) =>
+    if T : property.equatable
+      x ? v T     => y.exists  && v = y.val
+        | e error => !y.exists && e = y.err
+    else
+      panic "***"
+
 
 
 # outcome with 1 argument provides an short-hand to wrap a value into a

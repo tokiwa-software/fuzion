@@ -227,7 +227,7 @@ public read_delimiter (LM type : mutate, delim u8, strip_cr bool) String|io.end_
               for b in a1 do
                 res.add b
 
-          match (container.searchable_sequence a).index_of delim
+          match a.index_of delim
             idx i32 =>
               add_to_res (a.slice 0 idx)
               (reader LM).discard idx+1

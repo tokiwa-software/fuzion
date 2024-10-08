@@ -55,7 +55,7 @@ is
 
     # total order over entries.
     #
-    fixed redef type.lteq(a, b entry.this) => a.key ≤ b.key
+    public fixed redef type.lteq(a, b entry.this) => a.key ≤ b.key
 
 
   # a sorted array of entries of this map

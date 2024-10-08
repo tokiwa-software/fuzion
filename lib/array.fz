@@ -283,7 +283,7 @@ module:public array(
 
   # collect the contents of this Sequence into an array
   #
-  public redef fixed as_array =>
+  public fixed redef as_array =>
     array.this
 
 

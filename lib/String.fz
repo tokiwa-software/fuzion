@@ -79,7 +79,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
-  fixed redef type.lteq(a, b String) =>
+  public fixed redef type.lteq(a, b String) =>
     a.utf8
       .zip b.utf8 (c,d)->(c,d)
       .filter (x ->
@@ -404,7 +404,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # check if this string starts with given prefix
   #
   public starts_with(prefx String) =>
-    (container.searchable_sequence utf8).starts_with prefx.utf8
+    utf8.starts_with prefx.utf8
 
 
   # check if this string ends with given suffix
@@ -413,13 +413,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
     l  := byte_length
     sl := suffix.byte_length
     end := utf8.drop l-sl
-    (container.searchable_sequence end).starts_with suffix.utf8
+    end.starts_with suffix.utf8
 
 
   # find (utf8-byte-) index of 'substring' witin this string.
   #
   public find(substring String) =>
-    (container.searchable_sequence utf8).find substring.utf8
+    utf8.find substring.utf8
 
 
   # find (utf8-byte-) index of 'substring' witin this string.
@@ -428,7 +428,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
               # start search at this index
               from i32)
   =>
-    (container.searchable_sequence (utf8.drop from)).find substring.utf8
+    (utf8.drop from).find substring.utf8
 
 
   # find (utf8-byte-) index of last occurrence of 'substring'
@@ -466,7 +466,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # count number of occurrences of given 'substring' in this string
   #
   public count (substring String) =>
-    (container.searchable_sequence utf8).count_matches substring.utf8
+    utf8.count_matches substring.utf8
 
 
   # Split string separated by (ASCII) white space
