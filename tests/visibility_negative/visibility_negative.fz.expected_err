@@ -1,0 +1,2370 @@
+
+--CURDIR--/visibility_negative.fz:298:14: error 1: Could not find target field 'f2' in assignment
+      set f2 := 222 // 147. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f2'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f2 := 222'
+
+
+--CURDIR--/visibility_negative.fz:299:14: error 2: Could not find target field 'f3' in assignment
+      set f3 := 333 // 148. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:300:14: error 3: Could not find target field 'f4' in assignment
+      set f4 := 444 // 149. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:301:14: error 4: Could not find target field 'f5' in assignment
+      set f5 := 555 // 150. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:302:14: error 5: Could not find target field 'f6' in assignment
+      set f6 := 666 // 151. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:303:14: error 6: Could not find target field 'f7' in assignment
+      set f7 := 777 // 152. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:304:14: error 7: Could not find target field 'f8' in assignment
+      set f8 := 888 // 153. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f8'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f8 := 888'
+
+
+--CURDIR--/visibility_negative.fz:305:14: error 8: Could not find target field 'f9' in assignment
+      set f9 := 999 // 154. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:416:14: error 9: Could not find target field 'f2' in assignment
+      set f2 := 222 // 226. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f2'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f2 := 222'
+
+
+--CURDIR--/visibility_negative.fz:417:14: error 10: Could not find target field 'f3' in assignment
+      set f3 := 333 // 227. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:418:14: error 11: Could not find target field 'f4' in assignment
+      set f4 := 444 // 228. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:419:14: error 12: Could not find target field 'f5' in assignment
+      set f5 := 555 // 229. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:420:14: error 13: Could not find target field 'f6' in assignment
+      set f6 := 666 // 230. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:421:14: error 14: Could not find target field 'f7' in assignment
+      set f7 := 777 // 231. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:422:14: error 15: Could not find target field 'f8' in assignment
+      set f8 := 888 // 232. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f8'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f8 := 888'
+
+
+--CURDIR--/visibility_negative.fz:423:14: error 16: Could not find target field 'f9' in assignment
+      set f9 := 999 // 233. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:426:14: error 17: Could not find target field 'f2' in assignment
+      set f2 := 222 // 234. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f2'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f2 := 222'
+
+
+--CURDIR--/visibility_negative.fz:427:14: error 18: Could not find target field 'f3' in assignment
+      set f3 := 333 // 235. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:428:14: error 19: Could not find target field 'f4' in assignment
+      set f4 := 444 // 236. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:429:14: error 20: Could not find target field 'f5' in assignment
+      set f5 := 555 // 237. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:430:14: error 21: Could not find target field 'f6' in assignment
+      set f6 := 666 // 238. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:431:14: error 22: Could not find target field 'f7' in assignment
+      set f7 := 777 // 239. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:433:14: error 23: Could not find target field 'f9' in assignment
+      set f9 := 999 // 240. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:456:14: error 24: Could not find target field 'f2' in assignment
+      set f2 := 222 // 254. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f2'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f2 := 222'
+
+
+--CURDIR--/visibility_negative.fz:457:14: error 25: Could not find target field 'f3' in assignment
+      set f3 := 333 // 255. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:458:14: error 26: Could not find target field 'f4' in assignment
+      set f4 := 444 // 256. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:459:14: error 27: Could not find target field 'f5' in assignment
+      set f5 := 555 // 257. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:460:14: error 28: Could not find target field 'f6' in assignment
+      set f6 := 666 // 258. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:461:14: error 29: Could not find target field 'f7' in assignment
+      set f7 := 777 // 259. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:463:14: error 30: Could not find target field 'f9' in assignment
+      set f9 := 999 // 260. should flag an error: feature not visible for assignment
+-------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:308:16: error 31: Could not find target field 'f2' in assignment
+        set f2 := 222 // 155. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f2'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f2 := 222'
+
+
+--CURDIR--/visibility_negative.fz:309:16: error 32: Could not find target field 'f3' in assignment
+        set f3 := 333 // 156. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:310:16: error 33: Could not find target field 'f4' in assignment
+        set f4 := 444 // 157. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:311:16: error 34: Could not find target field 'f5' in assignment
+        set f5 := 555 // 158. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:312:16: error 35: Could not find target field 'f6' in assignment
+        set f6 := 666 // 159. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:313:16: error 36: Could not find target field 'f7' in assignment
+        set f7 := 777 // 160. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:315:16: error 37: Could not find target field 'f9' in assignment
+        set f9 := 999 // 162. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:319:16: error 38: Could not find target field 'f3' in assignment
+        set f3 := 333 // 163. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:320:16: error 39: Could not find target field 'f4' in assignment
+        set f4 := 444 // 164. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:321:16: error 40: Could not find target field 'f5' in assignment
+        set f5 := 555 // 165. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:322:16: error 41: Could not find target field 'f6' in assignment
+        set f6 := 666 // 166. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:323:16: error 42: Could not find target field 'f7' in assignment
+        set f7 := 777 // 167. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:325:16: error 43: Could not find target field 'f9' in assignment
+        set f9 := 999 // 169. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:358:16: error 44: Could not find target field 'f3' in assignment
+        set f3 := 333 // 188. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:359:16: error 45: Could not find target field 'f4' in assignment
+        set f4 := 444 // 189. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:360:16: error 46: Could not find target field 'f5' in assignment
+        set f5 := 555 // 190. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:361:16: error 47: Could not find target field 'f6' in assignment
+        set f6 := 666 // 191. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:362:16: error 48: Could not find target field 'f7' in assignment
+        set f7 := 777 // 192. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:364:16: error 49: Could not find target field 'f9' in assignment
+        set f9 := 999 // 194. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:398:16: error 50: Could not find target field 'f3' in assignment
+        set f3 := 333 // 213. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:399:16: error 51: Could not find target field 'f4' in assignment
+        set f4 := 444 // 214. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:400:16: error 52: Could not find target field 'f5' in assignment
+        set f5 := 555 // 215. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:401:16: error 53: Could not find target field 'f6' in assignment
+        set f6 := 666 // 216. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:402:16: error 54: Could not find target field 'f7' in assignment
+        set f7 := 777 // 217. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:404:16: error 55: Could not find target field 'f9' in assignment
+        set f9 := 999 // 219. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:408:16: error 56: Could not find target field 'f3' in assignment
+        set f3 := 333 // 220. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:409:16: error 57: Could not find target field 'f4' in assignment
+        set f4 := 444 // 221. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:410:16: error 58: Could not find target field 'f5' in assignment
+        set f5 := 555 // 222. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:411:16: error 59: Could not find target field 'f6' in assignment
+        set f6 := 666 // 223. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:414:16: error 60: Could not find target field 'f9' in assignment
+        set f9 := 999 // 225. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:329:18: error 61: Could not find target field 'f3' in assignment
+          set f3 := 333 // 170. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:330:18: error 62: Could not find target field 'f4' in assignment
+          set f4 := 444 // 171. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:331:18: error 63: Could not find target field 'f5' in assignment
+          set f5 := 555 // 172. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:332:18: error 64: Could not find target field 'f6' in assignment
+          set f6 := 666 // 173. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:335:18: error 65: Could not find target field 'f9' in assignment
+          set f9 := 999 // 176. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:340:18: error 66: Could not find target field 'f4' in assignment
+          set f4 := 444 // 177. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:341:18: error 67: Could not find target field 'f5' in assignment
+          set f5 := 555 // 178. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:342:18: error 68: Could not find target field 'f6' in assignment
+          set f6 := 666 // 179. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:345:18: error 69: Could not find target field 'f9' in assignment
+          set f9 := 999 // 182. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:351:18: error 70: Could not find target field 'f5' in assignment
+          set f5 := 555 // 183. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:352:18: error 71: Could not find target field 'f6' in assignment
+          set f6 := 666 // 184. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:355:18: error 72: Could not find target field 'f9' in assignment
+          set f9 := 999 // 187. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1.c1'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:369:18: error 73: Could not find target field 'f3' in assignment
+          set f3 := 333 // 195. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:370:18: error 74: Could not find target field 'f4' in assignment
+          set f4 := 444 // 196. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:371:18: error 75: Could not find target field 'f5' in assignment
+          set f5 := 555 // 197. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:372:18: error 76: Could not find target field 'f6' in assignment
+          set f6 := 666 // 198. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:375:18: error 77: Could not find target field 'f9' in assignment
+          set f9 := 999 // 201. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:379:18: error 78: Could not find target field 'f3' in assignment
+          set f3 := 333 // 202. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:380:18: error 79: Could not find target field 'f4' in assignment
+          set f4 := 444 // 203. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:382:18: error 80: Could not find target field 'f6' in assignment
+          set f6 := 666 // 204. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:385:18: error 81: Could not find target field 'f9' in assignment
+          set f9 := 999 // 207. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:389:18: error 82: Could not find target field 'f3' in assignment
+          set f3 := 333 // 208. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:390:18: error 83: Could not find target field 'f4' in assignment
+          set f4 := 444 // 209. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:395:18: error 84: Could not find target field 'f9' in assignment
+          set f9 := 999 // 212. should flag an error: feature not visible for assignment
+-----------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b1.c2'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:437:16: error 85: Could not find target field 'f2' in assignment
+        set f2 := 222 // 241. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f2'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f2 := 222'
+
+
+--CURDIR--/visibility_negative.fz:438:16: error 86: Could not find target field 'f3' in assignment
+        set f3 := 333 // 242. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:439:16: error 87: Could not find target field 'f4' in assignment
+        set f4 := 444 // 243. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:440:16: error 88: Could not find target field 'f5' in assignment
+        set f5 := 555 // 244. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:441:16: error 89: Could not find target field 'f6' in assignment
+        set f6 := 666 // 245. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:442:16: error 90: Could not find target field 'f7' in assignment
+        set f7 := 777 // 246. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:444:16: error 91: Could not find target field 'f9' in assignment
+        set f9 := 999 // 247. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f9'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f9 := 999'
+
+
+--CURDIR--/visibility_negative.fz:447:16: error 92: Could not find target field 'f2' in assignment
+        set f2 := 222 // 248. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f2'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f2 := 222'
+
+
+--CURDIR--/visibility_negative.fz:448:16: error 93: Could not find target field 'f3' in assignment
+        set f3 := 333 // 249. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f3'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f3 := 333'
+
+
+--CURDIR--/visibility_negative.fz:449:16: error 94: Could not find target field 'f4' in assignment
+        set f4 := 444 // 250. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f4'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f4 := 444'
+
+
+--CURDIR--/visibility_negative.fz:450:16: error 95: Could not find target field 'f5' in assignment
+        set f5 := 555 // 251. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f5'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f5 := 555'
+
+
+--CURDIR--/visibility_negative.fz:451:16: error 96: Could not find target field 'f6' in assignment
+        set f6 := 666 // 252. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f6'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f6 := 666'
+
+
+--CURDIR--/visibility_negative.fz:452:16: error 97: Could not find target field 'f7' in assignment
+        set f7 := 777 // 253. should flag an error: feature not visible for assignment
+---------------^
+Field not found: 'f7'
+Within feature: 'visibility_negative.visi3.a1.b2'
+For assignment: 'set f7 := 777'
+
+
+--CURDIR--/visibility_negative.fz:473:13: error 98: Could not find outer feature in '.this'-expression
+      chck (b.this.x = "Inner!") "b.this.x"       // 263. should flag an error: feature not visible
+------------^
+Within feature: 'visibility_negative.visi5.a'
+Outer feature that was not found: 'b'
+Outer features available: 'a.this', 'visi5.a.this', 'visi5.this', 'visibility_negative.visi5.a.this', 'visibility_negative.visi5.this', 'visibility_negative.this'
+
+
+--CURDIR--/visibility_negative.fz:474:13: error 99: Could not find outer feature in '.this'-expression
+      chck (c.this.x = "Inner Inner!") "c.this.x" // 264. should flag an error: feature not visible
+------------^
+Within feature: 'visibility_negative.visi5.a'
+Outer feature that was not found: 'c'
+Outer features available: 'a.this', 'visi5.a.this', 'visi5.this', 'visibility_negative.visi5.a.this', 'visibility_negative.visi5.this', 'visibility_negative.this'
+
+
+--CURDIR--/visibility_negative.fz:478:13: error 100: Could not find outer feature in '.this'-expression
+      chck (b.this.x = "Inner!") "b.this.x"       // 265. should flag an error: feature not visible
+------------^
+Within feature: 'visibility_negative.visi5.a'
+Outer feature that was not found: 'b'
+Outer features available: 'a.this', 'visi5.a.this', 'visi5.this', 'visibility_negative.visi5.a.this', 'visibility_negative.visi5.this', 'visibility_negative.this'
+
+
+--CURDIR--/visibility_negative.fz:479:13: error 101: Could not find outer feature in '.this'-expression
+      chck (c.this.x = "Inner Inner!") "c.this.x" // 266. should flag an error: feature not visible
+------------^
+Within feature: 'visibility_negative.visi5.a'
+Outer feature that was not found: 'c'
+Outer features available: 'a.this', 'visi5.a.this', 'visi5.this', 'visibility_negative.visi5.a.this', 'visibility_negative.visi5.this', 'visibility_negative.this'
+
+
+--CURDIR--/visibility_negative.fz:484:15: error 102: Could not find outer feature in '.this'-expression
+        chck (c.this.x = "Inner Inner!") "c.this.x" // 268. should flag an error: feature not visible
+--------------^
+Within feature: 'visibility_negative.visi5.a.b'
+Outer feature that was not found: 'c'
+Outer features available: 'b.this', 'a.b.this', 'a.this', 'visi5.a.b.this', 'visi5.a.this', 'visi5.this', 'visibility_negative.visi5.a.b.this', 'visibility_negative.visi5.a.this', 'visibility_negative.visi5.this', 'visibility_negative.this'
+
+
+--CURDIR--/visibility_negative.fz:489:15: error 103: Could not find outer feature in '.this'-expression
+        chck (c.this.x = "Inner Inner!") "c.this.x" // 269. should flag an error: feature not visible
+--------------^
+Within feature: 'visibility_negative.visi5.a.b'
+Outer feature that was not found: 'c'
+Outer features available: 'b.this', 'a.b.this', 'a.this', 'visi5.a.b.this', 'visi5.a.this', 'visi5.this', 'visibility_negative.visi5.a.b.this', 'visibility_negative.visi5.a.this', 'visibility_negative.visi5.this', 'visibility_negative.this'
+
+
+--CURDIR--/visibility_negative.fz:542:5: error 104: Could not find called feature
+    c // 280. should flag an error: feature not visible
+----^
+Feature not found: 'c' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'c'
+
+
+--CURDIR--/visibility_negative.fz:549:19: error 105: Could not find called feature
+      ixtest1  := ix1     // 281. should flag an error: feature not visible
+------------------^^^
+Feature not found: 'ix1' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'ix1'
+
+
+--CURDIR--/visibility_negative.fz:551:19: error 106: Could not find called feature
+      ixtest2b := ix1, ix1// 282. should flag an error: feature not visible
+------------------^^^
+Feature not found: 'ix1' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'ix1'
+
+
+--CURDIR--/visibility_negative.fz:552:19: error 107: Could not find called feature
+      ixtest3  := ix3     // 283. should flag an error: feature not visible
+------------------^^^
+Feature not found: 'ix3' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'ix3'
+
+
+--CURDIR--/visibility_negative.fz:554:19: error 108: Could not find called feature
+      ixtest4b := ix3, ix3// 284. should flag an error: feature not visible
+------------------^^^
+Feature not found: 'ix3' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'ix3'
+
+
+--CURDIR--/visibility_negative.fz:120:11: error 109: Could not find called feature
+      use f2   // 33. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f2' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f2'
+
+
+--CURDIR--/visibility_negative.fz:121:11: error 110: Could not find called feature
+      use f3   // 34. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:122:11: error 111: Could not find called feature
+      use f4   // 35. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:123:11: error 112: Could not find called feature
+      use f5   // 36. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:124:11: error 113: Could not find called feature
+      use f6   // 37. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:125:11: error 114: Could not find called feature
+      use f7   // 38. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:126:11: error 115: Could not find called feature
+      use f8   // 39. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f8' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f8'
+
+
+--CURDIR--/visibility_negative.fz:127:11: error 116: Could not find called feature
+      use f9   // 40. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:238:11: error 117: Could not find called feature
+      use f2   // 112. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f2' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f2'
+
+
+--CURDIR--/visibility_negative.fz:239:11: error 118: Could not find called feature
+      use f3   // 113. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:240:11: error 119: Could not find called feature
+      use f4   // 114. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:241:11: error 120: Could not find called feature
+      use f5   // 115. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:242:11: error 121: Could not find called feature
+      use f6   // 116. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:243:11: error 122: Could not find called feature
+      use f7   // 117. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:244:11: error 123: Could not find called feature
+      use f8   // 118. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f8' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f8'
+
+
+--CURDIR--/visibility_negative.fz:245:11: error 124: Could not find called feature
+      use f9   // 119. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:248:11: error 125: Could not find called feature
+      use f2   // 120. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f2' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f2'
+
+
+--CURDIR--/visibility_negative.fz:249:11: error 126: Could not find called feature
+      use f3   // 121. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:250:11: error 127: Could not find called feature
+      use f4   // 122. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:251:11: error 128: Could not find called feature
+      use f5   // 123. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:252:11: error 129: Could not find called feature
+      use f6   // 124. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:253:11: error 130: Could not find called feature
+      use f7   // 125. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:255:11: error 131: Could not find called feature
+      use f9   // 126. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:278:11: error 132: Could not find called feature
+      use f2   // 140. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f2' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f2'
+
+
+--CURDIR--/visibility_negative.fz:279:11: error 133: Could not find called feature
+      use f3   // 141. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:280:11: error 134: Could not find called feature
+      use f4   // 142. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:281:11: error 135: Could not find called feature
+      use f5   // 143. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:282:11: error 136: Could not find called feature
+      use f6   // 144. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:283:11: error 137: Could not find called feature
+      use f7   // 145. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:285:11: error 138: Could not find called feature
+      use f9   // 146. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:130:13: error 139: Could not find called feature
+        use f2   // 41. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f2' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f2'
+
+
+--CURDIR--/visibility_negative.fz:131:13: error 140: Could not find called feature
+        use f3   // 42. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:132:13: error 141: Could not find called feature
+        use f4   // 43. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:133:13: error 142: Could not find called feature
+        use f5   // 44. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:134:13: error 143: Could not find called feature
+        use f6   // 45. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:135:13: error 144: Could not find called feature
+        use f7   // 46. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:137:13: error 145: Could not find called feature
+        use f9   // 48. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:141:13: error 146: Could not find called feature
+        use f3   // 49. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:142:13: error 147: Could not find called feature
+        use f4   // 50. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:143:13: error 148: Could not find called feature
+        use f5   // 51. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:144:13: error 149: Could not find called feature
+        use f6   // 52. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:145:13: error 150: Could not find called feature
+        use f7   // 53. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:147:13: error 151: Could not find called feature
+        use f9   // 55. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:180:13: error 152: Could not find called feature
+        use f3   // 74. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:181:13: error 153: Could not find called feature
+        use f4   // 75. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:182:13: error 154: Could not find called feature
+        use f5   // 76. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:183:13: error 155: Could not find called feature
+        use f6   // 77. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:184:13: error 156: Could not find called feature
+        use f7   // 78. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:186:13: error 157: Could not find called feature
+        use f9   // 80. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:220:13: error 158: Could not find called feature
+        use f3   // 99. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:221:13: error 159: Could not find called feature
+        use f4   // 100. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:222:13: error 160: Could not find called feature
+        use f5   // 101. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:223:13: error 161: Could not find called feature
+        use f6   // 102. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:224:13: error 162: Could not find called feature
+        use f7   // 103. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:226:13: error 163: Could not find called feature
+        use f9   // 105. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:230:13: error 164: Could not find called feature
+        use f3   // 106. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:231:13: error 165: Could not find called feature
+        use f4   // 107. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:232:13: error 166: Could not find called feature
+        use f5   // 108. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:233:13: error 167: Could not find called feature
+        use f6   // 109. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:236:13: error 168: Could not find called feature
+        use f9   // 111. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:151:15: error 169: Could not find called feature
+          use f3   // 56. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:152:15: error 170: Could not find called feature
+          use f4   // 57. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:153:15: error 171: Could not find called feature
+          use f5   // 58. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:154:15: error 172: Could not find called feature
+          use f6   // 59. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:157:15: error 173: Could not find called feature
+          use f9   // 62. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:162:15: error 174: Could not find called feature
+          use f4   // 63. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:163:15: error 175: Could not find called feature
+          use f5   // 64. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:164:15: error 176: Could not find called feature
+          use f6   // 65. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:167:15: error 177: Could not find called feature
+          use f9   // 68. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:173:15: error 178: Could not find called feature
+          use f5   // 69. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:174:15: error 179: Could not find called feature
+          use f6   // 70. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:177:15: error 180: Could not find called feature
+          use f9   // 73. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c1'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:191:15: error 181: Could not find called feature
+          use f3   // 81. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:192:15: error 182: Could not find called feature
+          use f4   // 82. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:193:15: error 183: Could not find called feature
+          use f5   // 83. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:194:15: error 184: Could not find called feature
+          use f6   // 84. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:197:15: error 185: Could not find called feature
+          use f9   // 87. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:201:15: error 186: Could not find called feature
+          use f3   // 88. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:202:15: error 187: Could not find called feature
+          use f4   // 89. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:204:15: error 188: Could not find called feature
+          use f6   // 90. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:207:15: error 189: Could not find called feature
+          use f9   // 93. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:211:15: error 190: Could not find called feature
+          use f3   // 94. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:212:15: error 191: Could not find called feature
+          use f4   // 95. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:217:15: error 192: Could not find called feature
+          use f9   // 98. should flag an error: feature not found / not visible
+--------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b1.c2'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:259:13: error 193: Could not find called feature
+        use f2   // 127. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f2' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f2'
+
+
+--CURDIR--/visibility_negative.fz:260:13: error 194: Could not find called feature
+        use f3   // 128. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:261:13: error 195: Could not find called feature
+        use f4   // 129. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:262:13: error 196: Could not find called feature
+        use f5   // 130. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:263:13: error 197: Could not find called feature
+        use f6   // 131. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:264:13: error 198: Could not find called feature
+        use f7   // 132. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:266:13: error 199: Could not find called feature
+        use f9   // 133. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f9' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f9'
+
+
+--CURDIR--/visibility_negative.fz:269:13: error 200: Could not find called feature
+        use f2   // 134. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f2' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f2'
+
+
+--CURDIR--/visibility_negative.fz:270:13: error 201: Could not find called feature
+        use f3   // 135. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f3' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f3'
+
+
+--CURDIR--/visibility_negative.fz:271:13: error 202: Could not find called feature
+        use f4   // 136. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f4' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f4'
+
+
+--CURDIR--/visibility_negative.fz:272:13: error 203: Could not find called feature
+        use f5   // 137. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f5' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f5'
+
+
+--CURDIR--/visibility_negative.fz:273:13: error 204: Could not find called feature
+        use f6   // 138. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f6' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f6'
+
+
+--CURDIR--/visibility_negative.fz:274:13: error 205: Could not find called feature
+        use f7   // 139. should flag an error: feature not found / not visible
+------------^^
+Feature not found: 'f7' (no arguments)
+Target feature: 'visibility_negative.visi2.a1.b2'
+In call: 'f7'
+
+
+--CURDIR--/visibility_negative.fz:471:13: error 206: Could not find called feature
+      chck (x = "Outer!") "outer x"               // 261. should flag an error: field used before it is declared
+------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'visibility_negative.visi5.a'
+In call: 'x'
+
+
+--CURDIR--/visibility_negative.fz:472:20: error 207: Could not find called feature
+      chck (a.this.x = "Outer!") "a.this.x"       // 262. should flag an error: field used before it is declared
+-------------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'visibility_negative.visi5.a'
+In call: 'a.this.x'
+
+
+--CURDIR--/visibility_negative.fz:483:22: error 208: Could not find called feature
+        chck (b.this.x = "Inner!") "b.this.x"       // 267. should flag an error: feature used before it is declared
+---------------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'visibility_negative.visi5.a.b'
+In call: 'b.this.x'
+
+
+--CURDIR--/visibility_negative.fz:495:24: error 209: Could not find called feature
+          chck (c.this.x = "Inner Inner!") "c.this.x" // 270. should flag an error: feature used before it is declared
+-----------------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'visibility_negative.visi5.a.b.c'
+In call: 'c.this.x'
+
+
+--CURDIR--/visibility_negative.fz:505:16: error 210: Could not find called feature
+    say "x is $x"   // 271. should flag an error: feature used before it is declared
+---------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'visibility_negative.visi6'
+In call: 'x'
+
+
+--CURDIR--/visibility_negative.fz:606:12: error 211: Could not find called feature
+    while (r = 3 &&     // 315a. should flag an error: feature not visible
+-----------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi10.loop'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:626:12: error 212: Could not find called feature
+    while (q = 3 &&     // 321a. should flag an error: feature not visible
+-----------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi11.loop'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:645:8: error 213: Could not find called feature
+   say b  // 327. should flag an error: feature not visible
+-------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visiA'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:646:8: error 214: Could not find called feature
+   say c  // 328. should flag an error: feature not visible
+-------^
+Feature not found: 'c' (no arguments)
+Target feature: 'visibility_negative.visiA'
+In call: 'c'
+
+
+--CURDIR--/visibility_negative.fz:513:10: error 215: No type information can be inferred from a lambda expression
+    e := ()->"x is "+x1+""   // 272. should flag an error: feature used before it is declared
+---------^^^^^^^^^^^^^^^^^
+A lambda expression can only be used if assigned to a field or argument of type 'Function'
+with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
+assigned field must be given explicitly.
+To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+
+
+--CURDIR--/visibility_negative.fz:589:12: error 216: Could not find called feature
+    t16 := ix1    // 307. should flag an error: feature not visible
+-----------^^^
+Feature not found: 'ix1' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'ix1'
+
+
+--CURDIR--/visibility_negative.fz:590:12: error 217: Could not find called feature
+    t17 := ix2    // 308. should flag an error: feature not visible
+-----------^^^
+Feature not found: 'ix2' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'ix2'
+
+
+--CURDIR--/visibility_negative.fz:591:12: error 218: Could not find called feature
+    t18 := it1    // 309. should flag an error: feature not visible
+-----------^^^
+Feature not found: 'it1' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'it1'
+
+
+--CURDIR--/visibility_negative.fz:592:12: error 219: Could not find called feature
+    t19 := it2    // 310. should flag an error: feature not visible
+-----------^^^
+Feature not found: 'it2' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'it2'
+
+
+--CURDIR--/visibility_negative.fz:593:12: error 220: Could not find called feature
+    t20 := ix3    // 311. should flag an error: feature not visible
+-----------^^^
+Feature not found: 'ix3' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'ix3'
+
+
+--CURDIR--/visibility_negative.fz:594:12: error 221: Could not find called feature
+    t21 := b      // 312. should flag an error: feature not visible
+-----------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:595:12: error 222: Could not find called feature
+    t22 := q      // 313. should flag an error: feature not visible
+-----------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:596:12: error 223: Could not find called feature
+    t23 := r      // 314. should flag an error: feature not visible
+-----------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi9'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:578:15: error 224: Could not find called feature
+        t6 := it1 // 297. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'it1' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'it1'
+
+
+--CURDIR--/visibility_negative.fz:579:15: error 225: Could not find called feature
+        t7 := it2 // 298. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'it2' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'it2'
+
+
+--CURDIR--/visibility_negative.fz:580:15: error 226: Could not find called feature
+        t8 := ix3 // 299. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'ix3' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'ix3'
+
+
+--CURDIR--/visibility_negative.fz:581:15: error 227: Could not find called feature
+        t9 := b   // 300. should flag an error: feature not visible
+--------------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:582:16: error 228: Could not find called feature
+        t10 := q  // 301. should flag an error: feature not visible
+---------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:583:16: error 229: Could not find called feature
+        t11 := r  // 302. should flag an error: feature not visible
+---------------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:584:16: error 230: Could not find called feature
+        t12 := s  // 303. should flag an error: feature not visible
+---------------^
+Feature not found: 's' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 's'
+
+
+--CURDIR--/visibility_negative.fz:586:16: error 231: Could not find called feature
+        t13 := b  // 304. should flag an error: feature not visible
+---------------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:587:16: error 232: Could not find called feature
+        t14 := q  // 305. should flag an error: feature not visible
+---------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:588:16: error 233: Could not find called feature
+        t15 := r  // 306. should flag an error: feature not visible
+---------------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi9.else'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:612:15: error 234: Could not find called feature
+        t6 := it1 // 316. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'it1' (no arguments)
+Target feature: 'visibility_negative.visi10.else'
+In call: 'it1'
+
+
+--CURDIR--/visibility_negative.fz:613:15: error 235: Could not find called feature
+        t7 := it2 // 317. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'it2' (no arguments)
+Target feature: 'visibility_negative.visi10.else'
+In call: 'it2'
+
+
+--CURDIR--/visibility_negative.fz:614:15: error 236: Could not find called feature
+        t8 := ix3 // 318. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'ix3' (no arguments)
+Target feature: 'visibility_negative.visi10.else'
+In call: 'ix3'
+
+
+--CURDIR--/visibility_negative.fz:615:15: error 237: Could not find called feature
+        t9 := q   // 319. should flag an error: feature not visible
+--------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi10.else'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:616:16: error 238: Could not find called feature
+        t10 := r  // 320. should flag an error: feature not visible
+---------------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi10.else'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:632:15: error 239: Could not find called feature
+        t6 := it1 // 322. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'it1' (no arguments)
+Target feature: 'visibility_negative.visi11.else'
+In call: 'it1'
+
+
+--CURDIR--/visibility_negative.fz:633:15: error 240: Could not find called feature
+        t7 := it2 // 323. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'it2' (no arguments)
+Target feature: 'visibility_negative.visi11.else'
+In call: 'it2'
+
+
+--CURDIR--/visibility_negative.fz:634:15: error 241: Could not find called feature
+        t8 := ix3 // 324. should flag an error: feature not visible
+--------------^^^
+Feature not found: 'ix3' (no arguments)
+Target feature: 'visibility_negative.visi11.else'
+In call: 'ix3'
+
+
+--CURDIR--/visibility_negative.fz:635:15: error 242: Could not find called feature
+        t9 := q   // 325. should flag an error: feature not visible
+--------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi11.else'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:636:16: error 243: Could not find called feature
+        t10 := r  // 326. should flag an error: feature not visible
+---------------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi11.else'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:566:14: error 244: Could not find called feature
+        t0:= q     // 289. should flag an error: feature not visible
+-------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi9.loop'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:568:15: error 245: Could not find called feature
+        t1 := r    // 290. should flag an error: feature not visible
+--------------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi9.loop'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:569:15: error 246: Could not find called feature
+        t2 := s    // 291. should flag an error: feature not visible
+--------------^
+Feature not found: 's' (no arguments)
+Target feature: 'visibility_negative.visi9.loop'
+In call: 's'
+
+
+--CURDIR--/visibility_negative.fz:573:15: error 247: Could not find called feature
+        t3 := r    // 294. should flag an error: feature not visible
+--------------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi9.loop'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:574:15: error 248: Could not find called feature
+        t4 := s    // 295. should flag an error: feature not visible
+--------------^
+Feature not found: 's' (no arguments)
+Target feature: 'visibility_negative.visi9.loop'
+In call: 's'
+
+
+--CURDIR--/visibility_negative.fz:576:15: error 249: Could not find called feature
+        t5 := s    // 296. should flag an error: feature not visible
+--------------^
+Feature not found: 's' (no arguments)
+Target feature: 'visibility_negative.visi9.loop'
+In call: 's'
+
+
+--CURDIR--/visibility_negative.fz:561:12: error 250: Could not find called feature
+           b = 3 && // 285. should flag an error: feature not visible
+-----------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi9.loop.λ.call'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:562:12: error 251: Could not find called feature
+           q = 3 && // 286. should flag an error: feature not visible
+-----------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi9.loop.λ.call'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:563:12: error 252: Could not find called feature
+           r = 3 && // 287. should flag an error: feature not visible
+-----------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi9.loop.λ.call'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:564:12: error 253: Could not find called feature
+           s = 3  ) // 288. should flag an error: feature not visible
+-----------^
+Feature not found: 's' (no arguments)
+Target feature: 'visibility_negative.visi9.loop.λ.call'
+In call: 's'
+
+
+--CURDIR--/visibility_negative.fz:571:12: error 254: Could not find called feature
+           r = 3 &&  // 292. should flag an error: feature not visible
+-----------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi9.loop.λ.call'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:572:12: error 255: Could not find called feature
+           s = 3 )   // 293. should flag an error: feature not visible
+-----------^
+Feature not found: 's' (no arguments)
+Target feature: 'visibility_negative.visi9.loop.λ.call'
+In call: 's'
+
+
+--CURDIR--/visibility_negative.fz:607:12: error 256: Could not find called feature
+           q = 4)       // 315b. should flag an error: feature not visible
+-----------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_negative.visi10.loop.λ.call'
+In call: 'q'
+
+
+--CURDIR--/visibility_negative.fz:627:12: error 257: Could not find called feature
+           r = 4)       // 321b. should flag an error: feature not visible
+-----------^
+Feature not found: 'r' (no arguments)
+Target feature: 'visibility_negative.visi11.loop.λ.call'
+In call: 'r'
+
+
+--CURDIR--/visibility_negative.fz:48:11: error 258: Could not find called feature
+          c3 //  1. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c3' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c1'
+In call: 'c3'
+
+
+--CURDIR--/visibility_negative.fz:49:11: error 259: Could not find called feature
+          c4 //  2. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c4' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c1'
+In call: 'c4'
+
+
+--CURDIR--/visibility_negative.fz:50:11: error 260: Could not find called feature
+          b3 //  3. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b3' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c1'
+In call: 'b3'
+
+
+--CURDIR--/visibility_negative.fz:51:11: error 261: Could not find called feature
+          c5 //  4. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c5' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c1'
+In call: 'c5'
+
+
+--CURDIR--/visibility_negative.fz:52:11: error 262: Could not find called feature
+          c6 //  5. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c6' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c1'
+In call: 'c6'
+
+
+--CURDIR--/visibility_negative.fz:57:11: error 263: Could not find called feature
+          c3 //  6. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c3' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c2'
+In call: 'c3'
+
+
+--CURDIR--/visibility_negative.fz:58:11: error 264: Could not find called feature
+          c4 //  7. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c4' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c2'
+In call: 'c4'
+
+
+--CURDIR--/visibility_negative.fz:59:11: error 265: Could not find called feature
+          b3 //  8. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b3' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c2'
+In call: 'b3'
+
+
+--CURDIR--/visibility_negative.fz:60:11: error 266: Could not find called feature
+          c5 //  9. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c5' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c2'
+In call: 'c5'
+
+
+--CURDIR--/visibility_negative.fz:61:11: error 267: Could not find called feature
+          c6 // 10. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c6' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b1.c2'
+In call: 'c6'
+
+
+--CURDIR--/visibility_negative.fz:67:11: error 268: Could not find called feature
+          c1 // 11. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c1' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c3'
+In call: 'c1'
+
+
+--CURDIR--/visibility_negative.fz:68:11: error 269: Could not find called feature
+          c2 // 12. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c2' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c3'
+In call: 'c2'
+
+
+--CURDIR--/visibility_negative.fz:69:11: error 270: Could not find called feature
+          b3 // 13. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b3' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c3'
+In call: 'b3'
+
+
+--CURDIR--/visibility_negative.fz:70:11: error 271: Could not find called feature
+          c5 // 14. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c5' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c3'
+In call: 'c5'
+
+
+--CURDIR--/visibility_negative.fz:71:11: error 272: Could not find called feature
+          c6 // 15. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c6' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c3'
+In call: 'c6'
+
+
+--CURDIR--/visibility_negative.fz:76:11: error 273: Could not find called feature
+          c1 // 16. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c1' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c4'
+In call: 'c1'
+
+
+--CURDIR--/visibility_negative.fz:77:11: error 274: Could not find called feature
+          c2 // 17. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c2' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c4'
+In call: 'c2'
+
+
+--CURDIR--/visibility_negative.fz:78:11: error 275: Could not find called feature
+          b3 // 18. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b3' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c4'
+In call: 'b3'
+
+
+--CURDIR--/visibility_negative.fz:79:11: error 276: Could not find called feature
+          c5 // 19. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c5' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c4'
+In call: 'c5'
+
+
+--CURDIR--/visibility_negative.fz:80:11: error 277: Could not find called feature
+          c6 // 20. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c6' (no arguments)
+Target feature: 'visibility_negative.visi1.a1.b2.c4'
+In call: 'c6'
+
+
+--CURDIR--/visibility_negative.fz:87:11: error 278: Could not find called feature
+          c1 // 21. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c1' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c5'
+In call: 'c1'
+
+
+--CURDIR--/visibility_negative.fz:88:11: error 279: Could not find called feature
+          c2 // 22. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c2' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c5'
+In call: 'c2'
+
+
+--CURDIR--/visibility_negative.fz:89:11: error 280: Could not find called feature
+          c3 // 23. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c3' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c5'
+In call: 'c3'
+
+
+--CURDIR--/visibility_negative.fz:90:11: error 281: Could not find called feature
+          c4 // 24. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c4' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c5'
+In call: 'c4'
+
+
+--CURDIR--/visibility_negative.fz:91:11: error 282: Could not find called feature
+          b1 // 25. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b1' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c5'
+In call: 'b1'
+
+
+--CURDIR--/visibility_negative.fz:92:11: error 283: Could not find called feature
+          b2 // 26. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b2' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c5'
+In call: 'b2'
+
+
+--CURDIR--/visibility_negative.fz:97:11: error 284: Could not find called feature
+          c1 // 27. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c1' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c6'
+In call: 'c1'
+
+
+--CURDIR--/visibility_negative.fz:98:11: error 285: Could not find called feature
+          c2 // 28. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c2' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c6'
+In call: 'c2'
+
+
+--CURDIR--/visibility_negative.fz:99:11: error 286: Could not find called feature
+          c3 // 29. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c3' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c6'
+In call: 'c3'
+
+
+--CURDIR--/visibility_negative.fz:100:11: error 287: Could not find called feature
+          c4 // 30. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'c4' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c6'
+In call: 'c4'
+
+
+--CURDIR--/visibility_negative.fz:101:11: error 288: Could not find called feature
+          b1 // 31. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b1' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c6'
+In call: 'b1'
+
+
+--CURDIR--/visibility_negative.fz:102:11: error 289: Could not find called feature
+          b2 // 32. should flag an error: feature not found / not visible
+----------^^
+Feature not found: 'b2' (no arguments)
+Target feature: 'visibility_negative.visi1.a2.b3.c6'
+In call: 'b2'
+
+
+--CURDIR--/visibility_negative.fz:526:5: error 290: Could not find called feature
+    b // 273. should flag an error: feature not visible
+----^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:527:5: error 291: Could not find called feature
+    c // 274. should flag an error: feature not visible
+----^
+Feature not found: 'c' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'c'
+
+
+--CURDIR--/visibility_negative.fz:530:9: error 292: Could not find called feature
+        c // 275. should flag an error: feature not visible
+--------^
+Feature not found: 'c' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'c'
+
+
+--CURDIR--/visibility_negative.fz:533:9: error 293: Could not find called feature
+        c // 276. should flag an error: feature not visible
+--------^
+Feature not found: 'c' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'c'
+
+
+--CURDIR--/visibility_negative.fz:536:9: error 294: Could not find called feature
+        b // 277. should flag an error: feature not visible
+--------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:539:9: error 295: Could not find called feature
+        b // 278. should flag an error: feature not visible
+--------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:541:5: error 296: Could not find called feature
+    b // 279. should flag an error: feature not visible
+----^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'b'
+
+296 errors.
