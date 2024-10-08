@@ -789,7 +789,7 @@ public Sequence(public T type) ref : property.equatable is
                   if n > 1
                     rest.split0 s (n - 1) split_after
                   else
-                    res Sequence T := rest;
+                    res Sequence T := rest
                     res : nil
 
 
@@ -802,7 +802,7 @@ public Sequence(public T type) ref : property.equatable is
     if is_empty
       nil
     else
-      cnt := (map T (_ -> T.one)).fold T.sum
+      cnt := (map _->T.one).fold T.sum
       sum := fold T.sum
       sum / cnt
 
@@ -816,8 +816,8 @@ public Sequence(public T type) ref : property.equatable is
     match average
       nil => nil
       avg T =>
-        cnt := (map T (_ -> T.one           )).fold T.sum
-        sum := (map T (x -> (x - avg)**T.two)).fold T.sum
+        cnt := (map (_ -> T.one           )).fold T.sum
+        sum := (map (x -> (x - avg)**T.two)).fold T.sum
         sum / cnt
 
 
@@ -876,7 +876,7 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : float
   =>
-    T.sqrt ((map (x)->x**T.two).fold T.sum)
+    T.sqrt ((map x->x**T.two).fold T.sum)
 
 
   # monoid of Sequences with infix concatentation operation.

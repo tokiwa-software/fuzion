@@ -55,7 +55,7 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
   # wrap this into an immutable array.
   #
   module fixed as_array =>
-    array T (fuzion.sys.internal_array T data length) unit unit unit
+    array (fuzion.sys.internal_array T data length) unit unit unit
 
 
   module indices => 0..length-1
@@ -72,4 +72,4 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
   # post   NYI
     # debug: array.this[i] == o
   =>
-    setel T data i o
+    setel data i o

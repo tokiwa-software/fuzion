@@ -184,7 +184,7 @@ public mutate : effect is
     # creates a copy of the mutable field
     #
     public copy new T =>
-      new T get
+      new get
 
 
     # unwrap this mutable value
@@ -213,4 +213,4 @@ public mut =>
 
 # create a new mutable value of type T with initial value v
 #
-public mut(T type, v T) => mut.new T v
+public mut(T type, v T) => mut.new v

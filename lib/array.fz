@@ -103,7 +103,7 @@ module:public array(
     # NYI: This is very inefficient since it copies the whole array.  Should
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
-    array T (max length i+1) (ix -> if (ix = i) v else array.this[ix])
+    array (max length i+1) (ix -> if (ix = i) v else array.this[ix])
 
   # create a new array with element i set to v. Grow the array in case i >= length.
   # New array elements at indices array.this.length..i-1 will be set to z.
@@ -117,7 +117,7 @@ module:public array(
     # NYI: This is very inefficient since it copies the whole array.  Should
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
-    array T (max length i+1) (ix -> if (ix = i) v else if (ix ≥ length) z else array.this[ix])
+    array (max length i+1) (ix -> if (ix = i) v else if (ix ≥ length) z else array.this[ix])
 
 
   # apply f to all elements in this array
@@ -254,8 +254,8 @@ module:public array(
 
   # reverse the order of the elements in this array
   #
-  public reverse_array array T =>
-    array T array.this.length (i -> array.this[array.this.length-1-i])
+  public reverse_array =>
+    array array.this.length (i -> array.this[array.this.length-1-i])
 
 
   # get a list of tuples indices and elements in this array
@@ -283,7 +283,7 @@ module:public array(
 
   # collect the contents of this Sequence into an array
   #
-  public fixed redef as_array array T =>
+  public fixed redef as_array =>
     array.this
 
 
@@ -301,11 +301,11 @@ module:public array(
     for x in indices do
       internal[x] := init x
 
-    array T internal unit unit unit
+    array internal unit unit unit
 
 
 
 # array -- create initialized one-dimensional immutable array
 #
-public array(T type, length i32, init i32 -> T) array T =>
+public array(T type, length i32, init i32 -> T) =>
   (array T).new length init

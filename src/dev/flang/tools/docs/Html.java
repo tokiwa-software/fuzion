@@ -320,9 +320,21 @@ public class Html extends ANY
 
   private String anchor(AbstractFeature af) {
     return "<div class='font-weight-600'>"
-            + "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>"
+            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
-            + "</a></div>";
+            + (noFeatureLink(af) ? "" : "</a>")
+            + "</div>";
+  }
+
+  /**
+   * Should a hyperlink be created for feature af?
+   * Fields and type parameters don't have their own page in the docs.
+   * @param af the feature which should be checked
+   * @return true iff there is no doc page for this feature and no hyperlink should be created
+   */
+  private boolean noFeatureLink(AbstractFeature af)
+  {
+    return af.isArgument() || af.isTypeParameter() || af.isOpenTypeParameter();
   }
 
 
@@ -386,23 +398,32 @@ public class Html extends ANY
     fields.addAll(normalArguments);
 
     // Constructors
-    var constructors =  new TreeSet<AbstractFeature>();
-    constructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    constructors.removeIf(f->!f.isConstructor());
+    var allConstructors =  new TreeSet<AbstractFeature>();
+    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+    allConstructors.removeIf(f->!f.isConstructor());
+
+    var normalConstructors = allConstructors.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+    var typeConstructors   = allConstructors.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
 
     // Functions
-    var functions = new TreeSet<AbstractFeature>();
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    functions.removeIf(f->f.isConstructor());
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
-    functions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+    var allFunctions = new TreeSet<AbstractFeature>();
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+    allFunctions.removeIf(f->f.isConstructor());
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
 
-    return (typeParameters.isEmpty()                ? "" : "<h4>Type Parameters</h4>" + mainSection0(typeParameters, outer))
-    + (fields.isEmpty()                             ? "" : "<h4>Fields</h4>"          + mainSection0(fields, outer))
-    + (constructors.isEmpty()                       ? "" : "<h4>Constructors</h4>"    + mainSection0(constructors, outer))
-    + (functions.isEmpty()                          ? "" : "<h4>Functions</h4>"       + mainSection0(functions, outer))
-    + (map.get(AbstractFeature.Kind.Choice) == null ? "" : "<h4>Choice Types</h4>"    + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
+    var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+
+
+    return (typeParameters.isEmpty()                ? "" : "<h4>Type Parameters</h4>"   + mainSection0(typeParameters, outer))
+    + (fields.isEmpty()                             ? "" : "<h4>Fields</h4>"            + mainSection0(fields, outer))
+    + (normalConstructors.isEmpty()                 ? "" : "<h4>Constructors</h4>"      + mainSection0(normalConstructors, outer))
+    + (typeConstructors.isEmpty()                   ? "" : "<h4>Type Constructors</h4>" + mainSection0(typeConstructors, outer))
+    + (normalFunctions.isEmpty()                    ? "" : "<h4>Functions</h4>"         + mainSection0(normalFunctions, outer))
+    + (typeFunctions.isEmpty()                      ? "" : "<h4>Type Functions</h4>"    + mainSection0(typeFunctions, outer))
+    + (map.get(AbstractFeature.Kind.Choice) == null ? "" : "<h4>Choice Types</h4>"      + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
   }
 
 
@@ -457,7 +478,7 @@ public class Html extends ANY
             .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
             .replace("$1",
               summary(af, printArgs, outer))
-            .replace("$2", (Util.commentOf(af).equals(Util.commentOf(outer)) ? "-- no comment --" : Util.commentOf(af))) // NYI: this is not a good solution, but arguments should not inherit the comment of their declaring feature in the first place
+            .replace("$2", Util.commentOf(af))
             .replace("$3", redefines(af));
       })
       .collect(Collectors.joining(System.lineSeparator()));

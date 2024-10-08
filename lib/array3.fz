@@ -62,7 +62,7 @@ private:public array3(
        redef internal_array fuzion.sys.internal_array T,
        _ unit,
        _ unit)
- : array T internal_array unit unit unit
+ : array internal_array unit unit unit
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
