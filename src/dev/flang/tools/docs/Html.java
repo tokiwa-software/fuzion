@@ -29,11 +29,13 @@ package dev.flang.tools.docs;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -63,8 +65,8 @@ public class Html extends ANY
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
-    this.navigation = navigation(universe, 0);
     this.lm = lm;
+    this.navigation = navigation(universe, 0);
   }
 
 
@@ -755,8 +757,8 @@ public class Html extends ANY
    */
   private String navigation(AbstractFeature start, int depth)
   {
-    var declaredFeatures = mapOfDeclaredFeatures.get(start);
-    if (declaredFeatures == null || Util.isArgument(start))
+    var declaredFeatures = lm.declaredFeatures(start);
+    if (declaredFeatures == null || start.isArgument())
       {
         return "";
       }
@@ -765,24 +767,25 @@ public class Html extends ANY
         .collect(Collectors.joining())
         .replaceAll("\s$", "―");
     var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + htmlEncodedBasename(start) + args(start) + "</a>";
+
+    var constructors = declaredFeatures.values().stream()
+                        .filter(ft -> ft.definesType()
+                                    && ft.visibility().typeVisibility() == Visi.PUB)
+                        .collect(Collectors.toList());
+
     return """
       <ul class="white-space-no-wrap">
         <li>
+          <div>$0</div>
           $1
         </li>
       </ul>"""
+        .replace("$0", f)
         .replace("$1",
-            (declaredFeatures.get(Kind.ValConstructor) == null
+            (constructors.isEmpty()
               ? ""
-              : "<div>" + f + "<small class=\"fd-feat-kind\"> Constructors</small></div>" + declaredFeatures.get(Kind.ValConstructor).stream()
-                .map(af -> navigation(af, depth + 1))
-                .collect(Collectors.joining(System.lineSeparator())))
-            + (declaredFeatures.get(Kind.ValConstructor) == null && declaredFeatures.get(Kind.Type) == null
-              ? "<div>" + f + "</div>"
-              : "")
-            + (declaredFeatures.get(Kind.Type) == null
-              ? ""
-              : "<div>" + f + "<small class=\"fd-feat-kind\"> Types</small></div>" + declaredFeatures.get(Kind.Type).stream()
+              : constructors.stream()
+                .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
                 .map(af -> navigation(af, depth + 1))
                 .collect(Collectors.joining(System.lineSeparator()))));
   }
