@@ -134,7 +134,7 @@ public has_interval : integer is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  public infix .. (public through has_interval.this) =>
+  public infix .. (through has_interval.this) =>
     interval has_interval.this through has_interval.this.one
 
 
