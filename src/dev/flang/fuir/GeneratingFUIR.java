@@ -571,6 +571,11 @@ public class GeneratingFUIR extends FUIR
       if (!_needsCode)
         {
           _needsCode = true;
+          var r = resultField();
+          if (r != NO_CLAZZ)
+            { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
+              id2clazz(r).doesNeedCode();
+            }
         }
     }
 
