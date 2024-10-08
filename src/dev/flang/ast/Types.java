@@ -265,7 +265,20 @@ public class Types extends ANY
         t_f64));
       resolved = this;
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
-      ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(universe);
+      ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(
+        new Feature(true) {
+          FeatureName fn = FeatureName.get(UNDEFINED_NAME, 0);
+          @Override
+          public FeatureName featureName()
+          {
+            return fn;
+          }
+          @Override
+          public boolean isUniverse()
+          {
+            return true;
+          }
+        });
       ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
     }
     Resolved(Resolution res, AbstractFeature universe)
