@@ -2566,31 +2566,6 @@ public class Call extends AbstractCall
         _type = _type.replace_type_parameters_of_type_feature_origin(context.outerFeature());
       }
 
-    // make sure type features exist for all features used as actual type
-    // parameters. This is required since the type parameter can be used to get
-    // an instance of the type feature, which requires the presence of all type
-    // features of all actual type parameters and outer types. See #2114 for an
-    // example: There `array a` is used, which requires the presence of `a`'s
-    // type feature.
-    for (var t : actualTypeParameters())
-      {
-        if (!t.isGenericArgument())
-          {
-            t.applyToGenericsAndOuter(t2 ->
-                                      {
-                                        if (!t2.isGenericArgument())
-                                          {
-                                            var f2 = t2.feature();
-                                            if (!f2.isUniverse() && f2.state().atLeast(State.RESOLVED_INHERITANCE))
-                                              {
-                                                var t2f = f2.typeFeature(res);
-                                              }
-                                          }
-                                        return t2;
-                                      });
-          }
-      }
-
     resolveTypesOfActuals(res, context);
 
     if (!res._options.isLanguageServer() &&
