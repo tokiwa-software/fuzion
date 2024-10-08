@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.ListIterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.stream.IntStream;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -684,7 +683,7 @@ public class Call extends AbstractCall
     if (_calledFeature == null && targetFeature != null)
       {
         res.resolveDeclarations(targetFeature);
-        var found = findOnTarget(res, targetFeature);
+        var found = findOnTarget(res, targetFeature, true);
         var fos = found.v0();
         var fo  = found.v1();
         if (fo != null &&
@@ -770,7 +769,7 @@ public class Call extends AbstractCall
    *          1) all found features matching the name
    *          2) the matching feature or null if none was found
    */
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target)
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs)
   {
     var calledName = FeatureName.get(_name, _actuals.size());
     var fos = res._module.lookup(target, _name, this, _target == null, false);
@@ -783,7 +782,7 @@ public class Call extends AbstractCall
       }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
       ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
-    if (fo == null)
+    if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
           FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> isSpecialWrtArgs(ff));
@@ -1053,7 +1052,8 @@ public class Call extends AbstractCall
    */
   private boolean isSpecialWrtArgs(AbstractFeature ff)
   {
-    return ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    return ff.arguments().size()==0;
   }
 
 
@@ -2408,8 +2408,8 @@ public class Call extends AbstractCall
           var tf = tt.feature();
           var ttf = tf.typeFeature(res);
           res.resolveDeclarations(tf);
-          var fo = findOnTarget(res, tf).v1();
-          var tfo = findOnTarget(res, ttf).v1();
+          var fo = findOnTarget(res, tf, false).v1();
+          var tfo = findOnTarget(res, ttf, false).v1();
           var f = tfo == null ? null : tfo._feature;
           if (f != null
               && f.outer() != null
