@@ -289,7 +289,7 @@ public class Html extends ANY
    */
   private String annotatePrivateConstructor(AbstractFeature af)
   {
-    return af.visibility() == Visi.PRIVPUB
+    return af.visibility().eraseTypeVisibility() != Visi.PUB
              ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
                "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
              : "";
@@ -396,7 +396,7 @@ public class Html extends ANY
     TreeSet<AbstractFeature> fields =  new TreeSet<AbstractFeature>();
     fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
     var normalArguments = outer.arguments().clone();
-    normalArguments.removeIf(a->a.isTypeParameter());
+    normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
     fields.addAll(normalArguments);
 
     // Constructors
