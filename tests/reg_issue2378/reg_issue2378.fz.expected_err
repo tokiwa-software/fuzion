@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue2378.fz:24:22: error 1: Cannot access value of open type parameter
+tuple.v0 => say "hi {values.0}"
+---------------------^^^^^^
+When calling 'tuple.values' result type '**error**' is open type parameter, which cannot be accessed directly.  You might try to access one specific type parameter parameter by adding '.0', '.1', etc.
+
+one error.

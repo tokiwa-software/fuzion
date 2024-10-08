@@ -1541,6 +1541,11 @@ public class Call extends AbstractCall
         else
           {
             t = types.get(_select);
+            if (t.isOpenGeneric())
+              {
+                t = Types.t_ERROR;
+                AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
+              }
           }
       }
     return t;
