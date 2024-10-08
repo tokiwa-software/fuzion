@@ -287,7 +287,7 @@ public class Html extends ANY
    */
   private String annotatePrivateConstructor(AbstractFeature af)
   {
-    return af.visibility().eraseTypeVisibility() != Visi.PUB && af.visibility().typeVisibility() == Visi.PUB
+    return af.visibility().eraseTypeVisibility() != Visi.PUB
              ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
                "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
              : "";
