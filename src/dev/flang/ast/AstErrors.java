@@ -2263,6 +2263,13 @@ public class AstErrors extends ANY
       "To solve this, remove the visibility modifier " + s(f.visibility()) + " from feature " + s(f) + ".");
   }
 
+  public static void mustNotCallOpenTypeParameter(Call call)
+  {
+    error(call.pos(),
+      "Open type parameters must not be called.",
+      "" /* NYI: UNDER DEVELOPMENT: can we give some useful suggestion here? */);
+  }
+
 
 }
 
