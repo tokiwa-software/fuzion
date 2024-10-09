@@ -2826,6 +2826,10 @@ public class Call extends AbstractCall
                 AstErrors.cannotCallChoice(pos(), _calledFeature);
               }
           }
+        if (_calledFeature.isOpenTypeParameter())
+          {
+            AstErrors.mustNotCallOpenTypeParameter(this);
+          }
 
         // Check that generics match formal generic constraints
         AbstractType.checkActualTypePars(context, _calledFeature, _generics, _unresolvedGenerics, pos());
