@@ -568,7 +568,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   protected Expr addFieldForResult(Resolution res, Context context, AbstractType t)
   {
     var result = this;
-    if (!t.isVoid())
+    if (!t.isVoid() &&
+        // NYI: UNDER DEVELOPMENT: ugly we have to do this:
+        context.outerFeature().state().atLeast(State.RESOLVED_TYPES))
       {
         var pos = pos();
         Feature r = new Feature(res,
