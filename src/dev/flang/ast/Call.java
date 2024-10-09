@@ -1518,33 +1518,31 @@ public class Call extends AbstractCall
    */
   private AbstractType resolveSelect(AbstractType t, AbstractType tt)
   {
-    if (_select < 0 && t.isOpenGeneric())
+    if (t.isOpenGeneric())
       {
-        AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
-        t = Types.t_ERROR;
-      }
-    else if (_select >= 0 && !t.isOpenGeneric())
-      {
-        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, t);
-        t = Types.t_ERROR;
-      }
-    else if (_select >= 0)
-      {
-        var types = t.genericArgument().replaceOpen(tt.generics());
-        int sz = types.size();
-        if (_select >= sz)
+        if (_select < 0)
           {
-            AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
-            setToErrorState();
+            AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
             t = Types.t_ERROR;
           }
-        else
+        else if (_select >= 0)
           {
-            t = types.get(_select);
-            if (t.isOpenGeneric())
+            var types = t.genericArgument().replaceOpen(tt.generics());
+            int sz = types.size();
+            if (_select >= sz)
               {
+                AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
+                setToErrorState();
                 t = Types.t_ERROR;
-                AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
+              }
+            else
+              {
+                t = types.get(_select);
+                if (t.isOpenGeneric())
+                  {
+                    t = Types.t_ERROR;
+                    AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
+                  }
               }
           }
       }
@@ -2527,8 +2525,15 @@ public class Call extends AbstractCall
               }
             else if (t != null)
               {
-                result = resolveImplicitSelect(res, context, t);
                 setActualResultType(res, context, t);
+
+                result = resolveImplicitSelect(res, context, _type);
+                if (_select >= 0 && !t.isOpenGeneric() && !result.type().isOpenGeneric())
+                  {
+                    AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, _type);
+                    setToErrorState();
+                  }
+
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
                 result = result.resolveImmediateFunctionCall(res, context); // NYI: Separate pass? This currently does not work if type was inferred

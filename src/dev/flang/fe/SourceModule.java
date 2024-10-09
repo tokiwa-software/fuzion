@@ -1056,6 +1056,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                                       f ->
                                       {
                                         if (featureVisible(use.pos()._sourceFile, f) &&
+                                            // NYI: UNDER DEVELOPMENT: this means selector .0 .1 can only be used for library features currently
                                             f instanceof LibraryFeature lf &&
                                             lf.resultType().isOpenGeneric() &&
                                             f.arguments().isEmpty())
