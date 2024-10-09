@@ -27,23 +27,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.charset.StandardCharsets;
-
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
-import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
+import dev.flang.ast.Constant;
+import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
@@ -55,7 +58,6 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
-
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -142,6 +144,9 @@ public class LibraryFeature extends AbstractFeature
    * cached result of outerRef()
    */
   private AbstractFeature _outerRef;
+
+  // TODO: javadoc
+  private Set<LibraryModule> _modulesOfInnerFeatures = null;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -868,7 +873,46 @@ public class LibraryFeature extends AbstractFeature
     return result;
   }
 
+  // TODO: javadoc
+  public Set<LibraryModule> modulesOfInnerFeatures()
+  {
+
+    // FIXME: What about inherited features??
+
+    // var result = new List<AbstractFeature>();
+    // fe.mainModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+
+    if (_modulesOfInnerFeatures == null)
+      {
+        _modulesOfInnerFeatures = new TreeSet<LibraryModule>(Comparator.comparingInt(System::identityHashCode));
+
+
+        var declaredOrInherited = new LinkedList<AbstractFeature>();
+
+        _libModule.forEachDeclaredOrInheritedFeature(this, f -> declaredOrInherited.add(f));
+
+        var libFeatures = declaredOrInherited.stream()
+                           .filter(f -> f instanceof LibraryFeature)
+                           .map(f -> (LibraryFeature) f)
+                          //  .peek(lf -> _modulesOfInnerFeatures.add(lf._libModule))
+                          //  .map(lf -> _modulesOfInnerFeatures.addAll(lf.modulesOfInnerFeatures()));
+                           .collect(Collectors.toList());
+
+
+        for (LibraryFeature lf : libFeatures)
+        {
+            // TODO: determine modules of inner features
+            _modulesOfInnerFeatures.add( lf._libModule );
+            // TODO: recursively add modules of all inner features in inner features
+            _modulesOfInnerFeatures.addAll( lf.modulesOfInnerFeatures() );
+          }
+      }
+
+    return Collections.unmodifiableSet(_modulesOfInnerFeatures);
+  }
 
 }
+
+
 
 /* end of file */

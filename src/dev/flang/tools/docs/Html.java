@@ -45,6 +45,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryModule;
+import dev.flang.fe.LibraryFeature;
 import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -202,6 +203,7 @@ public class Html extends ANY
       + annotateContainsAbstract(af)
       + annotatePrivateConstructor(af)
       + annotateModule(af)
+      + annotateInnerModules(af)
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -323,6 +325,13 @@ public class Html extends ANY
   {
     String module = (af instanceof LibraryFeature) ? ((LibraryFeature) af)._libModule.name() : "";
     return module.equals("base") ? "" : "&nbsp;<div class='fd-parent'>[Module " + module + "]</div>";
+  }
+
+  // FIXME: for debugging only
+  private String annotateInnerModules(AbstractFeature af)
+  {
+    String modules = (af instanceof LibraryFeature) ? ((LibraryFeature) af).modulesOfInnerFeatures().stream().map(m -> m.name()).collect(Collectors.joining(", ")) : "not a LibraryFeature";
+    return "&nbsp;<div class='fd-parent'>[Inner module " + modules + "]</div>";
   }
 
   private boolean isVisible(AbstractFeature af)
