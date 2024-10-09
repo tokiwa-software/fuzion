@@ -1152,12 +1152,16 @@ argNames    : name ( COMMA argNames
    */
   boolean skipArgNames()
   {
+    return skipArgNames(true);
+  }
+  boolean skipArgNames(boolean mayUseCommas)
+  {
     boolean result;
     do
       {
         result = skipName();
       }
-    while (result && skipComma());
+    while (result && mayUseCommas && skipComma());
     return result;
   }
 
@@ -1734,7 +1738,7 @@ actualMore  : COMMA actualSome
       {
         do
           {
-            result.add(operatorExpr());
+            result.add(operatorExpr(false /* see #3978 for an example where this is necessary */));
           }
         while (skipComma());
       }
@@ -1837,7 +1841,11 @@ operatorExpr  : opExpr
    */
   Expr operatorExpr()
   {
-    Expr result = opExpr();
+    return operatorExpr(true);
+  }
+  Expr operatorExpr(boolean mayUseCommas)
+  {
+    Expr result = opExpr(mayUseCommas);
     if (current() == Token.t_question)
       {
         SourcePosition pos = tokenSourcePos();
@@ -1852,12 +1860,12 @@ operatorExpr  : opExpr
           {
             i.ok();
             var eac = endAtColon(true);
-            Expr f = operatorExpr();
+            Expr f = operatorExpr(mayUseCommas);
             endAtColon(eac);
             i.next();
             i.ok();
             matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = operatorExpr();
+            Expr g = operatorExpr(mayUseCommas);
             i.end();
             result = new ParsedCall(result, new ParsedName(pos, "ternary ? :"), new List<>(f, g));
           }
@@ -1875,7 +1883,7 @@ opExpr      :     opTail
             | dot call
             ;
    */
-  Expr opExpr()
+  Expr opExpr(boolean mayUseCommas)
   {
      if (!skipDot())
        {
@@ -1883,7 +1891,7 @@ opExpr      :     opTail
          skipOps(oe);
          if (oe.size() != 1 || isTermPrefix())
            {
-             opTail(oe);
+             opTail(oe, mayUseCommas);
              return oe.toExpr();
            }
          else
@@ -1929,12 +1937,12 @@ opTail      : term
             | term ops opTail
             ;
    */
-  void opTail(OpExpr oe)
+  void opTail(OpExpr oe, boolean mayUseCommas)
   {
-    oe.add(term());
+    oe.add(term(mayUseCommas));
     if (skipOps(oe) && isTermPrefix())
       {
-        opTail(oe);
+        opTail(oe, mayUseCommas);
       }
   }
 
@@ -2038,10 +2046,10 @@ plainLambda : argNames lambda
    * @return true iff the next token(s) start a plainLambda.
    *
    */
-  boolean isPlainLambdaPrefix()
+  boolean isPlainLambdaPrefix(boolean mayUseCommas)
   {
     var f = fork();
-    return f.skipArgNames() && f.isLambdaPrefix();
+    return f.skipArgNames(mayUseCommas) && f.isLambdaPrefix();
   }
 
 
@@ -2110,7 +2118,7 @@ simpleterm  : bracketTerm
             | callOrFeatOrThis
             ;
    */
-  Expr term()
+  Expr term(boolean mayUseCommas)
   {
     int pos = tokenPos();
     var result = switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
@@ -2139,7 +2147,7 @@ simpleterm  : bracketTerm
                               }
                             else
                               {
-                                var res = callOrFeatOrThis();
+                                var res = callOrFeatOrThis(mayUseCommas);
                                 if (res == null)
                                   {
                                     syntaxError(pos, "term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name)", "term");
@@ -3090,14 +3098,14 @@ callOrFeatOrThis  : anonymous
                   | call
                   ;
    */
-  Expr callOrFeatOrThis()
+  Expr callOrFeatOrThis(boolean mayUseCommas)
   {
     return
-      isAnonymousPrefix()           ? anonymous()      : // starts with value/ref/:/fun/name
-      isPlainLambdaPrefix()         ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
-      current() == Token.t_universe ? universeCall()   :
-      isNamePrefix()                ? call(null)         // starts with name
-                                    : null;
+      isAnonymousPrefix()               ? anonymous()      : // starts with value/ref/:/fun/name
+      isPlainLambdaPrefix(mayUseCommas) ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
+      current() == Token.t_universe     ? universeCall()   :
+      isNamePrefix()                    ? call(null)         // starts with name
+                                        : null;
   }
 
 
