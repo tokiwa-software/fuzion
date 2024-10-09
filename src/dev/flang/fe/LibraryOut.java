@@ -49,6 +49,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
+import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
@@ -557,7 +558,7 @@ class LibraryOut extends ANY
   void type(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null, t != Types.t_ERROR);
+      (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
 
     var off = _data.offset(t);
     if (off >= 0)

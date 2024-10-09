@@ -43,7 +43,7 @@ is
 
   # type feature that to create an instance of `try` with the given error handler.
   #
-  public redef fixed type.new(h error->void) =>
+  public fixed redef type.new(h error->void) =>
     try T h unit unit
 
 

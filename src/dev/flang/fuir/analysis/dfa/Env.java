@@ -334,10 +334,20 @@ public class Env extends ANY implements Comparable<Env>
    */
   boolean isAborted(int ecl)
   {
-    if (PRECONDITIONS) require
-      (_effectType == ecl);
-
-    return _isAborted;
+    boolean result = false;
+    if (_effectType == ecl)
+      {
+        result = _isAborted;
+      }
+    else if (_outer != null)
+      {
+        result = _outer.isAborted(ecl);
+      }
+    else
+      {
+        check(false);
+      }
+    return result;
   }
 
 

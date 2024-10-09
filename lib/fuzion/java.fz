@@ -80,9 +80,9 @@ public fuzion.java is
   public Array(public T type,
                redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
-    public length                  => array_length T Array.this
+    public length                  => array_length Array.this
     public redef finite            => true
-    public redef index [ ] (i i32) => array_get    T Array.this i (sys.c_string signature)
+    public redef index [ ] (i i32) => array_get    Array.this i (sys.c_string signature)
     public redef as_list => as_list 0
 
 
@@ -210,6 +210,17 @@ public fuzion.java is
                  class_name Java_Object,
                  signature Java_Object,
                  args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
+
+
+  # cast this to some other class
+  #
+  public cast(T type : Java_Object, thiz Java_Object)
+  =>
+    cast0 T thiz.Java_Ref
+
+  # intrinsic to rewrap thiz in T
+  #
+  cast0(T type : Java_Object, thiz fuzion.sys.Pointer) outcome T => intrinsic
 
 
   # intrinsic to get the length of a Java array of arbitrary type

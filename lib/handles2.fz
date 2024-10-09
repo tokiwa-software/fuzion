@@ -57,7 +57,7 @@ is
   post
     debug: result.has_last
   =>
-    handles2 T X v (handle2_0 w) mode.next
+    handles2 v (handle2_0 w) mode.next
 
 
   # has one element been created using 'new'?
@@ -106,7 +106,7 @@ is
     w T)
   =>
     h.put w
-    handles2 T X v last_opt mode.next
+    handles2 v last_opt mode.next
 
 
   # create a new instance with the value referred to by a given handle read and
@@ -121,13 +121,13 @@ is
     )
   =>
     h.put (f h.get)
-    handles2 T X v last_opt mode.next
+    handles2 v last_opt mode.next
 
 
   public redef infix >>= (f X -> handles2 T X) => bind X f
 
   public bind(B type, f X -> handles2 T B) handles2 T B =>
-    handles2 T B (f v).v last_opt oneway_monad_mode.plain
+    handles2 (f v).v last_opt oneway_monad_mode.plain
 
   public return(B type, w B) => handles2 T B w last_opt oneway_monad_mode.plain
 

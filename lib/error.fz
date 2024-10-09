@@ -35,7 +35,7 @@ public error (
   #
   public msg String
 
-  )
+  ) : property.equatable
 
 is
 
@@ -45,3 +45,9 @@ is
   #
   public redef as_string String =>
     "error: $msg"
+
+
+  # equality
+  #
+  public fixed redef type.equality(x, y error) =>
+    x.msg = y.msg

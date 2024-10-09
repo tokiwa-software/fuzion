@@ -25,7 +25,12 @@
 
 # envir.args -- effect providing access to command line args
 #
-public args (all array String) : container.searchable_sequence String all.as_list, effect is
+public args (all array String) : Sequence String, effect is
+
+  # implement as_list
+  #
+  public redef as_list => all.as_list
+
 
   # install default effect args using fuzion.sys.args
   #

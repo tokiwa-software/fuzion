@@ -39,4 +39,14 @@ public equatable is
   # result is true iff 'a' is considered to represent the same abstract value
   # as 'b'.
   #
-  public type.equality(a, b equatable.this) bool => abstract
+  public type.equality(a, b equatable.this) bool
+  pre
+    is_equatable
+  => abstract
+
+
+  # additional restrictions on when equality is permitted,
+  # e.g., `option T` might require `T : property.equatable`.
+  # to implement `equality`
+  #
+  public type.is_equatable => true

@@ -1643,12 +1643,31 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkRedefVisibility(f);
     checkLegalTypeVisibility(f);
     checkResultTypeVisibility(f);
+    checkArgVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
     checkDuplicateFeatures(f);
     checkContractAccesses(f);
     checkLegalQualThisType(f);
+  }
+
+
+  /*
+   * check that arguments of functions etc.
+   * do not have visibility modifier.
+   */
+  private void checkArgVisibility(Feature f)
+  {
+    if (
+        f.isArgument()
+     && !f.outer().definesType()
+     && !f.outer().isTypeFeature()
+     && f.visibility() != Visi.PRIV
+    )
+      {
+        AstErrors.illegalVisibilityArgument(f);
+      }
   }
 
 

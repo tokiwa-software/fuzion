@@ -13,10 +13,10 @@ jobs:
       contents: write  # for ncipollo/release-action to create a release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v2.6.0
+    - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v2.6.0
 
     - name: Setup jdk
-      uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018 # main
+      uses: actions/setup-java@b36c23c0d998641eff861008f374ee103c25ac73 # main
       with:
         java-version: 21
         distribution: 'adopt'

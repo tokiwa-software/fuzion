@@ -54,8 +54,8 @@ is
   # all pairs of indices: (0, 0), (0, 1), (0, 2), ..., (length0-1, length1-1)
   #
   public index_pairs =>
-    indices0.flat_map (tuple i64 i64) (i ->
-      indices1.map j->(i,j))
+    indices0.flat_map i->
+      indices1.map j->(i,j)
 
 
   # get element at given index i
@@ -81,7 +81,7 @@ is
   # create immutable array from this buffer
   #
   public as_array ! E =>
-    array T (length0.as_i32 * length1.as_i32) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
+    array (length0.as_i32 * length1.as_i32) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
 
 
   # create a list from this buffer

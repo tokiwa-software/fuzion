@@ -683,7 +683,7 @@ public class Call extends AbstractCall
     if (_calledFeature == null && targetFeature != null)
       {
         res.resolveDeclarations(targetFeature);
-        var found = findOnTarget(res, targetFeature);
+        var found = findOnTarget(res, targetFeature, true);
         var fos = found.v0();
         var fo  = found.v1();
         if (fo != null &&
@@ -769,7 +769,7 @@ public class Call extends AbstractCall
    *          1) all found features matching the name
    *          2) the matching feature or null if none was found
    */
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target)
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs)
   {
     var calledName = FeatureName.get(_name, _actuals.size());
     var fos = res._module.lookup(target, _name, this, _target == null, false);
@@ -782,7 +782,7 @@ public class Call extends AbstractCall
       }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
       ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
-    if (fo == null)
+    if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
           FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> isSpecialWrtArgs(ff));
@@ -1052,7 +1052,8 @@ public class Call extends AbstractCall
    */
   private boolean isSpecialWrtArgs(AbstractFeature ff)
   {
-    return ff.arguments().size()==0; /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+    return ff.arguments().size()==0;
   }
 
 
@@ -1540,6 +1541,11 @@ public class Call extends AbstractCall
         else
           {
             t = types.get(_select);
+            if (t.isOpenGeneric())
+              {
+                t = Types.t_ERROR;
+                AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
+              }
           }
       }
     return t;
@@ -2208,29 +2214,62 @@ public class Call extends AbstractCall
                                            boolean[] conflict,
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    var result = false;
-    if ((formalType.isFunctionType() || formalType.isLazyType()) &&
-        formalType.generics().get(0).isGenericArgument()
-        )
+    var result = new boolean[] { false };
+    if (formalType.isFunctionType() || formalType.isLazyType())
       {
-        var rg = formalType.generics().get(0).genericArgument();
-        var ri = rg.index();
-        if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+        var at = actualArgType(res, formalType, frml, context);
+        if (!at.containsUndefined(true))
           {
-            var at = actualArgType(res, formalType, frml, context);
-            if (!at.containsUndefined(true))
-              {
-                var rt = al.inferLambdaResultType(res, context, at);
-                if (rt != null)
-                  {
-                    _generics = _generics.setOrClone(ri, rt);
-                  }
-                addPair(foundAt, ri, pos, rt);
-                result = true;
-              }
+            var lambdaResultType = formalType.generics().get(0);
+            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, new List<>(lambdaResultType), at);
           }
       }
-    return result;
+    return result[0];
+  }
+
+
+  /**
+   * Perform type inference for result type of lambda
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param al the lambda-expression we try to get the result from
+   *
+   * @param pos source code position of the expression actualType was derived from
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
+   */
+  private void inferGenericLambdaResult(Resolution res, Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
+    List<List<Pair<SourcePosition, AbstractType>>> foundAt, boolean[] result, AbstractType lambdaResultType, List<AbstractType> generics,
+    AbstractType argumentType)
+  {
+    generics
+      .stream()
+      .forEach(g -> {
+        if (!g.isGenericArgument())
+          {
+            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, g.generics(), argumentType);
+          }
+        else
+          {
+            var rg = g.genericArgument();
+            var ri = rg.index();
+            if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+              {
+                var rt = al.inferLambdaResultType(res, context, argumentType);
+                if (rt != null)
+                  {
+                      inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
+                      result[0] = true;
+                  }
+              }
+          }
+      });
   }
 
 
@@ -2374,8 +2413,8 @@ public class Call extends AbstractCall
           var tf = tt.feature();
           var ttf = tf.typeFeature(res);
           res.resolveDeclarations(tf);
-          var fo = findOnTarget(res, tf).v1();
-          var tfo = findOnTarget(res, ttf).v1();
+          var fo = findOnTarget(res, tf, false).v1();
+          var tfo = findOnTarget(res, ttf, false).v1();
           var f = tfo == null ? null : tfo._feature;
           if (f != null
               && f.outer() != null
@@ -2532,31 +2571,6 @@ public class Call extends AbstractCall
         _type = _type.replace_type_parameters_of_type_feature_origin(context.outerFeature());
       }
 
-    // make sure type features exist for all features used as actual type
-    // parameters. This is required since the type parameter can be used to get
-    // an instance of the type feature, which requires the presence of all type
-    // features of all actual type parameters and outer types. See #2114 for an
-    // example: There `array a` is used, which requires the presence of `a`'s
-    // type feature.
-    for (var t : actualTypeParameters())
-      {
-        if (!t.isGenericArgument())
-          {
-            t.applyToGenericsAndOuter(t2 ->
-                                      {
-                                        if (!t2.isGenericArgument())
-                                          {
-                                            var f2 = t2.feature();
-                                            if (!f2.isUniverse() && f2.state().atLeast(State.RESOLVED_INHERITANCE))
-                                              {
-                                                var t2f = f2.typeFeature(res);
-                                              }
-                                          }
-                                        return t2;
-                                      });
-          }
-      }
-
     resolveTypesOfActuals(res, context);
 
     if (!res._options.isLanguageServer() &&
@@ -2570,6 +2584,10 @@ public class Call extends AbstractCall
           {
             var ignore = _target.type();
           }
+
+        if (CHECKS) check
+          (Errors.any());
+
         result = Call.ERROR; // short circuit this call
       }
 
@@ -2807,6 +2825,10 @@ public class Call extends AbstractCall
               {
                 AstErrors.cannotCallChoice(pos(), _calledFeature);
               }
+          }
+        if (_calledFeature.isOpenTypeParameter())
+          {
+            AstErrors.mustNotCallOpenTypeParameter(this);
           }
 
         // Check that generics match formal generic constraints

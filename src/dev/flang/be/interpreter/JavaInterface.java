@@ -505,7 +505,7 @@ public class JavaInterface extends FUIRContext
       {
         err = e.getCause();
       }
-    catch (InstantiationException | IllegalAccessException e)
+    catch (Throwable e)
       {
         err = e;
       }

@@ -668,6 +668,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return returnResult(jvm, si, rc, exec);
         });
 
+    put("fuzion.java.cast0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var rc = jvm._fuir.clazzResultClazz(cc);
+          return returnResult(jvm, si, rc, args.get(0));
+        });
+
     put("fuzion.sys.args.count",
         (jvm, si, cc, tvalue, args) ->
         {

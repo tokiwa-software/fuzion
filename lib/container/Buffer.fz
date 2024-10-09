@@ -82,7 +82,7 @@ is
   # create immutable array from this buffer
   #
   public as_array ! E =>
-    array T length.as_i32 (i -> Buffer.this[i.as_i64])
+    array length.as_i32 (i -> Buffer.this[i.as_i64])
 
 
   # create a list from this buffer

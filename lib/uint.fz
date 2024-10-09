@@ -197,7 +197,7 @@ is
             (oi, ov) := ox
             tmp := v.as_u64 * ov.as_u64
             uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
-      .flat_map uint x->x
+      .flat_map id
       .fold uint.sum
 
 
@@ -234,14 +234,14 @@ is
 
   # equality: are these unsigned integers equal?
   #
-  fixed redef type.equality(a, b uint) bool =>
+  public fixed redef type.equality(a, b uint) bool =>
     a.data.count = b.data.count &&
       ((a.data.zip b.data (c,d -> c = d)) ∀ id)
 
 
   # total order
   #
-  fixed redef type.lteq(a, b uint) =>
+  public fixed redef type.lteq(a, b uint) =>
     if a.data.count = b.data.count
       a.data
         # zip the two equally long lists of digits
@@ -349,7 +349,7 @@ is
 
 
   # helper feature to init uint from an u32
-  public redef fixed type.from_u32(val u32) uint =>
+  public fixed redef type.from_u32(val u32) uint =>
     uint [val] unit
 
 

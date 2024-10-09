@@ -92,7 +92,7 @@ is
         #
         h1 := m.env.new 0
 
-        na := array T a.length (i ->
+        na := array a.length i->
           # index in current pair of heaps
           hi := i & (heap_size*2-1)
           # reset h1 in case we start new pair of heaps
@@ -116,7 +116,7 @@ is
           else
             # otherwise, return element from second heap
             a[i2]
-          )
+
 
         # continue sorting with doubled heap size
         sort na 2*heap_size
@@ -204,4 +204,4 @@ public sorted_array_of
   ) sorted_array T
 
 =>
-  sorted_array T from a,b->a≤b
+  sorted_array from T.lteq

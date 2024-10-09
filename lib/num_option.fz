@@ -31,12 +31,13 @@
 #
 public num_option(public T type : numeric)
   : switch T nil,
-    monad T (num_option T)
+    monad T (num_option T),
+    property.equatable
 is
 
 
   # monadic operator
-  public redef infix >>= (f T -> num_option T) => num_option.this.bind T f
+  public redef infix >>= (f T -> num_option T) => num_option.this.bind f
 
 
   # monadic operator
@@ -101,6 +102,15 @@ is
   # return function
   #
   public fixed redef type.return (a T) => num_option a
+
+
+  # equality
+  #
+  # NYI: UNDER DEVELOPMENT: (how) move this to switch?
+  #
+  public fixed redef type.equality(x, y num_option T) =>
+    x ? v T => y.exists && v = y.val
+      | nil => !y.exists
 
 
 # num_option with 1 argument provides an short-hand to wrap a value into a

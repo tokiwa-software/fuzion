@@ -71,6 +71,11 @@ public class Util
       {
         return Html.processComment("universe", universeComment());
       }
+    // arguments that are defined on same line as feature have no comments.
+    if (af.isArgument() && af.pos().line() == af.outer().pos().line())
+      {
+        return "";
+      }
     var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
     while (true)
