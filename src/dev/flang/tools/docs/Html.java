@@ -30,12 +30,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -44,9 +42,8 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.fe.LibraryModule;
 import dev.flang.fe.LibraryFeature;
-import dev.flang.tools.docs.Util.Kind;
+import dev.flang.fe.LibraryModule;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -58,15 +55,17 @@ public class Html extends ANY
   private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
   private final LibraryModule lm;
+  private final List<LibraryModule> libModules;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.lm = lm;
+    this.libModules = libModules;
     this.navigation = navigation(universe, 0);
   }
 
@@ -203,7 +202,7 @@ public class Html extends ANY
       + annotateContainsAbstract(af)
       + annotatePrivateConstructor(af)
       + annotateModule(af)
-      + annotateInnerModules(af)
+      //+ annotateInnerModules(af) // NYI: CLEANUP: for debugging only
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -323,15 +322,17 @@ public class Html extends ANY
    */
   private String annotateModule(AbstractFeature af)
   {
-    String module = (af instanceof LibraryFeature) ? ((LibraryFeature) af)._libModule.name() : "";
-    return module.equals("base") ? "" : "&nbsp;<div class='fd-parent'>[Module " + module + "]</div>";
+    var afModule = lf(af)._libModule;
+
+    // don't add annotation for features of own module
+    return afModule == lm ? "" : "&nbsp;<div class='fd-parent'>[Module " + afModule.name() + "]</div>";
   }
 
-  // FIXME: for debugging only
+  // NYI: CLEANUP: for debugging only: show modules of inner features
   private String annotateInnerModules(AbstractFeature af)
   {
-    String modules = (af instanceof LibraryFeature) ? ((LibraryFeature) af).modulesOfInnerFeatures().stream().map(m -> m.name()).collect(Collectors.joining(", ")) : "not a LibraryFeature";
-    return "&nbsp;<div class='fd-parent'>[Inner module " + modules + "]</div>";
+    String modules = lf(af).modulesOfInnerFeatures().stream().map(m -> m.name()).collect(Collectors.joining(", "));
+    return "&nbsp;<div class='fd-parent'>[Inner modules: " + modules + "]</div>";
   }
 
   private boolean isVisible(AbstractFeature af)
@@ -461,6 +462,7 @@ public class Html extends ANY
   private String mainSection0(TreeSet<AbstractFeature> set, AbstractFeature outer)
   {
     return set.stream()
+      .filter(af -> lf(af).showInMod(lm))  // filter out features of other modules which do not need to be shown for this module
       .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()))
       .map(af -> {
         // NYI summary tag must not contain div
@@ -485,7 +487,7 @@ public class Html extends ANY
   private String headingSection(AbstractFeature f)
   {
     return "<h1 class='$5'>$0</h1><h2>$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
-      .replace("$0", f.isUniverse() ? "API-Documentation": htmlEncodedBasename(f))
+      .replace("$0", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
       .replace("$3", anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
       .replace("$2", Util.commentOf(f))
@@ -720,7 +722,7 @@ public class Html extends ANY
    */
   private String featureAbsoluteURL(AbstractFeature f)
   {
-    return config.docsRoot() + featureAbsoluteURL0(f) + "/";
+    return config.docsRoot() + "/" + lm.name() + featureAbsoluteURL0(f) + "/";
   }
 
   private static String featureAbsoluteURL0(AbstractFeature f)
@@ -788,14 +790,29 @@ public class Html extends ANY
         .mapToObj(i -> "| ")
         .collect(Collectors.joining())
         .replaceAll("\s$", "―");
-    var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + htmlEncodedBasename(start) + args(start) + "</a>";
+    var startName = htmlEncodedBasename(start) + (start.isUniverse() ? " (module " + lm.name() + ")" : "");
+    var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + startName + args(start) + "</a>";
 
     var constructors = declaredFeatures.values().stream()
                         .filter(ft -> ft.definesType()
                                     && ft.visibility().typeVisibility() == Visi.PUB)
                         .collect(Collectors.toList());
 
+    // list with modules at the top
+    String modules = !start.isUniverse() ? "" : """
+      <ul class="white-space-no-wrap">
+        <li>
+          <div><a href=$0>Modules</a></div>
+            <ul style="list-style: circle inside">
+              $1
+      </ul></li></ul>"""
+      .replace("$1", libModules.stream()
+                               .map(m->"<li><a href=$0" + m.name() + ">" + m.name() + "</a></li>")
+                               .collect(Collectors.joining("\n")))
+      .replace("$0", config.docsRoot() + "/");
+
     return """
+      $2
       <ul class="white-space-no-wrap">
         <li>
           <div>$0</div>
@@ -809,7 +826,8 @@ public class Html extends ANY
               : constructors.stream()
                 .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
                 .map(af -> navigation(af, depth + 1))
-                .collect(Collectors.joining(System.lineSeparator()))));
+                .collect(Collectors.joining(System.lineSeparator()))))
+        .replace("$2", modules);
   }
 
 
@@ -824,6 +842,17 @@ public class Html extends ANY
         return " <small>(" + start.valueArguments().size() + " arg)</small>";
       }
     return " <small>(" + start.valueArguments().size() + " args)</small>";
+  }
+
+
+  /**
+   * Cast an AbstractFeature to LibraryFeature
+   * @param af an AbstractFeature feature which must be of type LibraryFeature
+   * @return
+   */
+  private static final LibraryFeature lf(AbstractFeature af)
+  {
+    return (LibraryFeature) af;
   }
 
 

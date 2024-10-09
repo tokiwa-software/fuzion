@@ -145,7 +145,9 @@ public class LibraryFeature extends AbstractFeature
    */
   private AbstractFeature _outerRef;
 
-  // TODO: javadoc
+  /**
+   * cached result of modulesOfInnerFeatures()
+   */
   private Set<LibraryModule> _modulesOfInnerFeatures = null;
 
   /*--------------------------  constructors  ---------------------------*/
@@ -873,42 +875,53 @@ public class LibraryFeature extends AbstractFeature
     return result;
   }
 
-  // TODO: javadoc
+  /**
+   * Union of the library features of all inner features. Checks inner features recursively.
+   * @return immutable set with all library features for which an inner feature exists
+   */
   public Set<LibraryModule> modulesOfInnerFeatures()
   {
-
-    // FIXME: What about inherited features??
-
-    // var result = new List<AbstractFeature>();
-    // fe.mainModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
-
     if (_modulesOfInnerFeatures == null)
       {
         _modulesOfInnerFeatures = new TreeSet<LibraryModule>(Comparator.comparingInt(System::identityHashCode));
 
-
         var declaredOrInherited = new LinkedList<AbstractFeature>();
-
         _libModule.forEachDeclaredOrInheritedFeature(this, f -> declaredOrInherited.add(f));
 
         var libFeatures = declaredOrInherited.stream()
-                           .filter(f -> f instanceof LibraryFeature)
                            .map(f -> (LibraryFeature) f)
-                          //  .peek(lf -> _modulesOfInnerFeatures.add(lf._libModule))
-                          //  .map(lf -> _modulesOfInnerFeatures.addAll(lf.modulesOfInnerFeatures()));
                            .collect(Collectors.toList());
-
 
         for (LibraryFeature lf : libFeatures)
         {
-            // TODO: determine modules of inner features
+            // modules of inner features
             _modulesOfInnerFeatures.add( lf._libModule );
-            // TODO: recursively add modules of all inner features in inner features
+            // for inner features recursively add modules their inner features
             _modulesOfInnerFeatures.addAll( lf.modulesOfInnerFeatures() );
           }
       }
 
     return Collections.unmodifiableSet(_modulesOfInnerFeatures);
+  }
+
+  /**
+   * Does this feature belong to or contain inner features of the given module?
+   * And should therefore be shown on the api page for that module
+   * @param module the module for which the belonging is to be checked
+   * @return true iff this feature needs to be included in the api page for module
+   */
+  public boolean showInMod(LibraryModule module)
+  {
+    // Problem: all features inherit from any, which is in base
+    // therefore all features from other modules would be shown in base module because they always have an inner feature from base
+    if (module.name().equals("base"))
+      {
+        return _libModule == module || isUniverse();
+      }
+    else
+      {
+        return _libModule == module || modulesOfInnerFeatures().contains(module);
+      }
   }
 
 }

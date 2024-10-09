@@ -48,6 +48,8 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.fe.LibraryFeature;
+import dev.flang.fe.LibraryModule;
 import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
@@ -261,27 +263,62 @@ public class Docs extends ANY
   /**
    * Get a path for a feature.
    * This is where the docs of this feature are
-   * @param f
+   * @param f the feature for which to get the path for
+   * @param module the module for which the docs are created
    * @return
    */
-  private static String featurePath(AbstractFeature f)
+  private static String featurePath(AbstractFeature f, LibraryModule module)
+  {
+    return featurePath(f, module, true);
+  }
+
+
+  /**
+   * Get a path for a feature.
+   * This is where the docs of this feature are
+   * @param f the feature for which to get the path for
+   * @param module the module for which the docs are created
+   * @param modulePrefix whether the module prefix should be included in the path
+   * @return
+   */
+  private static String featurePath(AbstractFeature f, LibraryModule module, boolean modulePrefix)
   {
     if (f.isUniverse())
       {
         return "";
       }
 
-    String path = f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin()) + "/" + "type.")
-                                    : (featurePath(f.outer()) + f.featureName().toString()) + "/";
+      // docs are generated per module, for features in universe add the module's folder
+      String path = (modulePrefix && f.outer().isUniverse()) ? module.name() + "/" : "";
+
+      path += f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin(), module, false) + "/" + "type.")
+                                : (featurePath(f.outer(), module) + f.featureName().toString()) + "/";
 
     return path
       .replace(" ", "+");
   }
 
+  /**
+   * Cast an AbstractFeature to LibraryFeature, requires that this is possible
+   * @param af an AbstractFeature that can be casted to LibraryFeature
+   * @return
+   */
+  private static final LibraryFeature lf(AbstractFeature af)
+  {
+    return (LibraryFeature) af;
+  }
+
 
   private void run(DocsOptions config)
   {
-    // declared features are sorted by feature name
+    // get all modules
+    var all_modules = allInnerAndInheritedFeatures(universe)
+              .map(af->lf(af)._libModule)
+              .distinct()
+              .filter(m->!m.name().equals("main")) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
+              .collect(Collectors.toCollection(List::new));
+
+    // collect all features for all modules
     var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feature -> {
@@ -309,31 +346,73 @@ public class Docs extends ANY
 
     }, universe);
 
-    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, fe.mainModule());
 
-    mapOfDeclaredFeatures
-      .keySet()
-      .stream()
-      .forEach(af -> {
-        var path = af.isUniverse()
-                                    ? config.destination()
-                                    : config.destination().resolve(featurePath(af));
-        path.toFile().mkdirs();
+    // generate documentation per module
+    for (var module : all_modules)
+    {
+        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
 
-        try
-          {
-            FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
-            var output = htmlTool.content(af);
-            writer.write(output);
-            writer.close();
-          }
-        catch (IOException e)
-          {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-      });
-  }
+        mapOfDeclaredFeatures
+          .keySet()
+          .stream()
+          .filter(af -> lf(af).showInMod(module))
+          .forEach(af -> {
+            var path = af.isUniverse()
+                                        ? config.destination().resolve(module.name())
+                                        : config.destination().resolve(featurePath(af, module));
+            path.toFile().mkdirs();
+
+            try
+              {
+                FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
+                var output = htmlTool.content(af);
+                writer.write(output);
+                writer.close();
+              }
+            catch (IOException e)
+              {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              }
+          });
+        }
+
+      // generate overview page of modules
+      /* FIXME:TODO:NYI:FIXME:TODO:NYI:FIXME:TODO:NYI:
+       *
+       * style module page (manually) -> use inspector on normal api page
+       *
+       * Why is `infix *` and `type.from_mutable_array` shown in string for module terminal??
+       *
+       * reorganize commits
+       *
+       * ggf. complexes beispiel zum testen?
+       *
+       * FIXME:TODO:NYI:FIXME:TODO:NYI:FIXME:TODO:NYI:
+       */
+      var path = config.destination();
+      path.toFile().mkdirs();
+      String modulePage = "<h2>Fuzion Library Modules</h2><ul>";
+      for (LibraryModule mod : all_modules)
+        {
+          modulePage += "<li><div class=\"font-weight-600 d-grid \"><a class=\"fd-feature\" href=$0>$1</a></div></li>"
+                          .replace("$0", mod.name())
+                          .replace("$1", mod.name());
+        }
+      modulePage += "</ul>";
+      try
+        {
+          FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
+          writer.write(modulePage);
+          writer.close();
+        }
+      catch (IOException e)
+        {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+    }
+
 
 
   /**
