@@ -2418,12 +2418,12 @@ public class Call extends AbstractCall
           var f = tfo == null ? null : tfo._feature;
           if (f != null
               && f.outer() != null
-              /* omitting dot-type does not work when calling
+              /* omitting dot-type does not work for `Any` when calling
                the inherited methods of `Type`. Otherwise we
-               would always have an ambiguity when calling `as_string` */
-              && f.outer().isTypeFeature())
+               would always have an ambiguity when calling e.g. `as_string` */
+              && (f.outer().isTypeFeature() || (f.outer() == Types.resolved.f_Type && tt.compareTo(Types.resolved.t_Any) != 0)))
             {
-              if (fo != null)
+              if (f.outer() != Types.resolved.f_Type && fo != null)
                 {
                   AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
                   setToErrorState();
