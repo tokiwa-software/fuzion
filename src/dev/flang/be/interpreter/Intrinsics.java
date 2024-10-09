@@ -776,6 +776,12 @@ public class Intrinsics extends ANY
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
+    putUnsafe("fuzion.java.cast0", (executor, innerClazz) -> args ->
+        {
+          var arg = JavaInterface.javaRefToJavaObject((JavaRef) args.get(1));
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+          return JavaInterface.javaObjectToInstance(arg, null, resultClazz);
+        });
     putUnsafe("fuzion.java.array_length",  (executor, innerClazz) -> args ->
         {
           var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());

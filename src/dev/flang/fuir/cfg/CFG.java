@@ -513,6 +513,7 @@ public class CFG extends ANY
     put("fuzion.java.call_c0"               , (cfg, cl) -> { } );
     put("fuzion.java.call_s0"               , (cfg, cl) -> { } );
     put("fuzion.java.call_v0"               , (cfg, cl) -> { } );
+    put("fuzion.java.cast0"                 , (cfg, cl) -> { } );
     put("fuzion.java.f32_to_java_object"    , (cfg, cl) -> { } );
     put("fuzion.java.f64_to_java_object"    , (cfg, cl) -> { } );
     put("fuzion.java.get_field0"            , (cfg, cl) -> { } );

@@ -30,6 +30,12 @@
 #
 javaHello : Java is
 
+  # catch panics, printing its exceptions
+  #
+  catch_panics(fun ()->unit) =>
+    panic.instate unit (panic (msg -> say msg; panic.abort) unit) fun _->unit
+
+
   fuzion.java.create_jvm0 ""
 
   # we can call code in Java package directly using fully
@@ -122,15 +128,40 @@ javaHello : Java is
   # say Java.com.sun.security.ntlm.NTLMException_static.AUTH__FAILED
 
 
-  # NYI replace with code below
-  say (Java.java.util.ArrayList.new_I -7)
+  # "cast" TreeMap to Map and use it in a call to putAll
+  #
+  test_casting =>
+    jstr => java.lang.__jString.new "my jstr"
 
-  /*  NYI: BUG: does not work yet
-  # unchecked exception: IllegalArgumentException
-  p : Panic_Handler is
-    public do_panic(msg String) unit =>
-      say "A panic was trigger with msg: $msg"
+    tm := Java.java.util.TreeMap.new
+    _ := tm.put jstr jstr
 
-  _ := (panic p unit).instate_self ()->
-    Java.java.util.ArrayList.new_I -7
-  */
+    util_map := fuzion.java.cast Java.java.util.Map tm
+
+    tm2 := Java.java.util.TreeMap.new
+    _ := try (outcome Java.java.util.Map) unit ()->
+      tm2.putAll util_map
+      say tm2.toString
+
+  test_casting
+
+
+  # "cast" java String to Map and use it in a call to putAll
+  #
+  test_casting_fail =>
+    jstr => java.lang.__jString.new "my jstr"
+
+    util_map := fuzion.java.cast Java.java.util.Map jstr
+
+    tm2 := Java.java.util.TreeMap.new
+    _ := try (outcome Java.java.util.Map) unit ()->
+      tm2.putAll util_map
+      say tm2.toString
+
+  catch_panics ()->
+    test_casting_fail
+
+
+
+  catch_panics ()->
+    say (Java.java.util.ArrayList.new_I -7)
