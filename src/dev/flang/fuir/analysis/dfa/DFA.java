@@ -2149,7 +2149,13 @@ public class DFA extends ANY
           cl._dfa._readFields.set(jref);
           return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
         });
-    put("fuzion.java.array_length"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.java.array_length"          , cl ->
+      {
+        var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa._readFields.set(jref);
+        return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
+      }
+    );
     put("fuzion.java.array_to_java_object0" , cl ->
         {
           var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
