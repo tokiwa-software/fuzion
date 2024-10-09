@@ -348,7 +348,7 @@ public class GeneratingFUIR extends FUIR
           var or = _feature.outerRef();
           if (or != null)
             {
-              res = id2clazz(lookup(new FeatureAndActuals(or, new List<>()), _feature));
+              res = id2clazz(lookup(new FeatureAndActuals(or, new List<>()), -1, _feature, false, false));
               _outerRef = res;
             }
         }
@@ -924,11 +924,17 @@ public class GeneratingFUIR extends FUIR
     int lookup(AbstractFeature f,
                HasSourcePosition p)
     {
+      return lookup(f, p, true);
+    }
+    int lookup(AbstractFeature f,
+               HasSourcePosition p,
+               boolean needed)
+    {
       if (PRECONDITIONS) require
         (f != null,
          !clazzIsVoidType(_id));
 
-      return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, p, false);
+      return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, p, false, needed);
     }
 
 
@@ -968,7 +974,7 @@ public class GeneratingFUIR extends FUIR
      */
     public int lookup(dev.flang.air.FeatureAndActuals fa, HasSourcePosition p)
     {
-      return lookup(fa, -1, p, false);
+      return lookup(fa, -1, p, false, true);
     }
 
 
@@ -980,8 +986,8 @@ public class GeneratingFUIR extends FUIR
                                                 typePars),
                           c.select(),
                           c,
-                          c.isInheritanceCall()
-                          ));
+                          c.isInheritanceCall(),
+                          true));
     }
 
 
@@ -1011,7 +1017,8 @@ public class GeneratingFUIR extends FUIR
     int lookup(dev.flang.air.FeatureAndActuals fa,
                int select,
                HasSourcePosition p,
-               boolean isInheritanceCall)
+               boolean isInheritanceCall,
+               boolean needed)
     {
       if (PRECONDITIONS) require
         (fa != null,
@@ -1201,7 +1208,8 @@ public class GeneratingFUIR extends FUIR
         (Errors.any() || fa._f.isTypeParameter() || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
          innerClazz != null);
       */
-      innerClazz.doesNeedCode();
+      if (needed)
+        innerClazz.doesNeedCode();
       return innerClazz._id;
     }
 
@@ -1753,7 +1761,7 @@ public class GeneratingFUIR extends FUIR
                                 * to `p` is `a.b.c`, which is the result type
                                 * of `p`'s outer ref:
                                 */
-                               id2clazz(lookup(p.outerRef(), pos)).resultClazz() :
+                               id2clazz(lookup(p.outerRef(), pos, false)).resultClazz() :
       p.isUniverse() ||
       p.outer().isUniverse() ? id2clazz(_universe)
                              : /* a field or choice, so there is no inherits
@@ -2244,7 +2252,7 @@ public class GeneratingFUIR extends FUIR
                 var n = replaceOpenCount(field);
                 for (var i = 0; i < n; i++)
                   {
-                    fields.add(id2clazz(lookup(new FeatureAndActuals(field), i, SourcePosition.builtIn, false)));
+                    fields.add(id2clazz(lookup(new FeatureAndActuals(field), i, SourcePosition.builtIn, false, true)));
                   }
               }
             else
@@ -4963,7 +4971,7 @@ public class GeneratingFUIR extends FUIR
           }
         */
 
-        innerClazz        = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c, c.isInheritanceCall()));
+        innerClazz        = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c, c.isInheritanceCall(), true));
         /*
         if (outerClazz.hasActualClazzes(c, outer))
           {
@@ -4979,7 +4987,7 @@ public class GeneratingFUIR extends FUIR
                 cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
                   ? Types.resolved.f_Type_infix_colon_true
                   : Types.resolved.f_Type_infix_colon_false;
-                innerClazz = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall()));
+                innerClazz = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall(), true));
               }
             // outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
