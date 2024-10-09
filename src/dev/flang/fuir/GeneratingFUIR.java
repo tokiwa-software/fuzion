@@ -337,13 +337,22 @@ public class GeneratingFUIR extends FUIR
             }
         }
 
-      var or = _feature.outerRef();
-      if (or != null)
-        {
-          _outerRef = id2clazz(lookup(new FeatureAndActuals(or, new List<>()), _feature));
-        }
-
       inspectCode(new List<>(), _feature);
+    }
+
+    Clazz outerRef()
+    {
+      var res = _outerRef;
+      if (res == null)
+        {
+          var or = _feature.outerRef();
+          if (or != null)
+            {
+              res = id2clazz(lookup(new FeatureAndActuals(or, new List<>()), _feature));
+              _outerRef = res;
+            }
+        }
+      return res;
     }
 
 
@@ -564,7 +573,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-
+  boolean needsCode() { return _needsCode && (!_lookupDone || !_feature.isField() || !resultClazz().isUnitType()); }
 
     void doesNeedCode()
     {
@@ -2194,7 +2203,7 @@ public class GeneratingFUIR extends FUIR
         if (!isVoidOrUndefined() &&
             field.feature().isField() &&
             // NYI: needed?  field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
-            (true || clazzNeedsCode(field._id))
+            field._needsCode
             )
           {
             fields.add(field);
@@ -2315,12 +2324,8 @@ public class GeneratingFUIR extends FUIR
           }
         i++;
       }
-    i = 0;
-    for (var f : outer()._fields)
-      {
-        i++;
-      }
-    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
+    // throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
+    return 99999; // NYI: try to avoid!
   }
 
 
@@ -3587,7 +3592,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    var or = c._outerRef;
+    var or = c.outerRef();
     return or == null ? NO_CLAZZ : or._id;
   }
 
@@ -3605,7 +3610,8 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size(),
-       true || clazzNeedsCode(cl) ||
+       !_lookupDone ||
+       clazzNeedsCode(cl) ||
        cl == clazz_Const_String() ||
        cl == clazz_Const_String_utf8_data() ||
        cl == clazz_array_u8() ||
@@ -3620,6 +3626,10 @@ public class GeneratingFUIR extends FUIR
     var result = c._code;
     if (result == NO_SITE)
       {
+        if (!_lookupDone)
+          {
+            c.doesNeedCode();
+          }
         result = addCodeX(cl, c);
         c._code = result;
       }
@@ -3742,7 +3752,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c._needsCode;
+    return c.needsCode();
   }
 
 
