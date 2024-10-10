@@ -46,6 +46,17 @@ module:public Type ref is
   public redef as_string => "Type of '$name'"
 
 
+  # convenience prefix operator to create a string from a value.
+  #
+  # This permits usage of `$` as a prefix operator in a similar way both
+  # inside and outside of constant strings: $x and "$x" will produce the
+  # same string.
+  #
+  # NYI: Redefinition allows the type feature to be distinguished from its normal counterpart, see #3913
+  #
+  public redef prefix $ => Type.this.as_string
+
+
   # There is no dynamic type of a type instance since this would result in an
   # endless hierarchy of types, so dynamic_type is redefined to just return
   # Type.type here.
