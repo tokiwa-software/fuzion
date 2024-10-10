@@ -713,8 +713,7 @@ public class GeneratingFUIR extends FUIR
         {
           res = YesNo.yes;
         }
-      else if ( _lookupDone && (!isBoxed()                     &&
-                                !_feature.isThisRef()          &&
+      else if ( _lookupDone && (!isRef()                       &&
                                 !_feature.isBuiltInPrimitive() &&
                                 !clazzIsVoidType(_id)          &&
                                 !clazzIsChoice(_id)              ))
