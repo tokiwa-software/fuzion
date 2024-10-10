@@ -378,32 +378,14 @@ public class Docs extends ANY
         }
 
       // generate overview page of modules
-      /* FIXME:TODO:NYI:FIXME:TODO:NYI:FIXME:TODO:NYI:
-       *
-       * style module page (manually) -> use inspector on normal api page
-       *
-       * Why is `infix *` and `type.from_mutable_array` shown in string for module terminal??
-       *
-       * reorganize commits
-       *
-       * ggf. complexes beispiel zum testen?
-       *
-       * FIXME:TODO:NYI:FIXME:TODO:NYI:FIXME:TODO:NYI:
-       */
       var path = config.destination();
       path.toFile().mkdirs();
-      String modulePage = "<h2>Fuzion Library Modules</h2><ul>";
-      for (LibraryModule mod : all_modules)
-        {
-          modulePage += "<li><div class=\"font-weight-600 d-grid \"><a class=\"fd-feature\" href=$0>$1</a></div></li>"
-                          .replace("$0", mod.name())
-                          .replace("$1", mod.name());
-        }
-      modulePage += "</ul>";
+      var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
+
       try
         {
           FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
-          writer.write(modulePage);
+          writer.write(htmlTool.modulePage());
           writer.close();
         }
       catch (IOException e)
