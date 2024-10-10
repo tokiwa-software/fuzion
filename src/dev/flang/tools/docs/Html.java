@@ -29,7 +29,9 @@ package dev.flang.tools.docs;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -410,16 +412,16 @@ public class Html extends ANY
   private String mainSection(Map<AbstractFeature.Kind, TreeSet<AbstractFeature>> map, AbstractFeature outer)
   {
     // Type Parameters
-    var typeParameters = new TreeSet<AbstractFeature>();
+    var typeParameters = new LinkedList<AbstractFeature>();
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.TypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
 
     // Fields
-    TreeSet<AbstractFeature> fields =  new TreeSet<AbstractFeature>();
+    var fields =  new LinkedList<AbstractFeature>();
     fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
     var normalArguments = outer.arguments().clone();
-    normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
+    normalArguments.removeIf(a->a.isTypeParameter());// || a.visibility().eraseTypeVisibility() != Visi.PUB);
     fields.addAll(normalArguments);
 
     // Constructors
@@ -441,41 +443,55 @@ public class Html extends ANY
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
     var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
 
+    // Choice Types
+    var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
 
-    return (typeParameters.isEmpty()                ? "" : "<h4>Type Parameters</h4>"   + mainSection0(typeParameters, outer))
-    + (fields.isEmpty()                             ? "" : "<h4>Fields</h4>"            + mainSection0(fields, outer))
-    + (normalConstructors.isEmpty()                 ? "" : "<h4>Constructors</h4>"      + mainSection0(normalConstructors, outer))
-    + (typeConstructors.isEmpty()                   ? "" : "<h4>Type Constructors</h4>" + mainSection0(typeConstructors, outer))
-    + (normalFunctions.isEmpty()                    ? "" : "<h4>Functions</h4>"         + mainSection0(normalFunctions, outer))
-    + (typeFunctions.isEmpty()                      ? "" : "<h4>Type Functions</h4>"    + mainSection0(typeFunctions, outer))
-    + (map.get(AbstractFeature.Kind.Choice) == null ? "" : "<h4>Choice Types</h4>"      + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
+    return mainSection0("Type Parameters",   typeParameters,     outer, false)
+         + mainSection0("Fields",            fields,             outer, false)
+         + mainSection0("Constructors",      normalConstructors, outer, true)
+         + mainSection0("Type Constructors", typeConstructors,   outer, true)
+         + mainSection0("Functions",         normalFunctions,    outer, true)
+         + mainSection0("Type Functions",    typeFunctions,      outer, true)
+         + mainSection0("Choice Types",      choices,            outer, true);
   }
 
 
   /**
    * The summaries and the comments of the features
+   * @param heading the title for this section
    * @param set the features to be included in the summary
-   * @param printArgs whether or not arguments of the feature should be included in output
    * @param outer the outer feature of the features in the summary
+   * @param filterAndSort should features from other modules (including not having a module) be removed and the list sorted?
    * @return
    */
-  private String mainSection0(TreeSet<AbstractFeature> set, AbstractFeature outer)
+  private String mainSection0(String heading, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
   {
-    return set.stream()
-      .filter(af -> lf(af).showInMod(lm))  // filter out features of other modules which do not need to be shown for this module
-      .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()))
-      .map(af -> {
-        // NYI summary tag must not contain div
-        return "<details id='" + htmlID(af)
-          + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
-            // NYI rename fd-private?
-            .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-            .replace("$1",
-              summary(af, outer))
-            .replace("$2", Util.commentOf(af))
-            .replace("$3", redefines(af));
-      })
-      .collect(Collectors.joining(System.lineSeparator()));
+    if (set == null) { return ""; }
+
+    heading = "<h4>" + heading + "</h4>\n";
+    var features = set.stream();
+
+    // e.g. don't filter or sort type parameters and fields
+    if (filterAndSort)
+      {
+        features = features.filter(af -> lf(af).showInMod(lm))  // filter out features of other modules which do not need to be shown for this module
+                           .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()));
+      }
+
+    var content = features.map(af ->
+      // NYI summary tag must not contain div
+      "<details id='" + htmlID(af)
+      + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+        // NYI rename fd-private?
+        .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
+        .replace("$1",
+          summary(af, outer))
+        .replace("$2", Util.commentOf(af))
+        .replace("$3", redefines(af))
+    )
+    .collect(Collectors.joining(System.lineSeparator()));
+
+    return content.equals("") ? "" : heading + content;
   }
 
 
