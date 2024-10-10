@@ -1191,6 +1191,19 @@ public class AirFUIR extends FUIR
 
 
   /**
+   * Check if the given clazz is a --possibly inherited--
+   * `fuzion.java.Java_Object.Java_Ref` field.
+   *
+   * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
+   */
+  @Override
+  public boolean isJavaRef(int cl)
+  {
+    return clazz(cl).feature() == Types.resolved.f_fuzion_Java_Object_Ref;
+  }
+
+
+  /**
    * Get the id of the given special clazz.
    *
    * @param c the id of clazz c or -1 if that clazz was not created.

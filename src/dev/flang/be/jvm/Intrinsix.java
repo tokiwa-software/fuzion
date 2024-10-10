@@ -389,15 +389,17 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
           var rt = jvm._types.javaType(rc);
+          var jO = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var javaRefFieldName = jvm._names.field(jO);
           var res = args
             .get(0)
-            .andThen(Expr.stringconst(javaRefFieldName()))
+            .andThen(Expr.stringconst(javaRefFieldName))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_get_field0",
                                        "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
                                        Names.JAVA_LANG_OBJECT))
             .andThen(args.get(1))
-            .andThen(Expr.stringconst(javaRefFieldName()))
+            .andThen(Expr.stringconst(javaRefFieldName))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_get_field0",
                                        "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
@@ -411,16 +413,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
           return new Pair<>(res.andThen(returnNewJavaObject(jvm, rc)), Expr.UNIT);
         });
-  }
-
-
-  /**
-   * get name of Java_Ref field
-   */
-  private static String javaRefFieldName()
-  {
-    // NYI: CLEANUP: get name programmatically
-    return "fzF_0_Java_Ref";
   }
 
 
