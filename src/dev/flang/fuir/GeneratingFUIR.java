@@ -4389,7 +4389,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return cl == clazz(SpecialClazzes.c_void);
+    return id2clazz(cl)._s == SpecialClazzes.c_void;
   }
 
 
