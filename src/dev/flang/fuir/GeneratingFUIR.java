@@ -1976,6 +1976,50 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * Is this a choice-type whose actual generics include ref?  If so, a field for
+   * all the refs will be needed.
+   */
+  public boolean isChoiceWithRefs()
+  {
+    boolean hasRefs = false;
+
+    if (_choiceGenerics != null)
+      {
+        for (Clazz c : _choiceGenerics)
+          {
+            hasRefs = hasRefs || c.isRef();
+          }
+      }
+
+    return hasRefs;
+  }
+
+
+  /**
+   * Is this a choice-type whose actual generics are all refs or stateless
+   * values? If so, no tag will be added, but ChoiceIdAsRef can be used.
+   *
+   * In case this is a choice of stateless value without any references, the
+   * result will be false since in this case, it is better to use the an integer
+   * stored in the tag.
+   */
+  public boolean isChoiceOfOnlyRefs()
+  {
+    boolean hasNonRefsWithState = false;
+
+    if (_choiceGenerics != null)
+      {
+        for (Clazz c : _choiceGenerics)
+          {
+            hasNonRefsWithState = hasNonRefsWithState || (!c.isRef() && !c.isUnitType() && !c.isVoidType());
+          }
+      }
+
+    return isChoiceWithRefs() && !hasNonRefsWithState;
+  }
+
+
+  /**
    * Obtain the actual classes of a choice.
    *
    * @return the actual clazzes of this choice clazz, in the order they appear
@@ -3292,7 +3336,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
-   * @param field a clazz id of the field
+   * @param field a clazz id, not necessarily a field
    *
    * @return true iff the field is an outer ref field that holds an address of
    * an outer value, false for normal fields our outer ref fields that store the
@@ -3303,8 +3347,7 @@ public class GeneratingFUIR extends FUIR
   {
     if (PRECONDITIONS) require
       (field >= CLAZZ_BASE,
-       field < CLAZZ_BASE + _clazzes.size(),
-       clazzKind(field) == FeatureKind.Field);
+       field < CLAZZ_BASE + _clazzes.size());
 
     var fc = id2clazz(field);
     var f = fc.feature();
@@ -3370,7 +3413,11 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.choiceGenerics().size();
+    return switch (c._feature.kind())
+      {
+      case Choice -> c.choiceGenerics().size();
+      default     -> -1;
+      };
   }
 
 
@@ -3404,6 +3451,8 @@ public class GeneratingFUIR extends FUIR
   /**
    * Is this a choice type with some elements of ref type?
    *
+   * NYI: CLEANUP: Used by C and interpreter backends only. Remove?
+   *
    * @param cl a clazz id
    *
    * @return true iff cl is a choice with at least one ref element
@@ -3415,7 +3464,8 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    throw new Error("NYI");
+    var cc = id2clazz(cl);
+    return cc.isChoiceWithRefs();
   }
 
 
@@ -3433,7 +3483,8 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return false;  // NYI: UNDER DEVELOPMENT
+    var cc = id2clazz(cl);
+    return cc.isChoiceOfOnlyRefs();
   }
 
 

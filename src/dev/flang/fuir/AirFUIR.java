@@ -446,7 +446,7 @@ public class AirFUIR extends FUIR
   /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
-   * @param fc a clazz of the field
+   * @param field a clazz id, not necessarily a field
    *
    * @return true iff the field is an outer ref field that holds an address of
    * an outer value, false for normal fields our outer ref fields that store the
