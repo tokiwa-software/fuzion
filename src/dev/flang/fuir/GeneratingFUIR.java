@@ -73,6 +73,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.IntArray;
 import dev.flang.util.IntMap;
@@ -2441,6 +2442,21 @@ public class GeneratingFUIR extends FUIR
     };
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * property- or env-var-controlled flag to enable debug output whenever a
+   * new clazz is created.
+   *
+   * To enable this, use fz with
+   *
+   *   dev_flang_fuir_GeneratingFUIR_SHOW_NEW_CLAZZES=true
+   */
+  static final boolean SHOW_NEW_CLAZZES = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.GeneratingFUIR.SHOW_NEW_CLAZZES");
+
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -2658,7 +2674,7 @@ public class GeneratingFUIR extends FUIR
               }
           }
         cl._s = s;
-        //System.out.println("NEW CLAZZ "+cl);
+        if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init();
 
     /*
