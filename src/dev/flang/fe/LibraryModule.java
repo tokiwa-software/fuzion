@@ -103,7 +103,7 @@ public class LibraryModule extends Module implements MirModule
    * The base index of this module. When converting local indices to global
    * indices, the _globalBase will be added.
    */
-  private final int _globalBase;
+  public final int _globalBase;
 
 
   /**
@@ -175,6 +175,7 @@ public class LibraryModule extends Module implements MirModule
   {
     super(null /* set later, we need correct universe first */);
 
+    fe._moduleList.add(this);
     _globalBase = globalBase;
     _mir = null;
     _data = data;
@@ -345,7 +346,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @return the feature declared at offset in this module.
    */
-  AbstractFeature libraryFeature(int offset)
+  public AbstractFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -961,7 +962,7 @@ Feature
     var ko = data().getShort(featureKindPos(at));
     return ko;
   }
-  AbstractFeature.Kind featureKindEnum(int at)
+  public AbstractFeature.Kind featureKindEnum(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return featureIsConstructor(at)
@@ -1011,8 +1012,9 @@ Feature
     var l = data().getInt(i);
     return l;
   }
-  byte[] featureName(int at)
+  public byte[] featureName(int at)
   {
+    //System.out.println("at is "+at+" base "+_globalBase);
     var i = featureNamePos(at);
     var d = data();
     var l = d.getInt(i); i = i + 4;
@@ -1030,7 +1032,7 @@ Feature
     var l = featureNameLength(at);
     return i + 4 + l;
   }
-  int featureArgCount(int at)
+  public int featureArgCount(int at)
   {
     return data().getInt(featureArgCountPos(at));
   }
@@ -1043,7 +1045,7 @@ Feature
   {
     return featureIdPos(at) + 4;
   }
-  int featureId(int at)
+  public int featureId(int at)
   {
     return data().getInt(featureIdPos(at));
   }
@@ -1211,7 +1213,7 @@ Feature
 
     return data().getInt(featureRedefinesPos(at) + 4 * i);
   }
-  int featureCodePos(int at)
+  public int featureCodePos(int at)
   {
     return featureRedefinesPos(at) + 4 * featureRedefinesCount(at);
   }
@@ -1493,7 +1495,7 @@ Expressions
   {
     return at;
   }
-  int codeSize(int at)
+  public int codeSize(int at)
   {
     return data().getInt(codeSizePos(at));
   }

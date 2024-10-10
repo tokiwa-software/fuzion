@@ -2,8 +2,9 @@
 --CURDIR--/reg_issue3199.fz:29:3: error 1: Used abstract feature 'reg_issue3199.X.f' is not implemented by 'reg_issue3199.y'
   y : X is
 --^
-Feature 'reg_issue3199.y' instantiated at <source position not available>:
-
+Feature 'reg_issue3199.y' instantiated at --CURDIR--/reg_issue3199.fz:31:10:
+  x X := y
+---------^
 inherits or declares abstract feature 'reg_issue3199.X.f' declared at --CURDIR--/reg_issue3199.fz:27:5:
     f i32 => abstract
 ----^

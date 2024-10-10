@@ -84,7 +84,7 @@ public class AirFUIR extends FUIR
   private TreeMap<Clazz, SpecialClazzes> SPECIAL_ID = new TreeMap<>();
 
 
-  private int[] _specialClazzes = new int[SpecialClazzes.c_NOT_FOUND.ordinal()+1];
+  private int[] _specialClazzes = new int[SpecialClazzes.values().length];
   { Arrays.fill(_specialClazzes, -1);  }
 
 
@@ -446,7 +446,7 @@ public class AirFUIR extends FUIR
   /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
-   * @param fc a clazz of the field
+   * @param field a clazz id, not necessarily a field
    *
    * @return true iff the field is an outer ref field that holds an address of
    * an outer value, false for normal fields our outer ref fields that store the
@@ -666,14 +666,13 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
-   * type.
+   * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe.
    */
   @Override
   public int clazzOuterClazz(int cl)
   {
     var o = clazz(cl)._outer;
-    return o == null ? -1 : id(o);
+    return o == null ? NO_CLAZZ : id(o);
   }
 
 
@@ -785,7 +784,7 @@ public class AirFUIR extends FUIR
   @Override
   public String clazzAsString(int cl)
   {
-    return cl == -1
+    return cl == -1 || cl == NO_CLAZZ
       ? "-- no clazz --"
       : clazz(cl)._type.asString();
   }
@@ -867,15 +866,15 @@ public class AirFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return id of cl's result field or -1 if f has no result field (NYI: or a
-   * result field that contains no data)
+   * @return id of cl's result field or NO_CLAZZ if cl has no result field (NYI:
+   * or a result field that contains no data)
    */
   @Override
   public int clazzResultField(int cl)
   {
     var cc = clazz(cl);
     var rf = cc.resultField();
-    return rf == null ? -1 : id(rf);
+    return rf == null ? NO_CLAZZ : id(rf);
   }
 
 
@@ -1088,7 +1087,7 @@ public class AirFUIR extends FUIR
 
 
   /**
-   * Get the id of clazz Const_String.array
+   * Get the id of clazz `array u8`
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */
@@ -1187,6 +1186,19 @@ public class AirFUIR extends FUIR
   public int lookupJavaRef(int cl)
   {
     return lookup(cl, Types.resolved.f_fuzion_Java_Object_Ref);
+  }
+
+
+  /**
+   * Check if the given clazz is a --possibly inherited--
+   * `fuzion.java.Java_Object.Java_Ref` field.
+   *
+   * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
+   */
+  @Override
+  public boolean isJavaRef(int cl)
+  {
+    return clazz(cl).feature() == Types.resolved.f_fuzion_Java_Object_Ref;
   }
 
 
@@ -1397,7 +1409,7 @@ public class AirFUIR extends FUIR
    *
    * @param s site of the access
    *
-   * @return the clazz that has to be accessed or -1 if the access is an
+   * @return the clazz that has to be accessed or NO_CLAZZ if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
@@ -1418,7 +1430,7 @@ public class AirFUIR extends FUIR
       (e instanceof Clazz          fld ) ? fld :
       (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
 
-    return innerClazz == null ? -1 : id(innerClazz);
+    return innerClazz == null ? NO_CLAZZ : id(innerClazz);
   }
 
 
@@ -1568,6 +1580,62 @@ public class AirFUIR extends FUIR
                                             : new int[0];
       }
     return result;
+  }
+
+
+  /**
+   * Get the possible inner clazz for a call or assignment to a field with given
+   * target clazz.
+   *
+   * This is used to feed information back from static analysis tools like DFA
+   * to the GeneratingFUIR such that the given target will be added to the
+   * targets / inner clazzes tuples returned by accesedClazzes.
+   *
+   * @param s site of the access
+   *
+   * @param tclazz the target clazz of the acces.
+   *
+   * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
+   * i.e., an abstract feature is missing.
+   */
+  @Override
+  public int lookup(int s, int tclazz)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       withinCode(s),
+       codeAt(s) == ExprKind.Call   ||
+       codeAt(s) == ExprKind.Assign    ,
+       tclazz >= CLAZZ_BASE &&
+       tclazz < CLAZZ_BASE  + _clazzes.all().size());
+
+    int innerClazz;
+    if (accessIsDynamic(s))
+      {
+        innerClazz = NO_CLAZZ;
+        var ccs = accessedClazzes(s);
+        for (var i = 0; i < ccs.length; i += 2)
+          {
+            var tt = ccs[i+0];
+            var cc = ccs[i+1];
+            if (tt == tclazz)
+              {
+                innerClazz = cc;
+              }
+          }
+      }
+    else
+      {
+        innerClazz = accessedClazz(s);
+        if (CHECKS) check
+          (tclazz == clazzOuterClazz(innerClazz));
+        innerClazz = switch (clazzKind(innerClazz))
+          {
+          case Routine, Intrinsic, Native, Field -> innerClazz;
+          case Abstract, Choice -> NO_CLAZZ;
+          };
+      }
+    return innerClazz;
   }
 
 
@@ -2500,7 +2568,7 @@ public class AirFUIR extends FUIR
   public boolean isConstructor(int clazz)
   {
     // Intrinsic functions are not constructors even though they have no result field.
-    return clazzResultField(clazz) == -1 && clazzKind(clazz) != FeatureKind.Intrinsic;
+    return clazzResultField(clazz) == NO_CLAZZ && clazzKind(clazz) != FeatureKind.Intrinsic;
   }
 
 
@@ -2680,7 +2748,7 @@ public class AirFUIR extends FUIR
    * `NO_SITE` if unknown.
    */
   @Override
-  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context)
+  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     var cc = clazz(cl);
     var cf = clazz(f);
