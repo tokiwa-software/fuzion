@@ -2253,9 +2253,8 @@ public class GeneratingFUIR extends FUIR
       {
         var field = id2clazz(_inner.get(ix));
         if (!isVoidOrUndefined() &&
-            field.feature().isField() &&
+            field.feature().isField()
             // NYI: needed?  field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
-            field._needsCode
             )
           {
             fields.add(field);
@@ -2376,7 +2375,7 @@ public class GeneratingFUIR extends FUIR
           }
         i++;
       }
-    // throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
+    // if (true) throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
     return 99999; // NYI: try to avoid!
   }
 
@@ -5578,11 +5577,6 @@ public class GeneratingFUIR extends FUIR
       default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
       };
 
-    //    var acl = cc.actualClazzes(ac.origin(), null);
-    // origin might be Constant, AbstractCall or InlineArray.  In all
-    // cases, the clazz of the result is the first actual clazz:
-    // var clazz = acl[0];
-    clazz.doesNeedCode();
     return clazz._id;
   }
 
