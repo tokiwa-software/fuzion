@@ -3692,6 +3692,7 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size(),
+       Errors.any() ||
        !_lookupDone ||
        clazzNeedsCode(cl) ||
        cl == clazz_Const_String() ||
