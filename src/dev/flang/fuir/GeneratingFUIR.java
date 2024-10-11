@@ -5022,7 +5022,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  public Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz tclazz, List<AbstractCall> inh)
+  public Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz explicitTarget, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -5033,15 +5033,15 @@ public class GeneratingFUIR extends FUIR
         return error();  // previous errors, give up
       }
 
-    if (tclazz == null)
-      {
-        tclazz  = calledTarget(c, outerClazz, inh);
-      }
+    var tclazz = explicitTarget == null
+      ? calledTarget(c, outerClazz, inh)
+      : explicitTarget;
 
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
-    //var callToOuterRef = c.target().isCallToOuterRef();
-    //boolean dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    var callToOuterRef = c.target().isCallToOuterRef();
+    var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    var needsCode = !dynamic || explicitTarget != null;
     /*
     if (callToOuterRef)
       {
@@ -5058,7 +5058,7 @@ public class GeneratingFUIR extends FUIR
           }
         */
 
-        innerClazz        = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c, c.isInheritanceCall(), true));
+        innerClazz        = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c, c.isInheritanceCall(), needsCode));
         /*
         if (outerClazz.hasActualClazzes(c, outer))
           {
@@ -5074,7 +5074,7 @@ public class GeneratingFUIR extends FUIR
                 cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
                   ? Types.resolved.f_Type_infix_colon_true
                   : Types.resolved.f_Type_infix_colon_false;
-                innerClazz = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall(), true));
+                innerClazz = id2clazz(tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall(), needsCode));
               }
             // outerClazz.saveActualClazzes(c, outer, new Clazz[] {innerClazz, tclazz});
           }
