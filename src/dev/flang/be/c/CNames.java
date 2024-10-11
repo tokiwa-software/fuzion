@@ -507,6 +507,8 @@ public class CNames extends ANY
       // NYI: UNDER DEVELOPMENT: Need to check: the special handling for
       // isJavaRef might be needed for all redefined fields. This should be
       // checked and fixed in case this is true.
+      //
+      // NYI: CLEANUP: #3927: Remove special handling once #3927 is fixed.
       ? FIELD_PREFIX + m
       : FIELD_PREFIX + _fuir.fieldIndex(field) + "_" + m;
     return new CIdent(n);

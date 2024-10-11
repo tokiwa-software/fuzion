@@ -4224,6 +4224,8 @@ public class GeneratingFUIR extends FUIR
    * Check if the given clazz is a --possibly inherited--
    * `fuzion.java.Java_Object.Java_Ref` field.
    *
+   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
+   *
    * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
    */
   @Override
@@ -4237,6 +4239,8 @@ public class GeneratingFUIR extends FUIR
   /**
    * Helper for isJavaRef to check is this is or redefineds
    * `fuzion.java.Java_Object.Java_Ref` field.
+   *
+   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
    */
   boolean isJavaRef(AbstractFeature f)
   {
