@@ -3666,7 +3666,7 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     var or = c.outerRef();
-    return or == null ? NO_CLAZZ : or._id;
+    return or == null || c.outer().isUnitType() ? NO_CLAZZ : or._id;
   }
 
 
