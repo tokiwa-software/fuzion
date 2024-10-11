@@ -1376,7 +1376,8 @@ public class DFA extends ANY
         var s = new TreeSet<String>();
         for (var cl = res.firstClazz(); cl <= res.lastClazz(); cl++)
           {
-            s.add("CLAZZ: "+res.clazzAsString(cl)+" nc "+res.clazzNeedsCode(cl)+" u "+res.clazzIsUnitType(cl)+" v "+res.clazzIsVoidType(cl)+" hd "+res.hasData(cl));
+            s.add("CLAZZ: "+res.clazzAsString(cl)+" nc "+res.clazzNeedsCode(cl)+" u "+res.clazzIsUnitType(cl)+" v "+res.clazzIsVoidType(cl)+" hd "+res.hasData(cl)+
+                  " outer: "+res.clazzAsString(res.clazzOuterRef(cl)));
           }
         for (var t : s)
           {
@@ -2236,7 +2237,6 @@ public class DFA extends ANY
           var ecl      = fuir.effectTypeFromInstrinsic(cl._cc);
 
           var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 0));
-          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1));
           var finallie = fuir.lookup_static_finally(ecl);
 
           var a0 = cl._args.get(0).value();  // new effect value e
@@ -2249,6 +2249,7 @@ public class DFA extends ANY
           var ev = newEnv.getActualEffectValues(ecl);
           if (newEnv.isAborted(ecl))
             { // default result, only if abort is effer called
+              var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1));
               var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value()) :
