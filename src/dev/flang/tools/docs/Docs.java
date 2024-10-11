@@ -362,17 +362,17 @@ public class Docs extends ANY
                                         : config.destination().resolve(featurePath(af, module));
             path.toFile().mkdirs();
 
+            var file = new File(path.toFile(), "index.html");
             try
               {
-                FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
+                FileWriter writer = new FileWriter(file);
                 var output = htmlTool.content(af);
                 writer.write(output);
                 writer.close();
               }
             catch (IOException e)
               {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new Error("file not writable: " + file.getPath());
               }
           });
         }
@@ -382,16 +382,16 @@ public class Docs extends ANY
       path.toFile().mkdirs();
       var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
 
+      var file = new File(path.toFile(), "index.html");
       try
         {
-          FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
+          FileWriter writer = new FileWriter(file);
           writer.write(htmlTool.modulePage());
           writer.close();
         }
       catch (IOException e)
         {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          throw new Error("file not writable: " + file.getPath());
         }
     }
 

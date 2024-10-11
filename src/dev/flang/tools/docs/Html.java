@@ -31,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -412,16 +411,16 @@ public class Html extends ANY
   private String mainSection(Map<AbstractFeature.Kind, TreeSet<AbstractFeature>> map, AbstractFeature outer)
   {
     // Type Parameters
-    var typeParameters = new LinkedList<AbstractFeature>();
+    var typeParameters = new List<AbstractFeature>();
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.TypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
 
     // Fields
-    var fields =  new LinkedList<AbstractFeature>();
+    var fields =  new List<AbstractFeature>();
     fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
     var normalArguments = outer.arguments().clone();
-    normalArguments.removeIf(a->a.isTypeParameter());// || a.visibility().eraseTypeVisibility() != Visi.PUB);
+    normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
     fields.addAll(normalArguments);
 
     // Constructors
