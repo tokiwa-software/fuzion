@@ -502,9 +502,14 @@ public class CNames extends ANY
    */
   CIdent fieldName(int field)
   {
-    var index = _fuir.fieldIndex(field);
-    return new CIdent(FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field)));
-
+    var m = mangle(_fuir.clazzBaseName(field));
+    var n = _fuir.isJavaRef(field)
+      // NYI: UNDER DEVELOPMENT: Need to check: the special handling for
+      // isJavaRef might be needed for all redefined fields. This should be
+      // checked and fixed in case this is true.
+      ? FIELD_PREFIX + m
+      : FIELD_PREFIX + _fuir.fieldIndex(field) + "_" + m;
+    return new CIdent(n);
   }
 
 

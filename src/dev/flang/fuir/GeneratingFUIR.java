@@ -4229,7 +4229,26 @@ public class GeneratingFUIR extends FUIR
   @Override
   public boolean isJavaRef(int cl)
   {
-    return id2clazz(cl)._feature == Types.resolved.f_fuzion_Java_Object_Ref;
+    var f = id2clazz(cl)._feature;
+    return isJavaRef(f);
+  }
+
+
+  /**
+   * Helper for isJavaRef to check is this is or redefineds
+   * `fuzion.java.Java_Object.Java_Ref` field.
+   */
+  boolean isJavaRef(AbstractFeature f)
+  {
+    var result = f == Types.resolved.f_fuzion_Java_Object_Ref;
+    if (!result)
+      {
+        for (var rf : f.redefines())
+          {
+            result = result || isJavaRef(rf);
+          }
+      }
+    return result;
   }
 
 
