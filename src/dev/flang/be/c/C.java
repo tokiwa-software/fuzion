@@ -2291,6 +2291,28 @@ public class C extends ANY
       .field(_names.fieldName(_fuir.clazz_fuzionJavaObject_Ref()));
   }
 
+
+  /**
+   * Does given field exist as a C field? This is the case for fields that
+   *
+   *  - contain data (are not unit types),
+   *
+   *  - that needs code
+   *
+   * @param field the clazz id of a field in _fuir.
+   *
+   * @return true if a C struct element exists for the given field.
+   */
+  boolean fieldExists(int field)
+  {
+    var rt = _fuir.clazzResultClazz(field);
+
+    return
+      _fuir.hasData(rt) &&
+      _fuir.clazzNeedsCode(field);
+  }
+
+
 }
 
 /* end of file */
