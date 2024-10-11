@@ -90,7 +90,16 @@ public class JavaInterface extends FUIRContext
    */
   static Object instanceToJavaObject(Instance i)
   {
-    var res = ((JavaRef)i.refs[0])._javaRef;
+    // NYI: CLEANUP: #3927: The following code is a very lazy way to find the
+    // offset of the field `Java_Ref`. This should disappear when #3927 is
+    // fixed.
+    int javaRef_offset = 0;
+    while (!(i.refs[javaRef_offset] instanceof JavaRef))
+      {
+        javaRef_offset++;
+      }
+
+    var res = ((JavaRef)i.refs[javaRef_offset])._javaRef;
     if (res != null)
       {
         // convert Value[] containing Java instances into corresponding Java array
