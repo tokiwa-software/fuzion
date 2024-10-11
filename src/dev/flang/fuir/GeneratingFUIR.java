@@ -978,7 +978,7 @@ public class GeneratingFUIR extends FUIR
     }
 
 
-    Clazz lookup(AbstractCall c, List<AbstractType> typePars)
+    Clazz lookup(AbstractCall c, List<AbstractType> typePars, boolean needsCode)
     {
       return isVoidOrUndefined()
         ? this
@@ -987,7 +987,7 @@ public class GeneratingFUIR extends FUIR
                           c.select(),
                           c,
                           c.isInheritanceCall(),
-                          true));
+                          needsCode));
     }
 
 
@@ -1667,7 +1667,7 @@ public class GeneratingFUIR extends FUIR
         var tclazz  = clazz(call.target(), oc, inh);
         var typePars = actualGenerics(call.actualTypeParameters());
         check(call.isInheritanceCall());
-        o = tclazz.lookup(call, typePars);
+        o = tclazz.lookup(call, typePars, false);
       }
     var ix = f.typeParameterIndex();
     var oag = o.actualTypeParameters();
@@ -3016,7 +3016,7 @@ public class GeneratingFUIR extends FUIR
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var typePars = outerClazz.actualGenerics(at);
-            result = tclazz.lookup(c, typePars).resultClazz();
+            result = tclazz.lookup(c, typePars, false).resultClazz();
           }
         else
           {
