@@ -5152,7 +5152,7 @@ public class GeneratingFUIR extends FUIR
         // field. Currently, back-ends (JVM) rely on this being a value, though.
         tclazz = tclazz.asValue();
       }
-    var fc = id2clazz(tclazz.lookup(a._assignedField, a));
+    var fc = id2clazz(tclazz.lookup(a._assignedField, a, false));
     if (fc.resultClazz().isUnitType())
       {
         fc = null;
@@ -5187,7 +5187,7 @@ public class GeneratingFUIR extends FUIR
       {
         Clazz sClazz = clazz(a._target, outerClazz, _inh.get(s - SITE_BASE));
         var vc = sClazz.asValue();
-        var fc = id2clazz(vc.lookup(a._assignedField, a));
+        var fc = id2clazz(vc.lookup(a._assignedField, a, false));
         propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz._feature /* NYI: was: outer */, outerClazz, _inh.get(s - SITE_BASE));
         /*
         if (!outerClazz.hasActualClazzes(a, outer))
@@ -5444,7 +5444,7 @@ public class GeneratingFUIR extends FUIR
           case Abstract, Choice -> NO_CLAZZ;
           };
       }
-    if (innerClazz != NO_CLAZZ)
+    if (innerClazz != NO_CLAZZ && codeAt(s) == ExprKind.Call)
       {
         doesNeedCode(innerClazz);
       }

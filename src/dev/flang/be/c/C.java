@@ -1584,7 +1584,8 @@ public class C extends ANY
       {
         value = value.castTo(_types.clazz(rt));
       }
-    return assign(af, value, rt);
+    return _types.fieldExists(f) ? assign(af, value, rt)
+                                 : CStmnt.lineComment("assignment to unused field " + clazzInQuotes(f));
   }
 
 
@@ -2293,23 +2294,13 @@ public class C extends ANY
 
 
   /**
-   * Does given field exist as a C field? This is the case for fields that
+   * For debugging output
    *
-   *  - contain data (are not unit types),
-   *
-   *  - that needs code
-   *
-   * @param field the clazz id of a field in _fuir.
-   *
-   * @return true if a C struct element exists for the given field.
+   * @return "`<clazz c>`".
    */
-  boolean fieldExists(int field)
+  private String clazzInQuotes(int c)
   {
-    var rt = _fuir.clazzResultClazz(field);
-
-    return
-      _fuir.hasData(rt) &&
-      _fuir.clazzNeedsCode(field);
+    return "`" + _fuir.clazzAsString(c) + "`";
   }
 
 
