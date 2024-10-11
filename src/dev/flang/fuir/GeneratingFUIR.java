@@ -1208,8 +1208,10 @@ public class GeneratingFUIR extends FUIR
         (Errors.any() || fa._f.isTypeParameter() || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
          innerClazz != null);
       */
-      if (needed)
-        innerClazz.doesNeedCode();
+      if (!_lookupDone && needed)
+        {
+          innerClazz.doesNeedCode();
+        }
       return innerClazz._id;
     }
 
@@ -2375,8 +2377,7 @@ public class GeneratingFUIR extends FUIR
           }
         i++;
       }
-    // if (true) throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
-    return 99999; // NYI: try to avoid!
+    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
   }
 
 
