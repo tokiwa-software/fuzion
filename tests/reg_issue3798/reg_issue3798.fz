@@ -17,10 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion test reg_issue3798
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue2740
-FUZION_OPTIONS = -modules=java.base
-include ../simple.mk
+f(a T, b T->T) => b a
+
+x := 42
+y := f(x, v->2*v)
+say y

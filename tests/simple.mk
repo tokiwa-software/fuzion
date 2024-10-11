@@ -42,6 +42,19 @@ ENV = \
   $(if $(FUZION_JAVA_STACK_SIZE), FUZION_JAVA_STACK_SIZE=$(FUZION_JAVA_STACK_SIZE),) \
   $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
 
+
+# for libjvm.so
+export LD_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
+# on windows jvm.dll is in /bin/server
+export PATH := $(PATH):$(JAVA_HOME)/bin/server
+# fix libjvm.dylib not found: see also https://stackoverflow.com/a/3172515
+export DYLD_FALLBACK_LIBRARY_PATH ?= $(JAVA_HOME)/lib/server
+
+
+# needed for exception texts: see #3106
+export LANGUAGE = en_US:en
+
+
 all: jvm c int
 
 int: $(FUZION_DEPENDENCIES)

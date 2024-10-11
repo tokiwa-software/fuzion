@@ -21,6 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue2740
-FUZION_OPTIONS = -modules=java.base
+override NAME = reg_issue3798
 include ../simple.mk
