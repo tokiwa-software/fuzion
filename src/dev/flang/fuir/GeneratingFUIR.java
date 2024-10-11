@@ -2675,6 +2675,14 @@ public class GeneratingFUIR extends FUIR
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init();
 
+        if (cl.feature().isField() && outerR.isRef() && !outerR.isBoxed())
+          { // NYI: CLEANUP: Duplicate clazzes for fields in corresponding value
+            // instance.  This is currently needed for the C backend only since
+            // that backend creates ref clazzes by embedding the underlying
+            // value instance in the ref clazz' struct:
+            var ignore = newClazz(outerR.asValue(), actualType);
+          }
+
     /*
     // NYI: We currently create new clazzes for every different outer
     // context. This gives us plenty of opportunity to specialize the code,
