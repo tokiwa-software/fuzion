@@ -28,7 +28,7 @@
 # option represents an optional value of type T
 #
 public option(public T type)
-  : switch T nil,
+  : switch_seq T nil,
     monad T (option T),
     property.equatable
 is

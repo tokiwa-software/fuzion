@@ -29,8 +29,7 @@
 public switch(A type, B type /* NYI: B should be open generic */) :
   choice A B,
   # monad A (switch A B) NYI: does not work,
-  auto_unwrap A (try (switch A B)), /* NYI: BUG #3355: auto_unwrap T (try switch.this) */
-  Sequence A
+  auto_unwrap A (try (switch A B)) /* NYI: BUG #3355: auto_unwrap T (try switch.this) */
 is
 
   # NYI: CLEANUP: decide name: exists/ok, get/val?
@@ -100,15 +99,6 @@ is
   =>
     switch.this ? a A => a
                 | B   => default
-
-
-  # converts switch into a list of either a single element in case
-  # switch.this.exists or `nil`otherwise
-  #
-  public redef as_list list A
-  =>
-    switch.this ? a A => a : nil
-                | B => nil
 
 
   # unwrap this switch

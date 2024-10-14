@@ -42,7 +42,7 @@
 #
 #
 #
-public list(public A type) : choice nil (Cons A (list A)), Sequence A is
+public list(public A type) : switch (Cons A (list A)) nil, Sequence A is
 # NYI: #530 (review comment): The following should work but causes an error:
 # list(A type) : nil | Cons A (list A), Sequence A is
 
@@ -482,6 +482,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public combine_list(U, V type, b Sequence U, f (A,U)->V) =>
     flat_map x->(b.map y->(f x y))
+
+
+
+  # this list as a String
+  #
+  public redef as_string =>
+    as_seq.as_string
+
 
 
   # create an empty list
