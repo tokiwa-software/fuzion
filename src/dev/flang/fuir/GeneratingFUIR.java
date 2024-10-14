@@ -97,8 +97,7 @@ public class GeneratingFUIR extends FUIR
   {
     final int _id;
 
-    final int _outer;
-    Clazz outer() { return _outer == NO_CLAZZ ? null : id2clazz(_outer); }
+    final Clazz _outer;
 
     final LibraryFeature _feature;
     LibraryFeature feature() { return _feature; }
@@ -219,7 +218,7 @@ public class GeneratingFUIR extends FUIR
         ? ResolvedNormalType.newType(type, outer._type)
         : type;
 
-      _outer = outer == null ? NO_CLAZZ : outer._id;
+      _outer = outer;
       _id = id;
       _feature = (LibraryFeature) type.feature();
       _needsCode = false;
@@ -527,8 +526,8 @@ public class GeneratingFUIR extends FUIR
    */
   private int compareOuter(Clazz other)
   {
-    var to = this .outer();
-    var oo = other.outer();
+    var to = this ._outer;
+    var oo = other._outer;
     int result = 0;
     if (to != oo)
       {
@@ -614,9 +613,9 @@ public class GeneratingFUIR extends FUIR
     // Replace any `a.this.type` actual generics by the actual outer clazz:
     result = result.map(t->replaceThisType(t));
 
-    if (_outer != NO_CLAZZ)
+    if (_outer != null)
       {
-        result = outer().actualGenerics(result);
+        result = _outer.actualGenerics(result);
       }
     return result;
   }
@@ -1207,7 +1206,7 @@ public class GeneratingFUIR extends FUIR
       if (_asValue == null)
         {
           _asValue = isRef() && _type != Types.t_ADDRESS
-            ? newClazz(outer(), _type.asValue())
+            ? newClazz(_outer, _type.asValue())
             : this;
         }
       if (CHECKS) check
@@ -1223,7 +1222,7 @@ public class GeneratingFUIR extends FUIR
   {
     return isRef()
       ? this
-      : newClazz(outer(), _type.asRef());
+      : newClazz(_outer, _type.asRef());
   }
 
 
@@ -1495,8 +1494,8 @@ public class GeneratingFUIR extends FUIR
     if (result == null)
       {
         var f = _feature;
-        var o  = _outer != NO_CLAZZ ? id2clazz(_outer) : null;
-        var of = _outer != NO_CLAZZ ? o._feature       : null;
+        var o  = _outer;
+        var of = o != null ? o._feature : null;
 
         if (f.isConstructor())
           {
@@ -1504,7 +1503,7 @@ public class GeneratingFUIR extends FUIR
           }
         else if (f.isOuterRef())
           {
-            result = o.inheritedOuterRefClazz(o.outer(), null, f, o._feature, null);
+            result = o.inheritedOuterRefClazz(o._outer, null, f, o._feature, null);
           }
         else if (f.isTypeParameter())
           {
@@ -1557,7 +1556,7 @@ public class GeneratingFUIR extends FUIR
       (feature().isTypeParameter());
 
     var f = feature();
-    var o = outer();
+    var o = _outer;
     var inh = o.feature().tryFindInheritanceChain(f.outer());
     if (inh != null && inh.size() > 0)
       { // type parameter was inherited, so get value from parameter of inherits call:
@@ -1584,7 +1583,7 @@ public class GeneratingFUIR extends FUIR
              || !_outer.asRef().hasActualClazzes(call, null) ? _outer
                                                              : _outer.asRef();
         */
-        var oc = outer();
+        var oc = _outer;
         var tclazz  = clazz(call.target(), oc, inh);
         var typePars = actualGenerics(call.actualTypeParameters());
         check(call.isInheritanceCall());
@@ -1619,7 +1618,7 @@ public class GeneratingFUIR extends FUIR
             _typeClazz = _type.containsError()  ? error() :
                          feature().isUniverse() ? this    :
                          tt.compareTo(ty) == 0  ? create(ty, universe())
-                                                : create(tt, outer().typeClazz()    );
+                                                : create(tt, _outer.typeClazz()    );
           }
       }
     return _typeClazz;
@@ -1652,7 +1651,7 @@ public class GeneratingFUIR extends FUIR
     )
       {
         res =  i.hasOuterRef() ? id2clazz(res.lookup(i.outerRef(), pos)).resultClazz()
-                               : res.outer();
+                               : res._outer;
         i = (LibraryFeature) i.outer();
       }
 
@@ -1690,7 +1689,7 @@ public class GeneratingFUIR extends FUIR
                              : /* a field or choice, so there is no inherits
                                 * call that could select a different outer:
                                  */
-                               id2clazz(_outer);
+                               _outer;
 
     if (CHECKS) check
       (Errors.any() || res != null);
@@ -1703,7 +1702,7 @@ public class GeneratingFUIR extends FUIR
     {
       String result;
       var o = _outer;
-      String outer = o != NO_CLAZZ && (o != _universe) ? id2clazz(o).asStringWrapped(humanReadable) + "." : "";
+      String outer = o != null && (o._id != _universe) ? o.asStringWrapped(humanReadable) + "." : "";
       var f = _feature;
       var typeType = f.isTypeFeature();
       if (typeType)
@@ -1928,11 +1927,11 @@ public class GeneratingFUIR extends FUIR
       }
     else
       {
-        var o = cl.outer();
+        var o = cl._outer;
         while (o != null)
           {
             o.instantiated(at);
-            o = o.outer();
+            o = o._outer;
           }
       }
   }
@@ -1960,7 +1959,7 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isOuterInstantiated()
   {
-    var o = outer();
+    var o = _outer;
     return o == null ||
 
       // NYI: Once Clazz.normalize() is implemented better, a clazz C has
@@ -2013,7 +2012,7 @@ public class GeneratingFUIR extends FUIR
       && (_checkingInstantiatedHeirs > 0
           || (isOuterInstantiated()
               || isChoice()
-              || outer().isRef() && outer().hasInstantiatedHeirs()));
+              || _outer.isRef() && _outer.hasInstantiatedHeirs()));
   }
 
 
@@ -2032,12 +2031,12 @@ public class GeneratingFUIR extends FUIR
       (Errors.any() || ft.isOpenGeneric());
 
     List<AbstractType> types;
-    var inh = outer() == null ? null : outer().feature().tryFindInheritanceChain(fouter.outer());
+    var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
     if (inh != null &&
         inh.size() > 0)
       {
         var typesa = new AbstractType[] { ft };
-        typesa = fouter.handDown(null, typesa, outer().feature());
+        typesa = fouter.handDown(null, typesa, _outer.feature());
         types = new List<AbstractType>();
         for (var t : typesa)
           {
@@ -2048,9 +2047,9 @@ public class GeneratingFUIR extends FUIR
       {
         types = ft.genericArgument().replaceOpen(_type.generics());
       }
-    else if (outer() != null)
+    else if (_outer != null)
       {
-        types = outer().replaceOpen(ft, fouter);
+        types = _outer.replaceOpen(ft, fouter);
       }
     else
       {
@@ -2209,9 +2208,9 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (feature().isField());
 
-    var ignore = outer().fields();
+    var ignore = _outer.fields();
     int i = 0;
-    for (var f : outer()._fields)
+    for (var f : _outer._fields)
       {
         if (f == this)
           {
@@ -2219,7 +2218,7 @@ public class GeneratingFUIR extends FUIR
           }
         i++;
       }
-    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + outer());
+    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + _outer);
   }
 
 
@@ -2444,7 +2443,7 @@ public class GeneratingFUIR extends FUIR
             while (c._type.compareTo(actualType) != 0)
               {
                 chain.append(""+i+": "+c._type+" at "+c._type.declarationPos().show()+"\n");
-                c = c.outer();
+                c = c._outer;
                 i++;
               }
             chain.append(""+i+": "+c._type+" at "+c._type.declarationPos().show()+"\n");
@@ -2455,7 +2454,7 @@ public class GeneratingFUIR extends FUIR
                          chain + "\n" +
                          "To solve this, you could add a 'ref' after the arguments list at "+o._type.feature().pos().show());
           }
-        o = o.outer();
+        o = o._outer;
       }
 
 
@@ -2907,7 +2906,8 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c._outer;
+    var o = c._outer;
+    return o == null ? NO_CLAZZ : o._id;
   }
 
 
@@ -3292,7 +3292,7 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     var or = c.outerRef();
-    return or == null || c.outer().isUnitType() ? NO_CLAZZ : or._id;
+    return or == null || c._outer.isUnitType() ? NO_CLAZZ : or._id;
   }
 
 
@@ -5210,7 +5210,7 @@ public class GeneratingFUIR extends FUIR
           {
             var outer = id2clazz(clazzAt(s));
             var innerClazz = calledInner(sc, outer, null, _inh.get(s - SITE_BASE));
-            var tclazz = innerClazz.outer();
+            var tclazz = innerClazz._outer;
             var T = innerClazz.actualTypeParameters()[0];
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||
               cf == Types.resolved.f_Type_infix_colon  &&
