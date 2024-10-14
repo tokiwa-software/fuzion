@@ -36,17 +36,14 @@
 #         s String => say s
 #
 public use(T, R type, path String, code ()-> outcome R) outcome R =>
-  match fuzion.sys.fileio.open_dir path
-    fd i64 =>
-      # install effect `open T` and run `code`
-      r := open T fd path
-        .instate_self code
-      # close file
-      _ := fuzion.sys.fileio.close_dir fd
-      # return result
-      r
-    e error =>
-      e
+  (fuzion.sys.fileio.open_dir path).bind R fd->
+    # install effect `open T` and run `code`
+    r := open T fd path
+      .instate_self code
+    # close file
+    _ := fuzion.sys.fileio.close_dir fd
+    # return result
+    r
 
 
 # short hand for use when

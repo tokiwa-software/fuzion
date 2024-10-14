@@ -92,8 +92,7 @@ is
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
   public and (O type, o outcome O) outcome O =>
-    outcome.this ? _ T     => o
-                 | e error => e
+    bind O _->o
 
   # returns o if outcome is not ok, otherwise return this outcome's value.
   public or (o outcome T) outcome T =>
