@@ -35,9 +35,9 @@ lib_property_equatable =>
 
   say (outcome 0)=(error "hello")
 
-  say (num_option 0)=0
-  say (num_option 0)=1
-  say (num_option 0)=nil
+  say (option 0)=0
+  say (option 0)=1
+  say (option 0)=nil
 
   # NYI: UNDER DEVELOPMENT: ugly that we have to use (id (container.Set i32) ...)
   say (id (container.Set i32) ((container.ps_set i32).empty))=((container.ps_set i32).empty)

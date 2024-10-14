@@ -103,10 +103,10 @@ module:public wrap_around : integer is
   => wrap_around.this *° other
 
   # overflow checking operations
-  public redef prefix -? num_option wrap_around.this => if wrapped_on_neg then nil else -wrap_around.this
-  public redef infix +? (other wrap_around.this) num_option wrap_around.this => if wrapped_on_add other then nil else wrap_around.this + other
-  public redef infix -? (other wrap_around.this) num_option wrap_around.this => if wrapped_on_sub other then nil else wrap_around.this - other
-  public redef infix *? (other wrap_around.this) num_option wrap_around.this => if wrapped_on_mul other then nil else wrap_around.this * other
+  public redef prefix -? option wrap_around.this => if wrapped_on_neg then nil else -wrap_around.this
+  public redef infix +? (other wrap_around.this) option wrap_around.this => if wrapped_on_add other then nil else wrap_around.this + other
+  public redef infix -? (other wrap_around.this) option wrap_around.this => if wrapped_on_sub other then nil else wrap_around.this - other
+  public redef infix *? (other wrap_around.this) option wrap_around.this => if wrapped_on_mul other then nil else wrap_around.this * other
 
 
   # saturating  operations
@@ -150,7 +150,7 @@ module:public wrap_around : integer is
   #
   # 'zero **? zero' is permitted and results in 'one'.
   #
-  public redef infix **? (other wrap_around.this) num_option wrap_around.this
+  public redef infix **? (other wrap_around.this) option wrap_around.this
   =>
     if      (other = wrap_around.this.zero) wrap_around.this.one
     else if (other = wrap_around.this.one ) wrap_around.this

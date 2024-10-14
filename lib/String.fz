@@ -205,7 +205,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     neg bool,
 
     # the value of the highest digits already parsed
-    hi num_option T,
+    hi option T,
 
     # the current character to be parsed
     c u8,
