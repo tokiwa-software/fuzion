@@ -264,7 +264,7 @@ is
   # exponentation always works, even though it might be
   # slow for large numbers
 
-  public fixed redef infix **?(other uint) num_option uint => uint.this ** other
+  public fixed redef infix **?(other uint) option uint => uint.this ** other
   public fixed redef infix **^(other uint) uint => uint.this ** other
 
   public fixed redef type.zero uint =>

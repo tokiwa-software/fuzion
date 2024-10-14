@@ -99,11 +99,11 @@ module:public numeric : property.hashable, property.orderable is
 
 
   # overflow checking operations
-  public prefix -? num_option numeric.this => - numeric.this
-  public infix +? (other numeric.this) num_option numeric.this => numeric.this + other
-  public infix -? (other numeric.this) num_option numeric.this => numeric.this - other
-  public infix *? (other numeric.this) num_option numeric.this => numeric.this * other
-  public infix **?(other numeric.this) num_option numeric.this
+  public prefix -? option numeric.this => - numeric.this
+  public infix +? (other numeric.this) option numeric.this => numeric.this + other
+  public infix -? (other numeric.this) option numeric.this => numeric.this - other
+  public infix *? (other numeric.this) option numeric.this => numeric.this * other
+  public infix **?(other numeric.this) option numeric.this
     pre
       debug: (other ≥ numeric.this.zero)
   => abstract

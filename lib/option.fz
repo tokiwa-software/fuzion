@@ -100,6 +100,159 @@ is
                 | nil => default
 
 
+  # monadic operator for bool result, false for nil
+  #
+  public infix >>? (f T -> bool)
+  pre
+    T : numeric
+  =>
+    option.this ? v T => f v
+                | nil => false
+
+
+  # 'prefix +' (identity)
+  #
+  public prefix +? option T
+  pre
+    T : numeric
+  => option.this >>= v -> +v
+
+
+  # 'prefix -' (negation)
+  #
+  public prefix -? option T
+  pre
+    T : numeric
+  => option.this >>= v -> -?v
+
+
+  # addition operator
+  #
+  public infix +? (other option T) option T
+  pre
+    T : numeric
+  => option.this >>= v -> other >>= w -> v +? w
+
+
+  # subtraction operator
+  #
+  public infix -? (other option T) option T
+  pre
+    T : numeric
+  => option.this >>= v -> other >>= w -> v -? w
+
+
+  # multiplication operator
+  #
+  public infix *? (other option T) option T
+  pre
+    T : numeric
+  => option.this >>= v -> other >>= w -> v *? w
+
+
+  # exponentation operator
+  #
+  public infix **?(other option T) option T
+  pre
+    T : numeric
+  => option.this >>= v -> other >>= w -> v **? w
+
+
+  # division operator
+  #
+  public infix /? (other option T) option T
+    pre
+      T : numeric
+      safety: !other.is_zero
+  =>
+    option.this >>= v -> other >>= w -> v / w
+
+
+  # modulo operator
+  #
+  public infix %? (other option T) option T
+    pre
+      T : numeric
+      safety: !other.is_zero
+  =>
+    option.this >>= v -> other >>= w -> v % w
+
+
+  # equals operator
+  #
+  public infix ==? (other option T) bool
+  pre
+    T : numeric
+  => option.this >>? v -> other >>? w -> v = w
+
+
+  # not equals operator
+  #
+  public infix !=? (other option T) bool
+  pre
+    T : numeric
+  => option.this >>? v -> other >>? w -> v != w
+
+
+  # lower than operator
+  #
+  public infix <?  (other option T) bool
+  pre
+    T : numeric
+  => option.this >>? v -> other >>? w -> v <  w
+
+
+  # lower or equal than operator
+  #
+  public infix <=? (other option T) bool
+  pre
+    T : numeric
+  => option.this >>? v -> other >>? w -> v ≤ w
+
+
+  # greater than operator
+  #
+  public infix >?  (other option T) bool
+  pre
+    T : numeric
+  => option.this >>? v -> other >>? w -> v >  w
+
+
+  # greater or equal than operator
+  #
+  public infix >=? (other option T) bool
+  pre
+    T : numeric
+  => option.this >>? v -> other >>? w -> v ≥ w
+
+
+  # is zero
+  #
+  public is_zero
+  pre
+    T : numeric
+  => sign ==? 0
+
+
+  # sign function resulting in `-1`/`0`/`+1` depending on whether `numeric.this`
+  # is less than, equal or larger than zero
+  #
+  public sign option i32
+  pre
+    T : numeric
+  =>
+    option.this ? v T => v.sign
+                | nil => nil
+
+
+  # absolute value
+  #
+  public abs option T
+  pre
+    T : numeric
+  =>
+    option.this >>= v -> if v.sign ≥ 0 v else -?v
+
 
   # return function
   #
