@@ -1026,14 +1026,14 @@ public class Lexer extends SourceFile
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                            // if indentation decreases before closing bracket, discard everything until closing bracket
                             if (current(true) != end._token)
                               {
-                               Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
-                               while (current(true) != end._token && current(true) != Token.t_eof)
-                                 {
-                                    next();
-                                 }
+                                // if indentation decreases before closing bracket, discard everything until closing bracket
+                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
+                                while (current(true) != end._token && current(true) != Token.t_eof)
+                                  {
+                                      next();
+                                  }
                               }
                             match(true, end, rule);
                             return Void.TYPE; // is there a better unit type in Java?
