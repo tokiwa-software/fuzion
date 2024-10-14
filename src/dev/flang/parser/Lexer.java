@@ -34,14 +34,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import dev.flang.parser.Lexer.Digits;
-import dev.flang.parser.Lexer.Digits.Base;
-import dev.flang.parser.Lexer.Literal;
-import dev.flang.parser.Lexer.Parens;
-import dev.flang.parser.Lexer.SemiState;
-import dev.flang.parser.Lexer.StringEnd;
-import dev.flang.parser.Lexer.Token;
-import dev.flang.parser.Lexer.TokenOrOp;
 import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.Pair;
@@ -1038,9 +1030,10 @@ public class Lexer extends SourceFile
                             if (current(true) != end._token)
                               {
                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
-                               while (current(true) != end._token && current(true) != Token.t_eof) {
-                                  next();
-                               }
+                               while (current(true) != end._token && current(true) != Token.t_eof)
+                                 {
+                                    next();
+                                 }
                               }
                             match(true, end, rule);
                             return Void.TYPE; // is there a better unit type in Java?
