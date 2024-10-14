@@ -56,10 +56,7 @@ public client(T type, ch Connection_Handler T, f net.family.val, p net.protocol.
 
       _ := fuzion.sys.net.close desc
 
-      res.bind T x->
-        match x
-          v T => v
-          e error => e
+      res.bind T x->x
 
 
 # NYI: ENHANCEMENT: short-hands: client(host String) etc.
