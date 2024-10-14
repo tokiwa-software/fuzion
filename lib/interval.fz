@@ -108,7 +108,7 @@ is
   # string representation of this interval, e.g., "1..10:2"
   #
   public redef as_string =>
-    thru := through.map_to_option ($)
+    thru := through.bind String ($)
                    .or_else ()->if step.sign < 0 then "-∞" else "∞"
     "$from..$thru{if step = T.one then "" else ":$step"}"
 
