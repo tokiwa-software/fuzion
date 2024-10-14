@@ -102,7 +102,6 @@ public class GeneratingFUIR extends FUIR
     final LibraryFeature _feature;
     LibraryFeature feature() { return _feature; }
     static final Clazz[] NO_CLAZZES = new Clazz[0];
-    static final int[] NO_CLAZZ_IDS = new int[0];
     Clazz[] _actualTypeParameters = NO_CLAZZES;
     Clazz[] actualTypeParameters() { return _actualTypeParameters; }
     final AbstractType _type;
@@ -2271,6 +2270,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  static final int[] NO_CLAZZ_IDS = new int[0];
 
 
   static final IntArray EMPTY_INT_ARRAY = new IntArray() {
@@ -4743,7 +4745,7 @@ public class GeneratingFUIR extends FUIR
     var result = _accessedClazzes.get(s);
     if (result == null)
       {
-        result = Clazz.NO_CLAZZ_IDS;
+        result = NO_CLAZZ_IDS;
       }
     return result;
   }
