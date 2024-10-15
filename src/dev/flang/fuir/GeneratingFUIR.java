@@ -196,7 +196,7 @@ public class GeneratingFUIR extends FUIR
   private final FrontEnd _fe;
 
   private final TreeMap<Clazz, Clazz> _clazzesTM;
-
+  private final java.util.HashMap<Clazz, Clazz> _clazzesHM;
 
   /**
    * For each site, this gives the clazz id of the clazz that contains the code at that site.
@@ -237,6 +237,7 @@ public class GeneratingFUIR extends FUIR
     _fe = fe;
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
+    _clazzesHM = new java.util.HashMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
     _accessedClazz = new IntMap<>();
     _accessedClazzes = new IntMap<>();
@@ -267,6 +268,7 @@ public class GeneratingFUIR extends FUIR
     original._lookupDone = true;
     _lookupDone = true;
     _clazzesTM = original._clazzesTM;
+    _clazzesHM = original._clazzesHM;
     _siteClazzes = original._siteClazzes;
     _accessedClazz = original._accessedClazz;
     _accessedClazzes = original._accessedClazzes;
@@ -355,16 +357,67 @@ public class GeneratingFUIR extends FUIR
     var t = actualType;
 
     var cl = new Clazz(_fuiri, outerR, t, CLAZZ_BASE + _clazzes.size());
-    var existing = _clazzesTM.get(cl);
+    // var existing = _clazzesTM.get(cl);
+    var existing = _clazzesHM.get(cl);
     if (existing != null)
       {
         result = existing;
       }
     else
       {
+        /*
+        for (var c : _clazzes)
+          {
+            if (c.compareTo(cl)==0)
+              {
+                throw new Error("DUPLICATE CLAZZ: "+c+" vs "+cl+" compare is "+c.compareTo(cl));
+              }
+          }
+        */
         result = cl;
         _clazzes.add(cl);
         _clazzesTM.put(cl, cl);
+        _clazzesHM.put(cl, cl);
+        /*
+        var sl = new List<Clazz>();
+        for (var c : _clazzesTM.keySet())
+          {
+            sl.add(c);
+          }
+        var al = sl.toArray(new Clazz[sl.size()]);
+        java.util.Arrays.sort(al);
+        var eq = false;
+        if (false)
+        for (var i = 0; i<al.length; i++)
+          {
+            for (var j = 0; j<al.length; j++)
+              {
+                var ij = al[i].compareTo(al[j]);
+                var ji = al[j].compareTo(al[i]);
+                check((ij <= 0) == (i <= j),
+                      (ij >= 0) == (i >= j),
+                      (ji <= 0) == (j <= i),
+                      (ji >= 0) == (j >= i));
+              }
+          }
+        for (var c : al)
+          {
+            var s = c.compareTo(cl);
+            System.out.print(s < 0 ? "<" :
+                             s > 0 ? ">" : "=");
+            if (!eq && s > 0)
+              {
+                System.out.println("**** order broken for "+c+" new "+cl);
+              }
+            eq = eq || s == 0;
+            if (eq && s < 0)
+              {
+                System.out.println("**** order broken for "+c+" new "+cl);
+              }
+
+          }
+        System.out.println();
+        */
 
         if (outerR != null)
           {
@@ -910,8 +963,8 @@ public class GeneratingFUIR extends FUIR
     var cc = id2clazz(cl);
     var cg = cc.choiceGenerics().get(i);
     var res = cg.isRef()          ||
-              cg.needsCode()         ? cg
-                                     : id2clazz(clazz(SpecialClazzes.c_void));
+              cg.isInstantiatedChoice() ? cg
+                                        : id2clazz(clazz(SpecialClazzes.c_void));
     return res._id;
   }
 
@@ -986,7 +1039,7 @@ public class GeneratingFUIR extends FUIR
     var result = new List<Clazz>();
     for (var h : c.heirs())
       {
-        if (h.needsCode())
+        if (h.isInstantiatedChoice())
           {
             result.add(h);
           }
@@ -2182,7 +2235,7 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = clazz(cl);
     var t = (Tag) getExpr(s);
     var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE), t);
-    tc.doesNeedCode();
+    tc.instantiatedChoice(t);
     return tc._id;
   }
 
@@ -2673,9 +2726,17 @@ public class GeneratingFUIR extends FUIR
     else
       {
         innerClazz = accessedClazz(s);
+        if (tclazz != clazzOuterClazz(innerClazz))
+          System.out.println("static : tclazz "+
+                             clazzAsString(tclazz)+" vs "+
+                             clazzAsString(clazzOuterClazz(innerClazz))+
+                             clazzIsRef(tclazz)+" vs "+
+                             clazzIsRef(clazzOuterClazz(innerClazz))+
+                             " "+(tclazz-CLAZZ_BASE)+" vs "+(clazzOuterClazz(innerClazz)-CLAZZ_BASE)+
+                             " compare: "+id2clazz(tclazz).compareTo(id2clazz(clazzOuterClazz(innerClazz)))+" "+
+                             " inner "+clazzAsString(innerClazz)+" "+clazzKind(innerClazz)+" from "+id2clazz(innerClazz).feature().pos().show());
         if (CHECKS) check
           (tclazz == clazzOuterClazz(innerClazz));
-        //    System.out.println("static : tclazz "+clazzAsString(tclazz)+" vs inner "+clazzAsString(innerClazz)+" "+clazzKind(innerClazz)+" from "+id2clazz(innerClazz).feature().pos().show());
       }
     if (innerClazz != NO_CLAZZ)
       {

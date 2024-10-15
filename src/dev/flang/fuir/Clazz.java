@@ -112,6 +112,11 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Will instances of this class be created?
+   */
+    private boolean _isInstantiatedChoice = true; // NYI: false;
+
+  /**
    * Is this a normalized outer clazz? If so, there might be calls on this as an
    * outer clazz even if it is not instantiated.
    */
@@ -541,7 +546,13 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result = compareToIgnoreOuter(other);
     if (result == 0)
       {
-        result = compareOuter(other);
+        var tp = actualTypeParameters().length;
+        var op = other.actualTypeParameters().length;
+        result = Integer.compare(tp, op);
+        if (result == 0)
+          {
+            result = compareOuter(other);
+          }
       }
     return result;
   }
@@ -555,6 +566,10 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result =
       this._select < other._select ? -1 :
       this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
+    if (result == 0)
+      {
+        check(this._type.generics().size() == other._type.generics().size());
+      }
     return result;
   }
 
@@ -563,6 +578,11 @@ class Clazz extends ANY implements Comparable<Clazz>
     public boolean equals(Object other)
     {
       return compareTo((Clazz)other)==0;
+    }
+    @Override
+    public int hashCode()
+    {
+      return (_type.isRef() ? 0x777377 : 0) ^ _feature.globalIndex();  // NYI: outer and type parameters!
     }
 
 
@@ -1883,6 +1903,89 @@ class Clazz extends ANY implements Comparable<Clazz>
       (isChoice());
 
     return _choiceGenerics;
+  }
+
+
+
+  /**
+   * Mark this as instantiated at given source code position.
+   *
+   * @param at gives the position in the source code that causes this instantiation.
+   */
+  void instantiatedChoice(HasSourcePosition at)
+  {
+    if (PRECONDITIONS) require
+      (at != null,
+       isChoice());
+
+    if (!_isInstantiatedChoice && !isVoidType())
+      {
+        _isInstantiatedChoice = true;
+      }
+  }
+
+
+  /**
+   * Check of _outer is instantiated.
+   *
+   * NYI: UNDER DEVELOPMENT: Check if this can be replaced by just `true`
+   */
+  private boolean isOuterInstantiated()
+  {
+    var o = _outer;
+    return o == null ||
+
+      // NYI: Once Clazz.normalize() is implemented better, a clazz C has
+      // to be considered instantiated if there is any clazz D that
+      // normalize() would replace by C if it occurs as an outer clazz.
+      o._s == FUIR.SpecialClazzes.c_Any    ||
+
+      o._isNormalized ||
+
+      o.isInstantiatedChoice();
+  }
+
+
+  /**
+   * Flag to detect endless recursion between isInstantiatedChoice() and
+   * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
+   * its outer clazz.
+   */
+  private int _checkingInstantiatedHeirs = 0;
+
+
+  /**
+   * Helper for isInstantiatedChoice to check if there are heir clazzes of this
+   * that are instantiated.
+   *
+   * @return true iff this is a ref and there exists an heir of this that is
+   * instantiated.
+   */
+  private boolean hasInstantiatedChoiceHeirs()
+  {
+    var result = false;
+    for (var h : heirs())
+      {
+        h._checkingInstantiatedHeirs++;
+        result = result
+          || h != this && h.isInstantiatedChoice();
+        h._checkingInstantiatedHeirs--;
+      }
+    return result;
+  }
+
+
+  /**
+   * Is this clazz instantiated?  This tests this._isInstantiatedChoice and,
+   * recursively, _outer.isInstantiated().
+   */
+  public boolean isInstantiatedChoice()
+  {
+    return _isInstantiatedChoice
+      && (_checkingInstantiatedHeirs > 0
+          || (true // NYI: was isOuterInstantiated()
+              || isChoice()
+              || _outer.isRef() && _outer.hasInstantiatedChoiceHeirs()));
   }
 
 
