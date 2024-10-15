@@ -27,23 +27,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.charset.StandardCharsets;
-
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
-import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
+import dev.flang.ast.Constant;
+import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
@@ -55,7 +58,6 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
-
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -142,6 +144,11 @@ public class LibraryFeature extends AbstractFeature
    * cached result of outerRef()
    */
   private AbstractFeature _outerRef;
+
+  /**
+   * cached result of modulesOfInnerFeatures()
+   */
+  private Set<LibraryModule> _modulesOfInnerFeatures = null;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -868,7 +875,57 @@ public class LibraryFeature extends AbstractFeature
     return result;
   }
 
+  /**
+   * Union of the library modules of all inner features. Checks inner features recursively.
+   * @return immutable set with all library modules for which an inner feature exists
+   */
+  public Set<LibraryModule> modulesOfInnerFeatures()
+  {
+    if (_modulesOfInnerFeatures == null)
+      {
+        _modulesOfInnerFeatures = new TreeSet<LibraryModule>(Comparator.comparingInt(System::identityHashCode));
+
+        var declaredOrInherited = new LinkedList<AbstractFeature>();
+        _libModule.forEachDeclaredOrInheritedFeature(this, f -> declaredOrInherited.add(f));
+
+        var libFeatures = declaredOrInherited.stream()
+                           .map(f -> (LibraryFeature) f)
+                           .collect(Collectors.toList());
+
+        for (LibraryFeature lf : libFeatures)
+        {
+            // modules of inner features
+            _modulesOfInnerFeatures.add( lf._libModule );
+            // for inner features recursively add modules their inner features
+            _modulesOfInnerFeatures.addAll( lf.modulesOfInnerFeatures() );
+          }
+      }
+
+    return Collections.unmodifiableSet(_modulesOfInnerFeatures);
+  }
+
+  /**
+   * Does this feature belong to or contain inner features of the given module?
+   * And should therefore be shown on the api page for that module
+   * @param module the module for which the belonging is to be checked
+   * @return true iff this feature needs to be included in the api page for module
+   */
+  public boolean showInMod(LibraryModule module)
+  {
+    // Problem: all features inherit from any, which is in base
+    // therefore all features from other modules would be shown in base module because they always have an inner feature from base
+    if (module.name().equals("base"))
+      {
+        return _libModule == module || isUniverse();
+      }
+    else
+      {
+        return _libModule == module || modulesOfInnerFeatures().contains(module);
+      }
+  }
 
 }
+
+
 
 /* end of file */

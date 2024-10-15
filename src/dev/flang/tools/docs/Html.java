@@ -29,13 +29,12 @@ package dev.flang.tools.docs;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -44,8 +43,8 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
+import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
-import dev.flang.tools.docs.Util.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -57,15 +56,17 @@ public class Html extends ANY
   private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
   private final String navigation;
   private final LibraryModule lm;
+  private final List<LibraryModule> libModules;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.lm = lm;
+    this.libModules = libModules;
     this.navigation = navigation(universe, 0);
   }
 
@@ -201,6 +202,8 @@ public class Html extends ANY
       + annotateAbstract(af)
       + annotateContainsAbstract(af)
       + annotatePrivateConstructor(af)
+      + annotateModule(af)
+      //+ annotateInnerModules(af) // NYI: CLEANUP: for debugging only
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -312,6 +315,27 @@ public class Html extends ANY
              : "";
   }
 
+
+  /**
+   * Returns a html formatted annotation for features from modules other than base
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a feature from other modules than base
+   */
+  private String annotateModule(AbstractFeature af)
+  {
+    var afModule = lf(af)._libModule;
+
+    // don't add annotation for features of own module
+    return afModule == lm ? "" : "&nbsp;<div class='fd-parent'>[Module " + afModule.name() + "]</div>";
+  }
+
+  // NYI: CLEANUP: for debugging only: show modules of inner features
+  private String annotateInnerModules(AbstractFeature af)
+  {
+    String modules = lf(af).modulesOfInnerFeatures().stream().map(m -> m.name()).collect(Collectors.joining(", "));
+    return "&nbsp;<div class='fd-parent'>[Inner modules: " + modules + "]</div>";
+  }
+
   private boolean isVisible(AbstractFeature af)
   {
     var vis = af.visibility();
@@ -387,13 +411,13 @@ public class Html extends ANY
   private String mainSection(Map<AbstractFeature.Kind, TreeSet<AbstractFeature>> map, AbstractFeature outer)
   {
     // Type Parameters
-    var typeParameters = new TreeSet<AbstractFeature>();
+    var typeParameters = new List<AbstractFeature>();
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.TypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(map.getOrDefault(AbstractFeature.Kind.OpenTypeParameter, new TreeSet<AbstractFeature>()));
     typeParameters.addAll(outer.typeArguments());
 
     // Fields
-    TreeSet<AbstractFeature> fields =  new TreeSet<AbstractFeature>();
+    var fields =  new List<AbstractFeature>();
     fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
     var normalArguments = outer.arguments().clone();
     normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
@@ -418,40 +442,55 @@ public class Html extends ANY
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
     var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
 
+    // Choice Types
+    var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
 
-    return (typeParameters.isEmpty()                ? "" : "<h4>Type Parameters</h4>"   + mainSection0(typeParameters, outer))
-    + (fields.isEmpty()                             ? "" : "<h4>Fields</h4>"            + mainSection0(fields, outer))
-    + (normalConstructors.isEmpty()                 ? "" : "<h4>Constructors</h4>"      + mainSection0(normalConstructors, outer))
-    + (typeConstructors.isEmpty()                   ? "" : "<h4>Type Constructors</h4>" + mainSection0(typeConstructors, outer))
-    + (normalFunctions.isEmpty()                    ? "" : "<h4>Functions</h4>"         + mainSection0(normalFunctions, outer))
-    + (typeFunctions.isEmpty()                      ? "" : "<h4>Type Functions</h4>"    + mainSection0(typeFunctions, outer))
-    + (map.get(AbstractFeature.Kind.Choice) == null ? "" : "<h4>Choice Types</h4>"      + mainSection0(map.get(AbstractFeature.Kind.Choice), outer));
+    return mainSection0("Type Parameters",   typeParameters,     outer, false)
+         + mainSection0("Fields",            fields,             outer, false)
+         + mainSection0("Constructors",      normalConstructors, outer, true)
+         + mainSection0("Type Constructors", typeConstructors,   outer, true)
+         + mainSection0("Functions",         normalFunctions,    outer, true)
+         + mainSection0("Type Functions",    typeFunctions,      outer, true)
+         + mainSection0("Choice Types",      choices,            outer, true);
   }
 
 
   /**
    * The summaries and the comments of the features
+   * @param heading the title for this section
    * @param set the features to be included in the summary
-   * @param printArgs whether or not arguments of the feature should be included in output
    * @param outer the outer feature of the features in the summary
+   * @param filterAndSort should features from other modules (including not having a module) be removed and the list sorted?
    * @return
    */
-  private String mainSection0(TreeSet<AbstractFeature> set, AbstractFeature outer)
+  private String mainSection0(String heading, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
   {
-    return set.stream()
-      .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()))
-      .map(af -> {
-        // NYI summary tag must not contain div
-        return "<details id='" + htmlID(af)
-          + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
-            // NYI rename fd-private?
-            .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-            .replace("$1",
-              summary(af, outer))
-            .replace("$2", Util.commentOf(af))
-            .replace("$3", redefines(af));
-      })
-      .collect(Collectors.joining(System.lineSeparator()));
+    if (set == null) { return ""; }
+
+    heading = "<h4>" + heading + "</h4>\n";
+    var features = set.stream();
+
+    // e.g. don't filter or sort type parameters and fields
+    if (filterAndSort)
+      {
+        features = features.filter(af -> lf(af).showInMod(lm))  // filter out features of other modules which do not need to be shown for this module
+                           .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()));
+      }
+
+    var content = features.map(af ->
+      // NYI summary tag must not contain div
+      "<details id='" + htmlID(af)
+      + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+        // NYI rename fd-private?
+        .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
+        .replace("$1",
+          summary(af, outer))
+        .replace("$2", Util.commentOf(af))
+        .replace("$3", redefines(af))
+    )
+    .collect(Collectors.joining(System.lineSeparator()));
+
+    return content.equals("") ? "" : heading + content;
   }
 
 
@@ -463,7 +502,7 @@ public class Html extends ANY
   private String headingSection(AbstractFeature f)
   {
     return "<h1 class='$5'>$0</h1><h2>$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
-      .replace("$0", f.isUniverse() ? "API-Documentation": htmlEncodedBasename(f))
+      .replace("$0", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
       .replace("$3", anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
       .replace("$2", Util.commentOf(f))
@@ -637,7 +676,7 @@ public class Html extends ANY
    * @param bareHtml
    * @return
    */
-  private static String fullHtml(AbstractFeature af, String bareHtml)
+  private static String fullHtml(String qualifiedName, String bareHtml)
   {
     return ("""
       <!DOCTYPE html>
@@ -653,7 +692,7 @@ public class Html extends ANY
         </body>
         </html>
                     """)
-        .replace("$qualifiedName", af.qualifiedName());
+        .replace("$qualifiedName", qualifiedName);
   }
 
 
@@ -698,7 +737,7 @@ public class Html extends ANY
    */
   private String featureAbsoluteURL(AbstractFeature f)
   {
-    return config.docsRoot() + featureAbsoluteURL0(f) + "/";
+    return config.docsRoot() + "/" + lm.name() + featureAbsoluteURL0(f) + "/";
   }
 
   private static String featureAbsoluteURL0(AbstractFeature f)
@@ -766,14 +805,19 @@ public class Html extends ANY
         .mapToObj(i -> "| ")
         .collect(Collectors.joining())
         .replaceAll("\s$", "―");
-    var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + htmlEncodedBasename(start) + args(start) + "</a>";
+    var startName = htmlEncodedBasename(start) + (start.isUniverse() ? " (module " + lm.name() + ")" : "");
+    var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + startName + args(start) + "</a>";
 
     var constructors = declaredFeatures.values().stream()
                         .filter(ft -> ft.definesType()
                                     && ft.visibility().typeVisibility() == Visi.PUB)
                         .collect(Collectors.toList());
 
+    // list modules at the top
+    String modules = start.isUniverse() ? navigationModules() : "";
+
     return """
+      $2
       <ul class="white-space-no-wrap">
         <li>
           <div>$0</div>
@@ -787,7 +831,26 @@ public class Html extends ANY
               : constructors.stream()
                 .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
                 .map(af -> navigation(af, depth + 1))
-                .collect(Collectors.joining(System.lineSeparator()))));
+                .collect(Collectors.joining(System.lineSeparator()))))
+        .replace("$2", modules);
+  }
+
+  /**
+   * render list with modules for the navigation at the left side
+   */
+  private String navigationModules()
+  {
+    return """
+      <ul class="white-space-no-wrap">
+        <li>
+          <div><a href=$0>Modules</a></div>
+            <ul style="list-style: circle inside">
+              $1
+      </ul></li></ul>"""
+      .replace("$1", libModules.stream()
+                               .map(m->"<li><a href=$0" + m.name() + ">" + m.name() + "</a></li>")
+                               .collect(Collectors.joining("\n")))
+      .replace("$0", config.docsRoot() + "/");
   }
 
 
@@ -802,6 +865,17 @@ public class Html extends ANY
         return " <small>(" + start.valueArguments().size() + " arg)</small>";
       }
     return " <small>(" + start.valueArguments().size() + " args)</small>";
+  }
+
+
+  /**
+   * Cast an AbstractFeature to LibraryFeature
+   * @param af an AbstractFeature feature which must be of type LibraryFeature
+   * @return
+   */
+  private static final LibraryFeature lf(AbstractFeature af)
+  {
+    return (LibraryFeature) af;
   }
 
 
@@ -835,7 +909,66 @@ public class Html extends ANY
         .replace("$3", config.ignoreVisibility() ? """
           <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
         """ : "");
-    return config.bare() ? bareHtml: fullHtml(af, bareHtml);
+    return config.bare() ? bareHtml: fullHtml(af.qualifiedName(), bareHtml);
+  }
+
+  /**
+   * The Module Page
+   * @return
+   */
+  String modulePage()
+  {
+    // NYI: BUG: some things (e.g. html id or links) might break if there are spaces in a module name
+    StringBuilder modPage = new StringBuilder();
+    modPage.append("""
+<!-- GENERATED BY FZDOCS -->
+<div class="fd">
+<div class="sidenav">
+  <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none');" class="toggle-nav cursor-pointer">☰</div>
+  <nav style="display: none">$0</nav>
+</div>
+<div class="container">
+  <section><h1>Fuzion Library Modules</h1>
+    <h2></h2><h3></h3><div class='fd-comment'></div>
+  </section>
+  <section>
+        """.replace("$0", navigationModules()));
+
+    for (LibraryModule mod : libModules)
+      {
+        modPage.append("""
+    <div class="cursor_pointer">
+      <details id='"$2"'$0>
+        <summary>
+          <div class="d-grid" style="grid-template-columns: 1fr min-content;">
+            <div class="d-flex flex-wrap word-break-break-word">
+              <a class="fd-anchor-sign mr-2" href="#$2">§</a>
+              <div class="d-flex flex-wrap word-break-break-word fz-code">
+                <div class="font-weight-600"><a class="fd-feature" href="$1">$2</a></div>
+                <div class="flex-grow-1"></div>
+              </div>
+            </div>
+          </div>
+        </summary>
+      </details>
+    </div>
+            """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
+               .replace("$1", mod.name())
+               .replace("$2", mod.name()));
+      }
+    // modulePage += "</ul>";
+
+    modPage.append("""
+  </section>
+  $3
+</div>
+</div>
+        """
+          .replace("$3", config.ignoreVisibility() ? """
+            <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
+          """ : ""));
+
+    return config.bare() ? modPage.toString(): fullHtml("Modules", modPage.toString());
   }
 
 

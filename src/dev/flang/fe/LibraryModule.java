@@ -617,7 +617,7 @@ Module File
   {
     return startPos();
   }
-  String name()
+  public String name()
   {
     return name(namePos());
   }
