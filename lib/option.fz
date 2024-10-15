@@ -234,8 +234,7 @@ is
   pre
     T : numeric
   =>
-    option.this ? v T => v.sign
-                | nil => nil
+    bind i32 v->v.sign
 
 
   # absolute value

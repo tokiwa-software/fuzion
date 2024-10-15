@@ -46,9 +46,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   # short-hand features to get the mutable references from `n`
   #
   public redef next option (Linked_List T) =>
-    match n.get
-      ll Mutable_Linked_List => ll
-      nil => nil
+    n.get.bind (Linked_List T) x->x
 
 
   # append an element to the linked list
@@ -73,9 +71,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
     if n.open
       n.close
 
-    match n.get
-      ll Mutable_Linked_List => ll.freeze
-      nil =>
+    _ := n.get.bind unit ll->ll.freeze
 
 
   # create a mutable linked list from a given sequence

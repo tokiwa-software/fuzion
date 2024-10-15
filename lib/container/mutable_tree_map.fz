@@ -88,8 +88,7 @@ is
   # contained in this map
   #
   public get(k KEY) option VAL =>
-    root.get ? nil => nil
-             | e Entry => e.get k
+    root.get.bind VAL (e -> e.get k)
 
 
   # add the mapping k -> v as a new entry to this map
@@ -171,10 +170,9 @@ is
     # ordering of the keys
     #
     minimum(node option Entry) option Entry =>
-      node ? nil => nil
-           | e Entry =>
-             e.left.get ? nil => e
-                        | l Entry => minimum l
+      node.bind Entry e->
+        e.left.get ? nil => e
+                   | l Entry => minimum l
 
 
     # helper feature to remove a mapping from this map. this feature
@@ -247,13 +245,11 @@ is
     # subtree whose root is the given node
     #
     fix_height(n option Entry) =>
-      match n
-        nil =>
-        e Entry =>
-          lh := height e.left.get
-          rh := height e.right.get
+      _ := n.bind unit e->
+        lh := height e.left.get
+        rh := height e.right.get
 
-          e.height <- (if lh > rh then lh else rh) + 1
+        e.height <- (if lh > rh then lh else rh) + 1
 
 
     # rotate right at the given node
