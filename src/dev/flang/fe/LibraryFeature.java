@@ -877,7 +877,7 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * Union of the library modules of all inner features. Checks inner features recursively.
-   * @return immutable set with all library features for which an inner feature exists
+   * @return immutable set with all library modules for which an inner feature exists
    */
   public Set<LibraryModule> modulesOfInnerFeatures()
   {
