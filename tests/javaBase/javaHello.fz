@@ -28,7 +28,7 @@
 #
 # See Makefile for how to start fuzion to run this example.
 #
-javaHello : Java is
+javaHello : Java is // TODO: #3852
 
   # catch panics, printing its exceptions
   #

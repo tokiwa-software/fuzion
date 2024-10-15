@@ -32,7 +32,6 @@ import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -1085,7 +1084,7 @@ public class Intrinsics extends ANY
                     CExpr.string(javaSignature(c._fuir, elementType)))), false));
         }
     });
-    put("fuzion.java.get_field0",
+    put("fuzion.java.get_field0", // TODO: #3852
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -1104,6 +1103,28 @@ public class Intrinsics extends ANY
                 new List<>(c.javaRefField(A0).castTo("jstring"),
                   c.javaRefField(A1).castTo("jstring"),
                   A2.castTo("char *"))),
+              false));
+    put("fuzion.java.set_field0", // TODO:FIXME:
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+              .call("fzE_set_field0",
+                new List<>(c.javaRefField(A0).castTo("jobject"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  c.javaRefField(A2).castTo("jobject"),
+                  A3.castTo("char *"))),
+            false));
+    put("fuzion.java.set_static_field0", // TODO:FIXME:
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+              .call("fzE_set_static_field0",
+                new List<>(c.javaRefField(A0).castTo("jstring"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  c.javaRefField(A2).castTo("jobject"),
+                  A3.castTo("char *"))),
               false));
     put("fuzion.java.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
