@@ -74,6 +74,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     final Clazz _outer;
 
+    int gix() { return _feature.globalIndex(); }
     final LibraryFeature _feature;
     LibraryFeature feature() { return _feature; }
     static final Clazz[] NO_CLAZZES = new Clazz[0];
@@ -566,6 +567,11 @@ class Clazz extends ANY implements Comparable<Clazz>
     public boolean equals(Object other)
     {
       return compareTo((Clazz)other)==0;
+    }
+    @Override
+    public int hashCode()
+    {
+      return (_type.isRef() ? 0x777377 : 0) ^ gix();  // NYI: outer and type parameters!
     }
 
 
