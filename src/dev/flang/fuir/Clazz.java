@@ -24,7 +24,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-
 package dev.flang.fuir;
 
 import java.util.Collection;
@@ -121,12 +120,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Cached actual type parameters of this clazz
-   */
-  Clazz[] _actualTypeParameters = NO_CLAZZES;
-
-
-  /**
    * Cached result of choiceGenerics(), only used if isChoice() and
    * !isChoiceOfOnlyRefs().
    */
@@ -143,10 +136,14 @@ class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * The argument fields of this routine.
-   *
-   * This is initialized after Clazz creation by dependencies().
    */
   Clazz[] _argumentFields;
+
+
+  /**
+   * Cached actual type parameters of this clazz
+   */
+  Clazz[] _actualTypeParameters = NO_CLAZZES;
 
 
   /**
@@ -171,7 +168,12 @@ class Clazz extends ANY implements Comparable<Clazz>
   private Clazz _asValue;
 
 
-    Clazz _resultClazz = null;
+  /**
+   * The type of the result of calling thiz clazz.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz _resultClazz = null;
 
 
 
@@ -254,89 +256,89 @@ class Clazz extends ANY implements Comparable<Clazz>
   /*--------------------------  constructors  ---------------------------*/
 
 
-    Clazz(FUIRI fuiri,
-          Clazz outer,
-          AbstractType type,
-          int select,
-          int id)
-    {
-      if (PRECONDITIONS) require
-                           (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
-         !type.containsThisType());
+  /**
+   * Constructor
+   *
+   * @param actualType the actual type this clazz is built on. The actual type
+   * must not be a generic argument.
+   *
+   * @param select in case actualType refers to a field whose result type is an
+   * open generic parameter, select specifies the actual generic to be used.
+   *
+   * @param outer
+   */
+  Clazz(FUIRI fuiri,
+        Clazz outer,
+        AbstractType type,
+        int select,
+        int id)
+  {
+    if (PRECONDITIONS) require
+      (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
+       !type.containsThisType());
 
-      _fuiri = fuiri;
-      outer = normalizeOuter(type, outer);
-      this._type = outer != null
-        ? ResolvedNormalType.newType(type, outer._type)
-        : type;
+    _fuiri = fuiri;
+    outer = normalizeOuter(type, outer);
+    this._type = outer != null
+      ? ResolvedNormalType.newType(type, outer._type)
+      : type;
 
-      _outer = outer;
-      _select = select;
-      _id = id;
-      _needsCode = false;
-      _code = IR.NO_SITE;
-    }
+    _outer = outer;
+    _select = select;
+    _id = id;
+    _needsCode = false;
+    _code = IR.NO_SITE;
+  }
 
-    /**
-     * Additional initialization code that has to be run after this Clazz was added to clazzesHT.
-     */
-    void init()
-    {
-      _choiceGenerics = determineChoiceGenerics();
-      var vas = feature().valueArguments();
-      if (vas.size() == 0 || isBoxed())
-        {
-          _argumentFields = NO_CLAZZES;
-        }
-      else
-        {
-          _argumentFields = actualFields(feature().valueArguments());
-        }
 
-      var gs = _type.generics();
-      if (!gs.isEmpty())
-        {
-          _actualTypeParameters = new Clazz[gs.size()];
-          for (int i = 0; i < gs.size(); i++)
-            {
-              var gi = gs.get(i);
-              if (gi.isThisType())
-                {
-                  // Only calls to type_as_value may have generic parameters gi with
-                  // gi.isThisType().  Calls to type_as_value will essentially become
-                  // NOPs anyway. Here we replace the this.types by their
-                  // underlying type to avoid problems creating clazzes form
-                  // this.types.
-                  if (CHECKS) check
-                    (Errors.any() || feature() == Types.resolved.f_type_as_value);
 
-                  gi = gi.feature().isThisRef() ? gi.asRef() : gi.asValue();
+  /**
+   * Additional initialization code that has to be run after this Clazz was
+   * added to FUIRI._clazzes for recursive clazz lookup.
+   */
+  void init()
+  {
+    _choiceGenerics = determineChoiceGenerics();
+    var vas = feature().valueArguments();
+    if (vas.size() == 0 || isBoxed())
+      {
+        _argumentFields = NO_CLAZZES;
+      }
+    else
+      {
+        _argumentFields = actualFields(feature().valueArguments());
+      }
+
+    var gs = _type.generics();
+    if (!gs.isEmpty())
+      {
+        _actualTypeParameters = new Clazz[gs.size()];
+        for (int i = 0; i < gs.size(); i++)
+          {
+            var gi = gs.get(i);
+            if (gi.isThisType())
+              {
+                // Only calls to type_as_value may have generic parameters gi with
+                // gi.isThisType().  Calls to type_as_value will essentially become
+                // NOPs anyway. Here we replace the this.types by their
+                // underlying type to avoid problems creating clazzes form
+                // this.types.
+                if (CHECKS) check
+                  (Errors.any() || feature() == Types.resolved.f_type_as_value);
+
+                gi = gi.feature().isThisRef() ? gi.asRef() : gi.asValue();
                 }
-              _actualTypeParameters[i] = _fuiri.type2clazz(gi);
-            }
-        }
+            _actualTypeParameters[i] = _fuiri.type2clazz(gi);
+          }
+      }
 
-      inspectCode(new List<>(), feature());
-      // NYI: UNDER DEVELOPMENT: we might want to create the result clazz early
-      // to avoid adding clazzes one lookupDone is set:
-      //
-      // var ignore = resultClazz();
-    }
+    inspectCode(new List<>(), feature());
+    // NYI: UNDER DEVELOPMENT: we might want to create the result clazz early
+    // to avoid adding clazzes one lookupDone is set:
+    //
+    // var ignore = resultClazz();
+  }
 
-    Clazz outerRef()
-    {
-      var res = _outerRef;
-      if (res == null)
-        {
-          var or = feature().outerRef();
-          if (or != null)
-            {
-              res = lookup(new FeatureAndActuals(or, new List<>()), -1, feature(), false, false);
-              _outerRef = res;
-            }
-        }
-      return res;
-    }
 
 
     void addInner(Clazz i)
@@ -847,16 +849,16 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
 
-    Clazz resultField()
-    {
-      Clazz result = null;
-      var rf = feature().resultField();
-      if (rf != null)
-        {
-          result = lookup(rf, feature());
-        }
-      return result;
-    }
+  Clazz resultField()
+  {
+    Clazz result = null;
+    var rf = feature().resultField();
+    if (rf != null)
+      {
+        result = lookup(rf, feature());
+      }
+    return result;
+  }
 
 
     /**
@@ -1256,6 +1258,30 @@ class Clazz extends ANY implements Comparable<Clazz>
     return isRef()
       ? this
       : _fuiri.newClazz(_outer, _type.asRef(), _select);
+  }
+
+
+  /**
+   * If this clazz contains a direct outer ref field, this is the direct outer
+   * ref. null otherwise.
+   */
+  Clazz outerRef()
+  {
+    var res = _outerRef;
+    if (res == null)
+      {
+        var or = feature().outerRef();
+        if (or != null)
+          {
+            res = lookup(new FeatureAndActuals(or, new List<>()), -1, feature(), false, false);
+          }
+        else
+          {
+            res = this;
+          }
+        _outerRef = res;
+      }
+    return res == this ? null : res;
   }
 
 
@@ -2125,7 +2151,17 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (_fields == null)
       {
-        _fields = actualFields(new List<>(_inner).map2(c -> c.feature()));
+        var fields = new List<Clazz>();
+        for (var fieldc: _inner)
+          {
+            var field = fieldc.feature();
+            if (!isVoidType() && field.isField())
+              {
+                fields.add(fieldc);
+              }
+          }
+        _fields = fields.size() == 0 ? NO_CLAZZES
+                                     : fields.toArray(new Clazz[fields.size()]);
       }
     return isRef() ? NO_CLAZZES : _fields;   // NYI: CLEANUP: Remove the difference between _fields and fields() wrt isRef()!
   }
