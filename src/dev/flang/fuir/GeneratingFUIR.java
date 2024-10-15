@@ -105,7 +105,7 @@ public class GeneratingFUIR extends FUIR
       }
       public Clazz newClazz(AbstractType t)
       {
-        return newClazz(t);
+        return GeneratingFUIR.this.newClazz(t);
       }
       public Clazz newClazz(Clazz outer, AbstractType actualType)
       {
@@ -1100,7 +1100,8 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.resultField()._id;
+    var r = c.resultField();
+    return r == null ? NO_CLAZZ: r._id;
   }
 
 

@@ -66,7 +66,7 @@ import java.util.TreeSet;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Clazz extends ANY
+class Clazz extends ANY implements Comparable<Clazz>
   {
     final FUIRI _fuiri;
 
@@ -1692,7 +1692,7 @@ class Clazz extends ANY
     {
       String result;
       var o = _outer;
-      String outer = o != null && o.feature().isUniverse() ? "" : o.asStringWrapped(humanReadable) + ".";
+      String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped(humanReadable) + "." : "";
       var f = _feature;
       var typeType = f.isTypeFeature();
       if (typeType)
