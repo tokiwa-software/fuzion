@@ -910,28 +910,17 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
     /**
-     * Lookup the code to call given feature with actual type parameters, using
-     * the given call position or null if not a call.
+     * Lookup the code to perform the given static call. The result is _not_
+     * marked as needed (since it might not be needed if the call is dynamic or
+     * inlined).
      *
-     * This is not intended for use at runtime, but during analysis of static
-     * types or to fill the virtual call table.
+     * @param c the call whose target is to be looked up
      *
-     * @param fa the feature and actual types that is called
-     *
-     * @param p if this lookup would result in the returned feature to be called,
-     * p gives the position in the source code that causes this call.  p must be
-     * null if the lookup does not cause a call, but it just done to determine
-     * the type.
+     * @param typePars the actual type parameters in the call.
      *
      * @return the inner clazz of the target in the call.
      */
-    public Clazz lookup(dev.flang.air.FeatureAndActuals fa)
-    {
-      return lookup(fa, -1, false, true);
-    }
-
-
-    Clazz lookup(AbstractCall c, List<AbstractType> typePars, boolean needsCode)
+    Clazz lookupCall(AbstractCall c, List<AbstractType> typePars)
     {
       return isVoidType()
         ? this
@@ -939,7 +928,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                                        typePars),
                  c.select(),
                  c.isInheritanceCall(),
-                 needsCode);
+                 false);
     }
 
 
@@ -1392,7 +1381,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var tclazz  = _fuiri.clazz(call.target(), oc, inh);
         var typePars = actualGenerics(call.actualTypeParameters());
         check(call.isInheritanceCall());
-        o = tclazz.lookup(call, typePars, false);
+        o = tclazz.lookupCall(call, typePars);
       }
     var ix = f.typeParameterIndex();
     var oag = o.actualTypeParameters();

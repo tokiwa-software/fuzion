@@ -529,7 +529,7 @@ public class GeneratingFUIR extends FUIR
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var typePars = outerClazz.actualGenerics(at);
-            result = tclazz.lookup(c, typePars, false).resultClazz();
+            result = tclazz.lookupCall(c, typePars).resultClazz();
           }
         else
           {
@@ -1247,15 +1247,12 @@ public class GeneratingFUIR extends FUIR
   {
     if (!clazzIsVoidType(cl))
       {
-        //System.out.println("add code "+c);
-        //var ff = c.feature();
         for (var p: ff.inherits())
           {
             var pf = (LibraryFeature) p.calledFeature();
             var of = pf.outerRef();
-            Clazz or = (of == null) ? null : c.lookup(new FeatureAndActuals(of, new List<>()));
+            Clazz or = (of == null) ? null : c.lookupNotNeeded(of);
             var needsOuterRef = (or != null && (!or.resultClazz().isUnitType()));
-            //System.out.println("++++++++++++++++++ needsOuterRef "+c+" is "+needsOuterRef+" pf "+pf.qualifiedName()+" of "+(of == null ? "null" : of.qualifiedName()) + " pf: "+pf.qualifiedName() + " ff is "+ff.qualifiedName());
             toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
             while (inhe.size() < code.size()) { inhe.add(inh); }
             while (_inh.size() < _allCode.size()) { _inh.add(inh); }
@@ -1283,8 +1280,6 @@ public class GeneratingFUIR extends FUIR
                     argFields[i] = c.lookupNeeded(cfa);
                   }
               }
-            //_parentCallArgFields.put(c.globalIndex(), argFields);
-            // var argFields = c._parentCallArgFields.get(p.globalIndex());
             for (var i = 0; i < p.actuals().size(); i++)
               {
                 var a = p.actuals().get(i);
