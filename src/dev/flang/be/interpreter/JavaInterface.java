@@ -81,6 +81,36 @@ public class JavaInterface extends FUIRContext
     return result;
   }
 
+  // TODO: #3852 // TODO:FIXME:
+  static void setField(String clazz,
+                        Object thiz,
+                        String field,
+                        Object value)
+  {
+    Value result;
+    try
+      {
+        Class cl = clazz != null ? Class.forName(clazz) : thiz.getClass();
+        Field f = cl.getDeclaredField(field);
+        f.set(cl, value);
+      }
+    catch (IllegalAccessException e)
+      {
+        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+    catch (ClassNotFoundException e)
+      {
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+    catch (NoSuchFieldException e)
+      {
+        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        result = null;
+      }
+  }
+
 
   /**
    * Extract Java object from an Instance of fuzion.java.Java_Object
