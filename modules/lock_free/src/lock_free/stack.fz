@@ -45,9 +45,7 @@ public stack(T type) : container.Stack T is
   public redef pop option T =>
 
     next (x option Node) =>
-      match x
-        n Node => n.next
-        nil => nil
+      x.bind Node n->n.next
 
     for o := top.read
         n := next o
