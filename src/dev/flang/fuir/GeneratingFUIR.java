@@ -519,7 +519,7 @@ public class GeneratingFUIR extends FUIR
 
     else if (e instanceof Box b)
       {
-        result = outerClazz.handDown(b.type(), inh, e);
+        result = outerClazz.handDown(b.type(), inh);
       }
 
     else if (e instanceof AbstractCall c)
@@ -544,7 +544,7 @@ public class GeneratingFUIR extends FUIR
 
     else if (e instanceof AbstractMatch m)
       {
-        result = outerClazz.handDown(m.type(), inh, e);
+        result = outerClazz.handDown(m.type(), inh);
       }
 
     else if (e instanceof Universe)
@@ -554,22 +554,22 @@ public class GeneratingFUIR extends FUIR
 
     else if (e instanceof Constant c)
       {
-        result = outerClazz.handDown(c.typeOfConstant(), inh, e);
+        result = outerClazz.handDown(c.typeOfConstant(), inh);
       }
 
     else if (e instanceof Tag tg)
       {
-        result = outerClazz.handDown(tg._taggedType, inh, e);
+        result = outerClazz.handDown(tg._taggedType, inh);
       }
 
     else if (e instanceof InlineArray ia)
       {
-        result = outerClazz.handDown(ia.type(), inh, e);
+        result = outerClazz.handDown(ia.type(), inh);
       }
 
     else if (e instanceof Env v)
       {
-        result = outerClazz.handDown(v.type(), inh, e);
+        result = outerClazz.handDown(v.type(), inh);
       }
 
     else
@@ -1253,7 +1253,7 @@ public class GeneratingFUIR extends FUIR
           {
             var pf = (LibraryFeature) p.calledFeature();
             var of = pf.outerRef();
-            Clazz or = (of == null) ? null : c.lookup(new FeatureAndActuals(of, new List<>()), p);
+            Clazz or = (of == null) ? null : c.lookup(new FeatureAndActuals(of, new List<>()));
             var needsOuterRef = (or != null && (!or.resultClazz().isUnitType()));
             //System.out.println("++++++++++++++++++ needsOuterRef "+c+" is "+needsOuterRef+" pf "+pf.qualifiedName()+" of "+(of == null ? "null" : of.qualifiedName()) + " pf: "+pf.qualifiedName() + " ff is "+ff.qualifiedName());
             toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
@@ -1280,7 +1280,7 @@ public class GeneratingFUIR extends FUIR
                 else
                   {
                     var cfa = cf.valueArguments().get(i);
-                    argFields[i] = c.lookup(cfa, p/* NYI: , _clazzes.isUsedAt(f) */);
+                    argFields[i] = c.lookupNeeded(cfa);
                   }
               }
             //_parentCallArgFields.put(c.globalIndex(), argFields);
@@ -1720,7 +1720,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookup(Types.resolved.f_fuzion_Java_Object_Ref)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
   }
 
 
@@ -1776,7 +1776,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookup(Types.resolved.f_Function_call)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_Function_call)._id;
   }
 
 
@@ -1796,7 +1796,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookup(Types.resolved.f_effect_static_finally)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_effect_static_finally)._id;
   }
 
 
@@ -1814,7 +1814,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookup(Types.resolved.f_concur_atomic_v)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_concur_atomic_v)._id;
   }
 
 
@@ -1833,7 +1833,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size(),
        id2clazz(cl).feature() == Types.resolved.f_array);
 
-    return id2clazz(cl).lookup(Types.resolved.f_array_internal_array)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_array_internal_array)._id;
   }
 
 
@@ -1853,7 +1853,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size(),
        id2clazz(cl).feature() == Types.resolved.f_fuzion_sys_array);
 
-    return id2clazz(cl).lookup(Types.resolved.f_fuzion_sys_array_data)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_sys_array_data)._id;
   }
 
 
@@ -1873,7 +1873,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size(),
        id2clazz(cl).feature() == Types.resolved.f_fuzion_sys_array);
 
-    return id2clazz(cl).lookup(Types.resolved.f_fuzion_sys_array_length)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_sys_array_length)._id;
   }
 
 
@@ -1891,7 +1891,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookup(Types.resolved.f_error_msg)._id;
+    return id2clazz(cl).lookupNeeded(Types.resolved.f_error_msg)._id;
   }
 
 
@@ -2236,7 +2236,7 @@ public class GeneratingFUIR extends FUIR
     var cl = clazzAt(s);
     var outerClazz = clazz(cl);
     var t = (Tag) getExpr(s);
-    var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE), t);
+    var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE));
     tc.instantiatedChoice(t);
     return tc._id;
   }
@@ -2334,7 +2334,7 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = id2clazz(cl);
     var b = (Box) getExpr(s);
     Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-    Clazz rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE), b);
+    Clazz rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
     if (rc.isRef() &&
         outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
       {
@@ -2496,7 +2496,7 @@ public class GeneratingFUIR extends FUIR
           }
         */
 
-        innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c, c.isInheritanceCall(), needsCode);
+        innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall(), needsCode);
           {
             if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
               {
@@ -2504,7 +2504,7 @@ public class GeneratingFUIR extends FUIR
                 cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
                   ? Types.resolved.f_Type_infix_colon_true
                   : Types.resolved.f_Type_infix_colon_false;
-                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c, c.isInheritanceCall(), needsCode);
+                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall(), needsCode);
               }
           }
 
@@ -2527,7 +2527,7 @@ public class GeneratingFUIR extends FUIR
         // field. Currently, back-ends (JVM) rely on this being a value, though.
         tclazz = tclazz.asValue();
       }
-    var fc = tclazz.lookup(a._assignedField, a, false);
+    var fc = tclazz.lookupNotNeeded(a._assignedField);
     if (fc.resultClazz().isUnitType())
       {
         fc = null;
@@ -2562,7 +2562,7 @@ public class GeneratingFUIR extends FUIR
       {
         Clazz sClazz = clazz(a._target, outerClazz, _inh.get(s - SITE_BASE));
         var vc = sClazz.asValue();
-        yield vc.lookup(a._assignedField, a, false);
+        yield vc.lookupNotNeeded(a._assignedField);
       }
 
 
@@ -2909,7 +2909,7 @@ public class GeneratingFUIR extends FUIR
       }
 
       case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
-      case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE), ia);
+      case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE));
       default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
       };
 
@@ -2989,7 +2989,7 @@ public class GeneratingFUIR extends FUIR
       {
         // NYI: Check if this works for a case that is part of an inherits clause, do
         // we need to store in outerClazz.outer?
-        result = outerClazz.lookup(f)._id;
+        result = outerClazz.lookupNotNeeded(f)._id;
       }
     return result;
   }

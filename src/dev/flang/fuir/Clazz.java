@@ -242,7 +242,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Does this clazz need code, i.e., for a routine: Is this ever called?  For a
-   * choice: Is this ever used?
+   * choice: Is this ever used? For a field: is it ever read?
    */
   boolean _needsCode;
 
@@ -257,15 +257,19 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Constructor
+   * Constructor for a Clazz
    *
-   * @param actualType the actual type this clazz is built on. The actual type
-   * must not be a generic argument.
+   * @fuiri FUIR instance used to lookup reference clazzes
+   *
+   * @param outer the outer clazz, will be normlized before it is used.
+   *
+   * @param type the actual type this clazz is built on. The actual type must
+   * not be a generic argument.
    *
    * @param select in case actualType refers to a field whose result type is an
    * open generic parameter, select specifies the actual generic to be used.
    *
-   * @param outer
+   * @param id the inter id used by FUIR to identify this Clazz.
    */
   Clazz(FUIRI fuiri,
         Clazz outer,
@@ -275,7 +279,8 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
-       !type.containsThisType());
+       !type.containsThisType(),
+       type.feature().resultType().isOpenGeneric() == (select >= 0));
 
     _fuiri = fuiri;
     outer = normalizeOuter(type, outer);
@@ -341,33 +346,33 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
 
-    void addInner(Clazz i)
-    {
-      if (PRECONDITIONS) require
-        (true || !_fuiri.lookupDone() /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ );
+  void addInner(Clazz i)
+  {
+    if (PRECONDITIONS) require
+      (true || !_fuiri.lookupDone() /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ );
 
-      if (_fuiri.lookupDone())
-        {
-          if (false)
-            { // NYI: CLEANUP: this should no longer happen, but it happens during layout phase, need to check why.
-              throw new Error("ADDING "+i+" to "+this);
-            }
-        }
-      _inner.add(i);
-    }
-
+    if (_fuiri.lookupDone())
+      {
+        if (false)
+          { // NYI: CLEANUP: this should no longer happen, but it happens during layout phase, need to check why.
+            throw new Error("ADDING "+i+" to "+this);
+          }
+      }
+    _inner.add(i);
+  }
 
 
   /**
-   * Check if the given feature has an outer ref that is used.
+   * Check if the given feature requires specialization for the exact outer
+   * clazz.
    *
    * If an outer ref is used to access the outer instance, we must not normalize
-   * because we will need the exact type of the outer instance to specialize code
-   * or to access features that only exist in the specific version
+   * because we will need the exact type of the outer instance to specialize
+   * code or to access features that only exist in the specific version
    *
    * @param f the feature to check if it has an outer ref
    */
-  private boolean hasUsedOuterRef(AbstractFeature f)
+  private boolean needsSpecialization(AbstractFeature f)
   {
     var or = f.outerRef();
 
@@ -392,7 +397,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
     var f = t.feature();
-    if (outer != null && !hasUsedOuterRef(f) && !f.isField() && t != Types.t_ERROR)
+    if (outer != null && !needsSpecialization(f) && !f.isField() && t != Types.t_ERROR)
       {
         outer = outer.normalize(t.feature().outer());
       }
@@ -420,11 +425,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // normalize anymore
         feature() == f ||
 
-        // if an outer ref is used (i.e., state is resolved) to access the
-        // outer instance, we must not normalize because we will need the
-        // exact type of the outer instance to specialize code or to access
-        // features that only exist in the specific version
-        hasUsedOuterRef(feature())
+        needsSpecialization(feature())
         )
       {
         return this;
@@ -548,20 +549,32 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-  boolean needsCode() { return _needsCode && (!_fuiri.lookupDone() || !feature().isField() || !resultClazz().isUnitType()); }
+  /**
+   * Does this clazz need code, i.e., for a routine: Is this ever called?  For a
+   * choice: Is this ever used? For a field: is it ever read?
+   */
+  boolean needsCode()
+  {
+    return _needsCode && (!_fuiri.lookupDone() || !feature().isField() || !resultClazz().isUnitType());
+  }
 
-    void doesNeedCode()
-    {
-      if (!_needsCode)
-        {
-          _needsCode = true;
-          var r = resultField();
-          if (r != null)
-            { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
-              r.doesNeedCode();
-            }
-        }
-    }
+
+
+  /**
+   * Record that this clazz needs code, or, in case of a field, is read at some point.
+   */
+  void doesNeedCode()
+  {
+    if (!_needsCode)
+      {
+        _needsCode = true;
+        var r = resultField();
+        if (r != null)
+          { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
+            r.doesNeedCode();
+          }
+      }
+  }
 
 
   /**
@@ -575,7 +588,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     t = replaceThisTypeForTypeFeature(t);
     if (t.isThisType())
       {
-        t = findOuter(t.feature(), t.feature())._type;
+        t = findOuter(t.feature())._type;
       }
     return t.applyToGenericsAndOuter(g -> replaceThisType(g));
   }
@@ -855,31 +868,10 @@ class Clazz extends ANY implements Comparable<Clazz>
     var rf = feature().resultField();
     if (rf != null)
       {
-        result = lookup(rf, feature());
+        result = lookupNeeded(rf);
       }
     return result;
   }
-
-
-    /**
-     * Lookup the code to call the feature f from this clazz without type
-     * parameters using dynamic binding if needed.
-     *
-     * This is not intended for use at runtime, but during analysis of static
-     * types or to fill the virtual call table.
-     *
-     * @param f the feature that is called
-     *
-     * @return the inner clazz of the target in the call.
-     */
-    Clazz lookup(AbstractFeature f)
-    {
-      if (PRECONDITIONS) require
-        (f != null,
-         !isVoidType());
-
-      return lookup(f, f.pos() /* NYI: _clazzes.isUsedAt(f) */);
-    }
 
 
     /**
@@ -898,20 +890,22 @@ class Clazz extends ANY implements Comparable<Clazz>
      *
      * @return the inner clazz of the target in the call.
      */
-    Clazz lookup(AbstractFeature f,
-                 HasSourcePosition p)
+    Clazz lookupNeeded(AbstractFeature f)
     {
-      return lookup(f, p, true);
+      return lookup(f, true);
+    }
+    Clazz lookupNotNeeded(AbstractFeature f)
+    {
+      return lookup(f, false);
     }
     Clazz lookup(AbstractFeature f,
-                 HasSourcePosition p,
                  boolean needed)
     {
       if (PRECONDITIONS) require
         (f != null,
          !isVoidType());
 
-      return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, p, false, needed);
+      return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, false, needed);
     }
 
 
@@ -931,9 +925,9 @@ class Clazz extends ANY implements Comparable<Clazz>
      *
      * @return the inner clazz of the target in the call.
      */
-    public Clazz lookup(dev.flang.air.FeatureAndActuals fa, HasSourcePosition p)
+    public Clazz lookup(dev.flang.air.FeatureAndActuals fa)
     {
-      return lookup(fa, -1, p, false, true);
+      return lookup(fa, -1, false, true);
     }
 
 
@@ -944,7 +938,6 @@ class Clazz extends ANY implements Comparable<Clazz>
         : lookup(new FeatureAndActuals(c.calledFeature(),
                                        typePars),
                  c.select(),
-                 c,
                  c.isInheritanceCall(),
                  needsCode);
     }
@@ -975,7 +968,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz lookup(dev.flang.air.FeatureAndActuals fa,
                int select,
-               HasSourcePosition p,
                boolean isInheritanceCall,
                boolean needed)
   {
@@ -1271,9 +1263,9 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (res == null)
       {
         var or = feature().outerRef();
-        if (or != null)
+        if (!isBoxed() && or != null)
           {
-            res = lookup(new FeatureAndActuals(or, new List<>()), -1, feature(), false, false);
+            res = lookup(new FeatureAndActuals(or, new List<>()), -1, false, false);
           }
         else
           {
@@ -1379,14 +1371,13 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param pos a source code position, used to report errors.
    */
-  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh, HasSourcePosition pos)
+  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)),
-       Errors.any() || inh != null,
-       pos != null);
+       Errors.any() || inh != null);
 
     var o = feature();
     var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
@@ -1419,7 +1410,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               }
           }
         t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
-        oc = oc.getOuter(o, pos);
+        oc = oc.getOuter(o);
         o = (LibraryFeature) o.outer();
       }
 
@@ -1431,15 +1422,14 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Convenience version of `handDown` with `select` set to `-1`.
    */
-  Clazz handDown(AbstractType t, List<AbstractCall> inh, HasSourcePosition pos)
+  Clazz handDown(AbstractType t, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
-       pos != null,
        !t.isOpenGeneric());
 
-    return handDown(t, -1, inh, pos);
+    return handDown(t, -1, inh);
   }
 
 
@@ -1523,10 +1513,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         else
           {
             var ft = f.resultType();
-            result = handDown(ft, _select, new List<>(), feature());
+            result = handDown(ft, _select, new List<>());
             if (result.feature().isTypeFeature())
               {
-                var ac = handDown(result._type.generics().get(0), new List<>(), feature());
+                var ac = handDown(result._type.generics().get(0), new List<>());
                 result = ac.typeClazz();
               }
           }
@@ -1622,11 +1612,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param o the outer feature whose clazz we are searching for.
    *
-   * @param pos a position for error messages.
-   *
    * @return the outer clazz of this corresponding feature `o`.
    */
-  Clazz findOuter(AbstractFeature o, HasSourcePosition pos)
+  Clazz findOuter(AbstractFeature o)
   {
     /* starting with feature(), follow outer references
      * until we find o.
@@ -1637,7 +1625,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       && !(i.isThisRef() && i.inheritsFrom(o)) // see #1391 and #1628 for when this can be the case.
     )
       {
-        res =  i.hasOuterRef() ? res.lookup(i.outerRef(), pos).resultClazz()
+        res =  i.hasOuterRef() ? res.lookupNotNeeded(i.outerRef()).resultClazz()
                                : res._outer;
         i = (LibraryFeature) i.outer();
       }
@@ -1656,10 +1644,8 @@ class Clazz extends ANY implements Comparable<Clazz>
    * `getOuter(i32)` will be `universe`.
    *
    * @param p a feature that is either equal to this or a direct parent of x.
-   *
-   * @param pos source position for error reporting only.
    */
-  Clazz getOuter(AbstractFeature p, HasSourcePosition pos)
+  Clazz getOuter(AbstractFeature p)
   {
     var res =
       p.hasOuterRef()        ? /* we either inherit from p as in
@@ -1670,7 +1656,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                                 * to `p` is `a.b.c`, which is the result type
                                 * of `p`'s outer ref:
                                 */
-                               lookup(p.outerRef(), pos, false).resultClazz() :
+                               lookupNotNeeded(p.outerRef()).resultClazz() :
       p.isUniverse() ||
       p.outer().isUniverse() ? _fuiri.universe()
                              : /* a field or choice, so there is no inherits
@@ -1863,10 +1849,8 @@ class Clazz extends ANY implements Comparable<Clazz>
             else
               {
                 var cfa = cf.valueArguments().get(i);
-                // argFields[i] = lookup(cfa, _clazzes.isUsedAt(f));
               }
           }
-        //        _parentCallArgFields.put(c.globalIndex(), argFields);
 
         if (CHECKS) check
           (Errors.any() || cf != null);
@@ -2193,12 +2177,12 @@ class Clazz extends ANY implements Comparable<Clazz>
                 var n = replaceOpenCount(field);
                 for (var i = 0; i < n; i++)
                   {
-                    fields.add(lookup(new FeatureAndActuals(field), i, SourcePosition.builtIn, false, true));
+                    fields.add(lookup(new FeatureAndActuals(field), i, false, true));
                   }
               }
             else
               {
-                fields.add(lookup(field));
+                fields.add(lookupNotNeeded(field));
               }
           }
       }
