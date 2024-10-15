@@ -74,13 +74,6 @@ is
     if is_nil then f() else option.this
 
 
-  # map this option using f, i.e., map nil to nil and any value v to f v
-  #
-  public map_to_option(B type, f T -> B) option B =>
-    option.this ? v T => f v
-                | nil => nil
-
-
   # converts option to a string
   #
   # returns the result of $T for an option containing an instance
