@@ -111,6 +111,22 @@ is
                 | B => nil
 
 
+  # convert this switch to an option
+  #
+  public as_option option A
+  =>
+    switch.this ? a A => a
+                | B => nil
+
+
+  # convert this switch to an outcome
+  #
+  public as_outcome outcome A
+  =>
+    switch.this ? a A => a
+                | B => error "switch.as_outcome: failure converting switch to outcome"
+
+
   # unwrap this switch
   #
   public redef unwrap ! try switch.this =>
