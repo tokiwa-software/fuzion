@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -152,6 +153,7 @@ public class GeneratingFUIR extends FUIR
 
     final Clazz _outer;
 
+    int gix() { return _feature.globalIndex(); }
     final LibraryFeature _feature;
     LibraryFeature feature() { return _feature; }
     static final Clazz[] NO_CLAZZES = new Clazz[0];
@@ -645,6 +647,12 @@ public class GeneratingFUIR extends FUIR
     {
       return compareTo((Clazz)other)==0;
     }
+    @Override
+    public int hashCode()
+    {
+      return (_type.isRef() ? 0x777377 : 0) ^ gix();  // NYI: outer and type parameters!
+    }
+
 
 
   /**
@@ -2364,6 +2372,7 @@ public class GeneratingFUIR extends FUIR
   private final FrontEnd _fe;
 
   private final TreeMap<Clazz, Clazz> _clazzesTM;
+  private final HashMap<Clazz, Clazz> _clazzesHM;
 
 
   /**
@@ -2405,6 +2414,7 @@ public class GeneratingFUIR extends FUIR
     _fe = fe;
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
+    _clazzesHM = new HashMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
     _accessedClazz = new IntMap<>();
     _accessedClazzes = new IntMap<>();
@@ -2435,6 +2445,7 @@ public class GeneratingFUIR extends FUIR
     original._lookupDone = true;
     _lookupDone = true;
     _clazzesTM = original._clazzesTM;
+    _clazzesHM = original._clazzesHM;
     _siteClazzes = original._siteClazzes;
     _accessedClazz = original._accessedClazz;
     _accessedClazzes = original._accessedClazzes;
@@ -2523,7 +2534,8 @@ public class GeneratingFUIR extends FUIR
     var t = actualType;
 
     var cl = new Clazz(_fuiri, outerR, t, CLAZZ_BASE + _clazzes.size());
-    var existing = _clazzesTM.get(cl);
+    // var existing = _clazzesTM.get(cl);
+    var existing = _clazzesHM.get(cl);
     if (existing != null)
       {
         result = existing;
@@ -2533,6 +2545,7 @@ public class GeneratingFUIR extends FUIR
         result = cl;
         _clazzes.add(cl);
         _clazzesTM.put(cl, cl);
+        _clazzesHM.put(cl, cl);
 
         if (outerR != null)
           {
