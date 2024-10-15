@@ -93,7 +93,7 @@ public class GeneratingFUIR extends FUIR
   /*-----------------------------  classes  -----------------------------*/
 
 
-  class Clazz
+  class Clazz implements Comparable<Clazz>
   {
     final int _id;
 
