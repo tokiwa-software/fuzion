@@ -1719,10 +1719,14 @@ public class C extends ANY
     var aii = _fuir.hasData(tc) ? 1 : 0;
     for (int ai = 0; ai < ac; ai++)
       {
+        var af = _fuir.clazzArg     (vcl, ai);
         var at = _fuir.clazzArgClazz(vcl, ai);
         if (_fuir.hasData(at))
           {
-            l.add(assign(CIdent.arg(ai), a.get(aii), at));
+            if (_fuir.clazzNeedsCode(af))
+              {
+                l.add(assign(CIdent.arg(ai), a.get(aii), at));
+              }
             aii = aii + 1;
           }
       }
