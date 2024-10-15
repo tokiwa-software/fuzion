@@ -47,7 +47,7 @@ interface FUIRI
   Clazz universe();
   Clazz type2clazz(AbstractType thiz);
   Clazz newClazz(AbstractType t);
-  Clazz newClazz(Clazz outer, AbstractType actualType);
+  Clazz newClazz(Clazz outer, AbstractType actualType, int select);
   boolean lookupDone();
   Clazz error();
   LibraryModule mainModule();
