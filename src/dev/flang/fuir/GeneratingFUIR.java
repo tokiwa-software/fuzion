@@ -461,7 +461,7 @@ public class GeneratingFUIR extends FUIR
                 _specialClazzes[s.ordinal()] = result;
               }
           }
-        cl._s = s;
+        cl._specialClazzId = s;
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init();
 
@@ -1497,7 +1497,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c._s;
+    return c._specialClazzId;
   }
 
 
@@ -1517,7 +1517,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl)._s == c;
+    return id2clazz(cl)._specialClazzId == c;
   }
 
 

@@ -82,9 +82,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   static final Clazz[] NO_CLAZZES = new Clazz[0];
 
 
-  final FUIRI _fuiri;
-
-
   /*-----------------------------  classes  -----------------------------*/
 
 
@@ -123,11 +120,11 @@ class Clazz extends ANY implements Comparable<Clazz>
   public final Clazz _outer;
 
 
-  final int _id;
+  /**
+   * Cached actual type parameters of this clazz
+   */
+  Clazz[] _actualTypeParameters = NO_CLAZZES;
 
-
-    Clazz[] _actualTypeParameters = NO_CLAZZES;
-    Clazz[] actualTypeParameters() { return _actualTypeParameters; }
 
   /**
    * Cached result of choiceGenerics(), only used if isChoice() and
@@ -144,13 +141,35 @@ class Clazz extends ANY implements Comparable<Clazz>
   LayoutStatus _layouting = LayoutStatus.Before;
 
 
-    FUIR.SpecialClazzes _s = FUIR.SpecialClazzes.c_NOT_FOUND;
-    boolean _needsCode;
-    int _code; // site of the code block of this clazz
-    Clazz _outerRef = null;
+  /**
+   * The argument fields of this routine.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz[] _argumentFields;
 
-    Clazz[] _fields = null;
-    Clazz[] _argumentFields = null;
+
+  /**
+   * If this clazz contains a direct outer ref field, this is the direct outer
+   * ref. null otherwise.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz _outerRef;
+
+
+  /**
+   * Fields in instances of this clazz. Set during layout phase.
+   */
+  Clazz[] _fields;
+
+
+  /**
+   * For a clazz with isRef()==true, this will be set to a value version of this
+   * clazz.
+   */
+  private Clazz _asValue;
+
 
     Clazz _resultClazz = null;
 
@@ -159,7 +178,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Will instances of this class be created?
    */
-    private boolean _isInstantiatedChoice = true; // NYI: false;
+  private boolean _isInstantiatedChoice = true; // NYI: false;
 
   /**
    * Is this a normalized outer clazz? If so, there might be calls on this as an
@@ -168,13 +187,13 @@ class Clazz extends ANY implements Comparable<Clazz>
   public boolean _isNormalized = false;
 
 
-    /**
-     * Set of all heirs of this clazz.
-     */
-    Set<Clazz> _heirs = null;
+  /**
+   * Set of all heirs of this clazz.
+   */
+  Set<Clazz> _heirs = null;
 
 
-    List<Clazz> _inner = new List<>();
+  List<Clazz> _inner = new List<>();
 
 
 
@@ -188,8 +207,10 @@ class Clazz extends ANY implements Comparable<Clazz>
   final Map<FeatureAndActuals, Object> _innerFromAir = new TreeMap<>();
 
 
-
-    YesNo _isUnitType = YesNo.dontKnow;
+  /**
+   * Cached result of isUnitType().
+   */
+  YesNo _isUnitType = YesNo.dontKnow;
 
 
   /**
@@ -198,9 +219,40 @@ class Clazz extends ANY implements Comparable<Clazz>
   private Set<Clazz> _parents = null;
 
 
-    boolean _closed = false;
 
-    Clazz _asValue;
+  /**
+   * Interface to FUIR instance used to with this Clazz.
+   */
+  final FUIRI _fuiri;
+
+
+  /**
+   * Integer id of this Clazz used in FUIR instance.
+   */
+  final int _id;
+
+
+  /**
+   * Special clazz id to quickly check if this is a given special clazz.
+   */
+  FUIR.SpecialClazzes _specialClazzId = FUIR.SpecialClazzes.c_NOT_FOUND;
+
+
+  /**
+   * Does this clazz need code, i.e., for a routine: Is this ever called?  For a
+   * choice: Is this ever used?
+   */
+  boolean _needsCode;
+
+
+  /**
+   * For a routine with _needsCode: Site of the code block of this clazz
+   */
+  int _code;
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
 
     Clazz(FUIRI fuiri,
           Clazz outer,
@@ -290,7 +342,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     void addInner(Clazz i)
     {
       if (PRECONDITIONS) require
-        (!_closed);
+        (true || !_fuiri.lookupDone() /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ );
 
       if (_fuiri.lookupDone())
         {
@@ -641,7 +693,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     var res = YesNo.no;
-    if (_s == FUIR.SpecialClazzes.c_unit)
+    if (_specialClazzId == FUIR.SpecialClazzes.c_unit)
       {
         res = YesNo.yes;
       }
@@ -691,7 +743,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isVoidType()
   {
-    return this._s == FUIR.SpecialClazzes.c_void;
+    return this._specialClazzId == FUIR.SpecialClazzes.c_void;
   }
 
 
@@ -1816,6 +1868,16 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * The actual type parameters of this clazz. E.g. for `list i32` this returns
+   * `[ i32 ]`.
+   */
+  Clazz[] actualTypeParameters()
+  {
+    return _actualTypeParameters;
+  }
+
+
+  /**
    * Is this a choice-type, i.e., does it directly inherit from choice?
    */
   public boolean isChoice()
@@ -1943,7 +2005,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       // NYI: Once Clazz.normalize() is implemented better, a clazz C has
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
-      o._s == FUIR.SpecialClazzes.c_Any    ||
+      o._specialClazzId == FUIR.SpecialClazzes.c_Any    ||
 
       o._isNormalized ||
 
