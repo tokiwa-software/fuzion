@@ -242,6 +242,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         }
 
       inspectCode(new List<>(), _feature);
+      // NYI: UNDER DEVELOPMENT: we might want to create the result clazz early
+      // to avoid adding clazzes one lookupDone is set:
+      //
+      // var ignore = resultClazz();
     }
 
     Clazz outerRef()
@@ -276,6 +280,13 @@ class Clazz extends ANY implements Comparable<Clazz>
       if (PRECONDITIONS) require
         (!_closed);
 
+      if (_fuiri.lookupDone())
+        {
+          if (false)
+            { // NYI: CLEANUP: this should no longer happen, but it happens during layout phase, need to check why.
+              throw new Error("ADDING "+i+" to "+this);
+            }
+        }
       _inner.add(i);
     }
 
@@ -642,13 +653,16 @@ class Clazz extends ANY implements Comparable<Clazz>
           // Object layout will later report an error for this case. (NYI: check this with a test!)
           _isUnitType = YesNo.no;
           res = YesNo.yes;
-          for(var i : _inner)
+          var os = _inner.size();
+
+          // NOTE: We cannot use `for (var i : _inner)` since `resultClazz` may
+          // add inner clazzes even if lookupDone() is set.
+          for (var ix = 0; ix < _inner.size(); ix++)
             {
-              if (i.clazzKind() == IR.FeatureKind.Field)
-                {
-                  var rc = i.resultClazz();
-                  res = rc.isUnitType() ? res : YesNo.no;
-                }
+              var i = _inner.get(ix);
+              res = i.clazzKind() != IR.FeatureKind.Field ||
+                    i.resultClazz().isUnitType()             ? res
+                                                             : YesNo.no;
             }
           _isUnitType = YesNo.dontKnow;
         }
@@ -1481,6 +1495,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   public Clazz resultClazz()
   {
+    if (PRECONDITIONS) require
+      (!isChoice());
+
     var result = _resultClazz;
     if (result == null)
       {
@@ -1797,6 +1814,15 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
+
+
+  /**
+   * Is this the universe?
+   */
+  public boolean isUniverse()
+  {
+    return feature().isUniverse();
+  }
 
 
   /**
