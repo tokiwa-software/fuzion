@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -196,7 +197,8 @@ public class GeneratingFUIR extends FUIR
   private final FrontEnd _fe;
 
   private final TreeMap<Clazz, Clazz> _clazzesTM;
-  private final java.util.HashMap<Clazz, Clazz> _clazzesHM;
+  private final HashMap<Clazz, Clazz> _clazzesHM;
+
 
   /**
    * For each site, this gives the clazz id of the clazz that contains the code at that site.
@@ -237,7 +239,7 @@ public class GeneratingFUIR extends FUIR
     _fe = fe;
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
-    _clazzesHM = new java.util.HashMap<Clazz, Clazz>();
+    _clazzesHM = new HashMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
     _accessedClazz = new IntMap<>();
     _accessedClazzes = new IntMap<>();
