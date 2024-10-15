@@ -53,6 +53,8 @@ import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.YesNo;
 
+import java.lang.Comparable;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -66,7 +68,7 @@ import java.util.TreeSet;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Clazz extends ANY
+class Clazz extends ANY implements Comparable<Clazz>
   {
     final FUIRI _fuiri;
 
@@ -108,11 +110,6 @@ class Clazz extends ANY
     Clazz _resultClazz = null;
 
 
-
-  /**
-   * Will instances of this class be created?
-   */
-    private boolean _isInstantiated = true; // NYI: false;
 
   /**
    * Is this a normalized outer clazz? If so, there might be calls on this as an
@@ -1107,11 +1104,6 @@ class Clazz extends ANY
                 }
             }
         }
-      if (p != null && !isInheritanceCall && innerClazz._type != Types.t_UNDEFINED)
-        {
-          //innerClazz.called(p);
-          //innerClazz.instantiated(p);
-        }
 
       /*
       if (POSTCONDITIONS) ensure
@@ -1692,7 +1684,7 @@ class Clazz extends ANY
     {
       String result;
       var o = _outer;
-      String outer = o != null && o.feature().isUniverse() ? "" : o.asStringWrapped(humanReadable) + ".";
+      String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped(humanReadable) + "." : "";
       var f = _feature;
       var typeType = f.isTypeFeature();
       if (typeType)
@@ -1891,118 +1883,6 @@ class Clazz extends ANY
       (isChoice());
 
     return _choiceGenerics;
-  }
-
-
-
-  /**
-   * Mark clazz cl and all its outers as instantiated.
-   * In case it is a choice, mark all its
-   * choice generics as instantiated as well.
-   *
-   * @param cl the clazz we want to mark as instantiated
-   *
-   * @param at where the instantiation is taking place
-   */
-  private void markInstantiated(Clazz cl, HasSourcePosition at)
-  {
-    cl.instantiated(at);
-    if (cl.isChoice())
-      {
-        // e.g. `java.call_c0` may return `outcome x`
-        for (var cg : cl.choiceGenerics())
-          {
-            markInstantiated(cg, at);
-          }
-      }
-    else
-      {
-        var o = cl._outer;
-        while (o != null)
-          {
-            o.instantiated(at);
-            o = o._outer;
-          }
-      }
-  }
-
-
-  /**
-   * Mark this as instantiated at given source code position.
-   *
-   * @param at gives the position in the source code that causes this instantiation.
-   */
-  void instantiated(HasSourcePosition at)
-  {
-    if (PRECONDITIONS) require
-      (at != null);
-
-    if (!_isInstantiated && !isVoidType())
-      {
-        _isInstantiated = true;
-      }
-  }
-
-
-  /**
-   * Check of _outer is instantiated.
-   */
-  private boolean isOuterInstantiated()
-  {
-    var o = _outer;
-    return o == null ||
-
-      // NYI: Once Clazz.normalize() is implemented better, a clazz C has
-      // to be considered instantiated if there is any clazz D that
-      // normalize() would replace by C if it occurs as an outer clazz.
-      o._s == FUIR.SpecialClazzes.c_Any    ||
-
-      o._isNormalized ||
-
-      o.isInstantiated();
-  }
-
-
-  /**
-   * Flag to detect endless recursion between isInstantiated() and
-   * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
-   * its outer clazz.
-   */
-  private int _checkingInstantiatedHeirs = 0;
-
-
-  /**
-   * Helper for isInstantiated to check if outer clazz this is a ref and there
-   * are heir clazzes of this that are refs and that are instantiated.
-   *
-   * @return true iff this is a ref and there exists an heir of this that is
-   * instantiated.
-   */
-  public boolean hasInstantiatedHeirs()
-  {
-    var result = false;
-    for (var h : heirs())
-      {
-        h._checkingInstantiatedHeirs++;
-        result = result
-          || h != this && h.isInstantiated();
-        h._checkingInstantiatedHeirs--;
-      }
-    return result;
-  }
-
-
-  /**
-   * Is this clazz instantiated?  This tests this._isInstantiated and,
-   * recursively, _outer.isInstantiated().
-   */
-  public boolean isInstantiated()
-  {
-    return _isInstantiated
-      && (_checkingInstantiatedHeirs > 0
-          || (isOuterInstantiated()
-              || isChoice()
-              || _outer.isRef() && _outer.hasInstantiatedHeirs()));
   }
 
 

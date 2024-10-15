@@ -105,7 +105,7 @@ public class GeneratingFUIR extends FUIR
       }
       public Clazz newClazz(AbstractType t)
       {
-        return newClazz(t);
+        return GeneratingFUIR.this.newClazz(t);
       }
       public Clazz newClazz(Clazz outer, AbstractType actualType)
       {
@@ -910,7 +910,7 @@ public class GeneratingFUIR extends FUIR
     var cc = id2clazz(cl);
     var cg = cc.choiceGenerics().get(i);
     var res = cg.isRef()          ||
-              cg.isInstantiated()    ? cg
+              cg.needsCode()         ? cg
                                      : id2clazz(clazz(SpecialClazzes.c_void));
     return res._id;
   }
@@ -986,7 +986,7 @@ public class GeneratingFUIR extends FUIR
     var result = new List<Clazz>();
     for (var h : c.heirs())
       {
-        if (h.isInstantiated())
+        if (h.needsCode())
           {
             result.add(h);
           }
@@ -1100,7 +1100,8 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.resultField()._id;
+    var r = c.resultField();
+    return r == null ? NO_CLAZZ : r._id;
   }
 
 
@@ -1158,18 +1159,18 @@ public class GeneratingFUIR extends FUIR
           {
             c.doesNeedCode();
           }
-        result = addCodeX(cl, c);
+        result = addCode(cl, c);
         c._code = result;
       }
     return result;
   }
 
 
-  int addCodeX(int cl, Clazz c)
+  int addCode(int cl, Clazz c)
   {
     var code = new List<Object>();
     var inhe = new List<List<AbstractCall>>();
-    addCodeI(cl, c, code, inhe, c.feature(), NO_INH);
+    addCode(cl, c, code, inhe, c.feature(), NO_INH);
     check
       (code.size() == inhe.size(),
        _allCode.size() == _inh.size());
@@ -1184,20 +1185,10 @@ public class GeneratingFUIR extends FUIR
       }
     check
       (_allCode.size() == _siteClazzes.size());
-    // NYI:     recordClazzForSitesOfRecentlyAddedCode(cl);
-    /* NYI:
-    var result = _nextSite;
-    _nextSite += m.codeSize(code) + 1;
-    for (var i = result; i < _nextSite; i++)
-      {
-        _siteClazzes.add(cl);
-      }
-    */
-    //System.out.println("Code added for "+c.asString(true)+" "+(_allCode.size() - (result - SITE_BASE)));
     return result;
   }
 
-  void addCodeI(int cl, Clazz c, List<Object> code, List<List<AbstractCall>> inhe, LibraryFeature ff, List<AbstractCall> inh)
+  void addCode(int cl, Clazz c, List<Object> code, List<List<AbstractCall>> inhe, LibraryFeature ff, List<AbstractCall> inh)
   {
     if (!clazzIsVoidType(cl))
       {
@@ -1253,7 +1244,7 @@ public class GeneratingFUIR extends FUIR
             var inh1 = new List<AbstractCall>();
             inh1.add(p);
             inh1.addAll(inh);
-            addCodeI(cl, c, code, inhe, pf, inh1);
+            addCode(cl, c, code, inhe, pf, inh1);
           }
         toStack(code, ff.code());
         while (inhe.size() < code.size()) { inhe.add(inh); }
@@ -2191,7 +2182,7 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = clazz(cl);
     var t = (Tag) getExpr(s);
     var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE), t);
-    tc.instantiated(t);
+    tc.doesNeedCode();
     return tc._id;
   }
 
