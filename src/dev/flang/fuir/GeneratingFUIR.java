@@ -144,7 +144,7 @@ public class GeneratingFUIR extends FUIR
 
 
   static
-  class Clazz
+  class Clazz implements Comparable<Clazz>
   {
     final FUIRI _fuiri;
 
