@@ -53,8 +53,6 @@ import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.YesNo;
 
-import java.lang.Comparable;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -547,13 +545,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result = compareToIgnoreOuter(other);
     if (result == 0)
       {
-        var tp = actualTypeParameters().length;
-        var op = other.actualTypeParameters().length;
-        result = Integer.compare(tp, op);
-        if (result == 0)
-          {
-            result = compareOuter(other);
-          }
+        result = compareOuter(other);
       }
     return result;
   }
@@ -567,10 +559,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result =
       this._select < other._select ? -1 :
       this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
-    if (result == 0)
-      {
-        check(this._type.generics().size() == other._type.generics().size());
-      }
     return result;
   }
 
@@ -1984,7 +1972,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return _isInstantiatedChoice
       && (_checkingInstantiatedHeirs > 0
-          || (true // NYI: was isOuterInstantiated()
+          || (isOuterInstantiated()
               || isChoice()
               || _outer.isRef() && _outer.hasInstantiatedChoiceHeirs()));
   }
