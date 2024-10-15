@@ -1495,9 +1495,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   public Clazz resultClazz()
   {
-    if (PRECONDITIONS) require
-      (!isChoice());
-
     var result = _resultClazz;
     if (result == null)
       {
