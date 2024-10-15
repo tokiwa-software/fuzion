@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.c;
 
 import java.io.IOException;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -39,10 +38,9 @@ import java.util.stream.Stream;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.fuir.analysis.TailCall;
 import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.ir.IR.FeatureKind;
-import dev.flang.fuir.analysis.TailCall;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -992,7 +990,9 @@ public class C extends ANY
                     "fuzion.java.array_length",
                     "fuzion.java.array_to_java_object0",
                     "fuzion.java.get_field0",
+                    "fuzion.java.set_field0",
                     "fuzion.java.get_static_field0",
+                    "fuzion.java.set_static_field0",
                     "fuzion.java.call_c0",
                     "fuzion.java.call_s0",
                     "fuzion.java.call_v0",

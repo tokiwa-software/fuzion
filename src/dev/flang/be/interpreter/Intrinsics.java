@@ -749,6 +749,25 @@ public class Intrinsics extends ANY
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
+    putUnsafe("fuzion.java.set_static_field0",
+        "fuzion.java.set_field0"      , (executor, innerClazz) ->
+        {
+          String in = executor.fuir().clazzOriginalName(innerClazz);
+          var statique = in.equals("fuzion.java.set_static_field0");
+          int resultClazz = executor.fuir().clazzActualGeneric(innerClazz, 0);
+          return args ->
+            {
+              Instance clazzOrThizI = (Instance) args.get(1);
+              Instance fieldI = (Instance) args.get(2);
+              Instance value = (Instance) args.get(3);
+              String clazz = !statique ? null : (String) JavaInterface.instanceToJavaObject(clazzOrThizI);
+              Object thiz  = statique  ? null :          JavaInterface.instanceToJavaObject(clazzOrThizI);
+              String field = (String) JavaInterface.instanceToJavaObject(fieldI);
+              Object val  = JavaInterface.instanceToJavaObject(value);
+              JavaInterface.setField(clazz, thiz, field, val);
+              return Value.EMPTY_VALUE;
+            };
+        });
     putUnsafe("fuzion.java.call_v0",
         "fuzion.java.call_s0",
         "fuzion.java.call_c0", (executor, innerClazz) ->

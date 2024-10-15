@@ -31,7 +31,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.Graph;
@@ -518,6 +517,8 @@ public class CFG extends ANY
     put("fuzion.java.f64_to_java_object"    , (cfg, cl) -> { } );
     put("fuzion.java.get_field0"            , (cfg, cl) -> { } );
     put("fuzion.java.get_static_field0"     , (cfg, cl) -> { } );
+    put("fuzion.java.set_field0"            , (cfg, cl) -> { } );
+    put("fuzion.java.set_static_field0"     , (cfg, cl) -> { } );
     put("fuzion.java.i16_to_java_object"    , (cfg, cl) -> { } );
     put("fuzion.java.i32_to_java_object"    , (cfg, cl) -> { } );
     put("fuzion.java.i64_to_java_object"    , (cfg, cl) -> { } );
