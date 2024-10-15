@@ -1228,19 +1228,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     return result;
   }
 
-    Clazz asValue()
-    {
-      if (_asValue == null)
-        {
-          _asValue = isRef() && _type != Types.t_ADDRESS
-            ? _fuiri.newClazz(_outer, _type.asValue(), _select)
-            : this;
-        }
-      if (CHECKS) check
-        (!_asValue.isRef());
-      return _asValue;
-    }
-
 
   /**
    * In case this is a Clazz of value type, create the corresponding reference clazz.
@@ -1275,164 +1262,6 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     return res == this ? null : res;
   }
-
-
-  /**
-   * Hand down a list of types along a given inheritance chain.
-   *
-   * @param tl the original list of types to be handed down
-   *
-   * @param inh the inheritance chain from the parent down to the child
-   *
-   * @return a new list of types as they are appear after inheritance. The
-   * length might be different due to open type parameters being replaced by a
-   * list of types.
-   */
-  public List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
-  {
-    for (AbstractCall c : inh)
-      {
-        var f = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.isOpenGeneric()
-                             ? t.genericArgument().replaceOpen(actualTypes)
-                             : new List<>(t.applyTypePars(f, actualTypes)));
-      }
-    return tl;
-  }
-
-
-  /**
-   * Helper for `handDown`: Change type `t`'s type parameters along the
-   * inheritance chain `inh`.
-   *
-   * ex: in this code
-   *
-   *    a(T type) is
-   *      x T => ...
-   *    b(U type) : a Sequence U  is
-   *    c(V type) : b option V is
-   *
-   * the result type `T` of `x` if used within `c` must be handed down via the inheritance chain
-   *
-   *    `a Sequence U'
-   *    'b option B'
-   *
-   * so it will be replaced by `Sequence (option V)`.
-   *
-   * @param t the type to hand down
-   *
-   * @param select if t is an open generic parameter, this specifies the actual
-   * argument to select.
-   *
-   * @param inh the inheritance call chain
-   *
-   * @return the type `t` as seen after inheritance
-   */
-  AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (t != null,
-       Errors.any() || !t.isOpenGeneric() || (select >= 0),
-       inh != null);
-
-    for (AbstractCall c : inh)
-      {
-        t = t.applyTypeParsLocally(c.calledFeature(),
-                                   c.actualTypeParameters(), select);
-      }
-    return t;
-  }
-
-
-  /**
-   * Hand down the given type along the given inheritance chain and along all
-   * inheritance chains of outer clazzes such that it has the actual type
-   * parameters in this clazz.
-   *
-   * @param t the original type
-   *
-   * @param select in case t is an open generic, the variant of the actual type
-   * that is to be chosen.  -1 otherwise.
-   *
-   * @param inh the inheritance change that brought is here. This is usually an
-   * empty list, only in case this is used in a (recursively) inlined inherits
-   * call, then inh gives the sequence of inherits calls from bottom (child) to
-   * top (parent).  E.g., in
-   *
-   *    sum(T type : numeric, a, b T) is
-   *       res := a + b
-   *
-   *    sum_of_3_and_5 : sum i32 3 5 is
-   *
-   * the type `T` used in `res := a + b` gets replaced by `i32` when this code
-   * is inlined to the constructor of `sum_of_3_and_5` via the inherits call
-   * `sum i32 3 5`.
-   *
-   * @param pos a source code position, used to report errors.
-   */
-  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (t != null,
-       Errors.any() || t != Types.t_ERROR,
-       Errors.any() || (t.isOpenGeneric() == (select >= 0)),
-       Errors.any() || inh != null);
-
-    var o = feature();
-    var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
-    var oc = this;
-    while (!o.isUniverse() && o != null && oc != null &&
-
-           /* In case of type features, we can have the following loop
-
-                oc: (((io.#type io).out.#type io.out).default_print_handler).println o: io.Print_Handler.println
-                oc: ( (io.#type io).out.#type io.out).default_print_handler          o: io.Print_Handler
-                oc:   (io.#type io).out.#type io.out                                 o: io
-                oc:    io.#type io                                                   o: universe
-
-              here, stop at (io.#type io).out.#type vs. io:
-            */
-           !(oc.feature().isTypeFeature() && !o.isTypeFeature())
-           )
-      {
-        var f = oc.feature();
-        var inh2 = f.tryFindInheritanceChain(o);
-        if (CHECKS) check
-          (Errors.any() || inh2 != null);
-        if (inh2 != null)
-          {
-            t1 = handDownThroughInheritsCalls(t1, select, inh2);
-            t1 = t1.applyTypeParsLocally(oc._type, select);
-            if (inh2.size() > 0)
-              {
-                o = f;
-              }
-          }
-        t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
-        oc = oc.getOuter(o);
-        o = (LibraryFeature) o.outer();
-      }
-
-    var t2 = replaceThisType(t1);
-    return _fuiri.type2clazz(t2);
-  }
-
-
-  /**
-   * Convenience version of `handDown` with `select` set to `-1`.
-   */
-  Clazz handDown(AbstractType t, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (t != null,
-       Errors.any() || t != Types.t_ERROR,
-       !t.isOpenGeneric());
-
-    return handDown(t, -1, inh);
-  }
-
-
 
 
   /**
@@ -2067,6 +1896,162 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Hand down a list of types along a given inheritance chain.
+   *
+   * @param tl the original list of types to be handed down
+   *
+   * @param inh the inheritance chain from the parent down to the child
+   *
+   * @return a new list of types as they are appear after inheritance. The
+   * length might be different due to open type parameters being replaced by a
+   * list of types.
+   */
+  public List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
+  {
+    for (AbstractCall c : inh)
+      {
+        var f = c.calledFeature();
+        var actualTypes = c.actualTypeParameters();
+        tl = tl.flatMap(t -> t.isOpenGeneric()
+                             ? t.genericArgument().replaceOpen(actualTypes)
+                             : new List<>(t.applyTypePars(f, actualTypes)));
+      }
+    return tl;
+  }
+
+
+  /**
+   * Helper for `handDown`: Change type `t`'s type parameters along the
+   * inheritance chain `inh`.
+   *
+   * ex: in this code
+   *
+   *    a(T type) is
+   *      x T => ...
+   *    b(U type) : a Sequence U  is
+   *    c(V type) : b option V is
+   *
+   * the result type `T` of `x` if used within `c` must be handed down via the inheritance chain
+   *
+   *    `a Sequence U'
+   *    'b option B'
+   *
+   * so it will be replaced by `Sequence (option V)`.
+   *
+   * @param t the type to hand down
+   *
+   * @param select if t is an open generic parameter, this specifies the actual
+   * argument to select.
+   *
+   * @param inh the inheritance call chain
+   *
+   * @return the type `t` as seen after inheritance
+   */
+  AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || !t.isOpenGeneric() || (select >= 0),
+       inh != null);
+
+    for (AbstractCall c : inh)
+      {
+        t = t.applyTypeParsLocally(c.calledFeature(),
+                                   c.actualTypeParameters(), select);
+      }
+    return t;
+  }
+
+
+  /**
+   * Hand down the given type along the given inheritance chain and along all
+   * inheritance chains of outer clazzes such that it has the actual type
+   * parameters in this clazz.
+   *
+   * @param t the original type
+   *
+   * @param select in case t is an open generic, the variant of the actual type
+   * that is to be chosen.  -1 otherwise.
+   *
+   * @param inh the inheritance change that brought is here. This is usually an
+   * empty list, only in case this is used in a (recursively) inlined inherits
+   * call, then inh gives the sequence of inherits calls from bottom (child) to
+   * top (parent).  E.g., in
+   *
+   *    sum(T type : numeric, a, b T) is
+   *       res := a + b
+   *
+   *    sum_of_3_and_5 : sum i32 3 5 is
+   *
+   * the type `T` used in `res := a + b` gets replaced by `i32` when this code
+   * is inlined to the constructor of `sum_of_3_and_5` via the inherits call
+   * `sum i32 3 5`.
+   *
+   * @param pos a source code position, used to report errors.
+   */
+  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || t != Types.t_ERROR,
+       Errors.any() || (t.isOpenGeneric() == (select >= 0)),
+       Errors.any() || inh != null);
+
+    var o = feature();
+    var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
+    var oc = this;
+    while (!o.isUniverse() && o != null && oc != null &&
+
+           /* In case of type features, we can have the following loop
+
+                oc: (((io.#type io).out.#type io.out).default_print_handler).println o: io.Print_Handler.println
+                oc: ( (io.#type io).out.#type io.out).default_print_handler          o: io.Print_Handler
+                oc:   (io.#type io).out.#type io.out                                 o: io
+                oc:    io.#type io                                                   o: universe
+
+              here, stop at (io.#type io).out.#type vs. io:
+            */
+           !(oc.feature().isTypeFeature() && !o.isTypeFeature())
+           )
+      {
+        var f = oc.feature();
+        var inh2 = f.tryFindInheritanceChain(o);
+        if (CHECKS) check
+          (Errors.any() || inh2 != null);
+        if (inh2 != null)
+          {
+            t1 = handDownThroughInheritsCalls(t1, select, inh2);
+            t1 = t1.applyTypeParsLocally(oc._type, select);
+            if (inh2.size() > 0)
+              {
+                o = f;
+              }
+          }
+        t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
+        oc = oc.getOuter(o);
+        o = (LibraryFeature) o.outer();
+      }
+
+    var t2 = replaceThisType(t1);
+    return _fuiri.type2clazz(t2);
+  }
+
+
+  /**
+   * Convenience version of `handDown` with `select` set to `-1`.
+   */
+  Clazz handDown(AbstractType t, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || t != Types.t_ERROR,
+       !t.isOpenGeneric());
+
+    return handDown(t, -1, inh);
+  }
+
+
+  /**
    * For an open generic type ft find the actual type parameters within this
    * clazz.  The resulting list could be empty.
    *
@@ -2127,32 +2112,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Set of fields in this clazz, including inherited and artificially added fields.
-   *
-   * @return the set of fields, NO_CLAZZES if none. Never null.
-   */
-  Clazz[] fields()
-  {
-    if (_fields == null)
-      {
-        var fields = new List<Clazz>();
-        for (var fieldc: _inner)
-          {
-            var field = fieldc.feature();
-            if (!isVoidType() && field.isField())
-              {
-                fields.add(fieldc);
-              }
-          }
-        _fields = fields.size() == 0 ? NO_CLAZZES
-                                     : fields.toArray(new Clazz[fields.size()]);
-      }
-    return isRef() ? NO_CLAZZES : _fields;   // NYI: CLEANUP: Remove the difference between _fields and fields() wrt isRef()!
-  }
-
-
-
-  /**
    * From a set of inner features of this clazz, extract used fields and create
    * the corresponding clazzes for these fields.
    *
@@ -2177,7 +2136,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 var n = replaceOpenCount(field);
                 for (var i = 0; i < n; i++)
                   {
-                    fields.add(lookup(new FeatureAndActuals(field), i, false, true));
+                    fields.add(lookup(new FeatureAndActuals(field), i, false, false));
                   }
               }
             else
@@ -2215,6 +2174,31 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Set of fields in this clazz, including inherited and artificially added fields.
+   *
+   * @return the set of fields, NO_CLAZZES if none. Never null.
+   */
+  Clazz[] fields()
+  {
+    if (_fields == null)
+      {
+        var fields = new List<Clazz>();
+        for (var fieldc: _inner)
+          {
+            var field = fieldc.feature();
+            if (!isVoidType() && field.isField())
+              {
+                fields.add(fieldc);
+              }
+          }
+        _fields = fields.size() == 0 ? NO_CLAZZES
+                                     : fields.toArray(new Clazz[fields.size()]);
+      }
+    return isRef() ? NO_CLAZZES : _fields;   // NYI: CLEANUP: Remove the difference between _fields and fields() wrt isRef()!
+  }
+
+
+  /**
    * For a field, determine its index in _outer.fields().
    *
    * @return index of this in fields()
@@ -2235,6 +2219,26 @@ class Clazz extends ANY implements Comparable<Clazz>
         i++;
       }
     throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + _outer);
+  }
+
+
+  /**
+   * For a clazz with isRef()==true, return a value version of this clazz.
+   * Returns this if it is already a value or ADDRESS.
+   */
+  Clazz asValue()
+  {
+    if (_asValue == null)
+      {
+        _asValue = isRef() && _type != Types.t_ADDRESS
+          ? _fuiri.newClazz(_outer, _type.asValue(), _select)
+          : this;
+      }
+
+    if (CHECKS) check
+      (!_asValue.isRef());
+
+    return _asValue;
   }
 
 }
