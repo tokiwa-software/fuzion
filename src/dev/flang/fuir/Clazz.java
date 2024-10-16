@@ -2129,8 +2129,8 @@ class Clazz extends ANY implements Comparable<Clazz>
                   }
               }
             else
-              { // NYI: UNDER DEVELOPMENT: using lookupNotNeeded here break test/javaBase with C backend, need to check why!
-                fields.add(lookupNeeded(field));
+              {
+                fields.add(lookupNotNeeded(field));
               }
           }
       }
