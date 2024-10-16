@@ -206,13 +206,13 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module version                                |
+   *   |        | 1      | u128          | module hash                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   void moduleRef(LibraryModule m)
   {
     _data.writeName(m.name());
-    _data.write(m.version());
+    _data.write(m.hash());
   }
 
 

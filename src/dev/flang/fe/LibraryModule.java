@@ -200,12 +200,12 @@ public class LibraryModule extends Module implements MirModule
     for (int i = 0; i < mrc; i++)
       {
         var n = moduleRefName(p);
-        var v = moduleRefVersion(p);
+        var v = moduleRefHash(p);
         var m = fe.loadModule(n, universe());
-        var mv = m.version();
+        var mv = m.hash();
         if (!Arrays.equals(v, mv))
           {
-            FeErrors.incompatibleModuleVersion(this, m, v, mv);
+            FeErrors.incompatibleModuleHash(this, m, v, mv);
           }
         var mr = new ModuleRef(moduleOffset, n, v, m);
         _modules[i] = mr;
@@ -570,7 +570,7 @@ Module File
 
               | 1      | Name          | module name
 
-              | 1      | u128          | module version
+              | 1      | u128          | module hash
 
               | 1      | int           | number of modules this module depends on n
 
@@ -595,7 +595,7 @@ Module File
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module version                                |
+   *   |        | 1      | u128          | module hash                                   |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -625,11 +625,11 @@ Module File
   {
     return nameNextPos(namePos());
   }
-  int versionPos()
+  int hashPos()
   {
     return nameNextPos();
   }
-  byte[] version(int at)
+  byte[] hash(int at)
   {
     var r = new byte[16];
     for (int i = 0; i<r.length; i++)
@@ -639,17 +639,17 @@ Module File
       }
     return r;
   }
-  byte[] version()
+  byte[] hash()
   {
-    return version(versionPos());
+    return hash(hashPos());
   }
-  int versionNextPos()
+  int hashNextPos()
   {
-    return versionPos() + 16;
+    return hashPos() + 16;
   }
   int moduleRefsCountPos()
   {
-    return versionNextPos();
+    return hashNextPos();
   }
   int moduleRefsCount()
   {
@@ -706,7 +706,7 @@ ModuleRef
 
 .2+| true     | 1      | Name          | module name
 
-              | 1      | u128          | module version
+              | 1      | u128          | module hash
 |====
 
 --asciidoc--
@@ -718,7 +718,7 @@ ModuleRef
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module version                                |
+   *   |        | 1      | u128          | module hash                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
    */
@@ -735,21 +735,21 @@ ModuleRef
   {
     return nameNextPos(at);
   }
-  int moduleRefVersionPos(int at)
+  int moduleRefHashPos(int at)
   {
     return moduleRefNameNextPos(at);
   }
-  byte[] moduleRefVersion(int at)
+  byte[] moduleRefHash(int at)
   {
-    return version(moduleRefVersionPos(at));
+    return hash(moduleRefHashPos(at));
   }
-  int moduleRefVersionNextPos(int at)
+  int moduleRefHashNextPos(int at)
   {
-    return moduleRefVersionPos(at) + 16;
+    return moduleRefHashPos(at) + 16;
   }
   int moduleRefNextPos(int at)
   {
-    return moduleRefVersionNextPos(at);
+    return moduleRefHashNextPos(at);
   }
 
 
@@ -2426,7 +2426,7 @@ SourceFile
     var hd = new HexDump(_data);
     hd.mark(0, FuzionConstants.MIR_FILE_MAGIC_EXPLANATION);
     hd.mark(namePos(), "module name");
-    hd.mark(versionPos(), "module version");
+    hd.mark(hashPos(), "module hash");
     hd.mark(moduleRefsCountPos(), "module refs count");
     hd.mark(moduleRefsPos(), "module refs");
     hd.mark(moduleNumDeclFeaturesPos(), "declFeatures count");
