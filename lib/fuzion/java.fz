@@ -212,6 +212,13 @@ public fuzion.java is
                  args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
 
+  # get a null value of type T
+  #
+  public null(T type : Java_Object)
+  =>
+    cast T (call_static (Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
+
+
   # cast this to some other class
   #
   public cast(T type : Java_Object, thiz Java_Object)
