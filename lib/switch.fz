@@ -124,7 +124,7 @@ is
   public as_outcome outcome A
   =>
     switch.this ? a A => a
-                | B => error "switch.as_outcome: failure converting switch to outcome"
+                | B => error "switch.as_outcome: no error message provided"
 
 
   # unwrap this switch
