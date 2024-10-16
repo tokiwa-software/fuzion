@@ -371,6 +371,8 @@ public class Call extends AbstractCall
        AbstractType type)
   {
     this(pos, target, calledFeature.featureName().baseName(), -1, generics, actuals, calledFeature, type);
+    if (PRECONDITIONS) check
+      (calledFeature.generics().sizeMatches(generics));
   }
 
 
