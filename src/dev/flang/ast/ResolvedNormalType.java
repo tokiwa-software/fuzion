@@ -415,11 +415,8 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType asRef()
   {
-    if (PRECONDITIONS) require
-      (!isVoid());
-
     AbstractType result = this;
-    if (!isRef() && this != Types.t_ERROR)
+    if (!isRef() && !isVoid() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, RefOrVal.Boxed);
       }
