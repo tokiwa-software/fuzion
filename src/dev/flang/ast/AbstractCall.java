@@ -28,7 +28,10 @@ package dev.flang.ast;
 
 import java.io.ByteArrayOutputStream;
 
+import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -173,6 +176,76 @@ public abstract class AbstractCall extends Expr
 
     };
     return result;
+  }
+
+
+  /**
+   * For a type feature, create the inheritance call for a parent type feature.
+   *
+   * @param p the source position
+   *
+   * @param typeParameters the type parameters passed to the call
+   *
+   * @param res Resolution instance used to resolve types in this call.
+   *
+   * @param that the original feature that is used to lookup types.
+   *
+   * @return instance of Call to be used for the parent call in typeFeature().
+   */
+  Call typeCall(SourcePosition p, Resolution res, AbstractFeature that)
+  {
+    var selfType = new ParsedType(pos(),
+                                  FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                                  new List<>(),
+                                  null);
+    var typeParameters = new List<AbstractType>(selfType);
+    if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
+      {
+        for (var atp : cpc.calledFeature().typeArguments())
+          {
+            typeParameters.add(Types.t_UNDEFINED);
+          }
+        cpc.whenInferredTypeParameters(() ->
+          {
+            int i = 0;
+            for (var atp : cpc.actualTypeParameters())
+              {
+                if (typeParameters.isFrozen())
+                  {
+                    if (CHECKS) check
+                      (Errors.any());
+                  }
+                else
+                  {
+                    typeParameters.set(i+1, that.rebaseTypeForTypeFeature(atp));
+                  }
+                i++;
+              }
+          });
+      }
+    else
+      {
+        for (var atp : actualTypeParameters())
+          {
+            typeParameters.add(that.rebaseTypeForTypeFeature(atp));
+          }
+      }
+
+    var o = calledFeature().outer();
+    Expr oc = o == null || o.isUniverse()
+      ? new Universe()
+      : (target() instanceof AbstractCall ac && !ac.isCallToOuterRef())
+      ? ac.typeCall(p, res, that)
+      : o.typeCall(p, new List<>(o.selfType()), res, that);
+
+    var tf = calledFeature().typeFeature(res);
+
+    return new Call(p,
+                    oc,
+                    typeParameters,
+                    Expr.NO_EXPRS,
+                    tf,
+                    tf.selfType());
   }
 
 

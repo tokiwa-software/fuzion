@@ -820,7 +820,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return instance of Call to be used for the parent call in typeFeature().
    */
-  private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
+  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
   {
     var o = outer();
     var oc = o == null || o.isUniverse()
@@ -876,7 +876,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param t the type to be moved to the type feature.
    */
-  private AbstractType rebaseTypeForTypeFeature(AbstractType t)
+  AbstractType rebaseTypeForTypeFeature(AbstractType t)
   {
     var tl = new List<AbstractType>();
     for (var ta0 : typeArguments())
@@ -983,54 +983,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.RESOLVED_INHERITANCE));
 
-    var inh = new List<AbstractCall>();
-    for (var pc: inherits())
-      {
-        if (pc.calledFeature() != Types.f_ERROR)
-          {
-            var iif = inh.size();
-            var selfType = new ParsedType(pos(),
-                                          FuzionConstants.TYPE_FEATURE_THIS_TYPE,
-                                          new List<>(),
-                                          null);
-            var tp = new List<AbstractType>(selfType);
-            if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
-              {
-                for (var atp : pc.calledFeature().typeArguments())
-                  {
-                    tp.add(Types.t_UNDEFINED);
-                  }
-                cpc.whenInferredTypeParameters(() ->
-                  {
-                    int i = 0;
-                    for (var atp : pc.actualTypeParameters())
-                      {
-                        tp.set(i+1, atp);
-                        var g = ((Call)inh.get(iif))._generics;
-                        if (g.isFrozen())
-                          {
-                            if (CHECKS) check
-                              (Errors.any());
-                          }
-                        else
-                          {
-                            g.set(i+1, atp);
-                          }
-                        i++;
-                      }
-                  });
-              }
-            else
-              {
-                for (var atp : pc.actualTypeParameters())
-                  {
-                    tp.add(atp);
-                  }
-              }
-            inh.add(pc.calledFeature().typeCall(pos(), tp, res, this));
-          }
-      }
-    return inh;
+    return inherits()
+      .stream()
+      .filter(pc -> pc.calledFeature() != Types.f_ERROR)
+      .map(pc -> pc.typeCall(pos(), res, this))
+      .collect(List.collector());
   }
 
 
