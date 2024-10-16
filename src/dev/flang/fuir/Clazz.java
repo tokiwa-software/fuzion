@@ -253,6 +253,13 @@ class Clazz extends ANY implements Comparable<Clazz>
   int _code;
 
 
+
+  /**
+   * Cached result values of `asString(boolean)`
+   */
+  String _asStringHuman, _asString;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -1491,53 +1498,63 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     String asString(boolean humanReadable)
     {
-      String result;
-      var o = _outer;
-      String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped(humanReadable) + "." : "";
-      var f = feature();
-      var typeType = f.isTypeFeature();
-      if (typeType)
+      String result = humanReadable ? _asStringHuman : _asString;
+      if (result == null)
         {
-          f = (LibraryFeature) f.typeFeatureOrigin();
-        }
-      var fn = f.featureName();
-      // for a feature that does not define a type itself, the name is not
-      // unique due to overloading with different argument counts. So we add
-      // the argument count to get a unique name.
-      var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
-        +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
-            ? ""
-            : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
-
-      // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
-      // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
-      //
-      if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
-        {
-          fname = fname.substring(FuzionConstants.POSTCONDITION_FEATURE_PREFIX.length(),
-                                  fname.lastIndexOf("_")) +
-            ".postcondition";
-        }
-
-      result = outer
-        + ( isRef() && !feature().isThisRef() ? "ref "   : "" )
-        + (!isRef() &&  feature().isThisRef() ? "value " : "" )
-        + fname;
-      if (typeType)
-        {
-          result = result + ".type";
-        }
-
-      var skip = typeType;
-      for (var g : actualTypeParameters())
-        {
-          if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+          var o = _outer;
+          String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped(humanReadable) + "." : "";
+          var f = feature();
+          var typeType = f.isTypeFeature();
+          if (typeType)
             {
-              result = result + " " + g.asStringWrapped(humanReadable);
+              f = (LibraryFeature) f.typeFeatureOrigin();
             }
-          skip = false;
-        }
+          var fn = f.featureName();
+          // for a feature that does not define a type itself, the name is not
+          // unique due to overloading with different argument counts. So we add
+          // the argument count to get a unique name.
+          var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
+            +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
+                ? ""
+                : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
 
+          // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
+          // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
+          //
+          if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
+            {
+              fname = fname.substring(FuzionConstants.POSTCONDITION_FEATURE_PREFIX.length(),
+                                      fname.lastIndexOf("_")) +
+                ".postcondition";
+            }
+
+          result = outer
+            + ( isRef() && !feature().isThisRef() ? "ref "   : "" )
+            + (!isRef() &&  feature().isThisRef() ? "value " : "" )
+            + fname;
+          if (typeType)
+            {
+              result = result + ".type";
+            }
+
+          var skip = typeType;
+          for (var g : actualTypeParameters())
+            {
+              if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+                {
+                  result = result + " " + g.asStringWrapped(humanReadable);
+                }
+              skip = false;
+            }
+          if (humanReadable)
+            {
+              _asStringHuman = result;
+            }
+          else
+            {
+              _asString = result;
+            }
+        }
       return result;
     }
 
