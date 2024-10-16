@@ -817,7 +817,7 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
         {
-          var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
+          var javaString = (String) ((JavaRef)args.get(1))._javaRef;
           return Interpreter.value(javaString == null ? "--null--" : javaString);
         });
     putUnsafe("fuzion.java.i8_to_java_object", (executor, innerClazz) -> args ->

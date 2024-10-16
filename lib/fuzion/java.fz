@@ -133,7 +133,7 @@ public fuzion.java is
   #
   public Java_String(redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
   is
-    public redef utf8 => (java_string_to_string Java_String.this).utf8
+    public redef utf8 => (java_string_to_string Java_Ref).utf8
 
 
   # Call a virtual Java method class_name.name with given signature signature
@@ -212,6 +212,13 @@ public fuzion.java is
                  args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
 
+  # get a null value of type T
+  #
+  public null(T type : Java_Object)
+  =>
+    cast T (call_static (Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
+
+
   # cast this to some other class
   #
   public cast(T type : Java_Object, thiz Java_Object)
@@ -270,13 +277,7 @@ public fuzion.java is
 
   # convert a Java String to a string
   #
-  java_string_to_string(# T is the actual String type, i.e., Java.java.lang._jString:
-                                #
-                                T type : Java_String,
-
-                                # the java String wrapped in Java.java.lang._jString
-                                js T
-                                ) String => intrinsic
+  java_string_to_string(Java_Ref fuzion.sys.Pointer) String => intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object
