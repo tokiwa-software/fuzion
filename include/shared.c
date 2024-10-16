@@ -692,7 +692,7 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig)
 
 
 // get a non-static field on obj.
-jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
+jvalue fzE_get_field0(jobject obj, jstring name, const char *sig) // TODO: #3852
 {
   jclass cl = (*getJNIEnv())->GetObjectClass(getJNIEnv(), obj);
   assert( cl != NULL );
@@ -719,6 +719,38 @@ jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
         return (jvalue){ .z = (*getJNIEnv())->GetBooleanField(getJNIEnv(), obj, fieldID) };
       default:
         return (jvalue){ .l = (*getJNIEnv())->GetObjectField(getJNIEnv(), obj, fieldID) };
+    }
+}
+
+
+// set a non-static field on obj.
+jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig) // TODO:FIXME:
+{
+  jclass cl = (*getJNIEnv())->GetObjectClass(getJNIEnv(), obj);
+  assert( cl != NULL );
+  jfieldID fieldID = (*getJNIEnv())->GetFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
+  // NYI: UNDER DEVELOPMENT: crash more gracefully
+  assert( fieldID != NULL );
+  switch (sig[0])
+    {
+      case 'B':
+        return (jvalue){ .b = (*getJNIEnv())->SetByteField(getJNIEnv(), obj, fieldID, value) };
+      case 'C':
+        return (jvalue){ .c = (*getJNIEnv())->SetCharField(getJNIEnv(), obj, fieldID, value) };
+      case 'S':
+        return (jvalue){ .s = (*getJNIEnv())->SetShortField(getJNIEnv(), obj, fieldID, value) };
+      case 'I':
+        return (jvalue){ .i = (*getJNIEnv())->SetIntField(getJNIEnv(), obj, fieldID, value) };
+      case 'J':
+        return (jvalue){ .j = (*getJNIEnv())->SetLongField(getJNIEnv(), obj, fieldID, value) };
+      case 'F':
+        return (jvalue){ .f = (*getJNIEnv())->SetFloatField(getJNIEnv(), obj, fieldID, value) };
+      case 'D':
+        return (jvalue){ .d = (*getJNIEnv())->SetDoubleField(getJNIEnv(), obj, fieldID, value) };
+      case 'Z':
+        return (jvalue){ .z = (*getJNIEnv())->SetBooleanField(getJNIEnv(), obj, fieldID, value) };
+      default:
+        return (jvalue){ .l = (*getJNIEnv())->SetObjectField(getJNIEnv(), obj, fieldID, value) };
     }
 }
 
@@ -751,6 +783,38 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
         return (jvalue){ .z = (*getJNIEnv())->GetStaticBooleanField(getJNIEnv(), cl, fieldID) };
       default:
         return (jvalue){ .l = (*getJNIEnv())->GetStaticObjectField(getJNIEnv(), cl, fieldID) };
+    }
+}
+
+
+// set a static field in class.
+jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig) // TODO:FIXME:
+{
+  jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
+  assert( cl != NULL );
+  jfieldID fieldID = (*getJNIEnv())->GetStaticFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
+  // NYI: UNDER DEVELOPMENT: crash more gracefully
+  assert( fieldID != NULL );
+  switch (sig[0])
+    {
+      case 'B':
+        return (jvalue){ .b = (*getJNIEnv())->SetStaticByteField(getJNIEnv(), cl, fieldID, value) };
+      case 'C':
+        return (jvalue){ .c = (*getJNIEnv())->SetStaticCharField(getJNIEnv(), cl, fieldID, value) };
+      case 'S':
+        return (jvalue){ .s = (*getJNIEnv())->SetStaticShortField(getJNIEnv(), cl, fieldID, value) };
+      case 'I':
+        return (jvalue){ .i = (*getJNIEnv())->SetStaticIntField(getJNIEnv(), cl, fieldID, value) };
+      case 'J':
+        return (jvalue){ .j = (*getJNIEnv())->SetStaticLongField(getJNIEnv(), cl, fieldID, value) };
+      case 'F':
+        return (jvalue){ .f = (*getJNIEnv())->SetStaticFloatField(getJNIEnv(), cl, fieldID, value) };
+      case 'D':
+        return (jvalue){ .d = (*getJNIEnv())->SetStaticDoubleField(getJNIEnv(), cl, fieldID, value) };
+      case 'Z':
+        return (jvalue){ .z = (*getJNIEnv())->SetStaticBooleanField(getJNIEnv(), cl, fieldID, value) };
+      default:
+        return (jvalue){ .l = (*getJNIEnv())->SetStaticObjectField(getJNIEnv(), cl, fieldID, value) };
     }
 }
 
