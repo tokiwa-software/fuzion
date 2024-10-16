@@ -2510,6 +2510,7 @@ brblock     : BRACEL exprs BRACER
     return switch (currentAtMinIndent())
       {
       case
+        t_comma,
         t_indentationLimit,
         t_lineLimit,
         t_spaceOrSemiLimit,
