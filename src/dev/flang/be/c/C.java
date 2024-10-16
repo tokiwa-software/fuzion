@@ -540,6 +540,9 @@ public class C extends ANY
       if (Arrays.binarySearch(_effectClazzes, ecl) >= 0)
         {
           res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
+          res = CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr()))
+                     .castTo(_types.clazz(ecl) + " *")
+                     .deref();
           var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
           o = CStmnt.iff(evi.not(), o);
         }
