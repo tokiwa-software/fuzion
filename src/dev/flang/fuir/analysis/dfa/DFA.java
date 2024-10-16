@@ -1016,8 +1016,11 @@ public class DFA extends ANY
   /**
    * Clazz ids for clazzes for of newly created calls for which recursive analysis is performed,
    * see `analyzeNewCall` for details.
+   *
+   * This is set by method dfa() after the initial call was created to avoid the
+   * initial cal to be treated outside the first iteration.
    */
-  private int[] _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
+  private int[] _newCallRecursiveAnalyzeClazzes = new int[0];
 
 
   /**
@@ -1402,6 +1405,7 @@ public class DFA extends ANY
             null /* env */,
             Context._MAIN_ENTRY_POINT_);
 
+    _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     findFixPoint();
     _fuir.reportAbstractMissing();
     Errors.showAndExit();

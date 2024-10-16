@@ -2430,12 +2430,12 @@ public class GeneratingFUIR extends FUIR
     var outerClazz = id2clazz(cl);
     var e = getExpr(s);
 
-    Clazz innerClazz = switch (e)
+    var innerClazz = switch (e)
       {
       case AbstractCall   call -> calledInner(call, outerClazz, tclazz, _inh.get(s - SITE_BASE));
       case AbstractAssign a    -> assignedField(outerClazz, tclazz, a, _inh.get(s - SITE_BASE));
       case Clazz          fld  -> fld;
-      default -> (Clazz) (Object) new Object() { { if (true) throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } }; /* Java is ugly... */
+      default                  -> { throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
     return innerClazz == null ? null : innerClazz;
   }
@@ -2547,8 +2547,7 @@ public class GeneratingFUIR extends FUIR
 
 
       case Clazz          fld -> fld;
-      default ->
-        (Clazz) (Object) new Object() { { if (true) throw new Error("assignedType found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
+      default                 -> { throw new Error("assignedType found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
 
     return field.resultClazz()._id;
@@ -2788,7 +2787,7 @@ public class GeneratingFUIR extends FUIR
       case Clazz          arg  -> outerClazz.isRef() && !arg.feature().isOuterRef(); // assignment to arg field in inherits call (dynamic if outerClazz is ref)
                                                                                     // or to outer ref field (not dynamic)
       case AbstractCall   call -> id2clazz(accessTargetClazz(s)).isRef();
-      default -> new Object() { { if (true) throw new Error("accessIsDynamic found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } == null /* Java is ugly... */;
+      default                  -> { throw new Error("accessIsDynamic found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
     return res;
   }
@@ -2824,8 +2823,7 @@ public class GeneratingFUIR extends FUIR
           case AbstractAssign ass  -> clazz(ass._target, outerClazz, _inh.get(s - SITE_BASE)); // NYI: This should be the same as assignedField._outer
           case Clazz          arg  -> outerClazz; // assignment to arg field in inherits call, so outer clazz is current instance
           case AbstractCall   call -> calledTarget(call, outerClazz, _inh.get(s - SITE_BASE));
-          default ->
-          (Clazz) (Object) new Object() { { if (true) throw new Error("accessTargetClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); } } /* Java is ugly... */;
+          default                  -> { throw new Error("accessTargetClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
           };
         _accessedTarget.put(s, tclazz);
       }
