@@ -27,12 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.math.BigInteger;
-
 import java.nio.file.Path;
-
 import java.util.Optional;
 import java.util.TreeSet;
-
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -1024,12 +1021,22 @@ public class Lexer extends SourceFile
     var end   = brackets._right;
     var ol = line();
     match(true, start, rule);
+    var indentRef = tokenPos();
     V result = relaxLineAndSpaceLimit(!currentMatches(true, end) ? c : def);
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                             match(true, end, rule);
-                             return Void.TYPE; // is there a better unit type in Java?
+                            if (current(true) != end._token)
+                              {
+                                // if indentation decreases before closing bracket, discard everything until closing bracket
+                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
+                                while (current(true) != end._token && current(true) != Token.t_eof)
+                                  {
+                                      next();
+                                  }
+                              }
+                            match(true, end, rule);
+                            return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
     if (sl == ol)

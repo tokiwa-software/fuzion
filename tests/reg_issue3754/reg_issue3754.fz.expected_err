@@ -1,0 +1,18 @@
+
+--CURDIR--/reg_issue3754.fz:27:14: error 1: Inconsistent indentation
+             say "b"} # this should cause an indentation error AND continue parsing after the closing bracket
+-------------^
+Indentation reference point is --CURDIR--/reg_issue3754.fz:26:15:
+  my_feat is {say "a"
+--------------^
+While parsing: block, parse stack: block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+
+
+--CURDIR--/reg_issue3754.fz:29:3: error 2: Could not find called feature
+  foobar # this should be parsed (because it is after the closing bracket) and therefore create an error
+--^^^^^^
+Feature not found: 'foobar' (no arguments)
+Target feature: 'reg_issue3754'
+In call: 'foobar'
+
+2 errors.
