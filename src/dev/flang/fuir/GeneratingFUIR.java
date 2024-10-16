@@ -2475,34 +2475,18 @@ public class GeneratingFUIR extends FUIR
     var callToOuterRef = c.target().isCallToOuterRef();
     var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
     var needsCode = !dynamic || explicitTarget != null;
-    /*
-    if (callToOuterRef)
-      {
-        tclazz._isCalledAsOuter = true;
-      }
-    */
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
     if (!tclazz.isVoidType())
       {
-        /*
-        if (dynamic)
+        innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall(), needsCode);
+        if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
-            calledDynamically(cf, typePars);
+            var T = innerClazz.actualTypeParameters()[0];
+            cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
+              ? Types.resolved.f_Type_infix_colon_true
+              : Types.resolved.f_Type_infix_colon_false;
+            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall(), needsCode);
           }
-        */
-
-        innerClazz        = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall(), needsCode);
-          {
-            if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
-              {
-                var T = innerClazz.actualTypeParameters()[0];
-                cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
-                  ? Types.resolved.f_Type_infix_colon_true
-                  : Types.resolved.f_Type_infix_colon_false;
-                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall(), needsCode);
-              }
-          }
-
       }
     return innerClazz == null ? error() : innerClazz;
   }

@@ -1329,7 +1329,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             result = typeParameterActualType().typeClazz();
           }
-        else if (f  == Types.resolved.f_type_as_value                     ||
+        else if (f  == Types.resolved.f_type_as_value                          ||
                  of == Types.resolved.f_type_as_value && f == of.resultField()   )
           {
             var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
