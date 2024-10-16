@@ -72,14 +72,6 @@ is
                  | e error => e
 
 
-  # convert this outcome to an option
-  # if the outcome is an error, the option is empty
-  public as_option option T =>
-    match outcome.this
-      t T => t
-      error => nil
-
-
   # converts outcome to a string
   #
   # returns the result of T.as_string for a successful outcome, or
