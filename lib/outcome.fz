@@ -129,6 +129,15 @@ is
                  | e error => e
 
 
+  # convert this to an outcome
+  #
+  # this is essentially a no-op.
+  #
+  public redef as_outcome outcome T
+  =>
+    outcome.this
+
+
   # return function
   #
   public fixed redef type.return (a T) => outcome a
