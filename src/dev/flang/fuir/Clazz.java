@@ -944,13 +944,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the inner clazz of the target in the call.
    */
-  Clazz lookupNeeded(AbstractFeature f)
-  {
-    var innerClazz = lookup(f);
-    innerClazz.doesNeedCode();
-    return innerClazz;
-  }
-
   Clazz lookup(AbstractFeature f)
   {
     if (PRECONDITIONS) require
@@ -958,6 +951,18 @@ class Clazz extends ANY implements Comparable<Clazz>
        !isVoidType());
 
     return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, false);
+  }
+
+
+  /**
+   * Convenience function that calls `lookup` followed `doesNeedCod()` on the
+   * result.
+   */
+  Clazz lookupNeeded(AbstractFeature f)
+  {
+    var innerClazz = lookup(f);
+    innerClazz.doesNeedCode();
+    return innerClazz;
   }
 
 
@@ -1195,14 +1200,81 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * In case this is a Clazz of value type, create the corresponding reference clazz.
+   * Create String from this clazz.
+   *
+   * @param humanReadable true to create a string optimized to be readable by
+   * humans but possibly not unique. false for a unique String representating
+   * this clazz to be used by compilers.
    */
-  public Clazz asRef()
+  String asString(boolean humanReadable)
   {
-    return isRef()
-      ? this
-      : _fuiri.newClazz(_outer, _type.asRef(), _select);
+    String result = humanReadable ? _asStringHuman : _asString;
+    if (result == null)
+      {
+        var o = _outer;
+        String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.asString(humanReadable)) + "." : "";
+        var f = feature();
+        var typeType = f.isTypeFeature();
+        if (typeType)
+          {
+            f = (LibraryFeature) f.typeFeatureOrigin();
+          }
+        var fn = f.featureName();
+        // for a feature that does not define a type itself, the name is not
+        // unique due to overloading with different argument counts. So we add
+        // the argument count to get a unique name.
+        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
+          +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
+              ? ""
+              : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+
+        // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
+        // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
+        //
+        if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
+          {
+            fname = fname.substring(FuzionConstants.POSTCONDITION_FEATURE_PREFIX.length(),
+                                    fname.lastIndexOf("_")) +
+              ".postcondition";
+          }
+
+        result = outer
+          + ( isRef() && !feature().isThisRef() ? "ref "   : "" )
+          + (!isRef() &&  feature().isThisRef() ? "value " : "" )
+          + fname;
+        if (typeType)
+          {
+            result = result + ".type";
+          }
+
+        var skip = typeType;
+        for (var g : actualTypeParameters())
+          {
+            if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+              {
+                result = result + " " + StringHelpers.wrapInParentheses(g.asString(humanReadable));
+              }
+            skip = false;
+          }
+        if (humanReadable)
+          {
+            _asStringHuman = result;
+          }
+        else
+          {
+            _asString = result;
+          }
+      }
+    return result;
   }
+
+
+  @Override
+  public String toString()
+  {
+    return asString(false); // maybe better true, i.e., human readable
+  }
+
 
 
   /**
@@ -1217,7 +1289,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var or = feature().outerRef();
         if (!isBoxed() && or != null)
           {
-            res = lookup(new FeatureAndActuals(or, new List<>()), -1, false);
+            res = lookup(or);
           }
         else
           {
@@ -1226,242 +1298,6 @@ class Clazz extends ANY implements Comparable<Clazz>
         _outerRef = res;
       }
     return res == this ? null : res;
-  }
-
-
-  /**
-   * Recursive helper function for to find the clazz for an outer ref from
-   * an inherited feature.
-   *
-   * @param cf the feature corresponding to the outer reference
-   *
-   * @param f the feature of the target of the inheritance call
-   *
-   * @param result must be null on the first call. This is used during recursive
-   * traversal to check that all results are equal in case several results are
-   * found.
-   *
-   * @return the static clazz of this call to an outer ref cf.
-   */
-  private Clazz inheritedOuterRefClazz(Clazz outer, Expr target, AbstractFeature cf, AbstractFeature f, Clazz result)
-  {
-    if (PRECONDITIONS) require
-      ((outer != null) != (target != null));
-
-    if (f.outerRef() == cf)
-      { // a "normal" outer ref for the outer clazz surrounding this instance or
-        // (if in recursion) an inherited outer ref referring to the target of
-        // the inherits call
-        if (outer == null)
-          {
-            outer = _fuiri.clazz(target, this, new List<>());
-          }
-        if (CHECKS) check
-          (result == null || result == outer);
-
-        result = outer;
-      }
-    else
-      {
-        for (var p : f.inherits())
-          {
-            result = inheritedOuterRefClazz(null, p.target(), cf, p.calledFeature(), result);
-          }
-      }
-    return result;
-  }
-
-
-  /**
-   * Determine the clazz of the result of calling this clazz, cache the result.
-   *
-   * @return the result clazz.
-   */
-  public Clazz resultClazz()
-  {
-    var result = _resultClazz;
-    if (result == null)
-      {
-        var f = feature();
-        var o  = _outer;
-        var of = o != null ? o.feature() : null;
-
-        if (f.isConstructor())
-          {
-            result = this;
-          }
-        else if (f.isOuterRef())
-          {
-            result = o.inheritedOuterRefClazz(o._outer, null, f, o.feature(), null);
-          }
-        else if (f.isTypeParameter())
-          {
-            result = typeParameterActualType().typeClazz();
-          }
-        else if (f  == Types.resolved.f_type_as_value                          ||
-                 of == Types.resolved.f_type_as_value && f == of.resultField()   )
-          {
-            var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
-            result = ag[0].typeClazz();
-          }
-        else
-          {
-            var ft = f.resultType();
-            result = handDown(ft, _select, new List<>());
-            if (result.feature().isTypeFeature())
-              {
-                var ac = handDown(result._type.generics().get(0), new List<>());
-                result = ac.typeClazz();
-              }
-          }
-        _resultClazz = result;
-      }
-    return result;
-  }
-
-
-  /**
-   * For a type clazz such as 'i32.type' return its name, such as 'i32'.
-   */
-  public String typeName()
-  {
-    if (PRECONDITIONS) require
-      (feature().isTypeFeature());
-
-    return _type.generics().get(0).asString(true);
-  }
-
-
-  /**
-   * For a type parameter, return the clazz of the actual type.
-   *
-   * Example:
-   *
-   * For `(Types.get (array f64)).T` this results in `array f64`.
-   */
-  public Clazz typeParameterActualType()
-  {
-    if (PRECONDITIONS) require
-      (feature().isTypeParameter());
-
-    var f = feature();
-    var o = _outer;
-    var inh = o.feature().tryFindInheritanceChain(f.outer());
-    if (inh != null && inh.size() > 0)
-      { // type parameter was inherited, so get value from parameter of inherits call:
-        var call = inh.get(0);
-        if (CHECKS) check
-          (call.calledFeature() == f.outer());
-
-        var oc = _outer;
-        var tclazz  = _fuiri.clazz(call.target(), oc, inh);
-        var typePars = actualGenerics(call.actualTypeParameters());
-        check(call.isInheritanceCall());
-        o = tclazz.lookupCall(call, typePars);
-      }
-    var ix = f.typeParameterIndex();
-    var oag = o.actualTypeParameters();
-    return inh == null || ix < 0 || ix >= oag.length ? _fuiri.error()
-                                                     : oag[ix];
-  }
-
-
-  /**
-   * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
-   * actually, '((a.type a).b.type b).c.type c'.
-   */
-  Clazz typeClazz()
-  {
-    if (PRECONDITIONS)
-      require(Errors.any() || !_type.isGenericArgument());
-
-    if (_typeClazz == null)
-      {
-        if (_type.isGenericArgument())
-          {
-            _typeClazz = _fuiri.error();
-          }
-        else
-          {
-            var tt = _type.typeType();
-            var ty = Types.resolved.f_Type.selfType();
-            _typeClazz = _type.containsError()  ? _fuiri.error() :
-                         feature().isUniverse() ? this    :
-                         tt.compareTo(ty) == 0  ? _fuiri.newClazz(_fuiri.universe() , ty, -1)
-                                                : _fuiri.newClazz(_outer.typeClazz(), tt, -1);
-          }
-      }
-    return _typeClazz;
-  }
-
-
-  /**
-   * cached result of typeClazz()
-   */
-  private Clazz _typeClazz = null;
-
-
-  /**
-   * Find outer clazz of this corresponding to feature `o`.
-   *
-   * @param o the outer feature whose clazz we are searching for.
-   *
-   * @return the outer clazz of this corresponding feature `o`.
-   */
-  Clazz findOuter(AbstractFeature o)
-  {
-    /* starting with feature(), follow outer references
-     * until we find o.
-     */
-    var res = this;
-    var i = feature();
-    while (i != null && i != o
-      && !(i.isThisRef() && i.inheritsFrom(o)) // see #1391 and #1628 for when this can be the case.
-    )
-      {
-        res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
-                               : res._outer;
-        i = (LibraryFeature) i.outer();
-      }
-
-    if (CHECKS) check
-      (Errors.any() || i == o || i != null && i.isThisRef() && i.inheritsFrom(o));
-
-    return i == null ? _fuiri.error() : res;
-  }
-
-
-  /**
-   * For a direct parent p of this clazz's feature, find the outer clazz of the
-   * parent. E.g., for `i32` that inherits from `num.wrap_around` the result of
-   * `getOuter(num.wrap_around)` will be the result clazz of `num`, while
-   * `getOuter(i32)` will be `universe`.
-   *
-   * @param p a feature that is either equal to this or a direct parent of x.
-   */
-  Clazz getOuter(AbstractFeature p)
-  {
-    var res =
-      p.hasOuterRef()        ? /* we either inherit from p as in
-                                *
-                                *     x : a.b.c.p is ...
-                                *
-                                * or x = p.  So the outer of `x` with respect
-                                * to `p` is `a.b.c`, which is the result type
-                                * of `p`'s outer ref:
-                                */
-                               lookup(p.outerRef()).resultClazz() :
-      p.isUniverse() ||
-      p.outer().isUniverse() ? _fuiri.universe()
-                             : /* a field or choice, so there is no inherits
-                                * call that could select a different outer:
-                                 */
-                               _outer;
-
-    if (CHECKS) check
-      (Errors.any() || res != null);
-
-    return res;
   }
 
 
@@ -1482,79 +1318,26 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-    String asString(boolean humanReadable)
-    {
-      String result = humanReadable ? _asStringHuman : _asString;
-      if (result == null)
-        {
-          var o = _outer;
-          String outer = o != null && !o.feature().isUniverse() ? o.asStringWrapped(humanReadable) + "." : "";
-          var f = feature();
-          var typeType = f.isTypeFeature();
-          if (typeType)
-            {
-              f = (LibraryFeature) f.typeFeatureOrigin();
-            }
-          var fn = f.featureName();
-          // for a feature that does not define a type itself, the name is not
-          // unique due to overloading with different argument counts. So we add
-          // the argument count to get a unique name.
-          var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
-            +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
-                ? ""
-                : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+  /**
+   * Get the argument fields of this routine
+   *
+   * @return the argument fields.
+   */
+  public Clazz[] argumentFields()
+  {
+    if (PRECONDITIONS) require
+      (switch (clazzKind())
+               {
+                 case Routine,
+                      Intrinsic,
+                      Abstract,
+                      Field,
+                      Native -> true;
+                 case Choice -> false;
+               });
 
-          // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
-          // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
-          //
-          if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
-            {
-              fname = fname.substring(FuzionConstants.POSTCONDITION_FEATURE_PREFIX.length(),
-                                      fname.lastIndexOf("_")) +
-                ".postcondition";
-            }
-
-          result = outer
-            + ( isRef() && !feature().isThisRef() ? "ref "   : "" )
-            + (!isRef() &&  feature().isThisRef() ? "value " : "" )
-            + fname;
-          if (typeType)
-            {
-              result = result + ".type";
-            }
-
-          var skip = typeType;
-          for (var g : actualTypeParameters())
-            {
-              if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
-                {
-                  result = result + " " + g.asStringWrapped(humanReadable);
-                }
-              skip = false;
-            }
-          if (humanReadable)
-            {
-              _asStringHuman = result;
-            }
-          else
-            {
-              _asString = result;
-            }
-        }
-      return result;
-    }
-
-    String asStringWrapped(boolean humanReadable)
-    {
-      return StringHelpers.wrapInParentheses(asString(humanReadable));
-    }
-
-
-    @Override
-    public String toString()
-    {
-      return asString(false); // maybe better true, i.e., human readable
-    }
+    return _argumentFields;
+  }
 
 
   /**
@@ -1888,6 +1671,253 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * In case this is a Clazz of value type, create the corresponding reference clazz.
+   */
+  public Clazz asRef()
+  {
+    return isRef()
+      ? this
+      : _fuiri.newClazz(_outer, _type.asRef(), _select);
+  }
+
+
+  /**
+   * Recursive helper function for to find the clazz for an outer ref from
+   * an inherited feature.
+   *
+   * @param cf the feature corresponding to the outer reference
+   *
+   * @param f the feature of the target of the inheritance call
+   *
+   * @param result must be null on the first call. This is used during recursive
+   * traversal to check that all results are equal in case several results are
+   * found.
+   *
+   * @return the static clazz of this call to an outer ref cf.
+   */
+  private Clazz inheritedOuterRefClazz(Clazz outer, Expr target, AbstractFeature cf, AbstractFeature f, Clazz result)
+  {
+    if (PRECONDITIONS) require
+      ((outer != null) != (target != null));
+
+    if (f.outerRef() == cf)
+      { // a "normal" outer ref for the outer clazz surrounding this instance or
+        // (if in recursion) an inherited outer ref referring to the target of
+        // the inherits call
+        if (outer == null)
+          {
+            outer = _fuiri.clazz(target, this, new List<>());
+          }
+        if (CHECKS) check
+          (result == null || result == outer);
+
+        result = outer;
+      }
+    else
+      {
+        for (var p : f.inherits())
+          {
+            result = inheritedOuterRefClazz(null, p.target(), cf, p.calledFeature(), result);
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Determine the clazz of the result of calling this clazz, cache the result.
+   *
+   * @return the result clazz.
+   */
+  public Clazz resultClazz()
+  {
+    var result = _resultClazz;
+    if (result == null)
+      {
+        var f = feature();
+        var o  = _outer;
+        var of = o != null ? o.feature() : null;
+
+        if (f.isConstructor())
+          {
+            result = this;
+          }
+        else if (f.isOuterRef())
+          {
+            result = o.inheritedOuterRefClazz(o._outer, null, f, o.feature(), null);
+          }
+        else if (f.isTypeParameter())
+          {
+            result = typeParameterActualType().typeClazz();
+          }
+        else if (f  == Types.resolved.f_type_as_value                          ||
+                 of == Types.resolved.f_type_as_value && f == of.resultField()   )
+          {
+            var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
+            result = ag[0].typeClazz();
+          }
+        else
+          {
+            var ft = f.resultType();
+            result = handDown(ft, _select, new List<>());
+            if (result.feature().isTypeFeature())
+              {
+                var ac = handDown(result._type.generics().get(0), new List<>());
+                result = ac.typeClazz();
+              }
+          }
+        _resultClazz = result;
+      }
+    return result;
+  }
+
+
+  /**
+   * For a type clazz such as 'i32.type' return its name, such as 'i32'.
+   */
+  public String typeName()
+  {
+    if (PRECONDITIONS) require
+      (feature().isTypeFeature());
+
+    return _type.generics().get(0).asString(true);
+  }
+
+
+  /**
+   * For a type parameter, return the clazz of the actual type.
+   *
+   * Example:
+   *
+   * For `(Types.get (array f64)).T` this results in `array f64`.
+   */
+  public Clazz typeParameterActualType()
+  {
+    if (PRECONDITIONS) require
+      (feature().isTypeParameter());
+
+    var f = feature();
+    var o = _outer;
+    var inh = o.feature().tryFindInheritanceChain(f.outer());
+    if (inh != null && inh.size() > 0)
+      { // type parameter was inherited, so get value from parameter of inherits call:
+        var call = inh.get(0);
+        if (CHECKS) check
+          (call.calledFeature() == f.outer());
+
+        var oc = _outer;
+        var tclazz  = _fuiri.clazz(call.target(), oc, inh);
+        var typePars = actualGenerics(call.actualTypeParameters());
+        check(call.isInheritanceCall());
+        o = tclazz.lookupCall(call, typePars);
+      }
+    var ix = f.typeParameterIndex();
+    var oag = o.actualTypeParameters();
+    return inh == null || ix < 0 || ix >= oag.length ? _fuiri.error()
+                                                     : oag[ix];
+  }
+
+
+  /**
+   * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
+   * actually, '((a.type a).b.type b).c.type c'.
+   */
+  Clazz typeClazz()
+  {
+    if (PRECONDITIONS)
+      require(Errors.any() || !_type.isGenericArgument());
+
+    if (_typeClazz == null)
+      {
+        if (_type.isGenericArgument())
+          {
+            _typeClazz = _fuiri.error();
+          }
+        else
+          {
+            var tt = _type.typeType();
+            var ty = Types.resolved.f_Type.selfType();
+            _typeClazz = _type.containsError()  ? _fuiri.error() :
+                         feature().isUniverse() ? this    :
+                         tt.compareTo(ty) == 0  ? _fuiri.newClazz(_fuiri.universe() , ty, -1)
+                                                : _fuiri.newClazz(_outer.typeClazz(), tt, -1);
+          }
+      }
+    return _typeClazz;
+  }
+
+
+  /**
+   * cached result of typeClazz()
+   */
+  private Clazz _typeClazz = null;
+
+
+  /**
+   * Find outer clazz of this corresponding to feature `o`.
+   *
+   * @param o the outer feature whose clazz we are searching for.
+   *
+   * @return the outer clazz of this corresponding feature `o`.
+   */
+  Clazz findOuter(AbstractFeature o)
+  {
+    /* starting with feature(), follow outer references
+     * until we find o.
+     */
+    var res = this;
+    var i = feature();
+    while (i != null && i != o
+      && !(i.isThisRef() && i.inheritsFrom(o)) // see #1391 and #1628 for when this can be the case.
+    )
+      {
+        res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
+                               : res._outer;
+        i = (LibraryFeature) i.outer();
+      }
+
+    if (CHECKS) check
+      (Errors.any() || i == o || i != null && i.isThisRef() && i.inheritsFrom(o));
+
+    return i == null ? _fuiri.error() : res;
+  }
+
+
+  /**
+   * For a direct parent p of this clazz's feature, find the outer clazz of the
+   * parent. E.g., for `i32` that inherits from `num.wrap_around` the result of
+   * `getOuter(num.wrap_around)` will be the result clazz of `num`, while
+   * `getOuter(i32)` will be `universe`.
+   *
+   * @param p a feature that is either equal to this or a direct parent of x.
+   */
+  Clazz getOuter(AbstractFeature p)
+  {
+    var res =
+      p.hasOuterRef()        ? /* we either inherit from p as in
+                                *
+                                *     x : a.b.c.p is ...
+                                *
+                                * or x = p.  So the outer of `x` with respect
+                                * to `p` is `a.b.c`, which is the result type
+                                * of `p`'s outer ref:
+                                */
+                               lookup(p.outerRef()).resultClazz() :
+      p.isUniverse() ||
+      p.outer().isUniverse() ? _fuiri.universe()
+                             : /* a field or choice, so there is no inherits
+                                * call that could select a different outer:
+                                 */
+                               _outer;
+
+    if (CHECKS) check
+      (Errors.any() || res != null);
+
+    return res;
+  }
+
+
+  /**
    * Hand down a list of types along a given inheritance chain.
    *
    * @param tl the original list of types to be handed down
@@ -2139,29 +2169,6 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     return fields.size() == 0 ? NO_CLAZZES
                               : fields.toArray(new Clazz[fields.size()]);
-  }
-
-
-
-  /**
-   * Get the argument fields of this routine
-   *
-   * @return the argument fields.
-   */
-  public Clazz[] argumentFields()
-  {
-    if (PRECONDITIONS) require
-      (switch (clazzKind())
-               {
-                 case Routine,
-                      Intrinsic,
-                      Abstract,
-                      Field,
-                      Native -> true;
-                 case Choice -> false;
-               });
-
-    return _argumentFields;
   }
 
 
