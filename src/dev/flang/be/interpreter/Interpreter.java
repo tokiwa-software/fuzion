@@ -29,7 +29,6 @@ package dev.flang.be.interpreter;
 
 import java.nio.charset.StandardCharsets;
 
-import dev.flang.fuir.AirFUIR;
 import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
@@ -51,23 +50,7 @@ public class Interpreter extends FUIRContext
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
-    this._fuir = fuir instanceof AirFUIR
-      ? new AirFUIR((AirFUIR) fuir)
-      {
-        // NYI: BUG: fuir should be thread safe #2760
-        @Override
-        public synchronized int[] matchCaseTags(int s, int cix)
-        {
-          return super.matchCaseTags(s, cix);
-        };
-        // NYI: BUG: fuir should be thread safe #2760
-        @Override
-        public synchronized int[] accessedClazzes(int s)
-        {
-          return super.accessedClazzes(s);
-        }
-      }
-      : new GeneratingFUIR((GeneratingFUIR) fuir)
+    this._fuir = new GeneratingFUIR((GeneratingFUIR) fuir)
       {
         // NYI: BUG: fuir should be thread safe #2760
         @Override

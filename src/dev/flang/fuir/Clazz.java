@@ -33,9 +33,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.air.AirErrors;
-import dev.flang.air.FeatureAndActuals;
-
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
@@ -206,7 +203,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * maps a feature to a Clazz[] that contains the actual fields.  The array
    * might be empty.
    */
-  final Map<FeatureAndActuals, Object> _innerFromAir = new TreeMap<>();
+  final Map<FeatureAndActuals, Object> _innerFromFuir = new TreeMap<>();
 
 
   /**
@@ -775,7 +772,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   void layoutAndHandleCycle()
   {
     var cycle = layout();
-    if (cycle != null && Errors.count() <= AirErrors.count())
+    if (cycle != null && Errors.count() <= FuirErrors.count())
       {
         StringBuilder cycleString = new StringBuilder();
         var tp = _type.declarationPos();
@@ -786,7 +783,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 cycleString.append(p.show()).append("\n");
               }
           }
-        AirErrors.error(tp,
+        FuirErrors.error(tp,
                         "Cyclic field nesting is not permitted",
                         "Cyclic value field nesting would result in infinitely large objects.\n" +
                         "Cycle of nesting found during clazz layout:\n" +
@@ -950,7 +947,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        !isVoidType());
 
-    return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, false);
+    return lookup(new FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, false);
   }
 
 
@@ -1022,7 +1019,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     Clazz innerClazz = null;
     Clazz[] innerClazzes = null;
-    var iCs = _innerFromAir.get(fa);
+    var iCs = _innerFromFuir.get(fa);
     if (select < 0)
       {
         if (CHECKS) check
@@ -1040,7 +1037,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         if (iCs == null || !(iCs instanceof Clazz[] iCA))
           {
             innerClazzes = new Clazz[replaceOpenCount(fa._f)];
-            _innerFromAir.put(fa, innerClazzes);
+            _innerFromFuir.put(fa, innerClazzes);
           }
         else
           {
@@ -1178,10 +1175,10 @@ class Clazz extends ANY implements Comparable<Clazz>
               (innerClazz._select == select);
             if (select < 0)
               {
-                _innerFromAir.put(fa, innerClazz);
+                _innerFromFuir.put(fa, innerClazz);
                 if (outerUnboxed != this)
                   {
-                    outerUnboxed._innerFromAir.put(fa, innerClazz);
+                    outerUnboxed._innerFromFuir.put(fa, innerClazz);
                   }
               }
             else

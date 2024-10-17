@@ -20,11 +20,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class AirErrors
+ * Source of class FuirErrors
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.air;
+package dev.flang.fuir;
 
 import java.util.Map;
 import java.util.Set;
@@ -40,11 +40,11 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * AirErrors handles errors in the Application IR
+ * FuirErrors handles errors in the Application IR
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class AirErrors extends AstErrors
+public class FuirErrors extends AstErrors
 {
 
   /*--------------------------  static fields  --------------------------*/
@@ -75,23 +75,6 @@ public class AirErrors extends AstErrors
     count += delta;
   }
 
-  public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
-                                                   Set<AbstractFeature> abstractFeature,
-                                                   HasSourcePosition instantiatedAt,
-                                                   String context,
-                                                   IClazzes clazzes)
-  {
-    var m = new TreeMap<AbstractFeature, String>();
-    for (var af : abstractFeature)
-      {
-        m.put(af,
-              clazzes.isUsedAt(af).sourceRange().show());
-      }
-    abstractFeatureNotImplemented(featureThatDoesNotImplementAbstract,
-                                  m,
-                                  instantiatedAt,
-                                  context);
-  }
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
                                                    Map<AbstractFeature, String> abstractFeature,
                                                    HasSourcePosition instantiatedAt,

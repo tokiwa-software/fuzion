@@ -40,10 +40,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.air.AirErrors;
-import dev.flang.air.FeatureAndActuals;
-//import dev.flang.air.FUIRI;
-
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
@@ -3358,9 +3354,6 @@ public class GeneratingFUIR extends FUIR
    *
    * handling of abstract missing errors.
    *
-   * NYI: This still uses AirErrors.abstractFeatureNotImplemented, which should
-   * eventually be moved to DFA or somewhere else when DFA is joined with AIR
-   * phase.
    */
 
 
@@ -3426,10 +3419,10 @@ public class GeneratingFUIR extends FUIR
   {
     _abstractMissing.values()
       .stream()
-      .forEach(r -> AirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
-                                                            r.called,
-                                                            r.instantiationPos,
-                                                            r.context));
+      .forEach(r -> FuirErrors.abstractFeatureNotImplemented(r.clazz.feature(),
+                                                             r.called,
+                                                             r.instantiationPos,
+                                                             r.context));
   }
 
 

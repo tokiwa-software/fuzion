@@ -26,12 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.opt;
 
-import dev.flang.air.AIR;
-import dev.flang.air.IClazzes;
-
 import dev.flang.fe.FrontEnd;
 
-import dev.flang.fuir.AirFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.GeneratingFUIR;
 
@@ -58,15 +54,7 @@ public class Optimizer extends ANY
    */
   public final FuzionOptions _options;
 
-
-  public final AIR _air;
-
-
-  private final IClazzes _clazzes;
-
-
   private final FrontEnd _fe;
-
 
   private final MIR _mir;
 
@@ -74,25 +62,12 @@ public class Optimizer extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public Optimizer(FuzionOptions options, AIR air, IClazzes clazzes)
-  {
-    _options = options;
-    _air = air;
-    _clazzes = clazzes;
-    _fe = null;
-    _mir = null;
-  }
-
-
   public Optimizer(FuzionOptions options, FrontEnd fe, MIR mir)
   {
     _options = options;
-    _air = null;
-    _clazzes = null;
     _fe = fe;
     _mir = mir;
   }
-
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -100,16 +75,7 @@ public class Optimizer extends ANY
 
   public FUIR fuir()
   {
-    FUIR result;
-    if (_fe != null)
-      {
-        result = new GeneratingFUIR(_fe, _mir);
-      }
-    else
-      {
-        result = new AirFUIR(_air.main(), _clazzes);
-      }
-    return result;
+    return new GeneratingFUIR(_fe, _mir);
   }
 
 
