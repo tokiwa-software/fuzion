@@ -328,23 +328,6 @@ public class FrontEnd extends ANY
   }
 
 
-  public LibraryModule module(int globalIndex)
-  {
-    if (PRECONDITIONS) require
-      (globalIndex != 0);
-
-    LibraryModule result = _moduleList.get(0);
-    for (var i = 1; i < _moduleList.size() && _moduleList.get(i)._globalBase <= globalIndex; i++)
-      {
-        result = _moduleList.get(i);
-        if (false) System.out.println("module: "+result._globalBase+" <= "+globalIndex+ " < " +
-                           (i+1 < _moduleList.size() ? _moduleList.get(i+1)._globalBase : "MAX"));
-      }
-    if (false) System.out.println("module: "+result._globalBase+" <= "+globalIndex+ " < " );
-    return result;
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 

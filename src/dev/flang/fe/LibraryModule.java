@@ -103,7 +103,7 @@ public class LibraryModule extends Module implements MirModule
    * The base index of this module. When converting local indices to global
    * indices, the _globalBase will be added.
    */
-  final int _globalBase;
+  private final int _globalBase;
 
 
   /**
@@ -1014,7 +1014,6 @@ Feature
   }
   byte[] featureName(int at)
   {
-    //System.out.println("at is "+at+" base "+_globalBase);
     var i = featureNamePos(at);
     var d = data();
     var l = d.getInt(i); i = i + 4;
