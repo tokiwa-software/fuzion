@@ -499,8 +499,8 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      var mir  = fe.createMIR();                                                       f.timer("createMIR");
-      var fuir = new Optimizer(fe._options, fe, mir).fuir();
+      var mir  = fe.createMIR();                             f.timer("createMIR");
+      var fuir = new Optimizer(fe._options, fe, mir).fuir(); f.timer("ir");
       process(fe._options, fuir);
     }
 
@@ -513,9 +513,6 @@ public class Fuzion extends Tool
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
-
-
-  static boolean FUM_FUIR = FuzionOptions.boolPropertyOrEnv("FUM_FUIR", true);
 
 
   /*----------------------------  variables  ----------------------------*/
