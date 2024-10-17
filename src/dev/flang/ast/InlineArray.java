@@ -282,7 +282,9 @@ public class InlineArray extends ExprWithPos
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(elementType(), context));
+        var eb = e.box(elementType(), context);
+        if (CHECKS) check
+          (e == eb);
       }
   }
 
@@ -308,6 +310,9 @@ public class InlineArray extends ExprWithPos
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e, context);
           }
+
+        if (CHECKS) check
+          (Errors.any() || e.type().isVoid() || e.needsBoxing(elementType, context) == null || e.isBoxed());
       }
   }
 
@@ -395,6 +400,16 @@ public class InlineArray extends ExprWithPos
    */
   public Expr resolveSyntacticSugar2(Resolution res, Context context)
   {
+    // elements may be boxed later
+    // therefore wrap all elements in block
+    // and freeze _elements list
+    var li = _elements.listIterator();
+    while (li.hasNext())
+      {
+        li.set(Block.fromExpr(li.next()));
+      }
+    _elements.freeze();
+
     var et = elementType();
     var eT           = new List<AbstractType>(et);
     var argsT        = new List<AbstractType>(et);

@@ -193,24 +193,19 @@ public class Resolution extends ANY
   final LinkedList<Feature> forTypeInference = new LinkedList<>();
 
   /**
-   * List of features scheduled for boxing
-   */
-  final LinkedList<Feature> forBoxing = new LinkedList<>();
-
-  /**
-   * List of features scheduled for type checking
-   */
-  final LinkedList<Feature> forCheckTypes1 = new LinkedList<>();
-
-  /**
    * List of features scheduled for second syntactic sugar resolution
    */
   final LinkedList<Feature> forSyntacticSugar2 = new LinkedList<>();
 
   /**
+   * List of features scheduled for boxing
+   */
+  final LinkedList<Feature> forBoxing = new LinkedList<>();
+
+  /**
    * List of features scheduled for second pass of type checking
    */
-  final LinkedList<Feature> forCheckTypes2 = new LinkedList<>();
+  final LinkedList<Feature> forCheckTypes = new LinkedList<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -344,7 +339,7 @@ public class Resolution extends ANY
   void scheduleForBoxing(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == State.TYPES_INFERENCED);
+      (f.state() == State.RESOLVED_SUGAR2);
 
     forBoxing.add(f);
   }
@@ -354,12 +349,12 @@ public class Resolution extends ANY
   /**
    * Add a feature to the set of features schedule for type checking
    */
-  void scheduleForCheckTypes1(Feature f)
+  void scheduleForCheckTypes(Feature f)
   {
     if (PRECONDITIONS) require
       (f.state() == State.BOXED);
 
-    forCheckTypes1.add(f);
+    forCheckTypes.add(f);
   }
 
 
@@ -370,24 +365,9 @@ public class Resolution extends ANY
   void scheduleForSyntacticSugar2Resolution(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == State.CHECKED_TYPES1);
+      (f.state() == State.TYPES_INFERENCED);
 
     forSyntacticSugar2.add(f);
-  }
-
-
-  /**
-   * Add a feature to the set of features schedule for 2nd type checking after
-   * syntactic sugar resolution. This is just a safety feature to check that the
-   * syntactic sugar resolution did not introduce any violations to the type
-   * system
-   */
-  void scheduleForCheckTypes2(Feature f)
-  {
-    if (PRECONDITIONS) require
-      (f.state() == State.RESOLVED_SUGAR2);
-
-    forCheckTypes2.add(f);
   }
 
 
@@ -455,22 +435,12 @@ public class Resolution extends ANY
         Feature f = forTypeInference.removeFirst();
         f.typeInference(this);
       }
-    else if (!forBoxing.isEmpty())
-      {
-        Feature f = forBoxing.removeFirst();
-        f.box(this);
-      }
     else if (!_waitingForCalls.isEmpty())
       {
         // there are some features that still require calls for type resolution,
         // so try to find those fot which we have found a call meanwhile.  Only if none
         // was found, start resolving declarations anyways.
         resolveDelayed().resolveDeclarations(this);
-      }
-    else if (!forCheckTypes1.isEmpty())
-      {
-        Feature f = forCheckTypes1.removeFirst();
-        f.checkTypes1and2(this);
       }
     else if (!forSyntacticSugar2.isEmpty())
       {
@@ -480,10 +450,15 @@ public class Resolution extends ANY
             f.resolveSyntacticSugar2(this);
           }
       }
-    else if (!forCheckTypes2.isEmpty())
+    else if (!forBoxing.isEmpty())
       {
-        Feature f = forCheckTypes2.removeFirst();
-        f.checkTypes1and2(this);
+        Feature f = forBoxing.removeFirst();
+        f.box(this);
+      }
+    else if (!forCheckTypes.isEmpty())
+      {
+        Feature f = forCheckTypes.removeFirst();
+        f.checkTypes(this);
       }
     else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
       {
