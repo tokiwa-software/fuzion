@@ -103,7 +103,7 @@ public class LibraryModule extends Module implements MirModule
    * The base index of this module. When converting local indices to global
    * indices, the _globalBase will be added.
    */
-  public final int _globalBase;
+  final int _globalBase;
 
 
   /**
@@ -346,7 +346,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @return the feature declared at offset in this module.
    */
-  public AbstractFeature libraryFeature(int offset)
+  AbstractFeature libraryFeature(int offset)
   {
     if (offset >= 0 && offset <= _data.limit())
       {
@@ -962,7 +962,7 @@ Feature
     var ko = data().getShort(featureKindPos(at));
     return ko;
   }
-  public AbstractFeature.Kind featureKindEnum(int at)
+  AbstractFeature.Kind featureKindEnum(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return featureIsConstructor(at)
@@ -1012,7 +1012,7 @@ Feature
     var l = data().getInt(i);
     return l;
   }
-  public byte[] featureName(int at)
+  byte[] featureName(int at)
   {
     //System.out.println("at is "+at+" base "+_globalBase);
     var i = featureNamePos(at);
@@ -1032,7 +1032,7 @@ Feature
     var l = featureNameLength(at);
     return i + 4 + l;
   }
-  public int featureArgCount(int at)
+  int featureArgCount(int at)
   {
     return data().getInt(featureArgCountPos(at));
   }
@@ -1045,7 +1045,7 @@ Feature
   {
     return featureIdPos(at) + 4;
   }
-  public int featureId(int at)
+  int featureId(int at)
   {
     return data().getInt(featureIdPos(at));
   }
@@ -1213,7 +1213,7 @@ Feature
 
     return data().getInt(featureRedefinesPos(at) + 4 * i);
   }
-  public int featureCodePos(int at)
+  int featureCodePos(int at)
   {
     return featureRedefinesPos(at) + 4 * featureRedefinesCount(at);
   }
@@ -1495,7 +1495,7 @@ Expressions
   {
     return at;
   }
-  public int codeSize(int at)
+  int codeSize(int at)
   {
     return data().getInt(codeSizePos(at));
   }
