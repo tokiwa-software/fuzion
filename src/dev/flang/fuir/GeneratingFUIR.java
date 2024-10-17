@@ -1251,7 +1251,7 @@ public class GeneratingFUIR extends FUIR
           {
             var pf = (LibraryFeature) p.calledFeature();
             var of = pf.outerRef();
-            Clazz or = (of == null) ? null : c.lookupNotNeeded(of);
+            Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = (or != null && (!or.resultClazz().isUnitType()));
             toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
             while (inhe.size() < code.size()) { inhe.add(inh); }
@@ -2478,14 +2478,18 @@ public class GeneratingFUIR extends FUIR
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
     if (!tclazz.isVoidType())
       {
-        innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall(), needsCode);
+        innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
             cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
-            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall(), needsCode);
+            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall());
+          }
+        if (needsCode)
+          {
+            innerClazz.doesNeedCode();
           }
       }
     return innerClazz == null ? error() : innerClazz;
@@ -2506,7 +2510,7 @@ public class GeneratingFUIR extends FUIR
         // field. Currently, back-ends (JVM) rely on this being a value, though.
         tclazz = tclazz.asValue();
       }
-    var fc = tclazz.lookupNotNeeded(a._assignedField);
+    var fc = tclazz.lookup(a._assignedField);
     if (fc.resultClazz().isUnitType())
       {
         fc = null;
@@ -2541,7 +2545,7 @@ public class GeneratingFUIR extends FUIR
       {
         Clazz sClazz = clazz(a._target, outerClazz, _inh.get(s - SITE_BASE));
         var vc = sClazz.asValue();
-        yield vc.lookupNotNeeded(a._assignedField);
+        yield vc.lookup(a._assignedField);
       }
 
 
@@ -2966,7 +2970,7 @@ public class GeneratingFUIR extends FUIR
       {
         // NYI: Check if this works for a case that is part of an inherits clause, do
         // we need to store in outerClazz.outer?
-        result = outerClazz.lookupNotNeeded(f)._id;
+        result = outerClazz.lookup(f)._id;
       }
     return result;
   }

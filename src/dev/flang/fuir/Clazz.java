@@ -566,13 +566,12 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-
   /**
    * Record that this clazz needs code, or, in case of a field, is read at some point.
    */
   void doesNeedCode()
   {
-    if (!_needsCode)
+    if (!_needsCode && !_fuiri.lookupDone())
       {
         _needsCode = true;
         var r = resultField();
@@ -868,75 +867,120 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-
-  Clazz resultField()
+  /**
+   * find redefinition of a given feature in this clazz. NYI: This will have to
+   * take the whole inheritance chain into account including the parent view that is
+   * being filled with live:
+   */
+  private AbstractFeature findRedefinition(AbstractFeature f)
   {
-    Clazz result = null;
-    var rf = feature().resultField();
-    if (rf != null)
+    if (PRECONDITIONS) require
+      (// type parameters never get redefined, they are effectively fixed.
+       // However, type features get replaced by actual type parameters in the
+       // inheritance call. Instead of searching for the redefinition, the type
+       // should be replaced by the actual type.
+       !f.isTypeParameter());
+
+    var fn = f.featureName();
+    var tf = feature();
+    if (f != Types.f_ERROR && tf != Types.resolved.f_void)
       {
-        result = lookupNeeded(rf);
+        var chain = tf.findInheritanceChain(f.outer());
+        if (CHECKS) check
+          (chain != null || Errors.any());
+        if (chain != null)
+          {
+            for (var p: chain)
+              {
+                fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+              }
+          }
       }
+
+    // first look in the feature itself
+    AbstractFeature result = _fuiri.mainModule().lookupFeature(feature(), fn, f);
+
+    if (!result.redefinesFull().contains(f) && result != f)
+      {
+        // feature with same name, but not a redefinition
+        result = null;
+      }
+
+    // the inherited feature might not be
+    // visible to the inheriting feature
+    var chain = tf.findInheritanceChain(f.outer());
+    if (result == null && chain != null)
+      {
+        for (var p: chain)
+          {
+            result = _fuiri.mainModule().lookupFeature(p.calledFeature(), fn, f);
+            if (!result.redefinesFull().contains(f) && result != f)
+              {
+                // feature with same name, but not a redefinition
+                result = null;
+              }
+            if (result != null)
+              {
+                break;
+              }
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null || Errors.any());
+
     return result;
   }
 
 
-    /**
-     * Lookup the code to call the feature f from this clazz without type
-     * parameters using dynamic binding if needed.
-     *
-     * This is not intended for use at runtime, but during analysis of static
-     * types or to fill the virtual call table.
-     *
-     * @param f the feature that is called
-     *
-     * @param p if this lookup would result in the returned feature to be called,
-     * p gives the position in the source code that causes this call.  p must be
-     * null if the lookup does not cause a call, but it just done to determine
-     * the type.
-     *
-     * @return the inner clazz of the target in the call.
-     */
-    Clazz lookupNeeded(AbstractFeature f)
-    {
-      return lookup(f, true);
-    }
-    Clazz lookupNotNeeded(AbstractFeature f)
-    {
-      return lookup(f, false);
-    }
-    Clazz lookup(AbstractFeature f,
-                 boolean needed)
-    {
-      if (PRECONDITIONS) require
-        (f != null,
-         !isVoidType());
+  /**
+   * Lookup the code to call the feature f from this clazz without type
+   * parameters using dynamic binding if needed.
+   *
+   * This is not intended for use at runtime, but during analysis of static
+   * types or to fill the virtual call table.
+   *
+   * @param f the feature that is called
+   *
+   * @return the inner clazz of the target in the call.
+   */
+  Clazz lookupNeeded(AbstractFeature f)
+  {
+    var innerClazz = lookup(f);
+    innerClazz.doesNeedCode();
+    return innerClazz;
+  }
 
-      return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, false, needed);
-    }
+  Clazz lookup(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       !isVoidType());
+
+    return lookup(new dev.flang.air.FeatureAndActuals(f, dev.flang.ast.AbstractCall.NO_GENERICS), -1, false);
+  }
 
 
-    /**
-     * Lookup the code to perform the given static call. The result is _not_
-     * marked as needed (since it might not be needed if the call is dynamic or
-     * inlined).
-     *
-     * @param c the call whose target is to be looked up
-     *
-     * @param typePars the actual type parameters in the call.
-     *
-     * @return the inner clazz of the target in the call.
-     */
-    Clazz lookupCall(AbstractCall c, List<AbstractType> typePars)
-    {
-      return isVoidType()
-        ? this
-        : lookup(new FeatureAndActuals(c.calledFeature(),
-                                       typePars),
-                 c.select(),
-                 c.isInheritanceCall(),
-                 false);
-    }
+  /**
+   * Lookup the code to perform the given static call. The result is _not_
+   * marked as needed (since it might not be needed if the call is dynamic or
+   * inlined).
+   *
+   * @param c the call whose target is to be looked up
+   *
+   * @param typePars the actual type parameters in the call.
+   *
+   * @return the inner clazz of the target in the call.
+   */
+  Clazz lookupCall(AbstractCall c, List<AbstractType> typePars)
+  {
+    return isVoidType()
+      ? this
+      : lookup(new FeatureAndActuals(c.calledFeature(),
+                                     typePars),
+               c.select(),
+               c.isInheritanceCall());
+  }
 
 
   /**
@@ -962,10 +1006,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the inner clazz of the target in the call.
    */
-  Clazz lookup(dev.flang.air.FeatureAndActuals fa,
+  Clazz lookup(FeatureAndActuals fa,
                int select,
-               boolean isInheritanceCall,
-               boolean needed)
+               boolean isInheritanceCall)
   {
     if (PRECONDITIONS) require
       (fa != null,
@@ -978,17 +1021,17 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (select < 0)
       {
         if (CHECKS) check
-                      (Errors.any() || iCs == null || iCs instanceof Clazz);
+          (Errors.any() || iCs == null || iCs instanceof Clazz);
 
         innerClazz =
           iCs == null              ? null :
           iCs instanceof Clazz iCC ? iCC
-          : _fuiri.error();
+                                   : _fuiri.error();
       }
     else
       {
         if (CHECKS) check
-                      (Errors.any() || iCs == null || iCs instanceof Clazz[]);
+          (Errors.any() || iCs == null || iCs instanceof Clazz[]);
         if (iCs == null || !(iCs instanceof Clazz[] iCA))
           {
             innerClazzes = new Clazz[replaceOpenCount(fa._f)];
@@ -999,7 +1042,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             innerClazzes = iCA;
           }
         if (CHECKS) check
-                      (Errors.any() || select < innerClazzes.length);
+          (Errors.any() || select < innerClazzes.length);
         innerClazz = select < innerClazzes.length ? innerClazzes[select] : _fuiri.error();
       }
     if (innerClazz == null)
@@ -1013,17 +1056,14 @@ class Clazz extends ANY implements Comparable<Clazz>
             if (CHECKS)
               check(Errors.any() || fa._tp.isEmpty());  // there should not be an actual type parameters to a type parameter
           }
-        else
+        else if (f != Types.f_ERROR)
           {
             var af = findRedefinition(f);
-            /*
-              if (CHECKS) check
-              (Errors.any() || af != null || isEffectivelyAbstract(f));
-            */
-            if (f != Types.f_ERROR && (af != null/* NYI:  || !isEffectivelyAbstract(f)*/))
+            if (CHECKS) check
+              (Errors.any() || af != null);
+            if (af != null)
               {
-                var aaf = af != null ? af : f;
-                t = aaf.selfType().applyTypePars(aaf, fa._tp);
+                t = af.selfType().applyTypePars(af, fa._tp);
               }
           }
         if (t == null)
@@ -1146,82 +1186,11 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
       }
 
-    /*
-      if (POSTCONDITIONS) ensure
+    if (POSTCONDITIONS) ensure
       (Errors.any() || fa._f.isTypeParameter() || findRedefinition(fa._f) == null || innerClazz._type != Types.t_ERROR,
       innerClazz != null);
-    */
-    if (!_fuiri.lookupDone() && needed)
-      {
-        innerClazz.doesNeedCode();
-      }
+
     return innerClazz;
-  }
-
-
-  /**
-   * find redefinition of a given feature in this clazz. NYI: This will have to
-   * take the whole inheritance chain into account including the parent view that is
-   * being filled with live:
-   */
-  private AbstractFeature findRedefinition(AbstractFeature f)
-  {
-    if (PRECONDITIONS) require
-      (// type parameters never get redefined, they are effectively fixed.
-       // However, type features get replaced by actual type parameters in the
-       // inheritance call. Instead of searching for the redefinition, the type
-       // should be replaced by the actual type.
-       !f.isTypeParameter());
-
-    var fn = f.featureName();
-    var tf = feature();
-    if (/* tf != Types.f_ERROR && */ f != Types.f_ERROR && tf != Types.resolved.f_void)
-      {
-        var chain = tf.findInheritanceChain(f.outer());
-        if (CHECKS) check
-          (chain != null || Errors.any());
-        if (chain != null)
-          {
-            for (var p: chain)
-              {
-                fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
-              }
-          }
-      }
-
-    // first look in the feature itself
-    AbstractFeature result = _fuiri.mainModule().lookupFeature(feature(), fn, f);
-
-    if (!result.redefinesFull().contains(f) && result != f)
-      {
-        // feature with same name, but not a redefinition
-        result = null;
-      }
-
-    // the inherited feature might not be
-    // visible to the inheriting feature
-    var chain = tf.findInheritanceChain(f.outer());
-    if (result == null && chain != null)
-      {
-        for (var p: chain)
-          {
-            result = _fuiri.mainModule().lookupFeature(p.calledFeature(), fn, f);
-            if (!result.redefinesFull().contains(f) && result != f)
-              {
-                // feature with same name, but not a redefinition
-                result = null;
-              }
-            if (result != null)
-              {
-                break;
-              }
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null || Errors.any());
-
-    return result;
   }
 
 
@@ -1248,7 +1217,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var or = feature().outerRef();
         if (!isBoxed() && or != null)
           {
-            res = lookup(new FeatureAndActuals(or, new List<>()), -1, false, false);
+            res = lookup(new FeatureAndActuals(or, new List<>()), -1, false);
           }
         else
           {
@@ -1450,7 +1419,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       && !(i.isThisRef() && i.inheritsFrom(o)) // see #1391 and #1628 for when this can be the case.
     )
       {
-        res =  i.hasOuterRef() ? res.lookupNotNeeded(i.outerRef()).resultClazz()
+        res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
                                : res._outer;
         i = (LibraryFeature) i.outer();
       }
@@ -1481,7 +1450,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                                 * to `p` is `a.b.c`, which is the result type
                                 * of `p`'s outer ref:
                                 */
-                               lookupNotNeeded(p.outerRef()).resultClazz() :
+                               lookup(p.outerRef()).resultClazz() :
       p.isUniverse() ||
       p.outer().isUniverse() ? _fuiri.universe()
                              : /* a field or choice, so there is no inherits
@@ -1493,6 +1462,23 @@ class Clazz extends ANY implements Comparable<Clazz>
       (Errors.any() || res != null);
 
     return res;
+  }
+
+
+  /**
+   * Get the result field of this routine if it exists.
+   *
+   * @return the result field or null.
+   */
+  Clazz resultField()
+  {
+    Clazz result = null;
+    var rf = feature().resultField();
+    if (rf != null)
+      {
+        result = lookupNeeded(rf);
+      }
+    return result;
   }
 
 
@@ -2142,12 +2128,12 @@ class Clazz extends ANY implements Comparable<Clazz>
                 var n = replaceOpenCount(field);
                 for (var i = 0; i < n; i++)
                   {
-                    fields.add(lookup(new FeatureAndActuals(field), i, false, false));
+                    fields.add(lookup(new FeatureAndActuals(field), i, false));
                   }
               }
             else
               {
-                fields.add(lookupNotNeeded(field));
+                fields.add(lookup(field));
               }
           }
       }
