@@ -345,7 +345,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isDirectlyAssignableFrom(AbstractType actual, Context context)
   {
-    return (!isChoice() && isAssignableFrom(actual, context))
+    return actual.isVoid()
+         || (!isChoice() && isAssignableFrom(actual, context))
          || (isChoice() && compareTo(actual) == 0);
   }
 
