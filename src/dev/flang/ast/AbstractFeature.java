@@ -1459,7 +1459,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
-       res == null || res.state(heir).atLeast(State.CHECKING_TYPES1));
+       res == null || res.state(heir).atLeast(State.CHECKING_TYPES));
 
     var a = handDown(res, new AbstractType[] { t }, heir);
 

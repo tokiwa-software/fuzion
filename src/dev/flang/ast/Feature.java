@@ -1851,7 +1851,7 @@ A ((Choice)) declaration must not contain a result type.
           }
 
         _state = State.TYPES_INFERENCED;
-        res.scheduleForBoxing(this);
+        res.scheduleForSyntacticSugar2Resolution(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1869,9 +1869,9 @@ A ((Choice)) declaration must not contain a result type.
   void box(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.TYPES_INFERENCED));
+      (_state.atLeast(State.RESOLVED_SUGAR2));
 
-    if (_state == State.TYPES_INFERENCED)
+    if (_state == State.RESOLVED_SUGAR2)
       {
         _state = State.BOXING;
 
@@ -1882,7 +1882,7 @@ A ((Choice)) declaration must not contain a result type.
           });
 
         _state = State.BOXED;
-        res.scheduleForCheckTypes1(this);
+        res.scheduleForCheckTypes(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1898,7 +1898,7 @@ A ((Choice)) declaration must not contain a result type.
   private void checkTypes(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.CHECKING_TYPES1));
+      (_state.atLeast(State.CHECKING_TYPES));
 
     res._module.checkTypes(this, context);
   }
@@ -1914,43 +1914,29 @@ A ((Choice)) declaration must not contain a result type.
   void checkTypes1and2(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.BOXED));
+      (_state == State.BOXED);
 
-    _state =
-      (_state == State.BOXED          ) ? State.CHECKING_TYPES1 :
-      (_state == State.RESOLVED_SUGAR2) ? State.CHECKING_TYPES2 : _state;
+    _state = State.CHECKING_TYPES;
 
     choiceTypeCheckAndInternalFields(res);
 
-    if ((_state == State.CHECKING_TYPES1) ||
-        (_state == State.CHECKING_TYPES2)    )
-      {
-        _selfType   = selfType() .checkChoice(_pos,             context());
-        _resultType = _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
-        visit(new ContextVisitor(context()) {
-            /* if an error is reported in a call it might no longer make sense to check the actuals: */
-            @Override public boolean visitActualsLate() { return true; }
+    _selfType   = selfType() .checkChoice(_pos,             context());
+    _resultType = _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
+    visit(new ContextVisitor(context()) {
+        /* if an error is reported in a call it might no longer make sense to check the actuals: */
+        @Override public boolean visitActualsLate() { return true; }
+        @Override public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
+        @Override public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
+        @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
+        @Override public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+        @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+        @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
+        @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
+        @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
+      });
+    checkTypes(res, context());
 
-            @Override public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
-            @Override public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
-            @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
-            @Override public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
-            @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
-            @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
-          });
-        checkTypes(res, context());
-
-        switch (_state)
-          {
-          case CHECKING_TYPES1: _state = State.CHECKED_TYPES1; res.scheduleForSyntacticSugar2Resolution(this); break;
-          case CHECKING_TYPES2: _state = State.RESOLVED; /* end for front end! */                              break;
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.CHECKED_TYPES1));
+    _state = State.RESOLVED;
   }
 
 
@@ -1991,26 +1977,20 @@ A ((Choice)) declaration must not contain a result type.
   void resolveSyntacticSugar2(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.CHECKED_TYPES1));
+      (_state == State.TYPES_INFERENCED);
 
-    if (_state == State.CHECKED_TYPES1)
-      {
-        _state = State.RESOLVING_SUGAR2;
+    _state = State.RESOLVING_SUGAR2;
 
-        visit(new ContextVisitor(context()) {
-            public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
-            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
-            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
-            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
-            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
-          });
+    visit(new ContextVisitor(context()) {
+        public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                 }
+        public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
+        public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
+        public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
+        public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
+      });
 
-        _state = State.RESOLVED_SUGAR2;
-        res.scheduleForCheckTypes2(this);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.RESOLVED_SUGAR2));
+    _state = State.RESOLVED_SUGAR2;
+    res.scheduleForBoxing(this);
   }
 
 

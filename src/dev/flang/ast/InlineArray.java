@@ -308,6 +308,9 @@ public class InlineArray extends ExprWithPos
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e, context);
           }
+
+        if (CHECKS) check
+          (Errors.any() || e.type().isVoid() || e.needsBoxing(elementType, context) == null || e.isBoxed());
       }
   }
 
