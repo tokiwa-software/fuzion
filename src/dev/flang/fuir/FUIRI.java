@@ -20,51 +20,37 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class AIR
+ * Source of interface FUIRI
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.air;
 
-import dev.flang.ir.IR;
+package dev.flang.fuir;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.Expr;
 
+import dev.flang.fe.LibraryModule;
+
+import dev.flang.util.List;
 
 /**
- * The AIR contains the intermediate representation of a fuzion applications.
+ * Temporary interface for Clazz to call dev.flang.fuir.GeneratingFuir methods.
+ * Will be removed once air package is joined into dev.flang.fuir package.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class AIR extends IR
+interface FUIRI
 {
-
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The main feature
-   */
-  final Clazz _main;
-
-
-  /*--------------------------  constructors  ---------------------------*/
-
-
-  public AIR(Clazz main)
-  {
-    _main = main;
-  }
-
-
-  /*-----------------------------  methods  -----------------------------*/
-
-
-  public Clazz main()
-  {
-    return _main;
-  }
+  Clazz universe();
+  Clazz type2clazz(AbstractType thiz);
+  Clazz newClazz(AbstractType t);
+  Clazz newClazz(Clazz outer, AbstractType actualType, int select);
+  boolean lookupDone();
+  Clazz error();
+  LibraryModule mainModule();
+  Clazz clazz(Expr e, Clazz outerClazz, List<AbstractCall> inh);
 
 }
-
-/* end of file */

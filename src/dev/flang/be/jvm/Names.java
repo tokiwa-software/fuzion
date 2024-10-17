@@ -417,7 +417,7 @@ public class Names extends ANY implements ClassFileConstants
       // NYI: UNDER DEVELOPMENT: there might be name conflicts due to different generic instances, so
       // we need to add the clazz id or the actual generics if this is the case:
       //
-      //   sb.append("_").append(clazzId2num(cl)).append("_");
+      // sb.append("_").append(_fuir.clazzId2num(cl)).append("_");
       return sb.toString();
     }
   }

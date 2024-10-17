@@ -155,6 +155,41 @@ public class TailCall extends ANY
 
 
   /**
+   * Take a field or NO_CLAZZ and return that field unless its result is unit
+   * type, then return NO_CLAZZ.
+   *
+   * @return f unless f is unit type, then return NO_CLAZZ.
+   */
+  private int noClazzIfResultUnitType(int f)
+  {
+    if (f != IR.NO_CLAZZ &&
+        _fuir.clazzIsUnitType(_fuir.clazzResultClazz(f)))
+      {
+        f = IR.NO_CLAZZ;
+      }
+    return f;
+  }
+
+  /**
+   * Check if `a` and `b` refer to the same field are both NO_CLAZZ. A field
+   * with unit type result clazz is considered the same as `NO_CLAZZ`.
+   *
+   * @param a a field or NO_CLAZZ
+   *
+   * @param b a field or NO_CLAZZ
+   *
+   * @return true if a == b or both are one of NO_CLAZZ or fields with unit type
+   * result.
+   */
+  private boolean sameField(int a, int b)
+  {
+    var a0 = noClazzIfResultUnitType(a);
+    var b0 = noClazzIfResultUnitType(b);
+    return a0 == b0;
+  }
+
+
+  /**
    * Helper to check from the last expr in cl's code if we find a tail call at c,ix.
    *
    * @param cl index of clazz containing the call
@@ -174,7 +209,7 @@ public class TailCall extends ANY
       case Call ->
         {
           var cc = _fuir.accessedClazz(cls);
-          yield mustAssignTo == -1 &&
+          yield mustAssignTo == IR.NO_CLAZZ &&
             (// we found call c/ix and we do not need to assign any variable, so we have a success!
              cls == s ||
 
@@ -189,10 +224,15 @@ public class TailCall extends ANY
       case Assign ->
         {
           var cc = _fuir.accessedClazz(cls);
+          if (cc != IR.NO_CLAZZ &&
+              _fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
+            {
+              cc = IR.NO_CLAZZ;
+            }
           yield
             // if this is an assignment to 'Current.mustAssignTo' with, recursively check if
             // the value assigned is the call s.
-            cc == mustAssignTo && cls > _fuir.codeBlockStart(cls)+1 &&
+            sameField(cc, mustAssignTo) && cls > _fuir.codeBlockStart(cls)+1 &&
             _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
             isTailCall(cl, _fuir.codeIndex(cls, -2), s, -1);
         }

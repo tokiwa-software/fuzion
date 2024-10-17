@@ -56,8 +56,6 @@ import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.dfa.DFA;
 
-import dev.flang.me.MiddleEnd;
-
 import dev.flang.opt.Optimizer;
 
 import dev.flang.util.List;
@@ -501,10 +499,8 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      var mir  = fe.createMIR();                                                       f.timer("createMIR");
-      var me   = new MiddleEnd(fe._options, mir, fe.mainModule() /* NYI: remove */);
-      var air  = me.air();                                                             f.timer("me");
-      var fuir = new Optimizer(fe._options, air, me.clazzes()).fuir();                 f.timer("ir");
+      var mir  = fe.createMIR();                             f.timer("createMIR");
+      var fuir = new Optimizer(fe._options, fe, mir).fuir(); f.timer("ir");
       process(fe._options, fuir);
     }
 

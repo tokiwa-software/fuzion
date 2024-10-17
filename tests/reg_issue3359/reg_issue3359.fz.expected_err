@@ -1,5 +1,83 @@
 
---CURDIR--/reg_issue3359.fz:76:3: error 1: Used abstract features 'reg_issue3359.i.q', 'reg_issue3359.i.r' are not implemented by 'reg_issue3359.i'
+--CURDIR--/reg_issue3359.fz:34:3: error 1: Used abstract features 'reg_issue3359.f.type.n', 'reg_issue3359.f.type.o' are not implemented by 'reg_issue3359.f.type'
+  f is
+--^
+Feature 'reg_issue3359.f.type' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
+    type.n unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:54:39:
+    if      envir.args.count = 0 then T.n
+--------------------------------------^^^
+and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
+    type.o unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:55:39:
+    else if envir.args.count = 1 then T.o
+--------------------------------------^^^
+without providing an implementation
+
+Callchain that lead to this point:
+
+call 'reg_issue3359.t#1 reg_issue3359.f' at --CURDIR--/reg_issue3359.fz:61:3:
+  t f
+--^^^
+call 'reg_issue3359'
+program entry point
+
+
+--CURDIR--/reg_issue3359.fz:42:3: error 2: Used abstract features 'reg_issue3359.f.type.n', 'reg_issue3359.f.type.o' are not implemented by 'reg_issue3359.g.type'
+  g : f is
+--^
+Feature 'reg_issue3359.g.type' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
+    type.n unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:54:39:
+    if      envir.args.count = 0 then T.n
+--------------------------------------^^^
+and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
+    type.o unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:55:39:
+    else if envir.args.count = 1 then T.o
+--------------------------------------^^^
+without providing an implementation
+
+Callchain that lead to this point:
+
+call 'reg_issue3359.t#1 reg_issue3359.g' at --CURDIR--/reg_issue3359.fz:64:3:
+  t g
+--^^^
+call 'reg_issue3359'
+program entry point
+
+
+--CURDIR--/reg_issue3359.fz:47:3: error 3: Used abstract feature 'reg_issue3359.f.type.o' is not implemented by 'reg_issue3359.h.type'
+  h : g is
+--^
+Feature 'reg_issue3359.h.type' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
+    type.o unit => abstract
+---------^
+which is called at --CURDIR--/reg_issue3359.fz:55:39:
+    else if envir.args.count = 1 then T.o
+--------------------------------------^^^
+without providing an implementation
+
+Callchain that lead to this point:
+
+call 'reg_issue3359.t#1 reg_issue3359.h' at --CURDIR--/reg_issue3359.fz:67:3:
+  t h
+--^^^
+call 'reg_issue3359'
+program entry point
+
+
+--CURDIR--/reg_issue3359.fz:76:3: error 4: Used abstract features 'reg_issue3359.i.q', 'reg_issue3359.i.r' are not implemented by 'reg_issue3359.i'
   i is
 --^
 Feature 'reg_issue3359.i' instantiated at --CURDIR--/reg_issue3359.fz:103:5:
@@ -28,7 +106,7 @@ call 'reg_issue3359'
 program entry point
 
 
---CURDIR--/reg_issue3359.fz:84:3: error 2: Used abstract features 'reg_issue3359.i.q', 'reg_issue3359.i.r' are not implemented by 'reg_issue3359.j'
+--CURDIR--/reg_issue3359.fz:84:3: error 5: Used abstract features 'reg_issue3359.i.q', 'reg_issue3359.i.r' are not implemented by 'reg_issue3359.j'
   j : i is
 --^
 Feature 'reg_issue3359.j' instantiated at --CURDIR--/reg_issue3359.fz:106:5:
@@ -57,7 +135,7 @@ call 'reg_issue3359'
 program entry point
 
 
---CURDIR--/reg_issue3359.fz:89:3: error 3: Used abstract feature 'reg_issue3359.i.r' is not implemented by 'reg_issue3359.k'
+--CURDIR--/reg_issue3359.fz:89:3: error 6: Used abstract feature 'reg_issue3359.i.r' is not implemented by 'reg_issue3359.k'
   k : j is
 --^
 Feature 'reg_issue3359.k' instantiated at --CURDIR--/reg_issue3359.fz:109:5:
@@ -75,84 +153,6 @@ Callchain that lead to this point:
 
 call 'reg_issue3359.u#2 reg_issue3359.k' at --CURDIR--/reg_issue3359.fz:109:3:
   u k
---^^^
-call 'reg_issue3359'
-program entry point
-
-
---CURDIR--/reg_issue3359.fz:34:3: error 4: Used abstract features 'reg_issue3359.f.type.n', 'reg_issue3359.f.type.o' are not implemented by 'reg_issue3359.f.type'
-  f is
---^
-Feature 'reg_issue3359.f.type' instantiated at <source position not available>:
-
-inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
-    type.n unit => abstract
----------^
-which is called at --CURDIR--/reg_issue3359.fz:54:39:
-    if      envir.args.count = 0 then T.n
---------------------------------------^^^
-and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
-    type.o unit => abstract
----------^
-which is called at --CURDIR--/reg_issue3359.fz:55:39:
-    else if envir.args.count = 1 then T.o
---------------------------------------^^^
-without providing an implementation
-
-Callchain that lead to this point:
-
-call 'reg_issue3359.t#1 reg_issue3359.f' at --CURDIR--/reg_issue3359.fz:61:3:
-  t f
---^^^
-call 'reg_issue3359'
-program entry point
-
-
---CURDIR--/reg_issue3359.fz:42:3: error 5: Used abstract features 'reg_issue3359.f.type.n', 'reg_issue3359.f.type.o' are not implemented by 'reg_issue3359.g.type'
-  g : f is
---^
-Feature 'reg_issue3359.g.type' instantiated at <source position not available>:
-
-inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
-    type.n unit => abstract
----------^
-which is called at --CURDIR--/reg_issue3359.fz:54:39:
-    if      envir.args.count = 0 then T.n
---------------------------------------^^^
-and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
-    type.o unit => abstract
----------^
-which is called at --CURDIR--/reg_issue3359.fz:55:39:
-    else if envir.args.count = 1 then T.o
---------------------------------------^^^
-without providing an implementation
-
-Callchain that lead to this point:
-
-call 'reg_issue3359.t#1 reg_issue3359.g' at --CURDIR--/reg_issue3359.fz:64:3:
-  t g
---^^^
-call 'reg_issue3359'
-program entry point
-
-
---CURDIR--/reg_issue3359.fz:47:3: error 6: Used abstract feature 'reg_issue3359.f.type.o' is not implemented by 'reg_issue3359.h.type'
-  h : g is
---^
-Feature 'reg_issue3359.h.type' instantiated at <source position not available>:
-
-inherits or declares abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
-    type.o unit => abstract
----------^
-which is called at --CURDIR--/reg_issue3359.fz:55:39:
-    else if envir.args.count = 1 then T.o
---------------------------------------^^^
-without providing an implementation
-
-Callchain that lead to this point:
-
-call 'reg_issue3359.t#1 reg_issue3359.h' at --CURDIR--/reg_issue3359.fz:67:3:
-  t h
 --^^^
 call 'reg_issue3359'
 program entry point

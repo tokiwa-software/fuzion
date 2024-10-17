@@ -29,7 +29,7 @@ package dev.flang.be.interpreter;
 
 import java.nio.charset.StandardCharsets;
 
-import dev.flang.fuir.AirFUIR;
+import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
@@ -50,7 +50,7 @@ public class Interpreter extends FUIRContext
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
-    this._fuir = new AirFUIR((AirFUIR) fuir)
+    this._fuir = new GeneratingFUIR((GeneratingFUIR) fuir)
       {
         // NYI: BUG: fuir should be thread safe #2760
         @Override
