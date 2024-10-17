@@ -10,30 +10,4 @@ d := (mutate.array door).new mutate 100 closed
 effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
-
-$MODULE/mutate.fz:106:7: error 2: Failed to verify that effect 'mutate' is installed in current environment.
-      mutate.this.env.replace
-------^^^^^^^^^^^^^^^
-Callchain that lead to this point:
-
-effect environment '--empty--' for call to '(mutate.array door).check_and_replace' at $MODULE/mutate/array.fz:53:5:
-    check_and_replace
-----^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to '(mutate.array door).index [ ] := #2' at $MODULE/container/Buffer.fz:76:5:
-    pre
-----^^^
-      safety: 0 ≤ i < length
-------^^^^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to '(mutate.array door).precall index [ ] := ' at --CURDIR--/reg_issue2273.fz:36:5:
-    d[j] := d[j].toggle
-----^^^^^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to 'loop.loop' at --CURDIR--/reg_issue2273.fz:35:3:
-  for j in (i64 i)..99 do
---^
-effect environment '--empty--' for call to 'loop' at --CURDIR--/reg_issue2273.fz:34:1:
-for i in (i64 0)..99 do
-^
-effect environment '--empty--' for call to 'universe'
-effect environment '--empty--' at program entry
-
-2 errors.
+one error.
