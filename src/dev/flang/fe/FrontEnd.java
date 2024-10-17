@@ -56,7 +56,6 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 
 
@@ -120,7 +119,6 @@ public class FrontEnd extends ANY
    * the corresponding LibraryModule instance.
    */
   private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
-  List<LibraryModule> _moduleList = new List<>();
 
 
   /**

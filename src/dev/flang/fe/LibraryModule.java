@@ -175,7 +175,6 @@ public class LibraryModule extends Module implements MirModule
   {
     super(null /* set later, we need correct universe first */);
 
-    fe._moduleList.add(this);
     _globalBase = globalBase;
     _mir = null;
     _data = data;
