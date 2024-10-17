@@ -1911,7 +1911,7 @@ A ((Choice)) declaration must not contain a result type.
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  void checkTypes1and2(Resolution res)
+  void checkTypes(Resolution res)
   {
     if (PRECONDITIONS) require
       (_state == State.BOXED);
@@ -1928,13 +1928,16 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
         @Override public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
         @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
-        @Override public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+        @Override public void         action(AbstractMatch  m                       ) {        m.checkTypes(_context);                 }
         @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
         @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
         @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
         @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
       });
     checkTypes(res, context());
+    visit(new ContextVisitor(context()) {
+      @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
+    });
 
     _state = State.RESOLVED;
   }
@@ -1982,11 +1985,10 @@ A ((Choice)) declaration must not contain a result type.
     _state = State.RESOLVING_SUGAR2;
 
     visit(new ContextVisitor(context()) {
-        public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                 }
-        public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
-        public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
-        public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
-        public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
+        @Override public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
+        @Override public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
+        @Override public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
+        @Override public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
       });
 
     _state = State.RESOLVED_SUGAR2;

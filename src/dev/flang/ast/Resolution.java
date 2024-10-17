@@ -458,7 +458,7 @@ public class Resolution extends ANY
     else if (!forCheckTypes.isEmpty())
       {
         Feature f = forCheckTypes.removeFirst();
-        f.checkTypes1and2(this);
+        f.checkTypes(this);
       }
     else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
       {
