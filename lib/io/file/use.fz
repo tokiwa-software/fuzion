@@ -53,17 +53,14 @@ public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome
                 mode.write => i8 1
                 mode.append => i8 2
 
-  match fuzion.sys.fileio.open file_name mode_num
-    fd i64 =>
-      # install effect `open T` and run `code`
-      r := open T fd file_name
-        .instate_self code
-      # close file
-      _ := fuzion.sys.fileio.close fd
-      # return result
-      r
-    e error =>
-      e
+  (fuzion.sys.fileio.open file_name mode_num).bind R fd->
+    # install effect `open T` and run `code`
+    r := open T fd file_name
+      .instate_self code
+    # close file
+    _ := fuzion.sys.fileio.close fd
+    # return result
+    r
 
 
 

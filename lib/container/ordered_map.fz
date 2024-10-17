@@ -75,7 +75,7 @@ is
   public redef index [] (k OK) =>
     sorted_entries
       .find_by_comparator (e -> ks[e.i] ⋄ k)
-      .map_to_option i->sorted_entries[i].val
+      .bind V i->sorted_entries[i].val
 
 
   # get an array of all key/value pairs in this map

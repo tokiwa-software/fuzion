@@ -110,7 +110,7 @@ is
   public fixed redef infix **!(other int) bool =>
     other ≥ int.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
-  public fixed redef infix **?(other int) num_option int =>
+  public fixed redef infix **?(other int) option int =>
     match other.ns
       num.plus => int.this ** other
       num.minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless

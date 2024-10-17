@@ -24,3 +24,4 @@ error: not_a_valid_file (No such file or directory)
 {my jstr=my jstr}
 Class java.lang.String does not implement the requested interface java.util.Map
 Illegal Capacity: -7
+--null--

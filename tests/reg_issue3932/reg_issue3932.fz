@@ -17,15 +17,18 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature universe
+#  Source code of Fuzion test reg_issue3932
 #
 # -----------------------------------------------------------------------
 
+g(start i32) : effect is
 
-#
-# universe is the mother and father of all features. As such it is the outermost feature.
-#
-# Universe can not be called but you can use it in a call as part of a full qualifier, e.g.:
-#
-# `universe.this.say "hello"`
-#
+  call =>
+    # replace current effect instance with next value
+    (g start+1).replace
+    start
+
+(g 0).instate_self ()->
+  for _ in 1..10 do
+    yak g.env.call
+

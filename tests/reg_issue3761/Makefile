@@ -17,15 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature universe
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-#
-# universe is the mother and father of all features. As such it is the outermost feature.
-#
-# Universe can not be called but you can use it in a call as part of a full qualifier, e.g.:
-#
-# `universe.this.say "hello"`
-#
+override NAME = reg_issue3761
+include ../simple.mk

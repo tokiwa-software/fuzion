@@ -45,12 +45,10 @@ public sync is
   private:public mutex(module mtx fuzion.sys.Pointer) : effect is
 
     public type.new(T type, code ()->T) outcome T =>
-      match concur.sync.mtx_init
-        e error => e
-        mtx fuzion.sys.Pointer =>
-          res := (concur.sync.mutex mtx).instate_self code
-          concur.sync.mtx_destroy mtx
-          res
+      concur.sync.mtx_init.bind T mtx->
+        res := (concur.sync.mutex mtx).instate_self code
+        concur.sync.mtx_destroy mtx
+        res
 
     public synchronized(T type, code ()->T) T =>
       check mtx_lock mtx
@@ -59,12 +57,10 @@ public sync is
       res
 
     public condition(T type, code ()->T) outcome T =>
-      match concur.sync.cnd_init mtx
-        e error => e
-        cnd fuzion.sys.Pointer =>
-          res := (concur.sync.condition cnd mtx).instate_self code
-          concur.sync.cnd_destroy cnd
-          res
+      (concur.sync.cnd_init mtx).bind T cnd->
+        res := (concur.sync.condition cnd mtx).instate_self code
+        concur.sync.cnd_destroy cnd
+        res
 
 
   private:public condition(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) : effect is

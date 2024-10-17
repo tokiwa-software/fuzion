@@ -165,3 +165,6 @@ javaHello : Java is
 
   catch_panics ()->
     say (Java.java.util.ArrayList.new_I -7)
+
+
+  say (fuzion.java.null (fuzion.java.Java_String))

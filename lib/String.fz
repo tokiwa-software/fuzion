@@ -205,7 +205,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     neg bool,
 
     # the value of the highest digits already parsed
-    hi num_option T,
+    hi option T,
 
     # the current character to be parsed
     c u8,
@@ -250,11 +250,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public as_codepoints Sequence codepoint =>
     codepoints_and_errors
-      .map (x ->
+      .map x->
         match x
           c codepoint => c
           e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
-      )
 
 
   # replaces invalid UTF-8 byte sequences in this string with the Unicode

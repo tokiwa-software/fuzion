@@ -48,6 +48,8 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.fe.LibraryFeature;
+import dev.flang.fe.LibraryModule;
 import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
@@ -261,27 +263,62 @@ public class Docs extends ANY
   /**
    * Get a path for a feature.
    * This is where the docs of this feature are
-   * @param f
+   * @param f the feature for which to get the path for
+   * @param module the module for which the docs are created
    * @return
    */
-  private static String featurePath(AbstractFeature f)
+  private static String featurePath(AbstractFeature f, LibraryModule module)
+  {
+    return featurePath(f, module, true);
+  }
+
+
+  /**
+   * Get a path for a feature.
+   * This is where the docs of this feature are
+   * @param f the feature for which to get the path for
+   * @param module the module for which the docs are created
+   * @param modulePrefix whether the module prefix should be included in the path
+   * @return
+   */
+  private static String featurePath(AbstractFeature f, LibraryModule module, boolean modulePrefix)
   {
     if (f.isUniverse())
       {
         return "";
       }
 
-    String path = f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin()) + "/" + "type.")
-                                    : (featurePath(f.outer()) + f.featureName().toString()) + "/";
+      // docs are generated per module, for features in universe add the module's folder
+      String path = (modulePrefix && f.outer().isUniverse()) ? module.name() + "/" : "";
+
+      path += f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin(), module, false) + "/" + "type.")
+                                : (featurePath(f.outer(), module) + f.featureName().toString()) + "/";
 
     return path
       .replace(" ", "+");
   }
 
+  /**
+   * Cast an AbstractFeature to LibraryFeature, requires that this is possible
+   * @param af an AbstractFeature that can be casted to LibraryFeature
+   * @return
+   */
+  private static final LibraryFeature lf(AbstractFeature af)
+  {
+    return (LibraryFeature) af;
+  }
+
 
   private void run(DocsOptions config)
   {
-    // declared features are sorted by feature name
+    // get all modules
+    var all_modules = allInnerAndInheritedFeatures(universe)
+              .map(af->lf(af)._libModule)
+              .distinct()
+              .filter(m->!m.name().equals("main")) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
+              .collect(Collectors.toCollection(List::new));
+
+    // collect all features for all modules
     var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feature -> {
@@ -309,31 +346,55 @@ public class Docs extends ANY
 
     }, universe);
 
-    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, fe.mainModule());
 
-    mapOfDeclaredFeatures
-      .keySet()
-      .stream()
-      .forEach(af -> {
-        var path = af.isUniverse()
-                                    ? config.destination()
-                                    : config.destination().resolve(featurePath(af));
-        path.toFile().mkdirs();
+    // generate documentation per module
+    for (var module : all_modules)
+    {
+        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
 
-        try
-          {
-            FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
-            var output = htmlTool.content(af);
-            writer.write(output);
-            writer.close();
-          }
-        catch (IOException e)
-          {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-      });
-  }
+        mapOfDeclaredFeatures
+          .keySet()
+          .stream()
+          .filter(af -> lf(af).showInMod(module))
+          .forEach(af -> {
+            var path = af.isUniverse()
+                                        ? config.destination().resolve(module.name())
+                                        : config.destination().resolve(featurePath(af, module));
+            path.toFile().mkdirs();
+
+            var file = new File(path.toFile(), "index.html");
+            try
+              {
+                FileWriter writer = new FileWriter(file);
+                var output = htmlTool.content(af);
+                writer.write(output);
+                writer.close();
+              }
+            catch (IOException e)
+              {
+                throw new Error("file not writable: " + file.getPath());
+              }
+          });
+        }
+
+      // generate overview page of modules
+      var path = config.destination();
+      path.toFile().mkdirs();
+      var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
+
+      var file = new File(path.toFile(), "index.html");
+      try
+        {
+          FileWriter writer = new FileWriter(file);
+          writer.write(htmlTool.modulePage());
+          writer.close();
+        }
+      catch (IOException e)
+        {
+          throw new Error("file not writable: " + file.getPath());
+        }
+    }
+
 
 
   /**

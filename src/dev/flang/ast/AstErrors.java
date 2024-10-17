@@ -406,7 +406,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && !frmlT.isVoid() && frmlT.asRef().isAssignableFrom(actlT, context))
+        if (remedy == null && frmlT.asRef().isAssignableFrom(actlT, context))
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
@@ -431,8 +431,8 @@ public class AstErrors extends ANY
           {
             remedy = !frmlT.isRef() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
                         "To solve this you could:\n" + //
-                            "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n" + //
-                            "  • change the type of the target " + ss(target) + " to " + s(actlT) + ", or\n" + //
+                            (frmlT.isChoice() ? "" : "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n") +
+                            "  • change the type of the target " + ss(target) + " to " + s(actlT) + ", or\n" +
                             "  • convert the type of the assigned value to " + s(frmlT) + "."
                         : "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
           }

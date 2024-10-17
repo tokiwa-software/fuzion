@@ -50,15 +50,13 @@ is
 
   # close server, stop listening on port
   public close =>
-    match state
-      d i64 =>
-        s := match fuzion.sys.net.close d
-          unit =>
-            server (error "not initialized") nil unit unit unit
-          error error =>
-            server error nil unit unit unit
-        s.replace
-      * =>
+    _ := state.bind unit d->
+      (match fuzion.sys.net.close d
+        unit =>
+          server (error "not initialized") nil unit unit unit
+        error error =>
+          server error nil unit unit unit
+      ).replace
 
 
   # accept new TCP connection
@@ -66,13 +64,40 @@ is
   # blocks until connection is established
   # NYI we may want to close server on certain errors?
   public accept(T type, ch Connection_Handler T) outcome T =>
-    match state
-      d i64 =>
-        match fuzion.sys.net.accept d
-          desc i64 =>
+    state.bind T d->
+      match fuzion.sys.net.accept d
+        desc i64 =>
+
+          lm : mutate is
+          res := lm.instate_self ()->
+            (io.buffered.reader lm (read_provider desc) 1024).with ()->
+              (io.buffered.writer lm (write_provider desc) 1024).with ()->
+                (net.channel desc).instate_self ()->
+                  ch.handle_connection lm
+
+          _ := fuzion.sys.net.close desc
+
+          res.bind T x->x
+
+        e error =>
+          # NYI we may not need to close server on every error...
+          (server e nil unit unit unit).replace
+          e
+
+
+  # accept a network connection that will be processed
+  # in a task submitted to the given thread_pool
+  #
+  public accept_threaded(TP type : concur.thread_pool, ch Connection_Handler unit) outcome unit ! TP =>
+    state.bind unit d->
+      match fuzion.sys.net.accept d
+        desc i64 =>
+
+          submit_success => TP.env.submit ()->
 
             lm : mutate is
-            res := lm.instate_self ()->
+
+            _ := lm.instate_self ()->
               (io.buffered.reader lm (read_provider desc) 1024).with ()->
                 (io.buffered.writer lm (write_provider desc) 1024).with ()->
                   (net.channel desc).instate_self ()->
@@ -80,47 +105,12 @@ is
 
             _ := fuzion.sys.net.close desc
 
-            res.bind T x->
-              match x
-                v T => v
-                e error => e
+          if submit_success then unit else error "error submitting task to thread pool"
 
-          e error =>
-            # NYI we may not need to close server on every error...
-            (server e nil unit unit unit).replace
-            e
-      e error =>
-        e
-
-
-  # accept a network connection that will be processed
-  # in a task submitted to the given thread_pool
-  #
-  public accept_threaded(TP type : concur.thread_pool, ch Connection_Handler unit) outcome unit ! TP =>
-    match state
-      d i64 =>
-        match fuzion.sys.net.accept d
-          desc i64 =>
-
-            submit_success => TP.env.submit ()->
-
-              lm : mutate is
-
-              _ := lm.instate_self ()->
-                (io.buffered.reader lm (read_provider desc) 1024).with ()->
-                  (io.buffered.writer lm (write_provider desc) 1024).with ()->
-                    (net.channel desc).instate_self ()->
-                      ch.handle_connection lm
-
-              _ := fuzion.sys.net.close desc
-
-            if submit_success then unit else error "error submitting task to thread pool"
-
-          e error =>
-            # NYI we may not need to close server on every error...
-            (server e nil unit unit unit).replace
-            e
-      e error => e
+        e error =>
+          # NYI we may not need to close server on every error...
+          (server e nil unit unit unit).replace
+          e
 
 
 # open new server bound to the any address listening on port
@@ -143,12 +133,8 @@ public server(f family.val, p protocol.val, port u16) outcome unit =>
 public server(f family.val, p protocol.val, addr String, port u16) outcome unit =>
   server.close
 
-  match init_ip_server f p addr port
-    desc i64 =>
-      (server desc p unit unit unit).replace
-      unit
-    e error =>
-      e
+  (init_ip_server f p addr port).bind unit desc->
+    (server desc p unit unit unit).replace
 
 
 # get currently installed server from env
@@ -168,17 +154,15 @@ init_ip_server(f family.val, p protocol.val, addr String, port u16) outcome i64 
   s := socket_type.by_protocol p
 
   # bind to port
-  match fuzion.sys.net.bind f.as_num s.as_num p.as_num addr port
-    err error => err
-    sd i64  =>
-      match p
-        protocol.tcp =>
-          # listen
-          listen_res := fuzion.sys.net.listen sd backlog
-          if listen_res != 0
-            _ := fuzion.sys.net.close sd
-            error "listening on socket failed with error $listen_res."
-          else
-            sd
-        * =>
+  (fuzion.sys.net.bind f.as_num s.as_num p.as_num addr port).bind i64 sd->
+    match p
+      protocol.tcp =>
+        # listen
+        listen_res := fuzion.sys.net.listen sd backlog
+        if listen_res != 0
+          _ := fuzion.sys.net.close sd
+          error "listening on socket failed with error $listen_res."
+        else
           sd
+      * =>
+        sd

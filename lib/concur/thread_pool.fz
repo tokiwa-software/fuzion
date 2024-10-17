@@ -137,7 +137,7 @@ is
       compute =>
         compute_result.write task.call
         mtx.synchronized ()->
-          _ := fut_cnd.read.map_to_option c->
+          _ := fut_cnd.read.bind unit c->
             check concur.sync.cnd_broadcast c
             concur.sync.cnd_destroy c
 

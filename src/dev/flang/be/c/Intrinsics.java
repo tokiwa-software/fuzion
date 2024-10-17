@@ -1236,7 +1236,7 @@ public class Intrinsics extends ANY
               var tmp = new CIdent("tmp");
               var rc = c._fuir.clazzResultClazz(cl);
               return CStmnt.seq(CStmnt.decl("const char *", tmp),
-                         tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(c.javaRefField(A0).castTo("jstring")))),
+                         tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(A0.castTo("jstring")))),
                          c.heapClone(c.constString(tmp, CExpr.call("strlen",new List<>(tmp))), c._fuir.clazz_Const_String())
                           .castTo(c._types.clazz(rc))
                           .ret());

@@ -45,18 +45,16 @@ public stack(T type) : container.Stack T is
   public redef pop option T =>
 
     next (x option Node) =>
-      match x
-        n Node => n.next
-        nil => nil
+      x.bind Node n->n.next
 
     for o := top.read
         n := next o
     while !o.is_nil && !top.compare_and_set o n
     else
-      o.map_to_option node->node.data
+      o.bind T node->node.data
 
 
   # peek at the top element from the stack
   #
   public redef peek option T =>
-    top.read.map_to_option node->node.data
+    top.read.bind T node->node.data

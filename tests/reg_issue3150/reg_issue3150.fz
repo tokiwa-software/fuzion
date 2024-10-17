@@ -17,15 +17,8 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature universe
+#  Source code of Fuzion test reg_issue3150
 #
 # -----------------------------------------------------------------------
 
-
-#
-# universe is the mother and father of all features. As such it is the outermost feature.
-#
-# Universe can not be called but you can use it in a call as part of a full qualifier, e.g.:
-#
-# `universe.this.say "hello"`
-#
+f(x option ((i32,i32))) => { say x.val.0 }; f (47,11)

@@ -72,14 +72,6 @@ is
                  | e error => e
 
 
-  # convert this outcome to an option
-  # if the outcome is an error, the option is empty
-  public as_option option T =>
-    match outcome.this
-      t T => t
-      error => nil
-
-
   # converts outcome to a string
   #
   # returns the result of T.as_string for a successful outcome, or
@@ -92,8 +84,7 @@ is
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
   public and (O type, o outcome O) outcome O =>
-    outcome.this ? _ T     => o
-                 | e error => e
+    bind O _->o
 
   # returns o if outcome is not ok, otherwise return this outcome's value.
   public or (o outcome T) outcome T =>
@@ -136,6 +127,15 @@ is
   public bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
                  | e error => e
+
+
+  # convert this to an outcome
+  #
+  # this is essentially a no-op.
+  #
+  public redef as_outcome outcome T
+  =>
+    outcome.this
 
 
   # return function

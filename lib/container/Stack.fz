@@ -54,18 +54,14 @@ public stack(LM type : mutate, T type) : Stack T is
   # pop an element from the stack
   #
   public redef pop option T =>
-    match top.get
-      n Element =>
-        top <- n.next
-        n.data
-      nil => nil
+    top.get.bind T n->
+      top <- n.next
+      n.data
 
 
   # peek at the top element from the stack
   #
   public redef peek option T =>
-    match top.get
-      n Element => n.data
-      nil => nil
+    top.get.bind T n->n.data
 
 
