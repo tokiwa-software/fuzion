@@ -33,8 +33,6 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -193,7 +191,6 @@ public class GeneratingFUIR extends FUIR
   private final FrontEnd _fe;
 
   private final TreeMap<Clazz, Clazz> _clazzesTM;
-  private final HashMap<Clazz, Clazz> _clazzesHM;
 
 
   /**
@@ -235,7 +232,6 @@ public class GeneratingFUIR extends FUIR
     _fe = fe;
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
-    _clazzesHM = new HashMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
     _accessedClazz = new IntMap<>();
     _accessedClazzes = new IntMap<>();
@@ -266,7 +262,6 @@ public class GeneratingFUIR extends FUIR
     original._lookupDone = true;
     _lookupDone = true;
     _clazzesTM = original._clazzesTM;
-    _clazzesHM = original._clazzesHM;
     _siteClazzes = original._siteClazzes;
     _accessedClazz = original._accessedClazz;
     _accessedClazzes = original._accessedClazzes;
@@ -355,67 +350,16 @@ public class GeneratingFUIR extends FUIR
     var t = actualType;
 
     var cl = new Clazz(_fuiri, outerR, t, select, CLAZZ_BASE + _clazzes.size());
-    // var existing = _clazzesTM.get(cl);
-    var existing = _clazzesHM.get(cl);
+    var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
         result = existing;
       }
     else
       {
-        /*
-        for (var c : _clazzes)
-          {
-            if (c.compareTo(cl)==0)
-              {
-                throw new Error("DUPLICATE CLAZZ: "+c+" vs "+cl+" compare is "+c.compareTo(cl));
-              }
-          }
-        */
         result = cl;
         _clazzes.add(cl);
         _clazzesTM.put(cl, cl);
-        _clazzesHM.put(cl, cl);
-        /*
-        var sl = new List<Clazz>();
-        for (var c : _clazzesTM.keySet())
-          {
-            sl.add(c);
-          }
-        var al = sl.toArray(new Clazz[sl.size()]);
-        java.util.Arrays.sort(al);
-        var eq = false;
-        if (false)
-        for (var i = 0; i<al.length; i++)
-          {
-            for (var j = 0; j<al.length; j++)
-              {
-                var ij = al[i].compareTo(al[j]);
-                var ji = al[j].compareTo(al[i]);
-                check((ij <= 0) == (i <= j),
-                      (ij >= 0) == (i >= j),
-                      (ji <= 0) == (j <= i),
-                      (ji >= 0) == (j >= i));
-              }
-          }
-        for (var c : al)
-          {
-            var s = c.compareTo(cl);
-            System.out.print(s < 0 ? "<" :
-                             s > 0 ? ">" : "=");
-            if (!eq && s > 0)
-              {
-                System.out.println("**** order broken for "+c+" new "+cl);
-              }
-            eq = eq || s == 0;
-            if (eq && s < 0)
-              {
-                System.out.println("**** order broken for "+c+" new "+cl);
-              }
-
-          }
-        System.out.println();
-        */
 
         if (outerR != null)
           {
