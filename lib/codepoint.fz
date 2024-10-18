@@ -135,3 +135,16 @@ is
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
   public fixed redef type.lteq(a, b codepoint) => a.val <= b.val
+
+
+
+  # this byte as a codepoint
+  #
+  public u8.as_codepoint =>
+    codepoint as_u32
+
+
+  # this u32 as a codepoint
+  #
+  public u32.as_codepoint =>
+    codepoint val
