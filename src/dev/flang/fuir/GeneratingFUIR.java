@@ -1416,10 +1416,10 @@ public class GeneratingFUIR extends FUIR
       }
     var vc0 = id2clazz(cl).asValue()._id;
     var vc = vcc._id;
-    if (clazzIsRef(vc))
-      {
-        throw new Error("clazzAsValue for "+clazzAsString(cl)+" is "+clazzAsString(vc)+" "+cl+" "+vc+"="+vc0+" "+System.identityHashCode(cc)+" "+System.identityHashCode(vcc));
-      }
+
+    if (POSTCONDITIONS) ensure
+      (!clazzIsRef(vc));
+
     return vc;
   }
 
