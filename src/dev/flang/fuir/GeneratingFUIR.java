@@ -2861,7 +2861,6 @@ public class GeneratingFUIR extends FUIR
       {
       case Constant     c ->
       {
-        var p = c.pos();
         var const_clazz = clazz(c, outerClazz, _inh.get(s - SITE_BASE));
         //        const_clazz.instantiated(p);
         if (const_clazz.feature() == Types.resolved.f_array)
