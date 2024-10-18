@@ -634,6 +634,15 @@ public Sequence(public T type) ref : property.equatable is
     find [x]
 
 
+  # does the Sequence contain element x?
+  #
+  public contains(x T)
+    pre
+      T : property.equatable
+  =>
+    (find [x]).exists
+
+
   # get the index of pattern within this Sequence or nil if it does not exist
   #
   # uses the Knuth-Morris-Pratt algorithm
