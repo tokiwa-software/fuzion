@@ -200,7 +200,7 @@ public class GeneratingFUIR extends FUIR
    * For each site, this gives the clazz id of the clazz that contains the code at that site.
    */
   private final IntArray _siteClazzes;
-  private final IntMap<Clazz> _accessedClazz;
+  private final IntMap<Object> _accessedClazz;
   private final IntMap<Clazz> _accessedTarget;
   final IntMap<int[]> _accessedClazzes;
 
@@ -2403,13 +2403,14 @@ public class GeneratingFUIR extends FUIR
     if (res == null)
       {
         res = accessedClazz(s, null);
-        if (res != null)
+        if (res == null)
           {
-            _accessedClazz.put(s, res);
+            res = this;  // using `this` for `null`.
           }
+        _accessedClazz.put(s, res);
         // _accessedClazz = res; -- NYI: need Map from s to res
       }
-    return res == null ? NO_CLAZZ : res._id;
+    return res instanceof Clazz rc ? rc._id : NO_CLAZZ;
   }
   //int _accessedClazz = NO_CLAZZ;
 
