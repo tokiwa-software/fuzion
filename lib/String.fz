@@ -400,6 +400,15 @@ public String ref : property.equatable, property.hashable, property.orderable is
     substring from codepoint_length
 
 
+  # splits this string in chunks of codepoint length n, the last part might be shorter
+  #
+  public chunk(n i32)
+    pre n>0
+  =>
+    as_codepoints.chunk n
+                 .map (.as_string "")
+
+
   # check if this string starts with given prefix
   #
   public starts_with(prefx String) =>
