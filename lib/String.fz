@@ -406,7 +406,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre n>0
   =>
     as_codepoints.chunk n
-                 .map (.as_string "")
+                 .map String.type.from_codepoints
 
 
   # check if this string starts with given prefix
