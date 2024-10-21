@@ -112,25 +112,28 @@ public bool : choice FALSE TRUE, property.equatable is
   # monoid of bool with infix & operation.  Will be true iff all elements are
   # true.
   #
-  public type.all : Monoid bool is
-    public redef infix ∙ (a, b bool) => a & b
-    public redef e => true
+  public type.all =>
+    ref : Monoid bool
+      public redef infix ∙ (a, b bool) => a & b
+      public redef e => true
 
 
   # monoid of bool with infix | operation.  Will be false iff all elements are
   # false.
   #
-  public type.any : Monoid bool is
-    public redef infix ∙ (a, b bool) => a | b
-    public redef e => false
+  public type.any =>
+    ref : Monoid bool
+      public redef infix ∙ (a, b bool) => a | b
+      public redef e => false
 
 
   # monoid of bool with infix ^ operation.  Will be true iff an odd number of
   # elements is true. This gives the even parity.
   #
-  public type.parity : Monoid bool is
-    public redef infix ∙ (a, b bool) => a ^ b
-    public redef e => false
+  public type.parity =>
+    ref: Monoid bool
+      public redef infix ∙ (a, b bool) => a ^ b
+      public redef e => false
 
 
 # boolean value "false"

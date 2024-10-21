@@ -39,11 +39,12 @@ public write(fwh Write_Handler) : effect is
 
   # the default file writing handler writing bytes into files via fuzion.sys.fileio.write
   #
-  module type.default_write_handler(fd i64) : io.file.Write_Handler is
-    public redef write(content array u8) =>
-      fuzion.sys.fileio.write fd content
-        .bind unit r->
-          if fuzion.sys.fileio.flush fd = 0 then r else error "flushing failed"
+  module type.default_write_handler(fd i64) =>
+    ref : io.file.Write_Handler
+      public redef write(content array u8) =>
+        fuzion.sys.fileio.write fd content
+          .bind unit r->
+            if fuzion.sys.fileio.flush fd = 0 then r else error "flushing failed"
 
 
 # short-hand for accessing write effect in current environment

@@ -2270,6 +2270,15 @@ public class AstErrors extends ANY
       "" /* NYI: UNDER DEVELOPMENT: can we give some useful suggestion here? */);
   }
 
+  public static void illegalFeatureDefiningType(Feature f)
+  {
+    error(f.pos(),
+      "Must not define type inside of type feature.",
+      "To solve this, move the type outside of the type feature." + System.lineSeparator() +
+      "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
+      "do this: " + code("public type.union =>" + System.lineSeparator() + "  ref : Monoid bitset"));
+  }
+
 
 }
 

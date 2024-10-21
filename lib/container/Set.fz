@@ -141,6 +141,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # monoid of Set with infix ∪ operation.
   #
   # NYI: BUG: name clash with union
-  public type.unionize : Monoid (container.Set E) is
-    redef infix ∙ (a, b container.Set E) => a ∪ b
-    redef e => (container.Set E).new []
+  public type.unionize =>
+    ref : Monoid (container.Set E)
+      redef infix ∙ (a, b container.Set E) => a ∪ b
+      redef e => (container.Set E).new []

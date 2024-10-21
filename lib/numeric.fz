@@ -235,30 +235,34 @@ module:public numeric : property.hashable, property.orderable is
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
   #
-  public type.sum : Monoid numeric.this is
-    public redef infix ∙ (a, b numeric.this) => a + b
-    public redef e => zero
+  public type.sum =>
+    ref : Monoid numeric.this
+      public redef infix ∙ (a, b numeric.this) => a + b
+      public redef e => zero
 
 
   # monoid of numeric with infix * operation.  Will create product of all elements
   # it is applied to.
   #
-  public type.product : Monoid numeric.this is
-    public redef infix ∙ (a, b numeric.this) => a * b
-    public redef e => one
+  public type.product =>
+    ref : Monoid numeric.this
+      public redef infix ∙ (a, b numeric.this) => a * b
+      public redef e => one
 
 
   # monoid of numeric with infix +^ operation.  Will create sum of all elements it
   # is applied to, stopping at max/min value in case of overflow.
   #
-  public type.sum_saturating : Monoid numeric.this is
-    public redef infix ∙ (a, b numeric.this) => a +^ b
-    public redef e => zero
+  public type.sum_saturating =>
+    ref : Monoid numeric.this
+      public redef infix ∙ (a, b numeric.this) => a +^ b
+      public redef e => zero
 
 
   # monoid of numeric with infix *^ operation.  Will create product of all elements
   # it is applied to, stopping at max/min value in case of overflow.
   #
-  public type.product_saturating : Monoid numeric.this is
-    public redef infix ∙ (a, b numeric.this) => a *^ b
-    public redef e => one
+  public type.product_saturating =>
+    ref : Monoid numeric.this
+      public redef infix ∙ (a, b numeric.this) => a *^ b
+      public redef e => one

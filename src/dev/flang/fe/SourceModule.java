@@ -1651,6 +1651,22 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkDuplicateFeatures(f);
     checkContractAccesses(f);
     checkLegalQualThisType(f);
+    checkLegalDefinesType(f);
+  }
+
+
+  private void checkLegalDefinesType(Feature f)
+  {
+    if (f.definesUsableType() && InTypeFeature(f))
+      {
+        AstErrors.illegalFeatureDefiningType(f);
+      }
+  }
+
+
+  private boolean InTypeFeature(AbstractFeature f)
+  {
+    return f.isTypeFeature() || (f.outer() != null && InTypeFeature(f.outer()));
   }
 
 

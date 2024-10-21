@@ -59,11 +59,12 @@ is
 
   # default thread handler
   #
-  type.default_thread : concur.Thread_Handler is
+  type.default_thread =>
+    ref : concur.Thread_Handler
 
-    # spawn a new thread using given code
-    #
-    redef spawn(code ()->unit) => concur.thread.spawned (fuzion.sys.thread.spawn code)
+      # spawn a new thread using given code
+      #
+      redef spawn(code ()->unit) => concur.thread.spawned (fuzion.sys.thread.spawn code)
 
 
 # thread with no argument returns thread.env, i.e., the currently installed

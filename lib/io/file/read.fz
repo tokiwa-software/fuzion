@@ -70,9 +70,10 @@ public read(ro Read_Handler) : effect is
 
   # the default file reading operation reading bytes from files via fuzion.sys.fileio.read
   #
-  type.default_read_handler : io.file.Read_Handler is
-    redef read(fd i64, n u64) =>
-      fuzion.sys.fileio.read fd n
+  type.default_read_handler =>
+    ref : io.file.Read_Handler
+      redef read(fd i64, n u64) =>
+        fuzion.sys.fileio.read fd n
 
 
   # install default effect io.file.read

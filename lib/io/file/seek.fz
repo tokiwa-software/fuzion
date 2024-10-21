@@ -54,12 +54,13 @@ public seek(ps Seek_Handler) : effect is
 
   # the default stream seeking
   #
-  type.default_seek_handler : io.file.Seek_Handler is
-    redef seek(fd i64, offset i64) =>
-      fuzion.sys.fileio.seek fd offset
+  type.default_seek_handler =>
+    ref : io.file.Seek_Handler
+      redef seek(fd i64, offset i64) =>
+        fuzion.sys.fileio.seek fd offset
 
-    redef file_position(fd i64) =>
-      fuzion.sys.fileio.file_position fd
+      redef file_position(fd i64) =>
+        fuzion.sys.fileio.file_position fd
 
 
   # install default effect io.file.seek

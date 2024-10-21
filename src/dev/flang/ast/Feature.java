@@ -2440,6 +2440,16 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
+  /**
+   * Does this feature define a type that is
+   * (potentially) qualifiable in sourcecode?
+   */
+  public boolean definesUsableType()
+  {
+    return definesType() && !featureName().isInternal();
+  }
+
+
 }
 
 /* end of file */
