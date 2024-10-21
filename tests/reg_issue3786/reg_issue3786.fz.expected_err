@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue3786.fz:27:8: error 1: Must not define type inside of type feature.
+  type.y is
+-------^
+To solve this, move the type outside of the type feature.
+E.g., instead of: 
+'type.union : Monoid bitset is'
+do this: 
+public type.union =>
+  ref : Monoid bitset
+
+one error.
