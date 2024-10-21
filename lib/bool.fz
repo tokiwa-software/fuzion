@@ -29,14 +29,14 @@
 # just to safe us from typing one more letter.  But at least we stop
 # here and do not use boo, bo or similar.
 #
-# bool is a choice type that can either be TRUE of FALSE.
+# bool is a choice type that can either be wrong or right.
 #
-# Note that 'TRUE' and 'FALSE' themselves are not of type 'bool'.
+# Note that 'right' and 'wrong' themselves are not of type 'bool'.
 # Routines 'true' and 'false' are the preferred way to get a constant
 # value of type 'bool'.
 #
 #
-public bool : choice FALSE TRUE, property.equatable is
+public bool : choice wrong right, property.equatable is
 
   # not
   public prefix ! bool =>
@@ -135,39 +135,39 @@ public bool : choice FALSE TRUE, property.equatable is
 
 # boolean value "false"
 #
-# Note that this value is of unit type >>FALSE<<, not of type >>bool<<, i.e.,
+# Note that this value is of unit type >>wrong<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := FALSE
+#    my_boolean := wrong
 #
-# you will get a variable of type >>FALSE<<, it will not be possible to assign
-# >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
+# you will get a variable of type >>wrong<<, it will not be possible to assign
+# >>right<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
 #
 #
-private:public FALSE is
+private:public wrong is
 
 
 # boolean value "true"
 #
-# Note that this value is of unit type >>TRUE<<, not of type >>bool<<, i.e.,
+# Note that this value is of unit type >>right<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := TRUE
+#    my_boolean := right
 #
-# you will get a variable of type >>TRUE<<, it will not be possible to assign
-# >>FALSE<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
+# you will get a variable of type >>right<<, it will not be possible to assign
+# >>wrong<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
 #
 #
-private:public TRUE is
+private:public right is
 
 
 # boolean value "false" as a constant of type >>bool<<.
 #
 #
-public false bool => FALSE
+public false bool => wrong
 
 
 # boolean value "true" as a constant of type >>bool<<.
 #
 #
-public true bool => TRUE
+public true bool => right
