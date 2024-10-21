@@ -110,6 +110,7 @@ MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
+MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -417,7 +418,8 @@ FZ_MODULES = \
 			$(MOD_BASE) \
 			$(MOD_TERMINAL) \
 			$(MOD_LOCK_FREE) \
-			$(MOD_NOM)
+			$(MOD_NOM) \
+			$(MOD_CRYPTO) \
 
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
@@ -633,6 +635,10 @@ $(MOD_LOCK_FREE): $(MOD_BASE) $(FZ) $(FZ_SRC)/modules/lock_free/src/lock_free.fz
 $(MOD_NOM): $(MOD_BASE) $(FZ) $(FZ_SRC)/modules/nom/src/nom.fz
 	mkdir -p $(@D)
 	$(FZ) -sourceDirs=$(FZ_SRC)/modules/nom/src -saveLib=$@
+
+$(MOD_CRYPTO): $(MOD_BASE) $(FZ) $(FZ_SRC)/modules/crypto/src/crypto.fz
+	mkdir -p $(@D)
+	$(FZ) -sourceDirs=$(FZ_SRC)/modules/crypto/src -saveLib=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
