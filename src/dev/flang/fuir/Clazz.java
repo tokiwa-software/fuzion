@@ -221,7 +221,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Interface to FUIR instance used to with this Clazz.
    */
-  final FUIRI _fuiri;
+  final GeneratingFUIR _fuir;
 
 
   /**
@@ -274,7 +274,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param id the inter id used by FUIR to identify this Clazz.
    */
-  Clazz(FUIRI fuiri,
+  Clazz(GeneratingFUIR fuir,
         Clazz outer,
         AbstractType type,
         int select,
@@ -285,7 +285,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        !type.containsThisType(),
        type.feature().resultType().isOpenGeneric() == (select >= 0));
 
-    _fuiri = fuiri;
+    _fuir = fuir;
     outer = normalizeOuter(type, outer);
     this._type = outer != null
       ? ResolvedNormalType.newType(type, outer._type)
@@ -336,7 +336,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
                 gi = gi.feature().isThisRef() ? gi.asRef() : gi.asValue();
                 }
-            _actualTypeParameters[i] = _fuiri.type2clazz(gi);
+            _actualTypeParameters[i] = _fuir.type2clazz(gi);
           }
       }
 
@@ -352,9 +352,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   void addInner(Clazz i)
   {
     if (PRECONDITIONS) require
-      (true || !_fuiri.lookupDone() /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ );
+      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ );
 
-    if (_fuiri.lookupDone())
+    if (_fuir._lookupDone)
       {
         if (false)
           { // NYI: CLEANUP: this should no longer happen, but it happens during layout phase, need to check why.
@@ -444,11 +444,11 @@ class Clazz extends ANY implements Comparable<Clazz>
     var f = t.feature();
     if (f.isUniverse())
       {
-        return _fuiri.universe();
+        return _fuir.universe();
       }
     else
       {
-        var normalized = _fuiri.newClazz(normalize2(f.outer().selfType()), t, -1);
+        var normalized = _fuir.newClazz(normalize2(f.outer().selfType()), t, -1);
         normalized._isNormalized = true;
         return normalized;
       }
@@ -511,7 +511,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
         var t2 = _type.actualType(t1, Context.NONE);
-        var pc = _fuiri.newClazz(t2);
+        var pc = _fuir.newClazz(t2);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
         result.add(pc);
@@ -558,7 +558,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   boolean needsCode()
   {
-    return _needsCode && (!_fuiri.lookupDone() || !feature().isField() || !resultClazz().isUnitType());
+    return _needsCode && (!_fuir._lookupDone || !feature().isField() || !resultClazz().isUnitType());
   }
 
 
@@ -567,7 +567,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   void doesNeedCode()
   {
-    if (!_needsCode && !_fuiri.lookupDone())
+    if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
         var r = resultField();
@@ -714,10 +714,10 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         res = YesNo.yes;
       }
-    else if ( _fuiri.lookupDone() && (!isRef()                        &&
-                                      !feature().isBuiltInPrimitive() &&
-                                      !isVoidType()                   &&
-                                      !isChoice()                       ))
+    else if ( _fuir._lookupDone && (!isRef()                        &&
+                                    !feature().isBuiltInPrimitive() &&
+                                    !isVoidType()                   &&
+                                    !isChoice()                       ))
       {
         // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
         // have a recursive type, isUnitType() will return false, so recursion will
@@ -741,7 +741,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         _isUnitType = YesNo.dontKnow;
       }
-    if (_fuiri.lookupDone())
+    if (_fuir._lookupDone)
       {
         _isUnitType = res;
       }
@@ -894,7 +894,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     // first look in the feature itself
-    AbstractFeature result = _fuiri.mainModule().lookupFeature(feature(), fn, f);
+    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn, f);
 
     if (!result.redefinesFull().contains(f) && result != f)
       {
@@ -909,7 +909,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var p: chain)
           {
-            result = _fuiri.mainModule().lookupFeature(p.calledFeature(), fn, f);
+            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn, f);
             if (!result.redefinesFull().contains(f) && result != f)
               {
                 // feature with same name, but not a redefinition
@@ -1027,7 +1027,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         innerClazz =
           iCs == null              ? null :
           iCs instanceof Clazz iCC ? iCC
-                                   : _fuiri.error();
+                                   : _fuir.error();
       }
     else
       {
@@ -1044,7 +1044,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         if (CHECKS) check
           (Errors.any() || select < innerClazzes.length);
-        innerClazz = select < innerClazzes.length ? innerClazzes[select] : _fuiri.error();
+        innerClazz = select < innerClazzes.length ? innerClazzes[select] : _fuir.error();
       }
     if (innerClazz == null)
       {
@@ -1069,7 +1069,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         if (t == null)
           {
-            innerClazz = _fuiri.error();
+            innerClazz = _fuir.error();
           }
         else
           {
@@ -1169,7 +1169,7 @@ class Clazz extends ANY implements Comparable<Clazz>
  */
 
             var outerUnboxed = isBoxed() && !f.isConstructor() ? asValue() : this;
-            innerClazz = _fuiri.newClazz(outerUnboxed, t, select);
+            innerClazz = _fuir.newClazz(outerUnboxed, t, select);
             if (CHECKS) check
               (innerClazz._select == select);
             if (select < 0)
@@ -1556,7 +1556,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         result = new List<>();
         for (var t : actualGenerics(feature().choiceGenerics()))
           {
-            result.add(_fuiri.newClazz(t));
+            result.add(_fuir.newClazz(t));
           }
       }
     else
@@ -1673,7 +1673,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return isRef()
       ? this
-      : _fuiri.newClazz(_outer, _type.asRef(), _select);
+      : _fuir.newClazz(_outer, _type.asRef(), _select);
   }
 
 
@@ -1702,7 +1702,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // the inherits call
         if (outer == null)
           {
-            outer = _fuiri.clazz(target, this, new List<>());
+            outer = _fuir.clazz(target, this, new List<>());
           }
         if (CHECKS) check
           (result == null || result == outer);
@@ -1802,14 +1802,14 @@ class Clazz extends ANY implements Comparable<Clazz>
           (call.calledFeature() == f.outer());
 
         var oc = _outer;
-        var tclazz  = _fuiri.clazz(call.target(), oc, inh);
+        var tclazz  = _fuir.clazz(call.target(), oc, inh);
         var typePars = actualGenerics(call.actualTypeParameters());
         check(call.isInheritanceCall());
         o = tclazz.lookupCall(call, typePars);
       }
     var ix = f.typeParameterIndex();
     var oag = o.actualTypeParameters();
-    return inh == null || ix < 0 || ix >= oag.length ? _fuiri.error()
+    return inh == null || ix < 0 || ix >= oag.length ? _fuir.error()
                                                      : oag[ix];
   }
 
@@ -1827,16 +1827,16 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         if (_type.isGenericArgument())
           {
-            _typeClazz = _fuiri.error();
+            _typeClazz = _fuir.error();
           }
         else
           {
             var tt = _type.typeType();
             var ty = Types.resolved.f_Type.selfType();
-            _typeClazz = _type.containsError()  ? _fuiri.error() :
+            _typeClazz = _type.containsError()  ? _fuir.error() :
                          feature().isUniverse() ? this    :
-                         tt.compareTo(ty) == 0  ? _fuiri.newClazz(_fuiri.universe() , ty, -1)
-                                                : _fuiri.newClazz(_outer.typeClazz(), tt, -1);
+                         tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe() , ty, -1)
+                                                : _fuir.newClazz(_outer.typeClazz(), tt, -1);
           }
       }
     return _typeClazz;
@@ -1875,7 +1875,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (CHECKS) check
       (Errors.any() || i == o || i != null && i.isThisRef() && i.inheritsFrom(o));
 
-    return i == null ? _fuiri.error() : res;
+    return i == null ? _fuir.error() : res;
   }
 
 
@@ -1900,7 +1900,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                                 */
                                lookup(p.outerRef()).resultClazz() :
       p.isUniverse() ||
-      p.outer().isUniverse() ? _fuiri.universe()
+      p.outer().isUniverse() ? _fuir.universe()
                              : /* a field or choice, so there is no inherits
                                 * call that could select a different outer:
                                  */
@@ -2051,7 +2051,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     var t2 = replaceThisType(t1);
-    return _fuiri.type2clazz(t2);
+    return _fuir.type2clazz(t2);
   }
 
 
@@ -2226,7 +2226,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (_asValue == null)
       {
         _asValue = isRef() && _type != Types.t_ADDRESS
-          ? _fuiri.newClazz(_outer, _type.asValue(), _select)
+          ? _fuir.newClazz(_outer, _type.asValue(), _select)
           : this;
       }
 

@@ -85,85 +85,6 @@ public class GeneratingFUIR extends FUIR
 {
 
 
-  /*-----------------------------  classes  -----------------------------*/
-
-
-  FUIRI _fuiri = new FUIRI()
-    {
-      public Clazz universe()
-      {
-        return id2clazz(_universe);
-      }
-      public Clazz type2clazz(AbstractType thiz)
-      {
-        return GeneratingFUIR.this.type2clazz(thiz);
-      }
-      public Clazz newClazz(AbstractType t)
-      {
-        return GeneratingFUIR.this.newClazz(t);
-      }
-      public Clazz newClazz(Clazz outer, AbstractType actualType, int select)
-      {
-        return GeneratingFUIR.this.newClazz(outer, actualType, select);
-      }
-      public boolean lookupDone()
-      {
-        return _lookupDone;
-      }
-      public Clazz error()
-      {
-        return GeneratingFUIR.this.error();
-      }
-      public LibraryModule mainModule()
-      {
-        return _mainModule;
-      }
-      public Clazz clazz(Expr e, Clazz outerClazz, List<AbstractCall> inh)
-      {
-        return GeneratingFUIR.this.clazz(e, outerClazz, inh);
-      }
-    };
-
-
-    Clazz error()
-    {
-      if (PRECONDITIONS) require
-        (Errors.any());
-
-      return _clazzes.get(clazz(SpecialClazzes.c_void));  // NYI: UNDER DEVELOPMENT: have a dedicated clazz for this?
-    }
-
-
-  /*----------------  methods to convert type to clazz  -----------------*/
-
-
-  /**
-   * clazz
-   *
-   * @return
-   */
-  Clazz type2clazz(AbstractType thiz)
-  {
-    if (PRECONDITIONS) require
-      (Errors.any() || !thiz.dependsOnGenerics(),
-       !thiz.isThisType());
-
-    var result = _clazzesForTypes.get(thiz);
-    if (result == null)
-      {
-        var ot = thiz.outer();
-        var oc = ot != null ? type2clazz(ot) : null;
-        result = newClazz(oc, thiz, -1);
-        _clazzesForTypes.put(thiz, result);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (Errors.any() || thiz.isRef() == result._type.isRef());
-
-    return result;
-  }
-
-
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -202,12 +123,12 @@ public class GeneratingFUIR extends FUIR
   final IntMap<int[]> _accessedClazzes;
 
 
-  private final LibraryModule _mainModule;
+  final LibraryModule _mainModule;
 
 
   private final int _mainClazz;
   private final int _universe;
-  private Clazz universe() { return id2clazz(_universe); }
+  Clazz universe() { return id2clazz(_universe); }
 
 
   private final List<Clazz> _clazzes;
@@ -219,7 +140,7 @@ public class GeneratingFUIR extends FUIR
 
   private final Map<AbstractType, Clazz> _clazzesForTypes;
 
-  private boolean _lookupDone;
+  boolean _lookupDone;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -280,12 +201,12 @@ public class GeneratingFUIR extends FUIR
 
 
 
-  private Clazz newClazz(AbstractType t)
+  Clazz newClazz(AbstractType t)
   {
     var o = t.outer();
     return newClazz(o == null ? null : newClazz(o), t, -1);
   }
-  private Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
+  Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
   {
     Clazz result;
 
@@ -347,7 +268,7 @@ public class GeneratingFUIR extends FUIR
 
     var t = actualType;
 
-    var cl = new Clazz(_fuiri, outerR, t, select, CLAZZ_BASE + _clazzes.size());
+    var cl = new Clazz(this, outerR, t, select, CLAZZ_BASE + _clazzes.size());
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -445,7 +366,7 @@ public class GeneratingFUIR extends FUIR
    * @param inh the inheritance chain that brought the code here (in case it is
    * an inlined inherits call).
    */
-  private Clazz clazz(Expr e, Clazz outerClazz, List<AbstractCall> inh)
+  Clazz clazz(Expr e, Clazz outerClazz, List<AbstractCall> inh)
   {
     Clazz result;
     if (e instanceof AbstractBlock b)
@@ -522,6 +443,48 @@ public class GeneratingFUIR extends FUIR
 
     if (POSTCONDITIONS) ensure
       (result != null);
+
+    return result;
+  }
+
+
+  /*----------------  get clazz to be used in case of an error  -----------------*/
+
+
+  Clazz error()
+  {
+    if (PRECONDITIONS) require
+      (Errors.any());
+
+    return _clazzes.get(clazz(SpecialClazzes.c_void));  // NYI: UNDER DEVELOPMENT: have a dedicated clazz for this?
+  }
+
+
+  /*----------------  methods to convert type to clazz  -----------------*/
+
+
+  /**
+   * clazz
+   *
+   * @return
+   */
+  Clazz type2clazz(AbstractType thiz)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || !thiz.dependsOnGenerics(),
+       !thiz.isThisType());
+
+    var result = _clazzesForTypes.get(thiz);
+    if (result == null)
+      {
+        var ot = thiz.outer();
+        var oc = ot != null ? type2clazz(ot) : null;
+        result = newClazz(oc, thiz, -1);
+        _clazzesForTypes.put(thiz, result);
+      }
+
+    if (POSTCONDITIONS) ensure
+      (Errors.any() || thiz.isRef() == result._type.isRef());
 
     return result;
   }
