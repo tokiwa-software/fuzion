@@ -1,0 +1,7 @@
+
+--CURDIR--/type_features_must_only_be_declared_in_features_that_define_types.fz:26:8: error 1: The outer feature of a type feature must define a type, i.e. constructors and choices.
+  type.tf => 4
+-------^^
+To solve this, move the declared type feature to a feature that defines a type.
+
+one error.
