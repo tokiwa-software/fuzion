@@ -17,14 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature net.Connection_Handler
+#  Source code of Fuzion standard library feature connection
 #
 # -----------------------------------------------------------------------
 
-# definition of a connection handler.
-#
-# NYI: UNDER DEVELOPMENT: remove
-public Connection_Handler(T type) ref is
+module:public connection(module desc i64) : property.orderable is
 
-  public handle_connection (LM type : mutate) T ! LM, io.buffered.reader, io.buffered.writer, net.channel
-  => abstract
+  public fixed redef type.lteq(a, b connection.this) bool =>
+    i64.type.lteq a.desc b.desc
+
+
