@@ -345,8 +345,6 @@ public class GeneratingFUIR extends FUIR
         o = o._outer;
       }
 
-
-
     var t = actualType;
 
     var cl = new Clazz(_fuiri, outerR, t, select, CLAZZ_BASE + _clazzes.size());
@@ -2103,18 +2101,9 @@ public class GeneratingFUIR extends FUIR
        s < SITE_BASE + _allCode.size(),
        withinCode(s));
 
-    ExprKind result;
     var e = getExpr(s);
-    if (e instanceof Clazz    )  /* Clazz represents the field we assign a value to */
-      {
-        result = ExprKind.Assign;
-        // System.out.println("###################### codeAt is "+result+" to "+e);
-      }
-    else
-      {
-        result = exprKind(e);
-        // System.out.println("###################### codeAt is "+result+" at "+(e instanceof HasSourcePosition he ? he.pos().show() : e));
-      }
+    var result = e instanceof Clazz  ? ExprKind.Assign /* Clazz represents the field we assign a value to */
+                                     : exprKind(e);
     if (result == null)
       {
         Errors.fatal(sitePos(s),
@@ -2356,7 +2345,7 @@ public class GeneratingFUIR extends FUIR
       }
     return res instanceof Clazz rc ? rc._id : NO_CLAZZ;
   }
-  //int _accessedClazz = NO_CLAZZ;
+
 
   private Clazz accessedClazz(int s, Clazz tclazz)
   {
@@ -2488,9 +2477,6 @@ public class GeneratingFUIR extends FUIR
         var vc = sClazz.asValue();
         yield vc.lookup(a._assignedField);
       }
-
-
-
       case Clazz          fld -> fld;
       default                 -> { throw new Error("assignedType found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
@@ -2628,38 +2614,10 @@ public class GeneratingFUIR extends FUIR
           {
             addToAccessedClazzes(s, tclazz, innerClazz);
           }
-        /*
-        innerClazz = NO_CLAZZ;
-        var ccs = accessedClazzes(s);
-        //System.out.println("tclazz "+clazzAsString(tclazz)+" count "+ccs.length);
-        if (CHECKS) check
-          (ccs.length % 2 == 0);
-        for (var i = 0; i < ccs.length; i += 2)
-          {
-            var tt = ccs[i+0];
-            var cc = ccs[i+1];
-            if (tt == tclazz)
-              {
-                innerClazz = cc;
-              }
-            //  System.out.println("tclazz "+clazzAsString(tclazz)+" vs tt "+clazzAsString(tt));
-          }
-        if (CHECKS) check
-          (innerClazz != NO_CLAZZ);
-        */
       }
     else
       {
         innerClazz = accessedClazz(s);
-        if (tclazz != clazzOuterClazz(innerClazz))
-          System.out.println("static : tclazz "+
-                             clazzAsString(tclazz)+" vs "+
-                             clazzAsString(clazzOuterClazz(innerClazz))+
-                             clazzIsRef(tclazz)+" vs "+
-                             clazzIsRef(clazzOuterClazz(innerClazz))+
-                             " "+(tclazz-CLAZZ_BASE)+" vs "+(clazzOuterClazz(innerClazz)-CLAZZ_BASE)+
-                             " compare: "+id2clazz(tclazz).compareTo(id2clazz(clazzOuterClazz(innerClazz)))+" "+
-                             " inner "+clazzAsString(innerClazz)+" "+clazzKind(innerClazz)+" from "+id2clazz(innerClazz).feature().pos().show());
         if (CHECKS) check
           (tclazz == clazzOuterClazz(innerClazz));
       }
@@ -2676,7 +2634,6 @@ public class GeneratingFUIR extends FUIR
         doesNeedCode(innerClazz);
       }
 
-    // System.out.println("LOOKUP for "+clazzAsString(tclazz)+" is "+clazzAsString(innerClazz)+" at "+sitePos(s).show());
     return innerClazz;
   }
 
@@ -2694,7 +2651,7 @@ public class GeneratingFUIR extends FUIR
 
     _lookupDone = true;
 
-    // NYI: layout phase creates new clazzes, which is why we cannot iterate like this. Need to check why and remove this!
+    // NYI: UNDER DEVELOPMENT: layout phase creates new clazzes, which is why we cannot iterate like this. Need to check why and remove this!
     //
     // for(var c : _clazzes)
     for (var i = 0; i < _clazzes.size(); i++)
@@ -2803,32 +2760,7 @@ public class GeneratingFUIR extends FUIR
     var ac = (Constant) getExpr(s);
     var clazz = switch (ac.origin())
       {
-      case Constant     c ->
-      {
-        var const_clazz = clazz(c, outerClazz, _inh.get(s - SITE_BASE));
-        //        const_clazz.instantiated(p);
-        if (const_clazz.feature() == Types.resolved.f_array)
-          { // add clazzes touched by constant creation:
-            //
-            //   array.internal_array
-            //   fuzion.sys.internal_array
-            //   fuzion.sys.internal_array.data
-            //   fuzion.sys.Pointer
-            //
-            throw new Error("NYI: constClazz for array!");
-            /*
-            var array          = const_clazz;
-            var internal_array = array.lookup(Types.resolved.f_array_internal_array);
-            var sys_array      = internal_array.resultClazz();
-            var data           = sys_array.lookup(Types.resolved.f_fuzion_sys_array_data);
-            array.instantiated(p);
-            sys_array.instantiated(p);
-            data.resultClazz().instantiated(p);
-            */
-          }
-        yield const_clazz;
-      }
-
+      case Constant     c -> clazz(c, outerClazz, _inh.get(s - SITE_BASE));
       case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
       case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE));
       default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
