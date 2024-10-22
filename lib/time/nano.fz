@@ -49,13 +49,15 @@ public nano (p Nano_Time_Handler) : effect is
     res
 
 
-  type.default_nano_time : time.Nano_Time_Handler is
+  type.default_nano_time =>
 
-    # no guarantee can be given for precision nor resolution
-    redef read => fuzion.std.nano_time
+    ref : time.Nano_Time_Handler
 
-    # no guarantee can be given for precision nor resolution
-    redef sleep(d time.duration) => fuzion.std.nano_sleep d.nanos
+      # no guarantee can be given for precision nor resolution
+      redef read => fuzion.std.nano_time
+
+      # no guarantee can be given for precision nor resolution
+      redef sleep(d time.duration) => fuzion.std.nano_sleep d.nanos
 
 
   # install default effect time using default_nano_time

@@ -63,8 +63,9 @@ scenario2 is
     type.z => zero
     type.zero T => abstract
 
-    type.sum : scenario2.M T is
-      fixed redef e => zero
+    type.sum =>
+      ref : scenario2.M T
+        fixed redef e => zero
 
   b : a scenario2.b is
 
@@ -319,9 +320,10 @@ scenario8 is
     #
     valueString String => abstract
 
-    type.sum : Monoid num0.this is
-      redef infix ∙ (a, b num0.this) => a.plus b
-      redef e => zero
+    type.sum =>
+      ref : Monoid num0.this
+        redef infix ∙ (a, b num0.this) => a.plus b
+        redef e => zero
 
 
   # integer mod 2 implementation of num0

@@ -32,8 +32,9 @@ public out (p Print_Handler) : print_effect p is
     (io.out default_print_handler).default
 
 
-  type.default_print_handler : io.Print_Handler is
-    redef print(s Any) => fuzion.sys.out.print s
+  type.default_print_handler =>
+    ref: io.Print_Handler
+      redef print(s Any) => fuzion.sys.out.print s
 
 
 # short-hand for accessing out effect in current environment
