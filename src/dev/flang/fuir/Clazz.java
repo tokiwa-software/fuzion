@@ -658,20 +658,20 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Return the kind of this clazz ( Routine, Field, Intrinsic, Abstract, ...)
    */
-    IR.FeatureKind clazzKind()
-    {
-      return switch (feature().kind())
-        {
-        case Routine           -> IR.FeatureKind.Routine;
-        case Field             -> IR.FeatureKind.Field;
-        case TypeParameter,
-             OpenTypeParameter -> IR.FeatureKind.Intrinsic; // NYI: strange
-        case Intrinsic         -> IR.FeatureKind.Intrinsic;
-        case Abstract          -> IR.FeatureKind.Abstract;
-        case Choice            -> IR.FeatureKind.Choice;
-        case Native            -> IR.FeatureKind.Native;
-        };
-    }
+  IR.FeatureKind clazzKind()
+  {
+    return switch (feature().kind())
+      {
+      case Routine           -> IR.FeatureKind.Routine;
+      case Field             -> IR.FeatureKind.Field;
+      case TypeParameter,
+           OpenTypeParameter -> IR.FeatureKind.Intrinsic; // NYI: strange
+      case Intrinsic         -> IR.FeatureKind.Intrinsic;
+      case Abstract          -> IR.FeatureKind.Abstract;
+      case Choice            -> IR.FeatureKind.Choice;
+      case Native            -> IR.FeatureKind.Native;
+      };
+  }
 
 
   /**
