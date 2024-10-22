@@ -24,8 +24,7 @@
 
 
 # This tries establishing a connection to `host`
-# on success the provided `Connection_Handler` is used
-# to process the connection.
+# on success returns an active connection.
 #
 # Minimal example:
 #
