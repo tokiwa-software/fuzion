@@ -44,7 +44,7 @@ visibility_negative is
     a1 is
       b1 is
         c1(b bool) i32 =>
-          if b { a1; a2; b1; b2; c1 false; c2 false }
+          if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c1 false; _ := c2 false; unit }
           c3 //  1. should flag an error: feature not found / not visible
           c4 //  2. should flag an error: feature not found / not visible
           b3 //  3. should flag an error: feature not found / not visible
@@ -53,7 +53,7 @@ visibility_negative is
           11
 
         c2(b bool) i32 =>
-          if b { a1; a2; b1; b2; c1 false; c2 false }
+          if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c1 false; _ := c2 false; unit}
           c3 //  6. should flag an error: feature not found / not visible
           c4 //  7. should flag an error: feature not found / not visible
           b3 //  8. should flag an error: feature not found / not visible
@@ -63,7 +63,7 @@ visibility_negative is
 
       b2 is
         c3(b bool) i32 =>
-          if b { a1; a2; b1; b2; c3 false; c4 false }
+          if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c3 false; _ := c4 false; unit}
           c1 // 11. should flag an error: feature not found / not visible
           c2 // 12. should flag an error: feature not found / not visible
           b3 // 13. should flag an error: feature not found / not visible
@@ -72,7 +72,7 @@ visibility_negative is
           33
 
         c4(b bool) i32 =>
-          if b { a1; a2; b1; b2; c3 false; c4 false }
+          if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c3 false; _ := c4 false; unit}
           c1 // 16. should flag an error: feature not found / not visible
           c2 // 17. should flag an error: feature not found / not visible
           b3 // 18. should flag an error: feature not found / not visible
@@ -83,7 +83,7 @@ visibility_negative is
     a2 is
       b3 is
         c5(b bool) i32 =>
-          if b { a1; a2; b3; c5 false; c6 false }
+          if b { _ := a1; _ := a2; _ := b3; _ := c5 false; _ := c6 false; unit}
           c1 // 21. should flag an error: feature not found / not visible
           c2 // 22. should flag an error: feature not found / not visible
           c3 // 23. should flag an error: feature not found / not visible
@@ -93,7 +93,7 @@ visibility_negative is
           55
 
         c6(b bool) i32 =>
-          if b { a1; a2; b3; c5 false; c6 false }
+          if b { _ := a1; _ := a2; _ := b3; _ := c5 false; _ := c6 false; unit}
           c1 // 27. should flag an error: feature not found / not visible
           c2 // 28. should flag an error: feature not found / not visible
           c3 // 29. should flag an error: feature not found / not visible
@@ -283,10 +283,10 @@ visibility_negative is
       use f7   // 145. should flag an error: feature not found / not visible
       chck (f8 = 22 || f8 = 88 || f8 = 154) "can access f8"
       use f9   // 146. should flag an error: feature not found / not visible
-    a1.b1.c1
-    a1.b1.c2
+    _ := a1.b1.c1
+    _ := a1.b1.c2
     a1.b2
-  visi2
+  _ := visi2
 
   visi3 =>
     count := 0
@@ -461,15 +461,15 @@ visibility_negative is
       set f7 := 777 // 259. should flag an error: feature not visible for assignment
       set f8 := 888; chck (f8 = 888) "can assign f8"
       set f9 := 999 // 260. should flag an error: feature not visible for assignment
-    a1.b1.c1
-    a1.b1.c2
+    _ := a1.b1.c1
+    _ := a1.b1.c2
     a1.b2
-  visi3
+  _ := visi3
 
   visi5 =>
     a is
       chck (x = "Outer!") "outer x"               // 261. should flag an error: field used before it is declared
-      chck (a.this.x = "Outer!") "a.this.x"       // 262. NYI: UNDER DEVELOPMENT: flag an error: field used before it is declared
+      chck (a.this.x = "Outer!") "a.this.x"       // 262. should flag an error: field used before it is declared
       chck (b.this.x = "Inner!") "b.this.x"       // 263. should flag an error: feature not visible
       chck (c.this.x = "Inner Inner!") "c.this.x" // 264. should flag an error: feature not visible
       x := "Outer!"
@@ -480,41 +480,41 @@ visibility_negative is
       b is
         chck (x = "Outer!") "outer x"
         chck (a.this.x = "Outer!") "a.this.x"
-        chck (b.this.x = "Inner!") "b.this.x"       // 267. NYI: UNDER DEVELOPMENT: flag an error: feature used before it is declared
+        chck (b.this.x = "Inner!") "b.this.x"       // 267. should flag an error: feature used before it is declared
         chck (c.this.x = "Inner Inner!") "c.this.x" // 268. should flag an error: feature not visible
         x := "Inner!"
-        chck (x = "Inner!") "inner x"
+        chck (b.this.x = "Inner!") "inner x"
         chck (a.this.x = "Outer!") "a.this.x"
         chck (b.this.x = "Inner!") "b.this.x"
         chck (c.this.x = "Inner Inner!") "c.this.x" // 269. should flag an error: feature not visible
 
         c is
-          chck (x = "Inner!") "inner x"
+          chck (b.this.x = "Inner!") "inner x"
           chck (a.this.x = "Outer!") "a.this.x"
           chck (b.this.x = "Inner!") "b.this.x"
-          chck (c.this.x = "Inner Inner!") "c.this.x" // 270. NYI: UNDER DEVELOPMENT: flag an error: feature used before it is declared
+          chck (c.this.x = "Inner Inner!") "c.this.x" // 270. should flag an error: feature used before it is declared
           x := "Inner Inner!"
-          chck (x = "Inner Inner!") "inner inner x"
+          chck (c.this.x = "Inner Inner!") "inner inner x"
           chck (a.this.x = "Outer!") "a.this.x"
           chck (b.this.x = "Inner!") "b.this.x"
           chck (c.this.x = "Inner Inner!") "c.this.x"
     a.b.c
-  visi5
+  _ := visi5
 
   visi6 =>
     say "x is $x"   // 271. should flag an error: feature used before it is declared
-    x := 2;        say "x is $x"
-    x := x as f64; say "x is $x"
-    x := x * 3.14; say "x is $x"
-    x := x as i32; say "x is $x"
+    x1 := 2;         say "x1 is $x1"
+    x2 := x1.as_f64; say "x2 is $x2"
+    x3 := x2 * 3.14; say "x3 is $x3"
+    x4 := x3.as_i32; say "x4 is $x4"
   visi6
 
   visi7 =>
-    e := ()->"x is "+x+""   // 272. should flag an error: feature used before it is declared
-    x := 2;          f := ()->"x is "+x+""
-    x := x*x*x*x;    g := ()->"x is "+x+""
-    x := x.as_string; h := ()->"x is "+x+""
-    x := x * 5;      i := ()->"x is "+x+""
+    e := ()->"x is "+x1+""   // 272. should flag an error: feature used before it is declared
+    x1 := 2;            f ()->String:= ()->"x1 is "+x1+""
+    x2 := x1*x1*x1*x1;  g ()->String:= ()->"x2 is "+x2+""
+    x3 := x2.as_string; h ()->String:= ()->"x3 is "+x3+""
+    x4 := x3 * 5;       i ()->String:= ()->"x4 is "+x4+""
     chck (f.call = "x is 2") "x is 2"
     chck (g.call = "x is 16") "x is 16"
     chck (h.call = "x is 16") "x is 16"
@@ -526,18 +526,18 @@ visibility_negative is
     b // 273. should flag an error: feature not visible
     c // 274. should flag an error: feature not visible
     if cond
-        a; b
+        _ := a; _ := b
         c // 275. should flag an error: feature not visible
         b is
-        a; b
+        _ := a; _ := b
         c // 276. should flag an error: feature not visible
     else
-        a; c
+        _ := a; _ := c
         b // 277. should flag an error: feature not visible
         c is
-        a; c
+        _ := a; _ := c
         b // 278. should flag an error: feature not visible
-    a
+    _ := a
     b // 279. should flag an error: feature not visible
     c // 280. should flag an error: feature not visible
   visi8 true
@@ -559,8 +559,8 @@ visibility_negative is
       ix3 := a + ix1 + ix2 + it1 + it2   // can make unqualified call to a, ix1, ix2, it1, it2 ..
     while (a + ix1 + ix2 + it1 + it2 + ix3 < 10000 &&
            b = 3 && // 285. should flag an error: feature not visible
-           q = 3 && // 286. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
-           r = 3 && // 287. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
+           q = 3 && // 286. should flag an error: feature not visible
+           r = 3 && // 287. should flag an error: feature not visible
            s = 3  ) // 288. should flag an error: feature not visible
         b => 6
         t0:= q     // 289. should flag an error: feature not visible
@@ -575,9 +575,9 @@ visibility_negative is
         r := a + ix1 + ix2 + it1 + it2 + ix3 + b + q
         t5 := s    // 296. should flag an error: feature not visible
     else
-        t6 := it1 // 297. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
-        t7 := it2 // 298. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
-        t8 := ix3 // 299. NYI: UNDER DEVELOPMENT: flag an error: feature not visible
+        t6 := it1 // 297. should flag an error: feature not visible
+        t7 := it2 // 298. should flag an error: feature not visible
+        t8 := ix3 // 299. should flag an error: feature not visible
         t9 := b   // 300. should flag an error: feature not visible
         t10 := q  // 301. should flag an error: feature not visible
         t11 := r  // 302. should flag an error: feature not visible
@@ -603,8 +603,8 @@ visibility_negative is
       it1 in 0..10
       it2 in it1..2*it1
       ix3 := it1 + it2
-    while (r = 3 &&     // 315. should flag an error: feature not visible
-           q = 4)       // does not flag an error, since r is not found and call not further evaluated
+    while (r = 3 &&     // 315a. should flag an error: feature not visible
+           q = 4)       // 315b. should flag an error: feature not visible
         q := 5
     until true
         r := 4
@@ -623,8 +623,8 @@ visibility_negative is
       it1 in 0..10
       it2 in it1..2*it1
       ix3 := it1 + it2
-    while (q = 3 &&     // 321. should flag an error: feature not visible
-           r = 4)       // does not flag an error, since q is not found and call not further evaluated
+    while (q = 3 &&     // 321a. should flag an error: feature not visible
+           r = 4)       // 321b. should flag an error: feature not visible
         q := 5
     until true
         r := 4
