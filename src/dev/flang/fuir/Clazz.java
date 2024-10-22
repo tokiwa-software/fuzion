@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -494,7 +493,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (_heirs == null)
       {
-        _heirs = new HashSet<>();
+        _heirs = new TreeSet<>();
       }
     return _heirs;
   }
@@ -505,7 +504,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private Set<Clazz> directParents()
   {
-    var result = new HashSet<Clazz>();
+    var result = new TreeSet<Clazz>();
     result.add(this);
     for (var p: feature().inherits())
       {
@@ -531,7 +530,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result = _parents;
     if (result == null)
       {
-        result = new HashSet<Clazz>();
+        result = new TreeSet<Clazz>();
         result.add(this);
         for (var p : directParents())
           {
