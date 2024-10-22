@@ -250,7 +250,7 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Clone this FUIR such that modifications can be made by optimizers.  A heir
+   * Clone this FUIR such that modifications can be made by optimizers.  An heir
    * of FUIR can use this to redefine methods.
    *
    * @param original the original FUIR instance that we are cloning.
