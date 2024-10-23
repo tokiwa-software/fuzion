@@ -106,8 +106,8 @@ module fileio is
     if !(delete arr unit)
       error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
 
-  # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
-  # and FALSE in case of failure
+  # intrinsic that deletes the file/dir represented by the path returning true in case of success
+  # and false in case of failure
   #
   delete(
                  # the internal array data representing the file/dir path in bytes
@@ -130,7 +130,7 @@ module fileio is
     if !(move arr0 arr1 unit)
       error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
 
-  # intrinsic that returns TRUE in case the move was successful and FALSE in case not
+  # intrinsic that returns true in case the move was successful and false in case not
   #
   move(
                # the internal array data representing the old file/dir path in bytes
@@ -151,7 +151,7 @@ module fileio is
     if !(create_dir arr unit)
       error "an error occurred while creating the following directory: \"$path\""
 
-  # intrinsic that returns TRUE in case of success or FALSE in case of failure during dir creation
+  # intrinsic that returns true in case of success or false in case of failure during dir creation
   #
   create_dir(
                      # the internal array data representing the dir path in bytes
@@ -161,7 +161,7 @@ module fileio is
 
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
-  # returns TRUE in case the operation was successful and FALSE in case of failure
+  # returns true in case the operation was successful and false in case of failure
   # in case the path refers to a symbolic link it resolves it and returns info about the actual file
   #
   # in case an error is returned (the result of this feature is false), then the size field of
@@ -174,7 +174,7 @@ module fileio is
         meta_data fuzion.sys.Pointer) bool => intrinsic
 
   # intrinsic that fills an array with some metadata of the file/dir provided by the path
-  # returns TRUE in case the operation was successful and FALSE in case of failure
+  # returns true in case the operation was successful and false in case of failure
   # in case the path refers to a symbolic link it does not attempt to follow it and returns info about the link itself
   #
   # in case an error is returned (the result of this feature is false), then the size field of
