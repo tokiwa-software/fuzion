@@ -2270,6 +2270,13 @@ public class AstErrors extends ANY
       "" /* NYI: UNDER DEVELOPMENT: can we give some useful suggestion here? */);
   }
 
+  public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
+  {
+    error(f.pos(), "The outer feature of a type feature must define a type, i.e. constructors and choices.",
+      "To solve this, move the declared type feature to a feature that defines a type."
+    );
+  }
+
 
 }
 

@@ -489,13 +489,17 @@ part of the (((inner features))) declarations of the corresponding
    */
   private void setOuterAndAddInnerForQualifiedRec(Feature inner, int at, AbstractFeature outer)
   {
-    outer.whenResolvedDeclarations( ()->
+    outer.whenResolvedDeclarations(()->
       {
         var q = inner._qname;
         var n = q.get(at);
         if (n == FuzionConstants.TYPE_NAME && outer.isUniverse())
           {
             AstErrors.mustNotDefineTypeFeatureInUniverse(inner);
+          }
+        else if (n == FuzionConstants.TYPE_NAME && !outer.definesType())
+          {
+            AstErrors.typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(inner);
           }
         var o =
           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
