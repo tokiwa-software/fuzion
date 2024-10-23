@@ -3185,7 +3185,8 @@ public class GeneratingFUIR extends FUIR
   @Override
   public SourcePosition declarationPos(int cl)
   {
-    throw new Error("NYI");
+    var c = id2clazz(cl);
+    return c._type.declarationPos();
   }
 
 
