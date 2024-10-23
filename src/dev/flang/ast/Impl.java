@@ -432,7 +432,7 @@ public class Impl extends ANY
                                 resultField,
                                 this._expr,
                                 context);
-        ass._value = this._expr.box(ass._assignedField.resultType(), context);  // NYI: move to constructor of Assign?
+        ass._value = this._expr;
         this._expr = ass;
       }
 

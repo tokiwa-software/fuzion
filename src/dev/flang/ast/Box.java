@@ -140,6 +140,16 @@ public class Box extends Expr
 
 
   /**
+   * Is the result of this expression boxed?
+   */
+  @Override
+  public boolean isBoxed()
+  {
+    return true;
+  }
+
+
+  /**
    * toString
    *
    * @return

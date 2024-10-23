@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 
@@ -42,6 +43,12 @@ import dev.flang.util.List;
  */
 public abstract class AbstractMatch extends Expr
 {
+
+  /**
+   * where this match came from.
+   * used only for better error messages.
+   */
+  enum Kind { Plain, If, Contract }
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -93,7 +100,7 @@ public abstract class AbstractMatch extends Expr
   {
     var ns = subject().visit(v, outer);
     if (CHECKS) check
-      (subject() == ns);
+      (Errors.any() || subject() == ns);
 
     v.action(this);
     for (var c: cases())
@@ -159,6 +166,54 @@ public abstract class AbstractMatch extends Expr
         _type = typeFromCases();
       }
     return _type;
+  }
+
+
+  /**
+   * where this match came from.
+   * used only for better error messages.
+   */
+  Kind kind()
+  {
+    return Kind.Plain;
+  }
+
+
+  /**
+   * checks the subject type of this match.
+   */
+  void checkTypes(Context context)
+  {
+    var st = subject().type();
+    if (st.isGenericArgument())
+      {
+        AstErrors.matchSubjectMustNotBeTypeParameter(subject().pos(), st);
+      }
+
+    if (CHECKS) check
+      (Errors.any() || st != Types.t_ERROR);
+
+    if (st != Types.t_ERROR)
+      {
+        if (kind() == Kind.Plain)
+          {
+            if (!st.isChoice())
+              {
+                AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
+              }
+          }
+        else if (!Types.resolved.t_bool.isDirectlyAssignableFrom(st, context))
+          {
+            if (kind() == Kind.Contract)
+              {
+                AstErrors.contractExpressionMustResultInBool(subject());
+              }
+            else
+              {
+                AstErrors.ifConditionMustBeBool(subject());
+              }
+          }
+      }
   }
 
 
