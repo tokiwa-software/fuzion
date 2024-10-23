@@ -2324,22 +2324,62 @@ public class DFA extends ANY
       });
     put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
 
-    put("concur.sync.mtx_init"              , cl -> outcome(cl._dfa,
-                                                            cl,
-                                                            cl._dfa._fuir.clazzResultClazz(cl._cc),
-                                                            cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context)));
-    put("concur.sync.mtx_lock"              , cl -> cl._dfa._bool);
-    put("concur.sync.mtx_trylock"           , cl -> cl._dfa._bool);
-    put("concur.sync.mtx_unlock"            , cl -> cl._dfa._bool);
-    put("concur.sync.mtx_destroy"           , cl -> Value.UNIT);
-    put("concur.sync.cnd_init"              , cl -> outcome(cl._dfa,
-                                                            cl,
-                                                            cl._dfa._fuir.clazzResultClazz(cl._cc),
-                                                            cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context)));
-    put("concur.sync.cnd_signal"            , cl -> cl._dfa._bool);
-    put("concur.sync.cnd_broadcast"         , cl -> cl._dfa._bool);
-    put("concur.sync.cnd_wait"              , cl -> cl._dfa._bool);
-    put("concur.sync.cnd_destroy"           , cl -> Value.UNIT);
+    put("concur.sync.mtx_init"              , cl ->
+      {
+        return outcome(cl._dfa,
+                       cl,
+                       cl._dfa._fuir.clazzResultClazz(cl._cc),
+                       cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+      });
+    put("concur.sync.mtx_lock"              , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return cl._dfa._bool;
+      });
+    put("concur.sync.mtx_trylock"           , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return cl._dfa._bool;
+      });
+    put("concur.sync.mtx_unlock"            , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return cl._dfa._bool;
+      });
+    put("concur.sync.mtx_destroy"           , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return Value.UNIT;
+      });
+    put("concur.sync.cnd_init"              , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return outcome(cl._dfa,
+                       cl,
+                       cl._dfa._fuir.clazzResultClazz(cl._cc),
+                       cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+      });
+    put("concur.sync.cnd_signal"            , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return cl._dfa._bool;
+      });
+    put("concur.sync.cnd_broadcast"         , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return cl._dfa._bool;
+      });
+    put("concur.sync.cnd_wait"              , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 1));
+        return cl._dfa._bool;
+      });
+    put("concur.sync.cnd_destroy"           , cl ->
+      {
+        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        return Value.UNIT;
+      });
   }
 
 
