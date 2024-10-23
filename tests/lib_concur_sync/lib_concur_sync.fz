@@ -23,25 +23,20 @@
 
 lib_concur_sync =>
 
-  # NYI: UNDER DEVELOPMENT: ugly, storing effect instances in fields...
-  # e.g.: mtx := concur.sync.mutex.env
-
   test_signal =>
 
-    mtx_res := concur.sync.mutex.new ()->
-      mtx := concur.sync.mutex.env
-      cnd_res := mtx.condition ()->
-        cnd := concur.sync.condition.env
+    mtx_res := concur.sync.mutex.new.bind unit mtx->
+      cnd_res := mtx.condition.bind unit cnd->
 
         a := concur.thread.spawn ()->
-          mtx.synchronized ()->
+          cnd.synchronized ()->
             check cnd.wait
             say "Thread proceeding after signal"
 
         b := concur.thread.spawn ()->
           say "Thread sleeping"
           time.nano.sleep (time.durations.ms 100)
-          mtx.synchronized ()->
+          cnd.synchronized ()->
             say "Thread sending signal"
             check cnd.signal
 
@@ -49,26 +44,26 @@ lib_concur_sync =>
         b.join
 
       check cnd_res.ok
+      # NYI BUG: without this, DFA reading uninitialized field
+      unit
     check mtx_res.ok
 
 
 
   test_broadcast =>
 
-    mtx_res := concur.sync.mutex.new ()->
-      mtx := concur.sync.mutex.env
-      cnd_res := mtx.condition ()->
-        cnd := concur.sync.condition.env
+    mtx_res := concur.sync.mutex.new.bind unit mtx->
+      cnd_res := mtx.condition.bind unit cnd->
 
         a := concur.thread.spawn ()->
-          mtx.synchronized ()->
+          cnd.synchronized ()->
             check cnd.wait
             say "Thread proceeding after broadcast"
 
         b := concur.thread.spawn ()->
           say "Thread sleeping"
           time.nano.sleep (time.durations.ms 100)
-          mtx.synchronized ()->
+          cnd.synchronized ()->
             say "Thread sending broadcast"
             check cnd.broadcast
 
@@ -76,6 +71,8 @@ lib_concur_sync =>
         b.join
 
       check cnd_res.ok
+      # NYI BUG: without this, DFA reading uninitialized field
+      unit
     check mtx_res.ok
 
 
