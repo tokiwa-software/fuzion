@@ -36,8 +36,11 @@
 #
 webserver_native is
 
+  # just to install the default mutate effect
+  _ := mut
+
   port u16 := 8080
-  match net.server net.family.ipv6 net.protocol.tcp port
+  match net.server.start net.family.ipv6 net.protocol.tcp port
     e error => say e
     unit =>
       say "started server on port: $port"
@@ -45,39 +48,33 @@ webserver_native is
       say "echo 'Hello' | curl 'http://[::1]:8080'"
 
 
-  # definition of a connection handler
-  #
-  rh(n i32) : net.Connection_Handler unit is
-
-    redef handle_connection (LM type : mutate) unit =>
-      say "accepted connection:"
-
-      match io.buffered.read_line LM
-        str String => say str
-        * =>
-
-      send200(data String) =>
-        _ := (io.buffered.writer LM)
-          .write """
-            HTTP/1.1 200 OK
-            Connection: close
-            Server: Fuzion demo WebServer v0.02
-            Content-Length: {data.byte_length}
-            Content-Type: text/html
-
-            {data}
-          """.utf8.as_array
-        (io.buffered.writer LM).flush
-
-      _ := send200 "<html>Hello Fuzion $n!</html>"
-
-      say "closed connection"
-
-
   # accept connections while server is active
   #
   for n in 1..
   while net.server.is_active
-    _ := net.server.accept unit (rh n)
+    _ := net.server.accept.bind unit c->
+      _ := net.connections.with unit mutate c ()->
+        say "accepted connection:"
+
+        match io.buffered.read_line mutate
+          str String => say str
+          * =>
+
+        send200(data String) =>
+          _ := (io.buffered.writer mutate)
+            .write """
+              HTTP/1.1 200 OK
+              Connection: close
+              Server: Fuzion demo WebServer v0.02
+              Content-Length: {data.byte_length}
+              Content-Type: text/html
+
+              {data}
+            """.utf8.as_array
+          (io.buffered.writer mutate).flush
+
+        _ := send200 "<html>Hello Fuzion $n!</html>"
+
+        say "closed connection"
 
 
