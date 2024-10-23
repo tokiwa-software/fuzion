@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -48,7 +49,7 @@ public class OuterType extends UnresolvedType
    */
   public OuterType(SourcePosition pos)
   {
-    super(pos, "#outer", AbstractCall.NO_GENERICS, null);
+    super(pos, FuzionConstants.OUTER_TYPE_NAME, AbstractCall.NO_GENERICS, null);
   }
 
 
