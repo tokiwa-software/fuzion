@@ -170,6 +170,18 @@ public class Block extends AbstractBlock
     return _expressions.size() == 1 ? _expressions.getFirst().asParsedType() : null;
   }
 
+
+  /*
+   * Returns either result of asParsedType()
+   * or Types.t_UNDEFINED in case types name is '_'.
+   */
+  @Override
+  public AbstractType asType()
+  {
+    return _expressions.size() == 1 ? _expressions.getFirst().asType() : null;
+  }
+
+
   /**
    * The sourcecode position of this expression, used for error messages.
    */
