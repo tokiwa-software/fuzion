@@ -20,13 +20,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class AirErrors
+ * Source of class FuirErrors
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.air;
+package dev.flang.fuir;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
@@ -38,11 +40,11 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * AirErrors handles errors in the Application IR
+ * FuirErrors handles errors in the Application IR
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class AirErrors extends AstErrors
+public class FuirErrors extends AstErrors
 {
 
   /*--------------------------  static fields  --------------------------*/
@@ -51,6 +53,7 @@ public class AirErrors extends AstErrors
    * Error count of only those errors that occurred in the IR.
    */
   static int count = 0;
+  public static int count() { return count; }
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -73,10 +76,9 @@ public class AirErrors extends AstErrors
   }
 
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
-                                                   Set<AbstractFeature> abstractFeature,
+                                                   Map<AbstractFeature, String> abstractFeature,
                                                    HasSourcePosition instantiatedAt,
-                                                   String context,
-                                                   IClazzes clazzes)
+                                                   String context)
   {
     if (PRECONDITIONS) require
       (!abstractFeature.isEmpty());
@@ -85,7 +87,7 @@ public class AirErrors extends AstErrors
     var abstracts = new StringBuilder();
     var foundAbstract = false;
     var foundFixed = false;
-    for (var af : abstractFeature)
+    for (var af : abstractFeature.keySet())
       {
         foundAbstract |= af.isAbstract();
         foundFixed    |= (af.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
@@ -96,13 +98,14 @@ public class AirErrors extends AstErrors
       foundAbstract && foundFixed ? "abstract or fixed" :
       foundAbstract               ? "abstract"          :
       foundFixed                  ? "fixed"             : Errors.ERROR_STRING;
-    for (var af : abstractFeature)
+    for (var af : abstractFeature.keySet())
       {
+        var calledAt = abstractFeature.get(af);
         abs.append(abs.length() == 0 ? "" : ", ").append(s(af));
         var afKind = af.isAbstract() ? "abstract" : "fixed";
         abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " " + afKind + " feature " +
                          s(af) + " declared at " + af.pos().show() + "\n" +
-                         "which is called at " + clazzes.isUsedAt(af).sourceRange().show() + "\n");
+                         "which is called at " + calledAt + "\n");
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos(),
