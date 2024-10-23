@@ -902,10 +902,17 @@ public Sequence(public T type) ref : property.equatable is
 
   # equality
   #
-  public fixed redef type.equality(a, b Sequence T) =>
+  public redef type.equality(a, b Sequence.this) =>
     if T : property.equatable
-      a.count = b.count
-        && ((a.zip b x,y->x=y) ∀ x->x)
+      if a.count != b.count
+        false
+      else
+        for x in a
+            y in b
+        until x != y
+          false
+        else
+          true
     else
       panic "***"
 
