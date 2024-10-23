@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 
 import dev.flang.ir.IR;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -50,26 +51,46 @@ public abstract class FUIR extends IR
    */
   public enum SpecialClazzes
   {
-    c_i8          ,
-    c_i16         ,
-    c_i32         ,
-    c_i64         ,
-    c_u8          ,
-    c_u16         ,
-    c_u32         ,
-    c_u64         ,
-    c_f32         ,
-    c_f64         ,
-    c_bool        ,
-    c_TRUE        ,
-    c_FALSE       ,
-    c_Const_String,
-    c_String      ,
-    c_sys_ptr     ,
-    c_unit        ,
-
     // dummy entry to report failure of getSpecialId()
-    c_NOT_FOUND   ;
+    c_NOT_FOUND   (""                           , 0, null        ),
+
+    c_universe    (FuzionConstants.UNIVERSE_NAME, 0, c_NOT_FOUND ),
+    c_Any         ("Any"                        , 0, c_universe  ),
+    c_i8          ("i8"                         , 1, c_universe  ),
+    c_i16         ("i16"                        , 1, c_universe  ),
+    c_i32         ("i32"                        , 1, c_universe  ),
+    c_i64         ("i64"                        , 1, c_universe  ),
+    c_u8          ("u8"                         , 1, c_universe  ),
+    c_u16         ("u16"                        , 1, c_universe  ),
+    c_u32         ("u32"                        , 1, c_universe  ),
+    c_u64         ("u64"                        , 1, c_universe  ),
+    c_f32         ("f32"                        , 1, c_universe  ),
+    c_f64         ("f64"                        , 1, c_universe  ),
+    c_unit        ("unit"                       , 0, c_universe  ),
+    c_void        ("void"                       , 0, c_universe  ),
+    c_bool        ("bool"                       , 0, c_universe  ),
+    c_TRUE        ("TRUE"                       , 0, c_universe  ),
+    c_FALSE       ("FALSE"                      , 0, c_universe  ),
+    c_Const_String("Const_String"               , 0, c_universe  ),
+    c_CS_utf8_data("utf8_data"                  , 0, c_Const_String),
+    c_String      ("String"                     , 0, c_universe  ),
+    c_error       ("error"                      , 1, c_universe  ),
+    c_fuzion      ("fuzion"                     , 0, c_universe  ),
+    c_java        ("java"                       , 0, c_fuzion    ),
+    c_fuzion_sys  ("sys"                        , 0, c_fuzion    ),
+    c_sys_ptr     ("Pointer"                    , 0, c_fuzion_sys),
+    ;
+
+    String _name;
+    int _argCount;
+    SpecialClazzes _outer;
+
+    SpecialClazzes(String name, int argc, SpecialClazzes outer)
+    {
+      _name = name;
+      _argCount = argc;
+      _outer = outer;
+    }
   }
 
 
@@ -220,8 +241,7 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
-   * type.
+   * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe.
    */
   public abstract int clazzOuterClazz(int cl);
 
@@ -265,7 +285,7 @@ public abstract class FUIR extends IR
   /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
-   * @param fcl a clazz id of the field
+   * @param field a clazz id, not necessarily a field
    *
    * @return true iff the field is an outer ref field that holds an address of
    * an outer value, false for normal fields our outer ref fields that store the
@@ -395,8 +415,8 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return id of cl's result field or -1 if f has no result field (NYI: or a
-   * result field that contains no data)
+   * @return id of cl's result field or NO_CLAZZ if cl has no result field (NYI:
+   * or a result field that contains no data)
    */
   public abstract int clazzResultField(int cl);
 
@@ -568,7 +588,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Const_String.array
+   * Get the id of clazz `array u8`
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */
@@ -635,6 +655,8 @@ public abstract class FUIR extends IR
   /**
    * Check if the given clazz is a --possibly inherited--
    * `fuzion.java.Java_Object.Java_Ref` field.
+   *
+   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
    *
    * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
    */
@@ -971,6 +993,34 @@ public abstract class FUIR extends IR
    * feature to be accessed for this target.
    */
   public abstract int[] accessedClazzes(int s);
+
+
+  /**
+   * Get the possible inner clazz for a call or assignment to a field with given
+   * target clazz.
+   *
+   * This is used to feed information back from static analysis tools like DFA
+   * to the GeneratingFUIR such that the given target will be added to the
+   * targets / inner clazzes tuples returned by accesedClazzes.
+   *
+   * @param s site of the access
+   *
+   * @param tclazz the target clazz of the acces.
+   *
+   * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
+   * i.e., an abstract feature is missing.
+   */
+  public abstract int lookup(int s, int tclazz);
+
+
+  /**
+   * Inform the FUIR instance that lookup for new clazzes is finished.  This
+   * means that clazzIsUnitType will be able to produce correct results since no
+   * more features will be added.
+   */
+  public void lookupDone()
+  {
+  }
 
 
   /**
@@ -1464,7 +1514,7 @@ public abstract class FUIR extends IR
    * @param instantiationPos if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
-  public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context);
+  public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite);
 
 
   /**

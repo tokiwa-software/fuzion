@@ -298,21 +298,24 @@ public class Executor extends ProcessExpression<Value, Object>
    */
   private Pair<Integer, Integer> ttcc(int s, Value tvalue)
   {
-    var ccs = _fuir.accessedClazzes(s);
-    var tt = ccs.length != 2 ? -1 : ccs[0];
-    var cc = ccs.length != 2 ? -1 : ccs[1];
-
-    if (cc == -1)
+    int cc, tt;
+    if (_fuir.accessIsDynamic(s))
       {
+        cc = -1;
         tt = ((ValueWithClazz)tvalue)._clazz;
-
+        var ccs = _fuir.accessedClazzes(s);
         for (var cci = 0; cci < ccs.length && cc==-1; cci += 2)
-        {
-          if (ccs[cci] == tt)
-            {
-              cc = ccs[cci+1];
-            }
-        }
+          {
+            if (ccs[cci] == tt)
+              {
+                cc = ccs[cci+1];
+              }
+          }
+      }
+    else
+      {
+        cc = _fuir.accessedClazz(s);
+        tt = _fuir.clazzOuterClazz(cc);
       }
 
     if (POSTCONDITIONS) ensure

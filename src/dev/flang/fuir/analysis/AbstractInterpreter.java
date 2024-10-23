@@ -443,7 +443,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     var cl = _fuir.clazzAt(s);
     var or = _fuir.clazzOuterRef(cl);
-    if (or != -1)
+    if (or != FUIR.NO_CLAZZ)
       {
         var rt = _fuir.clazzResultClazz(or);
         var cur = _processor.current(s);

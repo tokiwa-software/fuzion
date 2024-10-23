@@ -295,12 +295,13 @@ public class Call extends ANY implements Comparable<Call>, Context
                   case c_i8, c_i16, c_i32, c_i64,
                        c_u8, c_u16, c_u32, c_u64,
                        c_f32, c_f64              -> NumericValue.create(_dfa, rc);
-                  case c_bool                    -> _dfa._bool;
+                  case c_bool                    -> _dfa.bool();
                   case c_TRUE, c_FALSE           -> Value.UNIT;
                   case c_Const_String, c_String  -> _dfa.newConstString(null, this);
                   case c_unit                    -> Value.UNIT;
                   case c_sys_ptr                 -> new Value(_cc); // NYI: we might add a specific value for system pointers
                   case c_NOT_FOUND               -> null;
+                  default                        -> null;
                   };
               }
           }
