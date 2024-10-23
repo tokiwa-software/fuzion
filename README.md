@@ -78,31 +78,29 @@ outside.
 
 ```
 ex_gcd is
-  max(a, b i32) i32 =>
-    if a > b then a else b
 
-  common_divisors_of(a, b i32) list i32 =>
-    x := max a.abs b.abs
-    y := 1..x
-    y.flat_map i32 (i->
+  # return common divisors of a and b
+  #
+  common_divisors_of(a, b i32) =>
+    max := max a.abs b.abs
+    (1..max).flat_map i32 i->
       if (a % i = 0) && (b % i = 0)
         [-i, i]
       else
-        [])
-     .as_list
+        []
 
+
+  # find the greatest common divisor of a and b
+  #
   gcd(a, b i32) i32
     pre
       safety: (a != 0 || b != 0)
     post
       safety: a % result = 0
       safety: b % result = 0
-      pedantic: (common_divisors_of a b).reduce bool true (tmp,cur->tmp && (result % cur = 0))
+      pedantic: (common_divisors_of a b).reduce bool true (acc,cur -> acc && (result % cur = 0))
   =>
-    if b = 0
-      a
-    else
-      gcd b (a % b)
+    if b = 0 then a else gcd b (a % b)
 
 
   say (gcd 8 12)
