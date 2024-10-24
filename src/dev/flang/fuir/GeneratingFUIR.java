@@ -118,8 +118,24 @@ public class GeneratingFUIR extends FUIR
    * For each site, this gives the clazz id of the clazz that contains the code at that site.
    */
   private final IntArray _siteClazzes;
-  private final IntMap<Object> _accessedClazz;
+
+
+  /**
+   * For each site s, the cached result of accessedClazz(s) or boxResultClazz(s).
+   */
+  private final IntMap<Object> _accessedClazzOrBoxResultClazz;
+
+
+  /**
+   * For each site s, the cached result of accessTargetClazz(s)
+   */
   private final IntMap<Clazz> _accessedTarget;
+
+
+  /**
+   * For each site s, the actual results of lookup called for a dynamic site.
+   * This is returned as the result of accessedClazzes().
+   */
   final IntMap<int[]> _accessedClazzes;
 
 
@@ -154,7 +170,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
-    _accessedClazz = new IntMap<>();
+    _accessedClazzOrBoxResultClazz = new IntMap<>();
     _accessedClazzes = new IntMap<>();
     _accessedTarget = new IntMap<>();
     _mainModule = fe.mainModule();
@@ -184,7 +200,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = true;
     _clazzesTM = original._clazzesTM;
     _siteClazzes = original._siteClazzes;
-    _accessedClazz = original._accessedClazz;
+    _accessedClazzOrBoxResultClazz = original._accessedClazzOrBoxResultClazz;
     _accessedClazzes = original._accessedClazzes;
     _accessedTarget = original._accessedTarget;
     _mainModule = original._mainModule;
@@ -2217,19 +2233,24 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Box);
 
-    var cl = clazzAt(s);
-    var outerClazz = id2clazz(cl);
-    var b = (Box) getExpr(s);
-    Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-    Clazz rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
-    if (rc.isRef() &&
-        outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
+    var rc = (Clazz) _accessedClazzOrBoxResultClazz.get(s);
+    if (rc == null)
       {
-        rc = vc.asRef();
-      }
-    else
-      {
-        rc = vc;
+        var cl = clazzAt(s);
+        var outerClazz = id2clazz(cl);
+        var b = (Box) getExpr(s);
+        Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
+        rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
+        if (rc.isRef() &&
+            outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
+          {
+            rc = vc.asRef();
+          }
+        else
+          {
+            rc = vc;
+          }
+        _accessedClazzOrBoxResultClazz.put(s, rc);
       }
     return rc._id;
   }
@@ -2295,7 +2316,7 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
 
-    var res = _accessedClazz.get(s);
+    var res = _accessedClazzOrBoxResultClazz.get(s);
     if (res == null)
       {
         res = accessedClazz(s, null);
@@ -2303,8 +2324,7 @@ public class GeneratingFUIR extends FUIR
           {
             res = this;  // using `this` for `null`.
           }
-        _accessedClazz.put(s, res);
-        // _accessedClazz = res; -- NYI: need Map from s to res
+        _accessedClazzOrBoxResultClazz.put(s, res);
       }
     return res instanceof Clazz rc ? rc._id : NO_CLAZZ;
   }
