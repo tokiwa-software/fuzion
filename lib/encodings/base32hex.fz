@@ -24,19 +24,18 @@
 # Base32hex encoding and decoding as defined in RFC 4648
 # https://datatracker.ietf.org/doc/html/rfc4648#section-7
 #
-public base32hex : base32 is
-
-  redef get_alphabet => "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array
-  redef encoding_name => "base32hex"
+public base32hex : base32 "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array "base32hex" is
 
   # decode a valid base32hex character to 5 bits
+  #
   redef quintet_bits(n u8) =>
     if 65 <= n <= 86        # case A-V
       n.as_u64 - 55
-
     else                    # case 0-9
       n.as_u64 - 48
 
+
   # checks if a character is valid in the encoding
+  #
   redef is_valid(c u8) =>
     (65 <= c <= 86) || (48 <= c <= 57)
