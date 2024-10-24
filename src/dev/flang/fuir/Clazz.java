@@ -41,7 +41,6 @@ import dev.flang.ast.ResolvedNormalType;
 import dev.flang.ast.Types;
 
 import dev.flang.fe.LibraryFeature;
-import dev.flang.fe.LibraryModule;
 
 import dev.flang.ir.IR;
 

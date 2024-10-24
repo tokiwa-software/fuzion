@@ -32,11 +32,8 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -50,10 +47,8 @@ import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.ResolvedNormalType;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
@@ -67,12 +62,10 @@ import dev.flang.mir.MIR;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.IntArray;
 import dev.flang.util.IntMap;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.StringHelpers;
 
 
 /**
