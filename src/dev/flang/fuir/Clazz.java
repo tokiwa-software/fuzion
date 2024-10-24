@@ -340,7 +340,6 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
       }
 
-    inspectCode(new List<>(), feature());
     // NYI: UNDER DEVELOPMENT: we might want to create the result clazz early
     // to avoid adding clazzes one lookupDone is set:
     //
@@ -1418,54 +1417,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return (_type.isRef() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: outer and type parameters!
   }
-
-
-  /**
-   * call _clazzes.findClazzes for all the expressions in f, including all the
-   * expressions of the parents of f.
-   *
-   * @param inh an empty list when inspecting code of `f` for `f`, a list of
-   * inheritance calls when inspecting `f1` that inherits from `f`. The head of
-   * this list is the inheritance call from `f1` to `f`, the tail is the
-   * inheritance calls in case we are inspecting `f2` which inherits from `f1`,
-   * etc.
-   *
-   * @þaram f the feature whose code should be inspected to find clazzes
-   */
-  private void inspectCode(List<AbstractCall> inh, AbstractFeature f)
-  {
-    for (var c: f.inherits())
-      {
-        AbstractFeature cf = c.calledFeature();
-        var n = c.actuals().size();
-        var argFields = new Clazz[n];
-        for (var i = 0; i < n; i++)
-          {
-            if (i >= cf.valueArguments().size())
-              {
-                if (CHECKS) check
-                  (Errors.any());
-              }
-            else
-              {
-                var cfa = cf.valueArguments().get(i);
-              }
-          }
-
-        if (CHECKS) check
-          (Errors.any() || cf != null);
-
-        if (cf != null)
-          {
-            var inh1 = new List<AbstractCall>();
-            inh1.add(c);
-            inh1.addAll(inh);
-            inspectCode(inh1, cf);
-          }
-      }
-  }
-
-
 
 
   /**
