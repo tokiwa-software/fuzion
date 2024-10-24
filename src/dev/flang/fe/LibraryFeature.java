@@ -787,22 +787,6 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  /**
-   * Read a list a n conditions at given position in _libModule.
-   */
-  private List<Cond> condList(int n, int at)
-  {
-    var result = new List<Cond>();
-    for (var i = 0; i < n; i++)
-      {
-        var x = code1(at);
-        result.add(new Cond(x));
-        at = _libModule.codeNextPos(at);
-      }
-    return result;
-  }
-
-
   public Contract contract()
   {
     return Contract.EMPTY_CONTRACT;
