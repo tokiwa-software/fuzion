@@ -1102,9 +1102,7 @@ public class GeneratingFUIR extends FUIR
        cl == clazz_array_u8() ||
        cl == clazz_fuzionSysArray_u8() ||
        cl == clazz_fuzionSysArray_u8_data() ||
-       cl == clazz_fuzionSysArray_u8_length() ||
-       cl == clazz_fuzionJavaObject() ||
-       cl == clazz_fuzionJavaObject_Ref()
+       cl == clazz_fuzionSysArray_u8_length()
        );
 
     var c = id2clazz(cl);
