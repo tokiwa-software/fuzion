@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 reg_issue1588 is
-  end := time.nano.read + (time.durations.seconds 5).nanos
+  end := time.nano.read + (time.duration.seconds 5).nanos
   for
     c in 0..
   while time.nano.read < end do
