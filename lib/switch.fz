@@ -29,7 +29,7 @@
 public switch(A type, B type /* NYI: B should be open generic */) :
   choice A B,
   # monad A (switch A B) NYI: does not work,
-  auto_unwrap A (try (switch A B)), /* NYI: BUG #3355: auto_unwrap T (try switch.this) */
+  auto_unwrap A (try switch.this),
   Sequence A
 is
 
