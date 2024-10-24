@@ -40,7 +40,7 @@ lib_concur_sync =>
 
         b := concur.thread.spawn ()->
           say "Thread sleeping"
-          time.nano.sleep (time.durations.ms 100)
+          time.nano.sleep (time.duration.ms 100)
           mtx.synchronized ()->
             say "Thread sending signal"
             check cnd.signal
@@ -67,7 +67,7 @@ lib_concur_sync =>
 
         b := concur.thread.spawn ()->
           say "Thread sleeping"
-          time.nano.sleep (time.durations.ms 100)
+          time.nano.sleep (time.duration.ms 100)
           mtx.synchronized ()->
             say "Thread sending broadcast"
             check cnd.broadcast

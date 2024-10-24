@@ -105,7 +105,7 @@ test_process =>
   p := process.spawn ["cat"]
     p := spawned
     concur.thread.spawn ()->
-      time.nano.sleep (time.durations.s 1)
+      time.nano.sleep (time.duration.s 1)
       say "start reading"
       while
         match p.read_bytes 100
