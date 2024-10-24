@@ -104,7 +104,7 @@ public class Call extends AbstractCall
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
-    if (needsToInferTypeParametersFromArgs())
+    if (_generics == NO_GENERICS && needsToInferTypeParametersFromArgs())
       {
         res = new List<>();
         for (Generic g : _calledFeature.generics().list)
@@ -2351,7 +2351,7 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && _generics == NO_GENERICS && _calledFeature.generics() != FormalGenerics.NONE;
+    return _calledFeature != null && (_generics == NO_GENERICS || _generics.contains(Types.t_UNDEFINED)) && _calledFeature.generics() != FormalGenerics.NONE;
   }
 
 

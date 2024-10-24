@@ -543,6 +543,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   }
 
 
+  /*
+   * Returns either result of asParsedType()
+   * or Types.t_UNDEFINED in case types name is '_'.
+   */
+  public AbstractType asType()
+  {
+    return asParsedType();
+  }
+
+
   /**
    * Return this expression as a simple name.  This is null by default except
    * for calls that without an explicit target and without any actual arguments

@@ -996,9 +996,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var tp = new List<AbstractType>(selfType);
             if (pc instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
               {
+                var git = cpc._generics.iterator();
                 for (var atp : pc.calledFeature().typeArguments())
                   {
-                    tp.add(Types.t_UNDEFINED);
+                    tp.add(git.hasNext() ? git.next() : Types.t_UNDEFINED);
                   }
                 cpc.whenInferredTypeParameters(() ->
                   {

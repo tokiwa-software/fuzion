@@ -156,6 +156,19 @@ public class ParsedCall extends Call
   }
 
 
+  /*
+   * Returns either result of asParsedType()
+   * or Types.t_UNDEFINED in case types name is '_'.
+   */
+  @Override
+  public AbstractType asType()
+  {
+    return name().equals("_")
+      ? Types.t_UNDEFINED
+      : asParsedType();
+  }
+
+
   @Override
   public ParsedType asParsedType()
   {
@@ -565,7 +578,7 @@ public class ParsedCall extends Call
 
         if (_actuals.size() - i > vn)
           {
-            AbstractType t = _actuals.get(i).asParsedType();
+            AbstractType t = _actuals.get(i).asType();
             if (t != null)
               {
                 g.add(t);
