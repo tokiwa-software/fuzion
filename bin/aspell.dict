@@ -804,7 +804,6 @@ MapComparable
 mapOfDeclaredFeatures
 MapToN
 mapToObj
-markUsed
 maxErrorCount
 maxlength
 maxRow

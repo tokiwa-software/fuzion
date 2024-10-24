@@ -261,9 +261,7 @@ public class Types extends ANY implements ClassFileConstants
       cl == _fuir.clazz_array_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8_data() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_length() ||
-      cl == _fuir.clazz_fuzionJavaObject() ||
-      cl == _fuir.clazz_fuzionJavaObject_Ref();
+      cl == _fuir.clazz_fuzionSysArray_u8_length();
   }
 
 
