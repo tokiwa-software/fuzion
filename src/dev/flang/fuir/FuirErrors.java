@@ -27,8 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir;
 
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
