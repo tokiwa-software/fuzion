@@ -33,7 +33,7 @@
 #
 concur_simple =>
 
-  d := time.durations
+  d := time.duration.type
 
   N := 5
   t1 := d.ms 60

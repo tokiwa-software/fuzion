@@ -155,11 +155,11 @@ sockets_test is
   protocols array net.protocol.val := [net.protocol.tcp, net.protocol.udp]
   for f in families do
     for p in protocols do
-      time.nano.sleep (time.durations.s 1)
+      time.nano.sleep (time.duration.s 1)
       _ := concur.thread.spawn ()->
         _ := server f p
 
-  time.nano.sleep (time.durations.seconds 10)
+  time.nano.sleep (time.duration.seconds 10)
 
   for f in families do
     for p in protocols do

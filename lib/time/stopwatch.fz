@@ -24,8 +24,8 @@
 # -----------------------------------------------------------------------
 
 # stopwatch measures the execution duration of f
-public stopwatch(f () -> unit) duration =>
+public stopwatch(f () -> unit) time.duration =>
   start := nano.read
   f()
   end := nano.read
-  durations.ns end-start
+  duration.ns end-start
