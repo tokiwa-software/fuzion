@@ -21,6 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
+# the following code use to result in a Java precondition failure during Clazz lookup:
+#
+
 a is
   b is
     type.hi =>
