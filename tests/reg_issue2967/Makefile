@@ -17,15 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stopwatch
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# stopwatch measures the execution duration of f
-public stopwatch(f () -> unit) time.duration =>
-  start := nano.read
-  f()
-  end := nano.read
-  duration.ns end-start
+override NAME = reg_issue2967
+FUZION_OPTIONS = -modules=lock_free
+include ../simple.mk

@@ -104,7 +104,7 @@ public class Call extends AbstractCall
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
-    if (needsToInferTypeParametersFromArgs())
+    if (_generics == NO_GENERICS && needsToInferTypeParametersFromArgs())
       {
         res = new List<>();
         for (Generic g : _calledFeature.generics().list)
@@ -1476,8 +1476,7 @@ public class Call extends AbstractCall
    */
   protected void setActualResultType(Resolution res, Context context, AbstractType frmlT)
   {
-    var tt =
-      targetIsTypeParameter() && frmlT.isThisTypeInTypeFeature()
+    var tt = targetIsTypeParameter() && frmlT.isThisTypeInTypeFeature()
       ? // a call B.f for a type parameter target B. resultType() is the
         // constraint of B, so we create the corresponding type feature's
         // selfType:
@@ -1490,17 +1489,7 @@ public class Call extends AbstractCall
     var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
     var t4 = adjustThisTypeForTarget(t3, false, calledFeature(), context);
     var t5 = resolveForCalledFeature(res, t4, tt, context);
-    // call may be resolved repeatedly. In case of recursive use of FieldActual
-    // (see #2182), we may see `void` as the result type of calls to argument
-    // fields during recursion.  We use only the non-recursive (i.e., non-void)
-    // ones:
-    if (_type == null ||
-        !t5.isVoid() ||
-        !(_calledFeature instanceof Feature cf) ||
-        cf.impl()._kind != Impl.Kind.FieldActual)
-      {
-        _type = t5;
-      }
+    _type = t5;
   }
 
 
@@ -2351,7 +2340,7 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && _generics == NO_GENERICS && _calledFeature.generics() != FormalGenerics.NONE;
+    return _calledFeature != null && (_generics == NO_GENERICS || _generics.contains(Types.t_UNDEFINED)) && _calledFeature.generics() != FormalGenerics.NONE;
   }
 
 
