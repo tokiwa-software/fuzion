@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue3769.fz:24:6: error 1: Failed to verify that effect 'io.out' is installed in current environment.
+_ := io.out.env
+-----^^^^^^^^^^
+Callchain that lead to this point:
+
+effect environment '--empty--' for call to 'universe'
+effect environment '--empty--' at program entry
+
+one error.
