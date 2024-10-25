@@ -21,4 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
+# this used to result in a check failure. Should produce an error due to missing 
+# effect `io.out`.
+#
 _ := io.out.env
