@@ -3172,6 +3172,8 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the position where the clazz is declared
    * in the source code.
+   *
+   * NYI: CLEANUP: This is currently used only by the interpreter backend. Maybe we should remove this?
    */
   @Override
   public SourcePosition declarationPos(int cl)
