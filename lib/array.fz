@@ -52,13 +52,13 @@ module:public array(
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite => true
+  public redef finite => bool.true
 
 
   # is this Sequence known to be array backed? If so, this means that operations
   # like index[] are fast.
   #
-  public redef is_array_backed => true
+  public redef is_array_backed => bool.true
 
 
   # check if argument is a valid index in this array.
@@ -168,13 +168,13 @@ module:public array(
       # is this sequence known to be finite?  For infinite sequences, features like
       # count diverge.
       #
-      public redef finite => true
+      public redef finite => bool.true
 
 
       # is this Sequence known to be array backed? If so, this means that operations
       # like index[] are fast.
       #
-      public redef is_array_backed => true
+      public redef is_array_backed => bool.true
 
 
       # redefines Sequence.count for array.slice,

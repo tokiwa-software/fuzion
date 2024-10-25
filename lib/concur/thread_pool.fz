@@ -27,7 +27,7 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
 
   # is closed for taking any new elements?
   #
-  is_closed := concur.atomic false
+  is_closed := concur.atomic bool.false
 
   data := concur.atomic (array T) []
 

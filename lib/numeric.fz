@@ -161,7 +161,7 @@ module:public numeric : property.hashable, property.orderable is
   # does this numeric value fit into an u8? This is redefined by children
   # of numeric that support `as_u8`.
   #
-  public fits_in_u8 => false
+  public fits_in_u8 => bool.false
 
 
   # this numeric value as an u8

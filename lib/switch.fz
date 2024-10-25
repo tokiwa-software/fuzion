@@ -37,7 +37,7 @@ is
 
   # Does this switch contain a value of type A?
   #
-  public exists => (switch.this ? A => true
+  public exists => (switch.this ? A => bool.true
                                 | B => false)
 
 

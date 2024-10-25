@@ -137,7 +137,7 @@ prev_node(CTK type : property.hashable, CTV type) : choice (failed_node CTK CTV)
 
   is_nil =>
     match prev_node.this
-      nil => true
+      nil => bool.true
       * => false
 
 
@@ -218,7 +218,7 @@ is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  redef finite => true
+  redef finite => bool.true
 
   redef as_string => "list_node({from.as_string ", "})"
 
@@ -248,7 +248,7 @@ is
 
   # this field does not have to be atomic
   # but it probably does not hurt either.
-  committed := concur.atomic false
+  committed := concur.atomic bool.false
 
   redef as_string =>
     "Rdcss_Descriptor($ov, $exp, $nv)"

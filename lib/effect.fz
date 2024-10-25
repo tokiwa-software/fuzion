@@ -311,7 +311,7 @@ public effect is
   # a result. This is used, e.g, in `mutate` to avoid static analysis
   # reporting `panic` as an effect of the use of a local mutate instance.
   #
-  public abortable => true
+  public abortable => bool.true
 
 
   # abort the current execution and return from the surrounding call to

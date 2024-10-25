@@ -34,15 +34,15 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u128) => u128.max -° u128.this < other
-  public fixed redef underflow_on_add(other u128) => false
+  public fixed redef underflow_on_add(other u128) => bool.false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other u128) => false
+  public fixed redef overflow_on_sub (other u128) => bool.false
   public fixed redef underflow_on_sub(other u128) => u128.this < other
 
   # would multiplication * other cause an overflow or underflow?
   public fixed redef overflow_on_mul (other u128) => if (other = u128.zero) false else (u128.this *° other / other) != u128.this
-  public fixed redef underflow_on_mul(other u128) => false
+  public fixed redef underflow_on_mul(other u128) => bool.false
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed redef prefix -°             u128 => {carry u64 := { if (lo > 0             ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)}

@@ -360,8 +360,8 @@ public class If extends ExprWithPos
           public List<AbstractCase> cases()
           {
             return new List<AbstractCase>(
-              new Case(block.pos(), new List<AbstractType>(Types.resolved.f_TRUE.selfType()), block),
-              new Case(elseBlock.pos(), new List<AbstractType>(Types.resolved.f_FALSE.selfType()), elseBlock));
+              new Case(block.pos(), new List<AbstractType>(Types.resolved.f_true.selfType()), block),
+              new Case(elseBlock.pos(), new List<AbstractType>(Types.resolved.f_false.selfType()), elseBlock));
           }
         };
   }

@@ -34,15 +34,15 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u64) => u64.max -° val < other
-  public fixed redef underflow_on_add(other u64) => false
+  public fixed redef underflow_on_add(other u64) => bool.false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other u64) => false
+  public fixed redef overflow_on_sub (other u64) => bool.false
   public fixed redef underflow_on_sub(other u64) => val < other
 
   # would multiplication * other cause an overflow or underflow?
   public fixed redef overflow_on_mul (other u64) => if other = 0 then false else (val *° other / other) != val
-  public fixed redef underflow_on_mul(other u64) => false
+  public fixed redef underflow_on_mul(other u64) => bool.false
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed redef prefix -° u64 => intrinsic

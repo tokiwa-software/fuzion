@@ -85,7 +85,7 @@ is
        _ nil => a.highest!! && b.highest!!
        m u64 =>
          for
-           r := true, r && (a.has i <=> b.has i)
+           r := bool.true, r && (a.has i <=> b.has i)
            i in u64 0 .. m
          else
            r
@@ -97,7 +97,7 @@ is
       _ nil => "\{}"
       h u64 =>
         for
-          first := true, first && !(has i)
+          first := bool.true, first && !(has i)
           s := "", s + (if (has i) comma + $i else "")
           comma := if (first) "" else ", "
           i in u64 0 .. h

@@ -145,8 +145,6 @@ public class Types extends ANY
     public final AbstractFeature f_id;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
-    public final AbstractFeature f_TRUE;
-    public final AbstractFeature f_FALSE;
     public final AbstractFeature f_true;
     public final AbstractFeature f_false;
     public final AbstractFeature f_bool;
@@ -211,8 +209,6 @@ public class Types extends ANY
       f_id                      = universe.get(mod, "id", 2);
       f_void                    = universe.get(mod, "void", 0);
       f_choice                  = universe.get(mod, "choice", 1);
-      f_TRUE                    = universe.get(mod, "TRUE", 0);
-      f_FALSE                   = universe.get(mod, "FALSE", 0);
       f_true                    = universe.get(mod, "true", 0);
       f_false                   = universe.get(mod, "false", 0);
       f_bool                    = universe.get(mod, "bool", 0);

@@ -860,15 +860,15 @@ public ryū(public T type : float) is
 
       if q <= 21
         if mv % 5 = 0
-          (dv, dp, dm, false, (multiple_of_power_of_5 mv q), q)
+          (dv, dp, dm, bool.false, (multiple_of_power_of_5 mv q), q)
         else if rounding_mode.accept_upper_bound is_even
-          (dv, dp, dm, (multiple_of_power_of_5 smaller_halfway_point q), false,  q)
+          (dv, dp, dm, (multiple_of_power_of_5 smaller_halfway_point q), bool.false,  q)
         else if multiple_of_power_of_5 larger_halfway_point q
-          (dv, dp-1, dm, false, false, q)
+          (dv, dp-1, dm, bool.false, bool.false, q)
         else
-          (dv, dp, dm, false, false, q)
+          (dv, dp, dm, bool.false, bool.false, q)
       else
-        (dv, dp, dm, false, false, q)
+        (dv, dp, dm, bool.false, bool.false, q)
     else
 
       q := max (i64 0) (floor_log₁₀_pow_5 -exponent)-1
@@ -883,13 +883,13 @@ public ryū(public T type : float) is
 
       if q <= 1
         if rounding_mode.accept_upper_bound is_even
-          (dv, dp, dm, mm_shift, true, e10)
+          (dv, dp, dm, mm_shift, bool.true, e10)
         else
-          (dv, dp -  1, dm, false, true, e10)
+          (dv, dp -  1, dm, bool.false, bool.true, e10)
       else if q < 63
-        (dv, dp, dm, false, (mv & (((i64 1) << (q - 1)) - 1)) = 0, e10)
+        (dv, dp, dm, bool.false, (mv & (((i64 1) << (q - 1)) - 1)) = 0, e10)
       else
-        (dv, dp, dm, false, false, e10)
+        (dv, dp, dm, bool.false, bool.false, e10)
 
 
 

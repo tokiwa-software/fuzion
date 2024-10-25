@@ -49,4 +49,4 @@ public equatable is
   # e.g., `option T` might require `T : property.equatable`.
   # to implement `equality`
   #
-  public type.is_equatable => true
+  public type.is_equatable => bool.true

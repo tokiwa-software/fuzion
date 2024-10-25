@@ -55,7 +55,7 @@ public float : numeric is
   # does this float value fit into an i64? This is redefined by children
   # of float that support `as_i64`.
   #
-  public fits_in_i64 => false
+  public fits_in_i64 => bool.false
 
 
   # convert a float value to i64 dropping any fraction.

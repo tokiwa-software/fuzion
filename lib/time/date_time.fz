@@ -182,9 +182,9 @@ is
      (a.minute, b.minute),
      (a.second, b.second),
      (a.nano_second, b.nano_second)]
-      .reduce true (r, t)->
+      .reduce bool.true (r, t)->
         if t.values.0 > t.values.1
-          abort false
+          abort bool.false
         else
           r
 

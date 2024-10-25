@@ -37,7 +37,7 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
 
   # has the end of file been reached?
   #
-  eof := LM.env.new false
+  eof := LM.env.new bool.false
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
@@ -182,7 +182,7 @@ pre debug: n >= 0
     v
 
   for
-    is_eof                 := (reader LM).read ? io.end_of_file => true | a array => false
+    is_eof                 := (reader LM).read ? io.end_of_file => bool.true | a array => bool.false
     next_bytes Sequence u8 := ((reader LM).read ? io.end_of_file => []   | a array => a), rest ++ ((reader LM).read ? io.end_of_file => [] | a array => a)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,

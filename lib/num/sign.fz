@@ -27,7 +27,7 @@
 #
 public sign : choice num.plus num.minus, property.equatable is
 
-  module is_plus =>
+  module is_plus bool =>
     match sign.this
       num.plus => true
       num.minus => false

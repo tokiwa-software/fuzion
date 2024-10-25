@@ -66,7 +66,7 @@ public abstract class ContextVisitor extends FeatureVisitor
   {
     var s = m.subject();
     if (s instanceof AbstractCall sc &&
-        sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
+        sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_true .selfType())==0))
       {
         _context = _context.addTypeConstraint(sc);
         check(_context != null);
@@ -77,7 +77,7 @@ public abstract class ContextVisitor extends FeatureVisitor
   {
     var s = m.subject();
     if (s instanceof AbstractCall sc &&
-        sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
+        sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_true .selfType())==0))
       {
         _context = _context.exterior();
         check(_context != null);

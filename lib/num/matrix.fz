@@ -71,9 +71,9 @@ is
       x in a.e
       y in b.e
     until x != y
-      false
+      bool.false
     else
-      true
+      bool.true
 
 
   # transpose

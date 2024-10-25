@@ -2936,7 +2936,7 @@ public class GeneratingFUIR extends FUIR
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||
               cf == Types.resolved.f_Type_infix_colon  &&
               T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, tclazz._type.generics().get(0));
-            var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
+            var tf = pos ? Types.resolved.f_true : Types.resolved.f_false;
             if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
               {
                 return NO_SITE;
