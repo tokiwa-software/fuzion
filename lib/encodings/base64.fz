@@ -23,7 +23,7 @@
 
 # Base64 encoding and decoding as defined in RFC 4648
 #
-public base64(alphabet array u8, encoding_name String)
+private:public base64(alphabet array u8, encoding_name String)
 pre debug: (container.set_of_ordered alphabet).count = 64
 is
 

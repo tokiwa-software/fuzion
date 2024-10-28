@@ -24,7 +24,7 @@
 # base16 encoding and decoding as defined in RFC 4648
 # https://datatracker.ietf.org/doc/html/rfc4648#section-8
 #
-public base16(alphabet array u8, encoding_name String)
+private:public base16(alphabet array u8, encoding_name String)
 pre debug: (container.set_of_ordered alphabet).count = 16
 is
 

@@ -24,7 +24,7 @@
 # Base32 encoding and decoding as defined in RFC 4648
 # https://datatracker.ietf.org/doc/html/rfc4648#section-6
 #
-public base32(alphabet array u8, encoding_name String)
+module:public base32(alphabet array u8, encoding_name String)
 pre debug: (container.set_of_ordered alphabet).count = 32
 is
 
