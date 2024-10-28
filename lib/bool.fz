@@ -144,7 +144,7 @@ public bool : choice FALSE TRUE, property.equatable is
 # >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
 #
 #
-private:public FALSE is
+public FALSE is
 
 
 # boolean value "true"
@@ -158,7 +158,7 @@ private:public FALSE is
 # >>FALSE<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
 #
 #
-private:public TRUE is
+public TRUE is
 
 
 # boolean value "false" as a constant of type >>bool<<.
