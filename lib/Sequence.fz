@@ -73,7 +73,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   public count
   pre
-    analysis: finite = FALSE  # in practice, we do not always have this information
+    analysis: finite != trit.no  # in practice, we do not always have this information
   => (map i32 (_ -> 1)).fold i32.sum
 
 
@@ -917,14 +917,14 @@ public Sequence(public T type) ref : property.equatable is
   #
   public fixed redef type.equality(a, b Sequence T) =>
     equality0(a1, b1 Sequence (T2 : property.equatable)) =>
-      ((a1.zip b1 x,y->x=y) ∀ x->x)
+      (a1.zip b1 x,y->x=y) ∀ x->x
 
     if T : property.equatable
-      if a.finite && b.finite
+      if a.finite=trit.yes && b.finite=trit.yes
         a.count = b.count && equality0 a b
-      else if a.finite
+      else if a.finite=trit.yes
         a.count = (b.take (a.count+1)).count && equality0 a b
-      else if b.finite
+      else if b.finite=trit.yes
         b.count = (a.take (b.count+1)).count && equality0 a b
       else
         equality0 a b
