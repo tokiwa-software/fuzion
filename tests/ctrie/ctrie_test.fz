@@ -48,9 +48,8 @@ ctrie_test is
   for k in readded do
     ctrie.add k "v$k"
 
-  # NYI Set should have `except()` feature
-  no  := removed.filter (x -> !(readded.contains x))
-  yes := (set_from (all.filter (x -> !(removed.contains x)))) ∪ readded
+  no  := removed.except readded
+  yes := (all.except removed) ∪ readded
 
   say (no  ∀ (k -> ctrie[k].is_nil))
 

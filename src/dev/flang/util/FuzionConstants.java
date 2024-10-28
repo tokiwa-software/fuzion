@@ -283,6 +283,11 @@ public class FuzionConstants extends ANY
   public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "preandcall";
   public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_PREFIX + "post";
 
+  /**
+   * Internal name used for an outer type.
+   */
+  public static final String OUTER_TYPE_NAME = INTERNAL_NAME_PREFIX + "outer";
+
 
   /**
    * The qualified names of features fuzion.runtime.precondition_fault and

@@ -1587,7 +1587,8 @@ public class C extends ANY
       {
         value = value.castTo(_types.clazz(rt));
       }
-    return assign(af, value, rt);
+    return _types.fieldExists(f) ? assign(af, value, rt)
+                                 : CStmnt.lineComment("assignment to unused field " + clazzInQuotes(f));
   }
 
 
@@ -1721,10 +1722,14 @@ public class C extends ANY
     var aii = _fuir.hasData(tc) ? 1 : 0;
     for (int ai = 0; ai < ac; ai++)
       {
+        var af = _fuir.clazzArg     (vcl, ai);
         var at = _fuir.clazzArgClazz(vcl, ai);
         if (_fuir.hasData(at))
           {
-            l.add(assign(CIdent.arg(ai), a.get(aii), at));
+            if (_fuir.clazzNeedsCode(af))
+              {
+                l.add(assign(CIdent.arg(ai), a.get(aii), at));
+              }
             aii = aii + 1;
           }
       }
@@ -2293,6 +2298,18 @@ public class C extends ANY
       .field(CNames.FIELDS_IN_REF_CLAZZ)
       .field(_names.fieldName(_fuir.clazz_fuzionJavaObject_Ref()));
   }
+
+
+  /**
+   * For debugging output
+   *
+   * @return "`<clazz c>`".
+   */
+  private String clazzInQuotes(int c)
+  {
+    return "`" + _fuir.clazzAsString(c) + "`";
+  }
+
 
 }
 

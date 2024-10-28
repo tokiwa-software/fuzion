@@ -23,7 +23,7 @@
 
 
 # NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229
-Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
+Blocking_Queue(T type, cnd concur.sync.condition) ref is
 
   # is closed for taking any new elements?
   #
@@ -40,13 +40,14 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
     if is_closed.read
       false
     else
-      mtx.synchronized ()->
-        do
-          old := data.read
+      for old := data.read
           new := old.put old.length el
-        until data.compare_and_set old new
-        check cnd.broadcast
-      true
+      while !data.compare_and_set old new
+      else
+        cnd.synchronized ()->
+          # signal a waiting thread to pick up the work
+          check cnd.signal
+        true
 
 
   # dequeue an element
@@ -59,9 +60,10 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
       if is_closed.read
         nil
       else
-        mtx.synchronized unit ()->
-          if !is_closed.read
-            # NYI: BUG: possible dead lock?
+        cnd.synchronized ()->
+          # check the two conditions again, otherwise we MUST NOT wait
+          if !is_closed.read && data.read.is_empty
+            # NYI: BUG: possible dead lock? what if we write to data in the meantime?
             # we should use TLA+ or similar to prove correctness
             # https://www.hillelwayne.com/post/list-of-tla-examples/
             check cnd.wait
@@ -81,11 +83,9 @@ Blocking_Queue(T type, mtx concur.sync.mutex, cnd concur.sync.condition) ref is
 # submit a task to the thread_pool.
 #
 public thread_pool(R type, size i32, code ()->R) outcome R =>
-  (concur.sync.mutex.new ()->
-    mtx := concur.sync.mutex.env
-    mtx.condition ()->
-      cnd := concur.sync.condition.env
-      (thread_pool mtx cnd size unit).instate_self ()->
+  (concur.sync.mutex.new.bind mtx->
+    mtx.condition.bind R cnd->
+      (thread_pool cnd size).instate_self ()->
         res := code.call
         thread_pool.env.await
         res)
@@ -95,11 +95,11 @@ public thread_pool(R type, size i32, code ()->R) outcome R =>
 
 # simple, fixed size thread pool
 #
-private:public thread_pool(mtx concur.sync.mutex, cnd concur.sync.condition, size i32, _ unit) : effect
+private:public thread_pool(cnd concur.sync.condition, size i32) : effect
 pre debug: size > 0
 is
 
-  bq := Blocking_Queue ()->unit mtx cnd
+  bq := Blocking_Queue ()->unit cnd
 
   threads := (1..size)
     .map _->
@@ -128,30 +128,24 @@ is
 
     fut ref : concur.Future T is
 
-      uid := unique_id
+      fut_mtx := concur.sync.mutex.new.val # NYI: error handling
+      fut_cnd := fut_mtx.condition.val # NYI: error handling
 
       compute_result := concur.atomic (option T) nil
 
-      fut_cnd := concur.atomic (option fuzion.sys.Pointer) nil
-
       compute =>
-        compute_result.write task.call
-        mtx.synchronized ()->
-          _ := fut_cnd.read.bind unit c->
-            check concur.sync.cnd_broadcast c
-            concur.sync.cnd_destroy c
+        cr := task.call
+        fut_cnd.synchronized ()->
+          compute_result.write cr
+          check fut_cnd.broadcast
 
       redef is_done => compute_result.read.exists
 
       redef get T =>
-        while !is_done
-          mtx.synchronized ()->
-            match concur.sync.cnd_init mtx.mtx
-              e error => panic e.msg
-              c fuzion.sys.Pointer =>
-                  fut_cnd.write c
-                  if !is_done
-                    check concur.sync.cnd_wait c mtx.mtx
+        if !is_done
+          fut_cnd.synchronized ()->
+            if !is_done
+              check fut_cnd.wait
 
         compute_result.read.val
 
@@ -166,20 +160,17 @@ is
       panic "Thread pool has already shut down."
 
 
-  # initiate shutdown of thread pool
-  #
-  shutdown unit =>
-    bq.is_closed.write true
-
-
   # initiate shutdown, then wait for all added tasks to complete
   #
   await =>
 
-    shutdown
+    # initiate shutdown of thread pool
+    # i.e. stop accepting jobs
+    #
+    bq.is_closed.write true
 
     # wake up all threads
-    mtx.synchronized unit ()->
+    cnd.synchronized unit ()->
       _ := cnd.broadcast
 
     # wait for all threads to finish

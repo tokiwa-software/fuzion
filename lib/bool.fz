@@ -40,7 +40,7 @@ public bool : choice FALSE TRUE, property.equatable is
 
   # not
   public prefix ! bool =>
-    if bool.this then FALSE else TRUE
+    if bool.this then false else true
 
   # or with lazy evaluation
   #
