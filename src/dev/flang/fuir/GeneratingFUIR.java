@@ -2770,7 +2770,8 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public int matchStaticSubject(int s)
+  /* NYI: WORKAROUND: sychronized, fixes test atomic on windows/interpreter */
+  public synchronized int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
