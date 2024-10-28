@@ -927,7 +927,9 @@ public Sequence(public T type) ref : property.equatable is
       else if b.finite=trit.yes
         b.count = (a.take (b.count+1)).count && equality0 a b
       else
-        equality0 a b
+        equality0 a b &&
+          {zip_count := (a.zip b x,y->unit).count
+           (a.drop zip_count).is_empty && (b.drop zip_count).is_empty}
     else
       panic "***"
 
