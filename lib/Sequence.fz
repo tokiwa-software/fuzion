@@ -83,7 +83,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   public first(default T)
   =>
-    if is_empty then default else first.get
+    first.val default
 
 
   # get the last element of this Sequence
@@ -99,7 +99,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   public last(default T)
   =>
-    if is_empty then default else last
+    last.val default
 
 
   # collect the contents of this Sequence into an array
@@ -814,10 +814,9 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : property.orderable
   =>
-    if is_empty
-      nil
-    else
-      reduce first.get ((r,t) -> if r ≤ t then r else t)
+    match first
+      nil => nil
+      v T => reduce v ((r,t) -> if r ≤ t then r else t)
 
 
   # maximum value in the sequence
@@ -825,10 +824,9 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : property.orderable
   =>
-    if is_empty
-      nil
-    else
-      reduce first.get ((r,t) -> if r ≤ t then t else r)
+    match first
+      nil => nil
+      v T => reduce v ((r,t) -> if r ≤ t then t else r)
 
 
   # the median of the sequence
