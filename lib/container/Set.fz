@@ -42,7 +42,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # does this set contain the given value?
   #
-  public contains (e E) bool => abstract
+  public redef contains (e E) bool => abstract
 
 
   # list representation of values in this set
