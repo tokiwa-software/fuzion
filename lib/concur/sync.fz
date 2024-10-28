@@ -22,6 +22,7 @@
 # -----------------------------------------------------------------------
 
 # concur.sync -- synchronization primitives
+# NYI: sync should probably be an effect
 #
 public sync is
 
@@ -32,40 +33,49 @@ public sync is
   mtx_unlock(mtx fuzion.sys.Pointer) bool => intrinsic
   mtx_destroy(mtx fuzion.sys.Pointer) unit => intrinsic
 
-  module cnd_init(mtx fuzion.sys.Pointer) outcome fuzion.sys.Pointer => intrinsic
-  module cnd_signal(cnd fuzion.sys.Pointer) bool => intrinsic
-  module cnd_broadcast(cnd fuzion.sys.Pointer) bool => intrinsic
-  module cnd_wait(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) bool => intrinsic
+  cnd_init(mtx fuzion.sys.Pointer) outcome fuzion.sys.Pointer => intrinsic
+  cnd_signal(cnd fuzion.sys.Pointer) bool => intrinsic
+  cnd_broadcast(cnd fuzion.sys.Pointer) bool => intrinsic
+  cnd_wait(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) bool => intrinsic
   # NYI: cnd_timedwait
-  module cnd_destroy(cnd fuzion.sys.Pointer) unit => intrinsic
+  cnd_destroy(cnd fuzion.sys.Pointer) unit => intrinsic
 
 
   # NYI: documentation missing, waiting for JVM backend impl
 
-  private:public mutex(module mtx fuzion.sys.Pointer) : effect is
+  private:public mutex(module mtx fuzion.sys.Pointer) is
 
-    public type.new(T type, code ()->T) outcome T =>
-      concur.sync.mtx_init.bind T mtx->
-        res := (concur.sync.mutex mtx).instate_self code
-        concur.sync.mtx_destroy mtx
-        res
+    public type.new outcome concur.sync.mutex =>
+      concur.sync.mtx_init.bind concur.sync.mutex mtx->
+        concur.sync.mutex mtx
+
+    public condition outcome concur.sync.condition =>
+      (concur.sync.cnd_init mtx).bind concur.sync.condition cnd->
+        concur.sync.condition mtx cnd
+
+    # NYI destroy
+
+
+  private:public condition(mtx fuzion.sys.Pointer, cnd fuzion.sys.Pointer) is
+
+    public is_locked := concur.atomic false
 
     public synchronized(T type, code ()->T) T =>
       check mtx_lock mtx
+      is_locked.write true
       res := code.call
+      is_locked.write false
       check mtx_unlock mtx
       res
 
-    public condition(T type, code ()->T) outcome T =>
-      (concur.sync.cnd_init mtx).bind T cnd->
-        res := (concur.sync.condition cnd mtx).instate_self code
-        concur.sync.cnd_destroy cnd
-        res
+    public signal
+    pre is_locked.read
+    => cnd_signal cnd
+    public broadcast
+    pre is_locked.read
+    => cnd_broadcast cnd
+    public wait
+    pre is_locked.read
+    => cnd_wait cnd mtx
 
-
-  private:public condition(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) : effect is
-
-    public signal => cnd_signal cnd
-    public broadcast => cnd_broadcast cnd
-    # NYI: UNDER DEVELOPMENT: we should ensure that mutex is locked
-    public wait => cnd_wait cnd mtx
+    # NYI destroy

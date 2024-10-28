@@ -32,11 +32,8 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -50,10 +47,8 @@ import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.ResolvedNormalType;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
@@ -67,12 +62,10 @@ import dev.flang.mir.MIR;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.IntArray;
 import dev.flang.util.IntMap;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.StringHelpers;
 
 
 /**
@@ -118,8 +111,24 @@ public class GeneratingFUIR extends FUIR
    * For each site, this gives the clazz id of the clazz that contains the code at that site.
    */
   private final IntArray _siteClazzes;
-  private final IntMap<Object> _accessedClazz;
+
+
+  /**
+   * For each site s, the cached result of accessedClazz(s) or boxResultClazz(s).
+   */
+  private final IntMap<Object> _accessedClazzOrBoxResultClazz;
+
+
+  /**
+   * For each site s, the cached result of accessTargetClazz(s)
+   */
   private final IntMap<Clazz> _accessedTarget;
+
+
+  /**
+   * For each site s, the actual results of lookup called for a dynamic site.
+   * This is returned as the result of accessedClazzes().
+   */
   final IntMap<int[]> _accessedClazzes;
 
 
@@ -154,7 +163,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
-    _accessedClazz = new IntMap<>();
+    _accessedClazzOrBoxResultClazz = new IntMap<>();
     _accessedClazzes = new IntMap<>();
     _accessedTarget = new IntMap<>();
     _mainModule = fe.mainModule();
@@ -184,7 +193,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = true;
     _clazzesTM = original._clazzesTM;
     _siteClazzes = original._siteClazzes;
-    _accessedClazz = original._accessedClazz;
+    _accessedClazzOrBoxResultClazz = original._accessedClazzOrBoxResultClazz;
     _accessedClazzes = original._accessedClazzes;
     _accessedTarget = original._accessedTarget;
     _mainModule = original._mainModule;
@@ -1102,9 +1111,7 @@ public class GeneratingFUIR extends FUIR
        cl == clazz_array_u8() ||
        cl == clazz_fuzionSysArray_u8() ||
        cl == clazz_fuzionSysArray_u8_data() ||
-       cl == clazz_fuzionSysArray_u8_length() ||
-       cl == clazz_fuzionJavaObject() ||
-       cl == clazz_fuzionJavaObject_Ref()
+       cl == clazz_fuzionSysArray_u8_length()
        );
 
     var c = id2clazz(cl);
@@ -2217,19 +2224,24 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Box);
 
-    var cl = clazzAt(s);
-    var outerClazz = id2clazz(cl);
-    var b = (Box) getExpr(s);
-    Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-    Clazz rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
-    if (rc.isRef() &&
-        outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
+    var rc = (Clazz) _accessedClazzOrBoxResultClazz.get(s);
+    if (rc == null)
       {
-        rc = vc.asRef();
-      }
-    else
-      {
-        rc = vc;
+        var cl = clazzAt(s);
+        var outerClazz = id2clazz(cl);
+        var b = (Box) getExpr(s);
+        Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
+        rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
+        if (rc.isRef() &&
+            outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
+          {
+            rc = vc.asRef();
+          }
+        else
+          {
+            rc = vc;
+          }
+        _accessedClazzOrBoxResultClazz.put(s, rc);
       }
     return rc._id;
   }
@@ -2295,7 +2307,7 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
 
-    var res = _accessedClazz.get(s);
+    var res = _accessedClazzOrBoxResultClazz.get(s);
     if (res == null)
       {
         res = accessedClazz(s, null);
@@ -2303,8 +2315,7 @@ public class GeneratingFUIR extends FUIR
           {
             res = this;  // using `this` for `null`.
           }
-        _accessedClazz.put(s, res);
-        // _accessedClazz = res; -- NYI: need Map from s to res
+        _accessedClazzOrBoxResultClazz.put(s, res);
       }
     return res instanceof Clazz rc ? rc._id : NO_CLAZZ;
   }
@@ -2759,7 +2770,8 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public int matchStaticSubject(int s)
+  /* NYI: WORKAROUND: sychronized, fixes test atomic on windows/interpreter */
+  public synchronized int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -3181,11 +3193,14 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the position where the clazz is declared
    * in the source code.
+   *
+   * NYI: CLEANUP: This is currently used only by the interpreter backend. Maybe we should remove this?
    */
   @Override
   public SourcePosition declarationPos(int cl)
   {
-    throw new Error("NYI");
+    var c = id2clazz(cl);
+    return c._type.declarationPos();
   }
 
 
@@ -3232,13 +3247,15 @@ public class GeneratingFUIR extends FUIR
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     // we might have an assignment to a field that was removed:
-    if (codeAt(callSite) == FUIR.ExprKind.Call &&
-        // if there is no instantiation (while cotypes are implicitly instantiated), no need to report
-        (instantiationSite != NO_SITE || id2clazz(f).feature().outer().isTypeFeature()))
+    if (codeAt(callSite) == FUIR.ExprKind.Call)
       {
         var cc = id2clazz(cl);
         var cf = id2clazz(f);
-        var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeMap<>(), sitePos(instantiationSite), context));
+        var r = _abstractMissing.computeIfAbsent(cc, ccc ->
+          new AbsMissing(ccc,
+                         new TreeMap<>(),
+                         instantiationSite == NO_SITE ? SourcePosition.notAvailable : sitePos(instantiationSite),
+                         context));
         r.called.put(cf.feature(), sitePos(callSite).show());
         if (CHECKS) check
           (cf.feature().isAbstract() ||

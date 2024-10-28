@@ -3556,18 +3556,6 @@ typeOpt     : type
   /**
    * Check if the current position starts a onetype and skip it.
    *
-   * @return true iff the next token(s) is a onetype, otherwise no onetype was
-   * found and the parser/lexer is at an undefined position.
-   */
-  boolean skipOneType()
-  {
-    return skipOneType(false, true);
-  }
-
-
-  /**
-   * Check if the current position starts a onetype and skip it.
-   *
    * @param isFunctionReturnType true if this is a function return type. In this
    * case, a function type `(a,b)->c` may not be split into a new line after
    * `->`.

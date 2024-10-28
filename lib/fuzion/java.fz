@@ -81,7 +81,7 @@ public fuzion.java is
                redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
     public length                  => array_length Array.this
-    public redef finite            => true
+    public redef finite trit    => TRUE
     public redef index [ ] (i i32) => array_get    Array.this i (sys.c_string signature)
     public redef as_list => as_list 0
 

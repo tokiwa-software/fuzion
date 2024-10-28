@@ -48,7 +48,11 @@ public Sequence(public T type) ref : property.equatable is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public finite => false
+  # TRUE  = known finite
+  # FALSE = known infinite
+  # nil   = unknown
+  #
+  public finite trit => nil
 
 
   # is this Sequence known to be array backed? If so, this means that operations
@@ -69,7 +73,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   public count
   pre
-    analysis: finite  # in practice, we do not always have this information
+    analysis: finite != trit.no  # in practice, we do not always have this information
   => (map i32 (_ -> 1)).fold i32.sum
 
 
@@ -301,7 +305,7 @@ public Sequence(public T type) ref : property.equatable is
   # if finite), you may use `as_string_all`.
   #
   public redef as_string =>
-    if finite
+    if finite = TRUE
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
@@ -634,6 +638,15 @@ public Sequence(public T type) ref : property.equatable is
     find [x]
 
 
+  # does the Sequence contain element x?
+  #
+  public contains(x T)
+    pre
+      T : property.equatable
+  =>
+    (find [x]).exists
+
+
   # get the index of pattern within this Sequence or nil if it does not exist
   #
   # uses the Knuth-Morris-Pratt algorithm
@@ -903,9 +916,18 @@ public Sequence(public T type) ref : property.equatable is
   # equality
   #
   public fixed redef type.equality(a, b Sequence T) =>
+    equality0(a1, b1 Sequence (T2 : property.equatable)) =>
+      (a1.zip b1 x,y->x=y) ∀ x->x
+
     if T : property.equatable
-      a.count = b.count
-        && ((a.zip b x,y->x=y) ∀ x->x)
+      if a.finite=trit.yes && b.finite=trit.yes
+        a.count = b.count && equality0 a b
+      else if a.finite=trit.yes
+        a.count = (b.take (a.count+1)).count && equality0 a b
+      else if b.finite=trit.yes
+        b.count = (a.take (b.count+1)).count && equality0 a b
+      else
+        equality0 a b
     else
       panic "***"
 
