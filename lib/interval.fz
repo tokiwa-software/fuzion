@@ -128,6 +128,8 @@ is
   public redef finite =>
     through.exists
 
+
+
 # has_interval -- feature for integers that can define an interval
 #
 public has_interval : integer is

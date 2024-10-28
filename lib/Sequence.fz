@@ -917,7 +917,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   public fixed redef type.equality(a, b Sequence T) =>
     equality0(a1, b1 Sequence (T2 : property.equatable)) =>
-      ((a1.zip b1 x,y->x=y) ∀ x->x)
+      (a1.zip b1 x,y->x=y) ∀ x->x
 
     if T : property.equatable
       if a.finite && b.finite
