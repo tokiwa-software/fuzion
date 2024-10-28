@@ -83,7 +83,7 @@ public u16(public val u16) : num.wrap_around, has_interval is
       cast_to_i16
   public as_i32 i32 => intrinsic
   public as_i64  => val.as_i32.as_i64
-# as_i128 => val.as_i32.as_i128
+  public as_i128 => val.as_i32.as_i128
   public redef as_u8   => low8bits
   public as_u32  => val.as_i32.as_u32
   public as_u64  => val.as_i32.as_u64
