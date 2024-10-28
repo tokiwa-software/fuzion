@@ -18,7 +18,7 @@
 module sequences is
 
   # take while cond is satisfied
-  public take_while0(T type, cond T -> bool) Parser (Sequence T) (Sequence T) (Sequence T) =>
+  public take_while0(T type, cond T -> bool) =>
     parser (Sequence T) (Sequence T) (Sequence T) input->
       rest Sequence T := input.drop_while cond
       matched Sequence T := input.take_while cond
@@ -26,7 +26,7 @@ module sequences is
 
 
   # take while cond is satisfied, at least once
-  public take_while1(T type, cond T -> bool) Parser (Sequence T) (Sequence T) (Sequence T) =>
+  public take_while1(T type, cond T -> bool) =>
     parser (Sequence T) (Sequence T) (Sequence T) input->
       matched Sequence T := input.take_while cond
       if matched.is_empty
@@ -37,7 +37,7 @@ module sequences is
 
 
   # matches input as often as possible but at least m times and at most n times.
-  public take_while_m_n(T type, m, n i32, cond (T) -> bool) Parser (Sequence T) (Sequence T) (Sequence T) =>
+  public take_while_m_n(T type, m, n i32, cond (T) -> bool) =>
     parser (Sequence T) (Sequence T) (Sequence T) input->
       if input.is_empty
         error "input is empty"

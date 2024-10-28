@@ -18,7 +18,7 @@
 module sequence is
 
   # apply p1 then p2 and return their results as a tuple.
-  public tuple2(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) Parser I I (tuple O1 O2) =>
+  public tuple2(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) =>
     parse(input I) parse_result I (tuple O1 O2) =>
       match p1.call input
         s1 success I O1 =>
@@ -31,7 +31,7 @@ module sequence is
 
 
   # apply p1 then p2 then p3 and return their results as a tuple.
-  public tuple3(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) Parser I I (tuple O1 O2 O3) =>
+  public tuple3(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) =>
     parse(input I) parse_result I (tuple O1 O2 O3) =>
       match p1.call input
         s1 success I O1 =>
@@ -51,7 +51,7 @@ module sequence is
     p2 Parser I I O2,
     p3 Parser I I O3,
     p4 Parser I I O4
-    ) Parser I I (tuple O1 O2 O3 O4) =>
+    ) =>
     parse(input I) parse_result I (tuple O1 O2 O3 O4) =>
       match p1.call input
         s1 success I O1 =>
