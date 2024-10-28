@@ -48,9 +48,9 @@ public Sequence(public T type) ref : property.equatable is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  # TRUE  = kwnon finite
-  # FALSE = kwnon infinite
-  # nil   = unkwnon
+  # TRUE  = known finite
+  # FALSE = known infinite
+  # nil   = unknown
   #
   public finite trit => nil
 
