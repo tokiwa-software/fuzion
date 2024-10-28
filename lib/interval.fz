@@ -126,7 +126,7 @@ is
   # count diverge.
   #
   public redef finite =>
-    through.exists
+    if through.exists then trit.yes else trit.no
 
 # has_interval -- feature for integers that can define an interval
 #

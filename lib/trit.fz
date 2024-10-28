@@ -28,6 +28,11 @@
 # wikipedia: "Analogous to a bit, a ternary digit is a trit (trinary digit)"
 #
 public trit : choice TRUE FALSE nil, property.equatable is
+
+  public type.yes trit     => TRUE
+  public type.no  trit     => FALSE
+  public type.unknown trit => nil
+
   public fixed redef type.equality(a,b trit) =>
     match a
       TRUE =>
