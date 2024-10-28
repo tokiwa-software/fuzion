@@ -163,7 +163,7 @@ public base32 is
 
     else
       if last_err
-        (qnt_last.filter (e -> e.is_error)).first.err
+        (qnt_last.filter (e -> e.is_error)).first.get.err
       else
         dump_size := 5 - ((40 - (pad_size * 5)) / 8)    # number of decoded bytes caused by zeroed padding
         outcome (res.take res.count-dump_size).as_array # remove zero bytes caused by padding

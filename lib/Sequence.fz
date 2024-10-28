@@ -75,31 +75,23 @@ public Sequence(public T type) ref : property.equatable is
 
   # get the first element of this Sequence
   #
-  # Sequence must not be empty, causes precondition failure if debug is enabled.
-  #
   public first
-  pre
-    debug: !is_empty
-  => as_list.head.get
+  => as_list.first
 
 
   # get the first element of this Sequence or default if sequence is empty
   #
   public first(default T)
   =>
-    if is_empty then default else first
+    if is_empty then default else first.get
 
 
   # get the last element of this Sequence
-  #
-  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite Sequence.
   #
   public last
-  pre
-    debug: !is_empty
   => as_list.last
 
 
@@ -825,7 +817,7 @@ public Sequence(public T type) ref : property.equatable is
     if is_empty
       nil
     else
-      reduce first ((r,t) -> if r ≤ t then r else t)
+      reduce first.get ((r,t) -> if r ≤ t then r else t)
 
 
   # maximum value in the sequence
@@ -836,7 +828,7 @@ public Sequence(public T type) ref : property.equatable is
     if is_empty
       nil
     else
-      reduce first ((r,t) -> if r ≤ t then t else r)
+      reduce first.get ((r,t) -> if r ≤ t then t else r)
 
 
   # the median of the sequence

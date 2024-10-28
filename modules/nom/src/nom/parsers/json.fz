@@ -105,7 +105,7 @@ public json =>
         if x.is_empty
           0.0
         else
-          (String.type.from_codepoints x.first)
+          (String.type.from_codepoints x.first.get)
             .parse_u64
             .val 0
             .as_f64 / (10.0*x.count.as_f64))
@@ -114,7 +114,7 @@ public json =>
       .map f64 (x ->
         if x.is_empty
           1.0
-        else if x.first.first = "+"
+        else if (x.first.get.first "#") = "+"
           1.0
         else
           -1.0
@@ -127,7 +127,7 @@ public json =>
         if x.is_empty
           1.0
         else
-          (sign, exp) := x.first
+          (sign, exp) := x.first.get
           10.0 ** (sign*exp))
 
     (tuple4 parser_minus parser_whole parser_fraction parser_exponent)
