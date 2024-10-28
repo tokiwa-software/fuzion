@@ -2510,6 +2510,7 @@ brblock     : BRACEL exprs BRACER
     return switch (currentAtMinIndent())
       {
       case
+        t_comma,
         t_indentationLimit,
         t_lineLimit,
         t_spaceOrSemiLimit,
@@ -3549,18 +3550,6 @@ typeOpt     : type
           }
       }
     return result;
-  }
-
-
-  /**
-   * Check if the current position starts a onetype and skip it.
-   *
-   * @return true iff the next token(s) is a onetype, otherwise no onetype was
-   * found and the parser/lexer is at an undefined position.
-   */
-  boolean skipOneType()
-  {
-    return skipOneType(false, true);
   }
 
 

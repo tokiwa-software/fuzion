@@ -514,6 +514,11 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil
 
 
+  # equality
+  #
+  public fixed redef type.equality(a, b list A) => (Sequence A).type.equality a b
+
+
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>

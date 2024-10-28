@@ -51,8 +51,6 @@ JAVA_FILES_PARSER            = $(wildcard $(SRC)/dev/flang/parser/*.java        
 JAVA_FILES_IR                = $(wildcard $(SRC)/dev/flang/ir/*.java            )
 JAVA_FILES_MIR               = $(wildcard $(SRC)/dev/flang/mir/*.java           )
 JAVA_FILES_FE                = $(wildcard $(SRC)/dev/flang/fe/*.java            )
-JAVA_FILES_AIR               = $(wildcard $(SRC)/dev/flang/air/*.java           )
-JAVA_FILES_ME                = $(wildcard $(SRC)/dev/flang/me/*.java            )
 JAVA_FILES_FUIR              = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
 JAVA_FILES_FUIR_ANALYSIS     = $(wildcard $(SRC)/dev/flang/fuir/analysis/*.java )
 JAVA_FILES_FUIR_ANALYSIS_DFA = $(wildcard $(SRC)/dev/flang/fuir/analysis/dfa/*.java )
@@ -76,8 +74,6 @@ CLASS_FILES_PARSER            = $(CLASSES_DIR)/dev/flang/parser/__marker_for_mak
 CLASS_FILES_IR                = $(CLASSES_DIR)/dev/flang/ir/__marker_for_make__
 CLASS_FILES_MIR               = $(CLASSES_DIR)/dev/flang/mir/__marker_for_make__
 CLASS_FILES_FE                = $(CLASSES_DIR)/dev/flang/fe/__marker_for_make__
-CLASS_FILES_AIR               = $(CLASSES_DIR)/dev/flang/air/__marker_for_make__
-CLASS_FILES_ME                = $(CLASSES_DIR)/dev/flang/me/__marker_for_make__
 CLASS_FILES_FUIR              = $(CLASSES_DIR)/dev/flang/fuir/__marker_for_make__
 CLASS_FILES_FUIR_ANALYSIS     = $(CLASSES_DIR)/dev/flang/fuir/analysis/__marker_for_make__
 CLASS_FILES_FUIR_ANALYSIS_DFA = $(CLASSES_DIR)/dev/flang/fuir/analysis/dfa/__marker_for_make__
@@ -493,17 +489,7 @@ $(CLASS_FILES_FE): $(JAVA_FILES_FE) $(CLASS_FILES_PARSER) $(CLASS_FILES_AST) $(C
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FE)
 	touch $@
 
-$(CLASS_FILES_AIR): $(JAVA_FILES_AIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
-	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_AIR)
-	touch $@
-
-$(CLASS_FILES_ME): $(JAVA_FILES_ME) $(CLASS_FILES_MIR) $(CLASS_FILES_AIR)
-	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_ME)
-	touch $@
-
-$(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
+$(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR) $(CLASS_FILES_FE)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
@@ -523,12 +509,12 @@ $(CLASS_FILES_FUIR_CFG): $(JAVA_FILES_FUIR_CFG) $(CLASS_FILES_UTIL) $(CLASS_FILE
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_CFG)
 	touch $@
 
-$(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
+$(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_FE) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
 	touch $@
 
-$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
+$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
@@ -558,7 +544,7 @@ $(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
@@ -1297,8 +1283,6 @@ lint/java:
 		$(JAVA_FILES_IR) \
 		$(JAVA_FILES_MIR) \
 		$(JAVA_FILES_FE) \
-		$(JAVA_FILES_AIR) \
-		$(JAVA_FILES_ME) \
 		$(JAVA_FILES_FUIR) \
 		$(JAVA_FILES_FUIR_ANALYSIS) \
 		$(JAVA_FILES_FUIR_ANALYSIS_DFA) \
@@ -1324,8 +1308,6 @@ lint/javadoc:
 		$(JAVA_FILES_IR) \
 		$(JAVA_FILES_MIR) \
 		$(JAVA_FILES_FE) \
-		$(JAVA_FILES_AIR) \
-		$(JAVA_FILES_ME) \
 		$(JAVA_FILES_FUIR) \
 		$(JAVA_FILES_FUIR_ANALYSIS) \
 		$(JAVA_FILES_FUIR_ANALYSIS_DFA) \

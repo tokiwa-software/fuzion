@@ -443,8 +443,6 @@ fileno
 FileNotFoundException
 findAllClasses
 findChainedBooleans
-findClasses
-findClazzes
 findClosingBracket
 findConstantType
 findDeclarations
@@ -804,7 +802,6 @@ MapComparable
 mapOfDeclaredFeatures
 MapToN
 mapToObj
-markUsed
 maxErrorCount
 maxlength
 maxRow

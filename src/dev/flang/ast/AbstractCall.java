@@ -201,9 +201,10 @@ public abstract class AbstractCall extends Expr
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
+        var git = cpc._generics.iterator();
         for (var atp : cpc.calledFeature().typeArguments())
           {
-            typeParameters.add(Types.t_UNDEFINED);
+            typeParameters.add(git.hasNext() ? git.next() : Types.t_UNDEFINED);
           }
         cpc.whenInferredTypeParameters(() ->
           {

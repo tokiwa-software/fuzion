@@ -406,7 +406,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && !frmlT.isVoid() && frmlT.asRef().isAssignableFrom(actlT, context))
+        if (remedy == null && frmlT.asRef().isAssignableFrom(actlT, context))
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
@@ -2268,6 +2268,13 @@ public class AstErrors extends ANY
     error(call.pos(),
       "Open type parameters must not be called.",
       "" /* NYI: UNDER DEVELOPMENT: can we give some useful suggestion here? */);
+  }
+
+  public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
+  {
+    error(f.pos(), "The outer feature of a type feature must define a type, i.e. constructors and choices.",
+      "To solve this, move the declared type feature to a feature that defines a type."
+    );
   }
 
 

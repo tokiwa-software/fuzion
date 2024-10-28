@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue2307.fz:26:5: error 1: Constraint for type parameter must not be a choice type
+  a(T type: void, a T) is
+----^
+Affected type parameter: 'reg_issue2307.a.T'
+constraint: 'void'
+
+one error.

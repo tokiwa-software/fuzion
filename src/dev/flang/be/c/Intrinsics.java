@@ -1236,7 +1236,7 @@ public class Intrinsics extends ANY
               var tmp = new CIdent("tmp");
               var rc = c._fuir.clazzResultClazz(cl);
               return CStmnt.seq(CStmnt.decl("const char *", tmp),
-                         tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(c.javaRefField(A0).castTo("jstring")))),
+                         tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(A0.castTo("jstring")))),
                          c.heapClone(c.constString(tmp, CExpr.call("strlen",new List<>(tmp))), c._fuir.clazz_Const_String())
                           .castTo(c._types.clazz(rc))
                           .ret());
@@ -1586,12 +1586,15 @@ public class Intrinsics extends ANY
         for (var i = 0; i < c._fuir.clazzNumFields(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);
-            var rti = c._fuir.clazzResultClazz(fi);
-            var f1 = value1.field(c._names.fieldName(fi));
-            var f2 = value2.field(c._names.fieldName(fi));
-            result = CStmnt.seq(result,
-                                CStmnt.iff(tmp,
-                                           compareValues(c, f1, f2, rti, tmp)));
+            if (c._types.fieldExists(fi))
+              {
+                var rti = c._fuir.clazzResultClazz(fi);
+                var f1 = value1.field(c._names.fieldName(fi));
+                var f2 = value2.field(c._names.fieldName(fi));
+                result = CStmnt.seq(result,
+                                    CStmnt.iff(tmp,
+                                               compareValues(c, f1, f2, rti, tmp)));
+              }
           }
       }
     return result;
