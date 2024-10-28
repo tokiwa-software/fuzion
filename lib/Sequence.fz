@@ -48,7 +48,11 @@ public Sequence(public T type) ref : property.equatable is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public finite => false
+  # TRUE  = kwnon finite
+  # FALSE = kwnon infinite
+  # nil   = unkwnon
+  #
+  public finite trit => nil
 
 
   # is this Sequence known to be array backed? If so, this means that operations
@@ -69,7 +73,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   public count
   pre
-    analysis: finite  # in practice, we do not always have this information
+    analysis: finite = FALSE  # in practice, we do not always have this information
   => (map i32 (_ -> 1)).fold i32.sum
 
 
@@ -301,7 +305,7 @@ public Sequence(public T type) ref : property.equatable is
   # if finite), you may use `as_string_all`.
   #
   public redef as_string =>
-    if finite
+    if finite = TRUE
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS

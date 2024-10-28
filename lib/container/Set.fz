@@ -31,7 +31,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite => size_option??
+  public redef finite trit => if size_option?? then TRUE else FALSE # NYI: UNDER DEVELOPMENT: could be just size_option?? #4019
 
 
   # number of entries in this set.  May be undefined, i.e., a range of

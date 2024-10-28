@@ -218,7 +218,7 @@ is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  redef finite => true
+  redef finite trit => TRUE
 
   redef as_string => "list_node({from.as_string ", "})"
 
