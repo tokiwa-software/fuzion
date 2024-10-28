@@ -2082,6 +2082,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * Does this type contain a generic argument?
+   *
+   * @return
+   */
+  public boolean containsGenericArgument()
+  {
+    return isGenericArgument()
+    || !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsGenericArgument()) ||
+        outer() != null && outer().containsGenericArgument());
+  }
+
+
 }
 
 /* end of file */

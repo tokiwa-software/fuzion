@@ -609,7 +609,7 @@ public class Feature extends AbstractFeature
                  String n,
                  Contract c)
   {
-    this(pos, v, m, t, n, c, Impl.FIELD);
+    this(pos, v, m, t, n, c, t == null ? Impl.FIELD_DEF : Impl.FIELD);
   }
 
 
@@ -978,7 +978,7 @@ public class Feature extends AbstractFeature
       {
         var t = _impl._kind == Impl.Kind.Routine
           ? _returnType.functionReturnType()
-          : Types.t_UNDEFINED /* dummy type, will be replaced during TYPES_INFERENCING phase */;
+          : null; // will be FIELD_DEF instead of FIELD
 
         if (CHECKS) check
           (_resultField == null);
@@ -2183,7 +2183,16 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, urgent);
+        var t = resultTypeFromRedefined(res);
+        // NYI: UNDER DEVELOPMENT: handle types that contain generic arguments / this types.
+        if (t == null || t.containsGenericArgument() || t.containsThisType())
+          {
+            result = _impl.inferredType(res, this, urgent);
+          }
+        else
+          {
+            result = selfType().actualType(t, context());
+          }
       }
     else if (_returnType.isConstructorType())
       {
@@ -2210,6 +2219,39 @@ A ((Choice)) declaration must not contain a result type.
       (isTypeFeaturesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
 
     return result;
+  }
+
+
+  /**
+   * get the result type from a feature being redefined
+   *
+   * @param res the resolution instance
+   * @return
+   */
+  private AbstractType resultTypeFromRedefined(Resolution res)
+  {
+    AbstractType t = null;
+    var it = redefines().iterator();
+    while(t == null && it.hasNext())
+      {
+        var redefined = it.next();
+        if (!(_returnType instanceof FunctionReturnType)
+            && !redefines().isEmpty()
+            && redefined instanceof Feature f
+            && f.returnType() instanceof FunctionReturnType)
+          {
+            t = f.returnType().functionReturnType();
+          }
+        else if (!redefines().isEmpty())
+          {
+            if (res != null)
+              {
+                res.resolveTypes(redefined);
+              }
+            t = redefined.resultTypeIfPresent(res);
+          }
+      }
+    return t;
   }
 
 
