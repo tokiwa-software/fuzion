@@ -52,7 +52,7 @@ module:public array(
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite => true
+  public redef finite trit => TRUE
 
 
   # is this Sequence known to be array backed? If so, this means that operations
@@ -168,7 +168,7 @@ module:public array(
       # is this sequence known to be finite?  For infinite sequences, features like
       # count diverge.
       #
-      public redef finite => true
+      public redef finite trit => TRUE
 
 
       # is this Sequence known to be array backed? If so, this means that operations
