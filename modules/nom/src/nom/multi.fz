@@ -18,7 +18,7 @@
 module multi is
 
   # apply parser multiple times, return results as sequence
-  public many0 (I, O type, p Parser I I O) Parser I I (Sequence O) =>
+  public many0 (I, O type, p Parser I I O) =>
     parse(input I) parse_result I (Sequence O) =>
       match p.call input
         s1 success I O =>
@@ -31,7 +31,7 @@ module multi is
 
 
   # apply parser at least once, return results as sequence
-  public many1 (I, O type, p Parser I I O) Parser I I (Sequence O) =>
+  public many1 (I, O type, p Parser I I O) =>
     parser I I (Sequence O) input->
       match p.call input
         s1 success I O => (many0 p).call input
@@ -39,7 +39,7 @@ module multi is
 
 
   # apply parser between m and n times, return results as sequence
-  public many_m_n (I, O type, m, n i32, p Parser I I O) Parser I I (Sequence O)
+  public many_m_n (I, O type, m, n i32, p Parser I I O)
   pre m<=n
       n>0
   =>
@@ -60,7 +60,7 @@ module multi is
 
 
   # parse a separated list of values, zero or more values
-  public separated_list0(I, O, D type, p_sep Parser I I D, p_value Parser I I O) Parser I I (Sequence O) =>
+  public separated_list0(I, O, D type, p_sep Parser I I D, p_value Parser I I O) =>
     parse(input I) parse_result I (Sequence O) =>
       match p_value.call input
         s1 success =>
@@ -73,7 +73,7 @@ module multi is
 
 
   # parse a separated list of values, one or more values
-  public separated_list1(I, O, D type, p_sep Parser I I D, p_value () -> (Parser I I O)) Parser I I (Sequence O) =>
+  public separated_list1(I, O, D type, p_sep Parser I I D, p_value () -> (Parser I I O)) =>
     parse(input I) parse_result I (Sequence O) =>
       match p_value().call input
         s1 success =>

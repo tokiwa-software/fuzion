@@ -26,7 +26,7 @@
 
 # json supports the following types: strings, numbers, booleans, null, arrays and objects
 public json_value : choice String f64 bool nil (Sequence json_value) (container.Map String json_value) is
-  redef as_string String =>
+  redef as_string =>
     match json_value.this
       s String => "\"$s\""
       f f64 => $f
@@ -44,18 +44,18 @@ public json =>
   parser_string =>
 
     # is this codepoint a valid hex digit: a-f or A-F
-    is_hex_digit(c codepoint) bool =>
+    is_hex_digit(c codepoint) =>
       codepoint.type.ascii_digit.contains c.val
         || (u32 0x41 .. 0x46).contains c.val
 
     parser_hex_unicode =>
-      preceded (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (tag "\\") (take_while_m_n codepoint 4 4 (c -> is_hex_digit c))
+      preceded (tag "\\") (take_while_m_n codepoint 4 4 (c -> is_hex_digit c))
         .map (Sequence codepoint) d->
           (c,_) := d.reduce (u32 0, u32 4) (r, c -> (val, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
           [(codepoint c)]
 
-    parse_and_map(t, r String) Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
-      (tag t).map (Sequence codepoint) (_ -> r.as_codepoints)
+    parse_and_map(t, r String) =>
+      (tag t).map (Sequence codepoint) _->r.as_codepoints
 
     parser_escapings :=
       alt [
@@ -70,11 +70,11 @@ public json =>
         parser_hex_unicode
         ]
 
-    parser_regular_codepoint Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) :=
+    parser_regular_codepoint :=
       (take_while1 codepoint (c-> (c != "\"") & (c != "\\")))
 
 
-    p Parser (Sequence codepoint) (Sequence codepoint) (Sequence (Sequence codepoint)) :=
+    p :=
       many0 (alt [parser_regular_codepoint, parser_escapings])
 
     delimited (tag "\"") p (tag "\"")
@@ -153,26 +153,26 @@ public json =>
 
   # parser for json array
   parser_array =>
-    parser_no_values Parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
+    parser_no_values :=
       whitespace0.map (Sequence json_value) (x -> (list json_value).type.empty)
 
-    parser_comma_sep_value Parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
+    parser_comma_sep_value :=
       separated_list1 (Sequence codepoint) json_value (Sequence codepoint) (tag ",") ()->parser_json_value_delimited
 
-    tmp Parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=  delimited (tag "[") (alt [parser_comma_sep_value, parser_no_values]) (tag "]")
+    tmp :=  delimited (tag "[") (alt [parser_comma_sep_value, parser_no_values]) (tag "]")
     tmp.map json_value id
 
 
   # parser for json object
   parser_object =>
-    parser_key_value Parser (Sequence codepoint) (Sequence codepoint) (tuple String json_value) =>
+    parser_key_value =>
       separated_pair (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) String (Sequence codepoint) json_value (delimited whitespace0 parser_string whitespace0) (tag ":") ()->parser_json_value_delimited
 
-    parser_no_key_values Parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) =>
+    parser_no_key_values =>
       whitespace0.map (Sequence (tuple String json_value)) (x -> (list (tuple String json_value)).type.empty)
 
-    parser_key_values Parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple String json_value)) =>
-      separated_list1 (Sequence codepoint) (tuple String json_value) (Sequence codepoint) (tag ",") ()->parser_key_value
+    parser_key_values =>
+      separated_list1 (tag ",") ()->parser_key_value
 
     delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
       .map json_value (x -> container.map_of x.as_array)
@@ -180,7 +180,7 @@ public json =>
 
   # parser for a json_value: true, false, [], {}, numbers, strings etc.
   parser_json_value =>
-    alt (Sequence codepoint) (Sequence codepoint) json_value [
+    alt [
       parser_string.map json_value id,
       parser_number,
       parser_object,
@@ -191,8 +191,8 @@ public json =>
 
 
   # parser for json_value which may be surrounded by whitespace
-  parser_json_value_delimited Parser (Sequence codepoint) (Sequence codepoint) json_value =>
-    delimited (Sequence codepoint) (Sequence codepoint) json_value (Sequence codepoint) whitespace0 parser_json_value whitespace0
+  parser_json_value_delimited =>
+    delimited whitespace0 parser_json_value whitespace0
 
 
   # map parser to take string input instead of Sequence of codepoints
