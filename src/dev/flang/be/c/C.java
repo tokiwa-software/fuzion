@@ -2114,8 +2114,8 @@ public class C extends ANY
       case c_unit :
         return expr;
       case c_Const_String :
-      case c_FALSE :
-      case c_TRUE :
+      case c_false_ :
+      case c_true_ :
       case c_sys_ptr :
       case c_u32 :
       case c_u64 :
@@ -2174,8 +2174,8 @@ public class C extends ANY
       case c_unit :
         return val;
       case c_Const_String :
-      case c_FALSE :
-      case c_TRUE :
+      case c_false_ :
+      case c_true_ :
       case c_sys_ptr :
       case c_u32 :
       case c_u64 :

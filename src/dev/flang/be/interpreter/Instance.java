@@ -303,13 +303,13 @@ public class Instance extends ValueWithClazz
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_TRUE) ||
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_FALSE) ||
+      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_true_) ||
+       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_false_) ||
        _clazz == fuir().clazz(FUIR.SpecialClazzes.c_bool));
 
     return
-      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_TRUE)  ? true  :
-      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_FALSE) ? false
+      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_true_)  ? true  :
+      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_false_) ? false
                                                : nonrefs[0] == 1;
   }
 

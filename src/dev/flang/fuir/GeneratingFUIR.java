@@ -314,8 +314,8 @@ public class GeneratingFUIR extends FUIR
               case "unit"              -> SpecialClazzes.c_unit        ;
               case "void"              -> SpecialClazzes.c_void        ;
               case "bool"              -> SpecialClazzes.c_bool        ;
-              case "TRUE"              -> SpecialClazzes.c_TRUE        ;
-              case "FALSE"             -> SpecialClazzes.c_FALSE       ;
+              case "true_"             -> SpecialClazzes.c_true_       ;
+              case "false_"            -> SpecialClazzes.c_false_      ;
               case "Const_String"      -> SpecialClazzes.c_Const_String;
               case "String"            -> SpecialClazzes.c_String      ;
               case "error"             -> SpecialClazzes.c_error       ;
