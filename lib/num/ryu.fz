@@ -68,7 +68,7 @@ public ryū(public T type : float) is
   # convert float to string
   public as_string(val T, scientific_notation bool, rounding_mode rounding_mode) String =>
     # trivial cases first
-    if (T.is_NaN val) then "NaN"
+    if val.is_NaN then "NaN"
     else if (val = T.positive_infinity) then "Infinity"
     else if (val = T.negative_infinity) then "-Infinity"
     else if (val = T.zero)
@@ -109,7 +109,7 @@ public ryū(public T type : float) is
     pre debug: (e >= 0)
         debug: (e <= 3528)
     post
-      debug: result = (T.log T.two (five ** T.from_i64 e)).as_i64
+      debug: result = ((five ** T.from_i64 e).log T.two).as_i64
     =>
       (e * 1217359) >> 19
 
@@ -120,7 +120,7 @@ public ryū(public T type : float) is
     pre debug: (e >= 0)
         debug: (e <= 1650)
     post
-      debug: result = (T.log T.ten (T.two ** T.from_i64 e)).floor.as_i64
+      debug: result = ((T.two ** T.from_i64 e).log T.ten).floor.as_i64
     =>
       e*78913 >> 18
 
@@ -131,8 +131,8 @@ public ryū(public T type : float) is
     pre debug: (e >= 0)
         debug: (e <= 2620)
     post
-      ( T.log T.ten (five ** T.from_i64 e) = T.infinity
-        || result = (T.log T.ten (five ** T.from_i64 e)).floor.as_i64)
+      ( (five ** T.from_i64 e).log T.ten = T.infinity
+        || result = ((five ** T.from_i64 e).log T.ten).floor.as_i64)
     =>
       e*732923 >> 20
 

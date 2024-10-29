@@ -243,42 +243,42 @@ public class Intrinsics extends ANY
   public static long    f64_as_i64_lax              (double a          ) { return (long)          (      a); }
   public static float   f64_as_f32                  (double a          ) { return (float)         (      a); }
   public static long    f64_cast_to_u64             (double a          ) { return Double.doubleToLongBits(a); }
-  public static boolean f32_type_is_NaN             (float  a          ) { return Float.isNaN       (         a); }
-  public static boolean f64_type_is_NaN             (double a          ) { return Double.isNaN      (         a); }
-  public static float   f32_type_acos               (float  a          ) { return (float) Math.acos (         a); }
-  public static float   f32_type_asin               (float  a          ) { return (float) Math.asin (         a); }
-  public static float   f32_type_atan               (float  a          ) { return (float) Math.atan (         a); }
-  public static float   f32_type_cos                (float  a          ) { return (float) Math.cos  (         a); }
-  public static float   f32_type_cosh               (float  a          ) { return (float) Math.cosh (         a); }
+  public static boolean f32_is_NaN                  (float  a          ) { return Float.isNaN       (         a); }
+  public static boolean f64_is_NaN                  (double a          ) { return Double.isNaN      (         a); }
+  public static float   f32_square_root             (float  a          ) { return (float) Math.sqrt ((double) a); }
+  public static float   f32_log                     (float  a          ) { return (float) Math.log  (         a); }
+  public static float   f32_exp                     (float  a          ) { return (float) Math.exp  (         a); }
+  public static float   f32_acos                    (float  a          ) { return (float) Math.acos (         a); }
+  public static float   f32_asin                    (float  a          ) { return (float) Math.asin (         a); }
+  public static float   f32_atan                    (float  a          ) { return (float) Math.atan (         a); }
+  public static float   f32_cos                     (float  a          ) { return (float) Math.cos  (         a); }
+  public static float   f32_cosh                    (float  a          ) { return (float) Math.cosh (         a); }
+  public static float   f32_sin                     (float  a          ) { return (float) Math.sin  (         a); }
+  public static float   f32_sinh                    (float  a          ) { return (float) Math.sinh (         a); }
+  public static float   f32_tan                     (float  a          ) { return (float) Math.tan  (         a); }
+  public static float   f32_tanh                    (float  a          ) { return (float) Math.tanh (         a); }
+  public static double  f64_square_root             (double a          ) { return         Math.sqrt (         a); }
+  public static double  f64_log                     (double a          ) { return         Math.log  (         a); }
+  public static double  f64_exp                     (double a          ) { return         Math.exp  (         a); }
+  public static double  f64_acos                    (double a          ) { return         Math.acos (         a); }
+  public static double  f64_asin                    (double a          ) { return         Math.asin (         a); }
+  public static double  f64_atan                    (double a          ) { return         Math.atan (         a); }
+  public static double  f64_cos                     (double a          ) { return         Math.cos  (         a); }
+  public static double  f64_cosh                    (double a          ) { return         Math.cosh (         a); }
+  public static double  f64_sin                     (double a          ) { return         Math.sin  (         a); }
+  public static double  f64_sinh                    (double a          ) { return         Math.sinh (         a); }
+  public static double  f64_tan                     (double a          ) { return         Math.tan  (         a); }
+  public static double  f64_tanh                    (double a          ) { return         Math.tanh (         a); }
   public static float   f32_type_epsilon            (                  ) { return (float) Math.ulp  ((float)  1); }
-  public static float   f32_type_exp                (float  a          ) { return (float) Math.exp  (         a); }
-  public static float   f32_type_log                (float  a          ) { return (float) Math.log  (         a); }
   public static float   f32_type_max                (                  ) { return Float.MAX_VALUE;                }
   public static int     f32_type_max_exp            (                  ) { return Float.MAX_EXPONENT;             }
   public static float   f32_type_min_positive       (                  ) { return Float.MIN_NORMAL;               }
   public static int     f32_type_min_exp            (                  ) { return Float.MIN_EXPONENT;             }
-  public static float   f32_type_sin                (float  a          ) { return (float) Math.sin  (         a); }
-  public static float   f32_type_sinh               (float  a          ) { return (float) Math.sinh (         a); }
-  public static float   f32_type_square_root        (float  a          ) { return (float) Math.sqrt ((double) a); }
-  public static float   f32_type_tan                (float  a          ) { return (float) Math.tan  (         a); }
-  public static float   f32_type_tanh               (float  a          ) { return (float) Math.tanh (         a); }
-  public static double  f64_type_acos               (double a          ) { return         Math.acos (         a); }
-  public static double  f64_type_asin               (double a          ) { return         Math.asin (         a); }
-  public static double  f64_type_atan               (double a          ) { return         Math.atan (         a); }
-  public static double  f64_type_cos                (double a          ) { return         Math.cos  (         a); }
-  public static double  f64_type_cosh               (double a          ) { return         Math.cosh (         a); }
   public static double  f64_type_epsilon            (                  ) { return         Math.ulp  ((double) 1); }
-  public static double  f64_type_exp                (double a          ) { return         Math.exp  (         a); }
-  public static double  f64_type_log                (double a          ) { return         Math.log  (         a); }
   public static double  f64_type_max                (                  ) { return Double.MAX_VALUE;               }
   public static int     f64_type_max_exp            (                  ) { return Double.MAX_EXPONENT;            }
   public static double  f64_type_min_positive       (                  ) { return Double.MIN_NORMAL;              }
   public static int     f64_type_min_exp            (                  ) { return Double.MIN_EXPONENT;            }
-  public static double  f64_type_sin                (double a          ) { return         Math.sin  (         a); }
-  public static double  f64_type_sinh               (double a          ) { return         Math.sinh (         a); }
-  public static double  f64_type_square_root        (double a          ) { return         Math.sqrt (         a); }
-  public static double  f64_type_tan                (double a          ) { return         Math.tan  (         a); }
-  public static double  f64_type_tanh               (double a          ) { return         Math.tanh (         a); }
 
   public static void fuzion_std_exit (int code)
   {
