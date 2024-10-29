@@ -2104,6 +2104,8 @@ public class GeneratingFUIR extends FUIR
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
     if (res == null)
       {
+        if (CHECKS) check
+          (!_lookupDone);
         var cl = clazzAt(s);
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
@@ -2225,6 +2227,8 @@ public class GeneratingFUIR extends FUIR
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
     if (res == null)
       {
+        if (CHECKS) check
+          (!_lookupDone);
         var cl = clazzAt(s);
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
@@ -2351,6 +2355,8 @@ public class GeneratingFUIR extends FUIR
     var res = _siteClazzCache.get(s);
     if (res == null)
       {
+        if (CHECKS) check
+          (!_lookupDone);
         res = accessedClazz(s, null);
         if (res == null)
           {
@@ -2502,6 +2508,9 @@ public class GeneratingFUIR extends FUIR
 
   private void addToAccessedClazzes(int s, int tclazz, int innerClazz)
   {
+    if (PRECONDITIONS) require
+      (!_lookupDone);
+
     var a = _accessedClazzes.get(s);
     if (a == null)
       {
@@ -2811,8 +2820,7 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  /* NYI: WORKAROUND: sychronized, fixes test atomic on windows/interpreter */
-  public synchronized int matchStaticSubject(int s)
+  public int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2823,6 +2831,8 @@ public class GeneratingFUIR extends FUIR
     var rc = (Clazz) _siteClazzCache.get(s);
     if (rc == null)
       {
+        if (CHECKS) check
+          (!_lookupDone);
         var cl = clazzAt(s);
         var cc = id2clazz(cl);
         var outerClazz = cc;
