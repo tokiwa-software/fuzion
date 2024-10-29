@@ -79,16 +79,17 @@ public Set(public E type : property.equatable) ref : Sequence E is
     Set.this.intersection other
 
 
-  # this Set except all elements in other
+  # this Set without all elements in other
   #
-  public except(other container.Set E) Set E =>
+  public difference(other container.Set E) Set E =>
     Set.this.new filter(el -> !other.contains el)
 
 
-  # infix variant for Set.except
+  # infix variant for Set.difference
+  # Note: the operator is NOT a backslash, but the unicode character U+2216 (SET MINUS)
   #
   public infix ∖ (other container.Set E) =>
-    Set.this.except other
+    Set.this.difference other
 
 
 

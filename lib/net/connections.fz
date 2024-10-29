@@ -36,7 +36,7 @@ module:public connections(public active container.Set net.connection) : effect i
   #
   public close(c net.connection) =>
     _ := (fuzion.sys.net.close c.desc) # NYI: handle errors
-    connections (active.except (container.set_of_ordered [c]))
+    connections (active.difference (container.set_of_ordered [c]))
       .replace
 
 

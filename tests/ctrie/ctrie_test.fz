@@ -48,8 +48,8 @@ ctrie_test is
   for k in readded do
     ctrie.add k "v$k"
 
-  no  := removed.except readded
-  yes := (all.except removed) ∪ readded
+  no  := removed.difference readded
+  yes := (all.difference removed) ∪ readded
 
   say (no  ∀ (k -> ctrie[k].is_nil))
 
