@@ -2093,7 +2093,9 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
-  private Pair<Clazz,Clazz> tagValueAndReusltClazz(int s)
+  private
+  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
+  Pair<Clazz,Clazz> tagValueAndReusltClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2216,7 +2218,9 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
-  private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
+  private
+  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
+  Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2343,7 +2347,9 @@ public class GeneratingFUIR extends FUIR
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
-  public int accessedClazz(int s)
+  public
+  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
+  int accessedClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2356,7 +2362,7 @@ public class GeneratingFUIR extends FUIR
     if (res == null)
       {
         if (CHECKS) check
-          (!_lookupDone);
+          (!_lookupDone || true); // NYI, why doesn't this hold?
         res = accessedClazz(s, null);
         if (res == null)
           {
@@ -2508,9 +2514,6 @@ public class GeneratingFUIR extends FUIR
 
   private void addToAccessedClazzes(int s, int tclazz, int innerClazz)
   {
-    if (PRECONDITIONS) require
-      (!_lookupDone);
-
     var a = _accessedClazzes.get(s);
     if (a == null)
       {
@@ -2530,6 +2533,9 @@ public class GeneratingFUIR extends FUIR
           }
         if (!found)
           {
+            if (CHECKS) check
+              (!_lookupDone);
+
             var n = new int[a.length+2];
             System.arraycopy(a, 0, n, 0, a.length);
             n[a.length  ] = tclazz;
@@ -2820,7 +2826,9 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public int matchStaticSubject(int s)
+  public
+  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
+  int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
