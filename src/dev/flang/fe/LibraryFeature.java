@@ -240,7 +240,7 @@ public class LibraryFeature extends AbstractFeature
   @Override
   public boolean isUniverse()
   {
-    return this == _libModule.libraryUniverse();
+    return this == _libModule.universe();
   }
 
 

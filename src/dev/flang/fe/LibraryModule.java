@@ -153,9 +153,15 @@ public class LibraryModule extends Module implements MirModule
 
 
   /**
-   * The universe
+   * The universe, as passed to the constructor, unless null was passed to the
+   * constructor, then it is the one defined by this module.
    */
   private final AbstractFeature _universe;
+
+  /**
+   * The universe, as defined in this module
+   */
+  private final LibraryFeature _libraryUniverse;
 
 
   /**
@@ -189,7 +195,8 @@ public class LibraryModule extends Module implements MirModule
     var p = moduleRefsPos();
     int moduleOffset = _data.limit();
 
-    this._universe = universe == null ? libraryUniverse() : universe;
+    _libraryUniverse = (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
+    _universe = universe == null ? _libraryUniverse : universe;
     if (CHECKS) check
       (_universe.isUniverse());
 
@@ -262,7 +269,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * The universe
    */
-  private AbstractFeature universe()
+  public AbstractFeature universe()
   {
     return _universe;
   }
@@ -401,7 +408,7 @@ public class LibraryModule extends Module implements MirModule
   {
     if (outer.isUniverse())
       {
-        return libraryUniverse()
+        return _libraryUniverse
           .innerFeatures();
       }
     else
@@ -418,15 +425,6 @@ public class LibraryModule extends Module implements MirModule
           }
         return new List<>();
       }
-  }
-
-
-  /**
-   * get the universe as persisted in this fum-file
-   */
-  public LibraryFeature libraryUniverse()
-  {
-    return (LibraryFeature)innerFeatures(declFeaturesInnerPos(moduleDeclFeaturesPos())).get(0);
   }
 
 
