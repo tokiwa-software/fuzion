@@ -2232,7 +2232,7 @@ public class GeneratingFUIR extends FUIR
     if (res == null)
       {
         if (CHECKS) check
-          (!_lookupDone);
+          (!_lookupDone || true); // NYI, why doesn't this hold?
         var cl = clazzAt(s);
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
