@@ -865,7 +865,7 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : float
   =>
-    variance.map (x -> T.sqrt x)
+    variance.map x->x.sqrt
 
 
   # the euclidean norm of this sequence
@@ -875,7 +875,7 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : float
   =>
-    T.sqrt ((map x->x**T.two).fold T.sum)
+    ((map x->x**T.two).fold T.sum).sqrt
 
 
   # monoid of Sequences with infix concatentation operation.
