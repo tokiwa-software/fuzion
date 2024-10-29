@@ -184,7 +184,7 @@ public class FuzionConstants extends ANY
    * names with this prefix will be removed from .fum files which results in
    * this not being found in redefinitions.
    */
-  public static final String TYPE_FEATURE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
+  public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
 
 
   /**
@@ -334,7 +334,7 @@ public class FuzionConstants extends ANY
   /**
    * Flag OR'ed to kind, true if feature for type 'f.type' was added.
    */
-  public static final int MIR_FILE_KIND_HAS_TYPE_FEATURE = 0x10;
+  public static final int MIR_FILE_KIND_HAS_COTYPE = 0x10;
 
 
   /**

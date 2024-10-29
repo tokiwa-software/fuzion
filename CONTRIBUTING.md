@@ -175,7 +175,7 @@ The available categories are
 
 Here is an example for a work-in-progress marker:
 
-    if (!f.typeParameter().isTypeFeaturesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+    if (!f.typeParameter().isCotypesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
 
 ### Commit Messages
 

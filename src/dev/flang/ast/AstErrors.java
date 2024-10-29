@@ -666,7 +666,7 @@ public class AstErrors extends ANY
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
                                                         AbstractFeature redefinedFeature, AbstractFeature redefinedArg, boolean suggestAddingFixed)
   {
-    if (!any() || !redefinedFeature.isTypeFeature() // type features generated from broken original features may cause subsequent errors
+    if (!any() || !redefinedFeature.isCotype() // cotypes generated from broken original features may cause subsequent errors
         )
       {
         error(redefinedArg.pos(),
@@ -687,7 +687,7 @@ public class AstErrors extends ANY
   {
     if (!any() || (originalType                  != Types.t_ERROR &&
                    redefinedFeature.resultType() != Types.t_ERROR &&
-                   !redefinedFeature.isTypeFeature() // type features generated from broken original features may cause subsequent errors
+                   !redefinedFeature.isCotype() // cotypes generated from broken original features may cause subsequent errors
                    )
         )
       {
@@ -970,14 +970,14 @@ public class AstErrors extends ANY
         var aa = a_declared_first ? a : b;
         var bb = a_declared_first ? b : a;
 
-        var of = aa.isTypeFeature() ? aa.typeFeatureOrigin() : aa;
+        var of = aa.isCotype() ? aa.cotypeOrigin() : aa;
         error(bb.pos(),
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + aa.pos().show() + "\n" +
               "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseNameHuman() + "ʼ") +
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
-              (aa.isTypeFeature()
+              (aa.isCotype()
                ? ("or changing it into a routine by returning a " +
                   sbn("unit") + " result, i.e., adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
                   " instead of "+ code("is") + ".")
@@ -1026,9 +1026,9 @@ public class AstErrors extends ANY
 
   public static void cannotRedefine(AbstractFeature f, AbstractFeature existing)
   {
-    if (any() && f.isTypeFeature() || existing.isTypeFeature())
+    if (any() && f.isCotype() || existing.isCotype())
       {
-        // suppress subsequent errors in auto-generated type features
+        // suppress subsequent errors in auto-generated cotypes
       }
     else if (existing.isChoice())
       {

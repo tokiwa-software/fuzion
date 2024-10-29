@@ -585,7 +585,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisType(AbstractType t)
   {
-    t = replaceThisTypeForTypeFeature(t);
+    t = replaceThisTypeForCotype(t);
     if (t.isThisType())
       {
         t = findOuter(t.feature())._type;
@@ -612,16 +612,16 @@ class Clazz extends ANY implements Comparable<Clazz>
    * the second type parameter for `B` has to get it's `this.type` types
    * replaced by the actual types given in the first type parameter
    */
-  AbstractType replaceThisTypeForTypeFeature(AbstractType t)
+  AbstractType replaceThisTypeForCotype(AbstractType t)
   {
-    if (feature().isTypeFeature())
+    if (feature().isCotype())
       {
         t = _type.generics().get(0).actualType(t, Context.NONE);
         var g = t.cotypeActualGenerics();
         var o = t.outer();
         if (o != null)
           {
-            o = replaceThisTypeForTypeFeature(o);
+            o = replaceThisTypeForCotype(o);
           }
         t = ResolvedNormalType.create(t, g, g, o, true);
       }
@@ -1208,10 +1208,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         var o = _outer;
         String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.asString(humanReadable)) + "." : "";
         var f = feature();
-        var typeType = f.isTypeFeature();
+        var typeType = f.isCotype();
         if (typeType)
           {
-            f = (LibraryFeature) f.typeFeatureOrigin();
+            f = (LibraryFeature) f.cotypeOrigin();
           }
         var fn = f.featureName();
         // for a feature that does not define a type itself, the name is not
@@ -1706,7 +1706,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             var ft = f.resultType();
             result = handDown(ft, _select, new List<>());
-            if (result.feature().isTypeFeature())
+            if (result.feature().isCotype())
               {
                 var ac = handDown(result._type.generics().get(0), new List<>());
                 result = ac.typeClazz();
@@ -1724,7 +1724,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   public String typeName()
   {
     if (PRECONDITIONS) require
-      (feature().isTypeFeature());
+      (feature().isCotype());
 
     return _type.generics().get(0).asString(true);
   }
@@ -1979,7 +1979,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
               here, stop at (io.#type io).out.#type vs. io:
             */
-           !(oc.feature().isTypeFeature() && !o.isTypeFeature())
+           !(oc.feature().isCotype() && !o.isCotype())
            )
       {
         var f = oc.feature();
