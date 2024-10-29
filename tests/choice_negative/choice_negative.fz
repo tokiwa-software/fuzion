@@ -29,25 +29,22 @@ choice_negative is
   any => panic "trying to create void"
 
   cyclic1 is
-    A : choice A i32 String is  // 1. should flag an error: cyclic choice
+    A : choice A i32 String is       // 1. should flag an error: cyclic choice
 
-  # NYI: this test does no longer make sense: "choice feature must not be ref"
-  # cyclic2 is
-  #   A : choice (ref A) i32 String is
+  cyclic2 is
+    A ref : choice A i32 String is  // 1a. should flag an error: choice feature must not be re
 
   cyclic3 is
-    A : choice i32 A String is  // 2. should flag an error: cyclic choice
+    A : choice i32 A String is      // 2. should flag an error: cyclic choice
 
-  # NYI: this test does no longer make sense: "choice feature must not be ref"
-  # cyclic4 is
-  #   A : choice i32 (ref A) String is
+  cyclic4 is
+    A ref : choice i32 A String is  // 2a. should flag an error: choice feature must not be re
 
   cyclic5 is
-    A : choice i32 String A is  // 3. should flag an error: cyclic choice
+    A : choice i32 String A is      // 3. should flag an error: cyclic choice
 
-  # NYI: this test does no longer make sense: "choice feature must not be ref"
-  # cyclic6 is
-  #   A : choice i32 String (ref A) is
+  cyclic6 is
+    A ref : choice i32 String A is  // 3a. should flag an error: choice feature must not be re
 
 /* NYI: cycle7..cycle12 moved to choice_negative2 since these currently are
   detected during clazz creation only, which is not performed when earlier
