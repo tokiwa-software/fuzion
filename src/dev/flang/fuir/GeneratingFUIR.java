@@ -65,6 +65,7 @@ import dev.flang.util.FuzionOptions;
 import dev.flang.util.IntArray;
 import dev.flang.util.IntMap;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
 
@@ -114,9 +115,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For each site s, the cached result of accessedClazz(s) or boxResultClazz(s).
+   * For each site s, the cached result of accessedClazz(s), box*Clazz(s), matchStaticSubject(), etc.
    */
-  private final IntMap<Object> _accessedClazzOrBoxResultClazz;
+  private final IntMap<Object> _siteClazzCache;
 
 
   /**
@@ -163,7 +164,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
-    _accessedClazzOrBoxResultClazz = new IntMap<>();
+    _siteClazzCache = new IntMap<>();
     _accessedClazzes = new IntMap<>();
     _accessedTarget = new IntMap<>();
     _mainModule = fe.mainModule();
@@ -193,7 +194,7 @@ public class GeneratingFUIR extends FUIR
     _lookupDone = true;
     _clazzesTM = original._clazzesTM;
     _siteClazzes = original._siteClazzes;
-    _accessedClazzOrBoxResultClazz = original._accessedClazzOrBoxResultClazz;
+    _siteClazzCache = original._siteClazzCache;
     _accessedClazzes = original._accessedClazzes;
     _accessedTarget = original._accessedTarget;
     _mainModule = original._mainModule;
@@ -2085,6 +2086,39 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * For an instruction of type ExprKind.Tag at site s, return a pair of the type of the
+   * original value and the new type of the tagged value.
+   *
+   * @param s a code site for an Env instruction.
+   *
+   * @return pair of untagged and tagged types.
+   */
+  private Pair<Clazz,Clazz> tagValueAndReusltClazz(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Tag);
+
+    var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
+    if (res == null)
+      {
+        var cl = clazzAt(s);
+        var outerClazz = clazz(cl);
+        var t = (Tag) getExpr(s);
+        Clazz vc = clazz(t._value, outerClazz, _inh.get(s - SITE_BASE));
+        var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE));
+        tc.instantiatedChoice(t);
+        res = new Pair<>(vc, tc);
+        _siteClazzCache.put(s, res);
+      }
+    return res;
+  }
+
+
+
+  /**
    * For an instruction of type ExprKind.Tag at site s, return the type of the
    * original value that will be tagged.
    *
@@ -2101,11 +2135,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
-    var cl = clazzAt(s);
-    var outerClazz = clazz(cl);
-    var t = (Tag) getExpr(s);
-    Clazz vc = clazz(t._value, outerClazz, _inh.get(s - SITE_BASE));
-    return vc._id;
+    return tagValueAndReusltClazz(s).v0()._id;
   }
 
 
@@ -2127,12 +2157,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
-    var cl = clazzAt(s);
-    var outerClazz = clazz(cl);
-    var t = (Tag) getExpr(s);
-    var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE));
-    tc.instantiatedChoice(t);
-    return tc._id;
+    return tagValueAndReusltClazz(s).v1()._id;
   }
 
 
@@ -2183,6 +2208,46 @@ public class GeneratingFUIR extends FUIR
 
   /**
    * For an instruction of type ExprKind.Box at site s, return the original type
+   * of the value that is to be boxed and the new reference type.
+   *
+   * @param s a code site for a Box instruction.
+   *
+   * @return a pair consisting of the original type and the new boxed type
+   */
+  private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
+  {
+    if (PRECONDITIONS) require
+      (s >= SITE_BASE,
+       s < SITE_BASE + _allCode.size(),
+       withinCode(s),
+       codeAt(s) == ExprKind.Box);
+
+    var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
+    if (res == null)
+      {
+        var cl = clazzAt(s);
+        var outerClazz = id2clazz(cl);
+        var b = (Box) getExpr(s);
+        Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
+        var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
+        if (rc.isRef() &&
+            outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
+          {
+            rc = vc.asRef();
+          }
+        else
+          {
+            rc = vc;
+          }
+        res = new Pair<>(vc, rc);
+        _siteClazzCache.put(s, res);
+      }
+    return res;
+  }
+
+
+  /**
+   * For an instruction of type ExprKind.Box at site s, return the original type
    * of the value that is to be boxed.
    *
    * @param s a code site for a Box instruction.
@@ -2198,12 +2263,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Box);
 
-    var cl = clazzAt(s);
-    var outerClazz = id2clazz(cl);
-    var b = (Box) getExpr(s);
-    Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-    Clazz rc = vc;
-    return vc._id;
+    return boxValueAndResultClazz(s).v0()._id;
   }
 
 
@@ -2224,26 +2284,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Box);
 
-    var rc = (Clazz) _accessedClazzOrBoxResultClazz.get(s);
-    if (rc == null)
-      {
-        var cl = clazzAt(s);
-        var outerClazz = id2clazz(cl);
-        var b = (Box) getExpr(s);
-        Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
-        if (rc.isRef() &&
-            outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
-          {
-            rc = vc.asRef();
-          }
-        else
-          {
-            rc = vc;
-          }
-        _accessedClazzOrBoxResultClazz.put(s, rc);
-      }
-    return rc._id;
+    return boxValueAndResultClazz(s).v1()._id;
   }
 
 
@@ -2307,7 +2348,7 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Call   ||
        codeAt(s) == ExprKind.Assign    );
 
-    var res = _accessedClazzOrBoxResultClazz.get(s);
+    var res = _siteClazzCache.get(s);
     if (res == null)
       {
         res = accessedClazz(s, null);
@@ -2315,7 +2356,7 @@ public class GeneratingFUIR extends FUIR
           {
             res = this;  // using `this` for `null`.
           }
-        _accessedClazzOrBoxResultClazz.put(s, res);
+        _siteClazzCache.put(s, res);
       }
     return res instanceof Clazz rc ? rc._id : NO_CLAZZ;
   }
@@ -2779,11 +2820,17 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Match);
 
-    var cl = clazzAt(s);
-    var cc = id2clazz(cl);
-    var outerClazz = cc;
-    var m = (AbstractMatch) getExpr(s);
-    return clazz(m.subject(), outerClazz, _inh.get(s - SITE_BASE))._id;
+    var rc = (Clazz) _siteClazzCache.get(s);
+    if (rc == null)
+      {
+        var cl = clazzAt(s);
+        var cc = id2clazz(cl);
+        var outerClazz = cc;
+        var m = (AbstractMatch) getExpr(s);
+        rc = clazz(m.subject(), outerClazz, _inh.get(s - SITE_BASE));
+        _siteClazzCache.put(s, rc);
+      }
+    return rc._id;
   }
 
 
