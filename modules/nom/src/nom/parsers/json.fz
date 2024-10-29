@@ -101,39 +101,34 @@ public json =>
                         .as_f64)
 
     parser_fraction := many_m_n 0 1 (preceded (tag ".") parser_digits)
-      .map f64 (x ->
-        if x.is_empty
-          0.0
-        else
-          (String.type.from_codepoints x.first)
-            .parse_u64
-            .val 0
-            .as_f64 / (10.0*x.count.as_f64))
+      .map f64 x->
+        match x.first
+          nil => 0.0
+          v Sequence =>
+            (String.type.from_codepoints v)
+              .parse_u64
+              .val 0
+              .as_f64 / (10.0*x.count.as_f64)
 
     parser_sign := many_m_n 0 1 (alt [tag "+", tag "-"])
-      .map f64 (x ->
-        if x.is_empty
-          1.0
-        else if x.first.first = "+"
-          1.0
-        else
-          -1.0
-      )
+      .map f64 x->
+        match x.first
+          nil => 1.0
+          v Sequence =>
+            if (v.first "#") = "+" then 1.0 else -1.0
 
     parser_signed_digit := tuple2 parser_sign parser_whole
 
     parser_exponent :=  many_m_n 0 1 (preceded (alt [tag "e", tag "E"]) parser_signed_digit)
-      .map f64 (x ->
-        if x.is_empty
-          1.0
-        else
-          (sign, exp) := x.first
-          10.0 ** (sign*exp))
+      .map f64 x->
+        match x.first
+          nil => 1.0
+          v tuple => 10.0 ** (v.0*v.1)
 
     (tuple4 parser_minus parser_whole parser_fraction parser_exponent)
-      .map json_value (x ->
+      .map json_value x->
         (sign, whole, fraction, exponent) := x
-        sign*(whole+fraction)*exponent)
+        sign*(whole+fraction)*exponent
 
 
   # parser for true
