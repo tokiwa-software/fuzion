@@ -38,15 +38,12 @@ public trit : choice TRUE FALSE nil, property.equatable is
       TRUE =>
         match b
           TRUE => true
-          FALSE => false
-          nil => false
+          * => false
       FALSE =>
         match b
-          TRUE => false
           FALSE => true
-          nil => false
+          * => false
       nil =>
         match b
-          TRUE => false
-          FALSE => false
           nil => true
+          * => false
