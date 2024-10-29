@@ -47,7 +47,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # predefined write provider for writing to
   # standard in of the process
   #
-  std_in_write_provider => write_provider std_in
+  std_in_write_provider => std_in.bind io.Write_Provider (desc -> write_provider desc)
 
 
   # read bytes from standard out
@@ -119,8 +119,11 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
 
 
   public with_in(T type, LM type : mutate, f ()->T) outcome T =>
-    (io.buffered.writer LM (std_in_write_provider) pipe_buffer_size)
-      .with f
+    std_in_write_provider
+      .as_outcome (error "stdin of Process already closed.")
+      .bind T p->
+        (io.buffered.writer LM p pipe_buffer_size)
+          .with f
 
 
   # write string to stdin of child process
