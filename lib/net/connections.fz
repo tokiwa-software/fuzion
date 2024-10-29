@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature connections
+#
+# -----------------------------------------------------------------------
+
+# effect to hold active connections
+#
+module:public connections(public active container.Set net.connection) : effect is
+
+  module add(c net.connection) =>
+    connections (active.union (container.set_of_ordered [c]))
+      .replace
+
+
+  # close connection manually.
+  # note that connections are closed automatically
+  # when effect is uninstalled, i.e. on abort or when thread is finished.
+  #
+  public close(c net.connection) =>
+    _ := (fuzion.sys.net.close c.desc) # NYI: handle errors
+    connections (active.except (container.set_of_ordered [c]))
+      .replace
+
+
+  # this installs reader, writer and channel for the given connection
+  #
+  public with(T type, LM type : mutate, c net.connection, fn ()->T)
+  pre active.contains c
+  =>
+    (io.buffered.reader LM (read_provider c.desc) 1024).with ()->
+      (io.buffered.writer LM (write_provider c.desc) 1024).with ()->
+        (net.channel c.desc).instate_self ()->
+          fn.call
+
+
+  # NYI: UNDER DEVELOPMENT:
+  # in_thread_pool(c)
+
+
+  # cleanup active connections that
+  # have not been closed manually
+  #
+  public redef finally =>
+    active.for_each c->
+      _ := fuzion.sys.net.close c.desc # NYI: handle errors
+
+
+# short-hand to get connections effect
+#
+public connections =>
+  if !net.connections.is_instated
+    (connections (container.set_of_ordered net.connection [])).default
+  net.connections.env

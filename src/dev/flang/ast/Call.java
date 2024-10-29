@@ -371,6 +371,8 @@ public class Call extends AbstractCall
        AbstractType type)
   {
     this(pos, target, calledFeature.featureName().baseName(), -1, generics, actuals, calledFeature, type);
+    if (PRECONDITIONS) check
+      (calledFeature.generics().sizeMatches(generics));
   }
 
 
@@ -2797,7 +2799,7 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != Types.t_ERROR && !frmlT.isAssignableFrom(actl.type(), context))
+                if (frmlT != Types.t_ERROR && !frmlT.isDirectlyAssignableFrom(actl.type(), context))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }

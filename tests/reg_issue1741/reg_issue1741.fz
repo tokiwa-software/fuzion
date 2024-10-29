@@ -1,0 +1,82 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue1741
+#
+# -----------------------------------------------------------------------
+
+
+# The issue was:
+#
+#
+# `lookup` fails when trying to look up type `num.wrap_around.type.max` - which is abstract - in clazz `(ex._0#type ex#0).two.#type ex#0.two`
+#
+# ```
+# ex =>
+#   two : i8 2 is
+#   Two ref : i8 2 is
+#
+#   say two
+#   say Two
+# ```
+#
+# ```
+# $ fz ~/playground/test.fz
+#
+# error 1: java.lang.Error: require-condition1 failed: dev.flang.air.Clazzes:clazzWithSpecificOuter:1260
+#   at dev.flang.util.ANY.require(ANY.java:111)
+#   at dev.flang.air.Clazzes.clazzWithSpecificOuter(Clazzes.java:1260)
+#   at dev.flang.air.Clazz.lookup(Clazz.java:1281)
+#   at dev.flang.air.Clazzes.findClazzes(Clazzes.java:914)
+#   at dev.flang.air.Clazz$1.action(Clazz.java:1548)
+#   at dev.flang.ast.Stmnt.visitStatements(Stmnt.java:65)
+#   at dev.flang.ast.AbstractCall.visitStatements(AbstractCall.java:112)
+#   at dev.flang.ast.Box.visitStatements(Box.java:157)
+#   at dev.flang.ast.AbstractAssign.visitStatements(AbstractAssign.java:139)
+#   at dev.flang.ast.AbstractBlock.visitStatements(AbstractBlock.java:99)
+#   at dev.flang.ast.AbstractCase.visitStatements(AbstractCase.java:152)
+#   at dev.flang.ast.AbstractMatch.visitStatements(AbstractMatch.java:127)
+#   at dev.flang.ast.AbstractBlock.visitStatements(AbstractBlock.java:99)
+#   at dev.flang.ast.AbstractCall.visitStatements(AbstractCall.java:110)
+#   at dev.flang.ast.Box.visitStatements(Box.java:157)
+#   at dev.flang.ast.AbstractAssign.visitStatements(AbstractAssign.java:139)
+#   at dev.flang.ast.AbstractBlock.visitStatements(AbstractBlock.java:99)
+#   at dev.flang.ast.AbstractFeature.visitStatements(AbstractFeature.java:1463)
+#   at dev.flang.air.Clazz.inspectCode(Clazz.java:1498)
+#   at dev.flang.air.Clazz.findAllClasses(Clazz.java:1542)
+#   at dev.flang.air.Clazzes.findAllClasses(Clazzes.java:444)
+#   at dev.flang.fuir.FUIR.<init>(FUIR.java:199)
+#   at dev.flang.opt.Optimizer.fuir(Optimizer.java:73)
+#   at dev.flang.tools.Fuzion$Backend.processFrontEnd(Fuzion.java:405)
+#   at dev.flang.tools.Fuzion.lambda$parseArgsForBackend$3(Fuzion.java:870)
+#   at dev.flang.tools.Tool.lambda$run$0(Tool.java:154)
+#   at dev.flang.util.Errors.runAndExit(Errors.java:748)
+#   at dev.flang.tools.Tool.run(Tool.java:154)
+#   at dev.flang.tools.Fuzion.main(Fuzion.java:519)
+#
+# ```
+
+
+reg_issue1741 =>
+
+  two : i8 2 is
+  Two ref : i8 2 is
+
+  say two
+  say Two

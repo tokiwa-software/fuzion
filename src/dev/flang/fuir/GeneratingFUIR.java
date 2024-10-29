@@ -2770,7 +2770,8 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public int matchStaticSubject(int s)
+  /* NYI: WORKAROUND: sychronized, fixes test atomic on windows/interpreter */
+  public synchronized int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -3246,13 +3247,15 @@ public class GeneratingFUIR extends FUIR
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     // we might have an assignment to a field that was removed:
-    if (codeAt(callSite) == FUIR.ExprKind.Call &&
-        // if there is no instantiation (while cotypes are implicitly instantiated), no need to report
-        (instantiationSite != NO_SITE || id2clazz(f).feature().outer().isTypeFeature()))
+    if (codeAt(callSite) == FUIR.ExprKind.Call)
       {
         var cc = id2clazz(cl);
         var cf = id2clazz(f);
-        var r = _abstractMissing.computeIfAbsent(cc, ccc -> new AbsMissing(ccc, new TreeMap<>(), sitePos(instantiationSite), context));
+        var r = _abstractMissing.computeIfAbsent(cc, ccc ->
+          new AbsMissing(ccc,
+                         new TreeMap<>(),
+                         instantiationSite == NO_SITE ? SourcePosition.notAvailable : sitePos(instantiationSite),
+                         context));
         r.called.put(cf.feature(), sitePos(callSite).show());
         if (CHECKS) check
           (cf.feature().isAbstract() ||

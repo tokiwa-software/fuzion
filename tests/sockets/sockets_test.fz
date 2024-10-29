@@ -23,108 +23,105 @@
 
 sockets_test is
 
+  lm : mutate is
 
-  # server
+
+  # server handles one connection at a time
   #
-  server(f net.family.val, p net.protocol.val) =>
+  server(family net.family.val, protocol net.protocol.val) =>
 
-    # server handles one connection at a time
-    start_server(family net.family.val, protocol net.protocol.val, port u16) =>
+    port := (port family protocol)
 
-      say_silent(s Any) => unit
+    say_silent(s Any) => unit
 
-      # install server in env
-      say "opened $protocol/$family-server on port $port: {(net.server family protocol port)}"
+    # install server in env
+    say "opened $protocol/$family-server on port $port: {(net.server.start family protocol port)}"
 
+    accept =>
+      match net.server.accept
+        e error => false
+        c net.connection =>
+          sc := net.connections.with unit lm c ()->
+            chan => net.channel.env
 
+            say_silent "$protocol/$family-server, accepted connection"
+            say_silent chan.get_peer_address
+            say_silent chan.get_peer_port
 
-      ch : net.Connection_Handler unit is
+            rr := io.buffered.read_line_while lm (s -> !s.is_empty)
 
-        redef handle_connection (LM type : mutate) unit =>
+            say_silent "$protocol/$family-server, read lines: >{rr}<"
 
-          chan => net.channel.env
+            match protocol
+              net.protocol.tcp =>
 
-          say_silent "$protocol/$family-server, accepted connection"
-          say_silent chan.get_peer_address
-          say_silent chan.get_peer_port
+                res := "received: {rr.as_string}\n\n"
 
-          rr := io.buffered.read_line_while LM (s -> !s.is_empty)
+                w =>
+                  x := ((io.buffered.writer lm).write res.utf8.as_array).error
 
-          say_silent "$protocol/$family-server, read lines: >{rr}<"
+                  match x
+                    unit => (io.buffered.writer lm).flush
+                    error => x
 
-          match protocol
-            net.protocol.tcp =>
-
-              res := "received: {rr.as_string}\n\n"
-
-              w =>
-                x := ((io.buffered.writer LM).write res.utf8.as_array).error
-
-                match x
-                  unit => (io.buffered.writer LM).flush
-                  error => x
-
-              match w
-                e error => say_silent "$protocol/$family-server, write error $e"
-                * => say_silent "$protocol/$family-server, write succeeded"
+                match w
+                  e error => say_silent "$protocol/$family-server, write error $e"
+                  * => say_silent "$protocol/$family-server, write succeeded"
 
 
-            net.protocol.udp =>
-              # rest of udp datagram was discarded
-            * =>
-              panic "NI"
+              net.protocol.udp =>
+                # rest of udp datagram was discarded
+              * =>
+                panic "NI"
 
+          net.connections.close c
 
+          sc.ok
 
-      while net.server.is_active && match net.server.accept unit ch
-                                      e error => false
-                                      * => true
-      do
-
-
-    start_server f p (port f p)
-
+    while net.server.is_active && accept
+    do
 
 
   # client
   #
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
-    ch : net.Connection_Handler String is
 
-      redef handle_connection (LM type : mutate) =>
-
-        chan => net.channel.env
-
-        req := ("GET / HTTP\n"
-          + "Host: $host\n"
-          + "Client: {sockets_test.client.this.num}\n\n")
-
-        w =>
-          _ := (io.buffered.writer LM).write req.utf8.as_array
-          _ := (io.buffered.writer LM).flush
-
-        res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
-
-        match protocol
-          net.protocol.tcp =>
-
-            rr := io.buffered.read_line_while LM (s -> !s.is_empty)
-
-            res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
-
-          # for UDP reading would block indefinitely
-          net.protocol.udp =>
-            # rest of udp datagram was discarded
-            res
-
-          * =>  panic "NI"
-
-
-    match net.client String ch family protocol host port
+    match net.client family protocol host port
       err error =>
         say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
-      str String =>
-        say str
+      c net.connection =>
+
+        res := net.connections.with String lm c ()->
+
+            chan => net.channel.env
+
+            req := ("GET / HTTP\n"
+              + "Host: $host\n"
+              + "Client: {sockets_test.client.this.num}\n\n")
+
+            w =>
+              _ := (io.buffered.writer lm).write req.utf8.as_array
+              _ := (io.buffered.writer lm).flush
+
+            res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
+
+            match protocol
+              net.protocol.tcp =>
+
+                rr := io.buffered.read_line_while lm (s -> !s.is_empty)
+
+                res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+
+              # for UDP reading would block indefinitely
+              net.protocol.udp =>
+                # rest of udp datagram was discarded
+                res
+
+              * =>  panic "NI"
+
+        net.connections.close c
+
+        say res
 
 
   # a number for protocol p to be used for
@@ -157,7 +154,8 @@ sockets_test is
     for p in protocols do
       time.nano.sleep (time.duration.s 1)
       _ := concur.thread.spawn ()->
-        _ := server f p
+        lm.instate_self ()->
+          _ := server f p
 
   time.nano.sleep (time.duration.seconds 10)
 
@@ -165,10 +163,9 @@ sockets_test is
     for p in protocols do
       say "### $p/$f-Tests ###"
 
-
-
       # write request to server and read response
       for i in 1..2 do
-        client f p (net.family.localhost f) (port f p) i
+        lm.instate_self ()->
+          client f p (net.family.localhost f) (port f p) i
 
   exit 0

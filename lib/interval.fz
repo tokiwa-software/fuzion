@@ -122,6 +122,14 @@ is
   public fixed redef type.new (s Sequence T) interval.this => panic "not applicable"
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  public redef finite =>
+    if through.exists then trit.yes else trit.no
+
+
+
 # has_interval -- feature for integers that can define an interval
 #
 public has_interval : integer is
