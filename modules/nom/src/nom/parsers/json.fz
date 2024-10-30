@@ -25,6 +25,7 @@
 
 
 # json supports the following types: strings, numbers, booleans, null, arrays and objects
+#
 public json_value : choice String f64 bool nil (Sequence json_value) (container.Map String json_value) is
   redef as_string =>
     match json_value.this
@@ -33,7 +34,7 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
       b bool => $b
       n nil => "null"
       seq Sequence => $seq
-      m (container.Map String json_value) => "\{$m}"
+      m container.Map => "\{$m}"
 
 
 # a json parser
