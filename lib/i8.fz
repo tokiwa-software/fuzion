@@ -71,7 +71,7 @@ public i8(public val i8) : num.wrap_around, has_interval is
   public as_i16  => as_i32.as_i16
   public as_i32 i32 => intrinsic
   public as_i64  => as_i32.as_i64
-# as_i128 => as_i32.as_i128
+  public as_i128 => as_i32.as_i128
 
   # does this i8 fit into an u8?  This is true for all non-negative values.
   #

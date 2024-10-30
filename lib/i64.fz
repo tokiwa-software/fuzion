@@ -93,6 +93,11 @@ public i64(public val i64) : num.wrap_around, has_interval is
     =>
       low32bits.cast_to_i32
 
+      
+  # this i64 as an i128
+  public as_i128 i128 =>
+    i128 (val >> 63) val.cast_to_u64
+
   # does this i64 fit into an u8?
   #
   public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i64

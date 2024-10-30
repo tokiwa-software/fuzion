@@ -90,6 +90,8 @@ public i32(public val i32) : num.wrap_around, has_interval is
     =>
       low16bits.cast_to_i16
   public as_i64 i64 => intrinsic
+  public as_i128 =>
+    as_i64.as_i128
   public redef as_u8  u8  => low8bits
   public as_u16 u16
     pre
