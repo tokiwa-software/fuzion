@@ -96,13 +96,13 @@ partial_application is
   test "data.zip data x,y->x*y" (data.zip data x,y->x*y) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
   test "data.zip data (+)" (data.zip data (+)) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
   test "data.zip data (*)" (data.zip data (*)) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
-  z00 Function i32 i32 i32 := +
+  z00 Binary i32 i32 i32 := +
   test "data.zip data +  " (data.zip data z00) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
-  z01 Function i32 i32 i32 := -
+  z01 Binary i32 i32 i32 := -
   test "data.zip data -  " (data.zip data z01) "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
-  z02 Function i32 i32 i32 => *
+  z02 Binary i32 i32 i32 => *
   test "data.zip data *  " (data.zip data z02) "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]"
-  z03 Function i32 i32 i32 => /
+  z03 Binary i32 i32 i32 => /
   test "data.zip data *  " (data.zip data z03) "[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]"
 
   easy(f i32->i32) =>
