@@ -159,7 +159,7 @@ public class ValueSet extends Value
         result = false;
         for (var tc : _componentsArray)
           {
-            result = result || tc == other;
+            result = result || tc.contains(other);
           }
       }
     return result;

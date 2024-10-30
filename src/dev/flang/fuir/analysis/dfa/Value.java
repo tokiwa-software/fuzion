@@ -279,7 +279,7 @@ public class Value extends Val
    */
   boolean contains(Value other)
   {
-    return false;
+    return this == other;
   }
 
 
