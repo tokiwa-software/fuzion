@@ -145,7 +145,7 @@ sockets_test is
 
 
   # For now use a different port for every test.
-  port(f net.family.val, p net.protocol.val) => u16 40000 + (protocol_num p) + (family_num f)
+  port(f net.family.val, p net.protocol.val) => u16 50000 + (protocol_num p) + (family_num f)
 
 
 ########### Tests ################
