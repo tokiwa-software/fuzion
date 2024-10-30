@@ -81,14 +81,14 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # division and remainder with check for div-by-zero
   public fixed redef infix / (other u128)
     pre else
-      // NYI: #3051 precondition inheritance does not work yet
-      // remove this redundant precondition once #3051 is fixed
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
       safety: other != u128.zero
   => div other
   public fixed redef infix % (other u128)
     pre else
-      // NYI: #3051 precondition inheritance does not work yet
-      // remove this redundant precondition once #3051 is fixed
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
       safety: other != u128.zero
   => mod other
 

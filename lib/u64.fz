@@ -53,14 +53,14 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # division and remainder with check for div-by-zero
   public fixed redef infix / (other u64)
     pre else
-      // NYI: #3051 precondition inheritance does not work yet
-      // remove this redundant precondition once #3051 is fixed
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
       safety: other != 0
   => div other
   public fixed redef infix % (other u64)
     pre else
-      // NYI: #3051 precondition inheritance does not work yet
-      // remove this redundant precondition once #3051 is fixed
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
       safety: other != 0
   => mod other
 
