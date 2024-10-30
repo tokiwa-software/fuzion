@@ -41,7 +41,7 @@ sockets_test is
       match net.server.accept
         e error => false
         c net.connection =>
-          sc := net.connections.in_thread_pool unit lm lm c ()->
+          sc := net.connections.in_thread_pool unit concur.thread_pool lm lm c ()->
             chan => net.channel.env
 
             say_silent "$protocol/$family-server, accepted connection"
@@ -92,7 +92,7 @@ sockets_test is
         say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
       c net.connection =>
 
-        res := net.connections.in_thread_pool String lm lm c ()->
+        res := net.connections.in_thread_pool String concur.thread_pool lm lm c ()->
 
             chan => net.channel.env
 
