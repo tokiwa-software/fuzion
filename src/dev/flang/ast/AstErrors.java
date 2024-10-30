@@ -2277,6 +2277,16 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void illegalThisType(SourcePosition pos, AbstractType t)
+  {
+    error(pos, "Illegal " + skw(".this") + " type: " + s(t),
+      """
+        To solve this, either
+          - move the code inside of the feature the type refers to
+        or
+          - change the type to a legal"""  + " " + skw(".this") + " type.");
+  }
+
 
 }
 

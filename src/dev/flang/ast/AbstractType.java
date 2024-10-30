@@ -2003,6 +2003,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   callPos != null                ? callPos
                                                  : called.pos();
 
+        a.checkLegalQualThisType(callPos, context);
         a.checkChoice(pos, context);
         if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
@@ -2022,6 +2023,38 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  /**
+   * If the type is a this-type, check if it is legal.
+   *
+   * @param pos
+   *
+   * @param context
+   */
+  private void checkLegalQualThisType(SourcePosition pos, Context context)
+  {
+    if (isThisType())
+      {
+        var subject = feature();
+        var found = false;
+        AbstractFeature o = context.outerFeature();
+        o = o.isCotype() ? o.cotypeOrigin() : o;
+        while(o != null)
+          {
+            if (subject == o)
+              {
+                found = true;
+                break;
+              }
+            o = o.outer();
+          }
+        if (!found)
+          {
+            AstErrors.illegalThisType(pos, this);
+          }
+      }
   }
 
 
