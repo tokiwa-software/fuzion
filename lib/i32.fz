@@ -57,7 +57,12 @@ public i32(public val i32) : num.wrap_around, has_interval is
       // remove this redundant precondition once #3051 is fixed
       safety: other != 0
   => div other
-  public fixed redef infix % (other i32) => mod other
+  public fixed redef infix % (other i32)
+    pre else
+      // NYI: #3051 precondition inheritance does not work yet
+      // remove this redundant precondition once #3051 is fixed
+      safety: other != 0
+  => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i32) i32 => intrinsic
