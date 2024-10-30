@@ -2607,8 +2607,9 @@ public class DFA extends ANY
         res = _joined.get(k);
         if (res == null)
           {
-            res = v instanceof ValueSet vv && vv.contains(w) ? v :
-                  w instanceof ValueSet vw && vw.contains(v) ? w : cache(new ValueSet(v, w));
+            res = v.contains(w) ? v :
+                  w.contains(v) ? w : new ValueSet(this, v, w);
+            res = cache(res);
             _joined.put(k, res);
           }
       }
