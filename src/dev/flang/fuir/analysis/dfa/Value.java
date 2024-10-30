@@ -275,6 +275,15 @@ public class Value extends Val
 
 
   /**
+   * Does this Value cover the values in other?
+   */
+  boolean contains(Value other)
+  {
+    return false;
+  }
+
+
+  /**
    * Add v to the set of values of given field within this instance.
    */
   public void setField(DFA dfa, int field, Value v)

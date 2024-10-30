@@ -2608,8 +2608,42 @@ public class DFA extends ANY
         if (res == null)
           {
             res = v instanceof ValueSet vv && vv.contains(w) ? v :
-                  w instanceof ValueSet vw && vw.contains(v) ? w : cache(new ValueSet(v, w));
+                  w instanceof ValueSet ww && ww.contains(v) ? w :
+                  v instanceof TaggedValue tv ? tryJoin(tv,w) :
+                  w instanceof TaggedValue tw ? tryJoin(tw,v) : null;
+            if (res == null)
+              {
+                res = new ValueSet(v, w);
+              }
+            res = cache(res);
             _joined.put(k, res);
+          }
+      }
+    return res;
+  }
+
+
+  /**
+   * Helper for newValueSet that tries to join a TaggedValue with another Value.
+   *
+   * @return a value that covers the values of tv and w or null if we must
+   * create a ValueSet of v and w.
+   */
+  private Value tryJoin(TaggedValue tv, Value w)
+  {
+    Value res = null;
+    if (tv.contains(w))
+      {
+        res = tv;
+      }
+    else if (w instanceof ValueSet ws)
+      {
+        for (var wc : ws._componentsArray)
+          {
+            if (wc.contains(tv))
+              {
+                res = w;
+              }
           }
       }
     return res;
