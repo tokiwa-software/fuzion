@@ -2284,7 +2284,7 @@ public class AstErrors extends ANY
         To solve this, either
           - move the code inside of the feature the type refers to
         or
-          - change the type to a legal """ + skw(".this") + " type.");
+          - change the type to a legal"""  + " " + skw(".this") + " type.");
   }
 
 
