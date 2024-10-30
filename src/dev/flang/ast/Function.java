@@ -84,13 +84,13 @@ public class Function extends AbstractLambda
    * will be used put the correct return type in case of a fun declaration using
    * => that requires type inference.
    *
-   * I.e. a call to (Function/Unary/Lazy <generics>)
+   * I.e. a call to (Function/Unary/Binary/Nullary/Lazy <generics>)
    */
   Call _inheritsCall;
 
 
   /**
-   * The feature that inherits from `Function/Unary/Lazy/...` that implements this lambda in
+   * The feature that inherits from `Function/Unary/Binary/Nullary/Lazy/...` that implements this lambda in
    * its `call` feature.
    */
   Feature _wrapper;
@@ -309,9 +309,11 @@ public class Function extends AbstractLambda
             feature._sourceCodeContext = context;
 
             var inheritsName =
-              (t.feature() == Types.resolved.f_Unary && gs.size() == 2) ? Types.UNARY_NAME :
-              (t.feature() == Types.resolved.f_Lazy  && gs.size() == 1) ? Types.LAZY_NAME
-                                                                        : Types.FUNCTION_NAME;
+              (t.feature() == Types.resolved.f_Unary   && gs.size() == 2) ? Types.UNARY_NAME   :
+              (t.feature() == Types.resolved.f_Binary  && gs.size() == 3) ? Types.BINARY_NAME  :
+              (t.feature() == Types.resolved.f_Nullary && gs.size() == 1) ? Types.NULLARY_NAME :
+              (t.feature() == Types.resolved.f_Lazy    && gs.size() == 1) ? Types.LAZY_NAME
+                                                                          : Types.FUNCTION_NAME;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
