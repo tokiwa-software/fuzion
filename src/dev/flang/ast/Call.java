@@ -1773,6 +1773,17 @@ public class Call extends AbstractCall
           }
       }
 
+
+    var rt = cf.resultTypeIfPresentUrgent(res, false);
+    // We may be able to infer generics later
+    // via result type propagation, do not emit errors yet.
+    if (rt != null &&
+        rt.isGenericArgument() &&
+        rt.genericArgument().feature().outer() == cf.outer())
+      {
+        return;
+      }
+
     // report missing inferred types only if there were no errors trying to find
     // the types of the actuals:
     if (!missing.isEmpty() &&
@@ -2077,15 +2088,18 @@ public class Call extends AbstractCall
         if (g.feature() == _calledFeature)
           { // we found a use of a generic type, so record it:
             var i = g.index();
-            var gt = _generics.get(i);
-            var nt = gt == Types.t_UNDEFINED ? actualType
-                                            : gt.union(actualType, context);
-            if (nt == Types.t_ERROR)
+            if (!conflict[i])
               {
-                conflict[i] = true;
+                var gt = _generics.get(i);
+                var nt = gt == Types.t_UNDEFINED ? actualType
+                                                : gt.union(actualType, context);
+                if (nt == Types.t_ERROR)
+                  {
+                    conflict[i] = true;
+                  }
+                _generics = _generics.setOrClone(i, nt == Types.t_ERROR ? Types.t_UNDEFINED : nt);
+                addPair(foundAt, i, pos, actualType);
               }
-            _generics = _generics.setOrClone(i, nt);
-            addPair(foundAt, i, pos, actualType);
           }
       }
     else
@@ -2881,7 +2895,14 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, context, Types.resolved.t_bool); }
         else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool); }
         else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_TERNARY) { result = newIf(_target, _actuals.get(0), _actuals.get(1)).propagateExpectedType(res, context, _generics.get(0)); }
+        else if (cf == Types.resolved.f_bool_TERNARY)
+          {
+            result = newIf(_target, _actuals.get(0), _actuals.get(1));
+            if (!_generics.get(0).containsUndefined(false))
+              {
+                result = result.propagateExpectedType(res, context, _generics.get(0));
+              }
+          }
 
         // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
         else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i8 ); }
