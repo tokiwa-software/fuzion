@@ -71,7 +71,7 @@ public interface SrcModule extends AbstractModule
                              boolean ignoreAmbiguous,
                              boolean ignoreNotFound);
 
-  void addTypeFeature(AbstractFeature outerType,
+  void addCotype(AbstractFeature outerType,
                       Feature         innerType);
   void addTypeParameter(AbstractFeature outerType,
                       Feature         innerType);

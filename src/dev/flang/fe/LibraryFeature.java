@@ -166,13 +166,13 @@ public class LibraryFeature extends AbstractFeature
     _index = index;
     _kind = lib.featureKindEnum(index);
 
-    var tf = existingTypeFeature();
+    var tf = existingCotype();
     if (tf != null)
       {
         // NYI: HACK: This is somewhat ugly, would be nicer if the type feature
         // in the fum file would contain a reference to the origin such that we
         // do not need to patch this into the type feature's field.
-        tf._typeFeatureOrigin = this;
+        tf._cotypeOrigin = this;
       }
   }
 
@@ -353,9 +353,9 @@ public class LibraryFeature extends AbstractFeature
    * If we have an existing type feature (store in a .fum library file), return that
    * type feature. return null otherwise.
    */
-  public AbstractFeature existingTypeFeature()
+  public AbstractFeature existingCotype()
   {
-    return _libModule.featureHasTypeFeature(_index) ? _libModule.featureTypeFeature(_index) : null;
+    return _libModule.featureHasCotype(_index) ? _libModule.featureCotype(_index) : null;
   }
 
 

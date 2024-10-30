@@ -1294,10 +1294,10 @@ public class Feature extends AbstractFeature
    * type feature.
    */
   @Override
-  public AbstractFeature typeFeature(Resolution res)
+  public AbstractFeature cotype(Resolution res)
   {
     resolveInheritance(res);
-    return super.typeFeature(res);
+    return super.cotype(res);
   }
 
 
@@ -1509,11 +1509,11 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_SUGAR1;
 
         Contract.addContractFeatures(res, this, context());
-        if (!isUniverse() && !isTypeFeature()
+        if (!isUniverse() && !isCotype()
             && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
             && !isTypeParameter())
           {
-            typeFeature(res);
+            cotype(res);
           }
         visit(new ContextVisitor(context())
           {
@@ -2207,7 +2207,7 @@ A ((Choice)) declaration must not contain a result type.
       }
 
     if (POSTCONDITIONS) ensure
-      (isTypeFeaturesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
+      (isCoTypesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
 
     return result;
   }
@@ -2414,12 +2414,12 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * Is this the 'THIS_TYPE' type parameter in a type feature?
    *
-   * Overriding since AbstractFeature.isTypeFeaturesThisType needs outer to be
+   * Overriding since AbstractFeature.isCoTypesThisType needs outer to be
    * in state of at least FINDING_DECLARATIONS which is not always the case
-   * when isTypeFeaturesThisType is called.
+   * when isCoTypesThisType is called.
    */
   @Override
-  public boolean isTypeFeaturesThisType()
+  public boolean isCoTypesThisType()
   {
     return false;
   }
