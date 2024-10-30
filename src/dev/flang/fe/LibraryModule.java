@@ -509,7 +509,7 @@ public class LibraryModule extends Module implements MirModule
           {
             if (CHECKS) check
               (k >= 0);
-            var feature = libraryFeature(typeFeature(at));
+            var feature = libraryFeature(cotype(at));
             var generics = UnresolvedType.NONE;
             if (k > 0)
               {
@@ -992,9 +992,9 @@ Feature
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
   }
-  boolean featureHasTypeFeature(int at)
+  boolean featureHasCotype(int at)
   {
-    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0);
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_COTYPE) != 0);
   }
   boolean featureIsFixed(int at)
   {
@@ -1075,23 +1075,23 @@ Feature
   {
     return featureOuterPos(at) + 4;
   }
-  int featureTypeFeaturePos(int at)
+  int featureCotypePos(int at)
   {
     return featureOuterNextPos(at);
   }
-  AbstractFeature featureTypeFeature(int at)
+  AbstractFeature featureCotype(int at)
   {
     if (PRECONDITIONS) require
-      (featureHasTypeFeature(at));
-    return feature(data().getInt(featureTypeFeaturePos(at)));
+      (featureHasCotype(at));
+    return feature(data().getInt(featureCotypePos(at)));
   }
-  int featureTypeFeatureNextPos(int at)
+  int featureCotypeNextPos(int at)
   {
-    return featureTypeFeaturePos(at) + (featureHasTypeFeature(at) ? 4 : 0);
+    return featureCotypePos(at) + (featureHasCotype(at) ? 4 : 0);
   }
   int featureResultTypePos(int at)
   {
-    return featureTypeFeatureNextPos(at);
+    return featureCotypeNextPos(at);
   }
   boolean featureHasResultType(int at)
   {
@@ -1369,26 +1369,26 @@ Type
 
     return data().getInt(typeTypeParameterPos(at));
   }
-  int typeFeaturePos(int at)
+  int CotypePos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
     return at+4;
   }
-  int typeFeature(int at)
+  int cotype(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
-    return data().getInt(typeFeaturePos(at));
+    return data().getInt(CotypePos(at));
   }
   int typeValRefOrThisPos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
-    return typeFeaturePos(at) + 4;
+    return CotypePos(at) + 4;
   }
   int typeValRefOrThis(int at)
   {

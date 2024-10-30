@@ -579,7 +579,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   boolean isTypeType()
   {
-    return _feature != null && _feature.isTypeFeature();
+    return _feature != null && _feature.isCotype();
   }
 
 

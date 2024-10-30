@@ -51,8 +51,20 @@ module:public connections(public active container.Set net.connection) : effect i
           fn.call
 
 
-  # NYI: UNDER DEVELOPMENT:
-  # in_thread_pool(c)
+  # this installs reader, writer and channel for the given connection
+  #
+  # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
+  #
+  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, c net.connection, fn ()->T) concur.Future (outcome T)
+  pre active.contains c
+  # NYI: UNDER DEVELOPMENT: make sure connection is not used concurrently.
+  =>
+    TP.env.submit (outcome T) ()->
+      lm.instate_self (outcome T) ()->
+        ((io.buffered.reader LM (read_provider c.desc) 1024).with ()->
+          (io.buffered.writer LM (write_provider c.desc) 1024).with ()->
+            (net.channel c.desc).instate_self ()->
+              fn()).bind T x->x
 
 
   # cleanup active connections that
