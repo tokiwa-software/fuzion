@@ -88,10 +88,20 @@ public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
 
 
   # division with check for div-by-zero
-  public fixed redef infix / (other i128) => div other
+  public fixed redef infix / (other i128)
+  pre else
+    // NYI: #3051 precondition inheritance does not work yet
+    // remove this redundant precondition once #3051 is fixed
+    safety: other != i128 0
+  => div other
 
   # remainder with check for div-by-zero
-  public fixed redef infix % (other i128) i128 => mod other # NYI: inference for return type does not work here
+  public fixed redef infix % (other i128) i128  # NYI: inference for return type does not work here
+  pre else
+    // NYI: #3051 precondition inheritance does not work yet
+    // remove this redundant precondition once #3051 is fixed
+    safety: other != i128 0
+  => mod other
 
   # division with crash in case of div-by-zero
   fixed div (other i128) i128 =>

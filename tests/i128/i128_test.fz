@@ -23,33 +23,16 @@
 
 i128_test =>
 
-  i128.hx_out =>
-    say hex
-
-  i128.bi_out =>
-    say bi
-
-  i128.hx =>
-    "0x{hi.bi}__{(lo.as_string 16 16).chunk(4).as_string "_"}"
-
   i128.bi =>
     "0b{hi.bi}__{(lo.bin 64).chunk(8).as_string "_"}"
 
   i128.bi_bare =>
     "{hi.as_bytes.map(.bin 8).as_string("")}{(lo.bin 64).chunk(8).as_string ""}"
 
-  i64.hx =>
-    as_bytes.chunk 2
-      .map (.as_array)
-      .map encodings.base16.encode_to_string
-      .as_string "_"
-
   i64.bi =>
     as_bytes
       .map (.bin 8)
       .as_string "_"
-
-
 
 
   # LOGIC OPERATIONS
@@ -115,17 +98,24 @@ i128_test =>
   test_add (i128 1 1) (i128 1 1) (i128 2 2) "36893488147419103234"
   # 53 + (-11) = 42
   test_add (i128 53) (-i128 11) (i128 42) "42"
+  test_add i128.min i128.max -i128.one "-1"
+  test_add i128.max i128.min -i128.one "-1"
 
   test_eq -(i128.min + i128.one) (i128.max)
 
   test_sub i128.one i128.one i128.zero "0"
   test_sub -i128.one i128.one (-i128 2) "-2"
   test_sub -i128.one -(i128 2) (i128 1) "1"
+  test_sub i128.min i128.min i128.zero "0"
+  test_sub i128.max i128.max i128.zero "0"
+  test_eq (i128.min -° i128.max) (i128 1)
 
   test_mul i128.one i128.one (i128 1) "1"
   test_mul i128.min i128.one i128.min ""
   test_mul i128.min i128.zero i128.zero "0"
   test_mul i128.max i128.zero i128.zero "0"
+  test_eq (i128.max *° i128.max) i128.one
+
   y := "10000000000000000000000000".parse_i128.get
   test_mul  y  i128.one  y  "10000000000000000000000000"
   test_mul -y  i128.one -y "-10000000000000000000000000"
@@ -158,4 +148,6 @@ i128_test =>
 
   test_div ("20000000000000000000000000000000000000".parse_i128.get) ("-40000000000000000000".parse_i128.get)
            ("-500000000000000000".parse_i128.get) "-500000000000000000"
-  
+
+  say (fuzion.runtime.pre_fault.try   ((i128.one / i128.zero).as_string)
+                               .catch msg->"1/0 expected precondition failure: $msg")
