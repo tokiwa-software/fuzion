@@ -2281,10 +2281,10 @@ public class AstErrors extends ANY
   {
     error(pos, "Illegal " + skw(".this") + " type: " + s(t),
       """
-        To solve this, either \n
+        To solve this, either
           - move the code inside of the feature the type refers to
         or
-          - change the type to a legal""" + skw(".this") + " type.");
+          - change the type to a legal """ + skw(".this") + " type.");
   }
 
 
