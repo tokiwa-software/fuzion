@@ -922,8 +922,6 @@ public class Runtime extends ANY
    */
   public static void fuzion_java_set_static_field0(String clazz, String field, Object value)
   {
-    System.out.println("  debug: fuzion_java_set_static_field0");
-
     unsafeIntrinsic();
 
     try
@@ -992,9 +990,6 @@ public class Runtime extends ANY
    */
   public static void fuzion_java_set_field0(Object thiz, String field, Object value)
   {
-
-    System.out.println("  debug: call to fuzion_java_set_field0");
-
     unsafeIntrinsic();
 
     Class clazz = null;

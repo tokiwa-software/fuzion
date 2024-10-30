@@ -384,7 +384,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.set_static_field0",
         (jvm, si, cc, tvalue, args) ->
         {
-          // var rc = jvm._fuir.clazzResultClazz(cc);
           var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
           var sref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
           var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
@@ -437,8 +436,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.set_field0",
         (jvm, si, cc, tvalue, args) ->
         {
-          // var rc = jvm._fuir.clazzResultClazz(cc);
-          // var rt = jvm._types.javaType(rc);
           var jO = jvm._fuir.clazz_fuzionJavaObject_Ref();
           var javaRefFieldName = jvm._names.field(jO);
           var res = args
