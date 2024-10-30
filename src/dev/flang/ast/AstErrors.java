@@ -757,16 +757,16 @@ public class AstErrors extends ANY
   }
   */
 
-  static void ifConditionMustBeBool(SourcePosition pos, AbstractType type)
+  static void ifConditionMustBeBool(Expr sub)
   {
     if (CHECKS) check
-      (any() || type != Types.t_ERROR);
+      (any() || sub.type() != Types.t_ERROR);
 
-    if (type != Types.t_ERROR)
+    if (sub.type() != Types.t_ERROR)
       {
-        error(pos,
+        error(sub.pos(),
               "If condition must be assignable to type " + s(Types.resolved.t_bool) + "",
-              "Actual type is " + s(type) + "");
+              "Actual type is " + s(sub.type()) + "");
       }
   }
 
