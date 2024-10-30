@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import dev.flang.util.IntMap;
+import dev.flang.util.List;
 
 
 /**
@@ -39,6 +40,141 @@ public class ValueSet extends Value
 
 
   /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Helper class to collet the values when creating a ValueSet.
+   *
+   * This handles two cases: Usually, the values in the set will just be joined,
+   * ordered by their _id fields.
+   *
+   * However, if the values are TaggedValues, then values with the same tag will
+   * be merged in new TaggedValue instances with their original values merged.
+   */
+  class Collect
+  {
+    /**
+     * the DFA instance
+     */
+    DFA _dfa;
+
+
+    /**
+     * Map for value ids to values in this set. This is unused in case the
+     * values are TaggedValue instances.  Allocated on demand.
+     */
+    IntMap<Value> _components;
+
+
+    /**
+     * In case the values are TaggedValue instances, this maps the tag values to
+     * the original values.  Allocated on demand.
+     */
+    List<Value> _forTags;
+
+
+    /**
+     * In case the values are TaggedValue instances, this is their clazz.
+     */
+    int _taggedClazz = -1;
+
+
+    /**
+     * Consrtructor
+     */
+    Collect(DFA dfa)
+    {
+      _dfa = dfa;
+    }
+
+
+    /**
+     * Add given value, or --if it is a ValueSet-- all of its components.
+     */
+    void add(Value v)
+    {
+      if (v instanceof ValueSet vs)
+        {
+          for (var c : vs._componentsArray)
+            {
+              add0(c);
+            }
+        }
+      else
+        {
+          add0(v);
+        }
+    }
+
+
+    /**
+     * Add given value that must not be a ValueSet itself
+     */
+    void add0(Value v)
+    {
+      if (PRECONDITIONS) require
+        (!(v instanceof ValueSet));
+
+      if (v instanceof TaggedValue tv)
+        {
+          if (_forTags == null)
+            {
+              _forTags = new List<>();
+              _taggedClazz = tv._clazz;
+            }
+
+          if (CHECKS) check
+            (_taggedClazz == tv._clazz);
+
+          var oo = _forTags.getIfExists(tv._tag);
+          var no = tv._original;
+          var o = oo == null ? no : _dfa.newValueSet(oo, no);
+          _forTags.force(tv._tag, o);
+        }
+      else
+        {
+          if (_components == null)
+            {
+              _components = new IntMap<>();
+            }
+          _components.put(v._id, v);
+        }
+    }
+
+
+    /**
+     * Convert the collected values to a components array to be used in this
+     * ValueSet.
+     */
+    Value[] asComponents()
+    {
+      if (CHECKS) check
+        ((_forTags == null) != (_components == null));
+
+      var comp = _components;
+      if (comp == null)
+        {
+          comp = new IntMap<Value>();
+          for (var i = 0; _forTags != null && i < _forTags.size(); i++)
+            {
+              var v = _forTags.get(i);
+              if (v != null)
+                {
+                  var tv = _dfa.newTaggedValue(_taggedClazz, v, i);
+                  comp.put(tv._id, tv);
+                }
+            }
+        }
+      var componentsArray = new Value[comp.size()];
+      var i = 0;
+      for (var c : comp.keySet())
+        {
+          componentsArray[i++] = comp.get(c);
+        }
+      return componentsArray;
+    }
+
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -63,39 +199,14 @@ public class ValueSet extends Value
    *
    * @param v2 some value
    */
-  public ValueSet(Value v1, Value v2)
+  public ValueSet(DFA dfa, Value v1, Value v2)
   {
     super(-1);
 
-    IntMap<Value> components = new IntMap<>();
-    if (v1 instanceof ValueSet v1s)
-      {
-        for (var c : v1s._componentsArray)
-          {
-            components.put(c._id, c);
-          }
-      }
-    else
-      {
-        components.put(v1._id, v1);
-      }
-    if (v2 instanceof ValueSet v2s)
-      {
-        for (var c : v2s._componentsArray)
-          {
-            components.put(c._id, c);
-          }
-      }
-    else
-      {
-        components.put(v2._id, v2);
-      }
-    _componentsArray = new Value[components.size()];
-    var i = 0;
-    for (var c : components.keySet())
-      {
-        _componentsArray[i++] = components.get(c);
-      }
+    var coll = new Collect(dfa);
+    coll.add(v1);
+    coll.add(v2);
+    _componentsArray = coll.asComponents();
   }
 
 

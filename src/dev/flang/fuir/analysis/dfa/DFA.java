@@ -2608,7 +2608,7 @@ public class DFA extends ANY
         if (res == null)
           {
             res = v.contains(w) ? v :
-                  w.contains(v) ? w : new ValueSet(v, w);
+                  w.contains(v) ? w : new ValueSet(this, v, w);
             res = cache(res);
             _joined.put(k, res);
           }
