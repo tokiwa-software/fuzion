@@ -85,6 +85,7 @@ public class Parser extends Lexer
 
   private boolean _nestedIf = false;
   private int _lastIfLine = -1;
+  private boolean _elif = false;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -2747,9 +2748,9 @@ loopEpilog  : "until" exprInLine thenPart elseBlock
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
-                                                    var els1= fork().elseBlock();
-                                                    var els2= fork().elseBlock();
-                                                    var els =        elseBlock();
+                                                    var els1= fork().loopElseBlock();
+                                                    var els2= fork().loopElseBlock();
+                                                    var els =        loopElseBlock();
         setMinIndent(old);
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
@@ -2867,6 +2868,10 @@ ifexpr      : "if" exprInLine thenPart elseBlock
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
+
+        var oldMinIdent = _elif ? null : setMinIndent(tokenPos());
+        _elif = false;
+
         match(Token.t_if, "ifexpr");
 
         _nestedIf = _lastIfLine == line();
@@ -2880,6 +2885,8 @@ ifexpr      : "if" exprInLine thenPart elseBlock
         // reset if new line
         if (_nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
         var els = elseBlock();
+
+        if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
         return new If(pos, e, b,
           // do no use empty blocks as else blocks since the source position
@@ -2914,6 +2921,34 @@ elseBlock   : "else" block
             ;
    */
   Block elseBlock()
+  {
+    Block result = null;
+
+    if (skip(true, Token.t_else))
+      {
+        if (current() == Token.t_if)
+          {
+            _elif = true;
+          }
+        result = block();
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result == null          ||
+       result instanceof Block    );
+
+    return result;
+  }
+
+
+    /**
+   * Parse elseBlock
+   *
+elseBlock   : "else" block
+            |
+            ;
+   */
+  Block loopElseBlock()
   {
     var result = skip(true, Token.t_else) ? block()
                                           : null;
