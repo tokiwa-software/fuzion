@@ -2730,7 +2730,7 @@ loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
             |                    "do" block
             ;
-loopEpilog  : "until" exprInLine thenPart elseBlock
+loopEpilog  : "until" exprInLine thenPart loopElseBlock
             |                             "else" block
             ;
    */
@@ -2942,11 +2942,11 @@ elseBlock   : "else" block
 
 
     /**
-   * Parse elseBlock
+   * Parse loopElseBlock
    *
-elseBlock   : "else" block
-            |
-            ;
+loopElseBlock : "else" block
+              |
+              ;
    */
   Block loopElseBlock()
   {
