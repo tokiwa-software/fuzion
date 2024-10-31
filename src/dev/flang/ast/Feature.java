@@ -1785,11 +1785,6 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-        if (CHECKS) check
-          (_resultType == null
-           || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-           );
-
         if (outer() instanceof Feature o)
           {
             o.typeInference(res);
@@ -2165,7 +2160,8 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, urgent);
+        _resultType = _impl.inferredType(res, this, urgent);
+        result = _resultType;
       }
     else if (_returnType.isConstructorType())
       {
