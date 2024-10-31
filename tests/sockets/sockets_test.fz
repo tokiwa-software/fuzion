@@ -41,7 +41,7 @@ sockets_test is
       match net.server.accept
         e error => false
         c net.connection =>
-          sc := net.connections.with unit lm c ()->
+          sc := c.with unit lm ()->
             chan => net.channel.env
 
             say_silent "$protocol/$family-server, accepted connection"
@@ -74,7 +74,7 @@ sockets_test is
               * =>
                 panic "NI"
 
-          net.connections.close c
+          _ := c.close
 
           sc.ok
 
@@ -91,7 +91,7 @@ sockets_test is
         say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
       c net.connection =>
 
-        res := net.connections.with String lm c ()->
+        res := c.with String lm ()->
 
             chan => net.channel.env
 
@@ -119,7 +119,7 @@ sockets_test is
 
               * =>  panic "NI"
 
-        net.connections.close c
+        _ := c.close
 
         say res
 
