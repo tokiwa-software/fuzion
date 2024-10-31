@@ -38,9 +38,12 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.ir.IR.ExprKind;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_SITE;
 
@@ -2177,7 +2180,20 @@ public class DFA extends ANY
         cl._dfa._readFields.set(jref0);
         cl._dfa._readFields.set(jref1);
         // NYI: UNDER DEVELOPMENT: setField Java_Ref, see get_static_field0
-        return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+        var x = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+        // Causes Error // x.setField(cl._dfa, jrefres, Value.UNKNOWN_JAVA_REF);
+        return x;
+      });
+    put("fuzion.java.set_field0"            , cl ->
+      {
+        var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
+        var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
+        var jref2 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(2))._clazz);
+        // mark Java_Ref fields as read
+        cl._dfa._readFields.set(jref0);
+        cl._dfa._readFields.set(jref1);
+        cl._dfa._readFields.set(jref2);
+        return Value.UNIT;
       });
     put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
     put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
@@ -2319,6 +2335,18 @@ public class DFA extends ANY
             jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
           }
         return jobj;
+      });
+    put("fuzion.java.set_static_field0"     , cl ->
+      {
+        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+        var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        // otherwise it is a primitive like int, boolean
+        if (cl._dfa._fuir.clazzIsRef(rc))
+          {
+            var jref = cl._dfa._fuir.lookupJavaRef(rc);
+            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+          }
+          return Value.UNIT;
       });
     put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
 
@@ -2607,8 +2635,9 @@ public class DFA extends ANY
         res = _joined.get(k);
         if (res == null)
           {
-            res = v instanceof ValueSet vv && vv.contains(w) ? v :
-                  w instanceof ValueSet vw && vw.contains(v) ? w : cache(new ValueSet(v, w));
+            res = v.contains(w) ? v :
+                  w.contains(v) ? w : new ValueSet(this, v, w);
+            res = cache(res);
             _joined.put(k, res);
           }
       }

@@ -32,7 +32,6 @@ import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -1105,6 +1104,26 @@ public class Intrinsics extends ANY
                   c.javaRefField(A1).castTo("jstring"),
                   A2.castTo("char *"))),
               false));
+    put("fuzion.java.set_field0",
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : CExpr
+              .call("fzE_set_field0",
+                new List<>(c.javaRefField(A0).castTo("jobject"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  c.javaRefField(A2).castTo("jvalue"),
+                  A3.castTo("char *"))));
+    put("fuzion.java.set_static_field0",
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : CExpr
+              .call("fzE_set_static_field0",
+                new List<>(c.javaRefField(A0).castTo("jstring"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  c.javaRefField(A2).castTo("jvalue"),
+                  A3.castTo("char *"))));
     put("fuzion.java.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {

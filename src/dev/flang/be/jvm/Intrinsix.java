@@ -26,6 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
@@ -39,13 +45,6 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
-
-import java.util.Arrays;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import java.util.stream.Collectors;
 
 
 /**
@@ -382,6 +381,28 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res.andThen(returnNewJavaObject(jvm, rc)), Expr.UNIT);
         });
 
+    put("fuzion.java.set_static_field0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
+          var sref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
+          var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
+          var res = args.get(0)
+            .andThen(Expr.checkcast(jt))
+            .andThen(jvm.getfield(sref0)) // class name as String
+            .andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(1))
+            .andThen(Expr.checkcast(jt))
+            .andThen(jvm.getfield(sref1)) // class name as String, field name as String
+            .andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(2))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                        "fuzion_java_set_static_field0",
+                                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V",
+                                        ClassFileConstants.PrimitiveType.type_void));
+          return new Pair<>(Expr.UNIT, res);
+        });
+
     put("fuzion.java.get_field0",
         (jvm, si, cc, tvalue, args) ->
         {
@@ -410,6 +431,39 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .is(rt);
 
           return new Pair<>(res.andThen(returnNewJavaObject(jvm, rc)), Expr.UNIT);
+        });
+
+    put("fuzion.java.set_field0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var jO = jvm._fuir.clazz_fuzionJavaObject_Ref();
+          var javaRefFieldName = jvm._names.field(jO);
+          var res = args
+            .get(0)
+            .andThen(Expr.stringconst(javaRefFieldName))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_get_field0",
+                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT))
+            .andThen(args.get(1))
+            .andThen(Expr.stringconst(javaRefFieldName))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_get_field0",
+                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT))
+            .andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(2))
+            .andThen(Expr.stringconst(javaRefFieldName))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_get_field0",
+                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
+                                       Names.JAVA_LANG_OBJECT))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "fuzion_java_set_field0",
+                                       "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)V",
+                                       ClassFileConstants.PrimitiveType.type_void));
+
+          return new Pair<>(Expr.UNIT, res);
         });
   }
 

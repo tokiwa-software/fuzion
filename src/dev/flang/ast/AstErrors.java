@@ -757,16 +757,16 @@ public class AstErrors extends ANY
   }
   */
 
-  static void ifConditionMustBeBool(SourcePosition pos, AbstractType type)
+  static void ifConditionMustBeBool(Expr sub)
   {
     if (CHECKS) check
-      (any() || type != Types.t_ERROR);
+      (any() || sub.type() != Types.t_ERROR);
 
-    if (type != Types.t_ERROR)
+    if (sub.type() != Types.t_ERROR)
       {
-        error(pos,
+        error(sub.pos(),
               "If condition must be assignable to type " + s(Types.resolved.t_bool) + "",
-              "Actual type is " + s(type) + "");
+              "Actual type is " + s(sub.type()) + "");
       }
   }
 
@@ -2275,6 +2275,16 @@ public class AstErrors extends ANY
     error(f.pos(), "The outer feature of a type feature must define a type, i.e. constructors and choices.",
       "To solve this, move the declared type feature to a feature that defines a type."
     );
+  }
+
+  public static void illegalThisType(SourcePosition pos, AbstractType t)
+  {
+    error(pos, "Illegal " + skw(".this") + " type: " + s(t),
+      """
+        To solve this, either
+          - move the code inside of the feature the type refers to
+        or
+          - change the type to a legal"""  + " " + skw(".this") + " type.");
   }
 
 

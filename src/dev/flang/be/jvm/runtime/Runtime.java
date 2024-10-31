@@ -26,12 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
-import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-import dev.flang.util.JavaInterface;
-import dev.flang.util.Pair;
-import dev.flang.util.StringHelpers;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,6 +46,12 @@ import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.JavaInterface;
+import dev.flang.util.Pair;
+import dev.flang.util.StringHelpers;
 
 
 /**
@@ -910,6 +910,35 @@ public class Runtime extends ANY
 
 
   /**
+   * Helper method called by the fuzion.java.set_static_field0 intrinsic.
+   *
+   * Sets the static field to the given content
+   *
+   * @param clazz name of the class of the field
+   *
+   * @param field name of the field
+   *
+   * @param value the value to which the field should be set
+   */
+  public static void fuzion_java_set_static_field0(String clazz, String field, Object value)
+  {
+    unsafeIntrinsic();
+
+    try
+      {
+        Class cl = Class.forName(clazz);
+        Field f = cl.getDeclaredField(field);
+        f.set(null, value);
+      }
+    catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()+" when calling fuzion.java.set_static_field for field "
+                     +clazz+"."+field+" and value "+value);
+      }
+  }
+
+
+  /**
    * Helper method called by the fuzion.java.get_field0 intrinsic.
    *
    * Given some instance of a Java class, retrieves the content of a given field in
@@ -944,6 +973,41 @@ public class Runtime extends ANY
       }
 
     return result;
+  }
+
+
+  /**
+   * Helper method called by the fuzion.java.set_field0 intrinsic.
+   *
+   * Given some instance of a Java class, set the given field in
+   * this instance to the given content
+   *
+   * @param thiz the Java instance
+   *
+   * @param field name of the field
+   *
+   * @param value the value the field should be set to
+   */
+  public static void fuzion_java_set_field0(Object thiz, String field, Object value)
+  {
+    unsafeIntrinsic();
+
+    Class clazz = null;
+
+    try
+      {
+        clazz = thiz.getClass();
+        Field f = clazz.getDeclaredField(field);
+        f.set(thiz, value);
+      }
+    catch (IllegalAccessException | NoSuchFieldException e)
+      {
+        Errors.fatal(e.toString()
+          + " when calling fuzion.java.set_field for field "
+          + (clazz !=null ? clazz.getName() : "")+"."+field
+          + "and value "+value
+        );
+      }
   }
 
 

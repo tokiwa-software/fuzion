@@ -17,18 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Lazy
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Lazy has special compiler support.
-# It can be used to require lazy evaluation of arguments.
-#
-# A good example is `or` in bool:
-#     infix || (other Lazy bool) bool =>
-#
-# In the following example the expression
-# `4+5>10` will never be executed:
-#     true || 4+5>10
-#
-public Lazy(public T type) ref : Nullary T is
+override NAME = reg_issue1004
+include ../simple.mk

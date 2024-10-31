@@ -2803,6 +2803,10 @@ public class Call extends AbstractCall
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
+
+                if (CHECKS) check
+                  (Errors.any() || actl.type().isVoid() || actl.needsBoxing(frmlT, context) == null || actl.isBoxed());
+
                 count++;
               }
           }
