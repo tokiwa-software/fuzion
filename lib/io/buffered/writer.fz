@@ -40,6 +40,9 @@ public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect is
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
+  # NYI: UNDER DEVELOPMENT: with should have signature
+  # with(R type, f ()-> outcome R) outcome R =>
+  #
   public with (R type, f ()->R) outcome R =>
     try (writer LM) R (() -> writer.this.instate R writer.this f (_ -> exit 1))
 

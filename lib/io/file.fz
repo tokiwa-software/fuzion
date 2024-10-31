@@ -33,3 +33,11 @@ public file is
   public exists(path String) =>
     (stat path false).ok
 
+
+  # write String `s` to file `f`
+  #
+  public write(f String, s String) outcome unit =>
+    lm : mutate is
+    lm.instate_self ()->
+      use unit lm f mode.write ()->
+        ((io.buffered.writer lm).write s.utf8).error
