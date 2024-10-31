@@ -268,9 +268,9 @@ O(n log n).
                 + (if (size & sz0) != 0 nt else 0)
                 + (if (size & sz ) != 0 sz else 0))
         m0 := if (size & sz) != 0
-            min0 m at at+sz-1
-          else
-            m
+                min0 m at at+sz-1
+              else
+                m
         min m0 at0 sz0 nt
 
     if size = 0
@@ -298,9 +298,9 @@ O(n log n).
                 + (if (size & sz0) != 0 nt else 0)
                 + (if (size & sz ) != 0 sz else 0))
         m0 := if (size & sz) != 0
-            max0 m at at+sz-1
-          else
-            m
+                max0 m at at+sz-1
+              else
+                m
         max m0 at0 sz0 nt
 
     if size = 0
@@ -343,9 +343,9 @@ O(n log n).
                 + (if (size & sz0) != 0 nt else 0)
                 + (if (size & sz ) != 0 sz else 0))
         a0 := if (size & sz) != 0
-            add_all a at at+sz-1
-          else
-            a
+                add_all a at at+sz-1
+              else
+                a
         add_all a0 at0 sz0 nt
 
     if other.size < size
