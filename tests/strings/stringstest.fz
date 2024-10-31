@@ -30,10 +30,10 @@ stringstest is
 
   chck(b0 bool, msg String) =>
     s := if b0
-        "PASSED: "
-      else
-        _ := set_exit_code 1
-        "FAILED: "
+           "PASSED: "
+         else
+           _ := set_exit_code 1
+           "FAILED: "
     say (s + msg)
 
   x := 42
