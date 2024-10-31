@@ -5,7 +5,7 @@
 The field being redefined: --CURDIR--/reg_issue3108.fz:29:5:
     y := 2
 ----^
-To solve this, you may want to consider converting the redefined field into a routine by replacing':=' by '=>'.
+To solve this, you may want to consider converting the redefined field into a routine by replacing ':=' by '=>'.
 
 
 --CURDIR--/reg_issue3108.fz:34:11: error 2: Redefinition of non-argument fields is forbidden.
@@ -14,6 +14,6 @@ To solve this, you may want to consider converting the redefined field into a ro
 The field being redefined: --CURDIR--/reg_issue3108.fz:31:5:
     field := 3
 ----^^^^^
-To solve this, you may want to consider converting the redefined field into a routine by replacing':=' by '=>'.
+To solve this, you may want to consider converting the redefined field into a routine by replacing ':=' by '=>'.
 
 2 errors.

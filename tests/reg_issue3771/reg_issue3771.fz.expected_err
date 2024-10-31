@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3771.fz:29:5: error 1: Expression produces result of type 'e.this.type (in type feature)' but result is not used.
+    p
+----^
+To solve this, use the result or explicitly ignore the result '_ := <expression>'.
+
+one error.
