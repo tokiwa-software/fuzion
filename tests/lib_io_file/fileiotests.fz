@@ -31,26 +31,19 @@ fileiotests =>
 
   content := "Hello world 🌍"
 
-  f := io.file
+  f => io.file
 
-  reader := f.read
-
-  exists(path String) bool =>
-    match f.stat path true
-      io.file.meta_data => true
-      error => false
-
-  say "$dir exists: {exists dir}"
+  say "$dir exists: {f.exists dir}"
   _ := (io.dir.make dir).bind unit _->
     say "$dir was created"
-  say "$dir exists: {exists dir}"
+  say "$dir exists: {f.exists dir}"
 
-  say "$file exists: {exists file}"
+  say "$file exists: {f.exists file}"
 
   _ := f
     .use unit file io.file.mode.write (()->io.file.open.write content.utf8)
     .bind unit (_ -> say "$file was created")
-  say "$file exists: {exists file}"
+  say "$file exists: {f.exists file}"
 
   say "stat resolve=true : $file size is {(f.stat file true).val.size}"
   say "stat resolve=false: $file size is {(f.stat file false).val.size}"
@@ -70,15 +63,15 @@ fileiotests =>
 
   _ := f.delete file
     .bind unit (_-> say "$file was deleted")
-  say "$file exists: {exists file}"
+  say "$file exists: {f.exists file}"
 
-  say "$dir exists: {exists dir}"
-  say "$newdir exists: {exists newdir}"
+  say "$dir exists: {f.exists dir}"
+  say "$newdir exists: {f.exists newdir}"
   _ := f.move dir newdir
     .bind unit (_ -> say "$dir is now: $newdir")
-  say "$newdir exists: {exists newdir}"
-  say "$dir exists: {exists dir}"
+  say "$newdir exists: {f.exists newdir}"
+  say "$dir exists: {f.exists dir}"
 
   _ := f.delete newdir
     .bind unit (_ -> say "$newdir was deleted")
-  say "$newdir exists: {exists newdir}"
+  say "$newdir exists: {f.exists newdir}"
