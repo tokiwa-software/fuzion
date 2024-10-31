@@ -28,10 +28,10 @@ redef_args is
 
   chck(b bool, msg String) =>
     s := if (b)
-      "PASSED: "
-    else
-      _ := set_exit_code 1
-      "FAILED: "
+           "PASSED: "
+         else
+           _ := set_exit_code 1
+           "FAILED: "
     say (s + msg)
 
   RComplex(RT type) ref is
