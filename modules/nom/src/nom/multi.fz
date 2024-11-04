@@ -36,7 +36,7 @@ module multi is
   public many1 (I, O type, p Parser I I O) =>
     parser I I (Sequence O) input->
       match p.call input
-        s1 success I O => (many0 p).call input
+        _ success I O => (many0 p).call input
         e error => e
 
 
@@ -70,7 +70,7 @@ module multi is
         s1 success =>
           match (many0 (sequence.preceded p_sep p_value)).call s1.rest
             s2 success => success s2.rest ([s1.out]++s2.out).as_seq
-            e error => panic "invalid state, many0 always succeeds"
+            _ error => panic "invalid state, many0 always succeeds"
         # NYI type inference should infer correct type of empty array
         error => success input (list O).type.empty.as_seq
     parser I _ _ (input -> parse input)
@@ -87,4 +87,3 @@ module multi is
             error => panic "invalid state, many0 always succeeds"
         e error => e
     parser I _ _ (input -> parse input)
-

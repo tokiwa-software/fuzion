@@ -277,7 +277,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       .map x->
         match x
           c codepoint => c
-          e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
+          _ error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
 
 
   # replaces invalid UTF-8 byte sequences in this string with the Unicode
@@ -293,7 +293,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       .reduce "" r,x->
         match x
           c codepoint => r + c
-          e error => r + replacement
+          _ error => r + replacement
 
 
   # convert this string into a list of codepoint and errors for encoding problems

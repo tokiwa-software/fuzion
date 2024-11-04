@@ -201,7 +201,7 @@ is
               l Entry =>
                 match e.right.get
                   nil => (option l, option old_val)
-                  r Entry =>
+                  _ Entry =>
                     m := minimum e.right.get
 
                     new_node := Entry m.get.key m.get.val

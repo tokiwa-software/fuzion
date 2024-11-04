@@ -24,7 +24,7 @@
 private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
 
   # NYI use this to register open resource
-  uid := unique_id
+  # uid := unique_id
 
 
   # how many bytes are read at a time

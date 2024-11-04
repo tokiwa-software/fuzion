@@ -153,7 +153,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef last option A =>
     tail ? nil    => head
-         | c Cons => tail.last
+         | _ Cons => tail.last
 
 
   # collect the contents of this list into an array
