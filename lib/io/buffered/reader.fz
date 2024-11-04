@@ -27,7 +27,7 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
+public reader(LM type : mutate, rp Read_Provider, buf_size i32) : tryable is
 
 
   # circular buffer backing this reader
@@ -38,25 +38,6 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
   # has the end of file been reached?
   #
   eof := LM.env.new false
-
-
-  # install this effect and execute 'f'. Wrap the result of 'f' into an
-  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
-  # via a call to 'raise' wrap the 'error' passed to 'raise' into the
-  # resulting 'outcome'.
-  #
-  # NYI: UNDER DEVELOPMENT: with should have signature
-  # with(R type, f ()-> outcome R) outcome R =>
-  #
-  public with(R type, f ()->R) outcome R =>
-    try (reader LM) R ()->
-      reader.this.instate_self R f
-
-
-  # terminate immediately with the given error wrapped in 'option'.
-  #
-  raise(e error) =>
-    (try (reader LM)).env.raise e
 
 
   # read returns the current buffer or end of file.

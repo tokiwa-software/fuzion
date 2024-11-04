@@ -42,7 +42,7 @@ module:public connection(desc i64) is
   public with(T type, LM type : mutate, fn ()->T) ! net.connections
   pre is_active
   =>
-    (io.buffered.reader LM (read_provider desc) 1024).with ()->
+    (io.buffered.reader LM (read_provider desc) 1024).try ()->
       (io.buffered.writer LM (write_provider desc) 1024).with ()->
         (net.channel desc).instate_self ()->
           fn.call
@@ -57,7 +57,7 @@ module:public connection(desc i64) is
   =>
     TP.env.submit (outcome T) ()->
       lm.instate_self (outcome T) ()->
-        ((io.buffered.reader LM (read_provider desc) 1024).with ()->
+        ((io.buffered.reader LM (read_provider desc) 1024).try ()->
           (io.buffered.writer LM (write_provider desc) 1024).with ()->
             (net.channel desc).instate_self ()->
               fn()).bind T x->x
