@@ -34,7 +34,7 @@ test_issue1604 is
         fill ~a ~b ~c ~d ~e ~f n-1
 
     s := small 0x11
-    l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
+    _ := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
     a0 := concur.atomic c s
 
     test(n i32) unit =>

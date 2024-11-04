@@ -1,7 +1,7 @@
 
---CURDIR--/semicolon_ambiguity.fz:30:30: error 1: Ambiguous semicolon in nested blocks.
-  g1 ()->unit := ()->say "hi"; say "ho"
------------------------------^
+--CURDIR--/semicolon_ambiguity.fz:30:29: error 1: Ambiguous semicolon in nested blocks.
+  _ ()->unit := ()->say "hi"; say "ho"
+----------------------------^
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 
 
@@ -24,13 +24,13 @@ It is unclear whether this semicolon terminates the inner block or not. To solve
 
 
 --CURDIR--/semicolon_ambiguity.fz:39:36: error 5: Ambiguous semicolon in nested blocks.
-      i i32       => ()->yak "'$i'"; say " is a number"
+      _ i32       => ()->yak "'$i'"; say " is a number"
 -----------------------------------^
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 
 
 --CURDIR--/semicolon_ambiguity.fz:40:36: error 6: Ambiguous semicolon in nested blocks.
-      c codepoint => ()->yak "'$c'"; say " is a codepoint"
+      _ codepoint => ()->yak "'$c'"; say " is a codepoint"
 -----------------------------------^
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 

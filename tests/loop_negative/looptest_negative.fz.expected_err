@@ -90,25 +90,25 @@ block returns value of type 'String' at --CURDIR--/looptest_negative.fz:58:7:
 
 
 --CURDIR--/looptest_negative.fz:68:3: error 9: Incompatible types in assignment
-  neg3i i32    := testLoop_neg3 a (i -> i > 10) //  3.a should flag an error: incompatible result types bool vs. i32
---^^^^^
-assignment to field : 'looptest_negative.neg3i'
+  _ i32    := testLoop_neg3 a (i -> i > 10) //  3.a should flag an error: incompatible result types bool vs. i32
+--^
+assignment to field : 'looptest_negative._'
 expected formal type: 'i32'
 actual type found   : 'bool'
 assignable to       : 'bool'
 for value assigned  : 'testLoop_neg3 a (i -> i > 10)'
-To solve this, you could change the type of the target 'looptest_negative.neg3i' to 'bool' or convert the type of the assigned value to 'i32'.
+To solve this, you could change the type of the target 'looptest_negative._' to 'bool' or convert the type of the assigned value to 'i32'.
 
 
 --CURDIR--/looptest_negative.fz:69:3: error 10: Incompatible types in assignment
-  neg3s String := testLoop_neg3 a (i -> i > 10) //  3.b should flag an error: incompatible result types bool vs. String
---^^^^^
-assignment to field : 'looptest_negative.neg3s'
+  _ String := testLoop_neg3 a (i -> i > 10) //  3.b should flag an error: incompatible result types bool vs. String
+--^
+assignment to field : 'looptest_negative._'
 expected formal type: 'String'
 actual type found   : 'bool'
 assignable to       : 'bool'
 for value assigned  : 'testLoop_neg3 a (i -> i > 10)'
-To solve this, you could change the type of the target 'looptest_negative.neg3s' to 'bool' or convert the type of the assigned value to 'String'.
+To solve this, you could change the type of the target 'looptest_negative._' to 'bool' or convert the type of the assigned value to 'String'.
 
 
 --CURDIR--/looptest_negative.fz:109:11: error 11: If condition must be assignable to type 'bool'

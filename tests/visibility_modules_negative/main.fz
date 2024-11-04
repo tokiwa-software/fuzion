@@ -93,6 +93,6 @@ public m =>
   # checkLegalVisibility
 
   match (list i32).empty
-    c Cons =>
+    _ Cons =>
       module my_feat is // should flag an error visibility modifier used in inner block
     nil =>

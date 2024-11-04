@@ -148,16 +148,16 @@ nested_choice =>
     match (c.nth 0)
       s some_choice_including_nil =>
         match s
-          nil nil => say "n2"
-          String String => say "s"
-      nil nil => say "n1"
+          _ nil => say "n2"
+          _ String => say "s"
+      _ nil => say "n1"
 
     match (c.nth 1)
       s some_choice_including_nil =>
         match s
-          nil nil => say "n2"
-          String String => say "s"
-      nil nil => say "n1"
+          _ nil => say "n2"
+          _ String => say "s"
+      _ nil => say "n1"
 
 
 
@@ -168,9 +168,9 @@ nested_choice =>
         match my_choice.this
           choice choice nil String =>
             match choice
-              nil nil => "inner nil"
+              _ nil => "inner nil"
               str String => str
-          nil nil => "outer nil"
+          _ nil => "outer nil"
 
     a my_choice := nil
     b my_choice := "string"
@@ -183,11 +183,11 @@ nested_choice =>
         match my_choice2.this
           choice choice nil String =>
             match choice
-              nil nil => "inner nil"
+              _ nil => "inner nil"
               str String => str
           choice choice nil unit =>
             match choice
-              nil nil => "inner nil"
+              _ nil => "inner nil"
               unit => "unit"
 
     // NYI this should flag an error
