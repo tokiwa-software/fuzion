@@ -219,6 +219,24 @@ public effect is
     effect.this.instate R effect.this code
 
 
+
+  # infix variant instate_self
+  #
+  # use it like this:
+  #
+  #     effect_instance ! ()->code
+  #
+  public infix !(# result type
+                 R type,
+
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+  =>
+    instate_self code
+
+
+
   # has an effect of this type been instated?
   #
   public type.is_instated bool => is_instated0

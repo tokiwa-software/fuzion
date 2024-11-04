@@ -177,7 +177,7 @@ is
 # short-hand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) =>
-  (handles unit (array T 0 x->do) oneway_monad_mode.inst).instate_self rr
+  (handles unit (array T 0 x->do) oneway_monad_mode.inst) ! rr
 
 # short-hand for creating an empty set of handles of given type.
 #
