@@ -69,8 +69,8 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
   # write bytes to standard in
   #
   write_provider (desc i64) : io.Write_Provider is
-    redef write (bytes array u8) outcome unit =>
-      if (fuzion.sys.pipe.write desc bytes.internal_array.data bytes.count) = -1
+    redef write (bytes Sequence u8) outcome unit =>
+      if (fuzion.sys.pipe.write desc bytes.as_array.internal_array.data bytes.count) = -1
         error "error while writing"
       else
         unit

@@ -59,8 +59,8 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
   # definition of write provider for file
   #
   write_provider (desc i64) : io.Write_Provider is
-    redef write (bytes array u8) outcome unit =>
-      fuzion.sys.fileio.write desc bytes
+    redef write (bytes Sequence u8) outcome unit =>
+      fuzion.sys.fileio.write desc bytes.as_array
 
 
   mode_num := match m
