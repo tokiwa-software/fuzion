@@ -123,7 +123,7 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
       .as_outcome (error "stdin of Process already closed.")
       .bind T p->
         (io.buffered.writer LM p pipe_buffer_size)
-          .with f
+          .instate_self f
 
 
   # write string to stdin of child process
