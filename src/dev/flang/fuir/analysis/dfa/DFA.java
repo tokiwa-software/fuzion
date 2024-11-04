@@ -1284,6 +1284,7 @@ public class DFA extends ANY
   void findFixPoint()
   {
     var cnt = 0;
+    var lookupDone = false;
     do
       {
         cnt++;
@@ -1297,6 +1298,12 @@ public class DFA extends ANY
         _changed = false;
         _changedSetBy = () -> "*** change not set ***";
         iteration();
+        if (!_changed && !lookupDone)
+          {
+            _fuir.lookupDone();  // once we are done, FUIR.isUnitType() will work since it can be sure nothing will be added.
+            lookupDone = true;
+            wasChanged(() -> "freezing lookup");
+          }
       }
     while (_changed && (true || cnt < 100));
     if (_options.verbose(4))
@@ -1309,9 +1316,11 @@ public class DFA extends ANY
             _options.verbosePrintln(4, "  call: " + c);
           }
       }
+
     _reportResults = true;
-    _fuir.lookupDone();  // once we are done, FUIR.isUnitType() will work since it can be sure nothing will be added.
     iteration();
+    if (CHECKS) check
+      (!_changed);
 
     showCallStatistics();
   }
