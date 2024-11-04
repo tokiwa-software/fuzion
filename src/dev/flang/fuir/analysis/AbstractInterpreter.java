@@ -273,8 +273,15 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * or
    *
    *   dev_flang_fuir_analysis_AbstractInterpreter_DEBUG=".*install_default"
+   *
+   * Additionally, specifying
+   *
+   *   dev_flang_fuir_analysis_AbstractInterpreter_DEBUG_AFTER=true
+   *
+   * will enable debug output after processing of each command.
    */
   static final String DEBUG;
+  static final boolean DEBUG_AFTER;
   static {
     var prop = "dev.flang.fuir.analysis.AbstractInterpreter.DEBUG";
     var debug = FuzionOptions.propertyOrEnv(prop);
@@ -283,6 +290,9 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       debug.equals("false") ? null :
       debug.equals("true" ) ? ".*"
                             : debug;
+
+    var prop_after = "dev.flang.fuir.analysis.AbstractInterpreter.DEBUG_AFTER";
+    DEBUG_AFTER = FuzionOptions.boolPropertyOrEnv(prop_after);
   }
 
 
@@ -519,7 +529,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     if (last_s > 0 && _fuir.alwaysResultsInVoid(last_s))
       {
-        l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable."));
+        l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable:\n" +
+                                           _fuir.siteAsString(last_s)));
       }
 
     // FUIR has the (so far undocumented) invariant that the stack must be
@@ -561,6 +572,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       }
     var e = _fuir.codeAt(s);
 
+    RESULT res;
     switch (e)
       {
       case Assign:
@@ -573,13 +585,14 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var f = _fuir.accessedClazz(s);
           if (f != -1)  // field we are assigning to may be unused, i.e., -1
             {
-              return _processor.assign(s, tvalue, avalue);
+              res = _processor.assign(s, tvalue, avalue);
             }
           else
             {
-              return _processor.sequence(new List<>(_processor.drop(tvalue, tc),
+              res = _processor.sequence(new List<>(_processor.drop(tvalue, tc),
                                                     _processor.drop(avalue, ft)));
             }
+          break;
         }
       case Box:
         {
@@ -588,15 +601,16 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           if (_fuir.clazzIsRef(vc) || !_fuir.clazzIsRef(rc))
             { // vc's type is a generic argument whose actual type does not need
               // boxing
-              return _processor.comment("Box is a NOP, clazz is already a ref");
+              res = _processor.comment("Box is a NOP, clazz is already a ref");
             }
           else
             {
               var val = pop(stack, vc);
               var r = _processor.box(s, val, vc, rc);
               push(stack, rc, r.v0());
-              return r.v1();
+              res = r.v1();
             }
+          break;
         }
       case Call:
         {
@@ -614,18 +628,21 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
               var rt = _fuir.clazzResultClazz(cc0);
               push(stack, rt, r.v0());
             }
-          return r.v1();
+          res = r.v1();
+          break;
         }
       case Comment:
         {
-          return _processor.comment(_fuir.comment(s));
+          res = _processor.comment(_fuir.comment(s));
+          break;
         }
       case Current:
         {
           var r = _processor.current(s);
           var cl = _fuir.clazzAt(s);
           push(stack, cl, r.v0());
-          return r.v1();
+          res = r.v1();
+          break;
         }
       case Const:
         {
@@ -638,7 +655,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             (r.v1() == _processor.nop());
 
           push(stack, constCl, r.v0());
-          return r.v1();
+          res = r.v1();
+          break;
         }
       case Match:
         {
@@ -651,7 +669,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             }
           if (CHECKS) check
             (r.v0() == null || r.v0() == _processor.unitValue());
-          return r.v1();
+          res = r.v1();
+          break;
         }
       case Tag:
         {
@@ -663,7 +682,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           int tagNum  = _fuir.tagTagNum(s);
           var r = _processor.tag(s, value, newcl, tagNum);
           push(stack, newcl, r.v0());
-          return r.v1();
+          res = r.v1();
+          break;
         }
       case Env:
         {
@@ -672,7 +692,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var ecl = _fuir.envClazz(s);
           var r = _processor.env(s, ecl);
           push(stack, ecl, r.v0());
-          return r.v1();
+          res = r.v1();
+          break;
         }
       case Pop:
         {
@@ -685,14 +706,24 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var cc = _fuir.accessedClazz(s-1);
           var rt = _fuir.clazzResultClazz(cc);
           var v = pop(stack, rt);
-          return _processor.drop(v, rt);
+          res = _processor.drop(v, rt);
+          break;
         }
       default:
         {
           Errors.fatal("AbstractInterpreter backend does not handle expressions of type " + e);
-          return null;
+          res = null;
+          break;
         }
       }
+
+    if (DEBUG_AFTER &&
+        DEBUG != null &&
+        _fuir.clazzAsString(_fuir.clazzAt(s)).matches(DEBUG))
+      {
+        say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
+      }
+    return res;
   }
 
 
