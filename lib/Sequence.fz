@@ -458,12 +458,18 @@ public Sequence(public T type) ref : property.equatable is
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the total order defined by less_or_equal
-  public sort(less_or_equal (T, T) -> bool) => container.sorted_array Sequence.this less_or_equal
+  # sort this Sequence using the order defined by less_or_equal
+  #
+  public sort_by(less_or_equal (T, T) -> bool) => container.sorted_array Sequence.this less_or_equal
 
 
-  # sort this Sequence using total order defined for 'f a[i]'
-  public sort_by(O type : property.orderable, f T->O) => sort (a, b -> f a ≤ f b)
+  # sort this Sequence
+  #
+  public sort
+  pre
+    T : property.partially_orderable
+  =>
+    sort_by ((a,b) -> T.lteq a b)
 
 
   # create a new list from the result of applying 'f' to the
@@ -851,11 +857,11 @@ public Sequence(public T type) ref : property.equatable is
     if is_empty
       nil
     else
-      arr := container.sorted_array_of Sequence.this
-      if arr.length % 2 = 1
-        arr[arr.length / 2]
+      sorted := sort
+      if sorted.length % 2 = 1
+        sorted[sorted.length / 2]
       else
-        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (T.two)
+        (sorted[(sorted.length / 2) - 1] + sorted[(sorted.length / 2)]) / (T.two)
 
 
 
