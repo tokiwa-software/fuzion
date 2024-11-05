@@ -52,7 +52,7 @@ module:public connection(desc i64) is
   =>
     (io.buffered.reader LM (read_provider desc) 1024).with ()->
       (io.buffered.writer LM (write_provider desc) 1024).with ()->
-        (net.channel desc).instate_self ()->
+        (net.channel desc) ! ()->
           fn.call
 
 
@@ -64,5 +64,5 @@ module:public connection(desc i64) is
   pre is_active
   =>
     TP.env.submit (outcome T) ()->
-      lm.instate_self (outcome T) ()->
+      lm ! ()->
         (with0 T LM fn).bind T x->x

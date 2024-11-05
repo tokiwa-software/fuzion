@@ -59,8 +59,8 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
   # definition of write provider for file
   #
   write_provider (desc i64) : io.Write_Provider is
-    redef write (bytes array u8) outcome unit =>
-      fuzion.sys.fileio.write desc bytes
+    redef write (bytes Sequence u8) outcome unit =>
+      fuzion.sys.fileio.write desc bytes.as_array
 
 
   mode_num := match m
@@ -70,7 +70,7 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
 
   (fuzion.sys.fileio.open file_name mode_num).bind R fd->
     # install effect `open T` and run `code`
-    r := (open T fd file_name).instate_self ()->
+    r := (open T fd file_name) ! ()->
           (io.buffered.reader LM (read_provider fd) 1024).with ()->
             (io.buffered.writer LM (write_provider fd) 1024).with ()->
               tmp := code.call
