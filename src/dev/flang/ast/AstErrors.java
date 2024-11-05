@@ -2261,7 +2261,7 @@ public class AstErrors extends ANY
 
   public static void illegalVisibilityArgument(Feature f)
   {
-    error(f.pos(), "Argument features must not have visibility modifier.",
+    error(f.pos(), "Argument features of non-constructors must not have visibility modifier.",
       "To solve this, remove the visibility modifier " + s(f.visibility()) + " from feature " + s(f) + ".");
   }
 
