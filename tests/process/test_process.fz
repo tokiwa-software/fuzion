@@ -104,7 +104,7 @@ test_process =>
   test "10mb write to stdin, piped to another process"
   p := process.spawn ["cat"]
     p := spawned
-    concur.thread.spawn ()->
+    concur.threads.spawn ()->
       time.nano.sleep (time.duration.s 1)
       say "start reading"
       while

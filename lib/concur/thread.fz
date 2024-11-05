@@ -23,61 +23,30 @@
 #
 # -----------------------------------------------------------------------
 
-# thread -- effect that provides concurrent thread
+# type for a spawned thread
 #
-public thread (
-  # the handler this effect uses to spawn threads
-  p Thread_Handler
-  ) : effect
-is
+module:public thread(id i64) : property.equatable is
 
-  # type for a spawned thread
+  joined := concur.atomic trit.no
+
+  # wait for this thread to finish execution
   #
-  private:public spawned(id i64) is
-
-    # wait for this thread to finish execution
-    #
-    # NYI it should be made impossible to call this more than once
-    #
-    public join =>
+  public join =>
+    if joined.compare_and_set trit.no trit.unknown
       fuzion.sys.thread.join0 id
-      _ := thread p
+      joined.write trit.yes
+    else
+      # NYI: UNDER DEVELOPMENT:
+      # better busy loop
+      while joined.read != trit.yes
+
+    # NYI: UNDER DEVELOPMENT:
+    # should we send message to the thread that spawned this
+    # thread that it can remove its list of running threads?
 
 
-
-  # spawn a new thread
+  # equality
   #
-  public spawn(code ()->unit) =>
-    st := p.spawn code
-    _ := thread p
-    st
-
-
-  type.install_default =>
-    (concur.thread default_thread).default
-
-
-  # default thread handler
-  #
-  type.default_thread : concur.Thread_Handler is
-
-    # spawn a new thread using given code
-    #
-    redef spawn(code ()->unit) => concur.thread.spawned (fuzion.sys.thread.spawn code)
-
-
-# thread with no argument returns thread.env, i.e., the currently installed
-# source of thread concurrency.
-#
-public thread =>
-  thread.install_default
-  thread.env
-
-
-# Thread_Provider -- abstract source of concurrency
-#
-private:public Thread_Handler ref is
-
-  # spawn a new thread using given code
-  #
-  spawn(code ()->unit) concur.thread.spawned => abstract
+  public fixed redef type.equality(a, b thread.this) bool
+  =>
+    a.id = b.id
