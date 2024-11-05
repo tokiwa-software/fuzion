@@ -59,6 +59,8 @@ public class Feature extends AbstractFeature
    */
   static int _ids_ = 0;
 
+  static final Set<AbstractFeature> fieldUsages = new TreeSet<AbstractFeature>();
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -1879,6 +1881,7 @@ A ((Choice)) declaration must not contain a result type.
             public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
             public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
             public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
+            public void action(AbstractCall c) { c.recordUsage(fieldUsages); };
           });
 
         _state = State.BOXED;
@@ -1900,7 +1903,20 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (_state.atLeast(State.CHECKING_TYPES));
 
-    res._module.checkTypes(this, context);
+      res._module.checkTypes(this, context);
+
+      // warn about unused, non public, non ignored fields
+      if (kind() == AbstractFeature.Kind.Field
+          && visibility().eraseTypeVisibility() != Visi.PUB  // public fields may be unused
+          && !featureName().isInternal()                     // don't warn for internal features
+          && !this.outer().featureName().isInternal()        // don't warn for inner features of internal features
+          && !featureName().isNameless()                     // don't warn for nameless features
+          && !isArgument()                                   // don't warn for arguments
+          && !fieldUsages.contains(this)                     // check if the field is used
+          && !isUniverse())                                  // don't warn for universe
+        {
+          AstErrors.unusedField(this);
+        }
   }
 
 

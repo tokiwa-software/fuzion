@@ -32,8 +32,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import dev.flang.ast.AstErrors.PreOrPost;
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -90,6 +92,11 @@ public class AstErrors extends ANY
     }
 
   }
+
+
+  /*------------------------  static variables  -------------------------*/
+
+  private static int unusedFieldErrCount = 0;
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -2287,6 +2294,24 @@ public class AstErrors extends ANY
           - move the code inside of the feature the type refers to
         or
           - change the type to a legal"""  + " " + skw(".this") + " type.");
+  }
+
+  public static void unusedField(AbstractFeature f)
+  {
+    // only warn about unused fields if no other errors occurred
+    if (Errors.count() == unusedFieldErrCount)
+      {
+        error(f.pos(), "Unused, non public field " + sbnf(f),
+          """
+            To solve this, either
+              - use the field
+              - make it """ + " " + skw("public") +
+          """
+
+            or
+              - explicitly ignore the result """ + " " + ss("_ := …"));
+        unusedFieldErrCount++;
+      }
   }
 
 
