@@ -219,6 +219,35 @@ public effect is
     effect.this.instate R effect.this code
 
 
+
+  # infix variant instate_self
+  #
+  # use it like this:
+  #
+  #     effect_instance ! ()->code
+  #
+  public infix !(# result type
+                 R type,
+
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+  =>
+    instate_self code
+
+
+
+  # infix variant of effect.instate
+  #
+  # use it like this:
+  #
+  #     effect_type <- effect_instance ! code
+  #
+  public type.infix <- (E type : effect, e E) =>
+    effect0 e
+
+
+
   # has an effect of this type been instated?
   #
   public type.is_instated bool => is_instated0
@@ -357,3 +386,27 @@ public effect is
   # `ref`.
   #
   static_finally => finally
+
+
+
+# a constructor for holding an effect type and instance
+#
+# this allows defining operators
+#
+public effect0(E type : effect, e E) is
+
+
+  # infix variant of effect.instate
+  #
+  # use it like this:
+  #
+  #     effect_type <- effect_instance ! code
+  #
+  public infix !(# result type
+                 R type,
+
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+  =>
+    E.instate R e code

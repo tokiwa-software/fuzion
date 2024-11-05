@@ -1642,6 +1642,7 @@ public class C extends ANY
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
                      "Found call to  " + _fuir.clazzAsString(cc));
+        break;
       case Routine  :
       case Intrinsic:
       case Native   :

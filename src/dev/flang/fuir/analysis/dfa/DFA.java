@@ -278,7 +278,7 @@ public class DFA extends ANY
       var tv = tvalue.value();
       if (tv instanceof ValueSet tvalues)
         {
-          for(var t : tvalues._componentsArray)
+          for (var t : tvalues._componentsArray)
             {
               res = accessSingleTarget(s, t, args, res, tvalue);
             }
@@ -913,6 +913,7 @@ public class DFA extends ANY
    * Number of unique values that have been created.
    */
   int _numUniqueValues = 0;
+  List<Value> _uniqueValues = new List<Value>();
 
 
   /**
@@ -1074,7 +1075,7 @@ public class DFA extends ANY
   /**
    * Set of effects that are missing, excluding default effects.
    */
-  IntMap<Integer> _missingEffects = new IntMap<>();
+  IntMap<Integer> _missingEffects = new IntMap<>(); // NYI: CLEANUP: Remove? This is only written?
 
 
   /**
@@ -1240,19 +1241,6 @@ public class DFA extends ANY
 
       };
 
-    if ("true".equals(System.getenv("CLAZZ")))
-      {
-        var s = new TreeSet<String>();
-        for (var cl = res.firstClazz(); cl <= res.lastClazz(); cl++)
-          {
-            s.add("CLAZZ: "+res.clazzAsString(cl)+" nc "+res.clazzNeedsCode(cl)+" u "+res.clazzIsUnitType(cl)+" v "+res.clazzIsVoidType(cl)+" hd "+res.hasData(cl)+
-                  " outer: "+res.clazzAsString(res.clazzOuterRef(cl)));
-          }
-        for (var t : s)
-          {
-            System.out.println(t);
-          }
-      }
     return res;
   }
 
@@ -1284,6 +1272,7 @@ public class DFA extends ANY
   void findFixPoint()
   {
     var cnt = 0;
+    var lookupDone = false;
     do
       {
         cnt++;
@@ -1297,21 +1286,41 @@ public class DFA extends ANY
         _changed = false;
         _changedSetBy = () -> "*** change not set ***";
         iteration();
+        if (!_changed && !lookupDone)
+          {
+            _fuir.lookupDone();  // once we are done, FUIR.isUnitType() will work since it can be sure nothing will be added.
+            lookupDone = true;
+            wasChanged(() -> "freezing lookup");
+          }
       }
     while (_changed && (true || cnt < 100));
+
     if (_options.verbose(4))
       {
         _options.verbosePrintln(4, "DFA done:");
         _options.verbosePrintln(4, "Values: " + _numUniqueValues);
-        _options.verbosePrintln(4, "Calls: ");
+        int i = 0;
+        var valueStrings = new TreeSet<String>();
+        for (var v : _uniqueValues)
+          {
+            valueStrings.add(v.toString());
+          }
+        for (var v : valueStrings)
+          {
+            i++;
+            _options.verbosePrintln(5, "  value "+i+"/"+_numUniqueValues+": " + v);
+          }
+        _options.verbosePrintln(6, "Calls: ");
         for (var c : _calls.values())
           {
-            _options.verbosePrintln(4, "  call: " + c);
+            _options.verbosePrintln(6, "  call: " + c);
           }
       }
+
     _reportResults = true;
-    _fuir.lookupDone();  // once we are done, FUIR.isUnitType() will work since it can be sure nothing will be added.
     iteration();
+    if (CHECKS) check
+      (!_changed);
 
     showCallStatistics();
   }
@@ -1479,7 +1488,7 @@ public class DFA extends ANY
    */
   void analyzeShowDetails(Call c)
   {
-    if (_reportResults && _options.verbose(4))
+    if (_reportResults && _options.verbose(6))
       {
         say(("----------------"+c+
              "----------------------------------------------------------------------------------------------------")
@@ -2489,10 +2498,6 @@ public class DFA extends ANY
         if (_fuir.clazzIsRef(cl))
           {
             var vc = _fuir.clazzAsValue(cl);
-            if (_fuir.clazzIsRef(vc))
-              {
-                System.out.println("ref: "+_fuir.clazzAsString(cl)+" "+_fuir.clazzIsRef(cl)+" --> "+_fuir.clazzAsString(vc)+" "+_fuir.clazzIsRef(vc));
-              }
             check(!_fuir.clazzIsRef(vc));
             r = newInstance(vc, site, context).box(this, vc, cl, context);
           }
@@ -2583,6 +2588,7 @@ public class DFA extends ANY
       (v._id < 0);
 
     v._id = _numUniqueValues++;
+    _uniqueValues.add(v);
     wasChanged(() -> "DFA: new value " + v);
   }
   { makeUnique(Value.UNIT); }

@@ -27,7 +27,9 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
+public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect
+pre debug: buf_size > 0
+is
 
 
   # circular buffer backing this reader
@@ -50,7 +52,7 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
   #
   public with(R type, f ()->R) outcome R =>
     try (reader LM) R ()->
-      reader.this.instate_self R f
+      reader.this ! f
 
 
   # terminate immediately with the given error wrapped in 'option'.
@@ -70,7 +72,7 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
   # in case the buffer is empty it fills the buffer
   # with up to n bytes before returning it.
   #
-  public read(n i32) array u8 | io.end_of_file
+  public read(n i32) switch (array u8) io.end_of_file
     post
       debug: (result ? io.end_of_file => true | a array => !a.is_empty)
   =>
@@ -104,8 +106,7 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
   =>
     match rp.read buffer.available.as_i32
       a array u8 =>
-        x := buffer.enqueue a
-        match x
+        match buffer.enqueue a
           unit =>
           e error => raise e
       io.end_of_file =>
@@ -208,7 +209,7 @@ pre debug: n >= 0
 # if specified, strips carriage return bytes before
 # the delimiter before returning the read data
 #
-public read_delimiter (LM type : mutate, delim u8, strip_cr bool) String|io.end_of_file ! reader =>
+public read_delimiter (LM type : mutate, delim u8, strip_cr bool) switch String io.end_of_file ! reader =>
 
   if (reader LM).read ? io.end_of_file => true | * => false
     io.end_of_file
@@ -249,7 +250,7 @@ public read_delimiter (LM type : mutate, delim u8, strip_cr bool) String|io.end_
 # to read until a line feed occurs.
 # returns the line
 #
-public read_line (LM type : mutate) String|io.end_of_file ! (reader LM) =>
+public read_line (LM type : mutate) switch String io.end_of_file ! (reader LM) =>
   read_delimiter LM encodings.ascii.lf true
 
 
