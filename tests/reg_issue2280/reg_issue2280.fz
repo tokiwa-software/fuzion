@@ -28,7 +28,7 @@ reg_issue2280 is
   # NYI: this should be public in codepoint, had to copy it over!
 
   lm : mutate is
-  _ := lm.instate_self ()->((io.stdin lm).with ()->
+  _ := lm.instate_self ()->((io.stdin lm).try u32 ()->
     for
 
       t := u32 0, s
@@ -45,7 +45,7 @@ reg_issue2280 is
       first := l2.head.or_else (u32 0)
       #      last  :=  l2.is_empty ? 0 : l2.last        # NYI: does not work since ? : is not lazy on its arguments!
 
-      last  :=  {if l2.is_empty then u32 0 else l2.last}
+      last  :=  {if l2.is_empty then u32 0 else l2.last.get}
       # NYI: why this assymmetry between head returning option and last returning the element or panicking?
       # NYI: would be nice if `u32` would be inferred and not needed explicitly here!
       # NYI: can we get rid of the `{`/`}`

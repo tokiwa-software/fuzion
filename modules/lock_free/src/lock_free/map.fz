@@ -218,7 +218,7 @@ is
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  redef finite => true
+  redef finite => trit.yes
 
   redef as_string => "list_node({from.as_string ", "})"
 
@@ -650,7 +650,7 @@ is
         clean parent (lev - width)
       ln list_node =>
         fln := list_node ln.from.filter(sn -> sn.k != k)
-        match gcas i m (if fln.from.count = 1 then tomb_node fln.from.first else fln)
+        match gcas i m (if fln.from.count = 1 then tomb_node fln.from.first.get else fln)
           ctrie_ok => ln.find_key k
           restart => restart
 

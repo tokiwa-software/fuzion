@@ -326,8 +326,12 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig);
 
 // get a non-static field on obj.
 jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
+// set a non-static field on obj.
+jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig);
 // get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
+// set a static field in class.
+jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig);
 
 #endif
 

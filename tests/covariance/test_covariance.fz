@@ -225,7 +225,7 @@ test_this_type =>
 # This test creates nested features with inner type features that use outer features'
 # this.type in their signature.
 #
-test_this_type_in_type_feature =>
+test_this_type_in_cotype =>
 
   abc is
     def(s String) is
@@ -294,4 +294,4 @@ test_this_type_in_type_feature =>
 
 run_test_covariance
 test_this_type
-test_this_type_in_type_feature
+test_this_type_in_cotype

@@ -70,9 +70,8 @@ is
     state.bind net.connection d->
       match fuzion.sys.net.accept d
         desc i64 =>
-          c := (net.connection desc)
-          net.connections.add c
-          c
+          net.connections.add desc
+          net.connection desc
         e error =>
           # NYI we may not need to close server on every error...
           (server e nil).replace

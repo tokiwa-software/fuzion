@@ -18,7 +18,8 @@
 module sequence is
 
   # apply p1 then p2 and return their results as a tuple.
-  public tuple2(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) Parser I I (tuple O1 O2) =>
+  #
+  public tuple2(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) =>
     parse(input I) parse_result I (tuple O1 O2) =>
       match p1.call input
         s1 success I O1 =>
@@ -27,11 +28,12 @@ module sequence is
               success s2.rest (s1.out, s2.out)
             e2 error => e2
         e1 error => e1
-    parser I I (tuple O1 O2) (input -> parse input)
+    parser I _ _ (input -> parse input)
 
 
   # apply p1 then p2 then p3 and return their results as a tuple.
-  public tuple3(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) Parser I I (tuple O1 O2 O3) =>
+  #
+  public tuple3(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) =>
     parse(input I) parse_result I (tuple O1 O2 O3) =>
       match p1.call input
         s1 success I O1 =>
@@ -42,16 +44,17 @@ module sequence is
                 e3 error => e3
             e2 error => e2
         e1 error => e1
-    parser I I (tuple O1 O2 O3) (input -> parse input)
+    parser I _ _ (input -> parse input)
 
 
   # apply p1 then p2 then p3, then p4 and return their results as a tuple.
+  #
   public tuple4(I, O1, O2, O3, O4 type,
     p1 Parser I I O1,
     p2 Parser I I O2,
     p3 Parser I I O3,
     p4 Parser I I O4
-    ) Parser I I (tuple O1 O2 O3 O4) =>
+    ) =>
     parse(input I) parse_result I (tuple O1 O2 O3 O4) =>
       match p1.call input
         s1 success I O1 =>
@@ -65,20 +68,22 @@ module sequence is
                 e3 error => e3
             e2 error => e2
         e1 error => e1
-    parser I I (tuple O1 O2 O3 O4) (input -> parse input)
+    parser I _ _ (input -> parse input)
 
 
   # discard the output of the first parser, return the result of the second parser
+  #
   public preceded(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) =>
     parse(input I) parse_result I O2 =>
       match p1.call input
         s1 success I O1 =>
           p2.call s1.rest
         e1 error => e1
-    parser I I O2 (input -> parse input)
+    parser I _ _ (input -> parse input)
 
 
   # discard p1 and p3, return result of p2
+  #
   public delimited(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) =>
     parse(input I) parse_result I O2 =>
       match p1.call input
@@ -90,10 +95,11 @@ module sequence is
                 e3 error => e3
             e2 error => e2
         e1 error => e1
-    parser I I O2 (input -> parse input)
+    parser I _ _ (input -> parse input)
 
 
   # return result of p1 and p2 as tuple, drop result of p_sep
+  #
   public separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 Parser I R1 O1, p_sep Parser R1 R2 O2, p2 () -> (Parser R2 R3 O3)) =>
     parser I R3 (tuple O1 O3) input->
       match p1.call input

@@ -723,6 +723,47 @@ jvalue fzE_get_field0(jobject obj, jstring name, const char *sig)
 }
 
 
+// set a non-static field on obj.
+void fzE_set_field0(jobject obj, jstring name, jvalue value, const char *sig)
+{
+  jclass cl = (*getJNIEnv())->GetObjectClass(getJNIEnv(), obj);
+  assert( cl != NULL );
+  jfieldID fieldID = (*getJNIEnv())->GetFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
+  // NYI: UNDER DEVELOPMENT: crash more gracefully
+  assert( fieldID != NULL );
+  switch (sig[0])
+    {
+      case 'B':
+        (*getJNIEnv())->SetByteField(getJNIEnv(), obj, fieldID, value.b);
+        break;
+      case 'C':
+        (*getJNIEnv())->SetCharField(getJNIEnv(), obj, fieldID, value.c);
+        break;
+      case 'S':
+        (*getJNIEnv())->SetShortField(getJNIEnv(), obj, fieldID, value.s);
+        break;
+      case 'I':
+        (*getJNIEnv())->SetIntField(getJNIEnv(), obj, fieldID, value.i);
+        break;
+      case 'J':
+        (*getJNIEnv())->SetLongField(getJNIEnv(), obj, fieldID, value.j);
+        break;
+      case 'F':
+        (*getJNIEnv())->SetFloatField(getJNIEnv(), obj, fieldID, value.f);
+        break;
+      case 'D':
+        (*getJNIEnv())->SetDoubleField(getJNIEnv(), obj, fieldID, value.d);
+        break;
+      case 'Z':
+        (*getJNIEnv())->SetBooleanField(getJNIEnv(), obj, fieldID, value.z);
+        break;
+      default:
+        (*getJNIEnv())->SetObjectField(getJNIEnv(), obj, fieldID, value.l);
+        break;
+    }
+}
+
+
 // get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 {
@@ -751,6 +792,47 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
         return (jvalue){ .z = (*getJNIEnv())->GetStaticBooleanField(getJNIEnv(), cl, fieldID) };
       default:
         return (jvalue){ .l = (*getJNIEnv())->GetStaticObjectField(getJNIEnv(), cl, fieldID) };
+    }
+}
+
+
+// set a static field in class.
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig) // TODO:FIXME:
+{
+  jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
+  assert( cl != NULL );
+  jfieldID fieldID = (*getJNIEnv())->GetStaticFieldID(getJNIEnv(), cl, fzE_java_string_to_modified_utf8(name), sig);
+  // NYI: UNDER DEVELOPMENT: crash more gracefully
+  assert( fieldID != NULL );
+  switch (sig[0])
+    {
+      case 'B':
+        (*getJNIEnv())->SetStaticByteField(getJNIEnv(), cl, fieldID, value.b);
+        break;
+      case 'C':
+        (*getJNIEnv())->SetStaticCharField(getJNIEnv(), cl, fieldID, value.c);
+        break;
+      case 'S':
+        (*getJNIEnv())->SetStaticShortField(getJNIEnv(), cl, fieldID, value.s);
+        break;
+      case 'I':
+        (*getJNIEnv())->SetStaticIntField(getJNIEnv(), cl, fieldID, value.i);
+        break;
+      case 'J':
+        (*getJNIEnv())->SetStaticLongField(getJNIEnv(), cl, fieldID, value.j);
+        break;
+      case 'F':
+        (*getJNIEnv())->SetStaticFloatField(getJNIEnv(), cl, fieldID, value.f);
+        break;
+      case 'D':
+        (*getJNIEnv())->SetStaticDoubleField(getJNIEnv(), cl, fieldID, value.d);
+        break;
+      case 'Z':
+        (*getJNIEnv())->SetStaticBooleanField(getJNIEnv(), cl, fieldID, value.z);
+        break;
+      default:
+        (*getJNIEnv())->SetStaticObjectField(getJNIEnv(), cl, fieldID, value.l);
+        break;
     }
 }
 

@@ -158,6 +158,30 @@ public String ref : property.equatable, property.hashable, property.orderable is
     parse_integer u64 base
 
 
+  # parse this string as a signed 128-bit integer value
+  #
+  public parse_i128        => parse_i128 10
+  public parse_i128_binary => parse_i128 2
+  public parse_i128_octal  => parse_i128 8
+  public parse_i128_hex    => parse_i128 16
+  public parse_i128 (base u64) outcome i128
+    pre safety: u64 1 < base ≤  36
+  =>
+    parse_integer i128 base.as_i128
+
+
+  # parse this string as an unsigned 128-bit integer value
+  #
+  public parse_u128        => parse_u128 10
+  public parse_u128_binary => parse_u128 2
+  public parse_u128_octal  => parse_u128 8
+  public parse_u128_hex    => parse_u128 16
+  public parse_u128 (base u64) outcome u128
+    pre safety: u64 1 < base ≤ 36
+  =>
+    parse_integer u128 base.as_u128
+
+
   # parse this string as an int value of arbitrary size
   #
   public parse_int        => parse_int int(10)
@@ -840,11 +864,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  public type.minus_char  => "-".utf8.first
-  public type.plus_char   => "+".utf8.first
-  public type.zero_char   => "0".utf8.first
-  public type.nine_char   => "9".utf8.first
-  public type.a_char      => "a".utf8.first
-  public type.z_char      => "z".utf8.first
-  public type.cap_a_char  => "A".utf8.first
-  public type.cap_z_char  => "Z".utf8.first
+  public type.minus_char  => "-".utf8.first.get
+  public type.plus_char   => "+".utf8.first.get
+  public type.zero_char   => "0".utf8.first.get
+  public type.nine_char   => "9".utf8.first.get
+  public type.a_char      => "a".utf8.first.get
+  public type.z_char      => "z".utf8.first.get
+  public type.cap_a_char  => "A".utf8.first.get
+  public type.cap_z_char  => "Z".utf8.first.get

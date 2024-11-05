@@ -24,16 +24,12 @@
 # Base32 encoding and decoding as defined in RFC 4648
 # https://datatracker.ietf.org/doc/html/rfc4648#section-6
 #
-public base32 is
-
-  # allows redefinition e.g. for base32hex
-  module get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".utf8.as_array
-  module encoding_name => "base32"
-
-  # NYI: compiler does currently not optimize features without arguments to treat them like fields
-  alphabet := get_alphabet
+module:public base32(alphabet array u8, encoding_name String)
+pre debug: (container.set_of_ordered alphabet).count = 32
+is
 
   # decode a valid base32 character to 5 bits
+  #
   module quintet_bits(n u8) =>
     if 65 <= n <= 90        # case A-Z
       n.as_u64 - 65
@@ -41,12 +37,16 @@ public base32 is
     else # 50 <= n <= 55      case 2-7
       n.as_u64 - 24
 
+
   # checks if a character is valid in the encoding
+  #
   module is_valid(c u8) =>
     (65 <= c <= 90) || (50 <= c <= 55) // A-Z or 2-7
 
+
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a sequence of ascii values
+  #
   public encode(data array u8) =>
 
     # extract 8 quintets from 40 bits (of an u64)
@@ -75,6 +75,7 @@ public base32 is
 
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a string
+  #
   public encode_to_string(data array u8) =>
     String.type.from_bytes (encode data)
 
@@ -84,6 +85,7 @@ public base32 is
   # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
+  #
   public decode_str(data String) =>
     decode data.utf8.as_array
 
@@ -93,6 +95,7 @@ public base32 is
   # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
+  #
   public decode(data array u8) =>
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
@@ -163,7 +166,14 @@ public base32 is
 
     else
       if last_err
-        (qnt_last.filter (e -> e.is_error)).first.err
+        (qnt_last.filter (e -> e.is_error)).first.get.err
       else
         dump_size := 5 - ((40 - (pad_size * 5)) / 8)    # number of decoded bytes caused by zeroed padding
         outcome (res.take res.count-dump_size).as_array # remove zero bytes caused by padding
+
+
+# Base32 encoding and decoding as defined in RFC 4648
+# alphabet is A-Z, 2-7
+#
+public base32 =>
+  base32 "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".utf8.as_array "base32"

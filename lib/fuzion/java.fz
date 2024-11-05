@@ -51,6 +51,21 @@ public fuzion.java is
     get_field0 T thiz f (sys.c_string signature)
 
 
+  # set a static field of given name in class with given name.
+  #
+  public set_static_field(clazz String, field String, val Java_Object, signature String) =>
+    c := string_to_java_object clazz
+    f := string_to_java_object field
+    set_static_field0 c f val.Java_Ref (sys.c_string signature)
+
+
+  # set a field of given name from given object instance thiz.
+  #
+  public set_field(thiz Java_Object, field String, val Java_Object, signature String) =>
+    f := string_to_java_object field
+    set_field0 thiz f val (sys.c_string signature)
+
+
   # intrinsic to read static field
   #
   get_static_field0(T type, clazz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic
@@ -59,6 +74,16 @@ public fuzion.java is
   # intrinsic to read instance field
   #
   get_field0(T type, thiz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic
+
+  
+  # intrinsic to set static field
+  #
+  set_static_field0(clazz Java_Object, field Java_Object, val fuzion.sys.Pointer, signature fuzion.sys.Pointer) unit => intrinsic
+
+
+  # intrinsic to set instance field
+  #
+  set_field0(thiz Java_Object, field Java_Object, val Java_Object, signature fuzion.sys.Pointer) unit => intrinsic
 
 
   # A Java reference
@@ -81,7 +106,7 @@ public fuzion.java is
                redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
     public length                  => array_length Array.this
-    public redef finite            => true
+    public redef finite trit    => TRUE
     public redef index [ ] (i i32) => array_get    Array.this i (sys.c_string signature)
     public redef as_list => as_list 0
 
@@ -332,4 +357,3 @@ public fuzion.java is
   public bool  .as_java_object => fuzion.java.bool_to_java_object bool.this
   public String.as_java_object => fuzion.java.string_to_java_object String.this
   public array .as_java_object => fuzion.java.array_to_java_object array.this
-

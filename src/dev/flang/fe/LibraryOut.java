@@ -453,9 +453,9 @@ class LibraryOut extends ANY
     if (CHECKS) check
       (k >= 0,
        Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
-    if (f.hasTypeFeature())
+    if (f.hasCotype())
       {
-        k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_COTYPE;
       }
     if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
       {
@@ -490,9 +490,9 @@ class LibraryOut extends ANY
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
     featureIndexOrZeroForUniverse(f.outer());
-    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0)
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_COTYPE) != 0)
       {
-        _data.writeOffset(f.typeFeature());
+        _data.writeOffset(f.cotype());
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);

@@ -25,7 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-private:public uint (public b Sequence u32, _ unit) : has_interval
+module:public uint (public b Sequence u32, _ unit) : has_interval
 is
 
   # the actually relevant data of this uint.
@@ -138,7 +138,7 @@ is
     if uint.this = uint.zero
       uint.zero
     else
-      uint ((data.count.as_u32 - 1) * 32 + data.first.highest_bit).as_u64
+      uint ((data.count.as_u32 - 1) * 32 + data.first.get.highest_bit).as_u64
 
 
   # add two unsigned ints
@@ -150,7 +150,7 @@ is
 
         (bits, rest, carry_over) := r
 
-        s := t.as_u64 + rest.first.as_u64 + carry_over
+        s := t.as_u64 + rest.first.get.as_u64 + carry_over
 
         ([s.low32bits] ++ bits, (rest.drop 1), (s>>32))
 
@@ -321,6 +321,36 @@ is
       data[1].as_u64<<32 | data[0].as_u64
     else
       (data.first 0).as_u64
+
+
+  # does this uint fit into an u128?
+  public fits_in_u128 =>
+    data.count ≤ 4
+
+
+  # this uint as an u128
+  public as_u128 u128
+  pre debug: fits_in_u128
+  =>
+    n := data.count
+    bits := [u32 0].cycle.take (4-n) ++ data
+
+    u128 (bits[3].as_u64<<32 | bits[2].as_u64) (bits[1].as_u64<<32 | bits[0].as_u64)
+
+
+  # does this uint fit into an i128?
+  public fits_in_i128 =>
+    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
+
+
+  # this uint as an i128
+  public as_i128 i128
+  pre debug: fits_in_i128
+  =>
+    n := data.count
+    bits := [u32 0].cycle.take (4-n) ++ data
+
+    i128 (bits[0].as_u64<<32 | bits[1].as_u64).cast_to_i64 (bits[2].as_u64<<32 | bits[3].as_u64)
 
 
   # this uint as an int

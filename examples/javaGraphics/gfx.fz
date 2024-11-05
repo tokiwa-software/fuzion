@@ -81,7 +81,7 @@ is
   //     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
   //
   // radius of three main circles:
-  r2 := (radius - blw * (1.0 + (f64.sqrt 1.0/3))) / (1.0 + 2.0*(f64.sqrt 1.0/3))
+  r2 := (radius - blw * (1.0 + (1.0/3).sqrt)) / (1.0 + 2.0*(1.0/3).sqrt)
 
   // radius of three small circles
   r3 := r2 * SMALL_CIRCLE_PERCENTAGE
@@ -108,8 +108,8 @@ is
     #
     arc(c Java.java.awt.Color, x, y, r f64, start, len i32) =>
       g0.setColor c
-      rx := x * (f64.cos rot) - y * (f64.sin rot)
-      ry := x * (f64.sin rot) + y * (f64.cos rot)
+      rx := x * rot.cos - y * rot.sin
+      ry := x * rot.sin + y * rot.cos
       g0.fillArc (tx+rx-r).as_i32 (ty+ry-r).as_i32 (2.0*r).as_i32 (2.0*r).as_i32 (start-(rot*360/(2.0*f64.π)).as_i32)%360 len
 
 

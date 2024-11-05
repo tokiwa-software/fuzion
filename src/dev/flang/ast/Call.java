@@ -1478,7 +1478,7 @@ public class Call extends AbstractCall
    */
   protected void setActualResultType(Resolution res, Context context, AbstractType frmlT)
   {
-    var tt = targetIsTypeParameter() && frmlT.isThisTypeInTypeFeature()
+    var tt = targetIsTypeParameter() && frmlT.isThisTypeInCotype()
       ? // a call B.f for a type parameter target B. resultType() is the
         // constraint of B, so we create the corresponding type feature's
         // selfType:
@@ -1580,7 +1580,7 @@ public class Call extends AbstractCall
         tc.calledFeature().isTypeParameter() &&
         !tt.isGenericArgument())
       {
-        t = t.replace_type_parameter_used_for_this_type_in_type_feature
+        t = t.replace_type_parameter_used_for_this_type_in_cotype
           (tt.feature(),
            tc);
       }
@@ -1620,7 +1620,7 @@ public class Call extends AbstractCall
           {
             // a type parameter's result type is the constraint's type as a type
             // feature with actual type parameters as given to the constraint.
-            var tf = t.feature().typeFeature(res);
+            var tf = t.feature().cotype(res);
             var tg = new List<AbstractType>(t); // the constraint type itself
             tg.addAll(t.generics());            // followed by the generics
             t = tf.selfType().applyTypePars(tf, tg);
@@ -1630,7 +1630,7 @@ public class Call extends AbstractCall
       {
         t = _generics.get(0);
         // we are using `.this.type` inside a type feature, see #2295
-        if (t.isThisTypeInTypeFeature())
+        if (t.isThisTypeInCotype())
           {
             t = t.genericArgument().feature().thisType();
           }
@@ -2008,8 +2008,8 @@ public class Call extends AbstractCall
     var actualType = actual == null ? null : actual.typeForInferencing();
     if (actualType != null)
       {
-        actualType = actualType.replace_type_parameters_of_type_feature_origin(context.outerFeature());
-        if (!actualType.isGenericArgument() && actualType.feature().isTypeFeature())
+        actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());
+        if (!actualType.isGenericArgument() && actualType.feature().isCotype())
           {
             actualType = Types.resolved.f_Type.selfType();
           }
@@ -2069,7 +2069,7 @@ public class Call extends AbstractCall
                             List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     if (PRECONDITIONS) require
-      (actualType.compareTo(actualType.replace_type_parameters_of_type_feature_origin(context.outerFeature())) == 0);
+      (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
     if (formalType.isGenericArgument())
       {
@@ -2400,7 +2400,7 @@ public class Call extends AbstractCall
       if (tt != null && tt != Types.t_ERROR)
         {
           var tf = tt.feature();
-          var ttf = tf.typeFeature(res);
+          var ttf = tf.cotype(res);
           res.resolveDeclarations(tf);
           var fo = findOnTarget(res, tf, false).v1();
           var tfo = findOnTarget(res, ttf, false).v1();
@@ -2410,7 +2410,7 @@ public class Call extends AbstractCall
               /* omitting dot-type does not work when calling
                the inherited methods of `Type`. Otherwise we
                would always have an ambiguity when calling `as_string` */
-              && f.outer().isTypeFeature())
+              && f.outer().isCotype())
             {
               if (fo != null)
                 {
@@ -2561,10 +2561,10 @@ public class Call extends AbstractCall
       }
     if (_type != null &&
         // exclude call to create type instance, it requires origin's type parameters:
-        !calledFeature().isTypeFeature()
+        !calledFeature().isCotype()
         )
       {
-        _type = _type.replace_type_parameters_of_type_feature_origin(context.outerFeature());
+        _type = _type.replace_type_parameters_of_cotype_origin(context.outerFeature());
       }
 
     resolveTypesOfActuals(res, context);
@@ -2803,6 +2803,10 @@ public class Call extends AbstractCall
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
+
+                if (CHECKS) check
+                  (Errors.any() || actl.type().isVoid() || actl.needsBoxing(frmlT, context) == null || actl.isBoxed());
+
                 count++;
               }
           }

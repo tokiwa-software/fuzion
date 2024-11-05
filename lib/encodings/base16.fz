@@ -24,41 +24,50 @@
 # base16 encoding and decoding as defined in RFC 4648
 # https://datatracker.ietf.org/doc/html/rfc4648#section-8
 #
-public base16 is
+private:public base16(alphabet array u8, encoding_name String)
+pre debug: (container.set_of_ordered alphabet).count = 16
+is
 
-  alphabet array u8:= [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70] #0123456789ABCDEF
-  encoding_name => "base16"
 
   # decode a valid base16 character to 4 bits
+  #
   four_bits(n u8) =>
     if 48 <= n <= 57        # case 0-9
       n.as_u8 - 48
     else   # 65 <= n <= 70  # case A-F
       n.as_u8 - 55
 
+
   # checks if a character is valid in the encoding
+  #
   is_valid(c u8) =>
     (48 <= c <= 57) || (65 <= c <= 70)
 
+
   # Encodes a given byte sequence in base16
   # returns a sequence of ascii values
+  #
   public encode(data array u8) =>
     data.flat_map u8 (b->[alphabet[(b>>4).as_i32], alphabet[(b&15).as_i32]])
 
+
   # Encodes a given byte sequence in base16
   # returns a string
+  #
   public encode_to_string(data array u8) =>
     String.type.from_bytes (encode data)
 
 
   # decodes a base16 string, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
+  #
   public decode_str(data String) =>
     decode data.utf8.as_array
 
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
+  #
   public decode(data array u8) =>
 
     dec_char_at(i) =>
@@ -102,3 +111,11 @@ public base16 is
       else                  bits_4_7.err
     else
       outcome res.as_array
+
+
+# base16 encoding and decoding as defined in RFC 4648
+# alphabet is: 0-9, A-F
+#
+public base16 =>
+  base16 "0123456789ABCDEF".utf8.as_array "base16"
+

@@ -1,0 +1,153 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test i128_test
+#
+# -----------------------------------------------------------------------
+
+i128_test =>
+
+  i128.bi =>
+    "0b{hi.bi}__{(lo.bin 64).chunk(8).as_string "_"}"
+
+  i128.bi_bare =>
+    "{hi.as_bytes.map(.bin 8).as_string("")}{(lo.bin 64).chunk(8).as_string ""}"
+
+  i64.bi =>
+    as_bytes
+      .map (.bin 8)
+      .as_string "_"
+
+
+  # LOGIC OPERATIONS
+
+  shift_test_right(x i128) =>
+    for i in (i64 0)..129 do
+      yak (x >> i128 i).bi_bare
+      say "  >> $i"
+    say ""
+
+  shift_test_left(x i128) =>
+    for i in (i64 0)..129 do
+      yak (x << i128 i).bi_bare
+      say "  << $i"
+    say ""
+
+  shift_test_right (i_bits 0x8000_0000_0000_0001 0xc000_0000_0000_0005)
+  shift_test_left (i_bits 0x8000_0000_0000_0001 0xc000_0000_0000_0005)
+
+  say ""
+  shift_test_right (i_bits 0x5400_0000_0000_0000 0)
+
+
+  test_eq (~i_bits 0xf0f0_f0f0_f0f0_f0f0 0x0f0f_0f0f_0f0f_0f0f) (i_bits 0x0f0f_0f0f_0f0f_0f0f 0xf0f0_f0f0_f0f0_f0f0)
+  test_eq ((i_bits 0xf0f0_f0f0_f0f0_f0f0 0x0f0f_0f0f_0f0f_0f0f) ^ (i_bits 0x0f0f_0f0f_0f0f_0f0f 0xf0f0_f0f0_f0f0_f0f0)) (i128 -1)
+
+
+
+  # ARITHMETIC OPERATIONS
+
+  i_bits(hi, lo u64) =>
+    i128 hi.cast_to_i64 lo
+
+  test_eq(T type : num.wrap_around, actual, expected T) =>
+    yak actual
+    say (actual = expected ? "  [ok]" : "  [Error] expected $expected")
+
+  test_op(T type : num.wrap_around,  op (T,T)->T, op_name String, a, b, expected T, exp_str String) =>
+
+    actual := op a b
+    yak "$a $op_name $b = $actual "
+
+    if actual = expected && (exp_str = "" | actual.as_string = exp_str)
+      say "[ok]"
+    else
+      say "[Error]"
+      if actual != expected then say "  Expected: $expected"
+      if (exp_str != "" && actual.as_string != exp_str)  then say "  Expected .as_string to return $exp_str"
+
+  test_add(T type : num.wrap_around, a, b, expected T, exp_str String) => test_op (+) "+" a b expected exp_str
+  test_sub(T type : num.wrap_around, a, b, expected T, exp_str String) => test_op (-) "-" a b expected exp_str
+  test_mul(T type : num.wrap_around, a, b, expected T, exp_str String) => test_op (*) "*" a b expected exp_str
+  test_div(T type : num.wrap_around, a, b, expected T, exp_str String) => test_op (/) "/" a b expected exp_str
+
+
+
+  test_add i128.one i128.one (i128 2) "2"
+  # 0..01_0..01 + 0..01 = 0..10_0..0
+  test_add (i128 1 1) (i128 0 u64.max) (i128 2 0) "36893488147419103232"
+  # 10..011_0..0 + 0..01 = 10..01010_0..0
+  test_add (i_bits 0x8000_0000_0000_0003 u64.max) (i128 1) (i_bits 0x8000_0000_0000_0004 0) "-170141183460469231657900327421045899264"
+  # 0..01_0..01 + 0..01_0..01 = 0..010_0..010
+  test_add (i128 1 1) (i128 1 1) (i128 2 2) "36893488147419103234"
+  # 53 + (-11) = 42
+  test_add (i128 53) (-i128 11) (i128 42) "42"
+  test_add i128.min i128.max -i128.one "-1"
+  test_add i128.max i128.min -i128.one "-1"
+
+  test_eq -(i128.min + i128.one) (i128.max)
+
+  test_sub i128.one i128.one i128.zero "0"
+  test_sub -i128.one i128.one (-i128 2) "-2"
+  test_sub -i128.one -(i128 2) (i128 1) "1"
+  test_sub i128.min i128.min i128.zero "0"
+  test_sub i128.max i128.max i128.zero "0"
+  test_eq (i128.min -° i128.max) (i128 1)
+
+  test_mul i128.one i128.one (i128 1) "1"
+  test_mul i128.min i128.one i128.min ""
+  test_mul i128.min i128.zero i128.zero "0"
+  test_mul i128.max i128.zero i128.zero "0"
+  test_eq (i128.max *° i128.max) i128.one
+
+  y := "10000000000000000000000000".parse_i128.get
+  test_mul  y  i128.one  y  "10000000000000000000000000"
+  test_mul -y  i128.one -y "-10000000000000000000000000"
+  test_mul  y -i128.one -y "-10000000000000000000000000"
+  test_mul -y -i128.one  y  "10000000000000000000000000"
+
+  test_mul (i128 13 23) i128.one (i128 13 23) ""
+  test_mul (i128 3 2) -(i128 2) -(i128 6 4) "-110680464442257309700"
+
+  test_eq ((i128 2)**(i128 126)) (i_bits 0x4000_0000_0000_0000 0)
+
+  test_div i128.one i128.one (i128 1) "1"
+  test_div i128.max i128.one (i128.max) ""
+  test_div (i128.min + i128.one) -i128.one (i128.max) ""
+  test_div (i128.min) i128.one (i128.min) ""
+
+  test_div (i128  42) (i128  2) (i128  21)  "21"
+  test_div (i128 -42) (i128 -2) (i128  21)  "21"
+  test_div (i128  42) (i128 -2) (i128 -21) "-21"
+  test_div (i128 -42) (i128  2) (i128 -21) "-21"
+
+  test_div ("20000000000000000000000000000000000000".parse_i128.get) (i128  4000)
+           ("5000000000000000000000000000000000".parse_i128.get) "5000000000000000000000000000000000"
+
+  test_div ("20000000000000000000000000000000000000".parse_i128.get) ("40000000000000000000".parse_i128.get)
+           ("500000000000000000".parse_i128.get) "500000000000000000"
+
+  test_div ("-20000000000000000000000000000000000000".parse_i128.get) (i128  4000)
+           ("-5000000000000000000000000000000000".parse_i128.get) "-5000000000000000000000000000000000"
+
+  test_div ("20000000000000000000000000000000000000".parse_i128.get) ("-40000000000000000000".parse_i128.get)
+           ("-500000000000000000".parse_i128.get) "-500000000000000000"
+
+  say (fuzion.runtime.pre_fault.try   ((i128.one / i128.zero).as_string)
+                               .catch msg->"1/0 expected precondition failure: $msg")

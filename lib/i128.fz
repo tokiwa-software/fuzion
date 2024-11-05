@@ -25,22 +25,281 @@
 
 # i128 -- 128-bit signed integer values
 #
-# NYI: UNDER DEVELOPMENT: see #3107
-module i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
-  fixed redef infix + (other i128) i128 => panic "NYI: i128 is not supported"
-  fixed redef infix - (other i128) i128 => panic "NYI: i128 is not supported"
-  fixed redef infix * (other i128) i128 => panic "NYI: i128 is not supported"
-  fixed redef infix / (other i128) i128 => panic "NYI: i128 is not supported"
+public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
+
+  # overflow checking
+
+  # would negation cause an overflow?
+  public fixed redef wrapped_on_neg => is_min
+
+  # would addition + other cause an overflow or underflow?
+  public fixed redef overflow_on_add (other i128) => i128.this > i128.zero && i128.max -° i128.this < other
+  public fixed redef underflow_on_add(other i128) => i128.this < i128.zero && i128.min -° i128.this > other
+
+  # would subtraction - other cause an overflow or underflow?
+  public fixed redef overflow_on_sub (other i128) => i128.this > i128.zero && i128.this -° i128.max > other
+  public fixed redef underflow_on_sub(other i128) => i128.this < i128.zero && i128.this -° i128.min < other
+
+  # would multiplication * other cause an overflow or underflow?
+  public fixed redef overflow_on_mul (other i128) => sign *° other.sign ≤ 0 ? false : (i128.this *° other / other) != i128.this
+  public fixed redef underflow_on_mul(other i128) => sign *° other.sign ≥ 0 ? false : (i128.this *° other / other) != i128.this
+
+  # neg, add, sub, mul with wrap-around semantics
+  public fixed redef prefix -° i128 =>
+    carry i64 := if lo = 0 then 1 else 0
+    i128 ((hi ^ (i64 -1)) +° carry) ((lo ^ u64.max) +° 1)
+
+  public fixed redef infix +° (other i128) i128 =>
+    carry i64 := { if (lo +° other.lo < lo) 1 else 0 }
+    i128 (hi +° other.hi +° carry) (lo +° other.lo)
+
+  public fixed redef infix -° (other i128) i128 =>
+    i128.this +° (-° other)
+
+  public fixed redef infix *° (other i128) i128 =>
+    a0 := lo & 0x_ffff_ffff
+    a1 := lo >> 32
+    a2 := hi.cast_to_u64 & 0x_ffff_ffff
+    a3 := hi.cast_to_u64 >> 32
+    b0 := other.lo & 0x_ffff_ffff
+    b1 := other.lo >> 32
+    b2 := other.hi.cast_to_u64 & 0x_ffff_ffff
+    b3 := other.hi.cast_to_u64 >> 32
+    p00 := a0*b0
+    p10 := a1*b0
+    p01 := a0*b1
+    p20 := a2*b0
+    p11 := a1*b1
+    p02 := a0*b2
+    p30 := a3*b0
+    p21 := a2*b1
+    p12 := a1*b2
+    p03 := a0*b3
+    (i128 (i64 0  )             p00     +°
+     i128 (p10>>32).cast_to_i64 p10<<32 +°
+     i128 (p01>>32).cast_to_i64 p01<<32 +°
+     i128 (p20    ).cast_to_i64 0       +°
+     i128 (p11    ).cast_to_i64 0       +°
+     i128 (p02    ).cast_to_i64 0       +°
+     i128 (p30<<32).cast_to_i64 0       +°
+     i128 (p21<<32).cast_to_i64 0       +°
+     i128 (p12<<32).cast_to_i64 0       +°
+     i128 (p03<<32).cast_to_i64 0         )
+
+
+  # division with check for div-by-zero
+  public fixed redef infix / (other i128)
+  pre else
+    // NYI: #3051 precondition inheritance does not work yet
+    // remove this redundant precondition once #3051 is fixed
+    safety: other != i128 0
+  => div other
+
+  # remainder with check for div-by-zero
+  public fixed redef infix % (other i128) i128  # NYI: inference for return type does not work here
+  pre else
+    // NYI: #3051 precondition inheritance does not work yet
+    // remove this redundant precondition once #3051 is fixed
+    safety: other != i128 0
+  => mod other
+
+  # division with crash in case of div-by-zero
+  fixed div (other i128) i128 =>
+
+    res := (abs_to_u128 i128.this) / (abs_to_u128 other)
+
+    if i128.this.is_min && other = i128.one  # NYI: OPTIMIZATION: can this handling of special cases be avoided?
+      i128.min
+    else
+      (hi < 0) ^ (other.hi < 0) ? -res.as_i128 : res.as_i128
+
+  private abs_to_u128(val i128) =>
+    val.is_min ? (u128 0x_8000_0000_0000_0000 0) : val.abs.as_u128
+
+
+  # remainder with crash in case of div-by-zero
+  fixed mod (other i128) i128 =>
+
+    i128.this - (div other) *° other
+
+  # bitwise and, or and xor operations
+  public fixed redef infix &  (other i128) i128 => i128 (hi & other.hi) (lo & other.lo)
+  public fixed redef infix |  (other i128) i128 => i128 (hi | other.hi) (lo | other.lo)
+  public fixed redef infix ^  (other i128) i128 => i128 (hi ^ other.hi) (lo ^ other.lo)
+
+
+  # arithmetic (signed) right shift
+  # examples:
+  #   10..0 >> 127 = 1..1
+  #   10..0 >> 128 = 10..0
+  #
+  public fixed redef infix >> (other i128) i128 =>
+    n := other.as_u64
+    i_n := n.as_i64
+    if n ≥ u64 128
+      i128.this < i128.zero ? i128.all_bits_set : i128.zero
+    else if n ≥ u64 64
+      i128 (hi >> 63) (hi >> (i_n-64)).cast_to_u64
+    else if n > u64 0
+      i128 (hi >> i_n) ((hi << ((i64 64)-i_n)).cast_to_u64 | lo >> n)
+    else
+      i128.this
+
+  # arithmetic (signed) left shift
+  public fixed redef infix << (other i128) i128 =>
+    n := other.as_u64
+    i_n := n.as_i64
+    if n ≥ u64 128
+      i128.zero
+    else if n ≥ u64 64
+      i128 (lo << (n-64)).cast_to_i64 0
+    else if n > u64 0
+      i128 ((hi << i_n) | (lo >> ((u64 64)-n)).cast_to_i64) (lo << n)
+    else
+      i128.this
+
+
+  # equality
+  #
+  public fixed redef type.equality(a, b i128) =>
+    a.hi = b.hi && a.lo = b.lo
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b i128) =>
+    a.hi < b.hi || (a.hi = b.hi) && (a.lo ≤ b.lo)
+
+  # does this i128 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => i128.zero ≤ i128.this ≤ u8.max.as_i128
+
+  public fixed as_i8 i8
+  pre
+    debug: i8.min.as_i128 ≤ i128.this ≤ i8.max.as_i128
+  =>
+    hi < 0 ? (lo.cast_to_i64).as_i8 : lo.as_i8
+
+  public fixed as_i16 i16
+  pre
+    debug: i16.min.as_i128 ≤ i128.this ≤ i16.max.as_i128
+  =>
+    hi < 0 ? (lo.cast_to_i64).as_i16 : lo.as_i16
+
+  public fixed as_i32 i32
+  pre
+    debug: i32.min.as_i128 ≤ i128.this ≤ i32.max.as_i128
+  =>
+    hi < 0 ? (lo.cast_to_i64).as_i32 : lo.as_i32
+
+  public fixed as_i64 i64
+  pre
+    debug: i64.min.as_i128 ≤ i128.this ≤ i64.max.as_i128
+  post
+    analysis: result.as_i128 = i128.this
+  =>
+    hi < 0 ? (lo.cast_to_i64) : lo.as_i64
+
+  public fixed redef as_u8 u8
+  post then
+    analysis: result.as_i128 = i128.this
+  =>
+    lo.as_u8
+
+  public fixed as_u16 u16
+  pre
+    debug: i128.zero ≤ i128.this ≤ u16.max.as_i128
+  post
+    analysis: result.as_i128 = i128.this
+  =>
+    lo.as_u16
+
+  public fixed as_u32 u32
+    pre
+      debug: i128.zero ≤ i128.this ≤ u32.max.as_i128
+    post
+      analysis: result.as_i128 = i128.this
+    =>
+      lo.as_u32
+
+  public fixed as_u64 u64
+  pre
+    debug: i128.zero ≤ i128.this ≤ u64.max.as_i128
+  post
+    analysis: result.as_i128 = i128.this
+  =>
+    lo
+
+  public fixed as_u128 u128
+  pre
+    debug: i128.this >= i128.zero
+  post
+    analysis: result.as_i128 = i128.this
+  =>
+    u128 hi.as_u64 lo
+
+  public redef low8bits  u8  => lo.low8bits
+  public low16bits u16 => lo.low16bits
+  public low32bits u32 => lo.low32bits
+  public low64bits u64 => lo
+
+  public cast_to_u128 => u128 hi.cast_to_u64 lo
+
+  # create hash code from this number
+  public redef type.hash_code(a i128.this) u64 =>
+    a.hi.cast_to_u64 ^ a.lo
+
+  # find the highest 1 bit in this integer and return integer with
+  # this single bit set or 0 if this is 0.
+  #
+  public highest_one_bit i128 =>
+    if hi < 0
+      i128.min
+    else if hi = i64 0
+      i128 0 lo.highest_one_bit
+    else
+      i128 hi.highest_one_bit 0
+
+
+  # count the number of trailing zeros in this integer.
+  #
+  public trailing_zeros i32 =>
+    if lo = u64 0
+      64 + hi.trailing_zeros
+    else
+      lo.trailing_zeros
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  public redef ones_count i32 =>
+    hi.ones_count + lo.ones_count
+
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => i128 -1 0x_ffff_ffff_ffff_ffff
+  fixed redef type.all_bits_set => i128 -1 u64.max
 
 
   # minimum
   #
-  public fixed redef type.min => i128 -0x_8000_0000_0000_0000 0
+  public fixed redef type.min => i128 i64.min 0
 
 
   # maximum
   #
-  public fixed redef type.max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.max => i128 i64.max u64.max
+
+
+  # identity element for 'infix +'
+  #
+  public fixed redef type.zero => i128 0 0
+
+
+  # identity element for 'infix *'
+  #
+  public fixed redef type.one => i128 0 1
+
+
+# shorthand to create an i128 via an i64
+public i128 (val i64) i128 =>
+  val.as_i128

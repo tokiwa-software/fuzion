@@ -51,8 +51,18 @@ public u8(public val u8) : num.wrap_around, has_interval is
   public fixed redef infix *° (other u8) u8 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u8) => div other
-  public fixed redef infix % (other u8) => mod other
+  public fixed redef infix / (other u8)
+    pre else
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
+      safety: other != 0
+  => div other
+  public fixed redef infix % (other u8)
+    pre else
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
+      safety: other != 0
+  => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u8) u8 => intrinsic
@@ -85,6 +95,7 @@ public u8(public val u8) : num.wrap_around, has_interval is
   public as_u32  => as_i32.as_u32
   public as_u64  => as_i32.as_u64
   public as_u128 => as_i32.as_u128
+  public as_i128 => i128 0 as_u64
   public as_int  => int as_i64
 
   public cast_to_i8 i8 => intrinsic
@@ -135,12 +146,12 @@ public u8(public val u8) : num.wrap_around, has_interval is
   # is this u8 an ASCII white-space character?
   #
   public is_ascii_white_space =>
-    (val = 9  ||  // HT
-     val = 10 ||  // LF
-     val = 11 ||  // VT
-     val = 12 ||  // FF
-     val = 13 ||  // CR
-     val = 32     // SPACE
+    (val = 9  ||  # HT
+     val = 10 ||  # LF
+     val = 11 ||  # VT
+     val = 12 ||  # FF
+     val = 13 ||  # CR
+     val = 32     # SPACE
     )
 
 

@@ -749,6 +749,25 @@ public class Intrinsics extends ANY
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
+    putUnsafe("fuzion.java.set_static_field0",
+        "fuzion.java.set_field0"      , (executor, innerClazz) ->
+        {
+          String in = executor.fuir().clazzOriginalName(innerClazz);
+          var statique = in.equals("fuzion.java.set_static_field0");
+          int resultClazz = executor.fuir().clazzActualGeneric(innerClazz, 0);
+          return args ->
+            {
+              Instance clazzOrThizI = (Instance) args.get(1);
+              Instance fieldI = (Instance) args.get(2);
+              Instance value = (Instance) args.get(3);
+              String clazz = !statique ? null : (String) JavaInterface.instanceToJavaObject(clazzOrThizI);
+              Object thiz  = statique  ? null :          JavaInterface.instanceToJavaObject(clazzOrThizI);
+              String field = (String) JavaInterface.instanceToJavaObject(fieldI);
+              Object val  = JavaInterface.instanceToJavaObject(value);
+              JavaInterface.setField(clazz, thiz, field, val);
+              return Value.EMPTY_VALUE;
+            };
+        });
     putUnsafe("fuzion.java.call_v0",
         "fuzion.java.call_s0",
         "fuzion.java.call_c0", (executor, innerClazz) ->
@@ -1335,42 +1354,42 @@ public class Intrinsics extends ANY
     put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("f32.type.is_NaN"       , (executor, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(1).f32Value())));
-    put("f64.type.is_NaN"       , (executor, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(1).f64Value())));
-    put("f32.type.acos"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())));
-    put("f32.type.asin"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())));
-    put("f32.type.atan"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())));
-    put("f32.type.cos"          , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())));
-    put("f32.type.cosh"         , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())));
+    put("f32.is_NaN"            , (executor, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(0).f32Value())));
+    put("f64.is_NaN"            , (executor, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(0).f64Value())));
+    put("f32.acos"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(0).f32Value())));
+    put("f32.asin"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(0).f32Value())));
+    put("f32.atan"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(0).f32Value())));
+    put("f32.cos"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(0).f32Value())));
+    put("f32.cosh"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(0).f32Value())));
+    put("f32.exp"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(0).f32Value())));
+    put("f32.log"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(0).f32Value())));
+    put("f32.sin"               , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(0).f32Value())));
+    put("f32.sinh"              , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(0).f32Value())));
+    put("f32.square_root"       , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(0).f32Value())));
+    put("f32.tan"               , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(0).f32Value())));
+    put("f32.tanh"              , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(0).f32Value())));
+    put("f64.acos"              , (executor, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(0).f64Value())));
+    put("f64.asin"              , (executor, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(0).f64Value())));
+    put("f64.atan"              , (executor, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(0).f64Value())));
+    put("f64.cos"               , (executor, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(0).f64Value())));
+    put("f64.cosh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(0).f64Value())));
+    put("f64.exp"               , (executor, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(0).f64Value())));
+    put("f64.log"               , (executor, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(0).f64Value())));
+    put("f64.sin"               , (executor, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(0).f64Value())));
+    put("f64.sinh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(0).f64Value())));
+    put("f64.square_root"       , (executor, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(0).f64Value())));
+    put("f64.tan"               , (executor, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(0).f64Value())));
+    put("f64.tanh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(0).f64Value())));
     put("f32.type.epsilon"      , (executor, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
-    put("f32.type.exp"          , (executor, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(1).f32Value())));
-    put("f32.type.log"          , (executor, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(1).f32Value())));
     put("f32.type.max"          , (executor, innerClazz) -> args -> new f32Value (                                           Float.MAX_VALUE));
     put("f32.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
     put("f32.type.min_positive" , (executor, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
     put("f32.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
-    put("f32.type.sin"          , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())));
-    put("f32.type.sinh"         , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())));
-    put("f32.type.square_root"  , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())));
-    put("f32.type.tan"          , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())));
-    put("f32.type.tanh"         , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(1).f32Value())));
-    put("f64.type.acos"         , (executor, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(1).f64Value())));
-    put("f64.type.asin"         , (executor, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(1).f64Value())));
-    put("f64.type.atan"         , (executor, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(1).f64Value())));
-    put("f64.type.cos"          , (executor, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(1).f64Value())));
-    put("f64.type.cosh"         , (executor, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(1).f64Value())));
     put("f64.type.epsilon"      , (executor, innerClazz) -> args -> new f64Value (                 Math.ulp(                 (double)1)));
-    put("f64.type.exp"          , (executor, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(1).f64Value())));
-    put("f64.type.log"          , (executor, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(1).f64Value())));
     put("f64.type.max"          , (executor, innerClazz) -> args -> new f64Value (                                               Double.MAX_VALUE));
     put("f64.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
     put("f64.type.min_positive" , (executor, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
     put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
-    put("f64.type.sin"          , (executor, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(1).f64Value())));
-    put("f64.type.sinh"         , (executor, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(1).f64Value())));
-    put("f64.type.square_root"  , (executor, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())));
-    put("f64.type.tan"          , (executor, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(1).f64Value())));
-    put("f64.type.tanh"         , (executor, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(1).f64Value())));
     put("fuzion.std.nano_time"  , (executor, innerClazz) -> args -> new u64Value (System.nanoTime()));
     put("fuzion.std.nano_sleep" , (executor, innerClazz) -> args ->
         {
