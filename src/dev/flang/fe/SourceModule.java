@@ -1670,7 +1670,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
   private boolean inTypeFeature(AbstractFeature f)
   {
-    return f.isTypeFeature() || (f.outer() != null && InTypeFeature(f.outer()));
+    return f.isTypeFeature() || (f.outer() != null && inTypeFeature(f.outer()));
   }
 
 
