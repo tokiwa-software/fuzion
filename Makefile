@@ -437,8 +437,8 @@ base-only: $(FZ) $(MOD_BASE) $(FUZION_FILES)
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
 
 .PHONY: lint-c
-lint-c:
-	@clang-tidy $(C_FILES) -- -std=c11
+lint/c:
+	clang-tidy $(C_FILES) -- -std=c11
 
 $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 	cp $^ $@
