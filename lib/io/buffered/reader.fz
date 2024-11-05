@@ -50,7 +50,7 @@ public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect is
   #
   public with(R type, f ()->R) outcome R =>
     try (reader LM) R ()->
-      reader.this.instate_self R f
+      reader.this ! f
 
 
   # terminate immediately with the given error wrapped in 'option'.
