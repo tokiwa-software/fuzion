@@ -96,7 +96,7 @@ Matched type: 'i32', which is not a choice type
 
 
 --CURDIR--/choice_negative.fz:162:11: error 15: 'match' subject type must be a choice type
-    j := (42 ? TRUE => true   // 35. should flag an error, match subject must be choice
+    j := (42 ? true_ => true   // 35. should flag an error, match subject must be choice
 ----------^^
 Matched type: 'i32', which is not a choice type
 
