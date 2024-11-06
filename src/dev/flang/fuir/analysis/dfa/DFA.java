@@ -2846,6 +2846,29 @@ public class DFA extends ANY
 
 
   /**
+   * Too reduce number of calls created for unit type values, we originally
+   * assume calls to an empty constructor with no arguments and not fields as
+   * all the same.
+   *
+   * @oaran cl a clazz id, must not be NO_CLAZZ
+   *
+   * @return true if, as for what we now about used fields at this pointer, `cl`
+   * defines a unit type.
+   */
+  boolean isUnitType(int cl)
+  {
+    var oc = _fuir.clazzOuterClazz(cl);
+    return
+      _fuir.isConstructor(cl) &&
+      _fuir.clazzArgCount(cl) == 0 &&
+      !_fuir.withinCode(_fuir.clazzCode(cl)) &&
+      !isBuiltInNumeric(cl) &&
+      !hasFields(cl) &&
+      (oc == FUIR.NO_CLAZZ || isUnitType(oc));
+  }
+
+
+  /**
    * Create call to given clazz with given target and args.
    *
    * @param cl the called clazz
@@ -2872,12 +2895,9 @@ public class DFA extends ANY
         site = FUIR.NO_SITE;
       }
     Call e, r;
-    if (!isBuiltInNumeric(cl) &&
-        !_fuir.clazzIs(cl, SpecialClazzes.c_bool) &&
-        !_fuir.clazzIsRef(cl) &&
-        !hasFields(cl))
+    r = _unitCalls.get(cl);
+    if (isUnitType(cl))
       { // as long as we see unit values only, we put them all together
-        r = _unitCalls.get(cl);
         e = r;
         if (r == null)
           {
@@ -2887,6 +2907,11 @@ public class DFA extends ANY
       }
     else
       {
+        if (r != null)
+          {
+            _unitCalls.put(cl, null);
+            _calls.remove(r);
+          }
         var k1 = _fuir.clazzId2num(cl);
         var k2 = tvalue._id;
         var k3 = siteIndex(site);
