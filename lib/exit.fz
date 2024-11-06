@@ -60,37 +60,38 @@ is
 
   # default exit handler
   #
-  type.default_exit_handler : Exit_Handler is
+  type.default_exit_handler =>
+
+    ref : Exit_Handler
+
+      # mutable value of the current exit code set
+      #
+      exit_code := u8 0
 
 
-    # mutable value of the current exit code set
-    #
-    exit_code := u8 0
+      # exit with the given code
+      #
+      redef exit(code u8) =>
+        fuzion.std.exit code.as_i32
 
 
-    # exit with the given code
-    #
-    redef exit(code u8) =>
-      fuzion.std.exit code.as_i32
+      # exit with the stored code
+      #
+      redef exit =>
+        fuzion.std.exit exit_code.as_i32
 
 
-    # exit with the stored code
-    #
-    redef exit =>
-      fuzion.std.exit exit_code.as_i32
-
-
-    # set the stored exit code
-    #
-    redef set_exit_code(code u8) outcome unit
-      post then
-        debug: exit_code = code
-      =>
-        if exit_code = 0
-          set exit_code := code
-          unit
-        else
-          error "exit code is already set"
+      # set the stored exit code
+      #
+      redef set_exit_code(code u8) outcome unit
+        post then
+          debug: exit_code = code
+        =>
+          if exit_code = 0
+            set exit_code := code
+            unit
+          else
+            error "exit code is already set"
 
 
 # exit with no argument returns exit.env, the currently installed

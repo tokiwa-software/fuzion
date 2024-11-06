@@ -134,7 +134,7 @@ is
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
 handles2(T type, rr ()->unit) =>
-  (handles2 T unit unit nil oneway_monad_mode.inst).instate_self rr
+  (handles2 T unit unit nil oneway_monad_mode.inst) ! rr
 
 # short-hand for creating an empty set of handles2 of given type.
 #

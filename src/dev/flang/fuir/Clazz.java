@@ -282,7 +282,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
        !type.containsThisType(),
-       type.feature().resultType().isOpenGeneric() == (select >= 0));
+       type.feature().resultType().isOpenGeneric() == (select >= 0),
+       type != Types.t_ERROR);
 
     _fuir = fuir;
     outer = normalizeOuter(type, outer);

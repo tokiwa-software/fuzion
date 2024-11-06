@@ -771,45 +771,83 @@ void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 
 
 void * fzE_mtx_init() {
+#ifdef FUZION_ENABLE_THREADS
   pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
   return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
+#else
+  return NULL;
+#endif
 }
 
 int32_t fzE_mtx_lock(void *mtx) {
+#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+#else
+  return 0;
+#endif
 }
 
 int32_t fzE_mtx_trylock(void *mtx) {
+#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+#else
+  return 0;
+#endif
 }
 
 int32_t fzE_mtx_unlock(void *mtx) {
+#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+#else
+  return 0;
+#endif
 }
 
 void fzE_mtx_destroy(void *mtx) {
+#ifdef FUZION_ENABLE_THREADS
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
   // NYI: free(mtx);
+#else
+#endif
 }
 
 void * fzE_cnd_init() {
+#ifdef FUZION_ENABLE_THREADS
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
   return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
+#else
+ return NULL;
+#endif
 }
 
 int32_t fzE_cnd_signal(void *cnd) {
+#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+#else
+  return 0;
+#endif
 }
 
 int32_t fzE_cnd_broadcast(void *cnd) {
+#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+#else
+  return 0;
+#endif
 }
 
 int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+#else
+  return 0;
+#endif
 }
 
 void fzE_cnd_destroy(void *cnd) {
+#ifdef FUZION_ENABLE_THREADS
   pthread_cond_destroy((pthread_cond_t *)cnd);
   // NYI: free(cnd);
+#else
+#endif
 }

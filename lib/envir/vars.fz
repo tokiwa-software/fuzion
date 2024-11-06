@@ -66,10 +66,11 @@ public vars (p Vars_Handler) : effect is
 
   # default handler using fuzion.sys.env_vars
   #
-  type.default_vars_handler : envir.Vars_Handler is
-    redef get(v String) => fuzion.sys.env_vars.get v
-    redef set1(n String, v String) => fuzion.sys.env_vars.set1 n v
-    redef unset(n String) => fuzion.sys.env_vars.unset n
+  type.default_vars_handler =>
+    ref : envir.Vars_Handler
+      redef get(v String) => fuzion.sys.env_vars.get v
+      redef set1(n String, v String) => fuzion.sys.env_vars.set1 n v
+      redef unset(n String) => fuzion.sys.env_vars.unset n
 
 
 # short-hand for accessing envir.args effect in current environment

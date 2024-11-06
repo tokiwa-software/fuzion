@@ -1,0 +1,23 @@
+
+--CURDIR--/reg_issue1491.fz:25:8: error 1: Must not define type inside of type feature.
+  type.a_type_feature is
+-------^^^^^^^^^^^^^^
+To solve this, move the type outside of the type feature.
+E.g., instead of: 
+'type.union : Monoid bitset is'
+do this: 
+public type.union =>
+  ref : Monoid bitset
+
+
+--CURDIR--/reg_issue1491.fz:26:5: error 2: Must not define type inside of type feature.
+    feature_defined_in_type_feature is
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, move the type outside of the type feature.
+E.g., instead of: 
+'type.union : Monoid bitset is'
+do this: 
+public type.union =>
+  ref : Monoid bitset
+
+2 errors.

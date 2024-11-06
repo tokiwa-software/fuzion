@@ -23,6 +23,11 @@
 
 name: run tests on macOS
 
+# https://lobste.rs/s/ppjtie/simple_trick_save_environment_money_when
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 permissions:
   contents: read
 

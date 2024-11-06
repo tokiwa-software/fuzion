@@ -159,23 +159,9 @@ public effect is
                       def effect.this -> R
                       ) R
   =>
-    # we replace `code`/`def` by functions with unit type result
-    # to reduce complexity of the `instate0` intrinsic.  We
-    # collect the result in this field
-    res := option R nil
-
-    # wrapper to call `code` and store result in 'res`
-    call_code : Function unit is
-      redef call =>
-        set res := code()
-
-    # wrapper to call `def` on final effect value and store result in 'res`
-    call_def : Function unit effect.this is
-      redef call(cur_e effect.this) =>
-        set res := def cur_e
-
-    instate0 e call_code call_def
-    res.get
+    x := instate_helper R effect.this e code def
+    instate0 e x.call_code x.call_def
+    x.res.get
 
 
   # execute 'code' in a context where the effect instance `e` has been
@@ -217,6 +203,35 @@ public effect is
                       ) R
   =>
     effect.this.instate R effect.this code
+
+
+
+  # infix variant instate_self
+  #
+  # use it like this:
+  #
+  #     effect_instance ! ()->code
+  #
+  public infix !(# result type
+                 R type,
+
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+  =>
+    instate_self code
+
+
+
+  # infix variant of effect.instate
+  #
+  # use it like this:
+  #
+  #     effect_type <- effect_instance ! code
+  #
+  public type.infix <- (E type : effect, e E) =>
+    effect0 e
+
 
 
   # has an effect of this type been instated?
@@ -357,3 +372,60 @@ public effect is
   # `ref`.
   #
   static_finally => finally
+
+
+# instante helper to hold the result of the effect
+#
+instate_helper(# result type
+               R type,
+
+               # effect type
+               ET type: effect,
+
+               # the effect value
+               e ET,
+
+               # the code to execute with `e` instated.
+               code () -> R,
+
+               # the lazy default result to use if effect aborts
+               def ET -> R) is
+
+  # we replace `code`/`def` by functions with unit type result
+  # to reduce complexity of the `instate0` intrinsic.  We
+  # collect the result in this field
+  res := option R nil
+
+  # wrapper to call `code` and store result in 'res`
+  call_code : Function unit is
+    redef call =>
+      set res := code()
+
+  # wrapper to call `def` on final effect value and store result in 'res`
+  call_def : Function unit ET is
+    redef call(cur_e ET) =>
+      set res := def cur_e
+
+
+
+# a constructor for holding an effect type and instance
+#
+# this allows defining operators
+#
+public effect0(E type : effect, e E) is
+
+
+  # infix variant of effect.instate
+  #
+  # use it like this:
+  #
+  #     effect_type <- effect_instance ! code
+  #
+  public infix !(# result type
+                 R type,
+
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+  =>
+    E.instate R e code

@@ -9,8 +9,8 @@ fuzion.runtime.pre_fault.cause#1
 fuzion.runtime.precondition_fault#1
 i32.pre infix +
 i32.precall infix +
-i32.type.sum.infix ∙#2
-i32.type.sum.op#2
+i32.type.sum.anonymous.infix ∙#2
+i32.type.sum.anonymous.op#2
 (list i32).fold#2
 (interval i32).fold#1
 reg_issue2325

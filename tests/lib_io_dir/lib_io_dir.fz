@@ -38,5 +38,5 @@ lib_io_dir =>
   res := io.dir.use (Sequence String) "test_path" ()->
     array 3 _->io.dir.open.read.as_string
 
-  (container.sorted_array_of res.val).for_each say
+  res.val.sort.for_each say
 

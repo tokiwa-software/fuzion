@@ -85,7 +85,7 @@ Blocking_Queue(T type, cnd concur.sync.condition) ref is
 public thread_pool(R type, size i32, code ()->R) outcome R =>
   (concur.sync.mutex.new.bind mtx->
     mtx.condition.bind R cnd->
-      (thread_pool cnd size).instate_self ()->
+      (thread_pool cnd size) ! ()->
         res := code.call
         thread_pool.env.await
         res)

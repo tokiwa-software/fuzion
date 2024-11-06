@@ -74,12 +74,13 @@ public stat(ps Stat_Handler) : effect is
 
   # the default file stat provided
   #
-  type.default_stat_handler : io.file.Stat_Handler is
-    redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-      fuzion.sys.fileio.stats path meta_data_arr
+  type.default_stat_handler =>
+    ref : io.file.Stat_Handler
+      redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+        fuzion.sys.fileio.stats path meta_data_arr
 
-    redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-      fuzion.sys.fileio.lstats path meta_data_arr
+      redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+        fuzion.sys.fileio.lstats path meta_data_arr
 
 
   # install default effect io.file.stat
