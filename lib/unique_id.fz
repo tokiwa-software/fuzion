@@ -34,8 +34,9 @@ is
   # default handler using
   # fuzion.sys.misc.unique_id to get unique id
   #
-  type.default_handler : Unique_Id_Handler is
-    redef get => fuzion.sys.misc.unique_id
+  type.default_handler =>
+    ref : Unique_Id_Handler
+      redef get => fuzion.sys.misc.unique_id
 
 
 public Unique_Id_Handler ref is

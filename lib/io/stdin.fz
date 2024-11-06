@@ -29,7 +29,7 @@
 #
 # usage example:
 #
-#     line_or_error := io.stdin.with ()->
+#     line_or_error := io.stdin.try ()->
 #       io.buffered.read_line
 #
 #

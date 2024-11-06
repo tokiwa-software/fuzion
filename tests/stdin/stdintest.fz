@@ -26,7 +26,7 @@
 stdintest =>
 
   lm : mutate is
-  say (lm.instate_self ()->((io.stdin lm).with ()->
+  say (lm.instate_self ()->((io.stdin lm).try unit ()->
 
     read(n i32) => io.buffered.read_string lm n
     read_line => io.buffered.read_line lm ? str String => str | io.end_of_file => ""

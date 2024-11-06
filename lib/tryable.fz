@@ -1,0 +1,47 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature tryable
+#
+# -----------------------------------------------------------------------
+
+# effect that uses the try effect to be able
+# to raise errors and abort itself.
+#
+# contrary to `try` there is no need to implement `type.new(h error->void)`
+#
+# NYI: BUG: moving this to eff leads to NullPointerException: Cannot read field "universe" because "dev.flang.ast.Types.resolved" is null
+#
+public tryable : effect is
+
+
+  # install this effect and execute 'f'. Wrap the result of 'f' into an
+  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
+  # via a call to 'raise' wrap the 'error' passed to 'raise' into the
+  # resulting 'outcome'.
+  #
+  public try(R type, f () -> outcome R) outcome R =>
+    universe.try tryable.this R ()->
+      tryable.this.instate_self R (() -> f() ? r R => r | e error => raise e)
+
+
+  # terminate immediately with the given error wrapped in 'option'.
+  #
+  public raise(e error) =>
+    (try tryable.this).env.raise e
