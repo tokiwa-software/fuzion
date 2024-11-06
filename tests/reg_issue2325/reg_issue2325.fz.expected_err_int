@@ -24,10 +24,10 @@ i32.precall infix +: $MODULE/numeric.fz:47:5:
 ----^^^
       debug: (numeric.this +! other)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-i32.type.sum.infix ∙#2: $MODULE/numeric.fz:239:49:
-    public redef infix ∙ (a, b numeric.this) => a + b
-------------------------------------------------^^^^^
-i32.type.sum.op#2: $MODULE/Monoid.fz:60:24:
+i32.type.sum.anonymous.infix ∙#2: $MODULE/numeric.fz:240:51:
+      public redef infix ∙ (a, b numeric.this) => a + b
+--------------------------------------------------^^^^^
+i32.type.sum.anonymous.op#2: $MODULE/Monoid.fz:60:24:
   public op(a, b T) => infix ∙  a b
 -----------------------^^^^^^^^^^^^
 (list i32).fold#2: $MODULE/list.fz:221:39:

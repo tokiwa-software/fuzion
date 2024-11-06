@@ -886,16 +886,18 @@ public Sequence(public T type) ref : property.equatable is
 
   # monoid of Sequences with infix concatentation operation.
   #
-  public type.concat_monoid : Monoid (Sequence T) is
+  public type.concat_monoid =>
 
-    # associative operation
-    #
-    redef infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
+    ref : Monoid (Sequence T)
 
-    # identity element
-    #
-    redef e Sequence T =>
-      (list T).empty
+      # associative operation
+      #
+      redef infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
+
+      # identity element
+      #
+      redef e Sequence T =>
+        (list T).empty
 
 
   # Maximum number of elements shown for on a call to `as_string` for a non-finite
