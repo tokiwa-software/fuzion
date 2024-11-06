@@ -156,11 +156,11 @@ choice_negative is
   issue23 is
 
     match 42   // 34. should flag an error, match subject must be choice
-      TRUE => say "T"
-      FALSE => say "F"
+      true_  => say "T"
+      false_ => say "F"
 
-    j := (42 ? TRUE => true   // 35. should flag an error, match subject must be choice
-             | FALSE => false) # NYI: parentheses are currently required for this to work, see #3776
+    j := (42 ? true_ => true   // 35. should flag an error, match subject must be choice
+             | false_ => false) # NYI: parentheses are currently required for this to work, see #3776
 
 
   ambiguous_assignment_to_choice_via_subtype is

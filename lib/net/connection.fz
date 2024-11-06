@@ -42,9 +42,17 @@ module:public connection(desc i64) is
   public with(T type, LM type : mutate, fn ()->T) ! net.connections
   pre is_active
   =>
-    (io.buffered.reader LM (read_provider desc) 1024).with ()->
+    with0 T LM fn
+
+
+  # helper feature, without precondition `is_active`
+  # to make this usable from any thread
+  #
+  with0(T type, LM type : mutate, fn ()->T) ! net.connections
+  =>
+    (io.buffered.reader LM (read_provider desc) 1024).try ()->
       (io.buffered.writer LM (write_provider desc) 1024).with ()->
-        (net.channel desc).instate_self ()->
+        (net.channel desc) ! ()->
           fn.call
 
 
@@ -56,11 +64,5 @@ module:public connection(desc i64) is
   pre is_active
   =>
     TP.env.submit (outcome T) ()->
-      lm.instate_self (outcome T) ()->
-        ((io.buffered.reader LM (read_provider desc) 1024).with ()->
-          (io.buffered.writer LM (write_provider desc) 1024).with ()->
-            (net.channel desc).instate_self ()->
-              fn()).bind T x->x
-
-
-
+      lm ! ()->
+        (with0 T LM fn).bind T x->x

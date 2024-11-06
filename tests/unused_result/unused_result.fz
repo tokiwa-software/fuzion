@@ -32,11 +32,11 @@ unused_result is
   if true then 42 else -1 # should flag an error
 
   match true # should flag an error: incompatible branches
-    f FALSE => f
-    t TRUE => t
+    f false_ => f
+    t true_  => t
 
   match true # should flag an error
-    f FALSE => true
-    t TRUE => true
+    f false_ => true
+    t true_  => true
 
   unit

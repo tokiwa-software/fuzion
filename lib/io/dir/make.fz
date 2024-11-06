@@ -38,9 +38,10 @@ public make(fwh Make_Dir_Handler, _ unit) : effect is
 
   # the default handler
   #
-  type.default_handler : io.dir.Make_Dir_Handler is
-    public redef mkdir(path String) =>
-      fuzion.sys.fileio.create_dir path
+  type.default_handler =>
+    ref : io.dir.Make_Dir_Handler
+      public redef mkdir(path String) =>
+        fuzion.sys.fileio.create_dir path
 
 
 # make dir with the currently installed dir.make-effect.

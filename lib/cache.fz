@@ -43,7 +43,7 @@
 #
 #       fn Function cache_key := (() ->
 #         time.nano.sleep (time.durations.seconds 2)
-#         cache_key (sorted_array_of [6,4,1,9]))
+#         cache_key ([6,4,1,9].sort))
 #
 #       fm Function cache_kex := (() ->
 #         time.nano.sleep (time.durations.seconds 3)

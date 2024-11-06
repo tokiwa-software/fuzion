@@ -72,25 +72,29 @@ public stat(ps Stat_Handler) : effect is
       error "lstat error {res[0]} for {path}"
 
 
-  # the default file stat provided
-  #
-  type.default_stat_handler : io.file.Stat_Handler is
-    redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-      fuzion.sys.fileio.stats path meta_data_arr
 
-    redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-      fuzion.sys.fileio.lstats path meta_data_arr
+# install default effect io.file.stat
+#
+install_default =>
+  (stat default_stat_handler).default
 
 
-  # install default effect io.file.stat
-  type.install_default =>
-    (io.file.stat default_stat_handler).default
+
+# the default file stat provided
+#
+default_stat_handler : Stat_Handler is
+  redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+    fuzion.sys.fileio.stats path meta_data_arr
+
+  redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+    fuzion.sys.fileio.lstats path meta_data_arr
+
 
 
 # short-hand for accessing the stat effect in current environment
 #
 public stat =>
-  stat.install_default
+  install_default
   stat.env
 
 
@@ -105,7 +109,7 @@ public stat(
      path String,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) =>
-  stat.install_default
+  install_default
   if resolve
     stat.env.stats path
   else
