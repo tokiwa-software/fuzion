@@ -39,11 +39,11 @@ module:public connection(desc i64) is
 
   # this installs reader, writer and channel for the given connection
   #
-  public with(T type, LM type : mutate, fn ()->T) ! net.connections
+  public with(T type, fn ()->T) ! net.connections
   pre is_active
   =>
-    (io.buffered.reader LM (read_provider desc) 1024).with ()->
-      (io.buffered.writer LM (write_provider desc) 1024).with ()->
+    (io.buffered.reader (read_provider desc) 1024).instate_self ()->
+      (io.buffered.writer (write_provider desc) 1024).instate_self ()->
         (net.channel desc).instate_self ()->
           fn.call
 
@@ -52,15 +52,10 @@ module:public connection(desc i64) is
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
-  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) ! net.connections
+  public in_thread_pool(T type, TP type : concur.thread_pool, fn ()->T) ! net.connections
   pre is_active
   =>
-    TP.env.submit (outcome T) ()->
-      lm.instate_self (outcome T) ()->
-        ((io.buffered.reader LM (read_provider desc) 1024).with ()->
-          (io.buffered.writer LM (write_provider desc) 1024).with ()->
-            (net.channel desc).instate_self ()->
-              fn()).bind T x->x
+    TP.env.submit (outcome T) ()->(with fn)
 
 
 

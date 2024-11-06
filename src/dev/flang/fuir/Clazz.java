@@ -1814,7 +1814,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var res = this;
     var i = feature();
     while (i != null && i != o
-      && !(i.isThisRef() && i.inheritsFrom(o)) // see #1391 and #1628 for when this can be the case.
+      && !i.inheritsFrom(o) // see #1391 and #1628 for when this can be the case.
     )
       {
         res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
@@ -1823,7 +1823,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (CHECKS) check
-      (Errors.any() || i == o || i != null && i.isThisRef() && i.inheritsFrom(o));
+      (Errors.any() || i == o || i != null && i.inheritsFrom(o));
 
     return i == null ? _fuir.error() : res;
   }

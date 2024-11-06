@@ -24,19 +24,20 @@
 # -----------------------------------------------------------------------
 
 
-# short-hand to return an io.reader with a read provider
-# allowing to read from stdin.
+# stdin
 #
-# usage example:
-#
-#     line_or_error := io.stdin.with ()->
-#       io.buffered.read_line
-#
-#
-public stdin (LM type : mutate) io.buffered.reader LM =>
+public stdin : io.buffered.reader read_provider 1024 is
+
+  # type feature that to create an instance of `try` with the given error handler.
+  #
+  public fixed redef type.new(h error->void) =>
+    io.stdin
 
 
-  read_provider : io.Read_Provider is
+# read provider for reading from stdin
+#
+read_provider =>
+  ref : io.Read_Provider
     redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := fuzion.sys.internal_array_init u8 count
       v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
@@ -48,6 +49,3 @@ public stdin (LM type : mutate) io.buffered.reader LM =>
         array u8 v i->arr[i]
       else
         arr.as_array
-
-
-  io.buffered.reader LM read_provider 1024

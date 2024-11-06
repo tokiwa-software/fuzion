@@ -22,6 +22,7 @@
 # -----------------------------------------------------------------------
 
 public Read_Provider ref is
+  # NYI: should be outcome (array u8) once outcome is open generic
   public read(count i32) choice (array u8) io.end_of_file error
   # NYI
   # post debug: match result

@@ -46,7 +46,7 @@ public mode is
 #         e error => e
 #         a array => String.from_bytes a
 #
-public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(T, R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
   # definition of read provider for file
   #
@@ -71,11 +71,11 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
   (fuzion.sys.fileio.open file_name mode_num).bind R fd->
     # install effect `open T` and run `code`
     r := (open T fd file_name).instate_self ()->
-          (io.buffered.reader LM (read_provider fd) 1024).with ()->
-            (io.buffered.writer LM (write_provider fd) 1024).with ()->
+          (io.buffered.reader (read_provider fd) 1024).instate_self ()->
+            (io.buffered.writer (write_provider fd) 1024).instate_self ()->
               tmp := code.call
               # NYI: handle error once signature of with is changed
-              _ := (io.buffered.writer LM).flush
+              _ := io.buffered.writer.env.flush
               tmp
 
     # close file
@@ -99,5 +99,5 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
 #         e error => e
 #         a array => String.from_bytes a
 #
-public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
-  use open_unique_type R LM file_name m code
+public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+  use open_unique_type R file_name m code

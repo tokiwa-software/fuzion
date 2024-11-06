@@ -34,38 +34,26 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
 ```
 hello_world is
 
-  # first we define a custom mutate effect.
-  # we will need this for buffered reading from stdin
+  # read someone's name from standard input
   #
-  lm : mutate is
+  get_name String =>
+    match (io.stdin.on ()->io.stdin.type.read_line.as_string)
+      name String => name
+      e error => panic "Could not get your name!"
 
-  # calling `lm` creates an instance of our mutate effect,
-  # `instate_self` is then used to instate this instance and
-  # run code in the context of the instated effect.
+  # greet someone with the name given
   #
-  lm.instate_self ()->
+  greet(name String) is
+    say "Hello, {name}!"
 
-    # read someone's name from standard input
-    #
-    get_name String =>
-      match ((io.stdin lm).with ()->
-                io.buffered.read_line lm ? str String => str | io.end_of_file => "")
-        name String => name
-        e error => panic "Could not get your name!"
+  # greet the user
+  #
+  x := greet get_name
 
-    # greet someone with the name given
-    #
-    greet(name String) is
-      say "Hello, {name}!"
-
-    # greet the user
-    #
-    x := greet get_name
-
-    # you can access any feature - even argument features of other features
-    # from outside
-    #
-    say "How are you, {x.name}?"
+  # you can access any feature - even argument features of other features
+  # from outside
+  #
+  say "How are you, {x.name}?"
 ```
 
 This `hello_world` example demonstrates one important concept in Fuzion quite
