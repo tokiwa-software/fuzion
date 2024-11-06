@@ -118,12 +118,12 @@ private:public Process(id i64, std_in option i64, std_out, std_err i64) ref is
       .try f
 
 
-  public with_in(T type, LM type : mutate, f ()->T) outcome T =>
+  public with_in(T type, f ()->T) outcome T =>
     std_in_write_provider
       .as_outcome (error "stdin of Process already closed.")
       .bind T p->
-        (io.buffered.writer LM p pipe_buffer_size)
-          .with f
+        (io.buffered.writer p pipe_buffer_size)
+          .instate_self f
 
 
   # write string to stdin of child process
