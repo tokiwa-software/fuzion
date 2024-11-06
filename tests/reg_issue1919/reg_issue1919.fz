@@ -17,12 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature file
-#
-#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#  Source code of Fuzion test reg_issue1919
 #
 # -----------------------------------------------------------------------
 
-# file -- a unit type that contains effects related to file I/O
-#
-public file is
+reg_issue1919 =>
+
+  a(T type: (i32) -> f64, b T) f64 =>
+    b.call 3
+
+  say (a i32->f64 (x -> 0.23))

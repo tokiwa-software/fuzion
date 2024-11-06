@@ -17,12 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature file
-#
-#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# file -- a unit type that contains effects related to file I/O
-#
-public file is
+override NAME = reg_issue1919
+include ../simple.mk

@@ -161,14 +161,14 @@ y true?1:2
 say ""
 
 say "EXP: y Type of 'codepoint'"
-y (3=4 ? TRUE  => "a"
-       | FALSE => "b")
+y (3=4 ? true_  => "a"
+       | false_ => "b")
 say ""
 
 say "EXP: y Type of 'codepoint'"
 y (match 3=4
-     TRUE  => "a"
-     FALSE => "b")
+     true_  => "a"
+     false_ => "b")
 say ""
 
 say "EXP: y Type of 'codepoint'"

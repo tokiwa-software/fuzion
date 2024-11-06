@@ -223,8 +223,8 @@ public class Types extends ANY
       f_id                      = universe.get(mod, "id", 2);
       f_void                    = universe.get(mod, "void", 0);
       f_choice                  = universe.get(mod, "choice", 1);
-      f_TRUE                    = universe.get(mod, "TRUE", 0);
-      f_FALSE                   = universe.get(mod, "FALSE", 0);
+      f_TRUE                    = universe.get(mod, "true_", 0);
+      f_FALSE                   = universe.get(mod, "false_", 0);
       f_true                    = universe.get(mod, "true", 0);
       f_false                   = universe.get(mod, "false", 0);
       f_bool                    = universe.get(mod, "bool", 0);
