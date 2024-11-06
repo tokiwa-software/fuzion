@@ -31,6 +31,11 @@ is
   # normalize the sign => no minus zero
   ns := if n = uint.zero then num.plus else s
 
+  # the actually relevant data of this uint.
+  # irrelevant zeros at start are dropped.
+  # zero is represented by the empty list.
+  data := n.b.drop_while x->x=0
+
   name String =>
     "int"
 
@@ -173,6 +178,35 @@ is
     n.as_u64
 
 
+  # does this int fit into an u128?
+  public fits_in_u128 =>
+    ns = num.plus && data.count ≤ 4
+
+
+  # this int as an u128
+  public as_u128 u128
+  pre debug: fits_in_u128
+  =>
+    n.as_u128
+
+
+  # does this int fit into an i128?
+  public fits_in_i128 =>
+    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
+
+
+  # this int as an i128
+  public as_i128 i128
+  pre debug: fits_in_i128
+  =>
+    if ns = num.plus
+      n.as_i128
+    else if data.as_seq = [u32 0x8000_0000, 0, 0, 0]
+      i128.min
+    else
+      -n.as_i128
+
+
   # this int as an uint
   public as_uint uint
   # NYI pre debug: int.this >= 0
@@ -189,6 +223,22 @@ is
                (-val).as_u64
              else val.as_u64
     int s (uint n)
+
+
+  # helper feature to init int via an i128
+  public type.from_i128(val i128) int =>
+    s num.sign := if val < i128.zero then num.minus else num.plus
+
+    if val.is_min
+      int s (uint [(u32 0x8000_0000), 0, 0, 0] unit)
+    else
+      a_val := val.abs
+      u_hi := a_val.hi.cast_to_u64
+      x0 := (u_hi >> 32).as_u32
+      x1 := ((u_hi<<32)>>32).as_u32
+      x2 := (a_val.abs.lo >> 32).as_u32
+      x3 := ((a_val.abs.lo<<32)>>32).as_u32
+      int s (uint [x0, x1, x2, x3] unit)
 
 
   # helper feature to init int via a u64

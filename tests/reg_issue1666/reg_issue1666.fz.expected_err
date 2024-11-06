@@ -1,0 +1,20 @@
+
+--CURDIR--/reg_issue1666.fz:27:10: error 1: IMPLEMENTATION RESTRICTION: An expression used as a lazy value cannot contain feature declarations
+f l => l (do)
+---------^^^^
+Declared features:
+declared 'f.loop' at --CURDIR--/reg_issue1666.fz:27:13:
+f l => l (do)
+------------^
+This is an implementation restriction that should be removed in a future version of Fuzion.
+
+To solve this, create a helper feature 'lazy_value' that calculates the value as follows:
+
+  lazy_value => {
+  private loop void : Any is Routine
+  f.this.#loop0
+}
+
+and then use 'lazy_value' as instead of the original expression.
+
+one error.

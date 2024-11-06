@@ -194,29 +194,6 @@ public class If extends ExprWithPos
 
 
   /**
-   * check the types in this if, in particular, check that the condition is of
-   * type bool.
-   *
-   * @param context the source code context where this If is used
-   */
-  public void checkTypes(Context context)
-  {
-    var t = cond.type();
-    if (!Types.resolved.t_bool.isDirectlyAssignableFrom(t, context))
-      {
-        if (fromContract())
-          {
-            AstErrors.contractExpressionMustResultInBool(cond);
-          }
-        else
-          {
-            AstErrors.ifConditionMustBeBool(cond.pos(), t);
-          }
-      }
-  }
-
-
-  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
@@ -343,7 +320,7 @@ public class If extends ExprWithPos
    */
   public Expr resolveSyntacticSugar2(Resolution res)
   {
-    return Errors.any()
+    return typeForInferencing() == Types.t_ERROR
       ? this  // no need to possible produce more errors
       : new AbstractMatch() {
           @Override
@@ -355,6 +332,11 @@ public class If extends ExprWithPos
           public SourcePosition pos()
           {
             return If.this.pos();
+          }
+          @Override
+          Kind kind()
+          {
+            return If.this.fromContract() ? Kind.Contract : Kind.If;
           }
           @Override
           public List<AbstractCase> cases()

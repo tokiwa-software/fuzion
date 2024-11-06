@@ -38,9 +38,12 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.ir.IR.ExprKind;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_SITE;
 
@@ -275,7 +278,7 @@ public class DFA extends ANY
       var tv = tvalue.value();
       if (tv instanceof ValueSet tvalues)
         {
-          for(var t : tvalues._componentsArray)
+          for (var t : tvalues._componentsArray)
             {
               res = accessSingleTarget(s, t, args, res, tvalue);
             }
@@ -910,6 +913,7 @@ public class DFA extends ANY
    * Number of unique values that have been created.
    */
   int _numUniqueValues = 0;
+  List<Value> _uniqueValues = new List<Value>();
 
 
   /**
@@ -1063,7 +1067,7 @@ public class DFA extends ANY
   /**
    * Set of effects that are missing, excluding default effects.
    */
-  IntMap<Integer> _missingEffects = new IntMap<>();
+  IntMap<Integer> _missingEffects = new IntMap<>(); // NYI: CLEANUP: Remove? This is only written?
 
 
   /**
@@ -1229,19 +1233,6 @@ public class DFA extends ANY
 
       };
 
-    if ("true".equals(System.getenv("CLAZZ")))
-      {
-        var s = new TreeSet<String>();
-        for (var cl = res.firstClazz(); cl <= res.lastClazz(); cl++)
-          {
-            s.add("CLAZZ: "+res.clazzAsString(cl)+" nc "+res.clazzNeedsCode(cl)+" u "+res.clazzIsUnitType(cl)+" v "+res.clazzIsVoidType(cl)+" hd "+res.hasData(cl)+
-                  " outer: "+res.clazzAsString(res.clazzOuterRef(cl)));
-          }
-        for (var t : s)
-          {
-            System.out.println(t);
-          }
-      }
     return res;
   }
 
@@ -1273,6 +1264,7 @@ public class DFA extends ANY
   void findFixPoint()
   {
     var cnt = 0;
+    var lookupDone = false;
     do
       {
         cnt++;
@@ -1286,21 +1278,41 @@ public class DFA extends ANY
         _changed = false;
         _changedSetBy = () -> "*** change not set ***";
         iteration();
+        if (!_changed && !lookupDone)
+          {
+            _fuir.lookupDone();  // once we are done, FUIR.isUnitType() will work since it can be sure nothing will be added.
+            lookupDone = true;
+            wasChanged(() -> "freezing lookup");
+          }
       }
     while (_changed && (true || cnt < 100));
+
     if (_options.verbose(4))
       {
         _options.verbosePrintln(4, "DFA done:");
         _options.verbosePrintln(4, "Values: " + _numUniqueValues);
-        _options.verbosePrintln(4, "Calls: ");
+        int i = 0;
+        var valueStrings = new TreeSet<String>();
+        for (var v : _uniqueValues)
+          {
+            valueStrings.add(v.toString());
+          }
+        for (var v : valueStrings)
+          {
+            i++;
+            _options.verbosePrintln(5, "  value "+i+"/"+_numUniqueValues+": " + v);
+          }
+        _options.verbosePrintln(6, "Calls: ");
         for (var c : _calls.values())
           {
-            _options.verbosePrintln(4, "  call: " + c);
+            _options.verbosePrintln(6, "  call: " + c);
           }
       }
+
     _reportResults = true;
-    _fuir.lookupDone();  // once we are done, FUIR.isUnitType() will work since it can be sure nothing will be added.
     iteration();
+    if (CHECKS) check
+      (!_changed);
 
     showCallStatistics();
   }
@@ -1468,7 +1480,7 @@ public class DFA extends ANY
    */
   void analyzeShowDetails(Call c)
   {
-    if (_reportResults && _options.verbose(4))
+    if (_reportResults && _options.verbose(6))
       {
         say(("----------------"+c+
              "----------------------------------------------------------------------------------------------------")
@@ -1927,42 +1939,42 @@ public class DFA extends ANY
     put("f32.cast_to_u32"                , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.cast_to_u64"                , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
+    put("f32.is_NaN"                     , cl -> cl._dfa.bool() );
+    put("f64.is_NaN"                     , cl -> cl._dfa.bool() );
+    put("f32.square_root"                , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.square_root"                , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.exp"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.exp"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.log"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.log"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.sin"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.sin"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.cos"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.cos"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.tan"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.tan"                        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.asin"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.asin"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.acos"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.acos"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.atan"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.atan"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.sinh"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.sinh"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.cosh"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.cosh"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f32.tanh"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("f64.tanh"                       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.type.min_exp"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.type.max_exp"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.type.min_positive"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.type.max"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.type.epsilon"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.is_NaN"                , cl -> cl._dfa.bool() );
-    put("f64.type.is_NaN"                , cl -> cl._dfa.bool() );
     put("f64.type.min_exp"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.max_exp"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.square_root"           , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.square_root"           , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.exp"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.exp"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.log"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.log"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.sin"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.sin"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.cos"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.cos"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.tan"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.tan"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.asin"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.asin"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.acos"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.acos"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.atan"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.atan"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.sinh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.sinh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.cosh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.cosh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.type.tanh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f64.type.tanh"                  , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
     put("fuzion.sys.internal_array_init.alloc", cl ->
         {
@@ -2177,7 +2189,20 @@ public class DFA extends ANY
         cl._dfa._readFields.set(jref0);
         cl._dfa._readFields.set(jref1);
         // NYI: UNDER DEVELOPMENT: setField Java_Ref, see get_static_field0
-        return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+        var x = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+        // Causes Error // x.setField(cl._dfa, jrefres, Value.UNKNOWN_JAVA_REF);
+        return x;
+      });
+    put("fuzion.java.set_field0"            , cl ->
+      {
+        var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
+        var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
+        var jref2 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(2))._clazz);
+        // mark Java_Ref fields as read
+        cl._dfa._readFields.set(jref0);
+        cl._dfa._readFields.set(jref1);
+        cl._dfa._readFields.set(jref2);
+        return Value.UNIT;
       });
     put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
     put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
@@ -2320,6 +2345,18 @@ public class DFA extends ANY
           }
         return jobj;
       });
+    put("fuzion.java.set_static_field0"     , cl ->
+      {
+        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+        var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        // otherwise it is a primitive like int, boolean
+        if (cl._dfa._fuir.clazzIsRef(rc))
+          {
+            var jref = cl._dfa._fuir.lookupJavaRef(rc);
+            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+          }
+          return Value.UNIT;
+      });
     put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
 
     put("concur.sync.mtx_init"              , cl ->
@@ -2453,10 +2490,6 @@ public class DFA extends ANY
         if (_fuir.clazzIsRef(cl))
           {
             var vc = _fuir.clazzAsValue(cl);
-            if (_fuir.clazzIsRef(vc))
-              {
-                System.out.println("ref: "+_fuir.clazzAsString(cl)+" "+_fuir.clazzIsRef(cl)+" --> "+_fuir.clazzAsString(vc)+" "+_fuir.clazzIsRef(vc));
-              }
             check(!_fuir.clazzIsRef(vc));
             r = newInstance(vc, site, context).box(this, vc, cl, context);
           }
@@ -2524,6 +2557,7 @@ public class DFA extends ANY
       (v._id < 0);
 
     v._id = _numUniqueValues++;
+    _uniqueValues.add(v);
     wasChanged(() -> "DFA: new value " + v);
   }
   { makeUnique(Value.UNIT); }
@@ -2607,8 +2641,9 @@ public class DFA extends ANY
         res = _joined.get(k);
         if (res == null)
           {
-            res = v instanceof ValueSet vv && vv.contains(w) ? v :
-                  w instanceof ValueSet vw && vw.contains(v) ? w : cache(new ValueSet(v, w));
+            res = v.contains(w) ? v :
+                  w.contains(v) ? w : new ValueSet(this, v, w);
+            res = cache(res);
             _joined.put(k, res);
           }
       }

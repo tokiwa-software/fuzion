@@ -1,0 +1,5 @@
+default case
+inner else
+B: found 2
+B: done
+works if else is properly indented

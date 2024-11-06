@@ -28,7 +28,7 @@
 #
 # This feature creates an instance of a map.
 #
-public map_of(K type : property.orderable, V type, ks array K, vs array V) Map K V => ordered_map ks vs
+public map_of(K type : property.orderable, V type, ks array K, vs array V) container.Map K V => ordered_map ks vs
 
 
 # map_of -- routine to initialize a map from an array of key value tuples
@@ -37,5 +37,5 @@ public map_of(K type : property.orderable, V type, ks array K, vs array V) Map K
 #
 # example: map_of [(key1, value1), (key2, value2)]
 #
-public map_of(K type : property.orderable, V type, kvs array (tuple K V)) Map K V =>
+public map_of(K type : property.orderable, V type, kvs array (tuple K V)) container.Map K V =>
   ordered_map (kvs.map_to_array (kv -> kv.values.0)) (kvs.map_to_array (kv -> kv.values.1))

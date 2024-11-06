@@ -32,7 +32,6 @@ import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -722,36 +721,36 @@ public class Intrinsics extends ANY
     put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
     put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
     put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32.type.is_NaN"      ,
-        "f64.type.is_NaN"      , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+    put("f32.is_NaN"           ,
+        "f64.is_NaN"           , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(outer)).ne(new CIdent("0")),
                                                                           c._names.FZ_TRUE.ret()
                                                                           ),
                                                                c._names.FZ_FALSE.ret()
                                                                ));
-    put("f32.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrtf",  new List<>(A0)).ret());
-    put("f64.type.square_root" , (c,cl,outer,in) -> CExpr.call("sqrt",   new List<>(A0)).ret());
-    put("f32.type.exp"         , (c,cl,outer,in) -> CExpr.call("expf",   new List<>(A0)).ret());
-    put("f64.type.exp"         , (c,cl,outer,in) -> CExpr.call("exp",    new List<>(A0)).ret());
-    put("f32.type.log"         , (c,cl,outer,in) -> CExpr.call("logf",   new List<>(A0)).ret());
-    put("f64.type.log"         , (c,cl,outer,in) -> CExpr.call("log",    new List<>(A0)).ret());
-    put("f32.type.sin"         , (c,cl,outer,in) -> CExpr.call("sinf",   new List<>(A0)).ret());
-    put("f64.type.sin"         , (c,cl,outer,in) -> CExpr.call("sin",    new List<>(A0)).ret());
-    put("f32.type.cos"         , (c,cl,outer,in) -> CExpr.call("cosf",   new List<>(A0)).ret());
-    put("f64.type.cos"         , (c,cl,outer,in) -> CExpr.call("cos",    new List<>(A0)).ret());
-    put("f32.type.tan"         , (c,cl,outer,in) -> CExpr.call("tanf",   new List<>(A0)).ret());
-    put("f64.type.tan"         , (c,cl,outer,in) -> CExpr.call("tan",    new List<>(A0)).ret());
-    put("f32.type.asin"        , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(A0)).ret());
-    put("f64.type.asin"        , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(A0)).ret());
-    put("f32.type.acos"        , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(A0)).ret());
-    put("f64.type.acos"        , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(A0)).ret());
-    put("f32.type.atan"        , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(A0)).ret());
-    put("f64.type.atan"        , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(A0)).ret());
-    put("f32.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinhf",  new List<>(A0)).ret());
-    put("f64.type.sinh"        , (c,cl,outer,in) -> CExpr.call("sinh",   new List<>(A0)).ret());
-    put("f32.type.cosh"        , (c,cl,outer,in) -> CExpr.call("coshf",  new List<>(A0)).ret());
-    put("f64.type.cosh"        , (c,cl,outer,in) -> CExpr.call("cosh",   new List<>(A0)).ret());
-    put("f32.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanhf",  new List<>(A0)).ret());
-    put("f64.type.tanh"        , (c,cl,outer,in) -> CExpr.call("tanh",   new List<>(A0)).ret());
+    put("f32.square_root"      , (c,cl,outer,in) -> CExpr.call("sqrtf", new List<>(outer)).ret());
+    put("f64.square_root"      , (c,cl,outer,in) -> CExpr.call("sqrt",  new List<>(outer)).ret());
+    put("f32.exp"              , (c,cl,outer,in) -> CExpr.call("expf",  new List<>(outer)).ret());
+    put("f64.exp"              , (c,cl,outer,in) -> CExpr.call("exp",   new List<>(outer)).ret());
+    put("f32.log"              , (c,cl,outer,in) -> CExpr.call("logf",  new List<>(outer)).ret());
+    put("f64.log"              , (c,cl,outer,in) -> CExpr.call("log",   new List<>(outer)).ret());
+    put("f32.sin"              , (c,cl,outer,in) -> CExpr.call("sinf",  new List<>(outer)).ret());
+    put("f64.sin"              , (c,cl,outer,in) -> CExpr.call("sin",   new List<>(outer)).ret());
+    put("f32.cos"              , (c,cl,outer,in) -> CExpr.call("cosf",  new List<>(outer)).ret());
+    put("f64.cos"              , (c,cl,outer,in) -> CExpr.call("cos",   new List<>(outer)).ret());
+    put("f32.tan"              , (c,cl,outer,in) -> CExpr.call("tanf",  new List<>(outer)).ret());
+    put("f64.tan"              , (c,cl,outer,in) -> CExpr.call("tan",   new List<>(outer)).ret());
+    put("f32.asin"             , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(outer)).ret());
+    put("f64.asin"             , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(outer)).ret());
+    put("f32.acos"             , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(outer)).ret());
+    put("f64.acos"             , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(outer)).ret());
+    put("f32.atan"             , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(outer)).ret());
+    put("f64.atan"             , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(outer)).ret());
+    put("f32.sinh"             , (c,cl,outer,in) -> CExpr.call("sinhf", new List<>(outer)).ret());
+    put("f64.sinh"             , (c,cl,outer,in) -> CExpr.call("sinh",  new List<>(outer)).ret());
+    put("f32.cosh"             , (c,cl,outer,in) -> CExpr.call("coshf", new List<>(outer)).ret());
+    put("f64.cosh"             , (c,cl,outer,in) -> CExpr.call("cosh",  new List<>(outer)).ret());
+    put("f32.tanh"             , (c,cl,outer,in) -> CExpr.call("tanhf", new List<>(outer)).ret());
+    put("f64.tanh"             , (c,cl,outer,in) -> CExpr.call("tanh",  new List<>(outer)).ret());
 
     put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
         {
@@ -1105,6 +1104,26 @@ public class Intrinsics extends ANY
                   c.javaRefField(A1).castTo("jstring"),
                   A2.castTo("char *"))),
               false));
+    put("fuzion.java.set_field0",
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : CExpr
+              .call("fzE_set_field0",
+                new List<>(c.javaRefField(A0).castTo("jobject"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  c.javaRefField(A2).castTo("jvalue"),
+                  A3.castTo("char *"))));
+    put("fuzion.java.set_static_field0",
+      (c, cl, outer, in) ->
+        C.JAVA_HOME == null
+          ? noJava
+          : CExpr
+              .call("fzE_set_static_field0",
+                new List<>(c.javaRefField(A0).castTo("jstring"),
+                  c.javaRefField(A1).castTo("jstring"),
+                  c.javaRefField(A2).castTo("jvalue"),
+                  A3.castTo("char *"))));
     put("fuzion.java.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {

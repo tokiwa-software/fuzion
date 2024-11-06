@@ -561,8 +561,11 @@ class CodeGen
     switch (_fuir.clazzKind(cc))
       {
       case Abstract :
+        res = new Pair<>(null,  // result is void, we do not return from this path.
+                         Expr.UNIT);
         Errors.error("Call to abstract feature encountered.",
                      "Found call to " + clazzInQuotes(cc));
+        break;
       case Intrinsic:
         {
           if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */

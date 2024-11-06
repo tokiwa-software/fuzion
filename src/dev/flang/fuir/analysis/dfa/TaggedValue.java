@@ -105,6 +105,19 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
 
 
   /**
+   * Does this Value cover the values in other?
+   */
+  @Override
+  boolean contains(Value other)
+  {
+    return other instanceof TaggedValue ot &&
+      _clazz == ot._clazz &&
+      _tag == ot._tag &&
+      _original.contains(ot._original);
+  }
+
+
+  /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
    */

@@ -1294,10 +1294,10 @@ public class Feature extends AbstractFeature
    * type feature.
    */
   @Override
-  public AbstractFeature typeFeature(Resolution res)
+  public AbstractFeature cotype(Resolution res)
   {
     resolveInheritance(res);
-    return super.typeFeature(res);
+    return super.cotype(res);
   }
 
 
@@ -1509,11 +1509,11 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_SUGAR1;
 
         Contract.addContractFeatures(res, this, context());
-        if (!isUniverse() && !isTypeFeature()
+        if (!isUniverse() && !isCotype()
             && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
             && !isTypeParameter())
           {
-            typeFeature(res);
+            cotype(res);
           }
         visit(new ContextVisitor(context())
           {
@@ -1851,7 +1851,7 @@ A ((Choice)) declaration must not contain a result type.
           }
 
         _state = State.TYPES_INFERENCED;
-        res.scheduleForBoxing(this);
+        res.scheduleForSyntacticSugar2Resolution(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1869,9 +1869,9 @@ A ((Choice)) declaration must not contain a result type.
   void box(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.TYPES_INFERENCED));
+      (_state.atLeast(State.RESOLVED_SUGAR2));
 
-    if (_state == State.TYPES_INFERENCED)
+    if (_state == State.RESOLVED_SUGAR2)
       {
         _state = State.BOXING;
 
@@ -1882,7 +1882,7 @@ A ((Choice)) declaration must not contain a result type.
           });
 
         _state = State.BOXED;
-        res.scheduleForCheckTypes1(this);
+        res.scheduleForCheckTypes(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1898,7 +1898,7 @@ A ((Choice)) declaration must not contain a result type.
   private void checkTypes(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.CHECKING_TYPES1));
+      (_state.atLeast(State.CHECKING_TYPES));
 
     res._module.checkTypes(this, context);
   }
@@ -1911,46 +1911,35 @@ A ((Choice)) declaration must not contain a result type.
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  void checkTypes1and2(Resolution res)
+  void checkTypes(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.BOXED));
+      (_state == State.BOXED);
 
-    _state =
-      (_state == State.BOXED          ) ? State.CHECKING_TYPES1 :
-      (_state == State.RESOLVED_SUGAR2) ? State.CHECKING_TYPES2 : _state;
+    _state = State.CHECKING_TYPES;
 
     choiceTypeCheckAndInternalFields(res);
 
-    if ((_state == State.CHECKING_TYPES1) ||
-        (_state == State.CHECKING_TYPES2)    )
-      {
-        _selfType   = selfType() .checkChoice(_pos,             context());
-        _resultType = _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
-        visit(new ContextVisitor(context()) {
-            /* if an error is reported in a call it might no longer make sense to check the actuals: */
-            @Override public boolean visitActualsLate() { return true; }
+    _selfType   = selfType() .checkChoice(_pos,             context());
+    _resultType = _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
+    visit(new ContextVisitor(context()) {
+        /* if an error is reported in a call it might no longer make sense to check the actuals: */
+        @Override public boolean visitActualsLate() { return true; }
+        @Override public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
+        @Override public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
+        @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
+        @Override public void         action(AbstractMatch  m                       ) {        m.checkTypes(_context);                 }
+        @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
+        @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
+        @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
+        @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
+      });
+    checkTypes(res, context());
+    visit(new ContextVisitor(context()) {
+      @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
+    });
 
-            @Override public void         action(AbstractAssign a, AbstractFeature outer) {        a.checkTypes(res,  _context);           }
-            @Override public Call         action(Call           c, AbstractFeature outer) {        c.checkTypes(res,  _context); return c; }
-            @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
-            @Override public Expr         action(If             i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-            @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
-            @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
-            @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
-          });
-        checkTypes(res, context());
-
-        switch (_state)
-          {
-          case CHECKING_TYPES1: _state = State.CHECKED_TYPES1; res.scheduleForSyntacticSugar2Resolution(this); break;
-          case CHECKING_TYPES2: _state = State.RESOLVED; /* end for front end! */                              break;
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.CHECKED_TYPES1));
+    _state = State.RESOLVED;
   }
 
 
@@ -1991,26 +1980,19 @@ A ((Choice)) declaration must not contain a result type.
   void resolveSyntacticSugar2(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.CHECKED_TYPES1));
+      (_state == State.TYPES_INFERENCED);
 
-    if (_state == State.CHECKED_TYPES1)
-      {
-        _state = State.RESOLVING_SUGAR2;
+    _state = State.RESOLVING_SUGAR2;
 
-        visit(new ContextVisitor(context()) {
-            public Expr  action(Feature     f, AbstractFeature outer) { return new Nop(_pos);                        }
-            public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
-            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
-            public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
-            public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
-          });
+    visit(new ContextVisitor(context()) {
+        @Override public Expr  action(Function    f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res); }
+        @Override public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, _context); }
+        @Override public void  action(Impl        i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, _context); }
+        @Override public Expr  action(If          i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res); }
+      });
 
-        _state = State.RESOLVED_SUGAR2;
-        res.scheduleForCheckTypes2(this);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.RESOLVED_SUGAR2));
+    _state = State.RESOLVED_SUGAR2;
+    res.scheduleForBoxing(this);
   }
 
 
@@ -2207,7 +2189,7 @@ A ((Choice)) declaration must not contain a result type.
       }
 
     if (POSTCONDITIONS) ensure
-      (isTypeFeaturesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
+      (isCoTypesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
 
     return result;
   }
@@ -2414,12 +2396,12 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * Is this the 'THIS_TYPE' type parameter in a type feature?
    *
-   * Overriding since AbstractFeature.isTypeFeaturesThisType needs outer to be
+   * Overriding since AbstractFeature.isCoTypesThisType needs outer to be
    * in state of at least FINDING_DECLARATIONS which is not always the case
-   * when isTypeFeaturesThisType is called.
+   * when isCoTypesThisType is called.
    */
   @Override
-  public boolean isTypeFeaturesThisType()
+  public boolean isCoTypesThisType()
   {
     return false;
   }

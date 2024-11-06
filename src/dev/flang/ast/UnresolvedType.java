@@ -429,7 +429,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     // This is called during parsing, so Types.resolved.f_function is not set yet.
     return new ParsedType(pos,
-                          arguments.size() == 1 ? Types.UNARY_NAME : Types.FUNCTION_NAME,
+                          arguments.size() == 1 ? Types.UNARY_NAME  :
+                          arguments.size() == 2 ? Types.BINARY_NAME : Types.FUNCTION_NAME,
                           new List<AbstractType>(returnType, arguments),
                           null);
   }
@@ -569,7 +570,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       {
         var of = outer;
         var o = _outer;
-        var inTypeFeature = false;
+        var inCotype = false;
         if (!tolerant && (o != null && !o.isThisType()))
           {
             o = o.resolve(res, context);
@@ -590,7 +591,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           }
         else
           {
-            inTypeFeature = of != originalOuterFeature(of);
+            inCotype = of != originalOuterFeature(of);
           }
 
         var ot = outer();
@@ -604,14 +605,14 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
         if (_resolved == null)
           {
-            var traverseOuter = ot == null && _name != FuzionConstants.TYPE_FEATURE_THIS_TYPE;
+            var traverseOuter = ot == null && _name != FuzionConstants.COTYPE_THIS_TYPE;
             var fo = tolerant ? res._module.lookupType(pos(), of, _name, traverseOuter,
                                                        true /* ignore ambiguous */ ,
                                                        true /* ignore not found */)
                               : res._module.lookupType(pos(), of, _name, traverseOuter,
                                                        false                           /* ignore ambiguous */,
-                                                       mayBeFreeType || inTypeFeature  /* ignore not found */);
-            if (fo == null || !fo._feature.isTypeParameter() && inTypeFeature)
+                                                       mayBeFreeType || inCotype       /* ignore not found */);
+            if (fo == null || !fo._feature.isTypeParameter() && inCotype)
               { // if we are in a type feature, type lookup happens in the
                 // original feature, except for type parameters that we just
                 // checked in the type feature (of).
@@ -845,7 +846,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     var o = outerfeat;
     while (isThisType() && o != null)
       {
-        if (isMatchingTypeFeature(o))
+        if (isMatchingCotype(o))
           {
             result = o.typeArguments().get(0).asGenericType();
             o = null;
@@ -865,14 +866,14 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param outerfeat the outer feature that should be compared to this.
    */
-  private boolean isMatchingTypeFeature(AbstractFeature outerfeat)
+  private boolean isMatchingCotype(AbstractFeature outerfeat)
   {
-    return outerfeat.isTypeFeature() &&
+    return outerfeat.isCotype() &&
       (_name + "." + FuzionConstants.TYPE_NAME).equals(outerfeat.featureName().baseName()) &&
       (_outer == null                                   ||
        (_outer instanceof UnresolvedType ot                   &&
         !ot.isThisType()                            &&
-        ot.isMatchingTypeFeature(outerfeat.outer())   )    );
+        ot.isMatchingCotype(outerfeat.outer())   )    );
   }
 
 

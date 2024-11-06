@@ -57,6 +57,11 @@ public class Types extends ANY
   public static final String FUNCTION_NAME = "Function";
 
   /**
+   * Name of abstract features for Nullary types:
+   */
+  public static final String NULLARY_NAME = "Nullary";
+
+  /**
    * Name of abstract features for lazy types:
    */
   public static final String LAZY_NAME = "Lazy";
@@ -65,6 +70,11 @@ public class Types extends ANY
    * Name of abstract features for unary function types:
    */
   public static final String UNARY_NAME = "Unary";
+
+  /**
+   * Name of abstract features for binary function types:
+   */
+  public static final String BINARY_NAME = "Binary";
 
   public static Resolved resolved = null;
 
@@ -183,8 +193,10 @@ public class Types extends ANY
     public final AbstractFeature f_Type_infix_colon_true;
     public final AbstractFeature f_Type_infix_colon_false;
     public final AbstractFeature f_type_as_value;
+    public final AbstractFeature f_Nullary;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_Unary;
+    public final AbstractFeature f_Binary;
     public final AbstractFeature f_auto_unwrap;
     public final Set<AbstractType> numericTypes;
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
@@ -249,8 +261,10 @@ public class Types extends ANY
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
       f_Type_infix_colon_false  = f_Type.get(mod, "infix_colon_false", 1);
       f_type_as_value           = universe.get(mod, "type_as_value", 1);
+      f_Nullary                 = universe.get(mod, NULLARY_NAME, 1);
       f_Lazy                    = universe.get(mod, LAZY_NAME, 1);
       f_Unary                   = universe.get(mod, UNARY_NAME, 2);
+      f_Binary                  = universe.get(mod, BINARY_NAME, 3);
       f_auto_unwrap             = universe.get(mod, "auto_unwrap", 2);
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,

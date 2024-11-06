@@ -190,12 +190,12 @@ public abstract class AbstractCall extends Expr
    *
    * @param that the original feature that is used to lookup types.
    *
-   * @return instance of Call to be used for the parent call in typeFeature().
+   * @return instance of Call to be used for the parent call in cotype().
    */
   Call typeCall(SourcePosition p, Resolution res, AbstractFeature that)
   {
     var selfType = new ParsedType(pos(),
-                                  FuzionConstants.TYPE_FEATURE_THIS_TYPE,
+                                  FuzionConstants.COTYPE_THIS_TYPE,
                                   new List<>(),
                                   null);
     var typeParameters = new List<AbstractType>(selfType);
@@ -218,7 +218,7 @@ public abstract class AbstractCall extends Expr
                   }
                 else
                   {
-                    typeParameters.set(i+1, that.rebaseTypeForTypeFeature(atp));
+                    typeParameters.set(i+1, that.rebaseTypeForCotype(atp));
                   }
                 i++;
               }
@@ -228,7 +228,7 @@ public abstract class AbstractCall extends Expr
       {
         for (var atp : actualTypeParameters())
           {
-            typeParameters.add(that.rebaseTypeForTypeFeature(atp));
+            typeParameters.add(that.rebaseTypeForCotype(atp));
           }
       }
 
@@ -239,7 +239,7 @@ public abstract class AbstractCall extends Expr
       ? ac.typeCall(p, res, that)
       : o.typeCall(p, new List<>(o.selfType()), res, that);
 
-    var tf = calledFeature().typeFeature(res);
+    var tf = calledFeature().cotype(res);
 
     return new Call(p,
                     oc,

@@ -738,7 +738,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @return the type after boxing or null if boxing is not needed
    */
-  private AbstractType needsBoxing(AbstractType frmlT, Context context)
+  protected AbstractType needsBoxing(AbstractType frmlT, Context context)
   {
     var t = type();
     if (frmlT.isGenericArgument() || frmlT.isThisType())
@@ -863,6 +863,15 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public String toStringWrapped()
   {
     return StringHelpers.wrapInParentheses(toString());
+  }
+
+
+  /**
+   * Is the result of this expression boxed?
+   */
+  public boolean isBoxed()
+  {
+    return false;
   }
 
 

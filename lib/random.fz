@@ -111,10 +111,10 @@ public random =>
   random.env
 
 public simple_random(seed u64, rr ()->unit) =>
-  random.instate (random (simple_random_handler seed seed)) rr
+  random <- (random (simple_random_handler seed seed)) ! rr
 
 public time_seeded_random(rr ()->unit) =>
-  random.instate (random simple_random_handler.time_seeded) rr
+  random <- (random simple_random_handler.time_seeded) ! rr
 
 
 # Random_Handler -- abstract source of random numbers
@@ -204,4 +204,4 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # random number generator.
   #
   type.time_seeded(rr ()->unit) =>
-    random.instate (random time_seeded) rr
+    random <- (random time_seeded) ! rr

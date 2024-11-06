@@ -29,25 +29,6 @@ module:public open(public T type,
                    fd i64,
                    public file_name String) : effect is
 
-  # writes the content of an array of bytes to a file opened as fd
-  #
-  # this might overwrite parts or all of an existing file.
-  #
-  public write(content Sequence u8) =>
-    # NYI we should probably not override existing effect in all cases..
-    # also write effect would not show up if used like this.
-    (io.file.write (io.file.write.default_write_handler fd)).instate_self ()->
-      io.file.write.write content.as_array
-
-
-  # reads all bytes from the file in the path
-  # returns outcome array u8, a byte array representing the content of the file if the operation was successful
-  # returns an error in case the operation fails
-  #
-  public read outcome (array u8) ! io.file.read =>
-    io.file.read.read_file fd
-
-
   # seek in file
   #
   public seek(

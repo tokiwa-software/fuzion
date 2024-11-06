@@ -79,8 +79,18 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
      u128 p03<<32 0         )
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u128) => div other
-  public fixed redef infix % (other u128) => mod other
+  public fixed redef infix / (other u128)
+    pre else
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
+      safety: other != u128.zero
+  => div other
+  public fixed redef infix % (other u128)
+    pre else
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
+      safety: other != u128.zero
+  => mod other
 
   # division and remainder with crash in case of div-by-zero
   fixed div (other u128) u128 =>
@@ -167,6 +177,11 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
       analysis: result.as_u128 = u128.this
     =>
       lo.as_i64
+  public fixed as_i128 i128
+  post
+    analysis: result.as_u128 = u128.this
+  =>
+    i128 hi.as_i64 lo
   public fixed redef as_u8 u8
     post then
       analysis: result.as_u128 = u128.this
@@ -198,6 +213,8 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public low16bits u16 => lo.low16bits
   public low32bits u32 => lo.low32bits
   public low64bits u64 => lo
+
+  public cast_to_i128 => i128 hi.cast_to_i64 lo
 
 
   # create hash code from this number
@@ -253,3 +270,4 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # identity element for 'infix *'
   #
   public fixed redef type.one => u128 0 1
+  

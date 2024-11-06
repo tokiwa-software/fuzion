@@ -161,9 +161,9 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    + This checks if this Generic is this implicit type parameter.
    */
-  boolean isThisTypeInTypeFeature()
+  boolean isThisTypeInCotype()
   {
-    return typeParameter().state().atLeast(State.FINDING_DECLARATIONS) && typeParameter().outer().isTypeFeature() && index() == 0;
+    return typeParameter().state().atLeast(State.FINDING_DECLARATIONS) && typeParameter().outer().isCotype() && index() == 0;
   }
 
 
@@ -192,13 +192,13 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    * @return the origin of `E` if it is in a type feature, `this` otherwise.
    */
-  Generic typeFeatureOrigin()
+  Generic cotypeOrigin()
   {
     var result = this;
     var o = typeParameter().outer();
-    if (!isThisTypeInTypeFeature() && o.isTypeFeature())
+    if (!isThisTypeInCotype() && o.isCotype())
       {
-        result = o.typeFeatureOrigin().generics().list.get(index()-1);
+        result = o.cotypeOrigin().generics().list.get(index()-1);
       }
     return result;
   }

@@ -80,7 +80,7 @@ public f32(public val f32) : float is
   # the "canonical" NaN.
   #
   public redef type.hash_code(a f32.this) u64 =>
-    if is_NaN a.val
+    if a.is_NaN
       hash NaN.cast_to_u32
     else if a = zero
       hash zero.cast_to_u32
@@ -142,7 +142,7 @@ public f32(public val f32) : float is
 
   # the fraction of the floating point number
   public fixed redef fract f32 =>
-    if f32.is_NaN val
+    if val.is_NaN
       f32.NaN
     else if val < (f32 0)
       -(-val).fract
@@ -163,6 +163,26 @@ public f32(public val f32) : float is
   #
   public redef use_scientific_notation bool =>
     abs<1E-3 || abs>=1E7
+
+
+  public fixed redef is_NaN bool => intrinsic
+
+  public fixed redef square_root f32 => intrinsic
+
+  public fixed redef exp f32 => intrinsic
+  public fixed redef log f32 => intrinsic
+
+
+  public fixed redef sin f32 => intrinsic
+  public fixed redef cos f32 => intrinsic
+  public fixed redef tan f32 => intrinsic
+  public fixed redef asin f32 => intrinsic
+  public fixed redef acos f32 => intrinsic
+  public fixed redef atan f32 => intrinsic
+
+  public fixed redef sinh f32 => intrinsic
+  public fixed redef cosh f32 => intrinsic
+  public fixed redef tanh f32 => intrinsic
 
 
   # convert this to a string.
@@ -199,9 +219,6 @@ public f32(public val f32) : float is
     val.as_f32
 
 
-  public fixed redef type.is_NaN(val f32) bool => intrinsic
-
-
   public fixed redef type.min_exp i32 => intrinsic
   public fixed redef type.max_exp i32 => intrinsic
   public fixed redef type.min_positive f32 => intrinsic
@@ -209,24 +226,11 @@ public f32(public val f32) : float is
   public fixed redef type.epsilon f32 => intrinsic
 
 
-  public fixed redef type.square_root(val f32) f32 => intrinsic
-
-  public fixed redef type.exp(val f32) f32 => intrinsic
-  public fixed redef type.log(val f32) f32 => intrinsic
-
-
-  public fixed redef type.sin(val f32) f32 => intrinsic
-  public fixed redef type.cos(val f32) f32 => intrinsic
-  public fixed redef type.tan(val f32) f32 => intrinsic
-  public fixed redef type.asin(val f32) f32 => intrinsic
-  public fixed redef type.acos(val f32) f32 => intrinsic
-  public fixed redef type.atan(val f32) f32 => intrinsic
-
   # atan(y/x) with a few special cases
   # see also: https://go.dev/src/math/atan2.go
   #
   public fixed redef type.atan2(y, x f32) f32 =>
-    if is_NaN y || is_NaN x
+    if y.is_NaN || x.is_NaN
       f32.NaN
     else if y = 0
       if x > 0 || (x = 0 && x.is_sign_bit_set)
@@ -256,13 +260,8 @@ public f32(public val f32) : float is
     else if y = f32.negative_infinity
       -π/2
     else
-      q := atan y/x
+      q := (y/x).atan
       if x < 0
         if q <= 0 then q+π else q-π
       else
         q
-
-
-  public fixed redef type.sinh (val f32) f32 => intrinsic
-  public fixed redef type.cosh (val f32) f32 => intrinsic
-  public fixed redef type.tanh (val f32) f32 => intrinsic
