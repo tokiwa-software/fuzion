@@ -29,8 +29,8 @@ public stdout (LM type : mutate) io.buffered.writer LM =>
 
 
   write_provider : io.Write_Provider is
-    redef write (b array u8) outcome unit =>
-      fuzion.sys.fileio.write fuzion.sys.out.stdout b
+    redef write (b Sequence u8) outcome unit =>
+      fuzion.sys.fileio.write fuzion.sys.out.stdout b.as_array
 
 
   io.buffered.writer LM write_provider 1024

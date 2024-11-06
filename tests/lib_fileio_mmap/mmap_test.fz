@@ -21,8 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
+lm : mutate is
 
-mmap_test is
+_ := lm.instate_self ()->mmap_test
+
+mmap_test =>
 
   testfile := "testfile"
 
@@ -32,10 +35,14 @@ mmap_test is
   # NYI get actual page size
   page_size := 65536
 
-  say (io.file.use unit testfile io.file.mode.append ()->
+  say (io.file.use unit lm testfile io.file.mode.append ()->
 
-    _ := f.write (array u8 page_size i->0)
-    _ := f.write "hello!".utf8
+    (io.buffered.writer lm).write (array u8 page_size i->0)
+      .error.get
+    (io.buffered.writer lm).write "hello!".utf8
+      .error.get
+    (io.buffered.writer lm).flush
+      .get
 
     offset := page_size.as_i64
 
@@ -49,10 +56,8 @@ mmap_test is
   )
 
 
-  say (io.file.use String testfile io.file.mode.read ()->
-    f
-      .read
-      .bind String (x -> String.from_bytes (x.drop page_size))
+  say (io.file.use String lm testfile io.file.mode.read ()->
+    String.from_bytes ((io.buffered.read_fully lm).drop page_size)
   )
 
   _ := io.file.delete testfile

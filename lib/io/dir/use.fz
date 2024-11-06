@@ -25,9 +25,6 @@
 # this opens a directory and installs the (open T) effect to be used
 # in `code()`.
 #
-# type parameter T is used to distinguish between several open
-# directories.
-#
 # usage example:
 #
 #     use some_type path ()->
@@ -35,26 +32,12 @@
 #         e error => e
 #         s String => say s
 #
-public use(T, R type, path String, code ()-> outcome R) outcome R =>
+public use(R type, path String, code ()-> outcome R) outcome R =>
   (fuzion.sys.fileio.open_dir path).bind R fd->
     # install effect `open T` and run `code`
-    r := open T fd path
-      .instate_self code
+    r := open fd path
+       ! code
     # close file
     _ := fuzion.sys.fileio.close_dir fd
     # return result
     r
-
-
-# short hand for use when
-# it is not necessary to distinguish between opens
-#
-# usage example:
-#
-#     use path ()->
-#       match open.read
-#         e error => e
-#         s String => say s
-#
-public use(R type, path String, code ()-> outcome R) outcome R =>
-  use open_unique_type R path code

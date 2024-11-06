@@ -2216,16 +2216,18 @@ public class AstErrors extends ANY
 
   public static void unusedResult(Expr e)
   {
-    error(e.pos(), "Expression produces result of type " + s(e.type()) +  " but result is not used.",
-       "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(e.type().feature())
-              + " from constructor to routine by replacing" + skw("is") + " by " + skw("=>") + ".");
+    var t = e.type();
+    error(e.pos(), "Expression produces result of type " + s(t) +  " but result is not used.",
+        (!t.isGenericArgument() && t.feature().isConstructor()
+          ? "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(t.feature()) + " from constructor to routine by replacing " + skw("is") + " by " + skw("=>") + "."
+          : "To solve this, use the result or explicitly ignore the result " + st("_ := <expression>") + "."));
   }
   public static void redefiningFieldsIsForbidden(AbstractFeature existing, AbstractFeature f)
   {
     error(f.pos(),
           "Redefinition of non-argument fields is forbidden.",
           "The field being redefined: " + existing.pos().show() + System.lineSeparator() +
-          "To solve this, you may want to consider converting the redefined field into a routine by replacing" + skw(":=") + " by " + skw("=>") + ".");
+          "To solve this, you may want to consider converting the redefined field into a routine by replacing " + skw(":=") + " by " + skw("=>") + ".");
   }
 
   public static void mustNotDefineTypeFeatureInUniverse(AbstractFeature f)
@@ -2259,7 +2261,7 @@ public class AstErrors extends ANY
 
   public static void illegalVisibilityArgument(Feature f)
   {
-    error(f.pos(), "Argument features must not have visibility modifier.",
+    error(f.pos(), "Argument features of non-constructors must not have visibility modifier.",
       "To solve this, remove the visibility modifier " + s(f.visibility()) + " from feature " + s(f) + ".");
   }
 
@@ -2268,6 +2270,15 @@ public class AstErrors extends ANY
     error(call.pos(),
       "Open type parameters must not be called.",
       "" /* NYI: UNDER DEVELOPMENT: can we give some useful suggestion here? */);
+  }
+
+  public static void illegalFeatureDefiningType(Feature f)
+  {
+    error(f.pos(),
+      "Must not define type inside of type feature.",
+      "To solve this, move the type outside of the type feature." + System.lineSeparator() +
+      "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
+      "do this: " + code("public type.union =>" + System.lineSeparator() + "  ref : Monoid bitset"));
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)

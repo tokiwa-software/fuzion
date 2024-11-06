@@ -26,10 +26,3 @@
 # file -- a unit type that contains effects related to file I/O
 #
 public file is
-
-
-  # Does a file or directory at path exist?
-  #
-  public exists(path String) =>
-    (stat path false).ok
-

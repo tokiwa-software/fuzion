@@ -53,7 +53,7 @@ webserver_native is
   for n in 1..
   while net.server.is_active
     _ := net.server.accept.bind unit c->
-      _ := net.connections.with unit mutate c ()->
+      _ := c.with unit mutate ()->
         say "accepted connection:"
 
         match io.buffered.read_line mutate

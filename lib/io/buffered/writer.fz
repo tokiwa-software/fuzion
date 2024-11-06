@@ -27,7 +27,9 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect is
+public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect
+pre debug: buf_size > 0
+is
 
 
   # circular buffer backing this writer
@@ -39,6 +41,9 @@ public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect is
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
+  #
+  # NYI: UNDER DEVELOPMENT: with should have signature
+  # with(R type, f ()-> outcome R) outcome R =>
   #
   public with (R type, f ()->R) outcome R =>
     try (writer LM) R (() -> writer.this.instate R writer.this f (_ -> exit 1))
@@ -104,7 +109,7 @@ public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect is
       write_result n_written e
 
 
-# short hand for getting the currently installed `buffered.reader`
+# short hand for getting the currently installed `buffered.writer`
 #
 public writer (LM type : mutate) =>
   (io.buffered.writer LM).env

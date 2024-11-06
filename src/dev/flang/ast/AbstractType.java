@@ -1148,16 +1148,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * isFunctionType checks if this is a function type used for lambda expressions,
    * e.g., "(i32, i32) -> String".
    *
-   * @return true iff this is a function type based on `Function`, `Unary` or `Binary`.
+   * @return true iff this is a function type but not a `Lazy`.
    */
   public boolean isFunctionType()
   {
     return
       this != Types.t_ERROR &&
-      !isGenericArgument() &&
-      (feature() == Types.resolved.f_Function ||
-       feature() == Types.resolved.f_Unary    ||
-       feature() == Types.resolved.f_Binary);
+      isAnyFunctionType() &&
+      feature() != Types.resolved.f_Lazy;
   }
 
 

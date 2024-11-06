@@ -31,7 +31,7 @@ public move(mop Move_Handler) : effect is
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
   # returns a unit type as outcome in case of success and error in case of failure
   #
-  move(
+  public move(
        # the old (relative or absolute) file name, using platform specific path separators
        old_path String,
        # the new (relative or absolute) file name, using platform specific path separators
@@ -41,17 +41,11 @@ public move(mop Move_Handler) : effect is
     tmp
 
 
-  # the default file/dir move operation via fuzion.sys.fileio.move
-  #
-  type.default_move_handler : io.file.Move_Handler is
-    redef move(old_path String, new_path String) =>
-      fuzion.sys.fileio.move old_path new_path
-
-
-  # install default effect io.file.move
-  #
-  type.install_default =>
-    (io.file.move default_move_handler).default
+# the default file/dir move operation via fuzion.sys.fileio.move
+#
+default_move_handler : Move_Handler is
+  redef move(old_path String, new_path String) =>
+    fuzion.sys.fileio.move old_path new_path
 
 
 # short-hand for accessing move effect in current environment and performing the default move operation using
@@ -65,7 +59,7 @@ public move(
      old_path String,
      # the new (relative or absolute) file name, using platform specific path separators
      new_path String) =>
-  move.install_default
+  (move default_move_handler).default
   move.env.move old_path new_path
 
 # reference to the move operations that could take place
