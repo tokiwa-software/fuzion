@@ -23,10 +23,8 @@
 
 
 # effect for manipulating open directories
-# T is used to distinguish several open directories
 #
-module:public open(public T type,
-                   fd i64,
+module:public open(fd i64,
                    public path String) : effect is
 
   # reads the next entry of this directory
@@ -42,24 +40,6 @@ module:public open(public T type,
 
 # short hand to get the currently
 # installed open effect
-# for type T from the environment.
-# see `use` on how to use this.
-#
-public open(T type) =>
-  (open T).env
-
-
-# unit type used internally by open- and use-
-# short hands which can be used when one does not need
-# to distinguish between several open directories.
-#
-private:public open_unique_type is
-
-
-# short hand to get the currently
-# installed open effect
-# from the environment.
-# see `use` on how to use this.
 #
 public open =>
-  (open open_unique_type).env
+  open.env

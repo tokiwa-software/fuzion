@@ -31,61 +31,45 @@ public seek(ps Seek_Handler) : effect is
   # returns an outcome i64 that represents the new offset
   # returns an error in case of failure
   #
-  module seek(
+  public seek(
        # the file descriptor
        fd i64,
        # the offset to seek from the beginning of the stream pointer
        offset i64) =>
-    tmp := ps.seek fd offset
     replace
-    tmp
+    ps.seek fd offset
+
 
   # returns the current file-pointer offset as an outcome i64,
   # the offset is measured from the beginning of the file indicated by the file descriptor
   # returns the current offset in success and error in failure
   #
-  module file_position(
+  public file_position(
                 # the file descriptor
                 fd i64) =>
-    tmp := ps.file_position fd
     replace
-    tmp
+    ps.file_position fd
 
 
-  # the default stream seeking
-  #
-  type.default_seek_handler : io.file.Seek_Handler is
-    redef seek(fd i64, offset i64) =>
-      fuzion.sys.fileio.seek fd offset
-
-    redef file_position(fd i64) =>
-      fuzion.sys.fileio.file_position fd
-
-
-  # install default effect io.file.seek
-  type.install_default unit =>
-    (io.file.seek default_seek_handler).default
-
-
-# short-hand for accessing seek effect in current environment and performing the default seek operation using
-# io.file.seek.seek fd offset
-# seek offset in the stream represented by fd
-# returns an outcome i64 that represents the new offset
-# returns an error in case of failure
+# the default stream seeking
 #
-seek(
-     # the file descriptor
-     fd i64,
-     # the offset to seek from the beginning of the stream pointer
-     offset i64) =>
-  seek.install_default
-  seek.env.seek fd offset
+default_seek_handler : Seek_Handler is
+  redef seek(fd i64, offset i64) =>
+    fuzion.sys.fileio.seek fd offset
+
+  redef file_position(fd i64) =>
+    fuzion.sys.fileio.file_position fd
+
+
+# install default effect seek
+install_default_seek unit =>
+  (seek default_seek_handler).default
 
 
 # short-hand for accessing seek effect in current environment
 #
 module seek =>
-  seek.install_default
+  install_default_seek
   seek.env
 
 
