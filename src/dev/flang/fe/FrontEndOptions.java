@@ -26,10 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.io.File;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
@@ -142,12 +145,54 @@ public class FrontEndOptions extends FuzionOptions
                          boolean loadSources,
                          Consumer<String> timer)
   {
+    this(verbose, fuzionHome, loadBaseLib, eraseInternalNamesInLib,
+          modules, moduleDirs, dumpModules, false, fuzionDebugLevel, fuzionSafety,
+          enableUnsafeIntrinsics, sourceDirs, readStdin, executeCode, main, loadSources, timer);
+  }
+
+  /**
+   * Constructor initializing fields as given.
+   *
+   * @param timer can be called with a phase name to measure the time spent in
+   * this phase, printed if `-verbose` level is sufficiently high.
+   */
+  public FrontEndOptions(int verbose,
+                         Path fuzionHome,
+                         boolean loadBaseLib,
+                         boolean eraseInternalNamesInLib,
+                         List<String> modules,
+                         List<String> moduleDirs,
+                         List<String> dumpModules,
+                         boolean loadAllModules,
+                         int fuzionDebugLevel,
+                         boolean fuzionSafety,
+                         boolean enableUnsafeIntrinsics,
+                         List<String> sourceDirs,
+                         boolean readStdin,
+                         byte[] executeCode,
+                         String main,
+                         boolean loadSources,
+                         Consumer<String> timer)
+  {
+
     super(verbose,
           fuzionDebugLevel,
           fuzionSafety,
           enableUnsafeIntrinsics,
           fuzionHome,
           timer);
+
+    if (loadAllModules)
+      {
+        try {
+          modules.addAll((Files.list(fuzionHome.resolve("modules"))
+                                .filter(Files::isRegularFile)
+                                .map(path -> path.getFileName().toString().replaceFirst("[.][^.]+$", ""))
+                                .collect(Collectors.toList())));
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
 
     if (PRECONDITIONS) require
       (verbose >= 0,
