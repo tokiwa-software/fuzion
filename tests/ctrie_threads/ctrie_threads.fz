@@ -31,7 +31,7 @@ ctrie_threads is
 
   in_threads(code i32->unit) =>
     (array num_threads t->
-      concur.thread.spawn ()->
+      concur.threads.spawn ()->
         code t
       ).for_each t->t.join
 
@@ -101,7 +101,7 @@ ctrie_threads is
             panic "illegal snap size: $k $s1"
 
     say ctrie.size # 999-900 = 99
-    say ((ctrie.items.map x->x.0).sort (a,b)->a<b).as_string_all
+    say (ctrie.items.map x->x.0).sort.as_string_all
 
 
   test3 =>

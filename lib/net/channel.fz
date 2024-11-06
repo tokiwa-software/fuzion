@@ -65,5 +65,5 @@ module read_provider(desc i64) : io.Read_Provider is
 # for a given descriptor
 #
 module write_provider(desc i64) : io.Write_Provider is
-  redef write(data array u8) outcome unit =>
-    fuzion.sys.net.write desc data
+  redef write(data Sequence u8) outcome unit =>
+    fuzion.sys.net.write desc data.as_array

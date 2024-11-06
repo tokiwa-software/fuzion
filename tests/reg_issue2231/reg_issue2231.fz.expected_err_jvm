@@ -8,7 +8,7 @@ panic.type.install_default.λ.call#1
 panic.cause#1
 panic#1
 (reg_issue2231.type.ef.type.instate#3 void).λ.call#1
-(reg_issue2231.type.ef.type.instate#4 void).call_def.call#1
+(instate_helper void reg_issue2231.ef).call_def.call#1
 reg_issue2231.type.ef.type.instate#4 void
 reg_issue2231.type.ef.type.instate#3 void
 reg_issue2231.ef.instate_self#2 void

@@ -422,18 +422,20 @@ public class Errors extends ANY
         if (!_errors_.contains(e) && (pos == null || !_syntaxErrorPositions_.contains(pos)))
           {
             _errors_.add(e);
-            print(pos, errorMessage(msg), detail);
-            if (count() >= MAX_ERROR_MESSAGES && MAX_ERROR_MESSAGES != -1)
+            if (count() <= MAX_ERROR_MESSAGES || MAX_ERROR_MESSAGES == -1)
+              {
+                print(pos, errorMessage(msg), detail);
+                if (STACK_TRACE_ON_ERROR)
+                  {
+                    Thread.dumpStack();
+                  }
+              }
+            else if (count() == (MAX_ERROR_MESSAGES + 1) && MAX_ERROR_MESSAGES != -1)
               {
                 warning(SourcePosition.builtIn,
-                        "Maximum error count reached, terminating.",
+                        "Maximum error count reached, stop error output.",
                         "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
                         "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
-                showAndExit();
-              }
-            if (STACK_TRACE_ON_ERROR)
-              {
-                Thread.dumpStack();
               }
           }
       }

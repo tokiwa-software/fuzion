@@ -17,50 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature write
-#
-#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#  Source code of Fuzion standard library feature io.file.write
 #
 # -----------------------------------------------------------------------
-
-# write -- effect providing writing operations for files
-#
-public write(fwh Write_Handler) : effect is
-
-
-  # writes the content of an array of bytes to a file opened as fd
-  #
-  # this might overwrite parts or all of an existing file.
-  #
-  public write(content array u8) =>
-    replace
-    fwh.write content
-
-
-  # the default file writing handler writing bytes into files via fuzion.sys.fileio.write
-  #
-  module type.default_write_handler(fd i64) : io.file.Write_Handler is
-    public redef write(content array u8) =>
-      fuzion.sys.fileio.write fd content
-        .bind unit r->
-          if fuzion.sys.fileio.flush fd = 0 then r else error "flushing failed"
-
-
-# short-hand for accessing write effect in current environment
-#
-public write =>
-  write.env
-
-
-# reference to the writing operations that could take place
-#
-public Write_Handler ref is
-  public write(content array u8) outcome unit => abstract
-
 
 
 # write String `s` to file `f`
 #
 public write(f String, s String) outcome unit =>
-  use unit f mode.write ()->
-    io.file.open.write s.utf8
+  lm : mutate is
+  lm ! ()->
+    use unit lm f mode.write ()->
+      ((io.buffered.writer lm).write s.utf8).error

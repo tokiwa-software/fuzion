@@ -59,7 +59,7 @@
 # which is used as the alternative type in an option.  This enables the use of
 # option void, which can store two distinct values, void and nil.
 #
-# Other unit types in Fuzion are TRUE and FALSE.
+# Other unit types in Fuzion are true_ and false_.
 #
 # The simplest syntax to create a value of unit type is an empty block '{}'. Note
 # that an empty tuple 'tuple' is a different unit value of a different type and
@@ -98,6 +98,7 @@ public unit is
   #
   # Since there is exactly one value of type unit, the operation, the equality
   # and the identity element of this monoid are canonically defined.
-  public type.monoid : Monoid unit is
-    public redef infix ∙ (a, b unit) unit => unit
-    public redef e unit => unit
+  public type.monoid =>
+    ref : Monoid unit
+      public redef infix ∙ (a, b unit) unit => unit
+      public redef e unit => unit

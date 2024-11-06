@@ -23,6 +23,11 @@
 #
 # -----------------------------------------------------------------------
 
+
+lm : mutate is
+
+_ := lm.instate_self ()->fileiotests
+
 fileiotests =>
 
   dir := "testdir"
@@ -31,7 +36,7 @@ fileiotests =>
 
   content := "Hello world 🌍"
 
-  f => io.file
+  f : io.file is
 
   say "$dir exists: {f.exists dir}"
   _ := (io.dir.make dir).bind unit _->
@@ -41,21 +46,21 @@ fileiotests =>
   say "$file exists: {f.exists file}"
 
   _ := f
-    .use unit file io.file.mode.write (()->io.file.open.write content.utf8)
+    .use unit lm file f.mode.write ()->((io.buffered.writer lm).write content.utf8).error
     .bind unit (_ -> say "$file was created")
   say "$file exists: {f.exists file}"
 
   say "stat resolve=true : $file size is {(f.stat file true).val.size}"
   say "stat resolve=false: $file size is {(f.stat file false).val.size}"
 
-  _ := f.use unit file io.file.mode.read ()->
-    say io.file.open.file_position
-    say (io.file.open.seek 1)
-    say io.file.open.file_position
-    say (io.file.open.seek 0)
+  _ := f.use unit lm file f.mode.read ()->
+    say  f.open.file_position
+    say (f.open.seek 1)
+    say  f.open.file_position
+    say (f.open.seek 0)
 
 
-  _ := f.use (array u8) file io.file.mode.read ()->io.file.open.read
+  _ := f.use (array u8) lm file f.mode.read (()->io.buffered.read_fully lm)
     .bind unit bytes->
       filecontent := String.from_bytes bytes
       say "file content bytes: $bytes"
