@@ -45,10 +45,6 @@ is
     st
 
 
-  type.install_default =>
-    (concur.threads default_thread_handler []).default
-
-
   # detach a running thread
   #
   public detach(thrd concur.thread)
@@ -64,13 +60,14 @@ is
       t.join
 
 
-  # default thread handler
-  #
-  type.default_thread_handler : concur.Thread_Handler is
 
-    # spawn a new thread using given code
-    #
-    redef spawn(code ()->unit) => concur.thread (fuzion.sys.thread.spawn code)
+# default thread handler
+#
+default_thread_handler : Thread_Handler is
+
+  # spawn a new thread using given code
+  #
+  redef spawn(code ()->unit) => concur.thread (fuzion.sys.thread.spawn code)
 
 
 
@@ -78,7 +75,7 @@ is
 # source of thread concurrency.
 #
 public threads =>
-  threads.install_default
+  (threads default_thread_handler []).default
   threads.env
 
 
