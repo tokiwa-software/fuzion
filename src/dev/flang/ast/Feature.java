@@ -379,6 +379,8 @@ public class Feature extends AbstractFeature
    */
   public boolean _scoped = false;
 
+  private List<AbstractType> _effects;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -652,7 +654,8 @@ public class Feature extends AbstractFeature
          a,
          i,
          c,
-         p);
+         p,
+         null);
   }
 
 
@@ -682,13 +685,51 @@ public class Feature extends AbstractFeature
                  List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
-                 Impl p)
+                 Impl p,
+                 List<AbstractType> effects)
   {
     this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
+
+    _effects = effects;
 
     if (PRECONDITIONS) require
       (qpname.size() >= 1,
        p != null);
+  }
+
+
+  /**
+   * Constructor without effects
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param v the visibility
+   *
+   * @param m the modifiers
+   *
+   * @param r the result type
+   *
+   * @param qname the name of this feature
+   *
+   * @param a the arguments
+   *
+   * @param i the inherits calls
+   *
+   * @param c the contract
+   *
+   * @param p the implementation (feature body etc).
+   */
+  public Feature(SourcePosition pos,
+                 Visi v,
+                 int m,
+                 ReturnType r,
+                 List<String> qname,
+                 List<AbstractFeature> a,
+                 List<AbstractCall> i,
+                 Contract c,
+                 Impl p)
+  {
+    this(pos,v,m,r,qname,a,i,c,p,null);
   }
 
 
@@ -721,7 +762,8 @@ public class Feature extends AbstractFeature
                  List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
-                 Impl p)
+                 Impl p,
+                 List<AbstractType> effects)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -1453,6 +1495,14 @@ public class Feature extends AbstractFeature
             var tt = selfType();
             _selfType = tt.resolve(res, context());
           }
+
+        if (_effects != null)
+        {
+          for (var e : _effects)
+            {
+              e.resolve(res, context());
+            }
+        }
 
         _state = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())

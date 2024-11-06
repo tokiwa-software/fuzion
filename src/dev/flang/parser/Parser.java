@@ -305,7 +305,7 @@ field       : returnType
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout(hasType);
     p = handleImplKindOf(pos, p, i == 0, l, inh, v);
-    l.add(new Feature(v,m,r,name,a,inh,c,p));
+    l.add(new Feature(v,m,r,name,a,inh,c,p,eff));
     return p2 == null
       ? new FList(l)
       : p2.routOrField(pos, l, v, m, n, i+1);
@@ -2833,8 +2833,8 @@ nextValue   : COMMA exprInLine
             p2 = new Impl(tokenSourcePos(), exprInLine(), p2._kind);
           }
       }
-    Feature f1 = new Feature(v1,m1,r1,new List<>(n1),new List<>(),new List<>(),Contract.EMPTY_CONTRACT,p1);
-    Feature f2 = new Feature(v2,m2,r2,new List<>(n2),new List<>(),new List<>(),Contract.EMPTY_CONTRACT,p2);
+    Feature f1 = new Feature(v1,m1,r1,new List<>(n1),new List<>(),new List<>(),Contract.EMPTY_CONTRACT,p1,null);
+    Feature f2 = new Feature(v2,m2,r2,new List<>(n2),new List<>(),new List<>(),Contract.EMPTY_CONTRACT,p2,null);
     indexVars.add(f1);
     nextValues.add(f2);
   }
