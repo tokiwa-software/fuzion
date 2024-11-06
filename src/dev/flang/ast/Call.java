@@ -2800,7 +2800,7 @@ public class Call extends AbstractCall
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (CHECKS) check
-                  (Errors.any() || (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR_VALUE));
+                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR_VALUE));
                 if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR_VALUE && !frmlT.isDirectlyAssignableFrom(actl.type(), context))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
