@@ -1345,8 +1345,9 @@ public class Call extends AbstractCall
                 var frmlTs = g.replaceOpen(g.feature() == _calledFeature
                                            ? _generics
                                            : (heir.isGenericArgument() // see for example #1919
-                                                ? heir.genericArgument().constraint(res, context).generics()
-                                                : heir.generics()));
+                                                ? heir.genericArgument().constraint(res, context)
+                                                : heir
+                                             ).generics());
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
