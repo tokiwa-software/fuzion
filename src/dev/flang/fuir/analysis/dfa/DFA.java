@@ -1246,20 +1246,11 @@ public class DFA extends ANY
         };
 
 
-        /*
         @Override
         public boolean clazzIsUnitType(int cl)
         {
-          if (false)
-            {
-          if (!super.clazzIsUnitType(cl) && isUnitType(cl))
-            dev.flang.util.Debug.uprintln("now unit type: "+_fuir.clazzAsString(cl)+" "+_fuir.clazzKind(cl));
-          if (super.clazzIsUnitType(cl) && !isUnitType(cl))
-            dev.flang.util.Debug.uprintln("no longer unit type: "+_fuir.clazzAsString(cl)+" "+isUnitTypeStr(cl)+" "+_fuir.clazzKind(cl));
-            }
           return super.clazzIsUnitType(cl) || isUnitType(cl);
         }
-        */
 
       };
 
@@ -2589,31 +2580,10 @@ public class DFA extends ANY
     return
       !_hasFields.get(clnum) &&
       _defaultEffects.get(cl) == null &&
-      _fuir.clazzKind(cl) != FUIR.FeatureKind.Choice &&
-      //      _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic &&
-      _fuir.clazzKind(cl) != FUIR.FeatureKind.Field &&
+      _fuir.isConstructor(cl) &&
       !_fuir.clazzIsRef(cl) &&
       _fuir.clazzArgCount(cl) == 0 &&
-      //      !_fuir.withinCode(_fuir.clazzCode(cl)) &&
-      !isBuiltInNumeric(cl) &&
-      (true || oc == FUIR.NO_CLAZZ || oc == _fuir.clazzUniverse() || isUnitType(oc));
-  }
-  String isUnitTypeStr(int cl)
-  {
-    var clnum = _fuir.clazzId2num(cl);
-    var oc = _fuir.clazzOuterClazz(cl);
-    return
-      (!_hasFields.get(clnum))+" && "+
-      (_defaultEffects.get(cl) == null)+" && "+
-      (_fuir.clazzKind(cl) != FUIR.FeatureKind.Choice)+" && "+
-      //      (_fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic)+" && "+
-      (_fuir.clazzKind(cl) != FUIR.FeatureKind.Field)+" && "+
-      //(_fuir.isConstructor(cl))+" && "+
-      (!_fuir.clazzIsRef(cl))+" && "+
-      (_fuir.clazzArgCount(cl) == 0)+" && "+
-      //      ((_fuir.isConstructor(cl))&&!_fuir.withinCode(_fuir.clazzCode(cl)))+" && "+
-      (!isBuiltInNumeric(cl))+" && "+
-      (true || oc == FUIR.NO_CLAZZ || oc == _fuir.clazzUniverse() || isUnitType(oc));
+      !isBuiltInNumeric(cl);
   }
 
 
