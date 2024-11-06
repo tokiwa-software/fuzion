@@ -2864,7 +2864,7 @@ public class DFA extends ANY
       !_fuir.withinCode(_fuir.clazzCode(cl)) &&
       !isBuiltInNumeric(cl) &&
       !hasFields(cl) &&
-      (oc == FUIR.NO_CLAZZ || isUnitType(oc));
+      (oc == FUIR.NO_CLAZZ || oc == _fuir.clazzUniverse() || isUnitType(oc));
   }
 
 
