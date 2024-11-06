@@ -70,63 +70,63 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
 
 
   # install
-  module type.install_default =>
+install_default =>
 
-    h : os.Process_Handler is
+  h : os.Process_Handler is
 
-      # start process with option to pass environment variables
-      #
-      # helper feature for start and `infix |`
-      #
-      public redef start(n String, args Sequence String, env_vars container.Map String String) outcome os.process
-      pre else
-        # NYI: UNDER DEVELOPMENT: allow utf-8?
-        # NYI: UNDER DEVELOPMENT: what about quotes(") ?
-        debug: n.as_codepoints                          ∀ (y -> y.is_ascii)
-        debug: args             ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
-        debug: env_vars.keys    ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
-        debug: env_vars.values  ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
-      =>
+    # start process with option to pass environment variables
+    #
+    # helper feature for start and `infix |`
+    #
+    public redef start(n String, args Sequence String, env_vars container.Map String String) outcome os.process
+    pre else
+      # NYI: UNDER DEVELOPMENT: allow utf-8?
+      # NYI: UNDER DEVELOPMENT: what about quotes(") ?
+      debug: n.as_codepoints                          ∀ (y -> y.is_ascii)
+      debug: args             ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
+      debug: env_vars.keys    ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
+      debug: env_vars.values  ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
+    =>
 
-        sys => fuzion.sys
-        NULL := [u8 0].internal_array.data
+      sys => fuzion.sys
+      NULL := [u8 0].internal_array.data
 
-        # posix_spawn needs last arg to be NULL
-        arg_data := array fuzion.sys.Pointer args.count+2 i->
-          if i=0 then sys.c_string n else if i<=args.count then sys.c_string args[i-1] else NULL
+      # posix_spawn needs last arg to be NULL
+      arg_data := array fuzion.sys.Pointer args.count+2 i->
+        if i=0 then sys.c_string n else if i<=args.count then sys.c_string args[i-1] else NULL
 
-        env_var_strings := env_vars
-          .items
-          .map x->
-            (k, v) := x
-            "$k=$v"
-          .as_array
+      env_var_strings := env_vars
+        .items
+        .map x->
+          (k, v) := x
+          "$k=$v"
+        .as_array
 
-        # posix_spawn needs last arg to be NULL
-        env_data := array fuzion.sys.Pointer env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
+      # posix_spawn needs last arg to be NULL
+      env_data := array fuzion.sys.Pointer env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
 
-        # args as string for windows to avoid malloc in backend
-        args_str := sys.c_string (String.type.join (([n]++args).map (x -> "\"" + x + "\"")) " ")
+      # args as string for windows to avoid malloc in backend
+      args_str := sys.c_string (String.type.join (([n]++args).map (x -> "\"" + x + "\"")) " ")
 
-        # environment variables for windows to avoid malloc in backend
-        # NULL terminates each environment variable
-        # NULL is also used to terminate the environment variables data structure.
-        env_str := sys.c_string ((String.type.join env_var_strings (codepoint 0)) + (codepoint 0))
+      # environment variables for windows to avoid malloc in backend
+      # NULL terminates each environment variable
+      # NULL is also used to terminate the environment variables data structure.
+      env_str := sys.c_string ((String.type.join env_var_strings (codepoint 0)) + (codepoint 0))
 
-        res_data := array i64 4 i->0
-        if (sys.process.create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.internal_array.data args_str env_str) = -1
-          error "*** error creating process ***"
-        else
-          os.process res_data[0] res_data[1] res_data[2] res_data[3]
+      res_data := array i64 4 i->0
+      if (sys.process.create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.internal_array.data args_str env_str) = -1
+        error "*** error creating process ***"
+      else
+        os.process res_data[0] res_data[1] res_data[2] res_data[3]
 
-    (os.processes h (container.ps_set os.process).empty).default
+  (os.processes h (container.ps_set os.process).empty).default
 
 
 
 # short-hand to processes effect
 #
 public processes =>
-  processes.install_default
+  install_default
   processes.env
 
 
