@@ -7,7 +7,15 @@ Target feature: 'visibility_scoping.test4.λ.call'
 In call: 'x'
 
 
---CURDIR--/visibility_scoping.fz:40:9: error 2: Could not find called feature
+--CURDIR--/visibility_scoping.fz:70:17: error 2: Failed to infer actual type parameters
+    say ((0..1).map y->x)  # should flag an error: feature not found
+----------------^^^
+In call to 'Sequence.map', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'B'
+Type inference failed for one type parameter 'B'
+
+
+--CURDIR--/visibility_scoping.fz:40:9: error 3: Could not find called feature
     say x     # should flag an error: feature not found
 --------^
 Feature not found: 'x' (no arguments)
@@ -15,7 +23,7 @@ Target feature: 'visibility_scoping.test1'
 In call: 'x'
 
 
---CURDIR--/visibility_scoping.fz:81:30: error 3: Could not find called feature
+--CURDIR--/visibility_scoping.fz:81:30: error 4: Could not find called feature
     say "outside else: q is $q"   # should flag an error: feature not found
 -----------------------------^
 Feature not found: 'q' (no arguments)
@@ -23,7 +31,7 @@ Target feature: 'visibility_scoping.test5'
 In call: 'q'
 
 
---CURDIR--/visibility_scoping.fz:122:13: error 4: Could not find called feature
+--CURDIR--/visibility_scoping.fz:122:13: error 5: Could not find called feature
         say x
 ------------^
 Feature not found: 'x' (no arguments)
@@ -31,7 +39,7 @@ Target feature: 'visibility_scoping.test9'
 In call: 'x'
 
 
---CURDIR--/visibility_scoping.fz:93:10: error 5: Could not find called feature
+--CURDIR--/visibility_scoping.fz:93:10: error 6: Could not find called feature
     b => tt   # should flag an error: feature not found
 ---------^^
 Feature not found: 'tt' (no arguments)
@@ -39,7 +47,7 @@ Target feature: 'visibility_scoping.test6.b'
 In call: 'tt'
 
 
---CURDIR--/visibility_scoping.fz:94:10: error 6: Could not find called feature
+--CURDIR--/visibility_scoping.fz:94:10: error 7: Could not find called feature
     c => t   # should flag an error: feature not found
 ---------^
 Feature not found: 't' (no arguments)
@@ -47,7 +55,7 @@ Target feature: 'visibility_scoping.test6.c'
 In call: 't'
 
 
---CURDIR--/visibility_scoping.fz:95:10: error 7: Could not find called feature
+--CURDIR--/visibility_scoping.fz:95:10: error 8: Could not find called feature
     d := ttt # should flag an error: feature not found
 ---------^^^
 Feature not found: 'ttt' (no arguments)
@@ -55,7 +63,7 @@ Target feature: 'visibility_scoping.test6'
 In call: 'ttt'
 
 
---CURDIR--/visibility_scoping.fz:92:10: error 8: Could not find called feature
+--CURDIR--/visibility_scoping.fz:92:10: error 9: Could not find called feature
     a => ttt # should flag an error: feature not found
 ---------^^^
 Feature not found: 'ttt' (no arguments)
@@ -63,7 +71,7 @@ Target feature: 'visibility_scoping.test6.a'
 In call: 'ttt'
 
 
---CURDIR--/visibility_scoping.fz:96:10: error 9: Could not find called feature
+--CURDIR--/visibility_scoping.fz:96:10: error 10: Could not find called feature
     e := tt   # should flag an error: feature not found
 ---------^^
 Feature not found: 'tt' (no arguments)
@@ -71,7 +79,7 @@ Target feature: 'visibility_scoping.test6'
 In call: 'tt'
 
 
---CURDIR--/visibility_scoping.fz:97:11: error 10: Could not find called feature
+--CURDIR--/visibility_scoping.fz:97:11: error 11: Could not find called feature
     f0 := t   # should flag an error: feature not found
 ----------^
 Feature not found: 't' (no arguments)
@@ -79,11 +87,11 @@ Target feature: 'visibility_scoping.test6'
 In call: 't'
 
 
---CURDIR--/visibility_scoping.fz:59:13: error 11: Could not find called feature
+--CURDIR--/visibility_scoping.fz:59:13: error 12: Could not find called feature
         say ar  # should flag an error: feature not found
 ------------^^
 Feature not found: 'ar' (no arguments)
 Target feature: 'visibility_scoping.test3.anonymous.call'
 In call: 'ar'
 
-11 errors.
+12 errors.
