@@ -456,10 +456,7 @@ public class Call extends AbstractCall
         result = Types.t_UNDEFINED;
       }
 
-    if (result.isGenericArgument())
-      {
-        result = result.genericArgument().constraint(res, context);
-      }
+    result = AbstractType.constraintIfGeneric(result, res, context);
 
     if (POSTCONDITIONS) ensure
       (!result.isGenericArgument());
@@ -1344,10 +1341,7 @@ public class Call extends AbstractCall
                 Generic g = frmlT.genericArgument();
                 var frmlTs = g.replaceOpen(g.feature() == _calledFeature
                                            ? _generics
-                                           : (heir.isGenericArgument() // see for example #1919
-                                                ? heir.genericArgument().constraint(res, context)
-                                                : heir
-                                             ).generics());
+                                           : AbstractType.constraintIfGeneric(heir, res, context).generics()); // see for example #1919
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
@@ -2398,7 +2392,7 @@ public class Call extends AbstractCall
           // check if this might be a
           // left hand side of dot-type-call
           tt = ut.resolve(res, context, true);
-          tt = tt != null && tt != Types.t_ERROR && tt.isGenericArgument() ? tt.genericArgument().constraint(res, context) : tt;
+          tt = tt != null && tt != Types.t_ERROR ? AbstractType.constraintIfGeneric(tt, res, context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {

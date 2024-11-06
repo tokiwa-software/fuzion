@@ -78,6 +78,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
 
+  /*---------------------------  static methods  ---------------------------*/
+
+
+
+  static AbstractType constraintIfGeneric(AbstractType tt, Context context)
+  {
+    return (tt.isGenericArgument() ? tt.genericArgument().constraint(context) : tt);
+  }
+  static AbstractType constraintIfGeneric(AbstractType tt, Resolution res, Context context)
+  {
+    return (tt.isGenericArgument() ? tt.genericArgument().constraint(res, context) : tt);
+  }
+
+
+  
   /*--------------------------  abstract methods  --------------------------*/
 
 
@@ -1471,7 +1486,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
-    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint(context) : tt);
+    var att = constraintIfGeneric(tt, context);
     if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
         isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
