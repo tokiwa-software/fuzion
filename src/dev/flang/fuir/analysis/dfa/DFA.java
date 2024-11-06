@@ -1044,6 +1044,12 @@ public class DFA extends ANY
 
 
   /**
+   * All clazzes that containt fields that are ever read.
+   */
+  BitSet _hasFields = new BitSet();
+
+
+  /**
    * Map from type to corresponding default effects.
    *
    * NYI: this might need to be thread-local and not global!
@@ -1238,6 +1244,22 @@ public class DFA extends ANY
           var key = ((long)s<<32)|((long)cix);
           return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
         };
+
+
+        /*
+        @Override
+        public boolean clazzIsUnitType(int cl)
+        {
+          if (false)
+            {
+          if (!super.clazzIsUnitType(cl) && isUnitType(cl))
+            dev.flang.util.Debug.uprintln("now unit type: "+_fuir.clazzAsString(cl)+" "+_fuir.clazzKind(cl));
+          if (super.clazzIsUnitType(cl) && !isUnitType(cl))
+            dev.flang.util.Debug.uprintln("no longer unit type: "+_fuir.clazzAsString(cl)+" "+isUnitTypeStr(cl)+" "+_fuir.clazzKind(cl));
+            }
+          return super.clazzIsUnitType(cl) || isUnitType(cl);
+        }
+        */
 
       };
 
@@ -2536,14 +2558,10 @@ public class DFA extends ANY
   }
 
 
-
-
-  BitSet _hasFields = new BitSet();
-  boolean hasFields(int cl)
-  {
-    return _hasFields.get(_fuir.clazzId2num(cl)) || _fuir.clazzArgCount(cl) != 0 || _fuir.clazzIsChoice(cl)
-      || _defaultEffects.get(cl)!=null;
-  }
+  /**
+   * Remember that the given field is read.  Fields that are never read will be
+   * removed from the code.
+   */
   void readField(int field)
   {
     var fnum = _fuir.clazzId2num(field);
@@ -2555,6 +2573,51 @@ public class DFA extends ANY
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
     var clnum = _fuir.clazzId2num(cl);
     _hasFields.set(clnum);
+  }
+
+
+  /**
+   * Too reduce number of calls created for unit type values, we originally
+   * assume calls to an empty constructor with no arguments and not fields as
+   * all the same.
+   *
+   * @oaran cl a clazz id, must not be NO_CLAZZ
+   *
+   * @return true if, as for what we now about used fields at this pointer, `cl`
+   * defines a unit type.
+   */
+  boolean isUnitType(int cl)
+  {
+    var clnum = _fuir.clazzId2num(cl);
+    var oc = _fuir.clazzOuterClazz(cl);
+    return
+      !_hasFields.get(clnum) &&
+      _defaultEffects.get(cl) == null &&
+      _fuir.clazzKind(cl) != FUIR.FeatureKind.Choice &&
+      //      _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic &&
+      _fuir.clazzKind(cl) != FUIR.FeatureKind.Field &&
+      !_fuir.clazzIsRef(cl) &&
+      _fuir.clazzArgCount(cl) == 0 &&
+      //      !_fuir.withinCode(_fuir.clazzCode(cl)) &&
+      !isBuiltInNumeric(cl) &&
+      (true || oc == FUIR.NO_CLAZZ || oc == _fuir.clazzUniverse() || isUnitType(oc));
+  }
+  String isUnitTypeStr(int cl)
+  {
+    var clnum = _fuir.clazzId2num(cl);
+    var oc = _fuir.clazzOuterClazz(cl);
+    return
+      (!_hasFields.get(clnum))+" && "+
+      (_defaultEffects.get(cl) == null)+" && "+
+      (_fuir.clazzKind(cl) != FUIR.FeatureKind.Choice)+" && "+
+      //      (_fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic)+" && "+
+      (_fuir.clazzKind(cl) != FUIR.FeatureKind.Field)+" && "+
+      //(_fuir.isConstructor(cl))+" && "+
+      (!_fuir.clazzIsRef(cl))+" && "+
+      (_fuir.clazzArgCount(cl) == 0)+" && "+
+      //      ((_fuir.isConstructor(cl))&&!_fuir.withinCode(_fuir.clazzCode(cl)))+" && "+
+      (!isBuiltInNumeric(cl))+" && "+
+      (true || oc == FUIR.NO_CLAZZ || oc == _fuir.clazzUniverse() || isUnitType(oc));
   }
 
 
@@ -2842,29 +2905,6 @@ public class DFA extends ANY
     arr.setField(this, internalArray, a);
     r.setField(this, utf_data, arr);
     return r;
-  }
-
-
-  /**
-   * Too reduce number of calls created for unit type values, we originally
-   * assume calls to an empty constructor with no arguments and not fields as
-   * all the same.
-   *
-   * @oaran cl a clazz id, must not be NO_CLAZZ
-   *
-   * @return true if, as for what we now about used fields at this pointer, `cl`
-   * defines a unit type.
-   */
-  boolean isUnitType(int cl)
-  {
-    var oc = _fuir.clazzOuterClazz(cl);
-    return
-      _fuir.isConstructor(cl) &&
-      _fuir.clazzArgCount(cl) == 0 &&
-      !_fuir.withinCode(_fuir.clazzCode(cl)) &&
-      !isBuiltInNumeric(cl) &&
-      !hasFields(cl) &&
-      (oc == FUIR.NO_CLAZZ || oc == _fuir.clazzUniverse() || isUnitType(oc));
   }
 
 
