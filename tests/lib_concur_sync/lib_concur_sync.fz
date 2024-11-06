@@ -28,12 +28,12 @@ lib_concur_sync =>
     mtx_res := concur.sync.mutex.new.bind unit mtx->
       cnd_res := mtx.condition.bind unit cnd->
 
-        a := concur.thread.spawn ()->
+        a := concur.threads.spawn ()->
           cnd.synchronized ()->
             check cnd.wait
             say "Thread proceeding after signal"
 
-        b := concur.thread.spawn ()->
+        b := concur.threads.spawn ()->
           say "Thread sleeping"
           time.nano.sleep (time.duration.ms 100)
           cnd.synchronized ()->
@@ -55,12 +55,12 @@ lib_concur_sync =>
     mtx_res := concur.sync.mutex.new.bind unit mtx->
       cnd_res := mtx.condition.bind unit cnd->
 
-        a := concur.thread.spawn ()->
+        a := concur.threads.spawn ()->
           cnd.synchronized ()->
             check cnd.wait
             say "Thread proceeding after broadcast"
 
-        b := concur.thread.spawn ()->
+        b := concur.threads.spawn ()->
           say "Thread sleeping"
           time.nano.sleep (time.duration.ms 100)
           cnd.synchronized ()->

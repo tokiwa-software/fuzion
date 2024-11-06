@@ -1,0 +1,89 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.threads
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# threads -- effect that provides concurrent thread
+#
+# lifecycle: while effect is installed threads can be spawned
+# when effect is uninstalled all threads are joined
+#
+public threads (
+  # the handler this effect uses to spawn threads
+  p Thread_Handler,
+  # NYI: UNDER DEVELOPMENT: use more suitable data structure
+  public running array concur.thread
+  ) : effect
+is
+
+  # spawn a new thread
+  #
+  public spawn(code ()->unit) =>
+    st := p.spawn code
+    (threads p (running++[st]).as_array).replace
+    st
+
+
+  # detach a running thread
+  #
+  public detach(thrd concur.thread)
+  pre debug: running.contains thrd
+  =>
+    (threads p (running.filter (t->t!=thrd)).as_array).replace
+
+
+  # join all running threads
+  #
+  redef finally =>
+    running.for_each t->
+      t.join
+
+
+
+# default thread handler
+#
+default_thread_handler : Thread_Handler is
+
+  # spawn a new thread using given code
+  #
+  redef spawn(code ()->unit) => concur.thread (fuzion.sys.thread.spawn code)
+
+
+
+# thread with no argument returns thread.env, i.e., the currently installed
+# source of thread concurrency.
+#
+public threads =>
+  (threads default_thread_handler []).default
+  threads.env
+
+
+
+# Thread_Provider -- abstract source of concurrency
+#
+private:public Thread_Handler ref is
+
+  # spawn a new thread using given code
+  #
+  spawn(code ()->unit) concur.thread => abstract
