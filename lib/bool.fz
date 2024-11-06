@@ -29,14 +29,14 @@
 # just to safe us from typing one more letter.  But at least we stop
 # here and do not use boo, bo or similar.
 #
-# bool is a choice type that can either be TRUE of FALSE.
+# bool is a choice type that can either be true_ of false_.
 #
-# Note that 'TRUE' and 'FALSE' themselves are not of type 'bool'.
+# Note that 'true_' and 'false_' themselves are not of type 'bool'.
 # Routines 'true' and 'false' are the preferred way to get a constant
 # value of type 'bool'.
 #
 #
-public bool : choice FALSE TRUE, property.equatable is
+public bool : choice false_ true_, property.equatable is
 
   # not
   public prefix ! bool =>
@@ -138,39 +138,39 @@ public bool : choice FALSE TRUE, property.equatable is
 
 # boolean value "false"
 #
-# Note that this value is of unit type >>FALSE<<, not of type >>bool<<, i.e.,
+# Note that this value is of unit type >>false_<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := FALSE
+#    my_boolean := false_
 #
-# you will get a variable of type >>FALSE<<, it will not be possible to assign
-# >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
+# you will get a variable of type >>false_<<, it will not be possible to assign
+# >>true_<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
 #
 #
-module:public FALSE is
+module:public false_ is
 
 
 # boolean value "true"
 #
-# Note that this value is of unit type >>TRUE<<, not of type >>bool<<, i.e.,
+# Note that this value is of unit type >>true_<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := TRUE
+#    my_boolean := true_
 #
-# you will get a variable of type >>TRUE<<, it will not be possible to assign
-# >>FALSE<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
+# you will get a variable of type >>true_<<, it will not be possible to assign
+# >>false_<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
 #
 #
-module:public TRUE is
+module:public true_ is
 
 
 # boolean value "false" as a constant of type >>bool<<.
 #
 #
-public false bool => FALSE
+public false bool => false_
 
 
 # boolean value "true" as a constant of type >>bool<<.
 #
 #
-public true bool => TRUE
+public true bool => true_
