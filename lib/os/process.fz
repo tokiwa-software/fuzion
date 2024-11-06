@@ -136,7 +136,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
       # NYI this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
-      _ := concur.thread.spawn ()->
+      _ := concur.threads.spawn ()->
         _ :=
           for p1rb := std_out_read_provider.read pipe_buffer_size
           while
