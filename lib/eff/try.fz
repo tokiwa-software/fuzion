@@ -42,8 +42,14 @@ public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
   # define code to execute in case of fault and run code
   #
   public catch(code_catch ERROR->T) =>
-    F.try   code_try
-     .catch code_catch
+    lm : mutate is
+
+    lm.instate_self ()->
+      m := lm.env.new (option ERROR nil)
+      v := F.new e->
+                m <- e
+                F.abort
+      F.instate T v code_try (_ -> code_catch m.get.get)
 
 
   # infix alias for catch
