@@ -148,6 +148,63 @@ public float : numeric is
   public use_scientific_notation bool => abstract
 
 
+  # is not a number?
+  #
+  public is_NaN bool => abstract
+
+
+  # square root
+  #
+  public square_root float.this => abstract
+
+
+  # square root alias
+  #
+  public sqrt => square_root
+
+
+  # the `val`-th power of ℇ
+  # i.e. ℇᵛᵃˡ
+  #
+  public exp float.this => abstract
+
+
+  # logarithm with base ℇ
+  #
+  public log float.this => abstract
+
+
+  # trigonometric
+
+  public sin  float.this => abstract
+  public cos  float.this => abstract
+  public tan  float.this => abstract
+  public asin float.this => abstract
+  public acos float.this => abstract
+  public atan float.this => abstract
+
+
+  # hyperbolicus
+
+  public sinh float.this => abstract
+  public cosh float.this => abstract
+  public tanh float.this => abstract
+
+
+  # area hyperbolicus
+
+  public asinh float.this =>
+    # ln(x+sqrt(x^2+1))
+    (float.this + (float.this ** float.this.type.two + float.this.type.one).sqrt).log
+  public acosh float.this =>
+    # ln(x+sqrt(x^2-1))
+    (float.this + (float.this ** float.this.type.two - float.this.type.one).sqrt).log
+  public atanh float.this =>
+    # 1/2*ln((1+x)/(1-x))
+    ((float.this.type.one + float.this)/(float.this.type.one - float.this)).log / float.this.type.two
+
+
+
   # number of bytes required to store this value
   #
   public type.bytes i32 => abstract
@@ -192,11 +249,6 @@ public float : numeric is
   public type.NaN => quiet_NaN
 
 
-  # is not a number?
-  #
-  public type.is_NaN (val float.this) bool => abstract
-
-
   public type.negative_infinity => -one / zero
 
 
@@ -215,64 +267,15 @@ public float : numeric is
   public type.epsilon float.this => abstract
 
 
-  # square root
-  #
-  public type.square_root (val float.this) float.this => abstract
-
-
-  # square root alias
-  #
-  public type.sqrt (val float.this) => square_root val
-
-
-  # the `val`-th power of ℇ
-  # i.e. ℇᵛᵃˡ
-  #
-  public type.exp (val float.this) float.this => abstract
-
-
-  # logarithm with base ℇ
-  #
-  public type.log (val float.this) float.this => abstract
-
-
   # logarithm with base `base`
   #
-  public type.log (base, val float.this) float.this
-  pre safety: base > zero
+  public log (base float.this) float.this
+  pre safety: base > float.this.type.zero
   =>
-    (float.this.log val) / (float.this.log base)
+    log / base.log
 
 
-  # trigonometric
-
-  public type.sin  (val float.this) float.this => abstract
-  public type.cos  (val float.this) float.this => abstract
-  public type.tan  (val float.this) float.this => abstract
-  public type.asin (val float.this) float.this => abstract
-  public type.acos (val float.this) float.this => abstract
-  public type.atan (val float.this) float.this => abstract
   public type.atan2 (y, x float.this) float.this => abstract
-
-
-  # hyperbolicus
-
-  public type.sinh (val float.this) float.this => abstract
-  public type.cosh (val float.this) float.this => abstract
-  public type.tanh (val float.this) float.this => abstract
-
-
-  # area hyperbolicus
-
-  public type.asinh(val float.this) float.this =>
-    # ln(x+sqrt(x^2+1))
-    float.this.log (val + sqrt (val ** two + one))
-  public type.acosh(val float.this) float.this =>
-    # ln(x+sqrt(x^2-1))
-    float.this.log (val + sqrt (val ** two - one))
-  public type.atanh(val float.this) float.this =>
-    # 1/2*ln((1+x)/(1-x))
-    float.this.log ((one + val)/(one - val)) / two
 
 
   # equality
@@ -285,7 +288,7 @@ public float : numeric is
   # of floating-point numbers, with the definition of NaN = NaN.
   #
   public redef type.equality(a, b float.this) bool =>
-    a.infix = b || (is_NaN a && is_NaN b)
+    a.infix = b || (a.is_NaN && b.is_NaN)
 
 
   # total order
@@ -299,4 +302,4 @@ public float : numeric is
   # for any x (including x = NaN).
   #
   public redef type.lteq(a, b float.this) bool =>
-    a.infix <= b || is_NaN a
+    a.infix <= b || a.is_NaN

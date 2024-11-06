@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature base64url
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Base64url encoding and decoding as defined in RFC 4648
-# modification of base64 which is safer for URLs and file names
-# For the non-alphanumeric characters the alphabet uses "-" and "_" instead of "+" and "/".
-#
-public base64url : base64 is
-  redef get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".utf8.as_array
-  redef encoding_name => "base64url"
+override NAME = reg_issue373
+include ../simple.mk

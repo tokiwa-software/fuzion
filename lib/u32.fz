@@ -51,8 +51,18 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public fixed redef infix *° (other u32) u32 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u32) => div other
-  public fixed redef infix % (other u32) => mod other
+  public fixed redef infix / (other u32)
+    pre else
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
+      safety: other != 0
+  => div other
+  public fixed redef infix % (other u32)
+    pre else
+      # NYI: #3051 precondition inheritance does not work yet
+      # remove this redundant precondition once #3051 is fixed
+      safety: other != 0
+  => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u32) u32 => intrinsic
@@ -100,10 +110,9 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public as_i64 i64 => intrinsic
 
 
-  # NYI
-  # # this u32 as an i128
-  # as_i128 i128 is
-  #   as_i64.as_i128
+  # this u32 as an i128
+  public as_i128 i128 =>
+    as_u64.as_i128
 
 
   # this u32 as an u8

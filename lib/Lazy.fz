@@ -31,4 +31,4 @@
 # `4+5>10` will never be executed:
 #     true || 4+5>10
 #
-public Lazy(public T type) ref : Function T is
+public Lazy(public T type) ref : Nullary T is

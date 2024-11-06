@@ -29,22 +29,22 @@ choice_negative is
   any => panic "trying to create void"
 
   cyclic1 is
-    A : choice A i32 String is  // 1. should flag an error: cyclic choice
+    A : choice A i32 String is       // 1. should flag an error: cyclic choice
 
   cyclic2 is
-    A : choice (ref A) i32 String is
+    A ref : choice A i32 String is  // 1a. should flag an error: choice feature must not be re
 
   cyclic3 is
-    A : choice i32 A String is  // 2. should flag an error: cyclic choice
+    A : choice i32 A String is      // 2. should flag an error: cyclic choice
 
   cyclic4 is
-    A : choice i32 (ref A) String is
+    A ref : choice i32 A String is  // 2a. should flag an error: choice feature must not be re
 
   cyclic5 is
-    A : choice i32 String A is  // 3. should flag an error: cyclic choice
+    A : choice i32 String A is      // 3. should flag an error: cyclic choice
 
   cyclic6 is
-    A : choice i32 String (ref A) is
+    A ref : choice i32 String A is  // 3a. should flag an error: choice feature must not be re
 
 /* NYI: cycle7..cycle12 moved to choice_negative2 since these currently are
   detected during clazz creation only, which is not performed when earlier
@@ -74,11 +74,11 @@ choice_negative is
     B : choice String f64, A is // 12. should flag an error: choice type must inherit exactly once from choice
 
   nofields1 is
-    A : choice i32 String bool is
-      x i32 := any // 13. should flag an error: choice type must not have any fields
+    A : choice i32 String bool is // 13. should flag an error: choice type must not have any fields
+      x i32 := any
 
   nofields2 is
-    A (x i32)  : choice i32 String bool is  // 14. should flag an error: choice type must not have any fields
+    A (x i32) : choice i32 String bool is  // 14. should flag an error: choice type must not have any fields
 
   nofields3 is
     A is x i32 := any
@@ -156,11 +156,11 @@ choice_negative is
   issue23 is
 
     match 42   // 34. should flag an error, match subject must be choice
-      TRUE => say "T"
-      FALSE => say "F"
+      true_  => say "T"
+      false_ => say "F"
 
-    j := 42 ? TRUE => true   // 35. should flag an error, match subject must be choice
-            | FALSE => false
+    j := (42 ? true_ => true   // 35. should flag an error, match subject must be choice
+             | false_ => false) # NYI: parentheses are currently required for this to work, see #3776
 
 
   ambiguous_assignment_to_choice_via_subtype is

@@ -23,22 +23,20 @@
 
 # Base64 encoding and decoding as defined in RFC 4648
 #
-public base64 is
-
-  # allows redefinition e.g. for base64url
-  module get_alphabet => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".utf8.as_array
-  module encoding_name => "base64"
-
-  # NYI: compiler does currently not optimize features without arguments to treat them like fields
-  alphabet := get_alphabet
+private:public base64(alphabet array u8, encoding_name String)
+pre debug: (container.set_of_ordered alphabet).count = 64
+is
 
   # checks if a character is valid in the encoding
+  #
   module is_valid(c u8) =>
     ((65 <= c <= 90) || (97 <= c <= 122) || (48 <= c <= 57)  # A-Z or a-z or 0-1
      || (c = alphabet[62]) || (c = alphabet[63]))            # or '+' or '/'
 
+
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a sequence of ascii values
+  #
   public encode(data array u8) =>
 
     # extract four sextets from 24 bits (of an u32)
@@ -64,6 +62,7 @@ public base64 is
 
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a string
+  #
   public encode_to_string(data array u8) =>
     String.type.from_bytes (encode data)
 
@@ -74,6 +73,7 @@ public base64 is
   # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
+  #
   public decode_str(data String) =>
     decode data.utf8.as_array
 
@@ -84,6 +84,7 @@ public base64 is
   # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
+  #
   public decode(data array u8) =>
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
@@ -160,7 +161,23 @@ public base64 is
 
     else
       if last_err
-        (sxt_last.filter (e -> e.is_error)).first.err
+        (sxt_last.filter (e -> e.is_error)).first.get.err
       else
         # remove zero bytes caused by padding
         outcome (res.take res.count-pad_size).as_array
+
+
+
+# base64 encoding and decoding as defined in RFC 4648
+# using A-z, 0-9, + and / as its alphabet
+#
+public base64 =>
+  base64 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".utf8.as_array "base64"
+
+
+# base64url encoding and decoding as defined in RFC 4648
+# modification of base64 which is safer for URLs and file names
+# For the non-alphanumeric characters the alphabet uses "-" and "_" instead of "+" and "/".
+#
+public base64url =>
+    base64 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".utf8.as_array "base64url"

@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue2691_a
+#
+# -----------------------------------------------------------------------
+
+reg_issue2691_a =>
+
+  if true
+  then if false then
+  else
+    panic "*** should be unreachable ***" # part of the outer if
+
+  if false
+    say "first case"
+  else if false
+    say "second case"
+  else
+    say "default case" # part of the inner if 
+
+  if true
+    if false
+    else
+      say "inner else"
+
+
+  for i in 1..10
+  do if i = 2 then say "B: found 2"
+  else
+    say "B: done" # this should only be printed once after the loop
+
+  f is
+    chk(x i32)
+    pre debug: x > 0
+    => x
+
+  g : f is
+    redef chk(x i32)
+    pre else if x < -10 then false
+             else true       # works, else is properly indented
+    => x
+
+  while false
+  else if false then say "a"
+       else say "works if else is properly indented"

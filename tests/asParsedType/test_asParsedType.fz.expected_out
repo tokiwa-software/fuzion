@@ -30,12 +30,12 @@ GOT: x Type of 'Unary a a.b'
 GOT: x Type of 'Unary a a.b'
 
 EXP: x Type of 'Function String i32 u64'
-GOT: x Type of 'Function String i32 u64'
-GOT: x Type of 'Function String i32 u64'
+GOT: x Type of 'Binary String i32 u64'
+GOT: x Type of 'Binary String i32 u64'
 
 EXP: x Type of 'Function String (Sequence u64) a.b'
-GOT: x Type of 'Function String (Sequence u64) a.b'
-GOT: x Type of 'Function String (Sequence u64) a.b'
+GOT: x Type of 'Binary String (Sequence u64) a.b'
+GOT: x Type of 'Binary String (Sequence u64) a.b'
 
 EXP: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
 GOT: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'

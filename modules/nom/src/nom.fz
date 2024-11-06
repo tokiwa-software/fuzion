@@ -85,8 +85,5 @@ public nom is
 
 
   # the result of Parser.call()
-  public parse_result(I, O type) : choice (success I O) error is
-    public redef as_string =>
-      match parse_result.this
-        s success => $s
-        e error => $e
+  #
+  public parse_result(I, O type) : outcome (success I O) is

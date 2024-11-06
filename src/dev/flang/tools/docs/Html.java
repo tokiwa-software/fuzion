@@ -163,7 +163,7 @@ public class Html extends ANY
   private String typePrfx(AbstractFeature af)
   {
     // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
-    return af.outer() != null && (af.outer().isTypeFeature()  || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isTypeFeature() ? "<span class=\"fd-keyword\">type</span>." : "";
+    return af.outer() != null && (af.outer().isCotype()  || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isCotype() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
 
@@ -428,8 +428,8 @@ public class Html extends ANY
     allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
     allConstructors.removeIf(f->!f.isConstructor());
 
-    var normalConstructors = allConstructors.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
-    var typeConstructors   = allConstructors.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+    var normalConstructors = allConstructors.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
+    var typeConstructors   = allConstructors.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
 
     // Functions
     var allFunctions = new TreeSet<AbstractFeature>();
@@ -439,8 +439,8 @@ public class Html extends ANY
     allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
     allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
 
-    var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
-    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeatureNewTerminology()).collect(Collectors.toCollection(TreeSet::new));
+    var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
+    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
 
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
@@ -746,13 +746,13 @@ public class Html extends ANY
       {
         return "";
       }
-    if (f.isTypeFeature())
+    if (f.isCotype())
       {
-        return featureAbsoluteURL0(f.typeFeatureOrigin());
+        return featureAbsoluteURL0(f.cotypeOrigin());
       }
     else
       {
-        String prefix = f.outer().isTypeFeature() ? "type.": "";
+        String prefix = f.outer().isCotype() ? "type.": "";
         return featureAbsoluteURL0(f.outer()) + "/" + prefix + urlEncode(f.featureName().toString());
       }
   }

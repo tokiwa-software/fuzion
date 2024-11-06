@@ -16,34 +16,14 @@ s pre x =>
 Expression with unknown type: 'x'
 
 
---CURDIR--/reg_issue3493.fz:24:7: error 4: An expression of a contract must result in type 'bool'.
+--CURDIR--/reg_issue3493.fz:24:7: error 4: Incompatible types in assignment
 s pre x =>
 ------^
-Expression type is '**error**'
-To solve this, change the expression to return a value of type 'bool'.
-
-
---CURDIR--/reg_issue3493.fz:24:3: error 5: Failed to infer type of expression.
-s pre x =>
---^^^^^^^^
-Expression with unknown type: 'pre x =>'
-
-
---CURDIR--/reg_issue3493.fz:24:3: error 6: An expression of a contract must result in type 'bool'.
-s pre x =>
---^^^^^^^^
-Expression type is '**error**'
-To solve this, change the expression to return a value of type 'bool'.
-
-
---CURDIR--/reg_issue3493.fz:24:3: error 7: Incompatible types in assignment
-s pre x =>
---^^^^^
 assignment to field : 'pre s.result'
 expected formal type: 'bool'
 actual type found   : 'unit'
 assignable to       : 'unit'
-for value assigned  : 'pre x'
+for value assigned  : 'x'
 To solve this, you could change the type of the target 'pre s.result' to 'unit' or convert the type of the assigned value to 'bool'.
 
-7 errors.
+4 errors.

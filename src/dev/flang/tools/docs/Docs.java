@@ -242,7 +242,7 @@ public class Docs extends ANY
       || af.featureName().isInternal()
       || af.featureName().isNameless()
       || !(ignoreVisibility || Util.isVisible(af))
-      || af.isTypeFeature()
+      || af.isCotype()
       || Util.isArgument(af)
       || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)
       || isDummyFeature(af);
@@ -291,7 +291,7 @@ public class Docs extends ANY
       // docs are generated per module, for features in universe add the module's folder
       String path = (modulePrefix && f.outer().isUniverse()) ? module.name() + "/" : "";
 
-      path += f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin(), module, false) + "/" + "type.")
+      path += f.isCotype() ? (featurePath(f.cotypeOrigin(), module, false) + "/" + "type.")
                                 : (featurePath(f.outer(), module) + f.featureName().toString()) + "/";
 
     return path
@@ -330,9 +330,9 @@ public class Docs extends ANY
         .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
 
       Stream<AbstractFeature> st = Stream.empty();
-      if (feature.hasTypeFeature())
+      if (feature.hasCotype())
         {
-          var tf = feature.typeFeature();
+          var tf = feature.cotype();
           st = allInnerAndInheritedFeatures(tf)
             .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
         }

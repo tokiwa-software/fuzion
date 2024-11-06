@@ -187,21 +187,3 @@ is
         else               m
 
     binary_search 0 length-1
-
-
-# sorted_array_of -- sorted one-dimensional immutable array of ordered elements
-#
-# This takes an unsorted array as an argument and returns a sorted one using
-# the order defined by the type of the elements T.
-#
-# See sorted_array from less_or_equal for details
-#
-public sorted_array_of
-  (
-  T type : property.orderable,
-  # orginal, unsorted Sequence
-  from Sequence T
-  ) sorted_array T
-
-=>
-  sorted_array from T.lteq

@@ -39,12 +39,13 @@ public read(ro Read_Handler) : effect is
 
   # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
   #
-  type.default_read_handler : io.dir.Read_Handler is
-    redef read(fd i64) outcome String =>
-      if fuzion.sys.fileio.read_dir_has_next fd
-        fuzion.sys.fileio.read_dir fd
-      else
-        error "no more directory entries"
+  type.default_read_handler =>
+    ref : io.dir.Read_Handler
+      redef read(fd i64) outcome String =>
+        if fuzion.sys.fileio.read_dir_has_next fd
+          fuzion.sys.fileio.read_dir fd
+        else
+          error "no more directory entries"
 
 
   # install default effect io.dir.read

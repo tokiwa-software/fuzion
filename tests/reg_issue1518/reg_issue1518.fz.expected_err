@@ -1,5 +1,13 @@
 
---CURDIR--/reg_issue1518.fz:32:16: error 1: Wrong argument type in redefined feature
+--CURDIR--/reg_issue1518.fz:35:24: error 1: Could not find called feature
+      type.x a.this => a
+-----------------------^
+Feature not found: 'a' (no arguments)
+Target feature: 'reg_issue1518.a.type.x'
+In call: 'a'
+
+
+--CURDIR--/reg_issue1518.fz:32:16: error 2: Wrong argument type in redefined feature
       redef b (f a.this -> unit) unit =>
 ---------------^
 In 'reg_issue1518.a.b' that redefines 'reg_issue1518.c.b'
@@ -12,13 +20,5 @@ Original argument declared at --CURDIR--/reg_issue1518.fz:29:10:
 To solve this, change type of argument to 'Unary unit reg_issue1518.this.a' at --CURDIR--/reg_issue1518.fz:32:16:
       redef b (f a.this -> unit) unit =>
 ---------------^
-
-
---CURDIR--/reg_issue1518.fz:35:24: error 2: Could not find called feature
-      type.x a.this => a
------------------------^
-Feature not found: 'a' (no arguments)
-Target feature: 'reg_issue1518.a.type.x'
-In call: 'a'
 
 2 errors.

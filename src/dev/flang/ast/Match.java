@@ -147,21 +147,9 @@ public class Match extends AbstractMatch
     var st = _subject.type();
     if (CHECKS) check
       (Errors.any() || st != Types.t_ERROR);
-    if (st != Types.t_ERROR)
+    if (st != Types.t_ERROR && !st.isGenericArgument())
       {
-        if (st.isGenericArgument())
-          {
-            AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
-          }
-        else
-          {
-            res.resolveTypes(st.feature());
-          }
-
-        if (!st.isChoice())
-          {
-            AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
-          }
+        res.resolveTypes(st.feature());
       }
     if (st.isChoice())
       {

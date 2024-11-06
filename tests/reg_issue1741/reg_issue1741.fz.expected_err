@@ -1,0 +1,43 @@
+
+--CURDIR--/reg_issue1741.fz:78:3: error 1: Used abstract feature 'numeric.type.zero' is not implemented by 'reg_issue1741.two.type'
+  two : i8 2 is
+--^^^
+Feature 'reg_issue1741.two.type' instantiated at <source position not available>:
+
+inherits or declares abstract feature 'numeric.type.zero' declared at $MODULE/numeric.fz:200:15:
+  public type.zero numeric.this => abstract
+--------------^^^^
+which is called at $MODULE/numeric.fz:212:14:
+    if v = 0 zero else (from_u32 v-1) +^ one
+-------------^^^^
+without providing an implementation
+
+Callchain that lead to this point:
+
+call 'reg_issue1741.type.two.type.from_u32#1' at $MODULE/integer.fz:113:10:
+    b := integer.this.from_u32 base
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'reg_issue1741.two.as_string#1' at $MODULE/integer.fz:110:5:
+    pre
+----^^^
+      debug: 1 < base ≤ 36
+------^^^^^^^^^^^^^^^^^^^^
+call 'reg_issue1741.two.precall as_string' at $MODULE/integer.fz:103:36:
+  public redef as_string String => integer.this.as_string 10
+-----------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^
+call 'reg_issue1741.two.as_string' at $MODULE/io/print_effect.fz:55:12:
+    print (s.as_string + (codepoint 10))
+-----------^^^^^^^^^^^
+call 'io.type.out.type.default_print_handler.anonymous.println#1' at $MODULE/io/print_effect.fz:36:5:
+    p.println s
+----^^^^^^^^^^^
+call 'io.out.println#1' at $MODULE/say.fz:31:22:
+public say(s Any) => io.out.println s
+---------------------^^^^^^^^^^^^^^^^
+call 'say#1' at --CURDIR--/reg_issue1741.fz:81:3:
+  say two
+--^^^^^^^
+call 'reg_issue1741'
+program entry point
+
+one error.

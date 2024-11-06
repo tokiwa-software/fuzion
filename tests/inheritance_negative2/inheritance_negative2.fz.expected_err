@@ -1,0 +1,81 @@
+
+--CURDIR--/inheritance_negative2.fz:30:9: error 1: Could not find called feature
+    C : B1 is  // 1. should flag an error, inheritance of a feature that does not exist
+--------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.inheritedNotFound1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:35:11: error 2: Could not find called feature
+    C : A.B is  // 2. should flag an error, inheritance of an inner feature that does not exist
+----------^
+Feature not found: 'B' (no arguments)
+Target feature: 'inheritance_negative2.inheritedNotFound2.A'
+In call: 'B'
+
+
+--CURDIR--/inheritance_negative2.fz:53:17: error 3: Could not find called feature
+    C1 ref : A1.B1.C is                 //  3. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:54:17: error 4: Could not find called feature
+    D1 ref : A1.B1.C1.D is              //  4. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:55:17: error 5: Could not find called feature
+    E1 ref : A1.B1.C1.D1.E is           //  5. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:56:17: error 6: Could not find called feature
+    F1 ref : A1.B1.C1.D1.E1.F is        //  6. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:59:17: error 7: Could not find called feature
+    C2 ref : A1.B1.C is                 //  7. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:60:17: error 8: Could not find called feature
+    D2 ref : A1.B1.C1.D is              //  8. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:61:17: error 9: Could not find called feature
+    E2 ref : A1.B1.C1.D1.E is           //  9. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+
+--CURDIR--/inheritance_negative2.fz:62:17: error 10: Could not find called feature
+    F2 ref : A1.B1.C1.D1.E1.F is        // 10. should flag an error: B1 not found
+----------------^^
+Feature not found: 'B1' (no arguments)
+Target feature: 'inheritance_negative2.outerInheritsNotFound3.A1'
+In call: 'B1'
+
+10 errors.

@@ -114,11 +114,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # get the head of this list
   #
-  # list must not be empty, causes precondition failure if debug is enabled.
-  #
   public redef first
   =>
-    head.get
+    head
 
 
   # returns the list of all but the last element of this list
@@ -150,14 +148,12 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # get the last element of this list
   #
-  # list must not be empty, causes precondition failure if debug is enabled.
-  #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite list.
   #
-  public redef last A =>
-    force_tail ? nil    => first
-               | c Cons => force_tail.last
+  public redef last option A =>
+    tail ? nil    => head
+         | c Cons => tail.last
 
 
   # collect the contents of this list into an array
@@ -168,7 +164,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     lm.instate_self ()->
       e := lm.env.new list.this
       array A count _->
-        res := e.get.first
+        res := e.get.first.get
         e <- e.get.force_tail
         res
 
@@ -502,16 +498,18 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # to avoid clash with inherited `Sequence.concat_monoid`. Maybe
   # the inherited one should be renamed once renaming is supported.
   #
-  public type.list_concat_monoid : Monoid (list A) is
+  public type.list_concat_monoid =>
 
-    # associative operation
-    #
-    redef infix ∙ (a, b list A) list A => a.concat b
+    ref : Monoid (list A)
 
-    # identity element
-    #
-    redef e list A =>
-      nil
+      # associative operation
+      #
+      redef infix ∙ (a, b list A) list A => a.concat b
+
+      # identity element
+      #
+      redef e list A =>
+        nil
 
 
   # equality

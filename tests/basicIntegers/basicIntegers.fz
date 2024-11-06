@@ -39,20 +39,24 @@ basicIntegers =>
     if a -! b
       say "{T.name}: |$a - $b| = {|a-b|}"
 
-  test_i64 (a, b i64) unit => test i64 a                      b
-  test_i32 (a, b i64) unit => test i32 a.low32bits.cast_to_i32 b.low32bits.cast_to_i32
-  test_i16 (a, b i64) unit => test i16 a.low16bits.cast_to_i16 b.low16bits.cast_to_i16
-  test_i8  (a, b i64) unit => test i8  a.low8bits.cast_to_i8   b.low8bits.cast_to_i8
-  test_u64 (a, b i64) unit => test u64 a.cast_to_u64           b.cast_to_u64
-  test_u32 (a, b i64) unit => test u32 a.low32bits            b.low32bits
-  test_u16 (a, b i64) unit => test u16 a.low16bits            b.low16bits
-  test_u8  (a, b i64) unit => test u8  a.low8bits             b.low8bits
+  test_i128 (a, b i64) unit => test i128 a.as_i128               b.as_i128
+  test_i64  (a, b i64) unit => test i64  a                       b
+  test_i32  (a, b i64) unit => test i32  a.low32bits.cast_to_i32 b.low32bits.cast_to_i32
+  test_i16  (a, b i64) unit => test i16  a.low16bits.cast_to_i16 b.low16bits.cast_to_i16
+  test_i8   (a, b i64) unit => test i8   a.low8bits.cast_to_i8   b.low8bits.cast_to_i8
+  test_u128 (a, b i64) unit => test u128 a.as_i128.cast_to_u128  b.as_i128.cast_to_u128
+  test_u64  (a, b i64) unit => test u64  a.cast_to_u64           b.cast_to_u64
+  test_u32  (a, b i64) unit => test u32  a.low32bits             b.low32bits
+  test_u16  (a, b i64) unit => test u16  a.low16bits             b.low16bits
+  test_u8   (a, b i64) unit => test u8   a.low8bits              b.low8bits
 
   testAll (a, b i64) =>
+    test_i128 a b
     test_i64 a b
     test_i32 a b
     test_i16 a b
     test_i8 a b
+    test_u128 a b
     test_u64 a b
     test_u32 a b
     test_u16 a b

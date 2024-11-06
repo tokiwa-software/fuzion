@@ -79,31 +79,23 @@ public Sequence(public T type) ref : property.equatable is
 
   # get the first element of this Sequence
   #
-  # Sequence must not be empty, causes precondition failure if debug is enabled.
-  #
   public first
-  pre
-    debug: !is_empty
-  => as_list.head.get
+  => as_list.first
 
 
   # get the first element of this Sequence or default if sequence is empty
   #
   public first(default T)
   =>
-    if is_empty then default else first
+    first.val default
 
 
   # get the last element of this Sequence
-  #
-  # Sequence must not be empty, causes precondition failure if debug is enabled.
   #
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite Sequence.
   #
   public last
-  pre
-    debug: !is_empty
   => as_list.last
 
 
@@ -111,7 +103,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   public last(default T)
   =>
-    if is_empty then default else last
+    last.val default
 
 
   # collect the contents of this Sequence into an array
@@ -305,7 +297,7 @@ public Sequence(public T type) ref : property.equatable is
   # if finite), you may use `as_string_all`.
   #
   public redef as_string =>
-    if finite = TRUE
+    if finite = trit.yes
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
@@ -466,12 +458,18 @@ public Sequence(public T type) ref : property.equatable is
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the total order defined by less_or_equal
-  public sort(less_or_equal (T, T) -> bool) => container.sorted_array Sequence.this less_or_equal
+  # sort this Sequence using the order defined by less_or_equal
+  #
+  public sort_by(less_or_equal (T, T) -> bool) => container.sorted_array Sequence.this less_or_equal
 
 
-  # sort this Sequence using total order defined for 'f a[i]'
-  public sort_by(O type : property.orderable, f T->O) => sort (a, b -> f a ≤ f b)
+  # sort this Sequence
+  #
+  public sort
+  pre
+    T : property.partially_orderable
+  =>
+    sort_by ((a,b) -> T.lteq a b)
 
 
   # create a new list from the result of applying 'f' to the
@@ -835,10 +833,9 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : property.orderable
   =>
-    if is_empty
-      nil
-    else
-      reduce first ((r,t) -> if r ≤ t then r else t)
+    match first
+      nil => nil
+      v T => reduce v ((r,t) -> if r ≤ t then r else t)
 
 
   # maximum value in the sequence
@@ -846,10 +843,9 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : property.orderable
   =>
-    if is_empty
-      nil
-    else
-      reduce first ((r,t) -> if r ≤ t then t else r)
+    match first
+      nil => nil
+      v T => reduce v ((r,t) -> if r ≤ t then t else r)
 
 
   # the median of the sequence
@@ -861,11 +857,11 @@ public Sequence(public T type) ref : property.equatable is
     if is_empty
       nil
     else
-      arr := container.sorted_array_of Sequence.this
-      if arr.length % 2 = 1
-        arr[arr.length / 2]
+      sorted := sort
+      if sorted.length % 2 = 1
+        sorted[sorted.length / 2]
       else
-        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (T.two)
+        (sorted[(sorted.length / 2) - 1] + sorted[(sorted.length / 2)]) / (T.two)
 
 
 
@@ -875,7 +871,7 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : float
   =>
-    variance.map (x -> T.sqrt x)
+    variance.map x->x.sqrt
 
 
   # the euclidean norm of this sequence
@@ -885,21 +881,23 @@ public Sequence(public T type) ref : property.equatable is
     pre
       T : float
   =>
-    T.sqrt ((map x->x**T.two).fold T.sum)
+    ((map x->x**T.two).fold T.sum).sqrt
 
 
   # monoid of Sequences with infix concatentation operation.
   #
-  public type.concat_monoid : Monoid (Sequence T) is
+  public type.concat_monoid =>
 
-    # associative operation
-    #
-    redef infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
+    ref : Monoid (Sequence T)
 
-    # identity element
-    #
-    redef e Sequence T =>
-      (list T).empty
+      # associative operation
+      #
+      redef infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
+
+      # identity element
+      #
+      redef e Sequence T =>
+        (list T).empty
 
 
   # Maximum number of elements shown for on a call to `as_string` for a non-finite
@@ -927,7 +925,9 @@ public Sequence(public T type) ref : property.equatable is
       else if b.finite=trit.yes
         b.count = (a.take (b.count+1)).count && equality0 a b
       else
-        equality0 a b
+        equality0 a b &&
+          {zip_count := (a.zip b x,y->unit).count
+           (a.drop zip_count).is_empty && (b.drop zip_count).is_empty}
     else
       panic "***"
 
