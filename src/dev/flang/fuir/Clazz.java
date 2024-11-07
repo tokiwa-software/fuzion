@@ -589,7 +589,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     t = replaceThisTypeForCotype(t);
     if (t.isThisType())
       {
-        t = findOuter(t.feature())._type;
+        t = findOuter(t)._type;
       }
     return t.applyToGenericsAndOuter(g -> replaceThisType(g));
   }
@@ -1807,16 +1807,22 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the outer clazz of this corresponding feature `o`.
    */
-  Clazz findOuter(AbstractFeature o)
+  Clazz findOuter(AbstractType o)
   {
     /* starting with feature(), follow outer references
      * until we find o.
      */
+    var of = o.feature();
+    var isValue = !o.isRef();
+    var isThisValue = o.isThisType() && o.isRef() != of.isThisRef() && isValue;
     var res = this;
     var i = feature();
-    while (i != null && i != o
-      && !i.inheritsFrom(o) // see #1391 and #1628 for when this can be the case.
-    )
+    while (
+      // direct match
+      i != null && i != of
+      // via inheritance (in values)
+      && !((isThisValue  ? i.isThisRef() : isValue) && i.inheritsFrom(of)) // see #1391 and #1628 for when this can be the case.
+          )
       {
         res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
                                : res._outer;
@@ -1824,7 +1830,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (CHECKS) check
-      (Errors.any() || i == o || i != null && i.inheritsFrom(o));
+      (Errors.any() || i == of || i != null && i.inheritsFrom(of) && isValue);
 
     return i == null ? _fuir.error() : res;
   }
