@@ -2784,7 +2784,7 @@ public class Call extends AbstractCall
         while (o != null && !o.isGenericArgument())
           {
             o = o.outer();
-            if (o != null && o.isRef() && !o.feature().isThisRef())
+            if (o != null && o.isRef() && !o.feature().isRef())
               {
                 AstErrors.illegalCallResultType(this, _type, o);
                 o = null;

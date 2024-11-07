@@ -1878,7 +1878,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
 
         result = outer
-              + (isRef() != feature().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
+              + (isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "" )
               + fname;
         if (isThisType())
           {
