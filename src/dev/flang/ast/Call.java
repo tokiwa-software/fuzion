@@ -1777,38 +1777,36 @@ public class Call extends AbstractCall
     var rt = cf.resultTypeIfPresentUrgent(res, false);
     // We may be able to infer generics later
     // via result type propagation, do not emit errors yet.
-    if (rt != null &&
+    if (!(rt != null &&
         rt.isGenericArgument() &&
-        rt.genericArgument().feature().outer() == cf.outer())
+        rt.genericArgument().feature().outer() == cf.outer()))
       {
-        return;
-      }
-
-    // report missing inferred types only if there were no errors trying to find
-    // the types of the actuals:
-    if (!missing.isEmpty() &&
-        (!Errors.any() ||
-         !_actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR)))
-      {
-        AstErrors.failedToInferActualGeneric(pos(),cf, missing);
-      }
-
-    // replace any missing type parameters or conflicting ones with t_ERROR,
-    // report errors for conflicts
-    for (Generic g : _calledFeature.generics().list)
-      {
-        int i = g.index();
-        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED || conflict[i])
+        // report missing inferred types only if there were no errors trying to find
+        // the types of the actuals:
+        if (!missing.isEmpty() &&
+            (!Errors.any() ||
+            !_actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR)))
           {
-            if (CHECKS) check
-              (Errors.any() || i < _generics.size());
-            if (conflict[i])
+            AstErrors.failedToInferActualGeneric(pos(),cf, missing);
+          }
+
+        // replace any missing type parameters or conflicting ones with t_ERROR,
+        // report errors for conflicts
+        for (Generic g : _calledFeature.generics().list)
+          {
+            int i = g.index();
+            if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED || conflict[i])
               {
-                AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt.get(i));
-              }
-            if (i < _generics.size())
-              {
-                _generics = _generics.setOrClone(i, Types.t_ERROR);
+                if (CHECKS) check
+                  (Errors.any() || i < _generics.size());
+                if (conflict[i])
+                  {
+                    AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt.get(i));
+                  }
+                if (i < _generics.size())
+                  {
+                    _generics = _generics.setOrClone(i, Types.t_ERROR);
+                  }
               }
           }
       }
