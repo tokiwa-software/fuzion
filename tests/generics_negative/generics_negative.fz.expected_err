@@ -1,6 +1,6 @@
 
 --CURDIR--/generics_negative.fz:52:20: error 1: Illegal use of open formal type parameter type
-    f4(a A, b B, c C, a1 A) is abstract  // 6. should flag an error, open generic can only be used for last argument
+    f4(a A, b B, c C, a1 A) unit => abstract  // 6. should flag an error, open generic can only be used for last argument
 -------------------^
 Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
 Open formal argument: 'C'

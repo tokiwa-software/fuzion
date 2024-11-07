@@ -2173,7 +2173,7 @@ A ((Choice)) declaration must not contain a result type.
       }
     else if (_returnType == NoType.INSTANCE)
       {
-        result = Types.resolved.t_unit; // may be the result of intrinsic or abstract feature
+        result = null;
       }
     else
       {

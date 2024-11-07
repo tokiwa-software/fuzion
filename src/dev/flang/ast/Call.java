@@ -2537,9 +2537,9 @@ public class Call extends AbstractCall
                 cf.whenResolvedTypes
                   (() ->
                    {
-                     var raw = cf.resultType();
+                     var raw = cf.resultTypeIfPresentUrgent(res, true);
                      AbstractType rt;
-                     if (raw == Types.t_UNDEFINED)
+                     if (raw == Types.t_UNDEFINED || raw == null)
                        {
                          // Handling of cyclic type inference. It migh tbe
                          // better if this was done in `Feature.resultType`, but
