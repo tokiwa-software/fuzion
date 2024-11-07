@@ -1,0 +1,39 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test effect_signature_test
+#
+# -----------------------------------------------------------------------
+
+# Testing the effect signature, non existing features
+# and features that are not effects should cause errors.
+#
+effect_signature_test =>
+
+  # effect in signature with existing effect
+  correct_effect_signature(x i32) ! mutate, mutate =>
+
+  # should cause an error: encodings is not an effect
+  non_effect_feature_in_signature ! encodings =>
+
+  # should cause an error: effect is not even a feature
+  non_existing_feature_in_effect_signature ! blabla =>
+
+  # mix of correct and wrong features in effect signature
+  mixed_effect_signature ! String, mutate, blabla =>
