@@ -50,7 +50,7 @@ jobs:
         uses: green-coding-solutions/eco-ci-energy-estimation@86f1b2ee12db687bca0d15160a529bb64a7b60d9 # resolves to v4.0.0
         with:
           task: start-measurement
-        continue-on-error: true
+          continue-on-error: true
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
@@ -69,12 +69,12 @@ jobs:
       - name: make version
         run: make --version
 
-      - name: Setup Measurement
+     - name: Setup Measurement
         uses: green-coding-solutions/eco-ci-energy-estimation@86f1b2ee12db687bca0d15160a529bb64a7b60d9 # resolves to v4.0.0
         with:
           task: get-measurement
           label: 'setup'
-        continue-on-error: true
+          continue-on-error: true
 
       - name: build java code
         run: make javac
@@ -84,7 +84,7 @@ jobs:
         with:
           task: get-measurement
           label: 'build java'
-        continue-on-error: true
+          continue-on-error: true
 
       - name: build (no java modules)
         run: make no-java
@@ -95,7 +95,7 @@ jobs:
         with:
           task: get-measurement
           label: 'build fuzion'
-        continue-on-error: true
+          continue-on-error: true
 
       - name: build docs
         run: make doc
@@ -105,7 +105,7 @@ jobs:
         with:
           task: get-measurement
           label: 'build docs'
-        continue-on-error: true
+          continue-on-error: true
 
       - name: run tests
         run: |
@@ -118,10 +118,10 @@ jobs:
         with:
           task: get-measurement
           label: 'tests'
-        continue-on-error: true
+          continue-on-error: true
 
       - name: Show Energy Results
         uses: green-coding-solutions/eco-ci-energy-estimation@86f1b2ee12db687bca0d15160a529bb64a7b60d9 # resolves to v4.0.0
         with:
           task: display-results
-        continue-on-error: true
+          continue-on-error: true
