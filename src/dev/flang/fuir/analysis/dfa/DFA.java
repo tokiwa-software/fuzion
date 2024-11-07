@@ -789,7 +789,7 @@ public class DFA extends ANY
    * overhead. However, some tests like fuzion/tests/transducers require this to
    * work properly.
    */
-  static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", true);
+  static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", !true);
 
 
   /**
@@ -2133,7 +2133,8 @@ public class DFA extends ANY
           var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
           if (ev != null)
             {
-              cl._env.aborted(ecl);
+              if (cl._env != null)
+                cl._env.aborted(ecl);
             }
           return null;
         });
@@ -2832,13 +2833,9 @@ public class DFA extends ANY
    */
   Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    if (!SITE_SENSITIVE)
-      {
-        site = FUIR.NO_SITE;
-      }
     var k1 = _fuir.clazzId2num(cl);
     var k2 = tvalue._id;
-    var k3 = siteIndex(site);
+    var k3 = SITE_SENSITIVE ? siteIndex(site) : 0;
     var k4 = env == null ? 0 : env._id + 1;
     Call e, r;
     // We use a LongMap in case we manage to fiddle k1..k4 into a long
