@@ -89,56 +89,72 @@ To solve this, change type of result to 'String'
 --CURDIR--/test_conflicting_inheritance.fz:43:53: error 8: Wrong result type in redefined feature
 rconflic_i32_String_String : ri32, rString is redef f => "bla"   # 4. should flag an error, ri32.f has wrong result type
 ----------------------------------------------------^
-In 'rconflic_i32_String_String.f' that redefines 'ri32.f'
-result type is       : 'String'
-result type should be: 'i32'
+In 'rconflic_i32_String_String.f' that redefines 'rString.f'
+result type is       : 'i32'
+result type should be: 'String'
 
-Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
-ri32    is        f => 42
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'String'
 
 
 --CURDIR--/test_conflicting_inheritance.fz:44:53: error 9: Wrong result type in redefined feature
 rconflic_String_i32_String : rString, ri32 is redef f => "bla"   # 5. should flag an error, ri32.f has wrong result type
 ----------------------------------------------------^
-In 'rconflic_String_i32_String.f' that redefines 'ri32.f'
-result type is       : 'String'
-result type should be: 'i32'
+In 'rconflic_String_i32_String.f' that redefines 'rString.f'
+result type is       : 'i32'
+result type should be: 'String'
 
-Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
-ri32    is        f => 42
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'String'
 
 
---CURDIR--/test_conflicting_inheritance.fz:45:53: error 10: Wrong result type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:45:58: error 10: Numeric literal used for integer type is not a whole number
+rconflic_i32_String_f64    : ri32, rString is redef f => 3.14    # 6. should flag an error, ri32.f and rString.f have wrong result type
+---------------------------------------------------------^^^^
+Type propagation results in an integer type that cannot hold a value that is not integer.
+Numeric literal: '3.14'
+Assigned to type: 'i32'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:45:53: error 11: Wrong result type in redefined feature
 rconflic_i32_String_f64    : ri32, rString is redef f => 3.14    # 6. should flag an error, ri32.f and rString.f have wrong result type
 ----------------------------------------------------^
-In 'rconflic_i32_String_f64.f' that redefines 'ri32.f'
-result type is       : 'f64'
-result type should be: 'i32'
+In 'rconflic_i32_String_f64.f' that redefines 'rString.f'
+result type is       : 'i32'
+result type should be: 'String'
 
-Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
-ri32    is        f => 42
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'String'
 
 
---CURDIR--/test_conflicting_inheritance.fz:46:53: error 11: Wrong result type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:46:58: error 12: Numeric literal used for integer type is not a whole number
+rconflic_String_i32_f64    : rString, ri32 is redef f => 3.14    # 7. should flag an error, ri32.f and rString.f have wrong result type
+---------------------------------------------------------^^^^
+Type propagation results in an integer type that cannot hold a value that is not integer.
+Numeric literal: '3.14'
+Assigned to type: 'i32'
+
+
+--CURDIR--/test_conflicting_inheritance.fz:46:53: error 13: Wrong result type in redefined feature
 rconflic_String_i32_f64    : rString, ri32 is redef f => 3.14    # 7. should flag an error, ri32.f and rString.f have wrong result type
 ----------------------------------------------------^
-In 'rconflic_String_i32_f64.f' that redefines 'ri32.f'
-result type is       : 'f64'
-result type should be: 'i32'
+In 'rconflic_String_i32_f64.f' that redefines 'rString.f'
+result type is       : 'i32'
+result type should be: 'String'
 
-Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:39:19:
-ri32    is        f => 42
+Original feature declared at --CURDIR--/test_conflicting_inheritance.fz:40:19:
+rString is        f => "B.f"
 ------------------^
-To solve this, change type of result to 'i32'
+To solve this, change type of result to 'String'
 
 
---CURDIR--/test_conflicting_inheritance.fz:53:55: error 12: Wrong argument type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:53:55: error 14: Wrong argument type in redefined feature
 aconflic_i32_String_i32    : ai32, aString is redef f(a i32) =>      # 10. should flag an error, rString.f has wrong argument type
 ------------------------------------------------------^
 In 'aconflic_i32_String_i32.f' that redefines 'aString.f'
@@ -153,7 +169,7 @@ aconflic_i32_String_i32    : ai32, aString is redef f(a i32) =>      # 10. shoul
 ------------------------------------------------------^
 
 
---CURDIR--/test_conflicting_inheritance.fz:54:55: error 13: Wrong argument type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:54:55: error 15: Wrong argument type in redefined feature
 aconflic_String_i32_i32    : aString, ai32 is redef f(a i32) =>      # 11. should flag an error, rString.f has wrong argument type
 ------------------------------------------------------^
 In 'aconflic_String_i32_i32.f' that redefines 'aString.f'
@@ -168,7 +184,7 @@ aconflic_String_i32_i32    : aString, ai32 is redef f(a i32) =>      # 11. shoul
 ------------------------------------------------------^
 
 
---CURDIR--/test_conflicting_inheritance.fz:55:55: error 14: Wrong argument type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:55:55: error 16: Wrong argument type in redefined feature
 aconflic_i32_String_String : ai32, aString is redef f(a String) =>   # 12. should flag an error, ri32.f has wrong argument type
 ------------------------------------------------------^
 In 'aconflic_i32_String_String.f' that redefines 'ai32.f'
@@ -183,7 +199,7 @@ aconflic_i32_String_String : ai32, aString is redef f(a String) =>   # 12. shoul
 ------------------------------------------------------^
 
 
---CURDIR--/test_conflicting_inheritance.fz:56:55: error 15: Wrong argument type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:56:55: error 17: Wrong argument type in redefined feature
 aconflic_String_i32_String : aString, ai32 is redef f(a String) =>   # 13. should flag an error, ri32.f has wrong argument type
 ------------------------------------------------------^
 In 'aconflic_String_i32_String.f' that redefines 'ai32.f'
@@ -198,7 +214,7 @@ aconflic_String_i32_String : aString, ai32 is redef f(a String) =>   # 13. shoul
 ------------------------------------------------------^
 
 
---CURDIR--/test_conflicting_inheritance.fz:57:55: error 16: Wrong argument type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:57:55: error 18: Wrong argument type in redefined feature
 aconflic_i32_String_f64    : ai32, aString is redef f(a f64) =>      # 14. should flag an error, ri32.f and rString.f have wrong argument type
 ------------------------------------------------------^
 In 'aconflic_i32_String_f64.f' that redefines 'ai32.f'
@@ -213,7 +229,7 @@ aconflic_i32_String_f64    : ai32, aString is redef f(a f64) =>      # 14. shoul
 ------------------------------------------------------^
 
 
---CURDIR--/test_conflicting_inheritance.fz:58:55: error 17: Wrong argument type in redefined feature
+--CURDIR--/test_conflicting_inheritance.fz:58:55: error 19: Wrong argument type in redefined feature
 aconflic_String_i32_f64    : aString, ai32 is redef f(a f64) =>      # 15. should flag an error, ri32.f and rString.f have wrong argument type
 ------------------------------------------------------^
 In 'aconflic_String_i32_f64.f' that redefines 'ai32.f'
@@ -227,4 +243,26 @@ To solve this, change type of argument to 'i32' at --CURDIR--/test_conflicting_i
 aconflic_String_i32_f64    : aString, ai32 is redef f(a f64) =>      # 15. should flag an error, ri32.f and rString.f have wrong argument type
 ------------------------------------------------------^
 
-17 errors.
+
+--CURDIR--/test_conflicting_inheritance.fz:43:58: error 20: Incompatible types in assignment
+rconflic_i32_String_String : ri32, rString is redef f => "bla"   # 4. should flag an error, ri32.f has wrong result type
+---------------------------------------------------------^^^^^
+assignment to field : 'rconflic_i32_String_String.f.result'
+expected formal type: 'i32'
+actual type found   : 'String'
+assignable to       : 'String'
+for value assigned  : '"bla"'
+To solve this, you could change the type of the target 'rconflic_i32_String_String.f.result' to 'String' or convert the type of the assigned value to 'i32'.
+
+
+--CURDIR--/test_conflicting_inheritance.fz:44:58: error 21: Incompatible types in assignment
+rconflic_String_i32_String : rString, ri32 is redef f => "bla"   # 5. should flag an error, ri32.f has wrong result type
+---------------------------------------------------------^^^^^
+assignment to field : 'rconflic_String_i32_String.f.result'
+expected formal type: 'i32'
+actual type found   : 'String'
+assignable to       : 'String'
+for value assigned  : '"bla"'
+To solve this, you could change the type of the target 'rconflic_String_i32_String.f.result' to 'String' or convert the type of the assigned value to 'i32'.
+
+21 errors.

@@ -47,6 +47,7 @@ public class Impl extends ANY
 
 
   public static final Impl FIELD = new Impl(Kind.Field);
+  public static final Impl FIELD_DEF = new Impl(Kind.FieldDef);
 
   public static final Impl TYPE_PARAMETER = new Impl(Kind.TypeParameter);
   public static final Impl TYPE_PARAMETER_OPEN = new Impl(Kind.TypeParameterOpen);
