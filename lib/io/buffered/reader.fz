@@ -124,7 +124,7 @@ reader (LM type : mutate) =>
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(LM type : mutate, n i32) Sequence u8 ! reader =>
+public read_bytes(LM type : mutate, n i32) Sequence u8 ! reader LM =>
 
   res := (mutate.array u8).new LM
 
@@ -145,7 +145,7 @@ public read_bytes(LM type : mutate, n i32) Sequence u8 ! reader =>
 # read string, up to n codepoints or until end of file
 # requires `buffered.reader` effect to be installed.
 #
-public read_string(LM type : mutate, n i32) String ! reader
+public read_string(LM type : mutate, n i32) String ! reader LM
 pre debug: n >= 0
 =>
 
@@ -190,7 +190,7 @@ pre debug: n >= 0
 # if specified, strips carriage return bytes before
 # the delimiter before returning the read data
 #
-public read_delimiter (LM type : mutate, delim u8, strip_cr bool) switch String io.end_of_file ! reader =>
+public read_delimiter (LM type : mutate, delim u8, strip_cr bool) switch String io.end_of_file ! reader LM =>
 
   if (reader LM).read ? io.end_of_file => true | * => false
     io.end_of_file

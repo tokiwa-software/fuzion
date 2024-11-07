@@ -97,14 +97,14 @@ module:public open(fd i64,
 
     # get byte at given index i
     #
-    public redef index [ ] (i i64) u8 ! open T
+    public redef index [ ] (i i64) u8 ! open
     =>
       mapped_buffer_get memory i
 
 
     # set byte at given index i to given value o
     #
-    public redef set [ ] (i i64, o u8) unit ! open T
+    public redef set [ ] (i i64, o u8) unit ! open
     =>
       mapped_buffer_set memory i o
 
@@ -115,4 +115,3 @@ module:public open(fd i64,
 #
 public open =>
   open.env
-
