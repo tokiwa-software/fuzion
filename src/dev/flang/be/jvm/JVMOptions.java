@@ -76,12 +76,6 @@ public class JVMOptions extends FuzionOptions
 
 
   /**
-   * Should we use the DFA analysis to improve the generated code?
-   */
-  final boolean _Xdfa;
-
-
-  /**
    * Should the generated JVM bytecode be run immediately?
    */
   final boolean _run;
@@ -124,7 +118,6 @@ public class JVMOptions extends FuzionOptions
    * Constructor initializing fields as given.
    */
   public JVMOptions(FuzionOptions fo,
-                    boolean Xdfa,
                     boolean run,
                     boolean saveClasses,
                     boolean saveJAR,
@@ -132,7 +125,6 @@ public class JVMOptions extends FuzionOptions
   {
     super(fo);
 
-    this._Xdfa        = Xdfa;
     this._run         = run;
     this._saveClasses = saveClasses;
     this._saveJAR     = saveJAR;
