@@ -81,19 +81,31 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /*---------------------------  static methods  ---------------------------*/
 
 
-
+  /**
+   * Return constraint if type is a generic, unmodified type otherwise
+   * @param tt the type
+   * @param context the context
+   * @return constraint for generics, unmodified type otherwise
+   */
   static AbstractType selfOrConstraint(AbstractType tt, Context context)
   {
     return (tt.isGenericArgument() ? tt.genericArgument().constraint(context) : tt);
   }
-  
+
+  /**
+   * Return constraint if type is a generic, unmodified type otherwise
+   * @param tt the type
+   * @param res the resolution
+   * @param context the context
+   * @return constraint for generics, unmodified type otherwise
+   */
   static AbstractType selfOrConstraint(AbstractType tt, Resolution res, Context context)
   {
     return (tt.isGenericArgument() ? tt.genericArgument().constraint(res, context) : tt);
   }
 
 
-  
+
   /*--------------------------  abstract methods  --------------------------*/
 
 
