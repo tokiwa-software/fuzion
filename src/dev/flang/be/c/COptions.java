@@ -120,6 +120,13 @@ public class COptions extends FuzionOptions
     return fuzionHome().resolve(p).normalize().toAbsolutePath().toString();
   }
 
+
+  @Override
+  public boolean needsEscapeAnalysis()
+  {
+    return true;
+  }
+
 }
 
 /* end of file */
