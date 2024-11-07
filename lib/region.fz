@@ -1,0 +1,70 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature region
+#
+# -----------------------------------------------------------------------
+
+# a region is an effect holding allocations
+#
+# NYI d should be RBBVector or similar
+public region (d array fuzion.sys.Pointer) : effect is
+
+
+  module:public region_array(
+      public T type,
+      idx i32,
+      redef length i32,
+      _ unit) : abstract_array T is
+
+    module redef internal_array =>
+      fuzion.sys.internal_array T region.this.env.d[idx] length
+
+
+    # equality
+    #
+    public fixed redef type.equality(a, b region.region_array T) => (Sequence T).type.equality a b
+
+
+
+  public region_array(T type, init i32->T, length i32)
+    pre
+      safety: length ≥ 0
+  =>
+
+    indices => 0..length-1
+
+    internal := fuzion.sys.internal_array_init T length
+    for x in indices do
+      internal[x] := init x
+
+    idx := d.length
+
+    (region (d ++ [internal.data]).as_array).replace
+
+    region_array T idx length unit
+
+
+
+  # dealloc
+  #
+  redef finally =>
+    # NYI: free
+    # d.for_each (p -> free p)
+
