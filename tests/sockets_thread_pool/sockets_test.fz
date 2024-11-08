@@ -155,7 +155,7 @@ sockets_test is
   for f in families do
     for p in protocols do
       time.nano.sleep (time.duration.s 1)
-      _ := concur.thread.spawn ()->
+      _ := concur.threads.spawn ()->
         _ := concur.thread_pool 3 ()->
           _ := server f p
 

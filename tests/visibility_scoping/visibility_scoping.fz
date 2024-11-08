@@ -84,8 +84,8 @@ visibility_scoping is
 
   test6 is
     match true
-      _ FALSE =>
-      t TRUE =>
+        false_ =>
+      t true_ =>
         tt := t
         ttt => t
 

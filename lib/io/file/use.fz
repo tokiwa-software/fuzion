@@ -37,8 +37,6 @@ public mode is
 # this opens a file with the given mode and installs
 # effect (open T) to be used in `code()`.
 #
-# type parameter T is used to distinguish between several open files.
-#
 # usage example:
 #
 #     use some_type file_name mode.read ()->
@@ -46,7 +44,7 @@ public mode is
 #         e error => e
 #         a array => String.from_bytes a
 #
-public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
   # definition of read provider for file
   #
@@ -59,8 +57,8 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
   # definition of write provider for file
   #
   write_provider (desc i64) : io.Write_Provider is
-    redef write (bytes array u8) outcome unit =>
-      fuzion.sys.fileio.write desc bytes
+    redef write (bytes Sequence u8) outcome unit =>
+      fuzion.sys.fileio.write desc bytes.as_array
 
 
   mode_num := match m
@@ -70,8 +68,8 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
 
   (fuzion.sys.fileio.open file_name mode_num).bind R fd->
     # install effect `open T` and run `code`
-    r := (open T fd file_name).instate_self ()->
-          (io.buffered.reader LM (read_provider fd) 1024).with ()->
+    r := (open fd file_name) ! ()->
+          (io.buffered.reader LM (read_provider fd) 1024).try ()->
             (io.buffered.writer LM (write_provider fd) 1024).with ()->
               tmp := code.call
               # NYI: handle error once signature of with is changed
@@ -87,17 +85,3 @@ public use(T, R type, LM type : mutate, file_name String, m mode.val, code ()-> 
       .bind (outcome R) x->x
       .bind R x->x
 
-
-
-# short hand for use when
-# it is not necessary to distinguish between opens
-#
-# usage example:
-#
-#     use file_name mode.read ()->
-#       match open.read
-#         e error => e
-#         a array => String.from_bytes a
-#
-public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
-  use open_unique_type R LM file_name m code

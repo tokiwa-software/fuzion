@@ -46,10 +46,10 @@ generics_negative is
     f3(a A, b B, c C) is
 
   opengenerics6 (A type, B type, C type...) is
-    f1(a A) is abstract
-    f2(a A, b B) is abstract
-    f3(a A, b B, c C) is abstract
-    f4(a A, b B, c C, a1 A) is abstract  // 6. should flag an error, open generic can only be used for last argument
+    f1(a A) unit => abstract
+    f2(a A, b B) unit => abstract
+    f3(a A, b B, c C) unit => abstract
+    f4(a A, b B, c C, a1 A) unit => abstract  // 6. should flag an error, open generic can only be used for last argument
 
   opengenerics7 (A type, B type, C type...) : opengenerics6 A A A A is
 
@@ -166,7 +166,7 @@ generics_negative is
 
   opengenerics12 is
     F(A type...) ref is
-      f(a A) => abstract
+      f(a A) unit => abstract
 
     G ref : F i32 bool i32 is
       redef f(a0 i32, a1 bool, a2 i32) =>

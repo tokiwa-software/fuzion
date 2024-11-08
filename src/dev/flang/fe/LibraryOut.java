@@ -668,7 +668,7 @@ class LibraryOut extends ANY
    *   | hasPos | 1      | int           | source position: index in this file's         |
    *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Add | 1      | Assign        | assignment                                    |
+   *   | k==Ass | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+

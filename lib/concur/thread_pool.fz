@@ -85,7 +85,7 @@ Blocking_Queue(T type, cnd concur.sync.condition) ref is
 public thread_pool(R type, size i32, code ()->R) outcome R =>
   (concur.sync.mutex.new.bind mtx->
     mtx.condition.bind R cnd->
-      (thread_pool cnd size).instate_self ()->
+      (thread_pool cnd size) ! ()->
         res := code.call
         thread_pool.env.await
         res)
@@ -101,9 +101,9 @@ is
 
   bq := Blocking_Queue ()->unit cnd
 
-  threads := (1..size)
+  thrds := (1..size)
     .map _->
-      concur.thread.spawn ()->
+      concur.threads.spawn ()->
         _ := for x := bq.dequeue
              while !x.is_empty
                x.val.call
@@ -174,5 +174,5 @@ is
       _ := cnd.broadcast
 
     # wait for all threads to finish
-    threads.for_each t->
+    thrds.for_each t->
       t.join

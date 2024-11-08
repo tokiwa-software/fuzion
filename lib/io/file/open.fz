@@ -23,10 +23,8 @@
 
 
 # effect for manipulating open files
-# T is used to distinguish several open files
 #
-module:public open(public T type,
-                   fd i64,
+module:public open(fd i64,
                    public file_name String) : effect is
 
   # seek in file
@@ -34,13 +32,13 @@ module:public open(public T type,
   public seek(
        # the offset to seek from the beginning of the stream pointer
        offset i64) =>
-    io.file.seek.seek fd offset
+    seek.seek fd offset
 
 
   # get the current byte position in the file
   #
   public file_position =>
-    io.file.seek.file_position fd
+    seek.file_position fd
 
 
   # install mmap effect an run code
@@ -94,19 +92,19 @@ module:public open(public T type,
      # the length of this buffer
      public redef length i64
     )
-    : container.Buffer u8 (io.file.open T) is
+    : container.Buffer u8 open is
 
 
     # get byte at given index i
     #
-    public redef index [ ] (i i64) u8 ! open T
+    public redef index [ ] (i i64) u8 ! open
     =>
       mapped_buffer_get memory i
 
 
     # set byte at given index i to given value o
     #
-    public redef set [ ] (i i64, o u8) unit ! io.file.open T
+    public redef set [ ] (i i64, o u8) unit ! open
     =>
       mapped_buffer_set memory i o
 
@@ -114,24 +112,6 @@ module:public open(public T type,
 
 # short hand to get the currently
 # installed open effect
-# for type T from the environment.
-# see `use` on how to use this.
-#
-public open(T type) =>
-  (open T).env
-
-
-# unit type used internally by open- and use-
-# short hands which can be used when one does not need
-# to distinguish between several open files.
-private:public open_unique_type is
-
-
-
-# short hand to get the currently
-# installed open effect
-# from the environment.
-# see `use` on how to use this.
 #
 public open =>
-  (open open_unique_type).env
+  open.env

@@ -78,6 +78,34 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
 
+  /*---------------------------  static methods  ---------------------------*/
+
+
+  /**
+   * Return constraint if type is a generic, unmodified type otherwise
+   * @param tt the type
+   * @param context the context
+   * @return constraint for generics, unmodified type otherwise
+   */
+  static AbstractType selfOrConstraint(AbstractType tt, Context context)
+  {
+    return (tt.isGenericArgument() ? tt.genericArgument().constraint(context) : tt);
+  }
+
+  /**
+   * Return constraint if type is a generic, unmodified type otherwise
+   * @param tt the type
+   * @param res the resolution
+   * @param context the context
+   * @return constraint for generics, unmodified type otherwise
+   */
+  static AbstractType selfOrConstraint(AbstractType tt, Resolution res, Context context)
+  {
+    return (tt.isGenericArgument() ? tt.genericArgument().constraint(res, context) : tt);
+  }
+
+
+
   /*--------------------------  abstract methods  --------------------------*/
 
 
@@ -1148,16 +1176,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * isFunctionType checks if this is a function type used for lambda expressions,
    * e.g., "(i32, i32) -> String".
    *
-   * @return true iff this is a function type based on `Function`, `Unary` or `Binary`.
+   * @return true iff this is a function type but not a `Lazy`.
    */
   public boolean isFunctionType()
   {
     return
       this != Types.t_ERROR &&
-      !isGenericArgument() &&
-      (feature() == Types.resolved.f_Function ||
-       feature() == Types.resolved.f_Unary    ||
-       feature() == Types.resolved.f_Binary);
+      isAnyFunctionType() &&
+      feature() != Types.resolved.f_Lazy;
   }
 
 
@@ -1473,7 +1499,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
-    var att = (tt.isGenericArgument() ? tt.genericArgument().constraint(context) : tt);
+    var att = selfOrConstraint(tt, context);
     if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
         isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt

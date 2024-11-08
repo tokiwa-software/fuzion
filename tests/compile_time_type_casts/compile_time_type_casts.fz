@@ -131,8 +131,8 @@ compile_time_type_casts =>
       say "other type $v type $T"
 
     match T : String
-      TRUE  => say "matched String '$v' type $T len {v.byte_length}"; for_String
-      FALSE =>
+      true_  => say "matched String '$v' type $T len {v.byte_length}"; for_String
+      false_ =>
 
   x "Fuzion!"
   x "F"

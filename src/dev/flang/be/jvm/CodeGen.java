@@ -428,7 +428,7 @@ class CodeGen
           {
             initLocals = Types.addToLocals(initLocals, _types.javaType(rc));
           }
-        addStub(si, tt, cc, dn, ds, isCall, initLocals);
+        addStub(tt, cc, dn, ds, isCall, initLocals);
       }
     return Expr.invokeInterface(intfc._name, dn, ds, dr, _fuir.sitePos(si).line());
   }
@@ -437,8 +437,6 @@ class CodeGen
   /**
    * Create a stub method, i.e., an implementation of a dynamic function defined
    * in an interface that performs a static access for the given target type.
-   *
-   * @param si site of the access expression, must be ExprKind.Assign or ExprKind.Call
    *
    * @param tt the target clazz. Note that tt may be different to
    * _fuir.clazzOuterClazz(cc), e.g., if tt is some type defining abstract
@@ -454,7 +452,7 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    */
-  private void addStub(int si, int tt, int cc, String dn, String ds, boolean isCall, List<VerificationType> initLocals)
+  private void addStub(int tt, int cc, String dn, String ds, boolean isCall, List<VerificationType> initLocals)
   {
     var cf = _types.classFile(tt);
     if (!cf.hasMethod(dn))
@@ -480,7 +478,12 @@ class CodeGen
             var t = _types.javaType(_fuir.clazzResultClazz(cc));
             na.add(t.load(1));
           }
-        var p = staticAccess(si, tt, cc, tv, na, isCall);
+        var p = staticAccess(/* *** NOTE ***: The site must be NO_SITE since we are not generating
+                              * code for `_fuir.clazzAt(si)`, but for the stub. If we would pass the
+                              * site here, the access might otherwise be optimized as a tail call!
+                              */
+                             FUIR.NO_SITE,
+                             tt, cc, tv, na, isCall);
         var code = p.v1()
           .andThen(p.v0() == null ? Expr.UNIT : p.v0())
           .andThen(retoern);
@@ -561,8 +564,11 @@ class CodeGen
     switch (_fuir.clazzKind(cc))
       {
       case Abstract :
+        res = new Pair<>(null,  // result is void, we do not return from this path.
+                         Expr.UNIT);
         Errors.error("Call to abstract feature encountered.",
                      "Found call to " + clazzInQuotes(cc));
+        break;
       case Intrinsic:
         {
           if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
@@ -580,7 +586,8 @@ class CodeGen
         {
           if (_types.clazzNeedsCode(cc))
             {
-              var cl = si == NO_SITE ? -1 :_fuir.clazzAt(si);
+              var cl = si == NO_SITE ? FUIR.NO_CLAZZ
+                                     : _fuir.clazzAt(si);
 
               if (cc == cl && // calling myself
                   _jvm._tailCall.callIsTailCall(cl, si))

@@ -2268,7 +2268,7 @@ public class AstErrors extends ANY
 
   public static void illegalVisibilityArgument(Feature f)
   {
-    error(f.pos(), "Argument features must not have visibility modifier.",
+    error(f.pos(), "Argument features of non-constructors must not have visibility modifier.",
       "To solve this, remove the visibility modifier " + s(f.visibility()) + " from feature " + s(f) + ".");
   }
 
@@ -2277,6 +2277,15 @@ public class AstErrors extends ANY
     error(call.pos(),
       "Open type parameters must not be called.",
       "" /* NYI: UNDER DEVELOPMENT: can we give some useful suggestion here? */);
+  }
+
+  public static void illegalFeatureDefiningType(Feature f)
+  {
+    error(f.pos(),
+      "Must not define type inside of type feature.",
+      "To solve this, move the type outside of the type feature." + System.lineSeparator() +
+      "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
+      "do this: " + code("public type.union =>" + System.lineSeparator() + "  ref : Monoid bitset"));
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
@@ -2314,6 +2323,14 @@ public class AstErrors extends ANY
       }
   }
 
+  public static void notAnEffect(AbstractType t, SourcePosition pos)
+  {
+    var f = t.isGenericArgument() ? t.genericArgument().feature() : t.feature();
+    error(pos,
+          "Feature " + sbnf(f) + " is not an effect.",
+          "Effects required by a feature are specified with " + skw("!") + " in the signature. " +
+          "Therefore, only valid effects may follow after it.");
+  }
 
 }
 

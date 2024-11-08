@@ -971,10 +971,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
     if (existing != null)
       {
         // NYI: need to check that the scopes are disjunct
-        if (existing instanceof Feature ef && ef._scoped && f._scoped)
+        if (existing instanceof Feature ef
+            && (ef._scoped && f._scoped || visibilityPreventsConflict(f, ef)))
           {
-            var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
-            fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
+            var existingFeatures = FeatureName.getAll(df, fn.baseName(), 0);
+            fn = FeatureName.get(fn.baseName(), 0, existingFeatures.size());
             f.setFeatureName(fn);
           }
         else
@@ -1002,6 +1003,19 @@ A post-condition of a feature that does not redefine an inherited feature must s
             addToHeirs(outer, fn, f);
           }
       }
+  }
+
+
+  /**
+   * Check if both features are fully private and
+   * in different files and thus not conflicting
+   * each other.
+   */
+  private boolean visibilityPreventsConflict(Feature f1, Feature f2)
+  {
+    return f2.visibility().typeVisibility() == Visi.PRIV
+         && f1.visibility().typeVisibility() == Visi.PRIV
+         && !f2.pos()._sourceFile._fileName.equals(f1.pos()._sourceFile._fileName);
   }
 
 
@@ -1655,6 +1669,22 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkDuplicateFeatures(f);
     checkContractAccesses(f);
     checkLegalQualThisType(f);
+    checkLegalDefinesType(f);
+  }
+
+
+  private void checkLegalDefinesType(Feature f)
+  {
+    if (f.definesUsableType() && inTypeFeature(f))
+      {
+        AstErrors.illegalFeatureDefiningType(f);
+      }
+  }
+
+
+  private boolean inTypeFeature(AbstractFeature f)
+  {
+    return f.isTypeFeature() || (f.outer() != null && inTypeFeature(f.outer()));
   }
 
 

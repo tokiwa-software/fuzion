@@ -498,16 +498,18 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # to avoid clash with inherited `Sequence.concat_monoid`. Maybe
   # the inherited one should be renamed once renaming is supported.
   #
-  public type.list_concat_monoid : Monoid (list A) is
+  public type.list_concat_monoid =>
 
-    # associative operation
-    #
-    redef infix ∙ (a, b list A) list A => a.concat b
+    ref : Monoid (list A)
 
-    # identity element
-    #
-    redef e list A =>
-      nil
+      # associative operation
+      #
+      redef infix ∙ (a, b list A) list A => a.concat b
+
+      # identity element
+      #
+      redef e list A =>
+        nil
 
 
   # equality

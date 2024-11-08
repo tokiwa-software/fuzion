@@ -22,5 +22,10 @@
 # -----------------------------------------------------------------------
 
 public Write_Provider ref is
-  public write(b array u8) outcome unit
+
+
+  # write bytes b
+  #
+  public write(b Sequence u8) outcome unit
+  pre b.finite = trit.yes
   => abstract

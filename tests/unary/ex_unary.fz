@@ -61,8 +61,8 @@ ex_unary is
   say y1
 
   bool_to_letters bool -> list String := (b ->
-    b ? TRUE => [$"T", $"r", $"u", $"e"].as_list
-      | FALSE => [$"F", $"a", $"l", $"s", $"e" ].as_list)
+    b ? true_  => [$"T", $"r", $"u", $"e"].as_list
+      | false_ => [$"F", $"a", $"l", $"s", $"e" ].as_list)
 
   join_list list String -> String := l -> String.join(l, "")
 

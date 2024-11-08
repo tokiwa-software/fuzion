@@ -35,9 +35,10 @@ main =>
   Sequence.prefix ! String =>
     lm : mutate is
     lm.instate_self ()->
-      match process.spawn (map x->x.as_string).as_array
+      seq := map x->x.as_string
+      match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing {Sequence.this}, error is $e"
-        p process.Process =>
+        p os.process =>
           match p.with_out String lm (()->String.from_bytes (io.buffered.read_fully lm))
             e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
             s String => s
@@ -49,9 +50,9 @@ main =>
   String.infix | (seq Sequence String) String =>
     lm : mutate is
     lm.instate_self ()->
-      match process.spawn (seq.map x->x.as_string).as_array
+      match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing $seq, error is $e"
-        p process.Process =>
+        p os.process =>
           _ := p.with_in unit lm ()->
             _ := (io.buffered.writer lm).write String.this.utf8
             _ := (io.buffered.writer lm).flush
@@ -114,7 +115,7 @@ main =>
   tmp := !!"mktemp -d"
   _ := !!"mkdir -p $tmp/fuzion_grammar"
   _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
-  antlr := if ((process.spawn ["antlr4"]).bind u32 p->p.wait) = 0 then "antlr4" else "antlr"
+  antlr := if ((os.process.start "antlr4").bind u32 p->p.wait) = 0 then "antlr4" else "antlr"
   # NYI add option -Werror
   _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
   !!"rm -rf $tmp"

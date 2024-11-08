@@ -39,17 +39,12 @@ public delete(dop Delete_Handler, _ unit) : effect is
     tmp
 
 
-  # the default file/dir delete operation via fuzion.sys.fileio.delete
-  #
-  type.default_delete_handler : io.file.Delete_Handler is
-    redef delete(path String) =>
-      fuzion.sys.fileio.delete path
+# the default file/dir delete operation via fuzion.sys.fileio.delete
+#
+default_delete_handler : Delete_Handler is
+  redef delete(path String) =>
+    fuzion.sys.fileio.delete path
 
-
-  # install default effect io.file.delete
-  #
-  type.install_default =>
-    (io.file.delete default_delete_handler unit).default
 
 # short-hand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
 # deletes the file/dir found in the path
@@ -57,7 +52,7 @@ public delete(dop Delete_Handler, _ unit) : effect is
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
 public delete(path String) =>
-  delete.install_default
+  (delete default_delete_handler unit).default
   delete.env.delete path
 
 # reference to the delete operations that could take place

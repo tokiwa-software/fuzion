@@ -145,9 +145,9 @@ choice_negative is
   impl5 is
     x : choice i64 bool is say "Hello" // 31. should flag an error, choice feature must not contain code
   impl6 is
-    x : choice i64 bool is abstract  // 32. should flag an error, choice feature must not be abstract
+    x unit : choice i64 bool => abstract  // 32. should flag an error, choice feature must not be abstract
   impl7 is
-     x : choice i64 bool is intrinsic  // 33. should flag an error, choice feature must not be intrinsic
+     x unit : choice i64 bool => intrinsic  // 33. should flag an error, choice feature must not be intrinsic
   impl8 is
     x : choice i64 bool is  // ok
   impl9 is
@@ -156,11 +156,11 @@ choice_negative is
   issue23 is
 
     match 42   // 34. should flag an error, match subject must be choice
-      TRUE => say "T"
-      FALSE => say "F"
+      true_  => say "T"
+      false_ => say "F"
 
-    _ := (42 ? TRUE => true   // 35. should flag an error, match subject must be choice
-             | FALSE => false) # NYI: parentheses are currently required for this to work, see #3776
+    _ := (42 ? true_ => true   // 35. should flag an error, match subject must be choice
+             | false_ => false) # NYI: parentheses are currently required for this to work, see #3776
 
 
   ambiguous_assignment_to_choice_via_subtype is

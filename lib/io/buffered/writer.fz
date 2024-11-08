@@ -27,7 +27,9 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect is
+public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect
+pre debug: buf_size > 0
+is
 
 
   # circular buffer backing this writer
@@ -107,7 +109,7 @@ public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect is
       write_result n_written e
 
 
-# short hand for getting the currently installed `buffered.reader`
+# short hand for getting the currently installed `buffered.writer`
 #
 public writer (LM type : mutate) =>
   (io.buffered.writer LM).env

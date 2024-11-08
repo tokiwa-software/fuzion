@@ -36,10 +36,9 @@ public ordered_map(
            public OK type : property.orderable,
            public V  type,
            ks array OK,
-           vs array V) : Map OK V
-  pre
-    ks.length = vs.length
-
+           vs array V) : container.Map OK V
+pre
+  ks.length = vs.length
 is
 
 
@@ -60,12 +59,20 @@ is
 
   # a sorted array of entries of this map
   #
-  public sorted_entries := sorted_array_of (ks.indices.map (i -> entry i)).as_array
+  public sorted_entries =>
+    sorted_indices
+      .map (i -> entry i)
+      .as_array
+
+
+  # a sorted array of indices of this map
+  #
+  sorted_indices := ks.indices.sort_by (a,b)->ks[a]≤ks[b]
 
 
   # number of entries in this map
   #
-  public redef size => sorted_entries.length
+  public redef size => sorted_indices.length
 
 
   # get the value k is mapped to, or nil if none.
@@ -73,14 +80,14 @@ is
   # performance is O(log size).
   #
   public redef index [] (k OK) =>
-    sorted_entries
-      .find_by_comparator (e -> ks[e.i] ⋄ k)
+    sorted_indices
+      .find_by_comparator (i -> ks[i] ⋄ k)
       .bind V i->sorted_entries[i].val
 
 
   # get an array of all key/value pairs in this map
   #
-  public redef items Sequence (tuple OK V) => sorted_entries.map e->(e.key, e.val)
+  public redef items Sequence (tuple OK V) => sorted_indices.map i->(ks[i], vs[i])
 
 
   # add mapping from k to v

@@ -1,0 +1,188 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature process
+#
+# -----------------------------------------------------------------------
+
+# type denoting a started process
+#
+module:public process(module id, std_in, std_out, std_err i64) : property.equatable, property.orderable is
+
+  # how many bytes are read at a time
+  # POSIX.1 requires PIPE_BUF to be at least 512 bytes
+  # NYI move this to effect?
+  pipe_buffer_size := 4096
+
+
+  # predefined read provider for reading from
+  # standard out of the process
+  #
+  std_out_read_provider => read_provider std_out
+
+
+  # predefined read provider for reading from
+  # standard err of the process
+  #
+  std_err_read_provider => read_provider std_err
+
+
+  # predefined write provider for writing to
+  # standard in of the process
+  #
+  std_in_write_provider => write_provider std_in
+
+
+  # read bytes from standard out
+  #
+  read_provider(desc i64) : io.Read_Provider is
+    redef read(count i32) choice (array u8) io.end_of_file error =>
+      arr := array u8 pipe_buffer_size i->0
+      res := fuzion.sys.pipe.read desc arr.internal_array.data arr.count
+      if res = -1
+        error "error reading from stdout."
+      else if res = 0
+        io.end_of_file
+      else
+        arr
+          .slice 0 res
+          .as_array
+
+
+  # write bytes to standard in
+  #
+  write_provider (desc i64) : io.Write_Provider is
+    redef write (bytes Sequence u8) outcome unit =>
+      if (fuzion.sys.pipe.write desc bytes.as_array.internal_array.data bytes.count) = -1
+        error "error while writing"
+      else
+        unit
+
+
+  # write bytes to stdin of child process
+  #
+  public write_bytes (bytes Sequence u8) outcome i32
+  =>
+    write_bytes std_in bytes
+
+
+  # helper function
+  #
+  write_bytes (desc i64, bytes Sequence u8) outcome i32
+  pre debug: bytes.count > 0
+  =>
+    bytes
+      .chunk pipe_buffer_size
+      .reduce_or_error 0 (r, t)->
+        arr := t.as_array
+        bw := fuzion.sys.pipe.write desc arr.internal_array.data arr.count
+        if bw = -1
+          abort (outcome i32) (error "error while writing. wrote $r bytes already.")
+        else
+          r+bw
+
+
+  # install buffered reader for reading from stdout of process
+  # and run `f`.
+  public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
+    (io.buffered.reader LM (std_out_read_provider) pipe_buffer_size)
+      .try f
+
+
+  # install buffered reader for reading from stdout of process
+  # and run `f`.
+  public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
+    (io.buffered.reader LM (std_err_read_provider) pipe_buffer_size)
+      .try f
+
+
+  public with_in(T type, LM type : mutate, f () -> T) outcome T =>
+    (io.buffered.writer LM std_in_write_provider pipe_buffer_size)
+      .instate_self f
+
+
+  # write string to stdin of child process
+  #
+  public write_string (s String) outcome i32 =>
+    write_bytes s.utf8
+
+
+  # pipe this processes output to new process
+  #
+  public infix | (process_and_args Sequence String) outcome os.process
+  pre
+    (process_and_args ∀ str -> str.is_ascii)
+    !process_and_args[0].contains_whitespace
+  =>
+    (os.process.start process_and_args.first.val (process_and_args.drop 1)).bind os.process p->
+
+      # NYI should wire pipe directly to process
+      # NYI this works only when pipes buffer is large enough for
+      # what is being written/read to/from pipes
+      # thread to pipe from one process to other
+      _ := concur.threads.spawn ()->
+        _ :=
+          for p1rb := std_out_read_provider.read pipe_buffer_size
+          while
+            match p1rb
+              s array u8 => (write_bytes p.std_in s).ok
+              * => false
+
+        # NYI error handling
+        _ := fuzion.sys.pipe.close p.std_in
+        _ := fuzion.sys.pipe.close process.this.std_out
+        _ := fuzion.sys.pipe.close process.this.std_err
+
+      p
+
+
+  # wait for this process
+  #
+  public wait =>
+    # NYI: process should be ref?
+    os.processes.wait (os.process id std_in std_out std_err)
+
+
+  # start a process with name, arguments and environment variables
+  #
+  public type.start(n String, args Sequence String, env_vars container.Map String String) =>
+    os.processes.start n args env_vars
+
+
+  # start a process with name and arguments
+  #
+  public type.start(n String, args Sequence String) =>
+    start n args (container.ps_map String String).empty
+
+
+  # start a process with name and no arguments
+  #
+  public type.start(n String) =>
+    start n []
+
+
+  # equality
+  #
+  public redef fixed type.equality(a, b process.this) => a.id = b.id
+
+
+  # lteq
+  #
+  public redef fixed type.lteq(a, b process.this) bool =>
+    a.id <= b.id

@@ -82,14 +82,10 @@ functions is
           say "here F.call done---------------"
           res
 
-    say "here x0 F()---------------"
-    x0 F()
     say "here x0 F---------------"
     x0 F
     say "here x0 (fun i32 (Any o, i32 i) \{ o.hash_code + i })---------------"
     x0 ((o, i) -> { o.hash_code + i })
-    say "here x F()---------------"
-    x F()
     say "here x(F)---------------"
     x F
 

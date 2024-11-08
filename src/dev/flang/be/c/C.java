@@ -662,7 +662,6 @@ public class C extends ANY
            FUIR fuir)
   {
     _options = opt;
-    fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _fuir = fuir;
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen());
@@ -1642,6 +1641,7 @@ public class C extends ANY
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
                      "Found call to  " + _fuir.clazzAsString(cc));
+        break;
       case Routine  :
       case Intrinsic:
       case Native   :
@@ -2115,8 +2115,8 @@ public class C extends ANY
       case c_unit :
         return expr;
       case c_Const_String :
-      case c_FALSE :
-      case c_TRUE :
+      case c_false_ :
+      case c_true_ :
       case c_sys_ptr :
       case c_u32 :
       case c_u64 :
@@ -2175,8 +2175,8 @@ public class C extends ANY
       case c_unit :
         return val;
       case c_Const_String :
-      case c_FALSE :
-      case c_TRUE :
+      case c_false_ :
+      case c_true_ :
       case c_sys_ptr :
       case c_u32 :
       case c_u64 :
