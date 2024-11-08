@@ -480,8 +480,7 @@ class CodeGen
           }
         var p = staticAccess(/* *** NOTE ***: The site must be NO_SITE since we are not generating
                               * code for `_fuir.clazzAt(si)`, but for the stub. If we would pass the
-                              * site here, the access might otherwise be optimized as a tail call
-                              * here!
+                              * site here, the access might otherwise be optimized as a tail call!
                               */
                              FUIR.NO_SITE,
                              tt, cc, tv, na, isCall);

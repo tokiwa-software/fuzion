@@ -2298,6 +2298,14 @@ public class AstErrors extends ANY
           - change the type to a legal"""  + " " + skw(".this") + " type.");
   }
 
+  public static void notAnEffect(AbstractType t, SourcePosition pos)
+  {
+    var f = t.isGenericArgument() ? t.genericArgument().feature() : t.feature();
+    error(pos,
+          "Feature " + sbnf(f) + " is not an effect.",
+          "Effects required by a feature are specified with " + skw("!") + " in the signature. " +
+          "Therefore, only valid effects may follow after it.");
+  }
 
 }
 
