@@ -29,6 +29,7 @@ package dev.flang.fuir.analysis.dfa;
 
 import dev.flang.fuir.FUIR;
 
+
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
@@ -36,8 +37,6 @@ import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
-
-import java.util.TreeSet;
 
 
 /**
@@ -345,47 +344,31 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * toString() might end up in a complex recursion if it is used for careless
-   * debug output, so we try to catch recursion and stop it.
-   */
-  static TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
-
-
-  /**
    * Create human-readable string from this call.
    */
   public String toString()
   {
-    if (_toStringRecursion_.contains(this))
+    var sb = new StringBuilder();
+    sb.append(_dfa._fuir.clazzAsString(_cc));
+    if (_target != Value.UNIT)
       {
-        return "*** recursive Call.toString() ***";
+        sb.append(" target=")
+          .append(_target);
       }
-    else
+    for (var i = 0; i < _args.size(); i++)
       {
-        _toStringRecursion_.add(this);
-        var sb = new StringBuilder();
-        sb.append(_dfa._fuir.clazzAsString(_cc));
-        if (_target != Value.UNIT)
-          {
-            sb.append(" target=")
-              .append(_target);
-          }
-        for (var i = 0; i < _args.size(); i++)
-          {
-            var a = _args.get(i);
-            sb.append(" a")
-              .append(i)
-              .append("=")
-              .append(a);
-          }
-        var r = result();
-        sb.append(" => ")
-          .append(r == null ? "*** VOID ***" : r)
-          .append(" ENV: ")
-          .append(Errors.effe(Env.envAsString(env())));
-        _toStringRecursion_.remove(this);
-        return sb.toString();
+        var a = _args.get(i);
+        sb.append(" a")
+          .append(i)
+          .append("=")
+          .append(a);
       }
+    var r = result();
+    sb.append(" => ")
+      .append(r == null ? "*** VOID ***" : r)
+      .append(" ENV: ")
+      .append(Errors.effe(Env.envAsString(env())));
+    return sb.toString();
   }
 
 
