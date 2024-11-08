@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue3321_unused_fields.fz:29:10: error 1: Unused, non public field 'x'
+--CURDIR--/unused_fields_error.fz:30:10: error 1: Unused, non public field 'x'
   module x := 0  # unused, not public, not ignored
 ---------^
 To solve this, either
@@ -9,7 +9,7 @@ or
   - explicitly ignore the result '_ := …'
 
 
---CURDIR--/reg_issue3321_unused_fields.fz:30:3: error 2: Unused, non public field 'y'
+--CURDIR--/unused_fields_error.fz:31:3: error 2: Unused, non public field 'y'
   y := 1         # unused, not public, not ignored
 --^
 To solve this, either

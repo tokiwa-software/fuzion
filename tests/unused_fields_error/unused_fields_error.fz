@@ -17,9 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion test unused_fields_error
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue3321_unused_fields
-include ../simple.mk
+# test errors for unused fields
+# this was implemented in #4086 (https://github.com/tokiwa-software/fuzion/pull/4086)
+#
+unused_fields_error =>
+
+  public w := 0  # unused but public
+  module x := 0  # unused, not public, not ignored
+  y := 1         # unused, not public, not ignored
+  z := 2         # is used
+
+  say "Not using w, x or y, but z=$z"
+
+  # no warnings for unused arguments
+  a(a i32, _ i32) =>
+  b(public a i32, _ i32, c i32) is
