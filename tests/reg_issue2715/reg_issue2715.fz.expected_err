@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue2715.fz:24:20: error 1: Failed to infer type of expression.
+fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs
+-------------------^^^^
+Expression with unknown type: 'fibs'
+
+one error.
