@@ -2129,10 +2129,7 @@ public class DFA extends ANY
           var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
           if (ev != null)
             {
-              if (cl._env != null)  // NYI: UNDER DEVELOPMENT: What if cl._env is null? Ignoring the abort seems wrong
-                {
-                  cl._env.aborted(ecl);
-                }
+              cl._env.aborted(ecl);
             }
           return null;
         });
