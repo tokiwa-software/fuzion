@@ -781,9 +781,9 @@ public class DFA extends ANY
    * equals calls `t.f args` if they occur at different sites, i.e., location in
    * the source code.
    *
-   * To disable, use fz with
+   * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_SITE_SENSITIVE=false
+   *   dev_flang_fuir_analysis_dfa_DFA_SITE_SENSITIVE=true
    */
   static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", false);
 
