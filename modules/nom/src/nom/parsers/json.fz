@@ -32,7 +32,7 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
       s String => "\"$s\""
       f f64 => $f
       b bool => $b
-      _ nil => "null"
+      nil => "null"
       seq Sequence => $seq
       m container.Map => "\{$m}"
 
