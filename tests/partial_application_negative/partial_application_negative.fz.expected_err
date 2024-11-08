@@ -102,7 +102,7 @@ To solve this, you might change the actual number of arguments to match the feat
 ---------^^^
 
 
---CURDIR--/partial_application_negative.fz:72:21: error 12: Ambiguity between direct and partially applied call target
+--CURDIR--/partial_application_negative.fz:72:20: error 12: Ambiguity between direct and partially applied call target
   _ i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
 -------------------^^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:66:3:
