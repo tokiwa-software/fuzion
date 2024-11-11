@@ -781,15 +781,11 @@ public class DFA extends ANY
    * equals calls `t.f args` if they occur at different sites, i.e., location in
    * the source code.
    *
-   * To disable, use fz with
+   * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_SITE_SENSITIVE=false
-   *
-   * NYI: OPTIMIZATION: For most tests, site sensitivity adds significant
-   * overhead. However, some tests like fuzion/tests/transducers require this to
-   * work properly.
+   *   dev_flang_fuir_analysis_dfa_DFA_SITE_SENSITIVE=true
    */
-  static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", true);
+  static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", false);
 
 
   /**
@@ -2875,6 +2871,24 @@ public class DFA extends ANY
 
 
   /**
+   * For a call to cc, should we be site sensivity, i.e., distinguish calls
+   * depending on their call site?
+   *
+   * Currently, we are site sensitive for all constructors or if SITE_SENSITIVE
+   * is set via env var or property.
+   *
+   * @param cc a clazz that is called
+   *
+   * @return true iff the call site should be taken into account when compating
+   * calls to `cc`.
+   */
+  boolean siteSensitive(int cc)
+  {
+    return SITE_SENSITIVE || _fuir.isConstructor(cc);
+  }
+
+
+  /**
    * Create call to given clazz with given target and args.
    *
    * @param cl the called clazz
@@ -2896,10 +2910,6 @@ public class DFA extends ANY
    */
   Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    if (!SITE_SENSITIVE)
-      {
-        site = FUIR.NO_SITE;
-      }
     Call e, r;
     r = _unitCalls.get(cl);
     if (isUnitType(cl))
@@ -2920,7 +2930,7 @@ public class DFA extends ANY
           }
         var k1 = _fuir.clazzId2num(cl);
         var k2 = tvalue._id;
-        var k3 = siteIndex(site);
+        var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
         var k4 = env == null ? 0 : env._id + 1;
         // We use a LongMap in case we manage to fiddle k1..k4 into a long
         //

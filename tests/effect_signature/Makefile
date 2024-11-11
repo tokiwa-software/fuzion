@@ -17,9 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature auto_unwrap
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-public auto_unwrap(T type, E type... : effect) is
-  public unwrap T => abstract
+override NAME = effect_signature_test
+include ../simple.mk

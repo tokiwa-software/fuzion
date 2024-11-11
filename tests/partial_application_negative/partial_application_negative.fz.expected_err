@@ -59,7 +59,15 @@ Target feature: 'i32'
 In call: '3.prefix*'
 
 
---CURDIR--/partial_application_negative.fz:43:38: error 7: Failed to infer actual type parameters
+--CURDIR--/partial_application_negative.fz:42:38: error 7: Failed to infer actual type parameters
+  test "data.map 3.prefix*   " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    // 1. should flag an error, do not change named prefix call to infix call
+-------------------------------------^^^
+In call to 'Sequence.map', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'B'
+Type inference failed for one type parameter 'B'
+
+
+--CURDIR--/partial_application_negative.fz:43:38: error 8: Failed to infer actual type parameters
   test "data.map 3.prefix-   " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
 -------------------------------------^^^
 In call to 'Sequence.map', no actual type parameters are given and inference of the type parameters failed.
@@ -67,7 +75,7 @@ Expected type parameters: 'B'
 Type inference failed for one type parameter 'B'
 
 
---CURDIR--/partial_application_negative.fz:44:47: error 8: Could not find called feature
+--CURDIR--/partial_application_negative.fz:44:47: error 9: Could not find called feature
   test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  // 3. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^^
 Feature not found: 'postfix *' (one argument)
@@ -75,18 +83,26 @@ Target feature: 'i32'
 In call: '3.postfix*'
 
 
---CURDIR--/partial_application_negative.fz:77:38: error 9: Different count of arguments needed when calling feature
+--CURDIR--/partial_application_negative.fz:44:38: error 10: Failed to infer actual type parameters
+  test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  // 3. should flag an error, do not change named prefix call to infix call
+-------------------------------------^^^
+In call to 'Sequence.map', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'B'
+Type inference failed for one type parameter 'B'
+
+
+--CURDIR--/partial_application_negative.fz:77:38: error 11: Different count of arguments needed when calling feature
   test "data.map  .as_string " (data.map  .as_string ) "[1,2,3,4,5,6,7,8,9,10]"  // 11. should flag an error: dot-call partials require parentheses
 -------------------------------------^^^
 Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $MODULE/Sequence.fz:340:10:
+To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $MODULE/Sequence.fz:336:10:
   public map(B type, f Unary B T) Sequence B =>
 ---------^^^
 
 
---CURDIR--/partial_application_negative.fz:72:21: error 10: Ambiguity between direct and partially applied call target
+--CURDIR--/partial_application_negative.fz:72:21: error 12: Ambiguity between direct and partially applied call target
   a2 i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
 --------------------^^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:66:3:
@@ -98,7 +114,7 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 To solve this, rename one of the ambiguous features.
 
 
---CURDIR--/partial_application_negative.fz:74:26: error 11: Ambiguity between direct and partially applied call target
+--CURDIR--/partial_application_negative.fz:74:26: error 13: Ambiguity between direct and partially applied call target
   _ := test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
 -------------------------^^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:66:3:
@@ -109,4 +125,4 @@ or by partially applying arguments to a call to 'partial_application_negative.am
 --^^^^^^.
 To solve this, rename one of the ambiguous features.
 
-11 errors.
+13 errors.

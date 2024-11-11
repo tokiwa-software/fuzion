@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue3003.fz:27:5: error 1: Failed to infer result type for feature 'reg_issue3003.a.f'.
+    f => abstract
+----^
+To solve this, please specify a result type explicitly.
+
+one error.

@@ -6,7 +6,7 @@ Feature 'abstractfeatures_negative.opengenerics12.G' instantiated at --CURDIR--/
     x G := G                                       //  2. should flag an error: abstract feature f not implemented
 -----------^
 inherits or declares abstract feature 'abstractfeatures_negative.opengenerics12.F.f' declared at --CURDIR--/abstractfeatures_negative.fz:33:7:
-      f(a A) is abstract                           //  1. should flag an error: abstract feature not implemented
+      f(a A) unit => abstract                           //  1. should flag an error: abstract feature not implemented
 ------^
 which is called at --CURDIR--/abstractfeatures_negative.fz:40:19:
     if maybe then y.f 3 true 5
@@ -29,19 +29,19 @@ Feature 'abstractfeatures_negative.opengenerics12a.G' instantiated at --CURDIR--
     x G := G                                       //  6. should flag an error: abstract features f1, f2, f3 not implemented
 -----------^
 inherits or declares abstract feature 'abstractfeatures_negative.opengenerics12a.F.f1' declared at --CURDIR--/abstractfeatures_negative.fz:46:7:
-      f1(a A) is abstract                          //  3. should flag an error: abstract feature not implemented
+      f1(a A) unit => abstract                          //  3. should flag an error: abstract feature not implemented
 ------^^
 which is called at --CURDIR--/abstractfeatures_negative.fz:56:19:
     if maybe then y.f1 3 true 5
 ------------------^^^^^^^^^^^^^
 and abstract feature 'abstractfeatures_negative.opengenerics12a.F.f2' declared at --CURDIR--/abstractfeatures_negative.fz:47:7:
-      f2(a A) is abstract                          //  4. should flag an error: abstract feature not implemented
+      f2(a A) unit => abstract                          //  4. should flag an error: abstract feature not implemented
 ------^^
 which is called at --CURDIR--/abstractfeatures_negative.fz:57:19:
     if maybe then y.f2 3 true 5
 ------------------^^^^^^^^^^^^^
 and abstract feature 'abstractfeatures_negative.opengenerics12a.F.f3' declared at --CURDIR--/abstractfeatures_negative.fz:48:7:
-      f3(a A) is abstract                          //  5. should flag an error: abstract feature not implemented
+      f3(a A) unit => abstract                          //  5. should flag an error: abstract feature not implemented
 ------^^
 which is called at --CURDIR--/abstractfeatures_negative.fz:58:19:
     if maybe then y.f3 3 true 5
@@ -64,7 +64,7 @@ Feature 'abstractfeatures_negative.opengenerics12b.G' instantiated at --CURDIR--
     x G := G                                       //  8. should flag an error: abstract feature f not implemented
 -----------^
 inherits or declares abstract feature 'abstractfeatures_negative.opengenerics12b.F.f' declared at --CURDIR--/abstractfeatures_negative.fz:64:7:
-      f(a A) is abstract                           //  7. should flag an error: abstract feature not implemented
+      f(a A) unit => abstract                           //  7. should flag an error: abstract feature not implemented
 ------^
 which is called at --CURDIR--/abstractfeatures_negative.fz:70:19:
     if maybe then x.f 3 true 5
@@ -87,19 +87,19 @@ Feature 'abstractfeatures_negative.opengenerics12c.G' instantiated at --CURDIR--
     x G := G                                       // 12. should flag an error: abstract features f1, f2, f3 not implemented
 -----------^
 inherits or declares abstract feature 'abstractfeatures_negative.opengenerics12c.F.f1' declared at --CURDIR--/abstractfeatures_negative.fz:76:7:
-      f1(a A) is abstract                          //  9. should flag an error: abstract feature not implemented
+      f1(a A) unit => abstract                          //  9. should flag an error: abstract feature not implemented
 ------^^
 which is called at --CURDIR--/abstractfeatures_negative.fz:85:19:
     if maybe then x.f1 3 true 5
 ------------------^^^^^^^^^^^^^
 and abstract feature 'abstractfeatures_negative.opengenerics12c.F.f2' declared at --CURDIR--/abstractfeatures_negative.fz:77:7:
-      f2(a A) is abstract                          // 10. should flag an error: abstract feature not implemented
+      f2(a A) unit => abstract                          // 10. should flag an error: abstract feature not implemented
 ------^^
 which is called at --CURDIR--/abstractfeatures_negative.fz:86:19:
     if maybe then x.f2 3 true 5
 ------------------^^^^^^^^^^^^^
 and abstract feature 'abstractfeatures_negative.opengenerics12c.F.f3' declared at --CURDIR--/abstractfeatures_negative.fz:78:7:
-      f3(a A) is abstract                          // 11. should flag an error: abstract feature not implemented
+      f3(a A) unit => abstract                          // 11. should flag an error: abstract feature not implemented
 ------^^
 which is called at --CURDIR--/abstractfeatures_negative.fz:87:19:
     if maybe then x.f3 3 true 5
