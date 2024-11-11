@@ -1248,6 +1248,20 @@ public class DFA extends ANY
           return super.clazzIsUnitType(cl) || isUnitType(cl);
         }
 
+
+        @Override
+        public int clazzOuterRef(int cl)
+        {
+          var res = NO_CLAZZ;
+          var or = super.clazzOuterRef(cl);
+          if (or != NO_CLAZZ && !clazzIsUnitType(clazzResultClazz(or)))
+            {
+              res = or;
+            }
+
+          return res;
+        }
+
       };
 
     return res;
