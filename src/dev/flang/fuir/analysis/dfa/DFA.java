@@ -945,6 +945,14 @@ public class DFA extends ANY
 
 
   /**
+   * Calls created during DFA analysis for instances that are still unit type
+   * values.  This is done to avoid creating many calls and values that all end
+   * up being unit types.
+   */
+  IntMap<Call> _unitCalls = new IntMap<>();
+
+
+  /**
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
@@ -1029,6 +1037,12 @@ public class DFA extends ANY
    * All fields that are ever read.
    */
   BitSet _readFields = new BitSet();
+
+
+  /**
+   * All clazzes that containt fields that are ever read.
+   */
+  BitSet _hasFields = new BitSet();
 
 
   /**
@@ -1226,6 +1240,27 @@ public class DFA extends ANY
           var key = ((long)s<<32)|((long)cix);
           return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
         };
+
+
+        @Override
+        public boolean clazzIsUnitType(int cl)
+        {
+          return super.clazzIsUnitType(cl) || isUnitType(cl);
+        }
+
+
+        @Override
+        public int clazzOuterRef(int cl)
+        {
+          var res = NO_CLAZZ;
+          var or = super.clazzOuterRef(cl);
+          if (or != NO_CLAZZ && !clazzIsUnitType(clazzResultClazz(or)))
+            {
+              res = or;
+            }
+
+          return res;
+        }
 
       };
 
@@ -2142,19 +2177,19 @@ public class DFA extends ANY
 
     put("fuzion.java.Java_Object.is_null0"  , cl ->
         {
-          cl._dfa._readFields.set(cl._dfa._fuir.clazzArg(cl._cc, 0));
+          cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
           return cl._dfa.bool();
         });
     put("fuzion.java.array_get"             , cl ->
         {
           var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-          cl._dfa._readFields.set(jref);
+          cl._dfa.readField(jref);
           return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
         });
     put("fuzion.java.array_length"          , cl ->
       {
         var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-        cl._dfa._readFields.set(jref);
+        cl._dfa.readField(jref);
         return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
       }
     );
@@ -2164,8 +2199,8 @@ public class DFA extends ANY
           var jref = cl._dfa._fuir.lookupJavaRef(rc);
           var data = cl._dfa._fuir.lookup_fuzion_sys_internal_array_data  (cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           var len  = cl._dfa._fuir.lookup_fuzion_sys_internal_array_length(cl._dfa._fuir.clazzArgClazz(cl._cc,0));
-          cl._dfa._readFields.set(data);
-          cl._dfa._readFields.set(len);
+          cl._dfa.readField(data);
+          cl._dfa.readField(len);
           var result = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
           result.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF); // NYI: record putfield of result.jref := args.get(0).data
           return result;
@@ -2178,8 +2213,8 @@ public class DFA extends ANY
         var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
         var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
         // mark Java_Ref fields as read
-        cl._dfa._readFields.set(jref0);
-        cl._dfa._readFields.set(jref1);
+        cl._dfa.readField(jref0);
+        cl._dfa.readField(jref1);
         // NYI: UNDER DEVELOPMENT: setField Java_Ref, see get_static_field0
         var x = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
         // Causes Error // x.setField(cl._dfa, jrefres, Value.UNKNOWN_JAVA_REF);
@@ -2191,9 +2226,9 @@ public class DFA extends ANY
         var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
         var jref2 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(2))._clazz);
         // mark Java_Ref fields as read
-        cl._dfa._readFields.set(jref0);
-        cl._dfa._readFields.set(jref1);
-        cl._dfa._readFields.set(jref2);
+        cl._dfa.readField(jref0);
+        cl._dfa.readField(jref1);
+        cl._dfa.readField(jref2);
         return Value.UNIT;
       });
     put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
@@ -2289,9 +2324,9 @@ public class DFA extends ANY
         var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
         var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
         var data2 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
-        cl._dfa._readFields.set(sref0);
-        cl._dfa._readFields.set(sref1);
-        cl._dfa._readFields.set(data2);
+        cl._dfa.readField(sref0);
+        cl._dfa.readField(sref1);
+        cl._dfa.readField(data2);
         return newFuzionJavaCall(cl);
       });
     put("fuzion.java.call_s0"               , cl ->
@@ -2302,10 +2337,10 @@ public class DFA extends ANY
         var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
         var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
         var data3 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
-        cl._dfa._readFields.set(sref0);
-        cl._dfa._readFields.set(sref1);
-        cl._dfa._readFields.set(sref2);
-        cl._dfa._readFields.set(data3);
+        cl._dfa.readField(sref0);
+        cl._dfa.readField(sref1);
+        cl._dfa.readField(sref2);
+        cl._dfa.readField(data3);
         return newFuzionJavaCall(cl);
       });
     put("fuzion.java.call_v0"               , cl ->
@@ -2317,11 +2352,11 @@ public class DFA extends ANY
         var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
         var sref3 = fuir.clazzArgClazz(cc, 3);
         var data4 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
-        cl._dfa._readFields.set(sref0);
-        cl._dfa._readFields.set(sref1);
-        cl._dfa._readFields.set(sref2);
-        cl._dfa._readFields.set(sref3);
-        cl._dfa._readFields.set(data4);
+        cl._dfa.readField(sref0);
+        cl._dfa.readField(sref1);
+        cl._dfa.readField(sref2);
+        cl._dfa.readField(sref3);
+        cl._dfa.readField(data4);
         return newFuzionJavaCall(cl);
       });
     put("fuzion.java.cast0", cl -> newFuzionJavaCall(cl));
@@ -2360,27 +2395,27 @@ public class DFA extends ANY
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_trylock"           , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_unlock"            , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_destroy"           , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return Value.UNIT;
       });
     put("concur.sync.cnd_init"              , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return outcome(cl._dfa,
                        cl,
                        cl._dfa._fuir.clazzResultClazz(cl._cc),
@@ -2388,23 +2423,23 @@ public class DFA extends ANY
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 1));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 1));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {
-        cl._dfa._readFields.set(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
         return Value.UNIT;
       });
   }
@@ -2509,6 +2544,7 @@ public class DFA extends ANY
             if (r == null)
               {
                 var ni = new Instance(this, cl, site, context);
+                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
                 clazzm.put(k, ni);
                 makeUnique(ni);
                 r = ni;
@@ -2516,6 +2552,48 @@ public class DFA extends ANY
           }
       }
     return r;
+  }
+
+
+  /**
+   * Remember that the given field is read.  Fields that are never read will be
+   * removed from the code.
+   */
+  void readField(int field)
+  {
+    var fnum = _fuir.clazzId2num(field);
+    if (!_readFields.get(fnum))
+      {
+        _readFields.set(fnum);
+        wasChanged(() -> "DFA: read field " + _fuir.clazzAsString(field));
+      }
+    var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
+    var clnum = _fuir.clazzId2num(cl);
+    _hasFields.set(clnum);
+  }
+
+
+  /**
+   * Too reduce number of calls created for unit type values, we originally
+   * assume calls to an empty constructor with no arguments and not fields as
+   * all the same.
+   *
+   * @oaran cl a clazz id, must not be NO_CLAZZ
+   *
+   * @return true if, as for what we now about used fields at this pointer, `cl`
+   * defines a unit type.
+   */
+  boolean isUnitType(int cl)
+  {
+    var clnum = _fuir.clazzId2num(cl);
+    var oc = _fuir.clazzOuterClazz(cl);
+    return
+      !_hasFields.get(clnum) &&
+      _defaultEffects.get(cl) == null &&
+      _fuir.isConstructor(cl) &&
+      !_fuir.clazzIsRef(cl) &&
+      _fuir.clazzArgCount(cl) == 0 &&
+      !isBuiltInNumeric(cl);
   }
 
 
@@ -2846,47 +2924,65 @@ public class DFA extends ANY
    */
   Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    var k1 = _fuir.clazzId2num(cl);
-    var k2 = tvalue._id;
-    var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
-    var k4 = env == null ? 0 : env._id + 1;
     Call e, r;
-    // We use a LongMap in case we manage to fiddle k1..k4 into a long
-    //
-    // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
-    //
-    // Bit 6666555555555544444444443333333333222222222211111111110000000000
-    //     3210987654321098765432109876543210987654321098765432109876543210
-    //     <----clazz id----><---tvalue id----><---siteIndex----><-env-id->
-    //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
-    //
-    if (k1 <= 0x3FFFF &&
-        k2 <= 0x3FFFF &&
-        k3 <= 0x3FFFF &&
-        k4 <= 0x03FF)
-      {
-        var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
-        if (CHECKS) check
-          (((k >> (18*2+10)) & 0x3FFFF) == k1,
-           ((k >> (18  +10)) & 0x3FFFF) == k2,
-           ((k >> (     10)) & 0x3FFFF) == k3,
-           ((k               & 0x003FF) == k4));
-        r = _callsQuick.get(k);
+    r = _unitCalls.get(cl);
+    if (isUnitType(cl))
+      { // as long as we see unit values only, we put them all together
         e = r;
         if (r == null)
           {
             r = new Call(this, cl, site, tvalue, args, env, context);
-            _callsQuick.put(k, r);
+            _unitCalls.put(cl, r);
           }
       }
     else
       {
-        // TreeMap fallback in case we failed to pack the key into a long.
+        if (r != null)
+          {
+            _unitCalls.put(cl, null);
+            _calls.remove(r);
+          }
+        var k1 = _fuir.clazzId2num(cl);
+        var k2 = tvalue._id;
+        var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
+        var k4 = env == null ? 0 : env._id + 1;
+        // We use a LongMap in case we manage to fiddle k1..k4 into a long
         //
-        // NYI: OPTIMIZATION: We might find a more efficient way for this case,
-        // maybe two nested LongMaps?
-        r = new Call(this, cl, site, tvalue, args, env, context);
-        e = _calls.get(r);
+        // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
+        //
+        // Bit 6666555555555544444444443333333333222222222211111111110000000000
+        //     3210987654321098765432109876543210987654321098765432109876543210
+        //     <----clazz id----><---tvalue id----><---siteIndex----><-env-id->
+        //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
+        //
+        if (k1 <= 0x3FFFF &&
+            k2 <= 0x3FFFF &&
+            k3 <= 0x3FFFF &&
+            k4 <= 0x03FF)
+          {
+            var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
+            if (CHECKS) check
+              (((k >> (18*2+10)) & 0x3FFFF) == k1,
+               ((k >> (18  +10)) & 0x3FFFF) == k2,
+               ((k >> (     10)) & 0x3FFFF) == k3,
+               ((k               & 0x003FF) == k4));
+            r = _callsQuick.get(k);
+            e = r;
+            if (r == null)
+              {
+                r = new Call(this, cl, site, tvalue, args, env, context);
+                _callsQuick.put(k, r);
+              }
+          }
+        else
+          {
+            // TreeMap fallback in case we failed to pack the key into a long.
+            //
+            // NYI: OPTIMIZATION: We might find a more efficient way for this case,
+            // maybe two nested LongMaps?
+            r = new Call(this, cl, site, tvalue, args, env, context);
+            e = _calls.get(r);
+          }
       }
     if (e == null)
       {
