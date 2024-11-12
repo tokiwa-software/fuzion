@@ -166,7 +166,7 @@ public class Instance extends Value
     var oldv = _fields.get(field);
     if (oldv != null)
       {
-        v = oldv.join(dfa, v);
+        v = oldv.join(dfa, v, dfa._fuir.clazzResultClazz(field));
       }
     if (oldv != v)
       {
