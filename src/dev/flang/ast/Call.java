@@ -1774,9 +1774,9 @@ public class Call extends AbstractCall
     var rt = cf.resultTypeIfPresentUrgent(res, false);
     // We may be able to infer generics later
     // via result type propagation, do not emit errors yet.
-    if (!(rt != null &&
-        rt.isGenericArgument() &&
-        rt.genericArgument().feature().outer() == cf.outer()))
+    if ((rt == null ||
+        !rt.isGenericArgument() ||
+         rt.genericArgument().feature().outer() != cf.outer()))
       {
         // report missing inferred types only if there were no errors trying to find
         // the types of the actuals:
