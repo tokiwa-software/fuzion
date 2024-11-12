@@ -2350,7 +2350,7 @@ public class DFA extends ANY
         var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
         var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
         var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
-        var sref3 = fuir.clazzArgClazz(cc, 3);
+        var sref3 = fuir.clazzArg(cc, 3);
         var data4 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa.readField(sref0);
         cl._dfa.readField(sref1);
@@ -2395,27 +2395,27 @@ public class DFA extends ANY
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_trylock"           , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_unlock"            , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_destroy"           , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return Value.UNIT;
       });
     put("concur.sync.cnd_init"              , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return outcome(cl._dfa,
                        cl,
                        cl._dfa._fuir.clazzResultClazz(cl._cc),
@@ -2423,23 +2423,23 @@ public class DFA extends ANY
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 1));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 1));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return Value.UNIT;
       });
   }
@@ -2561,6 +2561,9 @@ public class DFA extends ANY
    */
   void readField(int field)
   {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+
     var fnum = _fuir.clazzId2num(field);
     if (!_readFields.get(fnum))
       {
@@ -2574,7 +2577,7 @@ public class DFA extends ANY
 
 
   /**
-   * Too reduce number of calls created for unit type values, we originally
+   * To reduce number of calls created for unit type values, we originally
    * assume calls to an empty constructor with no arguments and not fields as
    * all the same.
    *
