@@ -37,8 +37,12 @@ import java.nio.file.StandardOpenOption;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.mir.MIR;
 
@@ -139,6 +143,18 @@ public class FrontEnd extends ANY
   private LibraryModule _mainModule;
 
 
+  /**
+   * The universe that is used by frontend.
+   */
+  public final Universe _feUniverse;
+
+
+  /**
+   * The modules loaded by frontend.
+   */
+  private final LibraryModule[] _dependsOn;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -149,7 +165,7 @@ public class FrontEnd extends ANY
   {
     _options = options;
     reset();
-    var universe = new Universe();
+    _feUniverse = new Universe();
 
     var sourcePaths = options.sourcePaths();
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
@@ -158,11 +174,11 @@ public class FrontEnd extends ANY
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
 
-    var dependsOn = loadModules(universe);
+    _dependsOn = loadModules(_feUniverse);
 
     if (options._loadSources)
       {
-        _sourceModule = new SourceModule(options, sourceDirs, dependsOn, universe);
+        _sourceModule = new SourceModule(options, sourceDirs, _dependsOn, _feUniverse);
         _sourceModule.createASTandResolve();
       }
     else
@@ -387,6 +403,42 @@ public class FrontEnd extends ANY
   public LibraryModule baseModule()
   {
     return _modules.get("base");
+  }
+
+
+  /**
+   * A module that consists of all modules that
+   * this front end depends on without the need for a
+   * source module.
+   */
+  public Module feModule()
+  {
+    if (Types.resolved == null)
+      {
+        _feUniverse.setState(State.RESOLVED);
+        new Types.Resolved(_modules.get("base"), _feUniverse, true);
+      }
+    return new Module(_dependsOn) {
+      @Override
+      public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
+      {
+        return Stream
+          .of(this._dependsOn)
+          .flatMap(m -> m.declaredFeatures(outer).entrySet().stream())
+          .collect(Collectors.toMap(
+              Map.Entry::getKey,
+              Map.Entry::getValue,
+              (v1, v2) -> v1,
+              TreeMap::new
+          ));
+      }
+
+      @Override
+      String name()
+      {
+        return "frontend";
+      }
+    };
   }
 
 }
