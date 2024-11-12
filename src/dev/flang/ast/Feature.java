@@ -1502,8 +1502,8 @@ public class Feature extends AbstractFeature
             {
               var t = e.resolve(res, context());
 
-              if (t != Types.t_ERROR && (!(AbstractType.selfOrConstraint(t, res, context()))
-                                                       .feature().inheritsFrom(Types.resolved.f_effect)))
+              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                            .feature().inheritsFrom(Types.resolved.f_effect)))
                 {
                   AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
                 }
