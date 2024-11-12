@@ -334,7 +334,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 if (CHECKS) check
                   (Errors.any() || feature() == Types.resolved.f_type_as_value);
 
-                gi = gi.feature().isThisRef() ? gi.asRef() : gi.asValue();
+                gi = gi.feature().isRef() ? gi.asRef() : gi.asValue();
                 }
             _actualTypeParameters[i] = _fuir.type2clazz(gi);
           }
@@ -694,7 +694,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * isBoxed is true iff this is a ref value but the underlying feature is a value feature.
    */
-  boolean isBoxed() { return isRef() && !feature().isThisRef(); }
+  boolean isBoxed() { return isRef() && !feature().isRef(); }
 
 
   /**
@@ -1234,8 +1234,8 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
 
         result = outer
-          + ( isRef() && !feature().isThisRef() ? "ref "   : "" )
-          + (!isRef() &&  feature().isThisRef() ? "value " : "" )
+          + ( isRef() && !feature().isRef() ? "ref "   : "" )
+          + (!isRef() &&  feature().isRef() ? "value " : "" )
           + fname;
         if (typeType)
           {
@@ -1815,7 +1815,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var res = this;
     var i = feature();
     while (i != null && i != o
-      && !(i.isThisRef() && i.inheritsFrom(o)) // see #1391 and #1628 for when this can be the case.
+      && !(i.isRef() && i.inheritsFrom(o)) // see #1391 and #1628 for when this can be the case.
     )
       {
         res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
@@ -1824,7 +1824,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     if (CHECKS) check
-      (Errors.any() || i == o || i != null && i.isThisRef() && i.inheritsFrom(o));
+      (Errors.any() || i == o || i != null && i.isRef() && i.inheritsFrom(o));
 
     return i == null ? _fuir.error() : res;
   }

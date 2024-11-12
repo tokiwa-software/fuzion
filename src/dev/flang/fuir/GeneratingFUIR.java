@@ -249,7 +249,7 @@ public class GeneratingFUIR extends FUIR
             //
             // So instead of testing !o.isRef() we use
             // !o._type.feature().isThisRef().
-            !o._type.feature().isThisRef() &&
+            !o._type.feature().isRef() &&
             !o._type.feature().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
 
@@ -296,7 +296,7 @@ public class GeneratingFUIR extends FUIR
           }
 
         var s = SpecialClazzes.c_NOT_FOUND;
-        if (cl.isRef() == cl.feature().isThisRef())  // not an boxed or explicit value clazz
+        if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
             // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
             s = switch (cl.feature().qualifiedName())
@@ -1303,7 +1303,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.isRef() && !c.feature().isThisRef();
+    return c.isRef() && !c.feature().isRef();
   }
 
 
@@ -1450,7 +1450,7 @@ public class GeneratingFUIR extends FUIR
             var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
             result = newClazz(oc, f.selfType(), -1);
             if (CHECKS) check
-              (f.isThisRef() == result.isRef());
+              (f.isRef() == result.isRef());
           }
         _specialClazzes[s.ordinal()] = result;
       }

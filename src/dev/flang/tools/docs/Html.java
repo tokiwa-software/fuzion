@@ -191,7 +191,7 @@ public class Html extends ANY
       + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
       + anchor(af)
       + arguments(af)
-      + (af.isThisRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
+      + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
       + (af.signatureWithArrow() ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
         : af.isConstructor()     ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"

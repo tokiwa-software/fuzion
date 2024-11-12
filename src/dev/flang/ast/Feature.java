@@ -1681,7 +1681,7 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (isChoice());
 
-    if (isThisRef())
+    if (isRef())
       {
         AstErrors.choiceMustNotBeRef(_pos);
       }
@@ -2367,9 +2367,9 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Has the frame object of this feature a ref type?
+   * Is this a constructor returning a reference result?
    */
-  public boolean isThisRef()
+  public boolean isRef()
   {
     return _returnType == RefType.INSTANCE;
   }
