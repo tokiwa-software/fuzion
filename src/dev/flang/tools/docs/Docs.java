@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -71,7 +72,7 @@ public class Docs extends ANY
     /* fuzionHome              */ new FuzionHome()._fuzionHome,
     /* loadBaseLib             */ true,
     /* eraseInternalNamesInLib */ false,
-    /* modules                 */ new List<>("terminal", "lock_free"),
+    /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
@@ -83,6 +84,30 @@ public class Docs extends ANY
     /* main                    */ null,
     /* loadSources             */ true,
     /* timer                   */ s->{});
+
+  /**
+   * Generate a list of all fuzion modules available in build/modules
+   */
+  private List<String> allModules()
+  {
+    List<String> modules = new List<>();
+
+    try {
+      modules.addAll((Files.list(new FuzionHome()._fuzionHome.resolve("modules"))
+                            .filter(Files::isRegularFile)
+                            .map(Path::getFileName)
+                            .map(Path::toString)
+                            .filter(name -> name.endsWith(".fum"))
+                            // exclude Java Modules from API docs
+                            // (they also caused an endless recursion when using the docs generation on them)
+                            .filter(name -> !name.startsWith("java."))
+                            .map(name -> name.substring(0, name.lastIndexOf('.')))
+                            .collect(Collectors.toList())));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return modules;
+  }
 
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
