@@ -745,6 +745,15 @@ public class Call extends AbstractCall
       {
         _actuals = new List<>();
       }
+
+    // example where this is relevenant:
+    // (fails when trying to resolve `zip` but does not know fibs result type yet)
+    // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
+    if (_calledFeature == null && _target instanceof Call c && c.calledFeatureKnown() && targetFeature(res, context) == null)
+      {
+        AstErrors.failedToInferType(c);
+      }
+
     resolveTypesOfActuals(res, context);
 
     if (POSTCONDITIONS) ensure
