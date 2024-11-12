@@ -249,15 +249,37 @@ public abstract class Tool extends ANY
       }
     else if (a.startsWith("-XjavaProf="))
       {
-        Profiler.start(a.substring(a.indexOf("=")+1));
+        var file = a.substring(a.indexOf("=")+1);
+        if (file.equals(""))
+          { fatal("Please provide a file name to option '-XjavaProf=<file>'."); }
+        else
+          { Profiler.start(); }
       }
-    else if (a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION) && a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
+    else if (a.equals(Errors.MAX_ERROR_MESSAGES_OPTION))
       {
-        Errors.MAX_ERROR_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
+        Errors.MAX_ERROR_MESSAGES = -1;
       }
-    else if (a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION) && a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
+    else if (a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
       {
-        Errors.MAX_WARNING_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
+        try {
+          Errors.MAX_ERROR_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
+        } catch (NumberFormatException e) {
+          fatal("'" + a.substring(a.indexOf("=")+1) + "' is not a valid argument to option '" + Errors.MAX_ERROR_MESSAGES_OPTION + "'. "
+                + "Please provide a integer value or use the option without an argument for unlimited errors.");
+        }
+      }
+    else if (a.equals(Errors.MAX_WARNING_MESSAGES_OPTION))
+      {
+        Errors.MAX_WARNING_MESSAGES = -1;
+      }
+    else if (a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
+      {
+        try {
+          Errors.MAX_WARNING_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
+        } catch (NumberFormatException e) {
+          fatal("'" + a.substring(a.indexOf("=")+1) + "' is not a valid argument to option '" + Errors.MAX_WARNING_MESSAGES_OPTION + "'. "
+                + "Please provide a integer value or use the option without an argument for unlimited warnings.");
+        }
       }
     else if (a.equals("-noANSI"))
       {
