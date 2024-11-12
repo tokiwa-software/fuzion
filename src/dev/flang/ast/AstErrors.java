@@ -375,6 +375,9 @@ public class AstErrors extends ANY
     String actlFound;
     var valAssigned = "";
     var assignableToSB = new StringBuilder();
+    var errorOrUndefinedFound =
+      frmlT     == Types.t_ERROR || frmlT     == Types.t_UNDEFINED ||
+      typeValue == Types.t_ERROR || typeValue == Types.t_UNDEFINED;
     if (value == null)
       {
         actlFound   = "actual type found   : " + s(typeValue);
@@ -383,6 +386,7 @@ public class AstErrors extends ANY
     else
       {
         var actlT = value.type();
+        errorOrUndefinedFound |=  actlT == Types.t_ERROR || actlT == Types.t_UNDEFINED;
         if (actlT.isThisType())
           {
             assignableToSB
@@ -440,14 +444,17 @@ public class AstErrors extends ANY
         valAssigned = "for value assigned  : " + s(value) + "\n";
       }
 
-    error(pos,
-          "Incompatible types " + where,
-          detail +
-          "expected formal type: " + s(frmlT) + "\n" +
-          actlFound + "\n" +
-          assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
-          valAssigned +
-          remedy);
+    if (!any() || !errorOrUndefinedFound)
+      {
+        error(pos,
+              "Incompatible types " + where,
+              detail +
+              "expected formal type: " + s(frmlT) + "\n" +
+              actlFound + "\n" +
+              assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
+              valAssigned +
+              remedy);
+      }
   }
 
 
@@ -1692,11 +1699,14 @@ public class AstErrors extends ANY
   static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
   {
     // NYI: It would be nice to output the whole cycle here as part of the detail message
-    error(pos,
-          "Illegal forward or cyclic type inference",
-          "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
-          "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
-          "Referenced feature: " + s(f) + " at " + at.show());
+    if (!any() || !(f instanceof Feature ff && ff.impl() == Impl.ERROR))
+      {
+        error(pos,
+              "Illegal forward or cyclic type inference",
+              "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
+              "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
+              "Referenced feature: " + s(f) + " at " + at.show());
+      }
   }
 
   public static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
@@ -1862,9 +1872,12 @@ public class AstErrors extends ANY
 
   static void failedToInferResultType(Feature f)
   {
-    error(f.pos(),
-          "Failed to infer result type for feature " + s(f) +  ".",
-          "To solve this, please specify a result type explicitly.");
+    if (!any() || f.impl() != Impl.ERROR)
+      {
+        error(f.pos(),
+              "Failed to infer result type for feature " + s(f) +  ".",
+              "To solve this, please specify a result type explicitly.");
+      }
   }
 
   /**
