@@ -2741,7 +2741,9 @@ public class DFA extends ANY
             if (r == null)
               {
                 r = new TaggedValue(this, nc, original, tag);
-                r = (TaggedValue) cache(r);
+                if (CHECKS) check
+                  (_cachedValues.get(r) == null);
+                makeUnique(r);
                 _tagged.put(k, r);
               }
           }
@@ -2774,9 +2776,13 @@ public class DFA extends ANY
         res = _joined.get(k);
         if (res == null)
           {
-            res = v.contains(w) ? v :
-                  w.contains(v) ? w : new ValueSet(this, v, w, clazz);
-            res = cache(res);
+            if      (v.contains(w)) { res = v; }
+            else if (w.contains(v)) { res = w; }
+            else
+              {
+                res = new ValueSet(this, v, w, clazz);
+                res = cache(res);
+              }
             _joined.put(k, res);
           }
       }
