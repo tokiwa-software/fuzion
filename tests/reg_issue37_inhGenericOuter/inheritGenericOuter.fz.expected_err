@@ -1,0 +1,6 @@
+
+--CURDIR--/inheritGenericOuter.fz:33:5: error 1: Implementation restriction, cyclic nesting detected.
+    b : a b is
+----^
+
+one error.

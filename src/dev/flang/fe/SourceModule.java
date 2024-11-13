@@ -1419,7 +1419,21 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         if (type_fs.size() > 1 && !ignoreAmbiguous)
           {
-            AstErrors.ambiguousType(pos, name, type_fs);
+            if (new TreeSet<>(type_fs).size() != type_fs.size())
+              {
+                var uniques = new TreeSet<>();
+                type_fs.stream()
+                    .filter(e -> !uniques.add(e))
+                    .forEach(duplicate -> {
+                      Errors.error(duplicate.pos(),
+                        "Implementation restriction, cyclic nesting detected.",
+                        "");
+                    });
+              }
+            else
+              {
+                AstErrors.ambiguousType(pos, name, type_fs);
+              }
             result = FeatureAndOuter.ERROR;
           }
         else if (type_fs.size() < 1 && !ignoreNotFound)

@@ -27,15 +27,16 @@
 #
 # A simple test that inherits from a generic outer feature.
 #
-inheritGenericOuter is
+inherit_generic_outer =>
 
   a(T type) is
     b : a b is
       say "ok, in a.b"
-      c
+      a.this.c
+      b.this.c
       d
-      d is say "in (a T).b.d"
-    c is say "in (a T).c"
+      d => say "in (a T).b.d"
+    c => say "in (a T).c"
 
-  (a i32).b
-  (a String).b
+  _ := (a i32).b
+  _ := (a String).b

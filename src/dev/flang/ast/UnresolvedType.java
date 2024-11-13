@@ -672,7 +672,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             var outerfeat = context.outerFeature();
 
             if (tolerant && CHECKS) check
-              (fo != FeatureAndOuter.ERROR);
+              (Errors.any() || fo != FeatureAndOuter.ERROR);
 
             if (tolerant && fo != null)
               {
