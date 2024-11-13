@@ -2784,19 +2784,24 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Const);
 
-    var cl = clazzAt(s);
-    var cc = id2clazz(cl);
-    var outerClazz = cc;
-    var ac = (Constant) getExpr(s);
-    var clazz = switch (ac.origin())
+    var res = (Clazz) _siteClazzCache.get(s);
+    if (res == null)
       {
-      case Constant     c -> clazz(c, outerClazz, _inh.get(s - SITE_BASE));
-      case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
-      case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE));
-      default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
-      };
+        var cl = clazzAt(s);
+        var cc = id2clazz(cl);
+        var outerClazz = cc;
+        var ac = (Constant) getExpr(s);
+        res = switch (ac.origin())
+          {
+          case Constant     c -> clazz(c, outerClazz, _inh.get(s - SITE_BASE));
+          case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
+          case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE));
+          default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
+          };
+        _siteClazzCache.put(s, res);
+      }
 
-    return clazz._id;
+    return res._id;
   }
 
 
