@@ -47,8 +47,8 @@ hello_world is
 
     # read someone's name from standard input
     #
-    get_name String =>
-      match ((io.stdin lm).with ()->
+    get_name =>
+      match ((io.stdin lm).try String ()->
                 io.buffered.read_line lm ? str String => str | io.end_of_file => "")
         name String => name
         e error => panic "Could not get your name!"
@@ -92,7 +92,7 @@ ex_gcd is
 
   # find the greatest common divisor of a and b
   #
-  gcd(a, b i32) i32
+  gcd(a, b i32)
     pre
       safety: (a != 0 || b != 0)
     post
