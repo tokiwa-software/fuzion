@@ -780,6 +780,13 @@ public class ANY
     say_err("");
   }
 
+  /**
+   * say but to be used for printing debug output in color
+   */
+  public static void sayDebug(String str)
+  {
+    say(Terminal.BLUE + str + Terminal.REGULAR_COLOR);
+  }
 
   /* ----------------------------------------------------------------------------- */
 
