@@ -33,10 +33,30 @@
 #
 module:public array(
       public T type,
-      module internal_array fuzion.sys.internal_array T,
+      module redef internal_array fuzion.sys.internal_array T,
       _ unit,
       _ unit,
-      _ unit) : Sequence T is
+      _ unit) : abstract_array T is
+
+
+  # collect the contents of this Sequence into an array
+  #
+  public fixed redef as_array =>
+    array.this
+
+
+  # equality
+  #
+  public fixed redef type.equality(a, b array T) => (Sequence T).type.equality a b
+
+
+
+# abstract array
+#
+module abstract_array(
+      public T type) : Sequence T is
+
+  module internal_array fuzion.sys.internal_array T => abstract
 
   internal_array.freeze
 
@@ -103,7 +123,7 @@ module:public array(
     # NYI: This is very inefficient since it copies the whole array.  Should
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
-    array (max length i+1) (ix -> if (ix = i) v else array.this[ix])
+    array (max length i+1) (ix -> if (ix = i) v else abstract_array.this[ix])
 
   # create a new array with element i set to v. Grow the array in case i >= length.
   # New array elements at indices array.this.length..i-1 will be set to z.
@@ -117,7 +137,7 @@ module:public array(
     # NYI: This is very inefficient since it copies the whole array.  Should
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
-    array (max length i+1) (ix -> if (ix = i) v else if (ix ≥ length) z else array.this[ix])
+    array (max length i+1) (ix -> if (ix = i) v else if (ix ≥ length) z else abstract_array.this[ix])
 
 
   # apply f to all elements in this array
@@ -163,7 +183,7 @@ module:public array(
       #
       public redef index [ ] (i i32) T
       =>
-        array.this[from+i]
+        abstract_array.this[from+i]
 
       # is this sequence known to be finite?  For infinite sequences, features like
       # count diverge.
@@ -196,7 +216,7 @@ module:public array(
       # For arrays, this has performance in O(1).
       #
       public redef drop (n i32) =>
-        array.this.slice from+(max 0 n) to
+        abstract_array.this.slice from+(max 0 n) to
                   .as_list
 
     arrayslice
@@ -209,21 +229,21 @@ module:public array(
     pre
       debug: 0 ≤ i < to ≤ length
   is
-    redef head => array.this[i]
+    redef head => abstract_array.this[i]
     redef tail => (slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
   #
   public map_to_array(B type, f T -> B) array B =>
-    array B array.this.length (i -> f array.this[i])
+    array B abstract_array.this.length (i -> f abstract_array.this[i])
 
 
   # variant of map which additionally passes the index to
   # the mapping function f
   #
   public map_indexed(B type, f (T, i32) -> B) array B =>
-    array B array.this.length (i -> f array.this[i] i)
+    array B abstract_array.this.length (i -> f abstract_array.this[i] i)
 
 
   # fold the elements of this array using the given monoid.
@@ -244,7 +264,7 @@ module:public array(
     if i = length
       s
     else
-      fold i+1 (m.op s array.this[i]) m
+      fold i+1 (m.op s abstract_array.this[i]) m
 
 
   # reverse the order of the elements in this array
@@ -255,7 +275,7 @@ module:public array(
   # reverse the order of the elements in this array
   #
   public reverse_array =>
-    array array.this.length (i -> array.this[array.this.length-1-i])
+    array abstract_array.this.length (i -> abstract_array.this[abstract_array.this.length-1-i])
 
 
   # get a list of tuples indices and elements in this array
@@ -281,11 +301,6 @@ module:public array(
       else                 nil
 
 
-  # collect the contents of this Sequence into an array
-  #
-  public fixed redef as_array =>
-    array.this
-
 
   # returns a copy of this array as a mutable array
   #
@@ -294,7 +309,7 @@ module:public array(
 
     # NYI: PERFORMANCE: copy complete array at once
     for x in data.indices do
-      data[x] := array.this[x]
+      data[x] := abstract_array.this[x]
 
     LM.env.array length.as_i64 data unit
 
@@ -314,11 +329,6 @@ module:public array(
       internal[x] := init x
 
     array internal unit unit unit
-
-
-  # equality
-  #
-  public fixed redef type.equality(a, b array T) => (Sequence T).type.equality a b
 
 
 
