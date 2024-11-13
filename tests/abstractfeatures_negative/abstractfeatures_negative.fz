@@ -30,8 +30,8 @@ abstractfeatures_negative is
 
   opengenerics12 =>
     F(A type...) ref is
-      f(a A) is abstract                           //  1. should flag an error: abstract feature not implemented
-      g(a A) is abstract                           // ok, not called.
+      f(a A) unit => abstract                           //  1. should flag an error: abstract feature not implemented
+      g(a A) unit => abstract                           // ok, not called.
 
     G ref : F i32 bool i32 is
 
@@ -43,11 +43,11 @@ abstractfeatures_negative is
 
   opengenerics12a =>
     F(A type...) ref is
-      f1(a A) is abstract                          //  3. should flag an error: abstract feature not implemented
-      f2(a A) is abstract                          //  4. should flag an error: abstract feature not implemented
-      f3(a A) is abstract                          //  5. should flag an error: abstract feature not implemented
-      f4(a A) is abstract                          // ok, not called.
-      f5(a A) is abstract                          // ok, not called.
+      f1(a A) unit => abstract                          //  3. should flag an error: abstract feature not implemented
+      f2(a A) unit => abstract                          //  4. should flag an error: abstract feature not implemented
+      f3(a A) unit => abstract                          //  5. should flag an error: abstract feature not implemented
+      f4(a A) unit => abstract                          // ok, not called.
+      f5(a A) unit => abstract                          // ok, not called.
 
     G ref : F i32 bool i32 is
 
@@ -61,8 +61,8 @@ abstractfeatures_negative is
 
   opengenerics12b =>
     F(A type...) ref is
-      f(a A) is abstract                           //  7. should flag an error: abstract feature not implemented
-      g(a A) is abstract                           // ok, not called.
+      f(a A) unit => abstract                           //  7. should flag an error: abstract feature not implemented
+      g(a A) unit => abstract                           // ok, not called.
 
     G ref : F i32 bool i32 is
 
@@ -73,11 +73,11 @@ abstractfeatures_negative is
 
   opengenerics12c =>
     F(A type...) ref is
-      f1(a A) is abstract                          //  9. should flag an error: abstract feature not implemented
-      f2(a A) is abstract                          // 10. should flag an error: abstract feature not implemented
-      f3(a A) is abstract                          // 11. should flag an error: abstract feature not implemented
-      f4(a A) is abstract                          // ok, not called.
-      f5(a A) is abstract                          // ok, not called.
+      f1(a A) unit => abstract                          //  9. should flag an error: abstract feature not implemented
+      f2(a A) unit => abstract                          // 10. should flag an error: abstract feature not implemented
+      f3(a A) unit => abstract                          // 11. should flag an error: abstract feature not implemented
+      f4(a A) unit => abstract                          // ok, not called.
+      f5(a A) unit => abstract                          // ok, not called.
 
     G ref : F i32 bool i32 is
 

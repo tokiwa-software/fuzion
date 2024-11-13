@@ -319,14 +319,32 @@ A choice feature must be a normal feature with empty code section
 
 
 --CURDIR--/choice_negative.fz:148:5: error 44: Choice feature must not be abstract
-    x : choice i64 bool is abstract  // 32. should flag an error, choice feature must not be abstract
+    x unit : choice i64 bool => abstract  // 32. should flag an error, choice feature must not be abstract
 ----^
 A choice feature must be a normal feature with empty code section
 
 
---CURDIR--/choice_negative.fz:150:6: error 45: Choice feature must not be intrinsic
-     x : choice i64 bool is intrinsic  // 33. should flag an error, choice feature must not be intrinsic
+--CURDIR--/choice_negative.fz:148:5: error 45: Choice feature must not have a result type
+    x unit : choice i64 bool => abstract  // 32. should flag an error, choice feature must not be abstract
+----^
+A choice feature cannot be called, so it does not make sense to define a result type of a choice.
+Result type 'unit' at --CURDIR--/choice_negative.fz:148:7:
+    x unit : choice i64 bool => abstract  // 32. should flag an error, choice feature must not be abstract
+------^^^^
+
+
+--CURDIR--/choice_negative.fz:150:6: error 46: Choice feature must not be intrinsic
+     x unit : choice i64 bool => intrinsic  // 33. should flag an error, choice feature must not be intrinsic
 -----^
 A choice feature must be a normal feature with empty code section
 
-45 errors.
+
+--CURDIR--/choice_negative.fz:150:6: error 47: Choice feature must not have a result type
+     x unit : choice i64 bool => intrinsic  // 33. should flag an error, choice feature must not be intrinsic
+-----^
+A choice feature cannot be called, so it does not make sense to define a result type of a choice.
+Result type 'unit' at --CURDIR--/choice_negative.fz:150:8:
+     x unit : choice i64 bool => intrinsic  // 33. should flag an error, choice feature must not be intrinsic
+-------^^^^
+
+47 errors.

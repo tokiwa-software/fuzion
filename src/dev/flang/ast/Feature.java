@@ -379,6 +379,8 @@ public class Feature extends AbstractFeature
    */
   public boolean _scoped = false;
 
+  private List<AbstractType> _effects;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -652,7 +654,8 @@ public class Feature extends AbstractFeature
          a,
          i,
          c,
-         p);
+         p,
+         null);
   }
 
 
@@ -682,13 +685,51 @@ public class Feature extends AbstractFeature
                  List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
-                 Impl p)
+                 Impl p,
+                 List<AbstractType> effects)
   {
     this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
+
+    _effects = effects;
 
     if (PRECONDITIONS) require
       (qpname.size() >= 1,
        p != null);
+  }
+
+
+  /**
+   * Constructor without effects
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param v the visibility
+   *
+   * @param m the modifiers
+   *
+   * @param r the result type
+   *
+   * @param qname the name of this feature
+   *
+   * @param a the arguments
+   *
+   * @param i the inherits calls
+   *
+   * @param c the contract
+   *
+   * @param p the implementation (feature body etc).
+   */
+  public Feature(SourcePosition pos,
+                 Visi v,
+                 int m,
+                 ReturnType r,
+                 List<String> qname,
+                 List<AbstractFeature> a,
+                 List<AbstractCall> i,
+                 Contract c,
+                 Impl p)
+  {
+    this(pos,v,m,r,qname,a,i,c,p,null);
   }
 
 
@@ -721,7 +762,8 @@ public class Feature extends AbstractFeature
                  List<AbstractFeature> a,
                  List<AbstractCall> i,
                  Contract c,
-                 Impl p)
+                 Impl p,
+                 List<AbstractType> effects)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -1454,6 +1496,20 @@ public class Feature extends AbstractFeature
             _selfType = tt.resolve(res, context());
           }
 
+        if (_effects != null)
+        {
+          for (var e : _effects)
+            {
+              var t = e.resolve(res, context());
+
+              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                            .feature().inheritsFrom(Types.resolved.f_effect)))
+                {
+                  AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
+                }
+            }
+        }
+
         _state = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())
           {
@@ -1625,7 +1681,7 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (isChoice());
 
-    if (isThisRef())
+    if (isRef())
       {
         AstErrors.choiceMustNotBeRef(_pos);
       }
@@ -2173,7 +2229,7 @@ A ((Choice)) declaration must not contain a result type.
       }
     else if (_returnType == NoType.INSTANCE)
       {
-        result = Types.resolved.t_unit; // may be the result of intrinsic or abstract feature
+        result = null;
       }
     else
       {
@@ -2311,9 +2367,9 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Has the frame object of this feature a ref type?
+   * Is this a constructor returning a reference result?
    */
-  public boolean isThisRef()
+  public boolean isRef()
   {
     return _returnType == RefType.INSTANCE;
   }

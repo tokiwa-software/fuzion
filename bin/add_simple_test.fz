@@ -30,7 +30,7 @@ add_simple_test =>
   lm : mutate is
   lm.instate_self ()->
 
-    _ := (io.stdin lm).with ()->
+    _ := (io.stdin lm).try void ()->
       match io.buffered.read_line lm
         test String =>
 
@@ -88,6 +88,8 @@ add_simple_test =>
           _ := io.file.use unit lm "tests/$test/Makefile" io.file.mode.write ()->
                 (io.buffered.writer.env.write ((header "Makefile")+(makefile_body test)).utf8).error
 
+          # NYI: UNDER DEVELOPMENT: workaround for reading uninitialized field
+          exit 0
         io.end_of_file => exit 1
 
 

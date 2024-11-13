@@ -360,7 +360,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     return
       t instanceof ResolvedNormalType tt         ? tt._refOrVal                   :
-      t.isRef() == t.feature().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+      t.isRef() == t.feature().isRef() ? RefOrVal.LikeUnderlyingFeature :
       t.isRef()                                  ? RefOrVal.Boxed
                                                  : RefOrVal.Value;
   }
@@ -471,7 +471,7 @@ public class ResolvedNormalType extends ResolvedType
           {
           case Boxed                -> true;
           case Value                -> false;
-          case LikeUnderlyingFeature-> feature().isThisRef();
+          case LikeUnderlyingFeature-> feature().isRef();
           case ThisType             -> false;
           };
         this._isRef = r;
@@ -509,8 +509,8 @@ public class ResolvedNormalType extends ResolvedType
           + (outer == "" ||
              outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
                                                          : outer + ".")
-          + (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
-             _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
+          + (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
+             _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
                                                                                       : ""       )
           + (_feature == null ? Errors.ERROR_STRING
                               : _feature.featureName().baseNameHuman());
@@ -519,8 +519,8 @@ public class ResolvedNormalType extends ResolvedType
       {
         result =
           _feature == null ? "<null-feature>" :
-          ((_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
-            _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
+          ((_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
+            _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
                                                                                     : ""       )
            + _feature.qualifiedName());
       }

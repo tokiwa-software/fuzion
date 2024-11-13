@@ -1,5 +1,13 @@
 
---CURDIR--/reg_issue3036.fz:24:13: error 1: Incompatible types found during type inference for type parameters
+--CURDIR--/reg_issue3036.fz:24:13: error 1: Failed to infer actual type parameters
+say (8 %% 5 = 3)
+------------^
+In call to 'infix =', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/reg_issue3036.fz:24:13: error 2: Incompatible types found during type inference for type parameters
 say (8 %% 5 = 3)
 ------------^
 Types inferred for first type parameter 'T':
@@ -10,4 +18,4 @@ say (8 %% 5 = 3)
 say (8 %% 5 = 3)
 --------------^
 
-one error.
+2 errors.

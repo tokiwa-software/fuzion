@@ -51,7 +51,7 @@ module:public open(fd i64,
   #   io.file.open.mmap (i64 0) (i64 100) ()->
   #     io.file.open.mmap[99] := 42
   #
-  public mmap(R type, offset i64, size i64, code mapped_buffer->R) outcome R
+  public mmap(R type, offset i64, size i64, code ()->R) outcome R
   pre safety: offset % 4096 = 0 # NYI get real page size instead of 4096.
   =>
 
@@ -61,58 +61,10 @@ module:public open(fd i64,
     if res[0] = -1
       error "mmap failed"
     else
-      r := code (mapped_buffer mapped_memory size)
-
-      if fuzion.sys.fileio.munmap mapped_memory size = 0
-        r
-      else
-        error "error closing the memory mapped file"
-
-
-  # get a byte from a given mapped buffer
-  #
-  module mapped_buffer_get(memory fuzion.sys.Pointer, i i64) =>
-    open.this.env.replace
-    fuzion.sys.fileio.mapped_buffer_get memory i
-
-  # set a byte of a given mapped buffer
-  #
-  module mapped_buffer_set(memory fuzion.sys.Pointer, i i64, o u8) =>
-    open.this.env.replace
-    fuzion.sys.fileio.mapped_buffer_set memory i o
-
-
-  # mapped buffer gives access to the memory region a file is mapped
-  # to via `mmap`.
-  #
-  module:public mapped_buffer
-    (# internal pointer to the mapped memory
-     memory fuzion.sys.Pointer,
-
-     # the length of this buffer
-     public redef length i64
-    )
-    : container.Buffer u8 open is
-
-
-    # get byte at given index i
-    #
-    public redef index [ ] (i i64) u8 ! open T
-    =>
-      mapped_buffer_get memory i
-
-
-    # set byte at given index i to given value o
-    #
-    public redef set [ ] (i i64, o u8) unit ! open T
-    =>
-      mapped_buffer_set memory i o
-
-
+      (mapped_buffer mapped_memory size) ! code
 
 # short hand to get the currently
 # installed open effect
 #
 public open =>
   open.env
-
