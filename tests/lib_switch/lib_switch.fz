@@ -1,0 +1,43 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_switch
+#
+# -----------------------------------------------------------------------
+
+lib_switch =>
+
+  a option i32 := 4
+  b option i32 := nil
+
+  say (a.and_then x->x+5)
+  say (b.and_then x->x+5)
+  say (a.or ()->5)
+  say (b.or ()->5)
+
+
+  # NYI: BUG: #4169
+  # require-condition3 failed: Tag.java:83 "(value != null, taggedType.isChoice(), Errors.any() || taggedType .choiceGenerics(context) .stream() .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))"
+
+  # y is
+
+  #   c option y.this := y.this
+  #   say (c.and_then x->y.this)
+
+  # _ := y

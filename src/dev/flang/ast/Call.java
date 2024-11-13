@@ -2096,7 +2096,7 @@ public class Call extends AbstractCall
               {
                 var gt = _generics.get(i);
                 var nt = gt == Types.t_UNDEFINED ? actualType
-                                                : gt.union(actualType, context);
+                                                 : gt.union(actualType, context);
                 if (nt == Types.t_ERROR)
                   {
                     conflict[i] = true;
