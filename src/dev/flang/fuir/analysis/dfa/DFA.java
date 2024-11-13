@@ -2737,9 +2737,7 @@ public class DFA extends ANY
             if (r == null)
               {
                 r = new TaggedValue(this, nc, original, tag);
-                if (CHECKS) check
-                  (_cachedValues.get(r) == null);
-                makeUnique(r);
+                r = (TaggedValue) cache(r);
                 _tagged.put(k, r);
               }
           }
