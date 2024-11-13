@@ -186,7 +186,7 @@ public class Instance extends Value
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
 
-    dfa._readFields.set(field);
+    dfa.readField(field);
     var v = _fields.get(field);
     Val res = v;
     if (v == null)

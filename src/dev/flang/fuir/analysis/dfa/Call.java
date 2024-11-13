@@ -29,7 +29,6 @@ package dev.flang.fuir.analysis.dfa;
 
 import dev.flang.fuir.FUIR;
 
-
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
@@ -37,6 +36,8 @@ import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+
+import java.util.TreeSet;
 
 
 /**
@@ -203,9 +204,9 @@ public class Call extends ANY implements Comparable<Call>, Context
   public int compareTo(Call other)
   {
     return
-      _cc         != other._cc                    ? Integer.compare(_cc        , other._cc        ) :
-      _target._id != other._target._id            ? Integer.compare(_target._id, other._target._id) :
-      DFA.SITE_SENSITIVE && _site  != other._site ? Integer.compare(_site      , other._site      ) :
+      _cc         != other._cc                        ? Integer.compare(_cc        , other._cc        ) :
+      _target._id != other._target._id                ? Integer.compare(_target._id, other._target._id) :
+      _dfa.siteSensitive(_cc) && _site != other._site ? Integer.compare(_site      , other._site      ) :
       Env.compare(env(), other.env());
   }
 
@@ -344,31 +345,47 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * toString() might end up in a complex recursion if it is used for careless
+   * debug output, so we try to catch recursion and stop it.
+   */
+  static TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
+
+
+  /**
    * Create human-readable string from this call.
    */
   public String toString()
   {
-    var sb = new StringBuilder();
-    sb.append(_dfa._fuir.clazzAsString(_cc));
-    if (_target != Value.UNIT)
+    if (_toStringRecursion_.contains(this))
       {
-        sb.append(" target=")
-          .append(_target);
+        return "*** recursive Call.toString() ***";
       }
-    for (var i = 0; i < _args.size(); i++)
+    else
       {
-        var a = _args.get(i);
-        sb.append(" a")
-          .append(i)
-          .append("=")
-          .append(a);
+        _toStringRecursion_.add(this);
+        var sb = new StringBuilder();
+        sb.append(_dfa._fuir.clazzAsString(_cc));
+        if (_target != Value.UNIT)
+          {
+            sb.append(" target=")
+              .append(_target);
+          }
+        for (var i = 0; i < _args.size(); i++)
+          {
+            var a = _args.get(i);
+            sb.append(" a")
+              .append(i)
+              .append("=")
+              .append(a);
+          }
+        var r = result();
+        sb.append(" => ")
+          .append(r == null ? "*** VOID ***" : r)
+          .append(" ENV: ")
+          .append(Errors.effe(Env.envAsString(env())));
+        _toStringRecursion_.remove(this);
+        return sb.toString();
       }
-    var r = result();
-    sb.append(" => ")
-      .append(r == null ? "*** VOID ***" : r)
-      .append(" ENV: ")
-      .append(Errors.effe(Env.envAsString(env())));
-    return sb.toString();
   }
 
 

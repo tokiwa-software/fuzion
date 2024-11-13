@@ -27,14 +27,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools.docs;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -50,7 +49,6 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
-import dev.flang.mir.MIR;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -59,36 +57,52 @@ import dev.flang.util.List;
 public class Docs extends ANY
 {
 
-  /**
-   * Compare Features by basename + args
-   */
-  private static final Comparator<? super AbstractFeature> byFeatureName = Comparator.comparing(
-    af -> af.featureName(), (name1, name2) -> name1.compareTo(name2));
-
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
     /* fuzionHome              */ new FuzionHome()._fuzionHome,
     /* loadBaseLib             */ true,
     /* eraseInternalNamesInLib */ false,
-    /* modules                 */ new List<>("terminal", "lock_free"),
+    /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
     /* fuzionSafety            */ false,
     /* enableUnsafeIntrinsics  */ false,
     /* sourceDirs              */ null,
-    /* readStdin               */ true,
+    /* readStdin               */ false,
     /* executeCode             */ null,
     /* main                    */ null,
-    /* loadSources             */ true,
+    /* loadSources             */ false,
     /* timer                   */ s->{});
+
+  /**
+   * Generate a list of all fuzion modules available in build/modules
+   */
+  private List<String> allModules()
+  {
+    List<String> modules = new List<>();
+
+    try {
+      modules.addAll((Files.list(new FuzionHome()._fuzionHome.resolve("modules"))
+                            .filter(Files::isRegularFile)
+                            .map(Path::getFileName)
+                            .map(Path::toString)
+                            .filter(name -> name.endsWith(".fum"))
+                            // exclude Java Modules from API docs
+                            // (they also caused an endless recursion when using the docs generation on them)
+                            .filter(name -> !name.startsWith("java."))
+                            .map(name -> name.substring(0, name.lastIndexOf('.')))
+                            .collect(Collectors.toList())));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return modules;
+  }
 
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
-  private final MIR mir = fe.createMIR();
-
-  private final AbstractFeature universe = mir.universe();
+  private final AbstractFeature universe = fe._feUniverse;
 
 
   /**
@@ -116,7 +130,7 @@ public class Docs extends ANY
    */
   private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
-    return fe.mainModule()
+    return fe.feModule()
       .declaredFeatures(f)
       .values()
       .stream();
@@ -131,7 +145,7 @@ public class Docs extends ANY
   private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
   {
     var result = new List<AbstractFeature>();
-    fe.mainModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+    fe.feModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
     return result
       .stream();
   }
@@ -244,19 +258,7 @@ public class Docs extends ANY
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()
       || Util.isArgument(af)
-      || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)
-      || isDummyFeature(af);
-  }
-
-
-  /**
-   * is this feature the dummy feature?
-   * @param af
-   * @return
-   */
-  private static boolean isDummyFeature(AbstractFeature af)
-  {
-    return af.qualifiedName().equals("dummyFeature");
+      || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME);
   }
 
 
@@ -355,7 +357,7 @@ public class Docs extends ANY
         mapOfDeclaredFeatures
           .keySet()
           .stream()
-          .filter(af -> lf(af).showInMod(module))
+          .filter(af -> af.isUniverse() || lf(af).showInMod(module))
           .forEach(af -> {
             var path = af.isUniverse()
                                         ? config.destination().resolve(module.name())
@@ -409,11 +411,6 @@ public class Docs extends ANY
         System.exit(0);
         return;
       }
-
-
-    // NYI get rid of this hack
-    var fakeIn = new ByteArrayInputStream("dummyFeature is".getBytes());
-    System.setIn(fakeIn);
 
     new Docs().run(config);
   }

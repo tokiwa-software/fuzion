@@ -370,7 +370,7 @@ public class Env extends ANY implements Comparable<Env>
       }
     else
       {
-        throw new Error("DFA: Aborted effect not found in current environment");
+        throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzAsString(ecl) + "` not found in current environment");
       }
   }
 
