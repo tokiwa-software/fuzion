@@ -37,6 +37,8 @@ import java.util.TreeSet;
 
 import java.util.function.Supplier;
 
+import java.util.stream.Stream;
+
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.FUIR.SpecialClazzes;
@@ -766,14 +768,15 @@ public class DFA extends ANY
    *
    * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=
+   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=on
    *
    * To show more details for feature `io.out.replace`
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=io.out.replace
    *
    */
-  static final String SHOW_CALLS = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_CALLS");
+  static final String SHOW_CALLS_ENV = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_CALLS", "off");
+  static final String SHOW_CALLS = Stream.of("off", "").anyMatch(SHOW_CALLS_ENV::equals) ? null : SHOW_CALLS_ENV;
 
 
   /**
@@ -782,14 +785,15 @@ public class DFA extends ANY
    *
    * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=
+   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=on
    *
-   * To show more details for feature `io.out.replace`
+   * To show more details for feature `u32`
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=u32
    *
    */
-  static final String SHOW_VALUES = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_VALUES");
+  static final String SHOW_VALUES_ENV = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_VALUES", "off");
+  static final String SHOW_VALUES = Stream.of("off", "").anyMatch(SHOW_VALUES_ENV::equals) ? null : SHOW_VALUES_ENV;
 
 
   /**
