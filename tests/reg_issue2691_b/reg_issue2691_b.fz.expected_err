@@ -17,23 +17,7 @@ block returns value of type 'unit' at --CURDIR--/reg_issue2691_b.fz:33:14:
 -------------^
 
 
---CURDIR--/reg_issue2691_b.fz:33:5: error 3: Illegal forward or cyclic type inference
-    pre else if x < -10 then false
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The definition of a field using ':=', or of a feature or function
-using '=>' must not create cyclic type dependencies.
-Referenced feature: 'reg_issue2691_b.h.chk' at --CURDIR--/reg_issue2691_b.fz:32:11:
-    redef chk(x i32)
-----------^^^
-
-
---CURDIR--/reg_issue2691_b.fz:32:11: error 4: Failed to infer result type for feature 'reg_issue2691_b.h.chk'.
-    redef chk(x i32)
-----------^^^
-To solve this, please specify a result type explicitly.
-
-
---CURDIR--/reg_issue2691_b.fz:33:14: error 5: Incompatible types in assignment
+--CURDIR--/reg_issue2691_b.fz:33:14: error 3: Incompatible types in assignment
     pre else if x < -10 then false
 -------------^
 assignment to field : 'reg_issue2691_b.h.pre chk.result'
@@ -43,4 +27,4 @@ assignable to       : 'unit'
 for value assigned  : ''
 To solve this, you could change the type of the target 'reg_issue2691_b.h.pre chk.result' to 'unit' or convert the type of the assigned value to 'bool'.
 
-5 errors.
+3 errors.

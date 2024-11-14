@@ -307,7 +307,7 @@ public class Env extends ANY implements Comparable<Env>
     if (_effectType == ecl)
       {
         var oe = _actualEffectValues;
-        var ne = e.join(_dfa, oe);
+        var ne = e.join(_dfa, oe, ecl);
         if (Value.compare(oe, ne) != 0)
           {
             _actualEffectValues = ne;
@@ -370,7 +370,7 @@ public class Env extends ANY implements Comparable<Env>
       }
     else
       {
-        throw new Error("DFA: Aborted effect not found in current environment");
+        throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzAsString(ecl) + "` not found in current environment");
       }
   }
 

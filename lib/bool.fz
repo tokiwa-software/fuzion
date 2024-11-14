@@ -36,7 +36,7 @@
 # value of type 'bool'.
 #
 #
-public bool : choice false_ true_, property.equatable is
+public bool : choice false_ true_, property.equatable, java_primitive is
 
   # not
   public prefix ! bool =>

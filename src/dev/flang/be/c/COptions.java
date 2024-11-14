@@ -55,12 +55,6 @@ public class COptions extends FuzionOptions
 
 
   /**
-   * Should we use the DFA analysis to improve the generated code?
-   */
-  final boolean _Xdfa;
-
-
-  /**
    * Name of the C compiler to use.
    */
   final String _cCompiler;
@@ -94,13 +88,12 @@ public class COptions extends FuzionOptions
    * Constructor initializing fields as given.
    * @param keepGeneratedCode
    */
-  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, boolean Xdfa, String cCompiler, String cFlags, String cTarget, boolean keepGeneratedCode)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, String cCompiler, String cFlags, String cTarget, boolean keepGeneratedCode)
   {
     super(fo);
 
     _binaryName = binaryName;
     _useBoehmGC = useBoehmGC;
-    _Xdfa = Xdfa;
     _cCompiler = cCompiler;
     _cFlags = cFlags;
     _cTarget = cTarget;
