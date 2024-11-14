@@ -1221,8 +1221,8 @@ public class DFA extends ANY
          */
         private boolean currentEscapes(int cl)
         {
-          if (PRECONDITIONS) require
-            (_options.needsEscapeAnalysis());
+          // if (PRECONDITIONS) require
+          // (_options.needsEscapeAnalysis());
 
           return _escapes.contains(cl);
         }
