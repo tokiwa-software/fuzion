@@ -102,7 +102,7 @@ public class SysArray extends Value
       }
     else
       {
-        ne = _elements.join(_dfa, el);
+        ne = _elements.join(_dfa, el, _elementClazz);
       }
     if (_elements == null || Value.compare(_elements, ne) != 0)
       {
@@ -133,14 +133,22 @@ public class SysArray extends Value
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
+   *
+   * @param dfa the current analysis context.
+   *
+   * @param v the value this value should be joined with.
+   *
+   * @param clazz the clazz of the resulting value. This is usually the same as
+   * the clazz of `this` or `v`, unless we are joining `ref` type values.
    */
-  public Value joinInstances(DFA dfa, Value v)
+  @Override
+  public Value joinInstances(DFA dfa, Value v, int cl)
   {
     if (v instanceof SysArray sv)
       {
         Value ne =
           _elements == null ? sv._elements :
-          sv._elements == null ? _elements : _elements.join(dfa, sv._elements);
+          sv._elements == null ? _elements : _elements.join(dfa, sv._elements, _elementClazz);
         return _dfa.newSysArray(ne, _elementClazz);
       }
     else

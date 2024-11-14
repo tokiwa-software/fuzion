@@ -435,7 +435,7 @@ public class Errors extends ANY
                 warning(SourcePosition.builtIn,
                         "Maximum error count reached, stop error output.",
                         "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
-                        "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
+                        "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "=<n>'.");
               }
           }
       }

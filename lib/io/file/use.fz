@@ -70,10 +70,10 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
     # install effect `open T` and run `code`
     r := (open fd file_name) ! ()->
           (io.buffered.reader LM (read_provider fd) 1024).try ()->
-            (io.buffered.writer LM (write_provider fd) 1024).with ()->
+            (io.buffered.writer (write_provider fd) 1024).instate_self ()->
               tmp := code.call
               # NYI: handle error once signature of with is changed
-              _ := (io.buffered.writer LM).flush
+              _ := io.buffered.writer.env.flush
               tmp
 
     # close file

@@ -77,3 +77,6 @@ jobs:
           export CPATH=/opt/homebrew/include
           export LIBRARY_PATH=/opt/homebrew/lib
           make run_tests_parallel
+
+      - name: syntax check
+        run: make syntaxcheck

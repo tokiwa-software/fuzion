@@ -113,7 +113,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered.writer LM std_in_write_provider pipe_buffer_size)
+    (io.buffered.writer std_in_write_provider pipe_buffer_size)
       .instate_self f
 
 

@@ -81,11 +81,18 @@ public abstract class Val extends ANY
 
   /**
    * Create the union of the values 'this' and 'v'.
+   *
+   * @param dfa the current analysis context.
+   *
+   * @param v the value this value should be joined with.
+   *
+   * @param clazz the clazz of the resulting value. This is usually the same as
+   * the clazz of `this` or `v`, unless we are joining `ref` type values.
    */
-  Val joinVal(DFA dfa, Val v)
+  Val joinVal(DFA dfa, Val v, int clazz)
   {
     return rewrap(dfa, a ->
-         v.rewrap(dfa, b -> a.join(dfa, b)));
+                  v.rewrap(dfa, b -> a.join(dfa, b, clazz)));
   }
 
 }

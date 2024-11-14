@@ -249,7 +249,7 @@ public class GeneratingFUIR extends FUIR
             //
             // So instead of testing !o.isRef() we use
             // !o._type.feature().isThisRef().
-            !o._type.feature().isThisRef() &&
+            !o._type.feature().isRef() &&
             !o._type.feature().isIntrinsic())
           {  // but a recursive chain of value types is not permitted
 
@@ -296,7 +296,7 @@ public class GeneratingFUIR extends FUIR
           }
 
         var s = SpecialClazzes.c_NOT_FOUND;
-        if (cl.isRef() == cl.feature().isThisRef())  // not an boxed or explicit value clazz
+        if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
             // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
             s = switch (cl.feature().qualifiedName())
@@ -1303,7 +1303,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.isRef() && !c.feature().isThisRef();
+    return c.isRef() && !c.feature().isRef();
   }
 
 
@@ -1450,7 +1450,7 @@ public class GeneratingFUIR extends FUIR
             var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
             result = newClazz(oc, f.selfType(), -1);
             if (CHECKS) check
-              (f.isThisRef() == result.isRef());
+              (f.isRef() == result.isRef());
           }
         _specialClazzes[s.ordinal()] = result;
       }
@@ -2784,19 +2784,24 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Const);
 
-    var cl = clazzAt(s);
-    var cc = id2clazz(cl);
-    var outerClazz = cc;
-    var ac = (Constant) getExpr(s);
-    var clazz = switch (ac.origin())
+    var res = (Clazz) _siteClazzCache.get(s);
+    if (res == null)
       {
-      case Constant     c -> clazz(c, outerClazz, _inh.get(s - SITE_BASE));
-      case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
-      case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE));
-      default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
-      };
+        var cl = clazzAt(s);
+        var cc = id2clazz(cl);
+        var outerClazz = cc;
+        var ac = (Constant) getExpr(s);
+        res = switch (ac.origin())
+          {
+          case Constant     c -> clazz(c, outerClazz, _inh.get(s - SITE_BASE));
+          case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
+          case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE));
+          default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
+          };
+        _siteClazzCache.put(s, res);
+      }
 
-    return clazz._id;
+    return res._id;
   }
 
 

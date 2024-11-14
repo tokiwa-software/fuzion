@@ -13,7 +13,7 @@ ex_gcd is
 
   # find the greatest common divisor of a and b
   #
-  gcd(a, b i32) i32
+  gcd(a, b i32)
     pre
       safety: (a != 0 || b != 0)
     post
