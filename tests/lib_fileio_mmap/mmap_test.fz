@@ -37,22 +37,22 @@ mmap_test =>
 
   say (io.file.use unit lm testfile io.file.mode.append ()->
 
-    (io.buffered.writer lm).write (array u8 page_size i->0)
+    io.buffered.writer.env.write (array u8 page_size i->0)
       .error.get
-    (io.buffered.writer lm).write "hello!".utf8
+    io.buffered.writer.env.write "hello!".utf8
       .error.get
-    (io.buffered.writer lm).flush
+    io.buffered.writer.env.flush
       .get
 
     offset := page_size.as_i64
 
     # map 6 bytes of file starting from the end of the '+'s.
-    say (f.mmap offset (i64 6) buf->
+    say (f.mmap offset (i64 6) ()->
           # change the 'e' in hello to an 'a'.
-          buf[1] := buf[1] - 4)
+          io.file.mapped_buffer.env[1] := io.file.mapped_buffer.env[1] - 4)
 
     # mmap should fail, since offset+size exceeds file size.
-    say (f.mmap offset (i64 7) _->)
+    say (f.mmap offset (i64 7) ()->)
   )
 
 

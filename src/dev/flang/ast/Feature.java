@@ -1504,8 +1504,8 @@ public class Feature extends AbstractFeature
             {
               var t = e.resolve(res, context());
 
-              if (t != Types.t_ERROR && (!(AbstractType.selfOrConstraint(t, res, context()))
-                                                       .feature().inheritsFrom(Types.resolved.f_effect)))
+              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                            .feature().inheritsFrom(Types.resolved.f_effect)))
                 {
                   AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
                 }
@@ -1683,7 +1683,7 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (isChoice());
 
-    if (isThisRef())
+    if (isRef())
       {
         AstErrors.choiceMustNotBeRef(_pos);
       }
@@ -2383,9 +2383,9 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Has the frame object of this feature a ref type?
+   * Is this a constructor returning a reference result?
    */
-  public boolean isThisRef()
+  public boolean isRef()
   {
     return _returnType == RefType.INSTANCE;
   }

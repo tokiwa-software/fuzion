@@ -128,6 +128,9 @@ import dev.flang.util.FuzionOptions;
 public class Resolution extends ANY
 {
 
+  /* flag to control debug output */
+  private static final boolean DEBUG = "true".equals(FuzionOptions.propertyOrEnv("dev.flang.ast.Resolution.DEBUG"));
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -404,11 +407,13 @@ public class Resolution extends ANY
     if (!forInheritance.isEmpty())
       {
         Feature f = forInheritance.removeFirst();
+        if (DEBUG) sayDebug("resolve inheritance: " + f);
         f.resolveInheritance(this);
       }
     else if (!forDeclarations.isEmpty())
       {
         Feature f = forDeclarations.removeFirst();
+        if (DEBUG) sayDebug("resolve declarations: " + f);
         f.resolveDeclarations(this);
       }
     else if (!forType.isEmpty())
@@ -419,6 +424,7 @@ public class Resolution extends ANY
           }
 
         Feature f = forType.removeFirst();
+        if (DEBUG) sayDebug("resolve types: " + f);
         f.internalResolveTypes(this);
       }
     else if (!moreThanTypes)
@@ -428,11 +434,13 @@ public class Resolution extends ANY
     else if (!forSyntacticSugar1.isEmpty())
       {
         Feature f = forSyntacticSugar1.removeFirst();
+        if (DEBUG) sayDebug("resolve syntax sugar 1: " + f);
         f.resolveSyntacticSugar1(this);
       }
     else if (!forTypeInference.isEmpty())
       {
         Feature f = forTypeInference.removeFirst();
+        if (DEBUG) sayDebug("resolve type inference: " + f);
         f.typeInference(this);
       }
     else if (!_waitingForCalls.isEmpty())
@@ -447,17 +455,20 @@ public class Resolution extends ANY
         Feature f = forSyntacticSugar2.removeFirst();
         if (!_options.isLanguageServer())
           {
+            if (DEBUG) sayDebug("resolve syntax sugar 2: " + f);
             f.resolveSyntacticSugar2(this);
           }
       }
     else if (!forBoxing.isEmpty())
       {
         Feature f = forBoxing.removeFirst();
+        if (DEBUG) sayDebug("resolve boxing: " + f);
         f.box(this);
       }
     else if (!forCheckTypes.isEmpty())
       {
         Feature f = forCheckTypes.removeFirst();
+        if (DEBUG) sayDebug("resolve check types: " + f);
         f.checkTypes(this);
       }
     else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once

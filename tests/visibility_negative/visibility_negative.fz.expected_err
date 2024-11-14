@@ -2377,4 +2377,4 @@ assignable to       : '**error**'
 for value assigned  : ''
 To solve this, you could change the type of 'b' to a 'ref' type like 'ref bool'.
 
-297 errors.
+296 errors.

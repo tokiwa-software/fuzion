@@ -238,7 +238,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this a constructor returning a reference result?
    */
-  public abstract boolean isThisRef();
+  public abstract boolean isRef();
 
 
   /**
@@ -727,7 +727,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this);
 
@@ -1116,7 +1116,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this,
        result.feature().generics().sizeMatches(result.generics()));
@@ -1242,7 +1242,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (outer() != null);
 
-    return !this.outer().isThisRef() && !isOuterRefCopyOfValue();
+    return !this.outer().isRef() && !isOuterRefCopyOfValue();
   }
 
 

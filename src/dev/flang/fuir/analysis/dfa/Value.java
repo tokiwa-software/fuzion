@@ -335,7 +335,7 @@ public class Value extends Val
                }
              else
                {
-                 resa[0] = resa[0].joinVal(dfa, r);
+                 resa[0] = resa[0].joinVal(dfa, r, dfa._fuir.clazzResultClazz(cc));
                }
            });
     return resa[0];
@@ -359,8 +359,15 @@ public class Value extends Val
 
   /**
    * Create the union of the values 'this' and 'v'.
+   *
+   * @param dfa the current analysis context.
+   *
+   * @param v the value this value should be joined with.
+   *
+   * @param clazz the clazz of the resulting value. This is usually the same as
+   * the clazz of `this` or `v`, unless we are joining `ref` type values.
    */
-  public Value join(DFA dfa, Value v)
+  public Value join(DFA dfa, Value v, int clazz)
   {
     if (this == v)
       {
@@ -376,7 +383,7 @@ public class Value extends Val
       }
     else
       {
-        return joinInstances(dfa, v);
+        return joinInstances(dfa, v, clazz);
       }
   }
 
@@ -384,10 +391,17 @@ public class Value extends Val
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
+   *
+   * @param dfa the current analysis context.
+   *
+   * @param v the value this value should be joined with.
+   *
+   * @param clazz the clazz of the resulting value. This is usually the same as
+   * the clazz of `this` or `v`, unless we are joining `ref` type values.
    */
-  public Value joinInstances(DFA dfa, Value v)
+  public Value joinInstances(DFA dfa, Value v, int clazz)
   {
-    return dfa.newValueSet(this, v);
+    return dfa.newValueSet(this, v, clazz);
   }
 
 

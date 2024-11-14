@@ -101,6 +101,48 @@ is
                 | B   => default
 
 
+  # synonym for infix >>=
+  #
+  # NYI: BUG: #4169 when replacing switch A B by switch.this
+  #
+  public and_then (f A -> switch A B) switch A B =>
+    match switch.this
+      a A => f a
+      b B => b
+
+
+  # returns o if outcome is ok, otherwise return the outcome's own
+  # error.
+  #
+  # NYI: BUG: #4169 when replacing switch A B by switch.this
+  #
+  public and (O type, o switch A B) switch A B =>
+    match switch.this
+      a A => o
+      b B => b
+
+
+  # if this switch is nil return the result of f
+  # otherwise just return this switch.
+  #
+  # NYI: BUG: when replacing switch A B by switch.this
+  #
+  public or (f Lazy (switch A B)) switch A B =>
+    # NYI: BUG: #4169 require-condition2 failed: RefValue.java:74 "(!dfa._fuir.clazzIsRef(original._clazz), original._clazz == vc, dfa._fuir.clazzIsRef(rc));"
+    # if ok then switch.this else f()
+    match switch.this
+      a A => a
+      b B => f()
+
+
+  # unwraps an switch if it exists, returns default value otherwise.
+  #
+  public or_else(default Lazy A) A =>
+    switch.this ? v A => v
+                |   B => default
+
+
+
   # converts switch into a list of either a single element in case
   # switch.this.exists or `nil`otherwise
   #

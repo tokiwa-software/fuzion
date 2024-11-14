@@ -456,7 +456,7 @@ public class Call extends AbstractCall
         result = Types.t_UNDEFINED;
       }
 
-    result = AbstractType.selfOrConstraint(result, res, context);
+    result = result.selfOrConstraint(res, context);
 
     if (POSTCONDITIONS) ensure
       (!result.isGenericArgument());
@@ -745,6 +745,15 @@ public class Call extends AbstractCall
       {
         _actuals = new List<>();
       }
+
+    // example where this is relevenant:
+    // (fails when trying to resolve `zip` but does not know fibs result type yet)
+    // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
+    if (_calledFeature == null && _target instanceof Call c && c.calledFeatureKnown() && targetFeature(res, context) == null)
+      {
+        AstErrors.failedToInferType(c);
+      }
+
     resolveTypesOfActuals(res, context);
 
     if (POSTCONDITIONS) ensure
@@ -1341,7 +1350,7 @@ public class Call extends AbstractCall
                 Generic g = frmlT.genericArgument();
                 var frmlTs = g.replaceOpen(g.feature() == _calledFeature
                                            ? _generics
-                                           : AbstractType.selfOrConstraint(heir, res, context).generics()); // see for example #1919
+                                           : heir.selfOrConstraint(res, context).generics()); // see for example #1919
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
@@ -1774,9 +1783,9 @@ public class Call extends AbstractCall
     var rt = cf.resultTypeIfPresentUrgent(res, false);
     // We may be able to infer generics later
     // via result type propagation, do not emit errors yet.
-    if (!(rt != null &&
-        rt.isGenericArgument() &&
-        rt.genericArgument().feature().outer() == cf.outer()))
+    if ((rt == null ||
+        !rt.isGenericArgument() ||
+         rt.genericArgument().feature().outer() != cf.outer()))
       {
         // report missing inferred types only if there were no errors trying to find
         // the types of the actuals:
@@ -2087,7 +2096,7 @@ public class Call extends AbstractCall
               {
                 var gt = _generics.get(i);
                 var nt = gt == Types.t_UNDEFINED ? actualType
-                                                : gt.union(actualType, context);
+                                                 : gt.union(actualType, context);
                 if (nt == Types.t_ERROR)
                   {
                     conflict[i] = true;
@@ -2404,7 +2413,7 @@ public class Call extends AbstractCall
           // check if this might be a
           // left hand side of dot-type-call
           tt = ut.resolve(res, context, true);
-          tt = tt != null && tt != Types.t_ERROR ? AbstractType.selfOrConstraint(tt, res, context) : tt;
+          tt = tt != null && tt != Types.t_ERROR ? tt.selfOrConstraint(res, context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
@@ -2790,7 +2799,7 @@ public class Call extends AbstractCall
         while (o != null && !o.isGenericArgument())
           {
             o = o.outer();
-            if (o != null && o.isRef() && !o.feature().isThisRef())
+            if (o != null && o.isRef() && !o.feature().isRef())
               {
                 AstErrors.illegalCallResultType(this, _type, o);
                 o = null;
@@ -2808,7 +2817,9 @@ public class Call extends AbstractCall
             for (Expr actl : _actuals)
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
-                if (frmlT != Types.t_ERROR && !frmlT.isDirectlyAssignableFrom(actl.type(), context))
+                if (CHECKS) check
+                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR_VALUE));
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR_VALUE && !frmlT.isDirectlyAssignableFrom(actl.type(), context))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }

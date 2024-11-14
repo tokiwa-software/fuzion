@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.file.mapped_buffer
+#
+# -----------------------------------------------------------------------
+
+
+# mapped buffer gives access to the memory region a file is mapped
+# to via `mmap`.
+#
+module:public mapped_buffer
+  (# internal pointer to the mapped memory
+    memory fuzion.sys.Pointer,
+
+    # the length of this buffer
+    public redef length i64
+  )
+  : container.Buffer u8 mapped_buffer.this, effect is
+
+
+  # get byte at given index i
+  #
+  public redef index [ ] (i i64) u8
+  =>
+    replace
+    fuzion.sys.fileio.mapped_buffer_get memory i
+
+
+  # set byte at given index i to given value o
+  #
+  public redef set [ ] (i i64, o u8) unit
+  =>
+    replace
+    fuzion.sys.fileio.mapped_buffer_set memory i o
+
+
+  # cleanup
+  #
+  redef finally =>
+    # NYI: what to do on error?
+    _ := fuzion.sys.fileio.munmap memory length
+
+
