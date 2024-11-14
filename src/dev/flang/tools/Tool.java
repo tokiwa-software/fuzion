@@ -255,31 +255,13 @@ public abstract class Tool extends ANY
         else
           { Profiler.start(); }
       }
-    else if (a.equals(Errors.MAX_ERROR_MESSAGES_OPTION))
+    else if (a.equals(Errors.MAX_ERROR_MESSAGES_OPTION) || a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
       {
-        Errors.MAX_ERROR_MESSAGES = -1;
+        Errors.MAX_ERROR_MESSAGES = parseIntArg(a, -1);
       }
-    else if (a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
+    else if (a.equals(Errors.MAX_WARNING_MESSAGES_OPTION) || a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
       {
-        try {
-          Errors.MAX_ERROR_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
-        } catch (NumberFormatException e) {
-          fatal("'" + a.substring(a.indexOf("=")+1) + "' is not a valid argument to option '" + Errors.MAX_ERROR_MESSAGES_OPTION + "'. "
-                + "Please provide a integer value or use the option without an argument for unlimited errors.");
-        }
-      }
-    else if (a.equals(Errors.MAX_WARNING_MESSAGES_OPTION))
-      {
-        Errors.MAX_WARNING_MESSAGES = -1;
-      }
-    else if (a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
-      {
-        try {
-          Errors.MAX_WARNING_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
-        } catch (NumberFormatException e) {
-          fatal("'" + a.substring(a.indexOf("=")+1) + "' is not a valid argument to option '" + Errors.MAX_WARNING_MESSAGES_OPTION + "'. "
-                + "Please provide a integer value or use the option without an argument for unlimited warnings.");
-        }
+        Errors.MAX_WARNING_MESSAGES = parseIntArg(a, -1);;
       }
     else if (a.equals("-noANSI"))
       {
@@ -287,7 +269,7 @@ public abstract class Tool extends ANY
       }
     else if (a.matches("-verbose(=\\d+|)"))
       {
-        _verbose = parsePositiveIntArg(a, 1);
+        _verbose = parseIntArg(a, 1);
       }
     else if (a.equals("-XenableSetKeyword"))
       {
@@ -341,7 +323,7 @@ public abstract class Tool extends ANY
    *
    * @return defawlt or the values specified in a after '='.
    */
-  protected int parsePositiveIntArg(String a, int defawlt)
+  protected int parseIntArg(String a, int defawlt)
   {
     if (PRECONDITIONS) require
       (a.split("=").length == 1 || a.split("=").length == 2);
