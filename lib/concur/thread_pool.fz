@@ -60,13 +60,11 @@ Blocking_Queue(T type, cnd concur.sync.condition) ref is
       if is_closed.read
         nil
       else
-        cnd.synchronized ()->
-          # check the two conditions again, otherwise we MUST NOT wait
-          if !is_closed.read && data.read.is_empty
-            # NYI: BUG: possible dead lock? what if we write to data in the meantime?
-            # we should use TLA+ or similar to prove correctness
-            # https://www.hillelwayne.com/post/list-of-tla-examples/
-            check cnd.wait
+        # NYI: BUG: possible dead lock? what if we write to data in the meantime?
+        # we should use TLA+ or similar to prove correctness
+        # https://www.hillelwayne.com/post/list-of-tla-examples/
+        cnd.wait ()->
+          is_closed.read || !data.read.is_empty
         dequeue
     else
       res := o[0]
@@ -142,10 +140,7 @@ is
       redef is_done => compute_result.read.exists
 
       redef get T =>
-        if !is_done
-          fut_cnd.synchronized ()->
-            if !is_done
-              check fut_cnd.wait
+        fut_cnd.wait ()->is_done
 
         compute_result.read.val
 

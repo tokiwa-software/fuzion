@@ -60,6 +60,11 @@ public sync is
 
     public is_locked := concur.atomic false
 
+
+    # lock the mutex that belongs to this condition
+    # run the code
+    # unlock the mutex
+    #
     public synchronized(T type, code ()->T) T =>
       check mtx_lock mtx
       is_locked.write true
@@ -68,14 +73,37 @@ public sync is
       check mtx_unlock mtx
       res
 
+
+    # send signal to one thread
+    # waiting on this condition
+    #
     public signal
-    pre is_locked.read
+      pre is_locked.read
     => cnd_signal cnd
+
+
+    # send signal to all threads
+    # waiting on this condition
+    #
     public broadcast
-    pre is_locked.read
+      pre is_locked.read
     => cnd_broadcast cnd
-    public wait
-    pre is_locked.read
-    => cnd_wait cnd mtx
+
+
+    # make this thread wait for being signaled
+    # while cnd_met returns false.
+    #
+    public wait(cnd_met ()->bool)
+    =>
+      synchronized ()->
+        wait0 cnd_met
+
+
+    wait0(cnd_met ()->bool)
+    =>
+      if !cnd_met()
+        _ := cnd_wait cnd mtx
+        wait0 cnd_met
+
 
     # NYI destroy
