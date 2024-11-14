@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature lock_free.map
+#  Source code of Fuzion standard library feature lock_free.Map
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
@@ -266,10 +266,10 @@ root_node(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK
 
 
 # the ctrie
-private:public map(public CTK type : property.hashable,
+private:public Map(public CTK type : property.hashable,
                    public CTV type,
                    root concur.atomic (root_node CTK CTV),
-                   public read_only bool) : container.Mutable_Map CTK CTV
+                   public read_only bool) ref : container.Mutable_Map CTK CTV
 is
 
   # the data structure as human readable string
@@ -526,7 +526,7 @@ is
     r := read_root
     match lookup r k 0 nil r.gen
       restart =>
-        map.this[k]
+        Map.this[k]
       not_found =>
         nil
       v CTV =>
@@ -669,7 +669,7 @@ is
     descriptor := Rdcss_Descriptor r expmain (copy_to_gen r new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of r
-      map (concur.atomic (root_node CTK CTV) (copy_to_gen r new_gen)) snapshot.this.read_only
+      Map (concur.atomic (root_node CTK CTV) (copy_to_gen r new_gen)) snapshot.this.read_only
     else
       snapshot snapshot.this.read_only
 
@@ -707,17 +707,17 @@ is
     initial_root_node lock_free.root_node CTK CTV :=
       lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
-    lock_free.map (concur.atomic initial_root_node) false
+    lock_free.Map (concur.atomic initial_root_node) false
 
 
-  # lock_free.map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
+  # lock_free.Map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
   #
   # This feature creates an instance of a ctrie.
   #
-  # example: lock_free.map.from_entries [(key1, value1), (key2, value2)]
+  # example: lock_free.Map.from_entries [(key1, value1), (key2, value2)]
   #
-  public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.map CTK CTV =>
-    m := (lock_free.map CTK CTV).empty
+  public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.Map CTK CTV =>
+    m := (lock_free.Map CTK CTV).empty
     kvs.for_each (kv -> m.add kv.0 kv.1)
     m
 
@@ -726,12 +726,12 @@ is
 #
 # This feature creates an instance of a Set.
 #
-public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K unit) | (Sequence K)) Set K =>
+public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K unit) | (Sequence K)) Set K =>
 
-  map lock_free.map K unit :=
+  map lock_free.Map K unit :=
     match vs
-      vss Sequence => (lock_free.map K unit).from_entries (vss.map (k -> tuple k unit))
-      vsc lock_free.map => vsc
+      vss Sequence => (lock_free.Map K unit).from_entries (vss.map (k -> tuple k unit))
+      vsc lock_free.Map => vsc
 
   ref : Set K
 
@@ -771,10 +771,10 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.map K
 #
 # f determines the key of an element
 #
-public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.map K (list T) =>
+public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.Map K (list T) =>
 
   # NYI It should be possible to choose the map implementation that is used.
-  res := (lock_free.map K (list T)).empty
+  res := (lock_free.Map K (list T)).empty
 
   for_each x->
     key := f x

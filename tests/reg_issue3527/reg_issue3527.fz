@@ -30,5 +30,5 @@ reg_issue3527 =>
     Node(val T) ref is
       next concur.atomic (option Node) := concur.atomic (option Node) nil
 
-    cache := (lock_free.map T Node).type.empty
+    cache := (lock_free.Map T Node).type.empty
     head  := concur.atomic (option Node) nil
