@@ -40,4 +40,4 @@ test_process =>
           _ := io.buffered.writer.env.flush
         say p.wait
         _ := p.with_out unit lm ()->
-          say (io.buffered.read_string lm 1E9)
+          say (io.buffered.read_string lm 1E9).val

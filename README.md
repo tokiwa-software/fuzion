@@ -47,10 +47,8 @@ hello_world is
     # read someone's name from standard input
     #
     get_name =>
-      match ((io.stdin lm).try String ()->
-                io.buffered.read_line lm ? str String => str | io.end_of_file => "")
-        name String => name
-        e error => panic "Could not get your name!"
+      (io.stdin lm).instate_self String ()->
+        io.buffered.read_line lm ? str String => str | io.end_of_file => ""
 
     # greet someone with the name given
     #
