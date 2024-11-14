@@ -688,6 +688,8 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
+    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+
     if (!_shutting_down_ &&
         (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1))
       {
@@ -698,13 +700,12 @@ public class Errors extends ANY
             detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
               "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
           }
-        Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
         if (!_warnings_.contains(e))
           {
-            _warnings_.add(e);
             print(pos, warningMessage(msg), detail);
           }
       }
+    _warnings_.add(e);
   }
 
 
