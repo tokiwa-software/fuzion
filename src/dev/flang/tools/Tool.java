@@ -219,11 +219,11 @@ public abstract class Tool extends ANY
    */
   protected boolean parseGenericArg(String a)
   {
-    if (_duplicates.contains(a))
+    if (_duplicates.contains(stripValue(a)))
       {
-        fatal("duplicate argument: '" + a + "'");
+        fatal("duplicate argument: '" + stripValue(a) + "'");
       }
-    _duplicates.add(a);
+    _duplicates.add(stripValue(a));
     if (a.equals("-h"    ) ||
         a.equals("-help" ) ||
         a.equals("--help")    )
@@ -280,6 +280,11 @@ public abstract class Tool extends ANY
         return false;
       }
     return true;
+  }
+
+  private String stripValue(String option)
+  {
+    return option.contains("=") ? option.substring(0, option.indexOf("=")) : option;
   }
 
 
