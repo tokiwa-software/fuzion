@@ -81,18 +81,6 @@ is
     outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
 
-  # returns o if outcome is ok, otherwise return the outcome's own
-  # error.
-  public and (O type, o outcome O) outcome O =>
-    bind O _->o
-
-  # returns o if outcome is not ok, otherwise return this outcome's value.
-  public or (o outcome T) outcome T =>
-    if !ok
-      o
-    else
-      outcome.this
-
 
   # monadic operator
   #
