@@ -2367,14 +2367,4 @@ Feature not found: 'b' (no arguments)
 Target feature: 'visibility_negative.visi8'
 In call: 'b'
 
-
-<built-in>: error 297: Incompatible types when passing argument in a call
-Actual type for argument #1 'b' does not match expected type.
-In call to          : 'visibility_negative.chck'
-expected formal type: 'bool'
-actual type found   : '**error**'
-assignable to       : '**error**'
-for value assigned  : ''
-To solve this, you could change the type of 'b' to a 'ref' type like 'ref bool'.
-
 296 errors.
