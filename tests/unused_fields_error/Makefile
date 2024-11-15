@@ -17,22 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-public reg_issue3108 =>
-
-  public A ref is
-
-    public x => 1
-    public y := 2
-
-    field := 3
-    routine => 4
-
-  b(redef field i32,           # should flag an error: redefining field forbidden
-    redef routine i32) : A =>
-
-    public redef x := 3
-    public redef y := 4               # should flag an error: redefining field forbidden
+override NAME = unused_fields_error
+include ../simple.mk

@@ -17,22 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test unused_fields_error
 #
 # -----------------------------------------------------------------------
 
-public reg_issue3108 =>
+# test errors for unused fields
+# this was implemented in #4086 (https://github.com/tokiwa-software/fuzion/pull/4086)
+#
+unused_fields_error =>
 
-  public A ref is
+  public w := 0  # unused but public
+  module x := 0  # unused, not public, not ignored
+  y := 1         # unused, not public, not ignored
+  z := 2         # is used
 
-    public x => 1
-    public y := 2
+  say "Not using w, x or y, but z=$z"
 
-    field := 3
-    routine => 4
-
-  b(redef field i32,           # should flag an error: redefining field forbidden
-    redef routine i32) : A =>
-
-    public redef x := 3
-    public redef y := 4               # should flag an error: redefining field forbidden
+  # no warnings for unused arguments
+  a(a i32, _ i32) =>
+  b(public a i32, _ i32, c i32) is
