@@ -150,6 +150,11 @@ public class Fuzion extends Tool
           }
         return result;
       }
+      @Override
+      public boolean needsEscapeAnalysis()
+      {
+        return true;
+      }
       void process(FuzionOptions options, FUIR fuir)
       {
         new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _keepGeneratedCode_), fuir).compile();
@@ -451,6 +456,19 @@ public class Fuzion extends Tool
     boolean needsSources()
     {
       return true;
+    }
+
+    /**
+     * Do we need to perform escape analysis during DFA phase since the backend needs that?
+     *
+     * This currently has a signficant impact on the DFA performance, so we try to
+     * avoid this for backends that do not need it (JVM and interpreter).
+     *
+     * @return true if escape analysis has to be performed.
+     */
+    public boolean needsEscapeAnalysis()
+    {
+      return false;
     }
 
     /**
@@ -1036,6 +1054,7 @@ public class Fuzion extends Tool
                                           _executeCode,
                                           _main,
                                           _backend.needsSources(),
+                                          _backend.needsEscapeAnalysis(),
                                           s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
