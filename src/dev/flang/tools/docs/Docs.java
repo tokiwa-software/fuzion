@@ -74,6 +74,7 @@ public class Docs extends ANY
     /* executeCode             */ null,
     /* main                    */ null,
     /* loadSources             */ false,
+    /* needsEscapeAnalysis     */ false,
     /* timer                   */ s->{});
 
   /**
