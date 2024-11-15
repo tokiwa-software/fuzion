@@ -1204,10 +1204,10 @@ public class DFA extends ANY
         public LifeTime lifeTime(int cl)
         {
           return
-            (clazzKind(cl) != FeatureKind.Routine)
-                ? super.lifeTime(cl)
-                : currentEscapes(cl) ? LifeTime.Unknown :
-                                       LifeTime.Call;
+            (clazzKind(cl) != FeatureKind.Routine) ? super.lifeTime(cl) :
+            !_options.needsEscapeAnalysis() ||
+            currentEscapes(cl)                     ? LifeTime.Unknown
+                                                   : LifeTime.Call;
         }
 
 
@@ -1221,8 +1221,8 @@ public class DFA extends ANY
          */
         private boolean currentEscapes(int cl)
         {
-          // if (PRECONDITIONS) require
-          //   (_options.needsEscapeAnalysis());
+          if (PRECONDITIONS) require
+            (_options.needsEscapeAnalysis());
 
           return _escapes.contains(cl);
         }
