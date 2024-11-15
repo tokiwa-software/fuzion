@@ -94,11 +94,6 @@ public class AstErrors extends ANY
   }
 
 
-  /*------------------------  static variables  -------------------------*/
-
-  private static int unusedFieldErrCount = 0;
-
-
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -2321,7 +2316,7 @@ public class AstErrors extends ANY
   public static void unusedField(AbstractFeature f)
   {
     // only warn about unused fields if no other errors occurred
-    if (Errors.count() == unusedFieldErrCount)
+    if (Errors.count() == Errors.unusedFieldErrCount)
       {
         error(f.pos(), "Unused, non public field " + sbnf(f),
           """
@@ -2332,7 +2327,7 @@ public class AstErrors extends ANY
 
             or
               - explicitly ignore the result """ + " " + ss("_ := …"));
-        unusedFieldErrCount++;
+        Errors.unusedFieldErrCount++;
       }
   }
 

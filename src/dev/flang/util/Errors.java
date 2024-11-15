@@ -138,6 +138,12 @@ public class Errors extends ANY
   public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
 
 
+  /**
+   * Counter for unused field errors.
+   */
+  public static int unusedFieldErrCount = 0;
+
+
   /*-----------------------------  classes  -----------------------------*/
 
 
@@ -886,6 +892,7 @@ public class Errors extends ANY
   {
     _errors_.clear();
     _warnings_.clear();
+    unusedFieldErrCount = 0;
   }
 
 
