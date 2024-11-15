@@ -1855,7 +1855,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var typeType = f.isCotype();
         if (typeType)
           {
-            f = f._cotypeOrigin;
+            f = f.cotypeOrigin();
           }
         var fn = f.featureName();
         // for a feature that does not define a type itself, the name is not
