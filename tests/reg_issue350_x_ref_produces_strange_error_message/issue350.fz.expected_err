@@ -7,9 +7,9 @@ Feature declared: 'x'
 
 
 --CURDIR--/issue350.fz:31:3: error 2: Illegal result type 'ref' in field definition using ':='
-  f1 ref := 42
---^^
+  _ ref := 42
+--^
 For field definition using ':=', the type is determined automatically, it must not be given explicitly.
-Field declared: 'test.f1'
+Field declared: 'test._'
 
 2 errors.

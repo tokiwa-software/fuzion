@@ -32,7 +32,7 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
       s String => "\"$s\""
       f f64 => $f
       b bool => $b
-      n nil => "null"
+      nil => "null"
       seq Sequence => $seq
       m container.Map => "\{$m}"
 
@@ -52,7 +52,7 @@ public json =>
     parser_hex_unicode =>
       preceded (tag "\\") (take_while_m_n codepoint 4 4 (c -> is_hex_digit c))
         .map (Sequence codepoint) d->
-          (c,_) := d.reduce (u32 0, u32 4) (r, c -> (val, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
+          (c,_) := d.reduce (u32 0, u32 4) (r, c -> (_, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
           [(codepoint c)]
 
     parse_and_map(t, r String) =>

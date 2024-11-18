@@ -343,7 +343,7 @@ is
   =>
     match root.read
       n Indirection_Node => n
-      d Rdcss_Descriptor => rdcss_complete abortable
+      Rdcss_Descriptor   => rdcss_complete abortable
 
 
   # read root none abortably
@@ -447,7 +447,7 @@ is
     if (lev > 0) && (cn.array.length = 1)
       match cn[0]
         sn singleton_node => tomb_node sn
-        i Indirection_Node => cn
+        Indirection_Node  => cn
     else
       cn
 
@@ -598,7 +598,7 @@ is
                 gcas i m ncn
               else
                 gcas i m (cn.update pos (singleton_node k v) i.gen)
-      tn tomb_node =>
+      tomb_node =>
         clean parent (lev - width)
       ln list_node =>
         gcas i m (list_node ([singleton_node k v] ++ (ln.from.filter (sn -> sn.k != k))))
@@ -608,9 +608,9 @@ is
   public redef remove(k CTK) option CTV =>
     r := read_root
     match remove r k 0 nil r.gen
-      restart => remove k
-      n not_found => nil
-      v CTV => v
+      restart   => remove k
+      not_found => nil
+      v CTV     => v
 
 
   # try remove an element from the ctrie
@@ -640,13 +640,13 @@ is
                   ctrie_ok => sn.v
                   restart => restart
           match res
-            v CTV =>
+            CTV =>
               match (gcas_read i).data
-                t tomb_node => clean_parent parent i (hash0 (hash k)) lev gen
+                tomb_node => clean_parent parent i (hash0 (hash k)) lev gen
                 * =>
             * =>
           res
-      tn tomb_node =>
+      tomb_node =>
         clean parent (lev - width)
       ln list_node =>
         fln := list_node ln.from.filter(sn -> sn.k != k)

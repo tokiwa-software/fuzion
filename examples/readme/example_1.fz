@@ -17,7 +17,7 @@ hello_world is
       match ((io.stdin lm).try String ()->
                 io.buffered.read_line lm ? str String => str | io.end_of_file => "")
         name String => name
-        e error => panic "Could not get your name!"
+        error => panic "Could not get your name!"
 
     # greet someone with the name given
     #

@@ -21,12 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
-reg_issue3108 =>
+public reg_issue3108 =>
 
-  A ref is
+  public A ref is
 
-    x => 1
-    y := 2
+    public x => 1
+    public y := 2
 
     field := 3
     routine => 4
@@ -34,7 +34,5 @@ reg_issue3108 =>
   b(redef field i32,           # should flag an error: redefining field forbidden
     redef routine i32) : A =>
 
-    redef x := 3
-    redef y := 4               # should flag an error: redefining field forbidden
-
-
+    public redef x := 3
+    public redef y := 4               # should flag an error: redefining field forbidden

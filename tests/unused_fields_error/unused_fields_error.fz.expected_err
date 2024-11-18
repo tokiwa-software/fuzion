@@ -1,0 +1,21 @@
+
+--CURDIR--/unused_fields_error.fz:30:10: error 1: Unused, non public field 'x'
+  module x := 0  # unused, not public, not ignored
+---------^
+To solve this, either
+  - use the field
+  - make it 'public'
+or
+  - explicitly ignore the result '_ := …'
+
+
+--CURDIR--/unused_fields_error.fz:31:3: error 2: Unused, non public field 'y'
+  y := 1         # unused, not public, not ignored
+--^
+To solve this, either
+  - use the field
+  - make it 'public'
+or
+  - explicitly ignore the result '_ := …'
+
+2 errors.

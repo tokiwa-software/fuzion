@@ -1,0 +1,38 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test unused_fields_error
+#
+# -----------------------------------------------------------------------
+
+# test errors for unused fields
+# this was implemented in #4086 (https://github.com/tokiwa-software/fuzion/pull/4086)
+#
+unused_fields_error =>
+
+  public w := 0  # unused but public
+  module x := 0  # unused, not public, not ignored
+  y := 1         # unused, not public, not ignored
+  z := 2         # is used
+
+  say "Not using w, x or y, but z=$z"
+
+  # no warnings for unused arguments
+  a(a i32, _ i32) =>
+  b(public a i32, _ i32, c i32) is

@@ -830,8 +830,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var typeParameters2 = new List<AbstractType>();
     for (var tp : typeParameters)
       {
-        var tpa = that.rebaseTypeForCotype(tp);
-        typeParameters2.add(typeParameters2.size() == 0 ? tp : tpa);
+        typeParameters2.add(typeParameters2.size() == 0
+                              ? tp
+                              : that.rebaseTypeForCotype(tp));
       }
     return new Call(p,
                     oc,

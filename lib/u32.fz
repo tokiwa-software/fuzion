@@ -186,7 +186,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
       (v2, s2) := if (                v1 < 0x100   )  (v1, s1) else (v1 >>  8, s1 +  8)
       (v3, s3) := if (                v2 < 0x10    )  (v2, s2) else (v2 >>  4, s2 +  4)
       (v4, s4) := if (                v3 < 4       )  (v3, s3) else (v3 >>  2, s3 +  2)
-      (v5, s5) := if (                v4 < 2       )  (v4, s4) else (v4 >>  1, s4 +  1)
+      (_, s5)  := if (                v4 < 2       )  (v4, s4) else (v4 >>  1, s4 +  1)
       s5 + 1
 
 

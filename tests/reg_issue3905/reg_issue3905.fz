@@ -28,4 +28,4 @@ reg_issue3905 =>
 
   a : choice i32 String, Some_Ref is
 
-  b a := 2
+  _ a := 2

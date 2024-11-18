@@ -45,5 +45,5 @@ envir_vars is
     error => exit 1
 
   match envir.vars.get "FUZION_ENVIR_VARS_TEST_SET"
-    val String => exit 1
-    nil => say " successful"
+    String => exit 1
+    nil    => say " successful"

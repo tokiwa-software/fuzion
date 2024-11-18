@@ -117,7 +117,7 @@ catch_precondition is
     .catch s->
       say "FAILED: $s"
 
-  r := q.f 3
+  _ := q.f 3
 
 
   // we consider seven different preconditions:
