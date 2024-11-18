@@ -39,7 +39,7 @@ sockets_test is
 
     accept =>
       match net.server.accept
-        e error => false
+        error => false
         c net.connection =>
           sc := c.in_thread_pool unit concur.thread_pool lm lm ()->
             chan => net.channel.env
@@ -88,7 +88,7 @@ sockets_test is
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
 
     match net.client family protocol host port
-      err error =>
+      error =>
         say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
       c net.connection =>
 

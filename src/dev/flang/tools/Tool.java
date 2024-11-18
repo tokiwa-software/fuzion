@@ -219,11 +219,11 @@ public abstract class Tool extends ANY
    */
   protected boolean parseGenericArg(String a)
   {
-    if (_duplicates.contains(a))
+    if (_duplicates.contains(stripValue(a)))
       {
-        fatal("duplicate argument: '" + a + "'");
+        fatal("duplicate argument: '" + stripValue(a) + "'");
       }
-    _duplicates.add(a);
+    _duplicates.add(stripValue(a));
     if (a.equals("-h"    ) ||
         a.equals("-help" ) ||
         a.equals("--help")    )
@@ -249,15 +249,19 @@ public abstract class Tool extends ANY
       }
     else if (a.startsWith("-XjavaProf="))
       {
-        Profiler.start(a.substring(a.indexOf("=")+1));
+        var file = a.substring(a.indexOf("=")+1);
+        if (file.equals(""))
+          { fatal("Please provide a file name to option '-XjavaProf=<file>'."); }
+        else
+          { Profiler.start(); }
       }
-    else if (a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION) && a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
+    else if (a.equals(Errors.MAX_ERROR_MESSAGES_OPTION) || a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
       {
-        Errors.MAX_ERROR_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
+        Errors.MAX_ERROR_MESSAGES = parseIntArg(a, -1);
       }
-    else if (a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION) && a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
+    else if (a.equals(Errors.MAX_WARNING_MESSAGES_OPTION) || a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
       {
-        Errors.MAX_WARNING_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
+        Errors.MAX_WARNING_MESSAGES = parseIntArg(a, -1);;
       }
     else if (a.equals("-noANSI"))
       {
@@ -265,7 +269,7 @@ public abstract class Tool extends ANY
       }
     else if (a.matches("-verbose(=\\d+|)"))
       {
-        _verbose = parsePositiveIntArg(a, 1);
+        _verbose = parseIntArg(a, 1);
       }
     else if (a.equals("-XenableSetKeyword"))
       {
@@ -276,6 +280,11 @@ public abstract class Tool extends ANY
         return false;
       }
     return true;
+  }
+
+  private String stripValue(String option)
+  {
+    return option.contains("=") ? option.substring(0, option.indexOf("=")) : option;
   }
 
 
@@ -319,7 +328,7 @@ public abstract class Tool extends ANY
    *
    * @return defawlt or the values specified in a after '='.
    */
-  protected int parsePositiveIntArg(String a, int defawlt)
+  protected int parseIntArg(String a, int defawlt)
   {
     if (PRECONDITIONS) require
       (a.split("=").length == 1 || a.split("=").length == 2);

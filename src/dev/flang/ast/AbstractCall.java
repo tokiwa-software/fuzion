@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -249,6 +250,26 @@ public abstract class AbstractCall extends Expr
                     tf.selfType());
   }
 
+
+  /**
+   * Collect used fields to be able to warn about unused ones.
+   * @param usages set to which the used fields should be collected to
+   */
+  public void recordUsage(Set<AbstractFeature> usages)
+  {
+    var feat = calledFeature();
+
+    // don't collect features that should never be warned about, see Feature.java for reasons
+    if (feat.kind() == AbstractFeature.Kind.Field
+        && feat.visibility().eraseTypeVisibility() != Visi.PUB
+        && !feat.featureName().isInternal()
+        && !feat.outer().featureName().isInternal()
+        && !feat.featureName().isNameless()
+        && !feat.isArgument())
+      {
+        usages.add(feat);
+      }
+  }
 
 }
 

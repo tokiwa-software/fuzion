@@ -143,5 +143,9 @@ grep failed$ "$BUILD_DIR"/run_tests.results || true
 
 if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
+
+  echo "To rerun all failed tests, use this command:"
+  grep failed$ "$BUILD_DIR"/run_tests.results | cut -d' ' -f1 | sed 's/^/make -C /' | sed -z 's/\n/ \&\& /g'
+
   exit 1;
 fi

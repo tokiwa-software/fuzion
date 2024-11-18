@@ -39,7 +39,7 @@ ctrie_threads is
   test1 =>
     say "test1: in {$num_threads} threads, adding 999 keys, removing every third key and taking a snapshot at key=500."
 
-    ctrie := (lock_free.map i32 i32).empty
+    ctrie := (lock_free.Map i32 i32).empty
 
     empty := ctrie.snapshot true
 
@@ -69,7 +69,7 @@ ctrie_threads is
   test2(take_snapshots bool) =>
     say "test2: in {$num_threads} threads, {if take_snapshots then "adding keys while taking snapshots, removing keys while taking snapshots." else "add keys, remove keys."}"
 
-    ctrie := (lock_free.map i32 i32).empty
+    ctrie := (lock_free.Map i32 i32).empty
 
     in_threads t->
       for k in keys do
@@ -107,7 +107,7 @@ ctrie_threads is
   test3 =>
     say "test3: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
 
-    ctrie := (lock_free.map i32 i32).empty
+    ctrie := (lock_free.Map i32 i32).empty
 
     in_threads t->
       for k in keys do
@@ -136,7 +136,7 @@ ctrie_threads is
   test4 =>
     say "test4: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
 
-    ctrie := (lock_free.map i32 i32).empty
+    ctrie := (lock_free.Map i32 i32).empty
 
     in_threads t->
       for k in keys do

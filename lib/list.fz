@@ -143,7 +143,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     list.this ? nil => fuzion.std.panic "list.init called on empty list"
               | c Cons =>
                 c.tail ? nil => res
-                       | _ Cons => c.tail.init (res ++ [c.head])
+                       | Cons => c.tail.init (res ++ [c.head])
 
 
   # get the last element of this list
@@ -153,7 +153,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef last option A =>
     tail ? nil    => head
-         | c Cons => tail.last
+         | Cons   => tail.last
 
 
   # collect the contents of this list into an array
@@ -176,7 +176,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public map_to_list(B type, f A -> B) list B =>
     match list.this
-      _ nil  => nil
+      nil    => nil
       c Cons =>
         ref : Cons B (list B)
           redef head => f c.head
@@ -191,10 +191,10 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public flat_map_to_list(B type, f A -> Sequence B) list B =>
     match list.this
-      _ nil  => nil
+      nil    => nil
       c Cons =>
         match (f c.head).as_list
-          _ nil => c.tail.flat_map_to_list f
+          nil     => c.tail.flat_map_to_list f
           c2 Cons =>
             ref : Cons B (list B)
               redef head => c2.head
@@ -265,7 +265,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil
     else
       match list.this
-        _ nil  => nil
+        nil    => nil
         c Cons =>
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
@@ -336,7 +336,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public concat (t Lazy (list A)) list A =>
     match list.this
-      _ nil => t()
+      nil    => t()
       c Cons =>
         # tricky, Lazy wrapping a Lazy.
         # The expression following the colon
@@ -384,7 +384,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef take_while (p A -> bool) list A
   =>
     match list.this
-      _ nil  => nil
+      nil    => nil
       c Cons =>
         if p c.head
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
@@ -399,7 +399,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef drop_while (p A -> bool) list A
   =>
     match list.this
-      _ nil  => nil
+      nil    => nil
       c Cons =>
         if p c.head
           c.tail.drop_while p
@@ -414,7 +414,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef filter (p A -> bool) list A =>
     match drop_while (a -> !(p a))
-      _ nil  => nil
+      nil    => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head
                   redef tail => c.tail.filter p

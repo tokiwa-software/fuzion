@@ -71,16 +71,16 @@ semicolon_parsing =>
 
   # print "declared field a
   #        declared field b"
-  a := 1; say "declared field a"; b := 2; say "declared field b"
+  public a := 1; say "declared field a"; public b := 2; say "declared field b"
 
   # print "f1 assigned"
-  f1 ()->unit := say "I'm f1"; say "field f1 assigned"
+  public f1 ()->unit := say "I'm f1"; say "field f1 assigned"
 
   # no output or error
-  f2 ()->unit := ()->say "hi";
+  public f2 ()->unit := ()->say "hi";
 
   # no output or error
-  f3 ()->unit := ()->say "hi";         # whitespace should not cause error either
+  public f3 ()->unit := ()->say "hi";         # whitespace should not cause error either
 
   # print "feature f4 assigned"
   f4 => {say "I'm f4"}; say "feature f4 assigned"
