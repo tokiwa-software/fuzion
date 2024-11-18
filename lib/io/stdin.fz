@@ -33,7 +33,7 @@
 #       io.stdin.read_line
 #
 #
-public stdin : io.buffered.reader read_provider 102 is
+public stdin : io.buffered.reader read_provider 1024 is
 
 
 read_provider : io.Read_Provider is
