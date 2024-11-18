@@ -100,18 +100,21 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
+  # NYI: inherit from reader, remove LM type: mutate
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_out_read_provider) pipe_buffer_size)
+    (io.buffered.reader (std_out_read_provider) pipe_buffer_size)
       .instate_self f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
+  # NYI: inherit from reader, remove LM type: mutate
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_err_read_provider) pipe_buffer_size)
+    (io.buffered.reader (std_err_read_provider) pipe_buffer_size)
       .instate_self f
 
 
+  # NYI: inherit from writer, remove LM type: mutate
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
     (io.buffered.writer std_in_write_provider pipe_buffer_size)
       .instate_self f

@@ -56,7 +56,7 @@ webserver_native is
       _ := c.with unit mutate ()->
         say "accepted connection:"
 
-        match io.buffered.read_line mutate
+        match io.buffered.reader.read_line
           str String => say str
           * =>
 

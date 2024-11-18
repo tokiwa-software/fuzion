@@ -49,7 +49,7 @@ test_process =>
       say p.wait
       _ := lm.instate_self ()->
         _ := p.with_out unit lm ()->
-          say (io.buffered.read_string lm 1E9).val
+          say (io.buffered.reader.read_string 1E9).val
 
 
 
@@ -57,7 +57,7 @@ test_process =>
     (os.process.start "echo" ["eecchhoo"]).bind unit p->
       _ := lm.instate_self ()->
         _ := p.with_out unit lm ()->
-          say (io.buffered.read_string lm 1E9).val
+          say (io.buffered.reader.read_string 1E9).val
 
 
 
@@ -65,7 +65,7 @@ test_process =>
     (os.process.start "printenv" ["MYENVVAR"] (container.map_of [("MYENVVAR", "content")])).bind unit p->
       _ := lm.instate_self ()->
         _ := p.with_out unit lm ()->
-          say (io.buffered.read_string lm 1E9).val
+          say (io.buffered.reader.read_string 1E9).val
 
 
 
@@ -74,7 +74,7 @@ test_process =>
       (p | ["cat"]).bind unit p2->
         _ := lm.instate_self ()->
           _ := p2.with_out unit lm ()->
-            say (io.buffered.read_string lm 1E9).val
+            say (io.buffered.reader.read_string 1E9).val
 
 
 
@@ -83,7 +83,7 @@ test_process =>
       (p | ["cat"]).bind unit p2->
         _ := lm.instate_self ()->
           _ := p2.with_out unit lm ()->
-            say (io.buffered.read_string lm 1E9).val.byte_length
+            say (io.buffered.reader.read_string 1E9).val.byte_length
           say p2.wait
 
 

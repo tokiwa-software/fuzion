@@ -573,9 +573,18 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         var inCotype = false;
         if (!tolerant && (o != null && !o.isThisType()))
           {
-            o = o.resolve(res, context);
-            var ot2 = o.selfOrConstraint(res, context); // see tests/reg_issue1943 for examples
-            of = ot2.feature();
+            // NYI: WORKAROUND: #4141
+            if (!(o instanceof UnresolvedType ut && ut.name().equals(FuzionConstants.UNIVERSE_NAME)))
+              {
+                o = o.resolve(res, context);
+                var ot2 = o.selfOrConstraint(res, context); // see tests/reg_issue1943 for examples
+                of = ot2.feature();
+              }
+            else
+              {
+                o = null;
+                of = null;
+              }
           }
         else if (tolerant && (o instanceof UnresolvedType ut))
           {

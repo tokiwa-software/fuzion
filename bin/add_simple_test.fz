@@ -29,9 +29,8 @@ add_simple_test =>
 
   lm : mutate is
   lm.instate_self ()->
-
-    _ := (io.stdin lm).instate_self void ()->
-      match io.buffered.read_line lm
+    _ := io.stdin.instate_self void ()->
+      match io.stdin.read_line
         test String =>
 
           header(name String) => """

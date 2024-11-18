@@ -29,25 +29,24 @@
 #
 # usage example:
 #
-#     line_or_error := io.stdin.try ()->
-#       io.buffered.read_line
+#     line_or_error := io.stdin.instate_self ()->
+#       io.stdin.read_line
 #
 #
-public stdin (LM type : mutate) io.buffered.reader LM =>
+public stdin : io.buffered.reader read_provider 102 is
 
 
-  read_provider : io.Read_Provider is
-    redef read(count i32) choice (array u8) io.end_of_file error =>
-      arr := fuzion.sys.internal_array_init u8 count
-      v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
-      if v < -1
-        error "an error occurred while reading stdin"
-      else if v <= 0
-        io.end_of_file
-      else if v < count
-        array u8 v i->arr[i]
-      else
-        arr.as_array
+read_provider : io.Read_Provider is
+  redef read(count i32) choice (array u8) io.end_of_file error =>
+    arr := fuzion.sys.internal_array_init u8 count
+    v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
+    if v < -1
+      error "an error occurred while reading stdin"
+    else if v <= 0
+      io.end_of_file
+    else if v < count
+      array u8 v i->arr[i]
+    else
+      arr.as_array
 
 
-  io.buffered.reader LM read_provider 1024
