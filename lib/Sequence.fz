@@ -659,7 +659,7 @@ public Sequence(public T type) ref : property.equatable is
       T : property.equatable
   =>
 
-    find_lm.instate_self ()->
+    find_lm ! ()->
 
       make(t Sequence T, r option (Node T)) =>
         n option (Node T) =>

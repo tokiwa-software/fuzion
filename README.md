@@ -42,7 +42,7 @@ hello_world is
   # `instate_self` is then used to instate this instance and
   # run code in the context of the instated effect.
   #
-  lm.instate_self ()->
+  lm ! ()->
 
     # read someone's name from standard input
     #
@@ -129,7 +129,7 @@ generator_effect is
 
   # bind the yield operation dynamically
   #
-  (gen i32 (i -> say "yielded $i")).instate_self ()->
+  (gen i32 (i -> say "yielded $i")) ! ()->
     [0,8,15].as_list.traverse
 ```
 
