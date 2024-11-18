@@ -1592,10 +1592,8 @@ public class Call extends AbstractCall
       }
     if (!calledFeature().isOuterRef())
       {
-        var inner = ResolvedNormalType.newType(calledFeature().selfType(),
-                                          _target.type());
         var t0 = t;
-        t = t.replace_this_type_by_actual_outer(inner,
+        t = t.replace_this_type_by_actual_outer(tt,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
                                                 context);
       }
