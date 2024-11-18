@@ -33,7 +33,7 @@
 #
 # example:
 #
-#     mem := memoize (lock_free.map i32 String) i32 String x->
+#     mem := memoize (lock_free.Map i32 String) i32 String x->
 #       say "computing $x"
 #       x.as_string
 #

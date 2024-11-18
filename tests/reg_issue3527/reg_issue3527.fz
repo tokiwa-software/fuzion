@@ -30,5 +30,5 @@ reg_issue3527 =>
     Node(val T) ref is
       _ concur.atomic (option Node) := concur.atomic (option Node) nil
 
-    _ := (lock_free.map T Node).type.empty
+    _ := (lock_free.Map T Node).type.empty
     _ := concur.atomic (option Node) nil
