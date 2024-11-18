@@ -50,7 +50,7 @@ module:public connection(desc i64) is
   #
   with0(T type, LM type : mutate, fn ()->T) ! net.connections
   =>
-    (io.buffered.reader LM (read_provider desc) 1024).instate_self ()->
+    (io.buffered.reader LM (read_provider desc) 1024) ! ()->
       (io.buffered.writer (write_provider desc) 1024) ! ()->
         (net.channel desc) ! ()->
           fn.call

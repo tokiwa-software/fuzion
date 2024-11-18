@@ -9,7 +9,7 @@ hello_world is
   # `instate_self` is then used to instate this instance and
   # run code in the context of the instated effect.
   #
-  lm.instate_self ()->
+  lm ! ()->
 
     # read someone's name from standard input
     #
