@@ -25,4 +25,4 @@ reg_issue2687 =>
   for _ in (1..100) do
     mi : mutate is
     mi.instate_self ()->
-      d := (mutate.array f64).type.new mi 5000 0.0
+      _ := (mutate.array f64).type.new mi 5000 0.0

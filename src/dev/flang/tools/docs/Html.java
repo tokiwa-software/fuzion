@@ -95,12 +95,23 @@ public class Html extends ANY
   /*-----------------------------  private methods  -----------------------------*/
 
 
+
+  /**
+   * Does this feature have an arrow "=>" in it's signature, i.e. is a function or an intrinsic
+   * @return true if the signature contains an arrow "=>"
+   */
+  private static boolean signatureWithArrow(AbstractFeature af)
+  {
+    return (af.isRoutine() && !af.isConstructor()) || af.isIntrinsic() || af.isAbstract() || af.isNative();
+  }
+
+
   /*
    * html containing the inherited features of af
    */
   private String inherited(AbstractFeature af)
   {
-    if (af.inherits().isEmpty() || af.signatureWithArrow()) // don't show inheritance for function features
+    if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
       {
         return "";
       }
@@ -193,7 +204,7 @@ public class Html extends ANY
       + arguments(af)
       + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
       + inherited(af)
-      + (af.signatureWithArrow() ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
+      + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
         : af.isConstructor()     ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
         : af.isField()           ? "&nbsp;" + anchor(af.resultType(), outer) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
                                  : "")

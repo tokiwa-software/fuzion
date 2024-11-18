@@ -17,48 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test ctrie_test
-#
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-ctrie_test is
-  ctrie := (lock_free.map i32 String).empty
-
-  set_from(s Sequence i32) =>
-    (container.ps_set i32).new s
-
-  all := set_from 0..100
-  removed := set_from 0..100:2
-  readded := set_from 0..100:3
-
-  no_items := ctrie.snapshot true
-
-  for k in all do
-    ctrie.add k "v$k"
-
-  all_items := ctrie.snapshot true
-
-  for k in removed do
-    _ := ctrie.remove k
-
-  half_of_items := ctrie.snapshot true
-
-  for k in readded do
-    ctrie.add k "v$k"
-
-  no  := removed.difference readded
-  yes := (all.difference removed) ∪ readded
-
-  say (no  ∀ (k -> ctrie[k].is_nil))
-
-  say (yes ∀ (k -> ctrie[k].get = "v$k"))
-
-  say (ctrie.size = yes.size_option.val)
-
-  say no_items.items.count # 0
-
-  say all_items.items.count # 101
-
-  say half_of_items.items.count # 50
+override NAME = unused_fields_error
+include ../simple.mk

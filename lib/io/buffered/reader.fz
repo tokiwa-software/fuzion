@@ -161,7 +161,7 @@ pre debug: n >= 0
     v
 
   for
-    is_eof                 := (reader LM).read ? outcome => true | a array => false
+    is_eof                 := (reader LM).read  ? outcome => true | array => false
     next_bytes Sequence u8 := ((reader LM).read ? outcome => []   | a array => a), rest ++ ((reader LM).read ? outcome => [] | a array => a)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,

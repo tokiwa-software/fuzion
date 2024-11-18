@@ -1,6 +1,6 @@
 
 --CURDIR--/issue_1352.fz:25:8: error 1: No type information can be inferred from a lambda expression
-  c := a ->
+  _ := a ->
 -------^^^^
     a.x
 ----^^^
