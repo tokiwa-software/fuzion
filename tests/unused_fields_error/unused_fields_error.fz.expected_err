@@ -18,4 +18,14 @@ To solve this, either
 or
   - explicitly ignore the result '_ := …'
 
-2 errors.
+
+--CURDIR--/unused_fields_error.fz:48:5: error 3: Unused, non public field 'inner2'
+    inner2 := 3
+----^^^^^^
+To solve this, either
+  - use the field
+  - make it 'public'
+or
+  - explicitly ignore the result '_ := …'
+
+3 errors.
