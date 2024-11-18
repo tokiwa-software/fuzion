@@ -397,15 +397,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
 
-  /**
-   * Does this feature has an arrow "=>" in it's signature, i.e. is a function or an intrinsic
-   * @return true if the signature contains an arrow "=>"
-   */
-  public boolean signatureWithArrow()
-  {
-    return (isRoutine() && !isConstructor()) || isIntrinsic() || isAbstract() || isNative();
-  }
-
 
   /**
    * Is this base-lib's choice-feature?
