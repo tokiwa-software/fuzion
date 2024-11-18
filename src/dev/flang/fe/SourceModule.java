@@ -1382,6 +1382,12 @@ A post-condition of a feature that does not redefine an inherited feature must s
     if (PRECONDITIONS) require
       (Errors.any() || outer != Types.f_ERROR);
 
+    // NYI: WORKAROUND: #4141
+    if (outer == null)
+      {
+        outer = _universe;
+      }
+
     FeatureAndOuter result = FeatureAndOuter.ERROR;
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
