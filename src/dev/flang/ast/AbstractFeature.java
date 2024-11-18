@@ -1073,11 +1073,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isCotype() || hasCotype());
 
-    var result = this == Types.f_ERROR
-      ? this
-      : isCotype()
-      ? Types.resolved.f_Type
-      : _cotype;
+    var result =
+      this == Types.f_ERROR ? this
+                            : isCotype()
+                              ? Types.resolved.f_Type
+                              : _cotype;
 
     if (POSTCONDITIONS) ensure
       (result != null);
