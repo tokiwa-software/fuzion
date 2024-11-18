@@ -69,7 +69,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
   (fuzion.sys.fileio.open file_name mode_num).bind R fd->
     # install effect `open T` and run `code`
     r := (open fd file_name) ! ()->
-          (io.buffered.reader LM (read_provider fd) 1024).try ()->
+          (io.buffered.reader LM (read_provider fd) 1024) ! ()->
             (io.buffered.writer (write_provider fd) 1024) ! ()->
               tmp := code.call
               # NYI: handle error once signature of with is changed

@@ -30,7 +30,7 @@ add_simple_test =>
   lm : mutate is
   lm ! ()->
 
-    _ := (io.stdin lm).try void ()->
+    _ := (io.stdin lm).instate_self void ()->
       match io.buffered.read_line lm
         test String =>
 
