@@ -1556,8 +1556,12 @@ callTail    : indexCall  callTail
               {
                 AstErrors.noValidLHSInExpresssion(result, ".env");
                 t = Types.t_ERROR;
+                result = Call.ERROR_VALUE;
               }
-            result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), result), new ParsedName(sourceRange(target.pos()), "get")));
+            else
+              {
+                result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), result), new ParsedName(sourceRange(target.pos()), "get")));
+              }
           }
         else if (skip(Token.t_type))
           {
@@ -1566,8 +1570,12 @@ callTail    : indexCall  callTail
               {
                 AstErrors.noValidLHSInExpresssion(result, ".type");
                 t = Types.t_ERROR;
+                result = Call.ERROR_VALUE;
               }
-            result = callTail(false, new DotType(sourceRange(target.pos()), result));
+            else
+              {
+                result = callTail(false, new DotType(sourceRange(target.pos()), result));
+              }
           }
         else if (skip(Token.t_this))
           {
