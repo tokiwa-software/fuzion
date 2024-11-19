@@ -1736,7 +1736,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             AstErrors.illegalResultTypeThisType(f);
           }
 
-        if (!f.isField() && f.resultType().feature().isRef() && !f.isOuterRef())
+        if (!(f.isField() || f.isAbstract() || !f.resultType().feature().isRef()))
           {
             AstErrors.ambiguousResultType(f);
           }
