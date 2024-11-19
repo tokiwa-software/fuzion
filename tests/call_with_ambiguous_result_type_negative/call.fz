@@ -46,4 +46,4 @@ call_with_ambiguous_result_type is
   # the result type of `v.g` is ambiguous: `h.e` for any
   # heir of `r`.  So this will cause an error:
   #
-  x := v.g   # error! ambiguous result type
+  _ := v.g   # error! ambiguous result type

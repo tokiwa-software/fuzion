@@ -25,7 +25,7 @@ reg_issue4143 =>
 
   a : mutate is
 
-    b := instate_self (() -> (mutate.circular_buffer u8).new a.this 42 0)
+    _ := instate_self (() -> (mutate.circular_buffer u8).new a.this 42 0)
 
   c : a is
 

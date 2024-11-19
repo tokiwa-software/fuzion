@@ -200,8 +200,8 @@ is
               nil => (e.right.get, option old_val)
               l Entry =>
                 match e.right.get
-                  nil => (option l, option old_val)
-                  r Entry =>
+                  nil   => (option l, option old_val)
+                  Entry =>
                     m := minimum e.right.get
 
                     new_node := Entry m.get.key m.get.val

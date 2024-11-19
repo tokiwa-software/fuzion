@@ -23,7 +23,7 @@
 
 lm : mutate is
 
-_ := lm.instate_self ()->lib_io_dir
+_ := lm ! ()->lib_io_dir
 
 lib_io_dir =>
 

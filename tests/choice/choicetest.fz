@@ -31,8 +31,8 @@ choicetest is
   Yellow ref : Light is
   Green  ref : Light is
 
-  l1 Light := Red
-  l2 Light := Green
+  _ Light := Red
+  _ Light := Green
 
   say "l1 is Red, l2 is Green"
 
@@ -63,7 +63,7 @@ choicetest is
 
   say "creating array:"
   mi : mutate is
-  a := mi.instate_self ()->
+  a := mi ! ()->
     a := (mutate.array Coin).new mi 10 Penny
     a[0] := Penny
     a[1] := Penny

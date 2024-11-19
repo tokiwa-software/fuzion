@@ -84,7 +84,7 @@ visibility_scoping is
 
   test6 is
     match true
-      f false_ =>
+      false_  =>
       t true_ =>
         tt := t
         ttt => t
@@ -92,9 +92,9 @@ visibility_scoping is
     a => ttt # should flag an error: feature not found
     b => tt   # should flag an error: feature not found
     c => t   # should flag an error: feature not found
-    d := ttt # should flag an error: feature not found
-    e := tt   # should flag an error: feature not found
-    f0 := t   # should flag an error: feature not found
+    _ := ttt # should flag an error: feature not found
+    _ := tt   # should flag an error: feature not found
+    _ := t   # should flag an error: feature not found
 
 
 

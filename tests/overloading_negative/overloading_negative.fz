@@ -38,13 +38,13 @@ overloading_negative is
     a(i i32) is
     a(i, j i32) is
 
-    x := a
-    y := a 42
-    z := a 47 11
+    _ := a
+    _ := a 42
+    _ := a 47 11
 
-    a1 a := a            // 1. should flag an error: ambiguous types
-    a2 a := a 42         // 2. should flag an error: ambiguous types
-    a3 a := a 47 11      // 3. should flag an error: ambiguous types
+    public a1 a := a            // 1. should flag an error: ambiguous types
+    public a2 a := a 42         // 2. should flag an error: ambiguous types
+    public a3 a := a 47 11      // 3. should flag an error: ambiguous types
     set a1 := a
     set a2 := a 42
     set a3 := a 47 11
@@ -55,13 +55,13 @@ overloading_negative is
     a(i i32) i32 => 13
     a(i, j i32) String => "foo"
 
-    x := a
-    y := a 42
-    z := a 47 11
+    _ := a
+    _ := a 42
+    _ := a 47 11
 
-    a1 a := a            // 4. should flag an error: type not found
-    a2 a := a 42         // 5. should flag an error: type not found
-    a3 a := a 47 11      // 6. should flag an error: type not found
+    public a1 a := a            // 4. should flag an error: type not found
+    public a2 a := a 42         // 5. should flag an error: type not found
+    public a3 a := a 47 11      // 6. should flag an error: type not found
     set a1 := a
     set a2 := a 42
     set a3 := a 47 11

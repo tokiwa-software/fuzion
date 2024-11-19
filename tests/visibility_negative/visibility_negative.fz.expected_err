@@ -1712,7 +1712,7 @@ In call: 'c'
 
 
 --CURDIR--/visibility_negative.fz:513:10: error 215: No type information can be inferred from a lambda expression
-    e := ()->"x is "+x1+""   // 272. should flag an error: feature used before it is declared
+    _ := ()->"x is "+x1+""   // 272. should flag an error: feature used before it is declared
 ---------^^^^^^^^^^^^^^^^^
 A lambda expression can only be used if assigned to a field or argument of type 'Function'
 with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
@@ -1720,65 +1720,65 @@ assigned field must be given explicitly.
 To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
 
 
---CURDIR--/visibility_negative.fz:589:12: error 216: Could not find called feature
-    t16 := ix1    // 307. should flag an error: feature not visible
------------^^^
+--CURDIR--/visibility_negative.fz:589:10: error 216: Could not find called feature
+    _ := ix1    // 307. should flag an error: feature not visible
+---------^^^
 Feature not found: 'ix1' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'ix1'
 
 
---CURDIR--/visibility_negative.fz:590:12: error 217: Could not find called feature
-    t17 := ix2    // 308. should flag an error: feature not visible
------------^^^
+--CURDIR--/visibility_negative.fz:590:10: error 217: Could not find called feature
+    _ := ix2    // 308. should flag an error: feature not visible
+---------^^^
 Feature not found: 'ix2' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'ix2'
 
 
---CURDIR--/visibility_negative.fz:591:12: error 218: Could not find called feature
-    t18 := it1    // 309. should flag an error: feature not visible
------------^^^
+--CURDIR--/visibility_negative.fz:591:10: error 218: Could not find called feature
+    _ := it1    // 309. should flag an error: feature not visible
+---------^^^
 Feature not found: 'it1' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'it1'
 
 
---CURDIR--/visibility_negative.fz:592:12: error 219: Could not find called feature
-    t19 := it2    // 310. should flag an error: feature not visible
------------^^^
+--CURDIR--/visibility_negative.fz:592:10: error 219: Could not find called feature
+    _ := it2    // 310. should flag an error: feature not visible
+---------^^^
 Feature not found: 'it2' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'it2'
 
 
---CURDIR--/visibility_negative.fz:593:12: error 220: Could not find called feature
-    t20 := ix3    // 311. should flag an error: feature not visible
------------^^^
+--CURDIR--/visibility_negative.fz:593:10: error 220: Could not find called feature
+    _ := ix3    // 311. should flag an error: feature not visible
+---------^^^
 Feature not found: 'ix3' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'ix3'
 
 
---CURDIR--/visibility_negative.fz:594:12: error 221: Could not find called feature
-    t21 := b      // 312. should flag an error: feature not visible
------------^
+--CURDIR--/visibility_negative.fz:594:10: error 221: Could not find called feature
+    _ := b      // 312. should flag an error: feature not visible
+---------^
 Feature not found: 'b' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'b'
 
 
---CURDIR--/visibility_negative.fz:595:12: error 222: Could not find called feature
-    t22 := q      // 313. should flag an error: feature not visible
------------^
+--CURDIR--/visibility_negative.fz:595:10: error 222: Could not find called feature
+    _ := q      // 313. should flag an error: feature not visible
+---------^
 Feature not found: 'q' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'q'
 
 
---CURDIR--/visibility_negative.fz:596:12: error 223: Could not find called feature
-    t23 := r      // 314. should flag an error: feature not visible
------------^
+--CURDIR--/visibility_negative.fz:596:10: error 223: Could not find called feature
+    _ := r      // 314. should flag an error: feature not visible
+---------^
 Feature not found: 'r' (no arguments)
 Target feature: 'visibility_negative.visi9'
 In call: 'r'

@@ -23,7 +23,7 @@
 
 lm : mutate is
 
-_ := lm.instate_self ()->mmap_test
+_ := lm ! ()->mmap_test
 
 mmap_test =>
 

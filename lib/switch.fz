@@ -118,7 +118,7 @@ is
   #
   public and (O type, o switch A B) switch A B =>
     match switch.this
-      a A => o
+      A   => o
       b B => b
 
 
@@ -132,7 +132,7 @@ is
     # if ok then switch.this else f()
     match switch.this
       a A => a
-      b B => f()
+      B   => f()
 
 
   # unwraps an switch if it exists, returns default value otherwise.

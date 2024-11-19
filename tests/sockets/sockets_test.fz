@@ -39,9 +39,9 @@ sockets_test is
 
     accept =>
       match net.server.accept
-        e error => false
+        error => false
         c net.connection =>
-          sc := c.with unit lm ()->
+          c.with unit lm ()->
             chan => net.channel.env
 
             say_silent "$protocol/$family-server, accepted connection"
@@ -75,8 +75,7 @@ sockets_test is
                 panic "NI"
 
           _ := c.close
-
-          sc.ok
+          true
 
     while net.server.is_active && accept
     do
@@ -87,7 +86,7 @@ sockets_test is
   client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
 
     match net.client family protocol host port
-      err error =>
+      error =>
         say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
       c net.connection =>
 
@@ -154,7 +153,7 @@ sockets_test is
     for p in protocols do
       time.nano.sleep (time.duration.s 1)
       _ := concur.threads.spawn ()->
-        lm.instate_self ()->
+        lm ! ()->
           _ := server f p
 
   time.nano.sleep (time.duration.seconds 10)
@@ -165,7 +164,7 @@ sockets_test is
 
       # write request to server and read response
       for i in 1..2 do
-        lm.instate_self ()->
+        lm ! ()->
           client f p (net.family.localhost f) (port f p) i
 
   exit 0

@@ -772,6 +772,10 @@ public class C extends ANY
           "-Wno-unused-function",
           // used when casting jobject to e.g. u16
           "-Wno-pointer-to-int-cast",
+          // clang >= 19:
+          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/linux' [-Werror,-Wmissing-include-dirs]
+          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
+          "-Wno-missing-include-dirs",
           // allow infinite recursion
           "-Wno-infinite-recursion");
 

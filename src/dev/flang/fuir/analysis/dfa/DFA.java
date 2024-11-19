@@ -1194,10 +1194,10 @@ public class DFA extends ANY
         public LifeTime lifeTime(int cl)
         {
           return
-            (clazzKind(cl) != FeatureKind.Routine)
-                ? super.lifeTime(cl)
-                : currentEscapes(cl) ? LifeTime.Unknown :
-                                       LifeTime.Call;
+            (clazzKind(cl) != FeatureKind.Routine) ? super.lifeTime(cl) :
+            !_options.needsEscapeAnalysis() ||
+            currentEscapes(cl)                     ? LifeTime.Unknown
+                                                   : LifeTime.Call;
         }
 
 
@@ -1211,6 +1211,9 @@ public class DFA extends ANY
          */
         private boolean currentEscapes(int cl)
         {
+          if (PRECONDITIONS) require
+            (_options.needsEscapeAnalysis());
+
           return _escapes.contains(cl);
         }
 
@@ -1226,6 +1229,9 @@ public class DFA extends ANY
          */
         public boolean doesResultEscape(int s)
         {
+          if (PRECONDITIONS) require
+            (_options.needsEscapeAnalysis());
+
           return _escapesCode.contains(s);
         }
 
@@ -2859,7 +2865,7 @@ public class DFA extends ANY
        value != null);
 
     Val r;
-    if (!USE_EMBEDDED_VALUES || value instanceof NumericValue)
+    if (!_options.needsEscapeAnalysis() || !USE_EMBEDDED_VALUES || value instanceof NumericValue)
       {
         r = value;
       }
@@ -2904,7 +2910,7 @@ public class DFA extends ANY
       (instance._id >= 0);
 
     Val r;
-    if (!USE_EMBEDDED_VALUES || value instanceof NumericValue)
+    if (!_options.needsEscapeAnalysis() || !USE_EMBEDDED_VALUES || value instanceof NumericValue)
       {
         r = value;
       }

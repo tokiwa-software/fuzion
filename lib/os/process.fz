@@ -102,14 +102,14 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
     (io.buffered.reader LM (std_out_read_provider) pipe_buffer_size)
-      .try f
+      .instate_self f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
     (io.buffered.reader LM (std_err_read_provider) pipe_buffer_size)
-      .try f
+      .instate_self f
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>

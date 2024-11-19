@@ -34,7 +34,7 @@ main =>
   #
   Sequence.prefix ! String =>
     lm : mutate is
-    lm.instate_self ()->
+    lm ! ()->
       seq := map x->x.as_string
       match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing {Sequence.this}, error is $e"
@@ -49,7 +49,7 @@ main =>
   #
   String.infix | (seq Sequence String) String =>
     lm : mutate is
-    lm.instate_self ()->
+    lm ! ()->
       match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing $seq, error is $e"
         p os.process =>

@@ -1225,7 +1225,7 @@ EXCLAMATION : "!"
    */
   boolean skipEffects()
   {
-    return skip('!') && skipTypeList();
+    return skip('!') && skipSimpleTypeList();
   }
 
 
@@ -1629,6 +1629,23 @@ typeList    : type ( COMMA typeList
     while (skipComma())
       {
         result = result && skipType(false, true);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position has simpleTypeList and skip it.
+   *
+   * @return true iff the next token(s) form typeList, otherwise no typeList was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipSimpleTypeList()
+  {
+    boolean result = skipSimpletype();
+    while (skipComma())
+      {
+        result = result && skipSimpletype();
       }
     return result;
   }
