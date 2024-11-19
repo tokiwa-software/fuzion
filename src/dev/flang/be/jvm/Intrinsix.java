@@ -1102,6 +1102,21 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           "(Ljava/lang/Object;)V",
                           ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
       );
+    put("effect.type.get",
+        "effect.type.unsafe_get", (jvm, si, cc, tvalue, args) ->
+      {
+        var ecl = jvm._fuir.clazzResultClazz(cc); // type
+        var rt = jvm._types.resultType(ecl);
+        var val =
+          Expr.iconst(jvm.effectId(ecl))
+          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                     Names.RUNTIME_EFFECT_GET,
+                                     Names.RUNTIME_EFFECT_GET_SIG,
+                                     Names.ANY_TYPE))
+          .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));
+        var code = Expr.UNIT;
+        return new Pair<>(val, code);
+      });
 
     put(new String[]
       {

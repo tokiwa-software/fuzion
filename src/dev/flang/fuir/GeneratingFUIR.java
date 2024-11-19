@@ -45,7 +45,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
@@ -434,11 +433,6 @@ public class GeneratingFUIR extends FUIR
     else if (e instanceof InlineArray ia)
       {
         result = outerClazz.handDown(ia.type(), inh);
-      }
-
-    else if (e instanceof Env v)
-      {
-        result = outerClazz.handDown(v.type(), inh);
       }
 
     else
@@ -2185,28 +2179,6 @@ public class GeneratingFUIR extends FUIR
 
     var t = (Tag) getExpr(s);
     return t.tagNum();
-  }
-
-
-  /**
-   * For an instruction of type ExprKind.Env at site s, return the type of the
-   * env value.
-   *
-   * @param s a code site for an Env instruction.
-   */
-  @Override
-  public int envClazz(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= SITE_BASE,
-       withinCode(s),
-       codeAt(s) == ExprKind.Env);
-
-    var cl = clazzAt(s);
-    var outerClazz = clazz(cl);
-    var v = (Env) getExpr(s);
-    Clazz vcl = clazz(v, outerClazz, _inh.get(s - SITE_BASE));
-    return vcl == null ? -1 : vcl._id;
   }
 
 

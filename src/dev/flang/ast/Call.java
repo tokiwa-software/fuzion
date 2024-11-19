@@ -2440,7 +2440,7 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _resolvedFormalArgumentTypes = null;
-                  _target = new DotType(_pos, _target.asParsedType()).resolveTypes(res, context);
+                  _target = new DotType(_pos, _target).resolveTypes(res, context);
                 }
             }
           if (_calledFeature != null &&

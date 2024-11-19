@@ -58,6 +58,11 @@ public effect is
   # --------------------  effect intrinsics  --------------------
 
 
+  # get this effect from env
+  #
+  public type.get effect.this => intrinsic
+
+
   # set default effect in the current context to this if none is
   # installed
   #
@@ -252,8 +257,7 @@ public effect is
   # in case static analysis fails to verify that `effect.this` is
   # actually instated.
   #
-  type.unsafe_get =>
-    effect.this.env
+  type.unsafe_get effect.this => intrinsic
 
 
   # --------------------  replacing effect instances  --------------------

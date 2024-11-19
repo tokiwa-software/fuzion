@@ -956,24 +956,6 @@ class CodeGen
 
 
   /**
-   * Access the effect of type ecl that is installed in the environment.
-   */
-  @Override
-  public Pair<Expr, Expr> env(int s, int ecl)
-  {
-    var rt = _types.resultType(ecl);
-    var res =
-      Expr.iconst(_jvm.effectId(ecl))
-      .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                 Names.RUNTIME_EFFECT_GET,
-                                 Names.RUNTIME_EFFECT_GET_SIG,
-                                 Names.ANY_TYPE))
-      .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));
-    return new Pair<>(res, Expr.UNIT);
-  }
-
-
-  /**
    * Are jt and resultType(type) a primitive type and do they match?
    */
   private boolean primitiveTypeMatches(JavaType jt, int type)
