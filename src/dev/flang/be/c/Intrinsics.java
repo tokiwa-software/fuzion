@@ -1039,7 +1039,7 @@ public class Intrinsics extends ANY
                         .castTo(c._types.clazz(ecl) + " *")
                         .deref();
               var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
-              o = CStmnt.iff(evi.not(), o, res.ret());
+              o = CStmnt.iff(evi.not(), o, c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : res.ret());
             }
           return o;
         });
