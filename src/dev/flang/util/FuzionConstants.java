@@ -384,7 +384,6 @@ public class FuzionConstants extends ANY
     Const,
     Match,
     Tag,
-    Env,
     Pop,
     Unit,
     InlineArray;
