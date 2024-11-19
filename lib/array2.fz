@@ -23,28 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-# array(length0, length1) -- two-dimensional immutable array
-#
-# array provides two-dimensional immutable arrays. These are actually
-# one-dimensional immutable arrays with an additional access function with
-# two index parameters.
-#
-public array2(T type,
-              length0, length1 i32,
-              init2 (i32, i32) -> T)
-  pre
-    safety: length0 ≥ 0
-    safety: length1 ≥ 0
-    safety: length0 *? length1 >=? 0
-=>
-
-  internal_array := fuzion.sys.internal_array_init T length0*length1
-  for i1 in 0..length0-1 do
-    for i2 in 0..length1-1 do
-      internal_array[i1 * length1 + i2] := init2 i1 i2
-
-  array2 length0 length1 internal_array unit unit
-
 
 # array(length0, length1) -- two-dimensional immutable array
 #
@@ -58,7 +36,7 @@ private:public array2(
        redef internal_array fuzion.sys.internal_array T,
        _ unit,
        _ unit)
- : array internal_array unit unit unit
+ : array T /* NYI: BUG: when removing T Failed to infer actual type parameters */ internal_array unit unit unit
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
@@ -128,7 +106,7 @@ is
   # flips the array along its diagonal
   #
   public transpose =>
-    array2 length1 length0 i,j->index[](j, i)
+    (array2 T).new length1 length0 i,j->index[](j, i)
 
 
   # create an array2 from a Sequence of a Sequence of elements
@@ -136,4 +114,27 @@ is
   public type.create2(s Sequence (Sequence T)) =>
     a := s.map s1->s1.as_array
           .as_array
-    array2 a.count a[0].count i,j->a[i][j]
+    (array2 T).new a.count a[0].count i,j->a[i][j]
+
+
+
+  # array(length0, length1) -- two-dimensional immutable array
+  #
+  # array provides two-dimensional immutable arrays. These are actually
+  # one-dimensional immutable arrays with an additional access function with
+  # two index parameters.
+  #
+  public type.new(length0, length1 i32,
+                  init2 (i32, i32) -> T)
+    pre
+      safety: length0 ≥ 0
+      safety: length1 ≥ 0
+      safety: length0 *? length1 >=? 0
+  =>
+
+    internal_array := fuzion.sys.internal_array_init T length0*length1
+    for i1 in 0..length0-1 do
+      for i2 in 0..length1-1 do
+        internal_array[i1 * length1 + i2] := init2 i1 i2
+
+    array2 length0 length1 internal_array unit unit
