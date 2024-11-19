@@ -359,7 +359,8 @@ FUZION_FILES = \
 			 $(BUILD_DIR)/examples \
 			 $(BUILD_DIR)/include \
 			 $(BUILD_DIR)/README.md \
-			 $(BUILD_DIR)/release_notes.md
+			 $(BUILD_DIR)/release_notes.md \
+			 $(BUILD_DIR)/include/libfuzion.so
 
 # files required for fz command with jvm backend
 FZ_JVM = \
@@ -1138,6 +1139,8 @@ $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.ad
 	mkdir -p $(@D)
 	asciidoctor $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
 
+$(BUILD_DIR)/include/libfuzion.so: $(BUILD_DIR)/include
+	clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/include/libfuzion.so
 
 # NYI integrate into fz: fz -docs
 $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)

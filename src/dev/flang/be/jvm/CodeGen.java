@@ -569,6 +569,21 @@ class CodeGen
         Errors.error("Call to abstract feature encountered.",
                      "Found call to " + clazzInQuotes(cc));
         break;
+      case Native   :
+        {
+          var call = args(false, tvalue, args, cc, _fuir.clazzArgCount(cc))
+          // NYI: UNDER DEVELOPMENT: package
+            .andThen(Expr.invokeStatic("dev/flang/jextract/fz_h",
+                                      _fuir.clazzBaseName(cc),
+                                      _types.descriptor(false, cc),
+                                      _types.resultType(_fuir.clazzResultClazz(cc)),
+                                      _fuir.sitePos(si).line()
+              ));
+
+
+          res = makePair(call, rt);
+          break;
+        }
       case Intrinsic:
         {
           if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
@@ -582,7 +597,6 @@ class CodeGen
           // fall through!
         }
       case Routine  :
-      case Native   :
         {
           if (_types.clazzNeedsCode(cc))
             {
