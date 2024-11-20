@@ -17,25 +17,23 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.buffered.writer
+#  Source code of Fuzion standard library feature io.buffered.writer0
 #
 # -----------------------------------------------------------------------
 
 
-# buffered.writer effect allows buffered writing
+# buffered.writer0 effect allows buffered writing
 # by using the given Write_Provider
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(wp Write_Provider, buf_size i32) => writer wp buf_size nil
-private:public writer(wp Write_Provider, buf_size i32, buff option (container.Circular_Buffer u8 LM)) : effect # : mutate
+public writer0(wp Write_Provider, buf_size i32) : mutate
 pre debug: buf_size > 0
 is
 
-  # circular buffer backing this writer
+  # circular buffer backing this writer0
   #
-  buffer => buff.get
-#  buffer := instate_self (() -> (mutate.circular_buffer u8).new writer.this buf_size.as_i64 0)
+  buffer := instate_self (() -> (mutate.circular_buffer u8).new writer0.this buf_size.as_i64 0)
 
 
   # flush the buffer, that is, write out everything that is still
@@ -68,7 +66,7 @@ is
     for n_written := 0, n_written + r
         e outcome unit := unit, e0
     while n_written < n
-      y := LM.new (outcome unit unit)
+      y := new (outcome unit unit)
       f =>
         if buffer.buffered = 0 && (n - n_written) > buf_size
           # can write directly
@@ -90,26 +88,3 @@ is
       write_result n_written e
     else
       write_result n_written e
-
-
-
-  # infix variant instate_self
-  #
-  # use it like this:
-  #
-  #     effect_instance ! ()->code
-  #
-  public redef infix !(# result type
-                 R type,
-
-                 # the code to execute with `e` instated.
-                 code () -> R
-  ) R
-  =>
-    LM.instate_self ()->
-      instate_self ()->
-        (writer wp buf_size ((mutate.circular_buffer u8).new LM buf_size.as_i64 0)).replace
-        code.call
-
-
-LM : mutate is

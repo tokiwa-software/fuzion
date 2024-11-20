@@ -30,4 +30,4 @@ write_provider : io.Write_Provider is
 # short-hand to return an io.writer with a write provider
 # allowing to write to stdout.
 #
-public stdout : io.buffered.writer write_provider 1024 is
+public stdout : io.buffered.writer0 write_provider 1024 is
