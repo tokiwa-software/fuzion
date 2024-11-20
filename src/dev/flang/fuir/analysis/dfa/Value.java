@@ -146,7 +146,10 @@ public class Value extends Val
           }
         else
           {
-            super.setField(dfa, field, v);
+            // a UNIT type value may have fields that are never read (i.e.,
+            // don't exist) or that are of unit type themselves
+            if (CHECKS) check
+              (!dfa.isRead(field) || dfa._fuir.clazzIsUnitType(dfa._fuir.clazzResultClazz(field)) || Errors.any());
           }
       }
 
@@ -288,12 +291,8 @@ public class Value extends Val
    */
   public void setField(DFA dfa, int field, Value v)
   {
-    var rt = dfa._fuir.clazzResultClazz(field);
-    if (!dfa._fuir.clazzIsUnitType(rt) && !Errors.any())
-      {
-        throw new Error("Value.setField for '"+dfa._fuir.clazzAsString(field)+"' called on class " +
-                        this + " (" + getClass() + "), expected " + Instance.class);
-      }
+    throw new Error("Value.setField for '"+dfa._fuir.clazzAsString(field)+"' called on class " +
+                    this + " (" + getClass() + "), expected " + Instance.class);
   }
 
 

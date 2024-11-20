@@ -2657,6 +2657,19 @@ public class DFA extends ANY
 
 
   /**
+   * Is this field ever read?
+   */
+  boolean isRead(int field)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+
+    var fnum = _fuir.clazzId2num(field);
+    return _readFields.get(fnum);
+  }
+
+
+  /**
    * To reduce number of calls created for unit type values, we originally
    * assume calls to an empty constructor with no arguments and not fields as
    * all the same.
