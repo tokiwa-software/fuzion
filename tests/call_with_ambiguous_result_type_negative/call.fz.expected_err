@@ -1,6 +1,6 @@
 
 --CURDIR--/call.fz:49:10: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
-  x := v.g   # error! ambiguous result type
+  _ := v.g   # error! ambiguous result type
 ---------^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
 Called feature: 'call_with_ambiguous_result_type.r.g'

@@ -53,8 +53,8 @@ argumentcount_negative is
   opengenerics22 ref : Function unit i32 is
     redef call(x, y bool) is                   // 8. should flag an error, wrong number of arguments
 
-  r3 Function unit          := opengenerics21  // 9. should flag an error: incompatible number of generic arguments
-  r4 Function unit i32 bool := opengenerics21  // 10. should flag an error: incompatible number of generic arguments
+  _ Function unit          := opengenerics21  // 9. should flag an error: incompatible number of generic arguments
+  _ Function unit i32 bool := opengenerics21  // 10. should flag an error: incompatible number of generic arguments
 
-  f3 Function i32 i32   := opengenerics15      // 11. should flag an error: incompatible types due to incompatible generics
-  f4 Function bool bool := opengenerics15      // 12. should flag an error: incompatible types due to incompatible generics
+  _ Function i32 i32   := opengenerics15      // 11. should flag an error: incompatible types due to incompatible generics
+  _ Function bool bool := opengenerics15      // 12. should flag an error: incompatible types due to incompatible generics

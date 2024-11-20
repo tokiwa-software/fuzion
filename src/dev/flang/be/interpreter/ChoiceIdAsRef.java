@@ -151,7 +151,8 @@ public class ChoiceIdAsRef extends Value
       {
         if (CHECKS) check
           (idAsRef instanceof ValueWithClazz ||
-           idAsRef instanceof JavaRef          );
+           idAsRef instanceof JavaRef        ||
+           idAsRef instanceof ArrayData  );
 
         var cl = (idAsRef instanceof ValueWithClazz id) ? id._clazz
                                                         : fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr);

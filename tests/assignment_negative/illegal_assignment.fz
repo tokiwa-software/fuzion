@@ -41,7 +41,7 @@ illegal_assignment is
   A ref is
     ident := id
     say "A's body$ident"
-    x is abstract
+    x unit => abstract
 
   B ref : A is
     say "B's body"

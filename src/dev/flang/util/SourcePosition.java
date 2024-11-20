@@ -409,6 +409,10 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
       {
         return this;
       }
+    else if (this == SourcePosition.notAvailable)
+      {
+        return this;
+      }
     else
       {
         return new SourceRange(_sourceFile, bytePos(), byteEndPos);

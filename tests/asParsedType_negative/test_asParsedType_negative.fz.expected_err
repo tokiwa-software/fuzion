@@ -25,7 +25,7 @@ Type that was not found: 'true'
 in feature: 'test_asParsedType_negative'
 However, one feature has been found that matches the type name but that does not define a type:
 'true' defined at $MODULE/bool.fz:173:8:
-public true bool => TRUE
+public true bool => true_
 -------^^^^
 
 To solve this, remove the return type (or replace it by 'ref') of this feature.
@@ -41,7 +41,7 @@ found none.
 
 
 --CURDIR--/test_asParsedType_negative.fz:140:3: error 5: Wrong number of type parameters
-  x (3=4 ? TRUE  => "a"         // 5. should flag an error: ?-match is not a type
+  x (3=4 ? true_  => "a"        // 5. should flag an error: ?-match is not a type
 --^
 Wrong number of actual type parameters in call:
 Called feature: test_asParsedType_negative.x

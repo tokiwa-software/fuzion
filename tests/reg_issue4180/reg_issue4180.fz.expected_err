@@ -1,0 +1,14 @@
+
+--CURDIR--/reg_issue4180.fz:26:32: error 1: Ambiguous targets found for call to 'a'
+  type.q(a universe.a.this) => a.h <= a.h
+-------------------------------^
+Found several possible call targets within the current feature at different levels of outer features:
+in 'a.type.q' found 'a.type.q.a' defined at --CURDIR--/reg_issue4180.fz:26:10:
+  type.q(a universe.a.this) => a.h <= a.h
+---------^
+and in 'universe' found 'a' defined at --CURDIR--/reg_issue4180.fz:24:1:
+a is
+^
+To solve this, you may qualify the feature using 'a.type.q.this.a' or 'universe.a'.
+
+one error.

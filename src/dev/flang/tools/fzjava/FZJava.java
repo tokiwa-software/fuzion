@@ -236,6 +236,7 @@ public class FZJava extends Tool
                                             /* executeCode */ null,
                                             /* main */ null,
                                             /* loadSources */ true,
+                                            /* needsEscapeAnalysis */ false,
                                             /* timer */ s -> timer(s));
         _fe = new FrontEnd(feOptions);
 

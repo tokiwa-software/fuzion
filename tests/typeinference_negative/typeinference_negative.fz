@@ -26,59 +26,59 @@
 typeinference_negative is
 
   cyclic0 is
-     x := x  // 1. c0.a should flag an error, cyclic type inference from oneself
+     public x := x  // 1. c0.a should flag an error, cyclic type inference from oneself
 
   cyclic1 is
-     x := y  // 2. c1.a should flag an error, field invisible
-     y := x
+     public x := y  // 2. c1.a should flag an error, field invisible
+     public y := x
 
   cyclic1a is
-     x := y  // 4. c1a.a should flag an error, field invisible
-     y := z  // 5. c1a.b should flag an error, field invisible
-     z := x
+     public x := y  // 4. c1a.a should flag an error, field invisible
+     public y := z  // 5. c1a.b should flag an error, field invisible
+     public z := x
 
   cyclic2a is
-     x := cyclic2b.x  // 7. c2.a should flag an error, cyclic type inference between cousins
+     public x := cyclic2b.x  // 7. c2.a should flag an error, cyclic type inference between cousins
 
   cyclic2b is
-     x := cyclic2a.x  // 8. c2.b should flag an error, cyclic type inference between cousins
+     public x := cyclic2a.x  // 8. c2.b should flag an error, cyclic type inference between cousins
 
 
   cyclic3aok is
-     x := cyclic3aok.y
+     public x := cyclic3aok.y
      y := 3
 
   cyclic3bok is
-     x := cyclic3bok.y
+     public x := cyclic3bok.y
      y := "Hello"
 
   cyclic4 is
-     a := b  //  9. c4.a should flag an error, field invisible
-     b := c  // 10. c4.b should flag an error, field invisible
-     c := d  // 11. c4.c should flag an error, field invisible
-     d := e  // 12. c4.d should flag an error, field invisible
-     e := f  // 13. c4.e should flag an error, field invisible
-     f := g  // 14. c4.f should flag an error, field invisible
-     g := h  // 15. c4.g should flag an error, field invisible
-     h := i  // 16. c4.h should flag an error, field invisible
-     i := j  // 17. c4.i should flag an error, field invisible
-     j := k  // 18. c4.j should flag an error, field invisible
-     k := l  // 19. c4.k should flag an error, field invisible
-     l := m  // 20. c4.l should flag an error, field invisible
-     m := n  // 21. c4.m should flag an error, field invisible
-     n := o  // 22. c4.n should flag an error, field invisible
-     o := p  // 23. c4.o should flag an error, field invisible
-     p := q  // 24. c4.p should flag an error, field invisible
-     q := r  // 25. c4.q should flag an error, field invisible
-     r := s  // 26. c4.r should flag an error, field invisible
-     s := t  // 27. c4.s should flag an error, field invisible
-     t := u  // 28. c4.t should flag an error, field invisible
-     u := v  // 29. c4.u should flag an error, field invisible
-     v := w  // 30. c4.v should flag an error, field invisible
-     w := x  // 31. c4.w should flag an error, field invisible
-     x := y  // 32. c4.x should flag an error, field invisible
-     y := z  // 33. c4.y should flag an error, field invisible
-     z := a
+     public a := b  //  9. c4.a should flag an error, field invisible
+     public b := c  // 10. c4.b should flag an error, field invisible
+     public c := d  // 11. c4.c should flag an error, field invisible
+     public d := e  // 12. c4.d should flag an error, field invisible
+     public e := f  // 13. c4.e should flag an error, field invisible
+     public f := g  // 14. c4.f should flag an error, field invisible
+     public g := h  // 15. c4.g should flag an error, field invisible
+     public h := i  // 16. c4.h should flag an error, field invisible
+     public i := j  // 17. c4.i should flag an error, field invisible
+     public j := k  // 18. c4.j should flag an error, field invisible
+     public k := l  // 19. c4.k should flag an error, field invisible
+     public l := m  // 20. c4.l should flag an error, field invisible
+     public m := n  // 21. c4.m should flag an error, field invisible
+     public n := o  // 22. c4.n should flag an error, field invisible
+     public o := p  // 23. c4.o should flag an error, field invisible
+     public p := q  // 24. c4.p should flag an error, field invisible
+     public q := r  // 25. c4.q should flag an error, field invisible
+     public r := s  // 26. c4.r should flag an error, field invisible
+     public s := t  // 27. c4.s should flag an error, field invisible
+     public t := u  // 28. c4.t should flag an error, field invisible
+     public u := v  // 29. c4.u should flag an error, field invisible
+     public v := w  // 30. c4.v should flag an error, field invisible
+     public w := x  // 31. c4.w should flag an error, field invisible
+     public x := y  // 32. c4.x should flag an error, field invisible
+     public y := z  // 33. c4.y should flag an error, field invisible
+     public z := a
 
   cyclic5ok is
      a := 1
@@ -106,7 +106,7 @@ typeinference_negative is
      w := v
      x := w
      y := x
-     z := y
+     _ := y
 
   funct1 is
      a () -> i32 := () -> 3
@@ -114,31 +114,31 @@ typeinference_negative is
      c := b
      d := c
 
-     xx := d() // should work
+     _ := d() // should work
 
   funct2 is
-     a := d  // 35. f2. should flag an error, illegal forward reference
+     _ := d  // 35. f2. should flag an error, illegal forward reference
      b () -> i32 := () -> 3
      c := b
      d := c
 
-     xx := d() // should work
+     _ := d() // should work
 
   expr1 is
      a := 3
-     b := { a }
+     _ := { a }
 
   expr2 is
      a := 3
      b := 5
      c := true
-     d := { if c { a } else { b } }
+     _ := { if c { a } else { b } }
 
   expr3 is
      a := 3
      b := 5
      c := a > b
-     d := c ? a : b
+     _ := c ? a : b
 
   result1 is
     x => 3
@@ -166,7 +166,7 @@ typeinference_negative is
     y => x // 39. r5.y should flag an error, cyclic result type inference
 
   mix1 is
-    x := f
+    _ := f
     f => 3
 
   mix2 is
@@ -174,26 +174,26 @@ typeinference_negative is
     x := 3
 
   mix3 is
-    x := f // 40. m3.x should flag an error, cyclic type inference between field and feature result type
+    public x := f // 40. m3.x should flag an error, cyclic type inference between field and feature result type
     f => x // 41. m3.f should flag an error, cyclic type inference between field and feature result type
 
   mix4 is
     f => x // 42. m4.f should flag an error, field invisible
-    x := f
+    public x := f
 
   mix5 is
     x := 3
     f => x
     g => y
     y := f
-    z := g
+    _ := g
 
   mix6 is // the types here are ok, but this has an access to an uninitialized field
     x := 3
     f => x
     g => y // 44. m6.z should flag an error, y accessed before it is initialized
-    z := g
-    y := f
+    _ := g
+    public y := f
 
   mix7 is
     x := 3
@@ -201,16 +201,16 @@ typeinference_negative is
     g => f
     h => y
     y := g
-    z := h
+    _ := h
 
   mix8 is
-    x := h; f => {x}; g => {f}; h => {y}; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
-    z := h
+    x := h; f => {x}; g => {f}; h => {y}; public y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
+    _ := h
 
   typeInferencingFromIf1(b bool) =>
     if       b     { 3 }         // 46. should flag an error: incompatible types in branches of if expression
     else if !b     { "String" }
-    else if b && b { x i32 := 3 }
+    else if b && b { _ i32 := 3 }
     else if b || b { }
     else           { false }
 
@@ -218,12 +218,12 @@ typeinference_negative is
     f =>
       if       b     { 3 }         // 47. should flag an error: incompatible types in branches of if expression
       else if !b     { "String" }
-      else if b && b { x i32 := 3 }
+      else if b && b { _ i32 := 3 }
       else if b || b { }
       else           { false }
 
   typeInferencingFromIf3(b bool) is
-    f choice i32 String bool :=
+    _ choice i32 String bool :=
       {
         if       b { 3 }
         else if !b { "String" }
@@ -248,9 +248,9 @@ typeinference_negative is
 
     test(x abcde) =>
       match x          // 48. should flag an error: incompatible types in cases of match expression
-        a A => 3
+        A   => 3
         B,C => "String"
-        d D => false
+        D   => false
         e E => e
 
   typeInferencingFromMatch2 is
@@ -264,9 +264,9 @@ typeinference_negative is
     test(x abcde) is
       f =>
         match x          // 49. should flag an error: incompatible types in cases of match expression
-          a A => 3
+          A   => 3
           B,C => "String"
-          d D => false
+          D   => false
           e E => e
 
   typeInferencingFromMatch3 is
@@ -278,12 +278,12 @@ typeinference_negative is
     abcde : choice A B C D E is
     x abcde := A
 
-    f choice i32 String bool E :=
+    _ choice i32 String bool E :=
       {
         match x
-          a A => 3
+          A   => 3
           B,C => "String"
-          d D => false
+          D   => false
           e E => e
       }
 
@@ -299,8 +299,8 @@ typeinference_negative is
     f(y choice i32 String bool E) =>
     f({
         match x
-          a A => 3
+          A   => 3
           B,C => "String"
-          d D => false
+          D   => false
           e E => e
       })

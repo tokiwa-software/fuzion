@@ -44,7 +44,7 @@ public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
   public catch(code_catch ERROR->T) =>
     lm : mutate is
 
-    lm.instate_self ()->
+    lm ! ()->
       m := lm.env.new (option ERROR nil)
       v := F.new e->
                 m <- e

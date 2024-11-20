@@ -448,7 +448,7 @@ class LibraryOut extends ANY
     _data.add(f);
     int k = f.visibility().ordinal() << 7;
     k = k | (!f.isConstructor() ? f.kind().ordinal() :
-              f.isThisRef()     ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
+              f.isRef()     ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
                                 : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
@@ -668,7 +668,7 @@ class LibraryOut extends ANY
    *   | hasPos | 1      | int           | source position: index in this file's         |
    *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Add | 1      | Assign        | assignment                                    |
+   *   | k==Ass | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+

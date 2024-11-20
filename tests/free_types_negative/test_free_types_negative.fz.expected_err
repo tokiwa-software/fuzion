@@ -9,7 +9,15 @@ The existing type was declared at --CURDIR--/test_free_types_negative.fz:120:3:
 To solve this, you may use a different name for free type 'EXISTING_TYPE'.
 
 
---CURDIR--/test_free_types_negative.fz:49:3: error 2: Incompatible types found during type inference for type parameters
+--CURDIR--/test_free_types_negative.fz:49:3: error 2: Failed to infer actual type parameters
+  c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
+--^^
+In call to 'test_free_type_negative.c1', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/test_free_types_negative.fz:49:3: error 3: Incompatible types found during type inference for type parameters
   c1 3.14 "e"        # 2. should flag an error, incompatible types inferred for `T`
 --^^
 Types inferred for first type parameter 'T':
@@ -21,7 +29,15 @@ Types inferred for first type parameter 'T':
 -----^^^^
 
 
---CURDIR--/test_free_types_negative.fz:52:3: error 3: Incompatible types found during type inference for type parameters
+--CURDIR--/test_free_types_negative.fz:52:3: error 4: Failed to infer actual type parameters
+  c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
+--^^
+In call to 'test_free_type_negative.c2', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/test_free_types_negative.fz:52:3: error 5: Incompatible types found during type inference for type parameters
   c2 3.14 "e"        # 3. should flag an error, incompatible types inferred for `T`
 --^^
 Types inferred for first type parameter 'T':
@@ -33,7 +49,15 @@ Types inferred for first type parameter 'T':
 -----^^^^
 
 
---CURDIR--/test_free_types_negative.fz:61:3: error 4: Incompatible types found during type inference for type parameters
+--CURDIR--/test_free_types_negative.fz:61:3: error 6: Failed to infer actual type parameters
+  d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
+--^
+In call to 'test_free_type_negative.d', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: '_'
+Type inference failed for one type parameter '_'
+
+
+--CURDIR--/test_free_types_negative.fz:61:3: error 7: Incompatible types found during type inference for type parameters
   d 3.14 "e"         # 4. should flag an error, incompatible types inferred for same anonymous type
 --^
 Types inferred for first type parameter '_':
@@ -45,7 +69,7 @@ Types inferred for first type parameter '_':
 ----^^^^
 
 
---CURDIR--/test_free_types_negative.fz:115:17: error 5: Could not find called feature
+--CURDIR--/test_free_types_negative.fz:115:17: error 8: Could not find called feature
   neg(x i33) => -x   # 8. should flag an error that is not too confusing
 ----------------^
 Feature not found: 'prefix -' (no arguments)
@@ -56,7 +80,7 @@ To solve this, you might replace the free type 'test_free_type_negative.neg.i33'
 --------^^^
 
 
---CURDIR--/test_free_types_negative.fz:142:9: error 6: Failed to infer actual type parameters
+--CURDIR--/test_free_types_negative.fz:142:9: error 9: Failed to infer actual type parameters
   say ((apply2             a,b->"$a $b").call true 3.14)   # 10. should flag an error, unable to infer actual type parameters
 --------^^^^^^
 In call to 'test_free_type_negative.apply2', no actual type parameters are given and inference of the type parameters failed.
@@ -64,7 +88,7 @@ Expected type parameters: 'A, B'
 Type inference failed for 2 type parameters 'A', 'B'
 
 
---CURDIR--/test_free_types_negative.fz:150:9: error 7: Failed to infer actual type parameters
+--CURDIR--/test_free_types_negative.fz:150:9: error 10: Failed to infer actual type parameters
   say ((apply3a         a,b->"$a $b").call true (u8 127))  # 11. should flag an error, unable to infer actual type parameters
 --------^^^^^^^
 In call to 'test_free_type_negative.apply3a', no actual type parameters are given and inference of the type parameters failed.
@@ -72,21 +96,21 @@ Expected type parameters: 'A, B'
 Type inference failed for 2 type parameters 'A', 'B'
 
 
---CURDIR--/test_free_types_negative.fz:35:3: error 8: Incompatible type parameter
+--CURDIR--/test_free_types_negative.fz:35:3: error 11: Incompatible type parameter
   a2 "fourty two"    # 1. should flag an error: type constraint not respected
 --^^
 formal type parameter 'T' with constraint 'numeric'
 actual type parameter 'String'
 
 
---CURDIR--/test_free_types_negative.fz:91:3: error 9: Incompatible type parameter
+--CURDIR--/test_free_types_negative.fz:91:3: error 12: Incompatible type parameter
   g ga3              # 6. should flag an error since type arguments are in the wrong order such that constraint is not matched
 --^
 formal type parameter 'B' with constraint 'numeric'
 actual type parameter 'String'
 
 
---CURDIR--/test_free_types_negative.fz:74:5: error 10: Type inference from actual arguments failed due to incompatible types of actual arguments
+--CURDIR--/test_free_types_negative.fz:74:5: error 13: Type inference from actual arguments failed due to incompatible types of actual arguments
   f(v,w) => say "f: $v $w"
 ----^
 For the formal argument 'test_free_type_negative.f.v' the following incompatible actual arguments where found for type inference:
@@ -98,7 +122,7 @@ actual is value of type 'f64' at --CURDIR--/test_free_types_negative.fz:76:5:
 ----^^^^
 
 
---CURDIR--/test_free_types_negative.fz:105:35: error 11: Incompatible types when passing argument in a call
+--CURDIR--/test_free_types_negative.fz:105:35: error 14: Incompatible types when passing argument in a call
   x2(s Sequence T, v U) => [v] ++ s ++ [v]    # 7. should flag an error since types are incompatible due to different free types
 ----------------------------------^
 Actual type for argument #1 's' does not match expected type.
@@ -111,4 +135,4 @@ assignable to       : 'Any',
 for value assigned  : 's'
 To solve this, you could change the type of the target 's' to 'Sequence test_free_type_negative.x2.T' or convert the type of the assigned value to 'Sequence test_free_type_negative.x2.U'.
 
-11 errors.
+14 errors.

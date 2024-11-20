@@ -350,6 +350,20 @@ public class FuzionOptions extends ANY
   }
 
 
+  /**
+   * Do we need to perform escape analysis during DFA phase since the backend needs that?
+   *
+   * This currently has a signficant impact on the DFA performance, so we try to
+   * avoid this for backends that do not need it (JVM and interpreter).
+   *
+   * @return true if escape analysis has to be performed.
+   */
+  public boolean needsEscapeAnalysis()
+  {
+    return false;
+  }
+
+
 }
 
 /* end of file */

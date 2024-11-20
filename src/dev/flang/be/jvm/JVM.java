@@ -802,7 +802,6 @@ should be avoided as much as possible.
              FUIR fuir)
   {
     _options = opt;
-    fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _fuir = fuir;
     _names = new Names(fuir);
     _types = new Types(opt, fuir, _names);

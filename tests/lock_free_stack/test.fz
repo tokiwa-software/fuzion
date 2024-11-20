@@ -9,7 +9,7 @@ test =>
 
   (1..4)
     .map (_)->
-      concur.thread.spawn ()->
+      concur.threads.spawn ()->
         for i in 1..100 do
           s.push i
           p := s.pop

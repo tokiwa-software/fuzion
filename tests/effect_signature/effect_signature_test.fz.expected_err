@@ -1,0 +1,31 @@
+
+--CURDIR--/effect_signature_test.fz:33:37: error 1: Feature 'encodings' is not an effect.
+  non_effect_feature_in_signature ! encodings =>
+------------------------------------^^^^^^^^^
+Effects required by a feature are specified with '!' in the signature. Therefore, only valid effects may follow after it.
+
+
+--CURDIR--/effect_signature_test.fz:36:46: error 2: Type not found
+  non_existing_feature_in_effect_signature ! blabla =>
+---------------------------------------------^^^^^^
+Type 'blabla' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'blabla'
+in feature: 'effect_signature_test.non_existing_feature_in_effect_signature'
+To solve this, check the spelling of the type you have used.
+
+
+--CURDIR--/effect_signature_test.fz:39:28: error 3: Feature 'String' is not an effect.
+  mixed_effect_signature ! String, mutate, blabla =>
+---------------------------^^^^^^
+Effects required by a feature are specified with '!' in the signature. Therefore, only valid effects may follow after it.
+
+
+--CURDIR--/effect_signature_test.fz:39:44: error 4: Type not found
+  mixed_effect_signature ! String, mutate, blabla =>
+-------------------------------------------^^^^^^
+Type 'blabla' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'blabla'
+in feature: 'effect_signature_test.mixed_effect_signature'
+To solve this, check the spelling of the type you have used.
+
+4 errors.

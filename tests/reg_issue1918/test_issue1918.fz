@@ -5,7 +5,7 @@ test_issue1918 =>
 
   (1..4)
     .map (_)->
-      concur.thread.spawn ()->
+      concur.threads.spawn ()->
         do
           p option i32 := 1
           while !(count p.get)

@@ -27,7 +27,7 @@
 semicolon_ambiguity =>
 
   # TESTING ERRORS FOR AMBIGUOUS SEMICOLON
-  g1 ()->unit := ()->say "hi"; say "ho"
+  _ ()->unit := ()->say "hi"; say "ho"
   g2 => say "I'm g2"; say "this is ambiguous"
 
   if true then if true then say "inner"; say "ambiguous"
@@ -36,8 +36,8 @@ semicolon_ambiguity =>
 
   match_test_2(val choice i32 codepoint) ()->unit =>
     match val
-      i i32       => ()->yak "'$i'"; say " is a number"
-      c codepoint => ()->yak "'$c'"; say " is a codepoint"
+      i32       => ()->yak "'$i'"; say " is a number"
+      codepoint => ()->yak "'$c'"; say " is a codepoint"
   res_1 := match_test_2 42
   res_1()
   res_2 := match_test_2 "B"

@@ -37,6 +37,8 @@ import java.util.TreeSet;
 
 import java.util.function.Supplier;
 
+import java.util.stream.Stream;
+
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.FUIR.SpecialClazzes;
@@ -340,7 +342,7 @@ public class DFA extends ANY
           var r = access0(s, tvalue, args, cc, original_tvalue);
           if (r != null)
             {
-              res = res == null ? r : res.joinVal(DFA.this, r);
+              res = res == null ? r : res.joinVal(DFA.this, r, _fuir.clazzResultClazz(cc));
             }
         }
       else
@@ -610,7 +612,7 @@ public class DFA extends ANY
           var b = _fuir.deseralizeConst(elementClazz, d);
           elements = elements == null
             ? constData(s, elementClazz, b).v0().value()
-            : elements.join(DFA.this, constData(s, elementClazz, b).v0().value());
+            : elements.join(DFA.this, constData(s, elementClazz, b).v0().value(), elementClazz);
         }
       SysArray sysArray = newSysArray(elements, elementClazz);
 
@@ -766,14 +768,32 @@ public class DFA extends ANY
    *
    * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=
+   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=on
    *
    * To show more details for feature `io.out.replace`
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=io.out.replace
    *
    */
-  static final String SHOW_CALLS = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_CALLS");
+  static final String SHOW_CALLS_ENV = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_CALLS", "off");
+  static final String SHOW_CALLS = Stream.of("off", "").anyMatch(SHOW_CALLS_ENV::equals) ? null : SHOW_CALLS_ENV;
+
+
+  /**
+   * Set this to show statistics on the clazzes that caused the most value that
+   * need to be analysed.
+   *
+   * To enable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=on
+   *
+   * To show more details for feature `u32`
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=u32
+   *
+   */
+  static final String SHOW_VALUES_ENV = FuzionOptions.propertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SHOW_VALUES", "off");
+  static final String SHOW_VALUES = Stream.of("off", "").anyMatch(SHOW_VALUES_ENV::equals) ? null : SHOW_VALUES_ENV;
 
 
   /**
@@ -781,15 +801,11 @@ public class DFA extends ANY
    * equals calls `t.f args` if they occur at different sites, i.e., location in
    * the source code.
    *
-   * To disable, use fz with
+   * To enable, use fz with
    *
-   *   dev_flang_fuir_analysis_dfa_DFA_SITE_SENSITIVE=false
-   *
-   * NYI: OPTIMIZATION: For most tests, site sensitivity adds significant
-   * overhead. However, some tests like fuzion/tests/transducers require this to
-   * work properly.
+   *   dev_flang_fuir_analysis_dfa_DFA_SITE_SENSITIVE=true
    */
-  static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", true);
+  static final boolean SITE_SENSITIVE = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.SITE_SENSITIVE", false);
 
 
   /**
@@ -1044,6 +1060,12 @@ public class DFA extends ANY
 
 
   /**
+   * All clazzes that containt fields that are ever read.
+   */
+  BitSet _hasFields = new BitSet();
+
+
+  /**
    * Map from type to corresponding default effects.
    *
    * NYI: this might need to be thread-local and not global!
@@ -1131,7 +1153,7 @@ public class DFA extends ANY
           {
             _trueX  = newTaggedValue(bool, Value.UNIT, 1);
             _falseX = newTaggedValue(bool, Value.UNIT, 0);
-            _boolX  = _trueX.join(this, _falseX);
+            _boolX  = _trueX.join(this, _falseX, bool);
           }
         else
           { // we have a very small application that does not even use `bool`
@@ -1182,10 +1204,10 @@ public class DFA extends ANY
         public LifeTime lifeTime(int cl)
         {
           return
-            (clazzKind(cl) != FeatureKind.Routine)
-                ? super.lifeTime(cl)
-                : currentEscapes(cl) ? LifeTime.Unknown :
-                                       LifeTime.Call;
+            (clazzKind(cl) != FeatureKind.Routine) ? super.lifeTime(cl) :
+            !_options.needsEscapeAnalysis() ||
+            currentEscapes(cl)                     ? LifeTime.Unknown
+                                                   : LifeTime.Call;
         }
 
 
@@ -1199,6 +1221,9 @@ public class DFA extends ANY
          */
         private boolean currentEscapes(int cl)
         {
+          if (PRECONDITIONS) require
+            (_options.needsEscapeAnalysis());
+
           return _escapes.contains(cl);
         }
 
@@ -1214,6 +1239,9 @@ public class DFA extends ANY
          */
         public boolean doesResultEscape(int s)
         {
+          if (PRECONDITIONS) require
+            (_options.needsEscapeAnalysis());
+
           return _escapesCode.contains(s);
         }
 
@@ -1238,6 +1266,27 @@ public class DFA extends ANY
           var key = ((long)s<<32)|((long)cix);
           return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
         };
+
+
+        @Override
+        public boolean clazzIsUnitType(int cl)
+        {
+          return super.clazzIsUnitType(cl) || isUnitType(cl);
+        }
+
+
+        @Override
+        public int clazzOuterRef(int cl)
+        {
+          var res = NO_CLAZZ;
+          var or = super.clazzOuterRef(cl);
+          if (or != NO_CLAZZ && !clazzIsUnitType(clazzResultClazz(or)))
+            {
+              res = or;
+            }
+
+          return res;
+        }
 
       };
 
@@ -1371,6 +1420,46 @@ public class DFA extends ANY
                                  i++;
                                }
                              prev = cc;
+                           }
+                       }
+                   });
+      }
+
+    if (SHOW_VALUES != null)
+      {
+        var total = _uniqueValues.size();
+        var counts = new IntMap<Integer>();
+        for (var v : _uniqueValues)
+          {
+            var i = counts.getOrDefault(v._clazz, 0);
+            counts.put(v._clazz, i+1);
+            if (v._clazz == -1 && ((i&(i-1))==0)) System.out.println("clazz is null for "+v.getClass()+" "+v);
+          }
+        counts
+          .keySet()
+          .stream()
+          .sorted((a,b)->
+                  { var ca = counts.get(a);
+                    var cb = counts.get(b);
+                    return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
+                      : Integer.compare(a, b);
+                  })
+          .filter(c -> counts.get(c) > total / 5000)
+          .forEach(c ->
+                   {
+                     System.out.println("Value count "+counts.get(c)+"/"+total+" for "+_fuir.clazzAsString(c));
+                     if (_fuir.clazzAsString(c).equals(SHOW_VALUES))
+                       {
+                         var i = 0;
+                         Value prev = null;
+                         for (var v : _uniqueValues)
+                           {
+                             if (v._clazz == c)
+                               {
+                                 System.out.println(i + ": " + v);
+                                 i++;
+                               }
+                             prev = v;
                            }
                        }
                    });
@@ -2127,7 +2216,7 @@ public class DFA extends ANY
               var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1));
               var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
               result =
-                result != null && res != null ? result.value().join(cl._dfa, res.value()) :
+                result != null && res != null ? result.value().join(cl._dfa, res.value(), cl._dfa._fuir.clazzResultClazz(cl._cc)) :
                 result != null                ? result
                                               : res;
             }
@@ -2256,7 +2345,7 @@ public class DFA extends ANY
         var msg = cl._dfa._fuir.lookup_error_msg(error_cl);
         error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
         var err = cl._dfa.newTaggedValue(rc, error, 1);
-        return okay.join(cl._dfa, err);
+        return okay.join(cl._dfa, err, cl._dfa._fuir.clazzResultClazz(cl._cc));
       }
     return switch (cl._dfa._fuir.getSpecialClazz(rc))
       {
@@ -2289,7 +2378,7 @@ public class DFA extends ANY
     var msg = dfa._fuir.lookup_error_msg(error_cl);
     error.setField(dfa, msg, dfa.newConstString(null, cl));
     var err = dfa.newTaggedValue(rc, error, 1);
-    return okay.join(dfa, err);
+    return okay.join(dfa, err, rc);
   }
 
 
@@ -2327,7 +2416,7 @@ public class DFA extends ANY
         var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
         var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
         var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
-        var sref3 = fuir.clazzArgClazz(cc, 3);
+        var sref3 = fuir.clazzArg(cc, 3);
         var data4 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa.readField(sref0);
         cl._dfa.readField(sref1);
@@ -2372,27 +2461,27 @@ public class DFA extends ANY
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_trylock"           , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_unlock"            , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_destroy"           , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return Value.UNIT;
       });
     put("concur.sync.cnd_init"              , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return outcome(cl._dfa,
                        cl,
                        cl._dfa._fuir.clazzResultClazz(cl._cc),
@@ -2400,23 +2489,23 @@ public class DFA extends ANY
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 1));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 1));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {
-        cl._dfa.readField(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return Value.UNIT;
       });
   }
@@ -2428,7 +2517,7 @@ public class DFA extends ANY
   void replaceDefaultEffect(int ecl, Value e)
   {
     var old_e = _defaultEffects.get(ecl);
-    var new_e = old_e == null ? e : old_e.join(this, e);
+    var new_e = old_e == null ? e : old_e.join(this, e, ecl);
     if (old_e == null || Value.compare(old_e, new_e) != 0)
       {
         _defaultEffects.put(ecl, new_e);
@@ -2532,16 +2621,15 @@ public class DFA extends ANY
   }
 
 
-
-
-  BitSet _hasFields = new BitSet();
-  boolean hasFields(int cl)
-  {
-    return _hasFields.get(_fuir.clazzId2num(cl)) || _fuir.clazzArgCount(cl) != 0 || _fuir.clazzIsChoice(cl)
-      || _defaultEffects.get(cl)!=null;
-  }
+  /**
+   * Remember that the given field is read.  Fields that are never read will be
+   * removed from the code.
+   */
   void readField(int field)
   {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+
     var fnum = _fuir.clazzId2num(field);
     if (!_readFields.get(fnum))
       {
@@ -2551,6 +2639,30 @@ public class DFA extends ANY
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
     var clnum = _fuir.clazzId2num(cl);
     _hasFields.set(clnum);
+  }
+
+
+  /**
+   * To reduce number of calls created for unit type values, we originally
+   * assume calls to an empty constructor with no arguments and not fields as
+   * all the same.
+   *
+   * @oaran cl a clazz id, must not be NO_CLAZZ
+   *
+   * @return true if, as for what we now about used fields at this pointer, `cl`
+   * defines a unit type.
+   */
+  boolean isUnitType(int cl)
+  {
+    var clnum = _fuir.clazzId2num(cl);
+    var oc = _fuir.clazzOuterClazz(cl);
+    return
+      !_hasFields.get(clnum) &&
+      _defaultEffects.get(cl) == null &&
+      _fuir.isConstructor(cl) &&
+      !_fuir.clazzIsRef(cl) &&
+      _fuir.clazzArgCount(cl) == 0 &&
+      !isBuiltInNumeric(cl);
   }
 
 
@@ -2635,7 +2747,9 @@ public class DFA extends ANY
             if (r == null)
               {
                 r = new TaggedValue(this, nc, original, tag);
-                r = (TaggedValue) cache(r);
+                if (CHECKS) check
+                  (_cachedValues.get(r) == null);
+                makeUnique(r);
                 _tagged.put(k, r);
               }
           }
@@ -2652,7 +2766,7 @@ public class DFA extends ANY
   /**
    * Create a new or retrieve an existing value of the joined values v and w.
    */
-  Value newValueSet(Value v, Value w)
+  Value newValueSet(Value v, Value w, int clazz)
   {
     Value res = null;
     var vi = v._id;
@@ -2668,9 +2782,13 @@ public class DFA extends ANY
         res = _joined.get(k);
         if (res == null)
           {
-            res = v.contains(w) ? v :
-                  w.contains(v) ? w : new ValueSet(this, v, w);
-            res = cache(res);
+            if      (v.contains(w)) { res = v; }
+            else if (w.contains(v)) { res = w; }
+            else
+              {
+                res = new ValueSet(this, v, w, clazz);
+                res = cache(res);
+              }
             _joined.put(k, res);
           }
       }
@@ -2738,7 +2856,7 @@ public class DFA extends ANY
        value != null);
 
     Val r;
-    if (!USE_EMBEDDED_VALUES || value instanceof NumericValue)
+    if (!_options.needsEscapeAnalysis() || !USE_EMBEDDED_VALUES || value instanceof NumericValue)
       {
         r = value;
       }
@@ -2783,7 +2901,7 @@ public class DFA extends ANY
       (instance._id >= 0);
 
     Val r;
-    if (!USE_EMBEDDED_VALUES || value instanceof NumericValue)
+    if (!_options.needsEscapeAnalysis() || !USE_EMBEDDED_VALUES || value instanceof NumericValue)
       {
         r = value;
       }
@@ -2842,25 +2960,20 @@ public class DFA extends ANY
 
 
   /**
-   * Too reduce number of calls created for unit type values, we originally
-   * assume calls to an empty constructor with no arguments and not fields as
-   * all the same.
+   * For a call to cc, should we be site sensivity, i.e., distinguish calls
+   * depending on their call site?
    *
-   * @oaran cl a clazz id, must not be NO_CLAZZ
+   * Currently, we are site sensitive for all constructors or if SITE_SENSITIVE
+   * is set via env var or property.
    *
-   * @return true if, as for what we now about used fields at this pointer, `cl`
-   * defines a unit type.
+   * @param cc a clazz that is called
+   *
+   * @return true iff the call site should be taken into account when compating
+   * calls to `cc`.
    */
-  boolean isUnitType(int cl)
+  boolean siteSensitive(int cc)
   {
-    var oc = _fuir.clazzOuterClazz(cl);
-    return
-      _fuir.isConstructor(cl) &&
-      _fuir.clazzArgCount(cl) == 0 &&
-      !_fuir.withinCode(_fuir.clazzCode(cl)) &&
-      !isBuiltInNumeric(cl) &&
-      !hasFields(cl) &&
-      (oc == FUIR.NO_CLAZZ || oc == _fuir.clazzUniverse() || isUnitType(oc));
+    return SITE_SENSITIVE || _fuir.isConstructor(cc);
   }
 
 
@@ -2886,10 +2999,6 @@ public class DFA extends ANY
    */
   Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    if (!SITE_SENSITIVE)
-      {
-        site = FUIR.NO_SITE;
-      }
     Call e, r;
     r = _unitCalls.get(cl);
     if (isUnitType(cl))
@@ -2910,7 +3019,7 @@ public class DFA extends ANY
           }
         var k1 = _fuir.clazzId2num(cl);
         var k2 = tvalue._id;
-        var k3 = siteIndex(site);
+        var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
         var k4 = env == null ? 0 : env._id + 1;
         // We use a LongMap in case we manage to fiddle k1..k4 into a long
         //

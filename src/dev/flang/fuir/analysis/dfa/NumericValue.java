@@ -198,8 +198,16 @@ public class NumericValue extends Value
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
+   *
+   * @param dfa the current analysis context.
+   *
+   * @param v the value this value should be joined with.
+   *
+   * @param clazz the clazz of the resulting value. This is usually the same as
+   * the clazz of `this` or `v`, unless we are joining `ref` type values.
    */
-  public Value joinInstances(DFA dfa, Value v)
+  @Override
+  public Value joinInstances(DFA dfa, Value v, int clazz)
   {
     if (v instanceof NumericValue nv)
       {
@@ -232,16 +240,16 @@ public class NumericValue extends Value
           }
         else
           {
-            return super.joinInstances(dfa, v);
+            return super.joinInstances(dfa, v, clazz);
           }
       }
     else if (v instanceof ValueSet)
       {
-        return v.join(dfa, this);
+        return v.join(dfa, this, clazz);
       }
     else
       {
-        return super.joinInstances(dfa, v);
+        return super.joinInstances(dfa, v, clazz);
       }
   }
 

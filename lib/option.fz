@@ -62,18 +62,6 @@ is
                 | nil => nil
 
 
-  # synonym for infix >>=
-  #
-  public and_then (f T -> option T) => option.this >>= f
-
-
-  # if this option is nil return the result of f
-  # otherwise just return this option.
-  #
-  public or (f Lazy (option T)) option T =>
-    if is_nil then f() else option.this
-
-
   # converts option to a string
   #
   # returns the result of $T for an option containing an instance
@@ -82,15 +70,6 @@ is
   public redef as_string String =>
     option.this ? v T => $v
                 | nil => $nil
-
-
-
-  # unwraps an option if it exists, returns default value otherwise.
-  #
-  public or_else(default Lazy T)
-  =>
-    option.this ? v T => v
-                | nil => default
 
 
   # monadic operator for bool result, false for nil

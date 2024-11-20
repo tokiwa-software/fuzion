@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 public auto_unwrap(T type, E type... : effect) is
-  public unwrap T ! E => abstract
+  public unwrap T => abstract

@@ -102,7 +102,7 @@ catch_postcondition is
     # use local mutate to store msg passed to `cause`
     lm : mutate.
 
-    res := lm.instate_self ()->
+    res := lm ! ()->
         m := lm.env.new (option String nil)
         (fuzion.runtime.post_fault.instate
           T

@@ -33,4 +33,4 @@
 
 issue119 is
   a := [0]
-  ar := array i32 0 (i -> a[i])
+  _ := array i32 0 (i -> a[i])

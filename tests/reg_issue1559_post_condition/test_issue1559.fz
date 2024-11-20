@@ -22,6 +22,6 @@
 # -----------------------------------------------------------------------
 
 a option String =>
-  mutate.instate_self ()->
+  mutate ! ()->
     ref : String
       redef utf8 => (list u8).empty

@@ -109,9 +109,9 @@ valWithDynOuter is
   #
   test (v "v1").e ".v1-v:v.x."
   testw w.g ".w-w:w.x."
-  rv ref_v := v "v2"
+  _ ref_v := v "v2"
 #  testrv rv.g ".v2-v:v.x."
-  rw ref_v := w
+  _ ref_v := w
 #  testrv rw.g ".w-w:w.x."
 #  tests s.g ".s-s:s.x."
 

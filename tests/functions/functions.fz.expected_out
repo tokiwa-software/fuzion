@@ -13,14 +13,6 @@ here 1x---------------
 in anonymous function: hallo
 in anonymous function: welt
 -1016783238  -2088744153
-here x0 F()---------------
-here 1x0---------------
-here F.call---------------
-here F.call done---------------
-here 2x0---------------
-here 3x0---------------
--1016783238  42
-here 1x0 done---------------
 here x0 F---------------
 here 1x0---------------
 here F.call---------------
@@ -35,13 +27,6 @@ here 2x0---------------
 here 3x0---------------
 -1016783238  42
 here 1x0 done---------------
-here x F()---------------
-here 1x---------------
-here F.call---------------
-here F.call done---------------
-here F.call---------------
-here F.call done---------------
--1016783238  -2088744153
 here x(F)---------------
 here 1x---------------
 here F.call---------------

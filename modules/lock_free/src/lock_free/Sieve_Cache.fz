@@ -43,7 +43,7 @@ Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic 
 public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref is
 
   # NYI: map implementation agnostic
-  cache := (lock_free.map K (lock_free.Node K V)).type.empty
+  cache := (lock_free.Map K (lock_free.Node K V)).type.empty
 
   # Using atomic here to be able to read and write in a
   # multi threaded environment.

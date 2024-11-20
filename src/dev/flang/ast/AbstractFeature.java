@@ -238,7 +238,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this a constructor returning a reference result?
    */
-  public abstract boolean isThisRef();
+  public abstract boolean isRef();
 
 
   /**
@@ -396,15 +396,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
-
-  /**
-   * Does this feature has an arrow "=>" in it's signature, i.e. is a function or an intrinsic
-   * @return true if the signature contains an arrow "=>"
-   */
-  public boolean signatureWithArrow()
-  {
-    return (isRoutine() && !isConstructor()) || isIntrinsic() || isAbstract() || isNative();
-  }
 
 
   /**
@@ -727,7 +718,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this);
 
@@ -830,8 +821,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var typeParameters2 = new List<AbstractType>();
     for (var tp : typeParameters)
       {
-        var tpa = that.rebaseTypeForCotype(tp);
-        typeParameters2.add(typeParameters2.size() == 0 ? tp : tpa);
+        typeParameters2.add(typeParameters2.size() == 0
+                              ? tp
+                              : that.rebaseTypeForCotype(tp));
       }
     return new Call(p,
                     oc,
@@ -1116,7 +1108,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this,
        result.feature().generics().sizeMatches(result.generics()));
@@ -1242,7 +1234,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (outer() != null);
 
-    return !this.outer().isThisRef() && !isOuterRefCopyOfValue();
+    return !this.outer().isRef() && !isOuterRefCopyOfValue();
   }
 
 

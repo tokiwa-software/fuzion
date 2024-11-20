@@ -28,7 +28,7 @@ g(start i32) : effect is
     (g start+1).replace
     start
 
-(g 0).instate_self ()->
+(g 0) ! ()->
   for _ in 1..10 do
     yak g.env.call
 

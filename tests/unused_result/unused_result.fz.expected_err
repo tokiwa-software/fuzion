@@ -21,12 +21,12 @@ To solve this, use the result, explicitly ignore the result '_ := <expression>' 
   match true # should flag an error: incompatible branches
 --^
 Incompatible result types in different branches:
-block returns value of type 'FALSE' at --CURDIR--/unused_result.fz:35:16:
-    f FALSE => f
----------------^
-block returns value of type 'TRUE' at --CURDIR--/unused_result.fz:36:15:
-    t TRUE => t
---------------^
+block returns value of type 'false_' at --CURDIR--/unused_result.fz:35:17:
+    f false_ => f
+----------------^
+block returns value of type 'true_' at --CURDIR--/unused_result.fz:36:17:
+    t true_  => t
+----------------^
 
 
 --CURDIR--/unused_result.fz:38:3: error 5: Expression produces result of type 'bool' but result is not used.

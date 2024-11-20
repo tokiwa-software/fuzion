@@ -23,12 +23,12 @@
 
 reg_issue3527 =>
 
-  cache0 := sieve_cache String 3
+  _ := sieve_cache String 3
 
   sieve_cache(T type : property.hashable, capacity u64) is
 
     Node(val T) ref is
-      next concur.atomic (option Node) := concur.atomic (option Node) nil
+      _ concur.atomic (option Node) := concur.atomic (option Node) nil
 
-    cache := (lock_free.map T Node).type.empty
-    head  := concur.atomic (option Node) nil
+    _ := (lock_free.Map T Node).type.empty
+    _ := concur.atomic (option Node) nil

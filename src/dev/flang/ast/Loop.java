@@ -680,7 +680,7 @@ public class Loop extends ANY
     var f1 = new Feature(f.visibility(), f.modifiers(), f.returnType(),
       new List<>(new ParsedName(f.pos(), prefix + f.featureName().baseName())),
       new List<>(), new List<>(),
-      Contract.EMPTY_CONTRACT, f.impl());
+      Contract.EMPTY_CONTRACT, f.impl(), null);
     f1._isLoopIterator = f._isLoopIterator;
     f1._loopIteratorListName = f._loopIteratorListName;
     f1._isIndexVarUpdatedByLoop = f._isIndexVarUpdatedByLoop;

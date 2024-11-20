@@ -116,6 +116,15 @@ public class FrontEndOptions extends FuzionOptions
   final boolean _loadSources;
 
 
+  /**
+   * Do we need to perform escape analysis during DFA phase since the backend needs that?
+   *
+   * This currently has a signficant impact on the DFA performance, so we try to
+   * avoid this for backends that do not need it (JVM and interpreter).
+   */
+  final boolean _needsEscapeAnalysis;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -140,6 +149,7 @@ public class FrontEndOptions extends FuzionOptions
                          byte[] executeCode,
                          String main,
                          boolean loadSources,
+                         boolean needsEscapeAnalysis,
                          Consumer<String> timer)
   {
     super(verbose,
@@ -196,6 +206,7 @@ public class FrontEndOptions extends FuzionOptions
     _dumpModules = dumpModules;
     _main = main;
     _loadSources = loadSources;
+    _needsEscapeAnalysis = needsEscapeAnalysis;
     if (sourceDirs == null)
       {
         sourceDirs = inputFile != null || readStdin  || executeCode != null ? new List<>() : new List<>(".");
@@ -215,6 +226,19 @@ public class FrontEndOptions extends FuzionOptions
     return _sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new);
   }
 
+
+  /**
+   * Do we need to perform escape analysis during DFA phase since the backend needs that?
+   *
+   * This currently has a signficant impact on the DFA performance, so we try to
+   * avoid this for backends that do not need it (JVM and interpreter).
+   *
+   * @return true if escape analysis has to be performed.
+   */
+  public boolean needsEscapeAnalysis()
+  {
+    return _needsEscapeAnalysis;
+  }
 
 }
 

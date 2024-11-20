@@ -156,7 +156,7 @@ genericstest is
       B(V, W type, y U) is
         p =>
           say "y is{y}"
-    x0 A i32 bool := A i32 bool
+    _ A i32 bool := A i32 bool
     x1 (A i32 bool).B String bool := (A i32 bool).B String bool true
     x1.p
 

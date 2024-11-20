@@ -17,20 +17,7 @@ block returns value of type 'unit' at --CURDIR--/reg_issue2691_b.fz:33:14:
 -------------^
 
 
---CURDIR--/reg_issue2691_b.fz:32:11: error 3: Wrong result type in redefined feature
-    redef chk(x i32)
-----------^^^
-In 'reg_issue2691_b.h.chk' that redefines 'reg_issue2691_b.f.chk'
-result type is       : 'unit'
-result type should be: 'i32'
-
-Original feature declared at --CURDIR--/reg_issue2691_b.fz:27:5:
-    chk(x i32)
-----^^^
-To solve this, change type of result to 'i32'
-
-
---CURDIR--/reg_issue2691_b.fz:33:14: error 4: Incompatible types in assignment
+--CURDIR--/reg_issue2691_b.fz:33:14: error 3: Incompatible types in assignment
     pre else if x < -10 then false
 -------------^
 assignment to field : 'reg_issue2691_b.h.pre chk.result'
@@ -40,4 +27,4 @@ assignable to       : 'unit'
 for value assigned  : ''
 To solve this, you could change the type of the target 'reg_issue2691_b.h.pre chk.result' to 'unit' or convert the type of the assigned value to 'bool'.
 
-4 errors.
+3 errors.

@@ -82,7 +82,7 @@ is
   public redef index [] (k OK) =>
     sorted_indices
       .find_by_comparator (i -> ks[i] ⋄ k)
-      .bind V i->vs[i]
+      .bind V i->sorted_entries[i].val
 
 
   # get an array of all key/value pairs in this map

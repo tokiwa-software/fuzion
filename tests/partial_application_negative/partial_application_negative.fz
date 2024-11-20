@@ -43,11 +43,11 @@ partial_application_negative is
   test "data.map 3.prefix-   " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
   test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  // 3. should flag an error, do not change named prefix call to infix call
 
-  x1 := data.map *3
-  x2 := data.map 3*
+  _ := data.map *3
+  _ := data.map 3*
   # x3 := (data.map 3.infix*)   // NYI, should work!
-  x4 := data.map 3.prefix*    // 4. should flag an error, do not change named prefix call to infix call
-  x5 := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
+  _ := data.map 3.prefix*    // 4. should flag an error, do not change named prefix call to infix call
+  _ := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
   #  x3 := data.map 4.infix*   // NYI, should work!
 
   ambig        Unary String i32 => x->"#$x#"
@@ -68,8 +68,8 @@ partial_application_negative is
 
   test2(f i32->String) => f 32168
 
-  a1 i32->String := ambig2          // ok
-  a2 i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
+  _ i32->String := ambig2          // ok
+  _ i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
   _ := test2             ambig2          // ok
   _ := test2            (ambig2 4711)    // 10. should flag an error: ambiguous call to implicit `ambig2.call (1 argument)` or partially applied `ambig2 (2 arguments)`
 

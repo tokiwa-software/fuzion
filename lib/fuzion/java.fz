@@ -75,7 +75,7 @@ public fuzion.java is
   #
   get_field0(T type, thiz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic
 
-  
+
   # intrinsic to set static field
   #
   set_static_field0(clazz Java_Object, field Java_Object, val fuzion.sys.Pointer, signature fuzion.sys.Pointer) unit => intrinsic
@@ -106,7 +106,7 @@ public fuzion.java is
                redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
     public length                  => array_length Array.this
-    public redef finite trit    => TRUE
+    public redef finite trit       => trit.yes
     public redef index [ ] (i i32) => array_get    Array.this i (sys.c_string signature)
     public redef as_list => as_list 0
 
@@ -272,14 +272,8 @@ public fuzion.java is
   # If you want to create an array of complex types use `Java.as_java_object [...]`
   #
   public array_to_java_object(T type, a Sequence T) Array T
-  pre (T.name = "i8"  ||
-       T.name = "i16" ||
-       T.name = "u16" ||
-       T.name = "i32" ||
-       T.name = "i64" ||
-       T.name = "f32" ||
-       T.name = "f64" ||
-       T.name = "bool")
+    pre
+      T : java_primitive
   =>
     array_to_java_object0 T a.as_array.internal_array
 

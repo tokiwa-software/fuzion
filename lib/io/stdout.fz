@@ -22,15 +22,12 @@
 # -----------------------------------------------------------------------
 
 
+write_provider : io.Write_Provider is
+  redef write (b Sequence u8) outcome unit =>
+    fuzion.sys.fileio.write fuzion.sys.out.stdout b.as_array
+
+
 # short-hand to return an io.writer with a write provider
 # allowing to write to stdout.
 #
-public stdout (LM type : mutate) io.buffered.writer LM =>
-
-
-  write_provider : io.Write_Provider is
-    redef write (b Sequence u8) outcome unit =>
-      fuzion.sys.fileio.write fuzion.sys.out.stdout b.as_array
-
-
-  io.buffered.writer LM write_provider 1024
+public stdout : io.buffered.writer write_provider 1024 is

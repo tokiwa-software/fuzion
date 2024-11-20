@@ -137,7 +137,7 @@ test_cov is
 
     f =>
       x := n.this
-      y := x.p n.this
+      _ := x.p n.this
 
     redef as_string => "{f}"
 
@@ -178,7 +178,7 @@ test_cov2 is
 
     f =>
       x := n.this
-      y := x.p n.this
+      _ := x.p n.this
 
     redef as_string => "{f}"
 
@@ -199,7 +199,7 @@ test_cov2a0 is
 
     f =>
       x := n.this
-      y := x.p n.this
+      _ := x.p n.this
 
   i(is_zero bool) : n is
     fixed redef p(other i) => other

@@ -566,7 +566,7 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.6+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.8+|true      | 1      | byte[]        | MIR_FILE_MAGIC
 
               | 1      | Name          | module name
 
@@ -763,7 +763,7 @@ DeclFeatures
 |====
    |cond.     | repeat | type          | what
 
-.6+|true      | 1      | int           | outer feature index, 0 for outer==universe
+.2+|true      | 1      | int           | outer feature index, 0 for outer==universe
 
               | 1      | InnerFeatures | inner Features
 |====
@@ -811,7 +811,7 @@ InnerFeatures
 
 .2+| true     | 1      | int           | sizeof(inner Features)
 
-   |          | 1      | Features      | inner Features
+              | 1      | Features      | inner Features
 |====
 
 Features
@@ -1519,7 +1519,7 @@ Expression
 
    | true     | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7
    | hasPos   | 1      | int           | source position: index in this file's SourceFiles section, 0 for builtIn pos
-   | k==Add   | 1      | Assign        | assignment
+   | k==Ass   | 1      | Assign        | assignment
    | k==Con   | 1      | Constant      | constant
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match expression
@@ -1538,7 +1538,7 @@ Expression
    *   | hasPos | 1      | int           | source position: index in this file's         |
    *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Add | 1      | Assign        | assignment                                    |
+   *   | k==Ass | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1674,7 +1674,7 @@ Box
 |====
    |cond.     | repeat | type          | what
 
-.3+| true  .2+| 1      | Type          | box result type
+   | true     | 1      | Type          | box result type
 |====
 
 --asciidoc--
@@ -2322,7 +2322,7 @@ SourceFile
 |====
    |cond.     | repeat | type          | what
 
-.2+| true     | 1      | Name          | file name
+.3+| true     | 1      | Name          | file name
               | 1      | int           | size s
               | s      | byte          | source file data
 |====

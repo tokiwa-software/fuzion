@@ -108,7 +108,7 @@ javaHello : Java is
   # checked exception: IOException
   match java.io.FileReader.new "not_a_valid_file"
     Java.java.io.FileReader => say "success opening file reader"
-    e error => say "error: not_a_valid_file (No such file or directory)"
+    error => say "error: not_a_valid_file (No such file or directory)"
 
 
   # get field (non-null)

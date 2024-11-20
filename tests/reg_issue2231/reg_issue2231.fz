@@ -29,6 +29,6 @@ reg_issue2231 is
     something =>
       ef.abort
 
-  ef.instate_self ()->
+  ef ! ()->
     reg_issue2231.ef.env.something
   say a.get.call

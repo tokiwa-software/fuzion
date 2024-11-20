@@ -662,7 +662,6 @@ public class C extends ANY
            FUIR fuir)
   {
     _options = opt;
-    fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _fuir = fuir;
     _tailCall = new TailCall(fuir);
     _ai = new AbstractInterpreter<>(fuir, new CodeGen());
@@ -794,6 +793,10 @@ public class C extends ANY
           "-Wno-unused-function",
           // used when casting jobject to e.g. u16
           "-Wno-pointer-to-int-cast",
+          // clang >= 19:
+          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/linux' [-Werror,-Wmissing-include-dirs]
+          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
+          "-Wno-missing-include-dirs",
           // allow infinite recursion
           "-Wno-infinite-recursion");
 
@@ -2116,8 +2119,8 @@ public class C extends ANY
       case c_unit :
         return expr;
       case c_Const_String :
-      case c_FALSE :
-      case c_TRUE :
+      case c_false_ :
+      case c_true_ :
       case c_sys_ptr :
       case c_u32 :
       case c_u64 :
@@ -2176,8 +2179,8 @@ public class C extends ANY
       case c_unit :
         return val;
       case c_Const_String :
-      case c_FALSE :
-      case c_TRUE :
+      case c_false_ :
+      case c_true_ :
       case c_sys_ptr :
       case c_u32 :
       case c_u64 :

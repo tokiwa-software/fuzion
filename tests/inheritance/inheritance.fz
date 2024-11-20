@@ -235,7 +235,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     AA is
-      x is rx := y
+      x is _ := y
       y i32 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -269,7 +269,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     AA ref is
-      x is rx := y
+      x is _ := y
       y i32 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -314,7 +314,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     AA is
-      x is rx := y
+      x is _ := y
       y i32 =>
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"

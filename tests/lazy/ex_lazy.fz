@@ -35,9 +35,9 @@ ex_lazy is
   say y
 
   say "should not eval mtrue"
-  x0 := and !true mtrue
+  _ := and !true mtrue
   say "should eval mtrue"
-  y0 := and true mtrue
+  _ := and true mtrue
 
   mtrue => {say "eval mtrue!"; true}
 

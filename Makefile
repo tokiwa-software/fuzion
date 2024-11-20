@@ -415,6 +415,8 @@ FZ_MODULES = \
 			$(MOD_LOCK_FREE) \
 			$(MOD_NOM)
 
+C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
+
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
 
@@ -433,6 +435,10 @@ base-only: $(FZ) $(MOD_BASE) $(FUZION_FILES)
 # phony target to compile all java sources
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
+
+.PHONY: lint-c
+lint/c:
+	clang-tidy $(C_FILES) -- -std=c11
 
 $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 	cp $^ $@
@@ -1134,8 +1140,8 @@ $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.ad
 
 
 # NYI integrate into fz: fz -docs
-$(BUILD_DIR)/apidocs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
-	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare $(BUILD_DIR)/apidocs
+$(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
+	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare $(@D)
 
 # NYI integrate into fz: fz -docs
 .phony: debug_api_docs

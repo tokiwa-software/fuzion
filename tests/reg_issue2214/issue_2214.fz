@@ -53,7 +53,7 @@ scenario3 =>
   Sequence.issue_2214_seq_map_broken(B type, f T -> B) : Sequence B is
     redef as_list list B =>
       r list B := match Sequence.this.as_list
-        _ nil => panic "nil" # nil #res list B := nil; res
+        nil    => panic "nil" # nil #res list B := nil; res
         c Cons => panic "cons" # (f c.head) : (c.tail.issue_2214_seq_map_broken B x->(f.call x))
       r
 

@@ -27,32 +27,13 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(LM type : mutate, wp Write_Provider, buf_size i32) : effect
+public writer(wp Write_Provider, buf_size i32) : mutate
 pre debug: buf_size > 0
 is
 
-
   # circular buffer backing this writer
   #
-  buffer := (mutate.circular_buffer u8).new LM buf_size.as_i64 0
-
-
-  # install this effect and execute 'f'. Wrap the result of 'f' into an
-  # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
-  # via a call to 'raise' wrap the 'error' passed to 'raise' into the
-  # resulting 'outcome'.
-  #
-  # NYI: UNDER DEVELOPMENT: with should have signature
-  # with(R type, f ()-> outcome R) outcome R =>
-  #
-  public with (R type, f ()->R) outcome R =>
-    try (writer LM) R (() -> writer.this.instate R writer.this f (_ -> exit 1))
-
-
-  # terminate immediately with the given error wrapped in 'option'.
-  #
-  raise (e error) =>
-    (try (writer LM)).env.raise e
+  buffer := instate_self (() -> (mutate.circular_buffer u8).new writer.this buf_size.as_i64 0)
 
 
   # flush the buffer, that is, write out everything that is still
@@ -85,7 +66,7 @@ is
     for n_written := 0, n_written + r
         e outcome unit := unit, e0
     while n_written < n
-      y := LM.env.new (outcome unit unit)
+      y := new (outcome unit unit)
       f =>
         if buffer.buffered = 0 && (n - n_written) > buf_size
           # can write directly
@@ -107,9 +88,3 @@ is
       write_result n_written e
     else
       write_result n_written e
-
-
-# short hand for getting the currently installed `buffered.writer`
-#
-public writer (LM type : mutate) =>
-  (io.buffered.writer LM).env

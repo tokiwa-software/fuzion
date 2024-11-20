@@ -17,33 +17,23 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to syntax check fz files.
+#  Source code of Fuzion test effect_signature_test
 #
 # -----------------------------------------------------------------------
 
-name: syntax check fz files
+# Testing the effect signature, non existing features
+# and features that are not effects should cause errors.
+#
+effect_signature_test =>
 
-permissions:
-  contents: read
+  # effect in signature with existing effect
+  correct_effect_signature(x i32) ! mutate, mutate =>
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0' # every sunday
+  # should cause an error: encodings is not an effect
+  non_effect_feature_in_signature ! encodings =>
 
-env:
-  PRECONDITIONS: true
-  POSTCONDITIONS: true
+  # should cause an error: effect is not even a feature
+  non_existing_feature_in_effect_signature ! blabla =>
 
-jobs:
-  run_tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: syntax check
-        run: make syntaxcheck
+  # mix of correct and wrong features in effect signature
+  mixed_effect_signature ! String, mutate, blabla =>

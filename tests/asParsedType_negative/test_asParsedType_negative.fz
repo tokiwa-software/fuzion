@@ -137,11 +137,11 @@ test_asParsedType_negative is
   x "hello"                     // 2. should flag an error: string literal is not a type
   x true                        // 3. should flag an error: true is not a type
   x true?1:2                    // 4. should flag an error: ? :  is not a type
-  x (3=4 ? TRUE  => "a"         // 5. should flag an error: ?-match is not a type
-         | FALSE => "b")
+  x (3=4 ? true_  => "a"        // 5. should flag an error: ?-match is not a type
+         | false_ => "b")
   x (match 3=4                  // 6. should flag an error: match is not a type
-       TRUE  => "a"
-       FALSE => "b")
+       true_  => "a"
+       false_ => "b")
   x (if 3=4 then "a" else "b")  // 7. should flag an error: if is not a type
   x (io.out.env)                // 8. should flag an error: env is not a type
   x (io.out.type)               // 9. should flag an error: type instance is not a type
@@ -180,14 +180,14 @@ test_asParsedType_negative is
   say ""
 
   say "EXP: y Type of 'codepoint'"
-  y (3=4 ? TRUE  => "a"
-         | FALSE => "b")
+  y (3=4 ? true_  => "a"
+         | false_ => "b")
   say ""
 
   say "EXP: y Type of 'codepoint'"
   y (match 3=4
-       TRUE  => "a"
-       FALSE => "b")
+       true_  => "a"
+       false_ => "b")
   say ""
 
   say "EXP: y Type of 'codepoint'"

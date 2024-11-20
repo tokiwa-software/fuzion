@@ -25,7 +25,7 @@ reg_issue2860 is
 
   match (1..0).as_list
     Cons =>
-      i := 2
+      _ := 2
       unit
     nil =>
       unit
