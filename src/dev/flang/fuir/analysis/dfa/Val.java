@@ -91,8 +91,10 @@ public abstract class Val extends ANY
    */
   Val joinVal(DFA dfa, Val v, int clazz)
   {
-    return rewrap(dfa, a ->
-                  v.rewrap(dfa, b -> a.join(dfa, b, clazz)));
+    return dfa._options.needsEscapeAnalysis()
+      ? rewrap(dfa, a ->
+               v.rewrap(dfa, b -> a.join(dfa, b, clazz)))
+      : ((Value) this).join(dfa, (Value) v, clazz);
   }
 
 }
