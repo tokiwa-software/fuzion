@@ -160,7 +160,7 @@ public effect is
                       ) R
   =>
     x := instate_helper R effect.this e code def
-    instate0 e x.call_code x.call_def
+    instate0 e.make_unique_at_instate x.call_code x.call_def
     x.res.get
 
 
@@ -254,6 +254,11 @@ public effect is
   #
   type.unsafe_get =>
     effect.this.env
+
+
+  # make sure this effect instance has a unique value when it is instated
+  #
+  module make_unique_at_instate => effect.this
 
 
   # --------------------  replacing effect instances  --------------------
