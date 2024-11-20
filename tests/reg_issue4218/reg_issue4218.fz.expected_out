@@ -1,0 +1,3 @@
+start
+r = 42
+*** mutate of type Type of 'repeated_mutate.m': mutatable created by different instate: 1 != 6
