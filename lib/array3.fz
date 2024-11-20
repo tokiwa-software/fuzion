@@ -142,3 +142,21 @@ is
 
     array3 length0 length1 length2 internal_array unit unit
 
+
+
+# array(length0, length1, length2) -- three-dimensional immutable array
+#
+# array provides three-dimensional immutable arrays. These are actually
+# one-dimensional immutable arrays with an additional access function with
+# three index parameters.
+#
+public array3(T type,
+        length0, length1, length2 i32,
+        init3 (i32, i32, i32) -> T)
+  pre
+    safety: length0 ≥ 0
+    safety: length1 ≥ 0
+    safety: length2 ≥ 0
+    safety: length0 *? length1 *? length2 >=? 0
+=>
+  (array3 T).new length0 length1 length2 init3

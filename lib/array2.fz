@@ -138,3 +138,21 @@ is
         internal_array[i1 * length1 + i2] := init2 i1 i2
 
     array2 length0 length1 internal_array unit unit
+
+
+
+# array(length0, length1) -- two-dimensional immutable array
+#
+# array provides two-dimensional immutable arrays. These are actually
+# one-dimensional immutable arrays with an additional access function with
+# two index parameters.
+#
+public array2(T type,
+              length0, length1 i32,
+              init2 (i32, i32) -> T)
+  pre
+    safety: length0 ≥ 0
+    safety: length1 ≥ 0
+    safety: length0 *? length1 >=? 0
+=>
+  (array2 T).new length0 length1 init2
