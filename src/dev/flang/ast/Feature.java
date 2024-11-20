@@ -2001,7 +2001,6 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void         action(Constant       c                       ) {        c.checkRange();                         }
         @Override public void         action(AbstractMatch  m                       ) {        m.checkTypes(_context);                 }
         @Override public Expr         action(InlineArray    i, AbstractFeature outer) {        i.checkTypes(      _context); return i; }
-        @Override public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.checkConstraints(_context);           }
         @Override public void         action(Cond           c, AbstractFeature outer) {        c.checkTypes();                         }
         @Override public void         actionBefore(Block    b, AbstractFeature outer) {        b.checkTypes();                         }
       });

@@ -1941,28 +1941,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if constraints on type parameters of this type are satisfied.
-   *
-   * @return itself on success or t_ERROR if constraints are not met and an
-   * error was produced
-   *
-   * @param context the source code context where this Type is used
-   */
-  public AbstractType checkConstraints(Context context)
-  {
-    var result = this;
-    if (result != Types.t_ERROR && !isGenericArgument())
-      {
-        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null))
-          {
-            result = Types.t_ERROR;
-          }
-      }
-    return result;
-  }
-
-
-  /**
    * Check that given actuals match formal type parameter constraints of given
    * feature.
    *
