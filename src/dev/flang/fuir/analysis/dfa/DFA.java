@@ -423,7 +423,7 @@ public class DFA extends ANY
               {
                 var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
-                if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
+                if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
                     res = newEmbeddedValue(s, res.value());
                   }
