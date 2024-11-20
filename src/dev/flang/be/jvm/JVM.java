@@ -461,7 +461,7 @@ should be avoided as much as possible.
           case Abstract     : jvm.code(cl); break;
           case Choice       : jvm._types._choices.createCode(cl); break;
           case Field        : break;
-          case Native       : Errors.warning("JVM backend cannot compile native " + jvm._fuir.clazzAsString(cl)); break;
+          case Native       : break;
           default           : throw new Error ("Unexpected feature kind: " + k);
           };
       }
