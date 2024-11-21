@@ -1899,19 +1899,17 @@ public class C extends ANY
     var l = new List<CStmnt>();
     if (_fuir.clazzNeedsCode(cl))
       {
-        var ck = _fuir.clazzKind(cl);
-        switch (ck)
+        l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
+        var o = switch (_fuir.clazzKind(cl))
           {
-          case Routine:
-          case Intrinsic:
-          case Native:
-            {
-              l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
-              var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl) :
-                      ck == FUIR.FeatureKind.Native  ? codeForNative(cl)
-                                                     : _intrinsics.code(this, cl);
-              l.add(cFunctionDecl(cl, o));
-            }
+            case Routine -> codeForRoutine(cl);
+            case Intrinsic -> _intrinsics.code(this, cl);
+            case Native -> codeForNative(cl);
+            default -> null;
+          };
+        if (o != null)
+          {
+            l.add(cFunctionDecl(cl, o));
           }
       }
     return CStmnt.seq(l);
@@ -1968,17 +1966,7 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var ai = new CIdent("arg" + i);
-        var ac = _fuir.clazzArgClazz(cl, i);
-
-        switch (_fuir.getSpecialClazz(ac))
-          {
-            case c_u8, c_u16, c_u32, c_u64,
-                 c_i8, c_i16, c_i32, c_i64,
-                 c_f32, c_f64              -> args.add(ai);
-            case c_sys_ptr                 -> args.add(ai.castTo("void*"));
-            default                        -> {}
-          };
+        args.add(CIdent.arg(i));
       }
 
     var rc = _fuir.clazzResultClazz(cl);
@@ -1992,7 +1980,11 @@ public class C extends ANY
             heapClone(constString(str, CExpr.call("strlen", new List<>(str))), _fuir.clazz_Const_String())
               .ret());
         }
-        default -> CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
+        default ->
+          CStmnt.seq(
+            _fuir.clazzIsUnitType(rc)
+              ? CExpr.call(_fuir.clazzBaseName(cl), args)
+              : CExpr.call(_fuir.clazzBaseName(cl), args).ret());
       };
   }
 
