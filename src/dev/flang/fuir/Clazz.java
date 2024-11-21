@@ -2185,10 +2185,6 @@ class Clazz extends ANY implements Comparable<Clazz>
         _asValue = isRef() && _type != Types.t_ADDRESS
           ? _fuir.newClazz(_outer, _type.asValue(), _select)
           : this;
-        if (_specialClazzId == FUIR.SpecialClazzes.c_Const_String)
-          {
-            _asValue._specialClazzId = FUIR.SpecialClazzes.c_value_Const_String;
-          }
       }
 
     if (CHECKS) check

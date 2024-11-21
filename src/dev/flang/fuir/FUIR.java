@@ -55,7 +55,6 @@ public abstract class FUIR extends IR
     c_NOT_FOUND   (""                           , 0, null        ),
 
     c_universe    (FuzionConstants.UNIVERSE_NAME, 0, c_NOT_FOUND ),
-    c_value_Const_String("value Const_String"   , 0, c_universe  ),
     c_Any         ("Any"                        , 0, c_universe  ),
     c_i8          ("i8"                         , 1, c_universe  ),
     c_i16         ("i16"                        , 1, c_universe  ),

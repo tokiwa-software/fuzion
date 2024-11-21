@@ -1617,7 +1617,6 @@ public class GeneratingFUIR extends FUIR
         result = switch (s)
           {
             case c_universe           -> id2clazz(_universe);
-            case c_value_Const_String -> id2clazz(clazzAsValue(specialClazz(SpecialClazzes.c_Const_String)._id));
             default ->
             {
               var o = clazz(s._outer);
