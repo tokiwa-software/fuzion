@@ -347,6 +347,13 @@ public class GeneratingFUIR extends FUIR
       {
         result = cl;
         _clazzes.add(cl);
+        if (_lookupDone)
+          {
+            if (false) // NYI: BUG: This still happens for some tests and some backends, need to check why and avoid this!
+              {
+                throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
+              }
+          }
         if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
           {
             var rc = _resultClazzes;
@@ -415,6 +422,8 @@ public class GeneratingFUIR extends FUIR
           }
 
         result.registerAsHeir();
+
+        var ignore = clazzAsValue(result._id);
       }
     return result;
   }
@@ -1605,20 +1614,22 @@ public class GeneratingFUIR extends FUIR
     var result = _specialClazzes[s.ordinal()];
     if (result == null)
       {
-        if (s == SpecialClazzes.c_universe)
+        result = switch (s)
           {
-            result = id2clazz(_universe);
-          }
-        else
-          {
-            var o = clazz(s._outer);
-            var oc = id2clazz(o);
-            var of = oc.feature();
-            var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
-            result = newClazz(oc, f.selfType(), -1);
-            if (CHECKS) check
-              (f.isRef() == result.isRef());
-          }
+            case c_universe           -> id2clazz(_universe);
+            case c_value_Const_String -> id2clazz(clazzAsValue(specialClazz(SpecialClazzes.c_Const_String)._id));
+            default ->
+            {
+              var o = clazz(s._outer);
+              var oc = id2clazz(o);
+              var of = oc.feature();
+              var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
+              var res = newClazz(oc, f.selfType(), -1);
+              if (CHECKS) check
+                (f.isRef() == res.isRef());
+              yield res;
+            }
+          };
         _specialClazzes[s.ordinal()] = result;
       }
     return result;
@@ -1673,7 +1684,7 @@ public class GeneratingFUIR extends FUIR
   public int clazz_Const_String()
   {
     var res = clazz(SpecialClazzes.c_Const_String);
-    doesNeedCode(clazzAsValue(res));
+    var ignore = clazzResultClazz(res);
     return res;
   }
 
@@ -1849,7 +1860,32 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_Function_call)._id;
+    return lookupCall(cl, !_lookupDone);
+  }
+
+
+  /**
+   * For a clazz that is an heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
+   *
+   * @param cl index of a clazz that is an heir of 'Function'.
+   *
+   * @param markAsCalled true to mark the result as called
+   *
+   * @return the index of the requested `Function.call` feature's clazz.
+   */
+  @Override
+  public int lookupCall(int cl, boolean markAsCalled)
+  {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    var cc = id2clazz(cl);
+
+    return (markAsCalled ? cc.lookupNeeded(Types.resolved.f_Function_call)
+                         : cc.lookup      (Types.resolved.f_Function_call))._id;
   }
 
 

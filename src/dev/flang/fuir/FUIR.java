@@ -55,6 +55,7 @@ public abstract class FUIR extends IR
     c_NOT_FOUND   (""                           , 0, null        ),
 
     c_universe    (FuzionConstants.UNIVERSE_NAME, 0, c_NOT_FOUND ),
+    c_value_Const_String("value Const_String"   , 0, c_universe  ),
     c_Any         ("Any"                        , 0, c_universe  ),
     c_i8          ("i8"                         , 1, c_universe  ),
     c_i16         ("i16"                        , 1, c_universe  ),
@@ -673,6 +674,20 @@ public abstract class FUIR extends IR
    * @return the index of the requested `Function.call` feature's clazz.
    */
   public abstract int lookupCall(int cl);
+
+
+  /**
+   * For a clazz that is an heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
+   *
+   * @param cl index of a clazz that is an heir of 'Function'.
+   *
+   * @param markAsCalled true to mark the result as called
+   *
+   * @return the index of the requested `Function.call` feature's clazz.
+   */
+  public abstract int lookupCall(int cl, boolean markAsCalled);
 
 
   /**
