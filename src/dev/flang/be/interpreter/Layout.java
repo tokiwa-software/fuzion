@@ -136,23 +136,20 @@ class Layout extends FUIRContext
             // NYI: Ugly special handling, clean up:
             int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
                                                        : fuir().clazzResultClazz(f);
-            int fsz = fuir().clazzIsRef(fc)
-              ? 1
-              : switch (fuir().getSpecialClazz(fc))
-                {
-                case c_i8   -> 1;
-                case c_i16  -> 1;
-                case c_i32  -> 1;
-                case c_i64  -> 2;
-                case c_u8   -> 1;
-                case c_u16  -> 1;
-                case c_u32  -> 1;
-                case c_u64  -> 2;
-                case c_f32  -> 1;
-                case c_f64  -> 2;
-                case c_void -> 0;
-                default     -> get(fc).size();
-                };
+            int fsz;
+            if        (fuir().clazzIsRef(fc)) {                         fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i8))  { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i16)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i32)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_i64)) { fsz = 2;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u8))  { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u16)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u32)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_u64)) { fsz = 2;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_f32)) { fsz = 1;
+            } else if (fc == fuir().clazz(FUIR.SpecialClazzes.c_f64)) { fsz = 2;
+            } else if (fuir().clazzIsVoidType(cl))                    { fsz = 0;
+            } else {                                                    fsz = get(fc).size(); }
             _offsets.put(i, size - Integer.MIN_VALUE);
             size += fsz;
           }
