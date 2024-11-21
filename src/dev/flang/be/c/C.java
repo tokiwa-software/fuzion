@@ -1966,25 +1966,33 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        args.add(CIdent.arg(i));
+        args.add(_fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
+                    ? CIdent.arg(i).castTo("void *")
+                    : CIdent.arg(i));
       }
 
     var rc = _fuir.clazzResultClazz(cl);
+    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
     return switch (_fuir.getSpecialClazz(rc))
       {
+        case
+          c_i8, c_i16, c_i32, c_i64, c_u8,
+          c_u16, c_u32, c_u64, c_f32, c_f64 -> call.ret();
         case c_Const_String, c_String ->
-        {
-          var str = new CIdent("str");
-          yield CStmnt.seq(
-            CExpr.decl("char*", str, CExpr.call(_fuir.clazzBaseName(cl), args)),
-            heapClone(constString(str, CExpr.call("strlen", new List<>(str))), _fuir.clazz_Const_String())
-              .ret());
-        }
+          {
+            var str = new CIdent("str");
+            yield CStmnt.seq(
+              CExpr.decl("char*", str, call),
+              heapClone(constString(str, CExpr.call("strlen", new List<>(str))), _fuir.clazz_Const_String())
+                .ret());
+          }
+        case c_bool -> call.cond(_names.FZ_TRUE, _names.FZ_FALSE).ret();
         default ->
-          CStmnt.seq(
-            _fuir.clazzIsUnitType(rc)
-              ? CExpr.call(_fuir.clazzBaseName(cl), args)
-              : CExpr.call(_fuir.clazzBaseName(cl), args).ret());
+          _fuir.clazzIsUnitType(rc)
+            ? call
+            : _fuir.clazzIsRef(rc)
+            ? call.castTo("void *").ret()
+            : call.ret();
       };
   }
 
