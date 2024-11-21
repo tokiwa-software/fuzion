@@ -630,7 +630,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                   }
                 else if (fo == null)
                   {
-                    _resolved = addAsFreeType(res, outer);
+                    _resolved = addAsFreeType(res, context);
                   }
                 else if (isFreeType())
                   {
@@ -988,15 +988,20 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  AbstractType addAsFreeType(Resolution res, AbstractFeature outerfeat)
+  /**
+   * Add this type as a free type to context.outerFeature().outer()
+   */
+  AbstractType addAsFreeType(Resolution res, Context context)
   {
-    if (PRECONDITIONS) require
-      (outerfeat.isValueArgument());
+    var outer = context.outerFeature();
+
+    if (CHECKS) check
+      (outer.isValueArgument());
 
     var tp = new Feature(pos(),
-                         outerfeat.visibility(),
+                         outer.visibility(),
                          0,
-                         freeTypeConstraint(),
+                         freeTypeConstraint().resolve(res, context),
                          _name,
                          Contract.EMPTY_CONTRACT,
                          Impl.TYPE_PARAMETER)
@@ -1006,7 +1011,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
          */
         public boolean isFreeType() { return true; }
       };
-    var g = outerfeat.outer().addTypeParameter(res, tp);
+    var g = outer.outer().addTypeParameter(res, tp);
     return g.type();
   }
 
