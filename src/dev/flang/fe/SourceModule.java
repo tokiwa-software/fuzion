@@ -1394,7 +1394,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             if (o.isCotype())
               {
-                lookup(o._cotypeOrigin, name, null, false, false)
+                lookup(o.cotypeOrigin(), name, null, false, false)
                   .stream()
                   .filter(fo -> !fo._feature.isTypeParameter())  // type parameters are duplicated in type feature and taken from there
                   .forEach(fo -> fs.add(fo));
