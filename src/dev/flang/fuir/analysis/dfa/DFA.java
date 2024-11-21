@@ -2058,7 +2058,7 @@ public class DFA extends ANY
     put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("effect.type.get"                , cl ->
+    put("effect.type.from_env"                , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
       var result = cl.getEffectCheck(ecl);
@@ -2071,10 +2071,10 @@ public class DFA extends ANY
         }
       return result;
     });
-    put("effect.type.unsafe_get"                , cl ->
+    put("effect.type.unsafe_from_env"                , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
-      return cl.getEffectCheck(ecl);
+      return cl.getEffectForce(cl._site, ecl);
     });
 
 

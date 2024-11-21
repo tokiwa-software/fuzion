@@ -1560,7 +1560,7 @@ callTail    : indexCall  callTail
               }
             else
               {
-                result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), result), new ParsedName(sourceRange(target.pos()), "get")));
+                result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), result), new ParsedName(sourceRange(target.pos()), "from_env")));
               }
           }
         else if (skip(Token.t_type))

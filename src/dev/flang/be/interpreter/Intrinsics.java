@@ -1424,8 +1424,8 @@ public class Intrinsics extends ANY
         "effect.type.is_instated0",
         "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
 
-    put("effect.type.get",
-        "effect.type.unsafe_get",
+    put("effect.type.from_env",
+        "effect.type.unsafe_from_env",
         (executor, innerClazz) -> args ->
         {
           var ecl = executor.fuir().clazzResultClazz(innerClazz); // type

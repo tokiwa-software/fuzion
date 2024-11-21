@@ -493,7 +493,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   Value getEffectForce(int s, int ecl)
   {
     var result = getEffectCheck(ecl);
-    if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
+    if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_from_env"))
       {
         DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                          _dfa._fuir.clazzAsString(ecl),
