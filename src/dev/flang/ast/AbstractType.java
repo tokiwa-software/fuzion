@@ -1993,7 +1993,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = f.constraint(Context.NONE);
+        var c = f.constraint(Context.NONE).applyTypePars(called, actuals);
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
