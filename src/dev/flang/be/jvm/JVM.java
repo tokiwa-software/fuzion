@@ -441,8 +441,7 @@ should be avoided as much as possible.
               {
                 cf.field(ACC_PUBLIC,
                          jvm._names.field(cl),
-                         jvm._types.resultType(jvm._fuir.clazzResultClazz(cl)).descriptor(),
-                         new List<>());
+                         jvm._types.resultType(jvm._fuir.clazzResultClazz(cl)).descriptor());
               }
           }
       }
