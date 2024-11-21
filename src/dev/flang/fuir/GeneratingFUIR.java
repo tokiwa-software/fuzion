@@ -1615,21 +1615,20 @@ public class GeneratingFUIR extends FUIR
     var result = _specialClazzes[s.ordinal()];
     if (result == null)
       {
-        result = switch (s)
+        if (s == SpecialClazzes.c_universe)
           {
-            case c_universe           -> id2clazz(_universe);
-            default ->
-            {
-              var o = clazz(s._outer);
-              var oc = id2clazz(o);
-              var of = oc.feature();
-              var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
-              var res = newClazz(oc, f.selfType(), -1);
-              if (CHECKS) check
-                (f.isRef() == res.isRef());
-              yield res;
-            }
-          };
+            result = id2clazz(_universe);
+          }
+        else
+          {
+            var o = clazz(s._outer);
+            var oc = id2clazz(o);
+            var of = oc.feature();
+            var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
+            result = newClazz(oc, f.selfType(), -1);
+            if (CHECKS) check
+              (f.isRef() == result.isRef());
+          }
         _specialClazzes[s.ordinal()] = result;
       }
     return result;
