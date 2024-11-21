@@ -349,7 +349,8 @@ public class GeneratingFUIR extends FUIR
         _clazzes.add(cl);
         if (_lookupDone)
           {
-            if (false) // NYI: BUG: This still happens for some tests and some backends, need to check why and avoid this!
+            if (false) // NYI: BUG: #4273: This still happens for some tests and
+                       // some backends, need to check why and avoid this!
               {
                 throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
               }
