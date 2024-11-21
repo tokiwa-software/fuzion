@@ -441,8 +441,7 @@ should be avoided as much as possible.
               {
                 cf.field(ACC_PUBLIC,
                          jvm._names.field(cl),
-                         jvm._types.resultType(jvm._fuir.clazzResultClazz(cl)).descriptor(),
-                         new List<>());
+                         jvm._types.resultType(jvm._fuir.clazzResultClazz(cl)).descriptor());
               }
           }
       }
@@ -457,11 +456,11 @@ should be avoided as much as possible.
         switch (k)
           {
           case Intrinsic    :
-          case Routine      :
-          case Abstract     : jvm.code(cl); break;
+          case Routine      : jvm.code(cl); break;
           case Choice       : jvm._types._choices.createCode(cl); break;
+          case Native       : jvm.native0(cl); break;
+          case Abstract     :
           case Field        : break;
-          case Native       : break;
           default           : throw new Error ("Unexpected feature kind: " + k);
           };
       }
@@ -971,6 +970,113 @@ should be avoided as much as possible.
           }
       }
   }
+
+
+  /**
+   * Create native for given clazz cl.
+   *
+   * @param cl id of clazz to compile
+   */
+  public void native0(int cl)
+  {
+    var cf = _types.classFile(cl);
+    cf.field(ACC_PUBLIC | ACC_STATIC,
+             "methodHandle",
+             "Ljava/lang/invoke/MethodHandle;");
+    var rt = _fuir.clazzResultClazz(cl);
+    ClassType mhCt = new ClassType("java/lang/invoke/MethodHandle");
+    cf.addToClInit(
+      Expr
+        .stringconst(_fuir.clazzBaseName(cl))                                          // String
+        .andThen(funDescArgs(cl))                                                      // String, (MemoryLayout), [MemoryLayout
+        .andThen(Expr.invokeStatic(
+          "java/lang/foreign/FunctionDescriptor",
+          _fuir.clazzIsUnitType(rt) ? "ofVoid": "of",
+          _fuir.clazzIsUnitType(rt)
+              ? "([Ljava/lang/foreign/MemoryLayout;)Ljava/lang/foreign/FunctionDescriptor;"
+              : "(Ljava/lang/foreign/MemoryLayout;[Ljava/lang/foreign/MemoryLayout;)Ljava/lang/foreign/FunctionDescriptor;",
+          new ClassType("java/lang/foreign/FunctionDescriptor"),
+          -1,
+          true)
+        )                                                                             // String, FunctionDescriptor
+        .andThen(Expr.invokeStatic(
+          Names.RUNTIME_CLASS,
+          "get_method_handle",
+          "(Ljava/lang/String;Ljava/lang/foreign/FunctionDescriptor;)Ljava/lang/invoke/MethodHandle;",
+          mhCt)
+        )                                                                              // MethodHandle
+        .andThen(Expr.putstatic(_names.javaClass(cl),
+                                "methodHandle",
+                                mhCt))
+    );
+  }
+
+
+  /**
+   * Put args for FunctionDescriptor onto stack.
+   *
+   * @param cc
+   * @return
+   */
+  private Expr funDescArgs(int cc)
+  {
+    var result = Expr.UNIT;
+    if (!_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
+      {
+        result = result.andThen(layout(_fuir.clazzResultClazz(cc)));
+      }
+    var jt = new ClassType("java/lang/foreign/ValueLayout");
+    result = result
+      .andThen(Expr.iconst(_fuir.clazzArgCount(cc)))
+      .andThen(jt.newArray());
+    for (int i = 0; i < _fuir.clazzArgCount(cc); i++)
+      {
+        result = result
+          .andThen(Expr.DUP)                             // T[], T[]
+          .andThen(Expr.iconst(i))                       // T[], T[], idx
+          .andThen(layout(_fuir.clazzArgClazz(cc, i)))   // T[], T[], idx, data
+          .andThen(jt.xastore());                        // T[]
+      }
+    return result;
+  }
+
+
+  /*
+   * Put MemoryLayout/ValueLayout of c onto stack.
+   */
+  private Expr layout(int c)
+  {
+    return switch (_fuir.getSpecialClazz(c))
+      {
+      case c_bool    -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_BOOLEAN",
+        new ClassType("java/lang/foreign/ValueLayout$OfBoolean"));
+      case c_i8      -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_BYTE",
+        new ClassType("java/lang/foreign/ValueLayout$OfByte"));
+      case c_i16     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_SHORT",
+        new ClassType("java/lang/foreign/ValueLayout$OfShort"));
+      case c_i32     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_INT",
+        new ClassType("java/lang/foreign/ValueLayout$OfInt"));
+      case c_i64     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_LONG",
+        new ClassType("java/lang/foreign/ValueLayout$OfLong"));
+      case c_u8      -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_BYTE",
+        new ClassType("java/lang/foreign/ValueLayout$OfByte"));
+      case c_u16     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_CHAR",
+        new ClassType("java/lang/foreign/ValueLayout$OfChar"));
+      case c_u32     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_INT",
+        new ClassType("java/lang/foreign/ValueLayout$OfInt"));
+      case c_f32     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_FLOAT",
+        new ClassType("java/lang/foreign/ValueLayout$OfFloat"));
+      case c_f64     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_DOUBLE",
+        new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
+      case c_u64 -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_LONG",
+        new ClassType("java/lang/foreign/ValueLayout$OfLong"));
+      default -> {
+        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
+        yield null;
+      }
+      };
+  }
+
 
   int current_index(int cl)
   {

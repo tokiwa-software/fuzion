@@ -128,8 +128,7 @@ public class Types extends ANY implements ClassFileConstants
           {
             cf.field(ACC_PUBLIC | ACC_STATIC,
                      Names.UNIVERSE_FIELD,
-                     UNIVERSE_TYPE.descriptor(),
-                     new List<>());
+                     UNIVERSE_TYPE.descriptor());
           }
 
         var sig = "()V";
@@ -147,8 +146,7 @@ public class Types extends ANY implements ClassFileConstants
               {
                 cf.field(ACC_PUBLIC,
                          Names.BOXED_VALUE_FIELD_NAME,
-                         vt.descriptor(),
-                         new List<>());
+                         vt.descriptor());
                 sig = "(" + vt.argDescriptor() + ")V";
                 initLocals = addToLocals(initLocals, vt);
                 cod = rt.load(0)
@@ -248,6 +246,7 @@ public class Types extends ANY implements ClassFileConstants
             };
       case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
       case Intrinsic -> true;
+      case Native    -> true; // constains a static field methodHandler
       default        -> false;
       };
   }

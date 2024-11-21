@@ -574,30 +574,14 @@ class CodeGen
         {
           var invokeDescr = "(" +  args.stream().map(arg -> arg.type().descriptor()).collect(Collectors.joining()) + ")" + _types.javaType(rt).descriptor();
           Expr call =
-            Expr
-              .stringconst(_fuir.clazzBaseName(cc))                                          // String
-              .andThen(funDescArgs(cc))                                                      // String, (MemoryLayout), [MemoryLayout
-              .andThen(Expr.invokeStatic(
-                "java/lang/foreign/FunctionDescriptor",
-                _fuir.clazzIsUnitType(rt) ? "ofVoid": "of",
-                _fuir.clazzIsUnitType(rt)
-                    ? "([Ljava/lang/foreign/MemoryLayout;)Ljava/lang/foreign/FunctionDescriptor;"
-                    : "(Ljava/lang/foreign/MemoryLayout;[Ljava/lang/foreign/MemoryLayout;)Ljava/lang/foreign/FunctionDescriptor;",
-                new ClassType("java/lang/foreign/FunctionDescriptor"),
-                _fuir.sitePos(si).line(),
-                true)
-              )                                                                             // String, FunctionDescriptor
-              .andThen(Expr.invokeStatic(
-                Names.RUNTIME_CLASS,
-                "get_method_handle",
-                "(Ljava/lang/String;Ljava/lang/foreign/FunctionDescriptor;)Ljava/lang/invoke/MethodHandle;",
-                new ClassType("java/lang/invoke/MethodHandle"))
-              )                                                                              // MethodHandle
-              .andThen(argsToStack(args))                                                    // MethodHandle, args...
-              .andThen(Expr.invokeVirtual(
-                "java/lang/invoke/MethodHandle", "invoke",
-                invokeDescr,
-                _types.javaType(rt)));                                                       // rt
+            Expr.getstatic(_names.javaClass(cc),
+                           "methodHandle",
+                           new ClassType("java/lang/invoke/MethodHandle"))                     // MethodHandle
+                .andThen(argsToStack(args))                                                    // MethodHandle, args...
+                .andThen(Expr.invokeVirtual(
+                  "java/lang/invoke/MethodHandle", "invoke",
+                  invokeDescr,
+                  _types.javaType(rt)));                                                       // rt
           res = makePair(call, rt);
           break;
         }
@@ -689,70 +673,6 @@ class CodeGen
     return result;
   }
 
-
-  /**
-   * Put args for FunctionDescriptor onto stack.
-   *
-   * @param cc
-   * @return
-   */
-  private Expr funDescArgs(int cc)
-  {
-    var result = Expr.UNIT;
-    if (!_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
-      {
-        result = result.andThen(layout(_fuir.clazzResultClazz(cc)));
-      }
-    var jt = new ClassType("java/lang/foreign/ValueLayout");
-    result = result
-      .andThen(Expr.iconst(_fuir.clazzArgCount(cc)))
-      .andThen(jt.newArray());
-    for (int i = 0; i < _fuir.clazzArgCount(cc); i++)
-      {
-        result = result
-          .andThen(Expr.DUP)                             // T[], T[]
-          .andThen(Expr.iconst(i))                       // T[], T[], idx
-          .andThen(layout(_fuir.clazzArgClazz(cc, i)))   // T[], T[], idx, data
-          .andThen(jt.xastore());                        // T[]
-      }
-    return result;
-  }
-
-  /*
-   * Put MemoryLayout/ValueLayout of c onto stack.
-   */
-  private Expr layout(int c)
-  {
-    return switch (_fuir.getSpecialClazz(c))
-      {
-      case c_bool    -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_BOOLEAN",
-        new ClassType("java/lang/foreign/ValueLayout$OfBoolean"));
-      case c_i8      -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_BYTE",
-        new ClassType("java/lang/foreign/ValueLayout$OfByte"));
-      case c_i16     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_SHORT",
-        new ClassType("java/lang/foreign/ValueLayout$OfShort"));
-      case c_i32     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_INT",
-        new ClassType("java/lang/foreign/ValueLayout$OfInt"));
-      case c_i64     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_LONG",
-        new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      case c_u8      -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_BYTE",
-        new ClassType("java/lang/foreign/ValueLayout$OfByte"));
-      case c_u16     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_CHAR",
-        new ClassType("java/lang/foreign/ValueLayout$OfChar"));
-      case c_u32     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_INT",
-        new ClassType("java/lang/foreign/ValueLayout$OfInt"));
-      case c_f32     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_FLOAT",
-        new ClassType("java/lang/foreign/ValueLayout$OfFloat"));
-      case c_f64     -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_DOUBLE",
-        new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
-      case c_u64 -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_LONG",
-        new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      default -> {
-        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
-        yield null;
-      }
-      };
-  }
 
 
   /**
@@ -909,8 +829,7 @@ class CodeGen
             {
               ucl.field(ACC_STATIC | ACC_PUBLIC,
                         f,
-                        jt.descriptor(),
-                        new List<>());
+                        jt.descriptor());
               ucl.addToClInit(c.v1());
               ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
             }
