@@ -423,7 +423,7 @@ public class DFA extends ANY
               {
                 var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
-                if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
+                if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
                     res = newEmbeddedValue(s, res.value());
                   }
@@ -1707,6 +1707,20 @@ public class DFA extends ANY
   static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i64); }
 
 
+  /**
+   * Allocate the result instance of an intrinsic call returning
+   * fuzion.java.Java_Object or children like fuzion.java.Array.
+   *
+   * @param cl the call to the intrinsic
+   *
+   * @return the result instance
+   */
+  static Value wrappedJavaObject(Call cl)
+  {
+    var rc   = cl._dfa._fuir.clazzResultClazz(cl._cc);
+    return cl._dfa.newInstance(rc, NO_SITE, cl._context);
+  }
+
   static
   {
     put("Type.name"                      , cl -> cl._dfa.newConstString(cl._dfa._fuir.clazzTypeName(cl._dfa._fuir.clazzOuterClazz(cl._cc)), cl) );
@@ -2220,9 +2234,10 @@ public class DFA extends ANY
           var result = cl._dfa.newCall(call, NO_SITE, a1, new List<>(), newEnv, cl).result();
 
           var ev = newEnv.getActualEffectValues(ecl);
-          if (newEnv.isAborted(ecl))
-            { // default result, only if abort is effer called
-              var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1));
+          var aborted = newEnv.isAborted(ecl);
+          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1), aborted);
+          if (aborted)
+            { // default result, only if abort is ever called
               var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), cl._dfa._fuir.clazzResultClazz(cl._cc)) :
@@ -2259,7 +2274,7 @@ public class DFA extends ANY
         {
           var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
           cl._dfa.readField(jref);
-          return cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+          return wrappedJavaObject(cl);
         });
     put("fuzion.java.array_length"          , cl ->
       {
@@ -2270,19 +2285,19 @@ public class DFA extends ANY
     );
     put("fuzion.java.array_to_java_object0" , cl ->
         {
-          var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+          var rc   = cl._dfa._fuir.clazzResultClazz(cl._cc);
           var jref = cl._dfa._fuir.lookupJavaRef(rc);
           var data = cl._dfa._fuir.lookup_fuzion_sys_internal_array_data  (cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           var len  = cl._dfa._fuir.lookup_fuzion_sys_internal_array_length(cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           cl._dfa.readField(data);
           cl._dfa.readField(len);
-          var result = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+          var result = wrappedJavaObject(cl);
           result.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF); // NYI: record putfield of result.jref := args.get(0).data
           return result;
         });
-    put("fuzion.java.bool_to_java_object"   , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
-    put("fuzion.java.f32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
-    put("fuzion.java.f64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.bool_to_java_object"   , cl -> wrappedJavaObject(cl) );
+    put("fuzion.java.f32_to_java_object"    , cl -> wrappedJavaObject(cl) );
+    put("fuzion.java.f64_to_java_object"    , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.get_field0"            , cl ->
       {
         var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
@@ -2291,7 +2306,7 @@ public class DFA extends ANY
         cl._dfa.readField(jref0);
         cl._dfa.readField(jref1);
         // NYI: UNDER DEVELOPMENT: setField Java_Ref, see get_static_field0
-        var x = cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context);
+        var x = wrappedJavaObject(cl);
         // Causes Error // x.setField(cl._dfa, jrefres, Value.UNKNOWN_JAVA_REF);
         return x;
       });
@@ -2306,17 +2321,17 @@ public class DFA extends ANY
         cl._dfa.readField(jref2);
         return Value.UNIT;
       });
-    put("fuzion.java.i16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
-    put("fuzion.java.i32_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
-    put("fuzion.java.i64_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
-    put("fuzion.java.i8_to_java_object"     , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.i16_to_java_object"    , cl -> wrappedJavaObject(cl) );
+    put("fuzion.java.i32_to_java_object"    , cl -> wrappedJavaObject(cl) );
+    put("fuzion.java.i64_to_java_object"    , cl -> wrappedJavaObject(cl) );
+    put("fuzion.java.i8_to_java_object"     , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.java.create_jvm", cl -> Value.UNIT);
     put("fuzion.java.string_to_java_object0", cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
         var jref = cl._dfa._fuir.lookupJavaRef(rc);
-        var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        var jobj = wrappedJavaObject(cl);
         jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
         return jobj;
       });
@@ -2364,7 +2379,7 @@ public class DFA extends ANY
         case c_unit -> Value.UNIT;
         default -> {
           var jref = cl._dfa._fuir.lookupJavaRef(rc);
-          var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+          var jobj = wrappedJavaObject(cl);
           jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
           yield jobj;
         }
@@ -2438,7 +2453,7 @@ public class DFA extends ANY
     put("fuzion.java.get_static_field0"     , cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
-        var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        var jobj = wrappedJavaObject(cl);
         // otherwise it is a primitive like int, boolean
         if (cl._dfa._fuir.clazzIsRef(rc))
           {
@@ -2450,7 +2465,7 @@ public class DFA extends ANY
     put("fuzion.java.set_static_field0"     , cl ->
       {
         var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
-        var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        var jobj = wrappedJavaObject(cl);
         // otherwise it is a primitive like int, boolean
         if (cl._dfa._fuir.clazzIsRef(rc))
           {
@@ -2459,7 +2474,7 @@ public class DFA extends ANY
           }
           return Value.UNIT;
       });
-    put("fuzion.java.u16_to_java_object"    , cl -> cl._dfa.newInstance(cl._dfa._fuir.clazzResultClazz(cl._cc), NO_SITE, cl._context) );
+    put("fuzion.java.u16_to_java_object"    , cl -> wrappedJavaObject(cl) );
 
     put("concur.sync.mtx_init"              , cl ->
       {
@@ -2648,6 +2663,19 @@ public class DFA extends ANY
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
     var clnum = _fuir.clazzId2num(cl);
     _hasFields.set(clnum);
+  }
+
+
+  /**
+   * Is this field ever read?
+   */
+  boolean isRead(int field)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+
+    var fnum = _fuir.clazzId2num(field);
+    return _readFields.get(fnum);
   }
 
 

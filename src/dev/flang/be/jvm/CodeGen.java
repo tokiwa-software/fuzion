@@ -796,8 +796,7 @@ class CodeGen
             {
               ucl.field(ACC_STATIC | ACC_PUBLIC,
                         f,
-                        jt.descriptor(),
-                        new List<>());
+                        jt.descriptor());
               ucl.addToClInit(c.v1());
               ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
             }

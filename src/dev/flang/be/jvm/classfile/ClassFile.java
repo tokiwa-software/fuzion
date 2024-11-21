@@ -1732,6 +1732,17 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
   /**
+   * Add a field declared in this class file.
+   */
+  public void field(int access_flags,
+                    String name,
+                    String descr)
+  {
+    _fields.add(new Field(access_flags, name, descr, new List<>()));
+  }
+
+
+  /**
    * Get the type of this class as a ClassType instance
    */
   public ClassType classType()

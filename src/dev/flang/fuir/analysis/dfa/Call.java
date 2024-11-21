@@ -316,8 +316,17 @@ public class Call extends ANY implements Comparable<Call>, Context
                  c_u8, c_u16, c_u32, c_u64,
                  c_f32, c_f64              -> NumericValue.create(_dfa, rc);
             case c_Const_String, c_String  -> _dfa.newConstString(null, this);
-            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzOriginalName(_cc));
-                                                yield null; }
+            default                        -> {
+              if (_dfa._fuir.clazzIsUnitType(rc))
+                {
+                  yield Value.UNIT;
+                }
+              else
+                {
+                  Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzOriginalName(_cc));
+                  yield null;
+                }
+            }
           };
       }
     else if (_returns)

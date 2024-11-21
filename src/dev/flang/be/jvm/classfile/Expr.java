@@ -656,6 +656,10 @@ public abstract class Expr extends ByteCode
   }
   public static Expr invokeStatic(String cls, String name, String descr, JavaType rt, int lineNumber)
   {
+    return invokeStatic(cls, name, descr, rt, lineNumber, false);
+  }
+  public static Expr invokeStatic(String cls, String name, String descr, JavaType rt, int lineNumber, boolean isInterface)
+  {
     return new Expr()
       {
         public String toString() { return "invokeStatic " + cls + "." + name; }
@@ -667,7 +671,7 @@ public abstract class Expr extends ByteCode
           var d   = cf.cpUtf8(descr);
           var cl  = cf.cpClass(c);
           var nat = cf.cpNameAndType(n, d);
-          var m   = cf.cpMethod(cl, nat);
+          var m   = isInterface ? cf.cpInterfaceMethod(cl, nat) : cf.cpMethod(cl, nat);
           code(ba, O_invokestatic, m);
         }
         @Override

@@ -251,9 +251,13 @@ public abstract class Tool extends ANY
       {
         var file = a.substring(a.indexOf("=")+1);
         if (file.equals(""))
-          { fatal("Please provide a file name to option '-XjavaProf=<file>'."); }
+          {
+            fatal("Please provide a file name to option '-XjavaProf=<file>'.");
+          }
         else
-          { Profiler.start(); }
+          {
+            Profiler.start(file);
+          }
       }
     else if (a.equals(Errors.MAX_ERROR_MESSAGES_OPTION) || a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
       {

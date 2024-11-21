@@ -85,18 +85,20 @@ public class CFile extends ANY
    * @param keepGeneratedCode true to create a file `name + ".c"` in the current
    * directory and keep it, false to create a temp file that will be deleted on
    * exit.
+   *
+   * @param isHeader use .h as extension
    */
-  public CFile(String name, boolean keepGeneratedCode)
+  public CFile(String name, boolean keepGeneratedCode, boolean isHeader)
   {
     try
       {
         if (keepGeneratedCode)
           {
-            _path = Path.of(System.getProperty("user.dir"), name + ".c");
+            _path = Path.of(System.getProperty("user.dir"), name + (isHeader ? ".h" : ".c"));
           }
         else
           {
-            var tempFile = File.createTempFile("fuzion_"+ name + "_", ".c");
+            var tempFile = File.createTempFile("fuzion_"+ name + "_", (isHeader ? ".h" : ".c"));
             tempFile.deleteOnExit();
             _path = tempFile.toPath();
           }
