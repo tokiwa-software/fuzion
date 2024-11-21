@@ -423,7 +423,7 @@ public class DFA extends ANY
               {
                 var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
-                if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
+                if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
                     res = newEmbeddedValue(s, res.value());
                   }
@@ -2653,6 +2653,19 @@ public class DFA extends ANY
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
     var clnum = _fuir.clazzId2num(cl);
     _hasFields.set(clnum);
+  }
+
+
+  /**
+   * Is this field ever read?
+   */
+  boolean isRead(int field)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+
+    var fnum = _fuir.clazzId2num(field);
+    return _readFields.get(fnum);
   }
 
 
