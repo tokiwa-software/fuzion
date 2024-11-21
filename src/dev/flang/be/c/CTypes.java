@@ -245,7 +245,7 @@ public class CTypes extends ANY
         if (!isScalar(cl)) // special handling of stdlib clazzes known to the compiler
           {
             // first, make sure structs used for inner fields are declared:
-            for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+            for (int i = 0; _fuir.clazzNeedsCode(cl) && i < _fuir.clazzNumFields(cl); i++)
               {
                 var fcl = _fuir.clazzField(cl, i);
                 var rcl = _fuir.clazzResultClazz(fcl);

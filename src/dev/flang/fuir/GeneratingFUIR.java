@@ -1672,7 +1672,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazz_Const_String()
   {
-    return clazz(SpecialClazzes.c_Const_String);
+    var res = clazz(SpecialClazzes.c_Const_String);
+    doesNeedCode(clazzAsValue(res));
+    return res;
   }
 
 
