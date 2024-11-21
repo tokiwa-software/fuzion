@@ -98,6 +98,29 @@ public class GeneratingFUIR extends FUIR
   static final boolean SHOW_NEW_CLAZZES = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.GeneratingFUIR.SHOW_NEW_CLAZZES");
 
 
+  /**
+   * Flag to enable caching for result of clazzResultClazz.
+   *
+   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * analysis of larger code bases.
+   */
+  static final boolean CACHE_RESULT_CLAZZ = true;
+
+
+  /**
+   * Flag to enable caching for result of clazzArgClazz and clazzArgCount.
+   *
+   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * analysis of larger code bases.
+   */
+  static final boolean CACHE_ARG_CLAZZES = true;
+
+
+  /**
+   * pre-allocated value for empty entry in _argClazzes
+   */
+  private static final int[] NO_ARGS = new int[0];
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -142,6 +165,23 @@ public class GeneratingFUIR extends FUIR
 
   private final List<Clazz> _clazzes;
 
+
+  /**
+   * For all clazzes, map clazzId2num(cl) to the clazz's result clazz id.
+   *
+   * Used only if CACHE_RESULT_CLAZZ is true.
+   */
+  private int[] _resultClazzes;
+
+
+  /**
+   * For all clazzes, map clazzId2num(cl) to the clazz's argument clazz ids.
+   *
+   * Used only if CACHE_ARG_CLAZZES is true.
+   */
+  private int[][] _argClazzes;
+
+
   private final List<List<AbstractCall>> _inh;
 
 
@@ -168,6 +208,23 @@ public class GeneratingFUIR extends FUIR
     _accessedTarget = new IntMap<>();
     _mainModule = fe.mainModule();
     _clazzes = new List<>();
+    if (CACHE_RESULT_CLAZZ)
+      {
+        _resultClazzes = new int[256];
+        Arrays.fill(_resultClazzes, NO_CLAZZ);
+      }
+    else
+      {
+        _resultClazzes = null;
+      }
+    if (CACHE_ARG_CLAZZES)
+      {
+        _argClazzes = new int[256][];
+      }
+    else
+      {
+        _argClazzes = null;
+      }
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
     _universe  = newClazz(null, mir.universe().selfType(), -1)._id;
     doesNeedCode(_universe);
@@ -200,6 +257,8 @@ public class GeneratingFUIR extends FUIR
     _mainClazz = original._mainClazz;
     _universe = original._universe;
     _clazzes = original._clazzes;
+    _resultClazzes = original._resultClazzes;
+    _argClazzes = original._argClazzes;
     _specialClazzes = original._specialClazzes;
     _inh = original._inh;
     _clazzesForTypes = original._clazzesForTypes;
@@ -287,6 +346,19 @@ public class GeneratingFUIR extends FUIR
       {
         result = cl;
         _clazzes.add(cl);
+        if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
+          {
+            var rc = _resultClazzes;
+            _resultClazzes = new int[rc.length * 3];
+            Arrays.fill(_resultClazzes, NO_CLAZZ);
+            System.arraycopy(rc, 0, _resultClazzes, 0, rc.length);
+          }
+        if (CACHE_RESULT_CLAZZ && _clazzes.size() > _argClazzes.length)
+          {
+            var ac = _argClazzes;
+            _argClazzes = new int[ac.length * 3][];
+            System.arraycopy(ac, 0, _argClazzes, 0, ac.length);
+          }
         _clazzesTM.put(cl, cl);
 
         if (outerR != null)
@@ -586,7 +658,21 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).resultClazz()._id;
+    int res;
+    if (CACHE_RESULT_CLAZZ)
+      {
+        res = _resultClazzes[clazzId2num(cl)];
+        if (res == NO_CLAZZ)
+          {
+            res = id2clazz(cl).resultClazz()._id;
+            _resultClazzes[clazzId2num(cl)] = res;
+          }
+      }
+    else
+      {
+        res = id2clazz(cl).resultClazz()._id;
+      }
+    return res;
   }
 
 
@@ -966,6 +1052,73 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * Get an array of argument clazzes required for a call to this clazz.
+   *
+   * This does not perform caching of the result.
+   *
+   * @param cl clazz id
+   *
+   * @return array of the result types of the arguments expected by cl
+   */
+  private int[] clazzArgs0(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size(),
+       CACHE_ARG_CLAZZES);
+
+    var c = id2clazz(cl);
+    return
+      switch (clazzKind(cl))
+        {
+        case Routine,
+             Intrinsic,
+             Abstract,
+             Native ->
+               {
+                 var af = c.argumentFields();
+                 var res = new int[af.length];
+                 for (var i = 0; i < af.length; i++)
+                   {
+                     res[i] = af[i].resultClazz()._id;
+                   }
+                 yield res;
+               }
+        case Field,
+             Choice -> NO_ARGS;
+        };
+  }
+
+
+  /**
+   * Get an array of argument clazzes required for a call to this clazz.
+   *
+   * This does perform caching of the result, it is used by clazzArgCount and
+   * clazzArgClazz in case CACHE_ARG_CLAZZES is true.
+   *
+   * @param cl clazz id
+   *
+   * @return array of the result types of the arguments expected by cl
+   */
+  private int[] clazzArgs(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size(),
+       CACHE_ARG_CLAZZES);
+
+    var res = _argClazzes[clazzId2num(cl)];
+    if (res == null)
+      {
+        res = clazzArgs0(cl);
+        _argClazzes[clazzId2num(cl)] = res;
+      }
+    return res;
+  }
+
+
+
+  /**
    * Get the number of arguments required for a call to this clazz.
    *
    * @param cl clazz id
@@ -980,17 +1133,24 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    var c = id2clazz(cl);
-    return
-      switch (clazzKind(c._id))
-        {
-        case Routine,
-             Intrinsic,
-             Abstract,
-             Native -> c.argumentFields().length;
-        case Field,
-             Choice -> 0;
-        };
+    if (CACHE_ARG_CLAZZES)
+      {
+        return clazzArgs(cl).length;
+      }
+    else
+      {
+        var c = id2clazz(cl);
+        return
+          switch (clazzKind(cl))
+            {
+            case Routine,
+                 Intrinsic,
+                 Abstract,
+                 Native -> c.argumentFields().length;
+            case Field,
+                 Choice -> 0;
+            };
+      }
   }
 
 
@@ -1013,9 +1173,16 @@ public class GeneratingFUIR extends FUIR
        arg >= 0,
        arg < clazzArgCount(cl));
 
-    var c = id2clazz(cl);
-    var rc = c.argumentFields()[arg].resultClazz();
-    return rc._id;
+    if (CACHE_ARG_CLAZZES)
+      {
+        return clazzArgs(cl)[arg];
+      }
+    else
+      {
+        var c = id2clazz(cl);
+        var rc = c.argumentFields()[arg].resultClazz();
+        return rc._id;
+      }
   }
 
 

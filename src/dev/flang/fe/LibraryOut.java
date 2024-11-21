@@ -392,7 +392,7 @@ class LibraryOut extends ANY
    *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
-   *   |        |        |               |           C = unused                          |
+   *   |        |        |               |           C = is cotype                       |
    *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
@@ -408,7 +408,9 @@ class LibraryOut extends ANY
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | Y=1    | 1      | int           | type feature index                            |
+   *   | Y=1    | 1      | int           | cotype index                                  |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | C=1    | 1      | int           | cotypeorigin index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
@@ -456,6 +458,10 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_COTYPE;
       }
+    if (f.isCotype())
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_IS_COTYPE;
+      }
     if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
@@ -489,9 +495,15 @@ class LibraryOut extends ANY
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
     featureIndexOrZeroForUniverse(f.outer());
+    if (CHECKS) check
+      (!(f.isCotype() && f.hasCotype()));
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_COTYPE) != 0)
       {
         _data.writeOffset(f.cotype());
+      }
+    if ((k & FuzionConstants.MIR_FILE_KIND_IS_COTYPE) != 0)
+      {
+        _data.writeOffset(f.cotypeOrigin());
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
