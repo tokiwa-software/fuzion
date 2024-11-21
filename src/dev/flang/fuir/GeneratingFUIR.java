@@ -424,6 +424,8 @@ public class GeneratingFUIR extends FUIR
 
         result.registerAsHeir();
 
+        // C backend requires the value variant for all ref clazzes, so we make
+        // sure we have the value clazz as well:
         var ignore = clazzAsValue(result._id);
       }
     return result;
