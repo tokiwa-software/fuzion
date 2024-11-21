@@ -1070,6 +1070,8 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic("java/lang/foreign/ValueLayout", "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
+      case c_sys_ptr -> Expr.getstatic("java/lang/foreign/ValueLayout", "ADDRESS",
+        new ClassType("java/lang/foreign/AddressLayout"));
       default -> {
         Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
         yield null;
