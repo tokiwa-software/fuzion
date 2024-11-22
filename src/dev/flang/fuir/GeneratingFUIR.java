@@ -349,11 +349,7 @@ public class GeneratingFUIR extends FUIR
         _clazzes.add(cl);
         if (_lookupDone)
           {
-            if (false) // NYI: BUG: #4273: This still happens for some tests and
-                       // some backends, need to check why and avoid this!
-              {
-                throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
-              }
+            throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
           }
         if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
           {
@@ -2297,9 +2293,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> tagValueAndReusltClazz(int s)
+  private Pair<Clazz,Clazz> tagValueAndReusltClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2422,9 +2416,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
+  private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2436,7 +2428,7 @@ public class GeneratingFUIR extends FUIR
     if (res == null)
       {
         if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
+          (!_lookupDone);
         var cl = clazzAt(s);
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
@@ -2551,9 +2543,7 @@ public class GeneratingFUIR extends FUIR
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int accessedClazz(int s)
+  public int accessedClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2566,7 +2556,7 @@ public class GeneratingFUIR extends FUIR
     if (res == null)
       {
         if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
+          (!_lookupDone);
         res = accessedClazz(s, null);
         if (res == null)
           {
@@ -3035,9 +3025,7 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int matchStaticSubject(int s)
+  public int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
