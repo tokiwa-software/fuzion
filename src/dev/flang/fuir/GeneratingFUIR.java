@@ -2873,8 +2873,6 @@ public class GeneratingFUIR extends FUIR
     if (CHECKS) check
       (!_lookupDone);
 
-    _lookupDone = true;
-
     // NYI: UNDER DEVELOPMENT: layout phase creates new clazzes, which is why we cannot iterate like this. Need to check why and remove this!
     //
     // for(var c : _clazzes)
@@ -2883,6 +2881,8 @@ public class GeneratingFUIR extends FUIR
         var c = _clazzes.get(i);
         c.layoutAndHandleCycle();
       }
+
+    _lookupDone = true;
   }
 
 
