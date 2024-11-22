@@ -1993,7 +1993,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = f.constraint(Context.NONE).applyTypePars(called, actuals);
+        var c = f.constraint(context).applyTypePars(called, actuals);
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
@@ -2001,7 +2001,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   callPos != null                ? callPos
                                                  : called.pos();
 
-        a.checkLegalQualThisType(callPos, context);
+        a.checkLegalQualThisType(pos, context);
         a.checkChoice(pos, context);
         if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                       // will be checked in SourceModule.checkTypes(Feature)
