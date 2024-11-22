@@ -31,6 +31,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.SymbolLookup;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1412,6 +1417,27 @@ public class Runtime extends ANY
           {
             Errors.fatal("Attempt to modify immutable array", stackTrace());
           }
+      }
+  }
+
+  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc)
+  {
+    try
+      {
+        return Linker.nativeLinker()
+          .downcallHandle(
+            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
+              .or(SymbolLookup.loaderLookup())
+              .or(Linker.nativeLinker().defaultLookup())
+              .find(str)
+              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol")),
+            desc);
+      }
+    catch (Throwable e)
+      {
+        say_err(e);
+        System.exit(1);
+        return null;
       }
   }
 

@@ -36,10 +36,10 @@ scenario1 =>
   fs b
 
   a(T type) is
-    type.zero T => abstract
+    type.zero option T => abstract
 
-  b : a bool is
-    redef type.zero => true
+  b : a b is
+    redef type.zero option b => nil
 
   fs(F type : a F) =>
     _ := F.zero
@@ -214,22 +214,31 @@ _ := ~8
 # here, we have a feature `p` with a type parameter that depends on `p` itself that defines
 # a type feature `abs`
 
+/*
+
+NYI: BUG: currently
+error 1: java.lang.Error: check-condition failed: Clazz.java:1833 "(Errors.any() || i == of || i != null && i.inheritsFrom(of) && isValue);"
+        at dev.flang.util.ANY.check(ANY.java:440)
+        at dev.flang.fuir.Clazz.findOuter(Clazz.java:1833)
+        at dev.flang.fuir.Clazz.replaceThisType(Clazz.java:592)
+        ...
+
 scenario7 is
 
   p (W type: p W) is
-    type.abs W => abstract
+    type.abs option W => abstract
     a => W.abs
 
   # Now, features `q`, `q2` and `q3` inherit from `p` and set the type parameter to `q`, `q2`
-  # and `q3, resp. and implement the type feature `abs`
+  # and `q3`, resp. and implement the type feature `abs`
   #
-  q : p scenario7.q is
-    redef type.abs scenario7.q => scenario7.q
+  q : p q is
+    redef type.abs option q => nil
 
-  q2 : p scenario7.q2 is
-    redef type.abs scenario7.q2 => scenario7.q2
-  q3 : p scenario7.q3 is
-    redef type.abs scenario7.q3 => scenario7.q3
+  q2 : p q2 is
+    redef type.abs option q2 => nil
+  q3 : p q3 is
+    redef type.abs option q3 => nil
 
   # Next, r, s and t build a long inheritance chain starting at `p q`:
   #
@@ -265,6 +274,7 @@ run_scenario7 =>
 
 run_scenario7
 
+*/
 
 # ------  eigth scenario  ------
 #

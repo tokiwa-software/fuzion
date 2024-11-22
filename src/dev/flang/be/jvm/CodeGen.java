@@ -43,6 +43,7 @@ import dev.flang.util.Pair;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 
 
@@ -569,6 +570,21 @@ class CodeGen
         Errors.error("Call to abstract feature encountered.",
                      "Found call to " + clazzInQuotes(cc));
         break;
+      case Native   :
+        {
+          var invokeDescr = "(" +  args.stream().map(arg -> arg.type().descriptor()).collect(Collectors.joining()) + ")" + _types.javaType(rt).descriptor();
+          Expr call =
+            Expr.getstatic(_names.javaClass(cc),
+                           Names.METHOD_HANDLE_FIELD_NAME,
+                           Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                     // MethodHandle
+                .andThen(argsToStack(args))                                                    // MethodHandle, args...
+                .andThen(Expr.invokeVirtual(
+                  Names.JAVA_LANG_INVOKE_METHODHANDLE, "invoke",
+                  invokeDescr,
+                  _types.javaType(rt)));                                                       // rt
+          res = makePair(call, rt);
+          break;
+        }
       case Intrinsic:
         {
           if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
@@ -582,7 +598,6 @@ class CodeGen
           // fall through!
         }
       case Routine  :
-      case Native   :
         {
           if (_types.clazzNeedsCode(cc))
             {
@@ -640,6 +655,24 @@ class CodeGen
       }
     return res;
   }
+
+  /**
+   * Put all args in the list onto the stack.
+   *
+   * @param args
+   * @return
+   */
+  private Expr argsToStack(List<Expr> args)
+  {
+    var result = Expr.UNIT;
+    for (int i = 0; i < args.size(); i++)
+      {
+        result = result
+          .andThen(args.get(i));
+      }
+    return result;
+  }
+
 
 
   /**
