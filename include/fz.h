@@ -64,15 +64,6 @@ int fzE_set_blocking(int sockfd, int blocking);
 // the last error that occurred.
 int fzE_net_error(void);
 
-// fuzion family number -> system family number
-int get_family(int family);
-
-// fuzion socket type number -> system socket type number
-int get_socket_type(int socktype);
-
-// fuzion protocol number -> system protocol number
-int get_protocol(int protocol);
-
 // close a socket descriptor
 int fzE_close(int sockfd);
 
