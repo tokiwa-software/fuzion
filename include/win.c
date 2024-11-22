@@ -161,7 +161,7 @@ int fzE_net_error()
 
 
 // fuzion family number -> system family number
-int get_family(int family)
+int fzE_get_family(int family)
 {
   return family == 1
     ? AF_UNIX
@@ -174,7 +174,7 @@ int get_family(int family)
 
 
 // fuzion socket type number -> system socket type number
-int get_socket_type(int socktype)
+int fzE_get_socket_type(int socktype)
 {
   return socktype == 1
     ? SOCK_STREAM
@@ -187,7 +187,7 @@ int get_socket_type(int socktype)
 
 
 // fuzion protocol number -> system protocol number
-int get_protocol(int protocol)
+int fzE_get_protocol(int protocol)
 {
   return protocol == 6
     ? IPPROTO_TCP

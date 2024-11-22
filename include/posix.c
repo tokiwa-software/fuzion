@@ -143,7 +143,7 @@ int fzE_net_error()
 
 
 // fuzion family number -> system family number
-int get_family(int family)
+int fzE_get_family(int family)
 {
   return family == 1
     ? AF_UNIX
@@ -156,7 +156,7 @@ int get_family(int family)
 
 
 // fuzion socket type number -> system socket type number
-int get_socket_type(int socktype)
+int fzE_get_socket_type(int socktype)
 {
   return socktype == 1
     ? SOCK_STREAM
@@ -169,7 +169,7 @@ int get_socket_type(int socktype)
 
 
 // fuzion protocol number -> system protocol number
-int get_protocol(int protocol)
+int fzE_get_protocol(int protocol)
 {
   return protocol == 6
     ? IPPROTO_TCP
@@ -196,7 +196,7 @@ int fzE_close(int sockfd)
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
   // NYI use lock to make this _atomic_.
-  int sockfd = socket(get_family(family), get_socket_type(type), get_protocol(protocol));
+  int sockfd = socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
   fcntl(sockfd, F_SETFD, FD_CLOEXEC);
   return sockfd;
 }
@@ -207,9 +207,9 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
   fzE_memset(&hints, 0, sizeof hints);
 
-  hints.ai_family = get_family(family);
-  hints.ai_socktype = get_socket_type(socktype);
-  hints.ai_protocol = get_protocol(protocol);
+  hints.ai_family = fzE_get_family(family);
+  hints.ai_socktype = fzE_get_socket_type(socktype);
+  hints.ai_protocol = fzE_get_protocol(protocol);
   hints.ai_flags = flags;
 
   return getaddrinfo(host, port, &hints, result);

@@ -1269,6 +1269,14 @@ public class DFA extends ANY
 
 
         @Override
+        public int matchCaseField(int s, int cix)
+        {
+          var key = ((long)s<<32)|((long)cix);
+          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : -1;
+        }
+
+
+        @Override
         public boolean clazzIsUnitType(int cl)
         {
           return super.clazzIsUnitType(cl) || isUnitType(cl);
@@ -2225,9 +2233,10 @@ public class DFA extends ANY
           var result = cl._dfa.newCall(call, NO_SITE, a1, new List<>(), newEnv, cl).result();
 
           var ev = newEnv.getActualEffectValues(ecl);
-          if (newEnv.isAborted(ecl))
-            { // default result, only if abort is effer called
-              var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1));
+          var aborted = newEnv.isAborted(ecl);
+          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1), aborted);
+          if (aborted)
+            { // default result, only if abort is ever called
               var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), cl._dfa._fuir.clazzResultClazz(cl._cc)) :
