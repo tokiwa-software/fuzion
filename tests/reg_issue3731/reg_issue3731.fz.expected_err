@@ -1,0 +1,19 @@
+
+--CURDIR--/reg_issue3731.fz:31:6: error 1: Could not find called feature
+x.me.f
+-----^
+Feature not found: 'f' (no arguments)
+Target feature: 'Any'
+In call: 'x.me.f'
+
+
+--CURDIR--/reg_issue3731.fz:28:5: error 2: Feature 'me' has an ambiguous result type 'Any.this'.
+Any.me => Any.this
+----^^
+This is because result type is a this-type and the underlying feature is a reference.
+To solve this, either
+  return a values this-type
+or
+  return the type of the reference itself (instead of 'Any.this' return 'Any').
+
+2 errors.

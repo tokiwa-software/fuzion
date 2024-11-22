@@ -2340,6 +2340,17 @@ public class AstErrors extends ANY
           "Therefore, only valid effects may follow after it.");
   }
 
+  public static void ambiguousResultType(Feature f)
+  {
+    error(f.pos(),
+      "Feature " + sbnf(f) + " has an ambiguous result type " + s(f.resultType()) + ".",
+      "This is because result type is a this-type and the underlying feature is a reference.\n" +
+      "To solve this, either\n" +
+       "  return a values this-type\n" +
+       "or\n"
+       + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
+  }
+
 }
 
 /* end of file */
