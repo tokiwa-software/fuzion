@@ -119,7 +119,7 @@ public class u64Value extends Value
 
   protected Object toNative()
   {
-    return this.u64Value();
+    return u64Value();
   }
 
 

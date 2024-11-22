@@ -2180,9 +2180,6 @@ public class DFA extends ANY
     put("fuzion.sys.pipe.write"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.pipe.close"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
-    put("fuzion.std.nano_time"           , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-
     put("fuzion.std.date_time"           , cl ->
         {
           setArrayI32ElementsToAnything(cl, 0, "fuzion.sys.net.date_time");

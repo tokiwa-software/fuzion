@@ -898,17 +898,6 @@ public class Intrinsics extends ANY
     return 0;
   }
 
-  public static void fuzion_std_nano_sleep(long d)
-  {
-    try
-      {
-        TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE: d);
-      }
-    catch (InterruptedException ie)
-      {
-        throw new Error("unexpected interrupt", ie);
-      }
-  }
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {

@@ -969,15 +969,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                      PrimitiveType.type_byte.array())));
     });
 
-    put("fuzion.std.nano_time", (jvm, si, cc, tvalue, args) -> {
-      var res =
-        tvalue.drop()
-          .andThen(Expr.invokeStatic(System.class.getName().replace(".", "/"),
-            "nanoTime",
-            methodDescriptor(System.class, "nanoTime"),
-            PrimitiveType.type_long));
-      return new Pair<>(res, Expr.UNIT);
-    });
     put("fuzion.sys.env_vars.get0", (jvm, si, cc, tvalue, args) -> {
       return jvm.constString(
         tvalue.drop()

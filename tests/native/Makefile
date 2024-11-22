@@ -23,14 +23,4 @@
 
 override NAME = native
 
-BUILD_DIR = ../../
-
-A:=$(shell clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/include/libfuzion.so && \
-		clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/include/libfuzion.dylib && \
-		clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/include/fuzion.dll)
-
-export LD_LIBRARY_PATH ?= ../../include
-export PATH := $(PATH):../../include
-export DYLD_FALLBACK_LIBRARY_PATH ?= ../../include
-
 include ../simple.mk
