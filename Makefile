@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA = java
+JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
 JAVA_VERSION = 21
-JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION)
+JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build

@@ -246,6 +246,7 @@ public class Types extends ANY implements ClassFileConstants
             };
       case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
       case Intrinsic -> true;
+      case Native    -> true; // constains a static field methodHandler
       default        -> false;
       };
   }

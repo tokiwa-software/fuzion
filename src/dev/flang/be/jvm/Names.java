@@ -214,6 +214,19 @@ public class Names extends ANY implements ClassFileConstants
   static final String PREALLOCATED_CONSTANT_PREFIX = "fzK_";
 
 
+  /**
+   * Predefined constants used when calling native code.
+   */
+  static final String    JAVA_LANG_INVOKE_METHODHANDLE = "java/lang/invoke/MethodHandle";
+  static final String    JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR = "java/lang/foreign/FunctionDescriptor";
+  static final String    METHOD_HANDLE_FIELD_NAME = "methodHandle";
+  static final String    JAVA_LANG_FOREIGN_VALUELAYOUT = "java/lang/foreign/ValueLayout";
+  static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT = new ClassType("java/lang/foreign/MemoryLayout");
+  static final ClassType CT_JAVA_LANG_INVOKE_METHODHANDLE = new ClassType(Names.JAVA_LANG_INVOKE_METHODHANDLE);
+  static final ClassType CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR = new ClassType(Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR);
+
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
