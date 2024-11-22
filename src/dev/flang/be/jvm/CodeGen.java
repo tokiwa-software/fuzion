@@ -575,11 +575,11 @@ class CodeGen
           var invokeDescr = "(" +  args.stream().map(arg -> arg.type().descriptor()).collect(Collectors.joining()) + ")" + _types.javaType(rt).descriptor();
           Expr call =
             Expr.getstatic(_names.javaClass(cc),
-                           "methodHandle",
-                           new ClassType("java/lang/invoke/MethodHandle"))                     // MethodHandle
+                           Names.METHOD_HANDLE_FIELD_NAME,
+                           Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                     // MethodHandle
                 .andThen(argsToStack(args))                                                    // MethodHandle, args...
                 .andThen(Expr.invokeVirtual(
-                  "java/lang/invoke/MethodHandle", "invoke",
+                  Names.JAVA_LANG_INVOKE_METHODHANDLE, "invoke",
                   invokeDescr,
                   _types.javaType(rt)));                                                       // rt
           res = makePair(call, rt);
