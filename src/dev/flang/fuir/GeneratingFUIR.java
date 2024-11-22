@@ -347,6 +347,14 @@ public class GeneratingFUIR extends FUIR
       {
         result = cl;
         _clazzes.add(cl);
+        if (_lookupDone)
+          {
+            if (false) // NYI: BUG: #4273: This still happens for some tests and
+                       // some backends, need to check why and avoid this!
+              {
+                throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
+              }
+          }
         if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
           {
             var rc = _resultClazzes;
@@ -415,6 +423,10 @@ public class GeneratingFUIR extends FUIR
           }
 
         result.registerAsHeir();
+
+        // C backend requires the value variant for all ref clazzes, so we make
+        // sure we have the value clazz as well:
+        var ignore = clazzAsValue(result._id);
       }
     return result;
   }
@@ -1847,7 +1859,32 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_Function_call)._id;
+    return lookupCall(cl, !_lookupDone);
+  }
+
+
+  /**
+   * For a clazz that is an heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
+   *
+   * @param cl index of a clazz that is an heir of 'Function'.
+   *
+   * @param markAsCalled true to mark the result as called
+   *
+   * @return the index of the requested `Function.call` feature's clazz.
+   */
+  @Override
+  public int lookupCall(int cl, boolean markAsCalled)
+  {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    var cc = id2clazz(cl);
+
+    return (markAsCalled ? cc.lookupNeeded(Types.resolved.f_Function_call)
+                         : cc.lookup      (Types.resolved.f_Function_call))._id;
   }
 
 

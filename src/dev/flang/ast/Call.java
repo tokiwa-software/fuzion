@@ -567,7 +567,11 @@ public class Call extends AbstractCall
     // are we searching for features called via outer's inheritance calls?
     if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
       {
-        if (_target instanceof Call tc)
+        if (_target instanceof Universe)
+          {
+            result = _target.type().feature();
+          }
+        else if (_target instanceof Call tc)
           {
             _target.loadCalledFeature(res, context);
             result = tc.calledFeature();
