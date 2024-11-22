@@ -43,7 +43,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.GeneratingFUIR;
-import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.fuir.analysis.AbstractInterpreter2;
 import dev.flang.ir.IR.ExprKind;
 import dev.flang.ir.IR.FeatureKind;
 
@@ -56,7 +56,6 @@ import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.IntMap;
 import dev.flang.util.LongMap;
-import dev.flang.util.Pair;
 
 
 /**
@@ -86,14 +85,6 @@ public class DFA extends ANY
 
 
   /**
-   * Dummy unit type as type parameter for AbstractInterpreter.ProcessExpression.
-   */
-  static class Unit
-  {
-  }
-
-
-  /**
    * Record match cases that were evaluated by the DFA.
    */
   public final Set<Long> _takenMatchCases = new TreeSet<>();
@@ -102,7 +93,7 @@ public class DFA extends ANY
   /**
    * Statement processor used with AbstractInterpreter to perform DFA analysis
    */
-  class Analyze extends AbstractInterpreter.ProcessExpression<Val,Unit>
+  class Analyze extends AbstractInterpreter2.ProcessExpression<Val>
   {
 
 
@@ -123,18 +114,6 @@ public class DFA extends ANY
 
 
 
-    /**
-     * Join a List of RESULT from subsequent statements into a compound
-     * statement.  For a code generator, this could, e.g., join statements "a :=
-     * 3;" and "b(x);" into a block "{ a := 3; b(x); }".
-     */
-    @Override
-    public Unit sequence(List<Unit> l)
-    {
-      return _unit_;
-    }
-
-
     /*
      * Produce the unit type value.  This is used as a placeholder
      * for the universe instance as well as for the instance 'unit'.
@@ -151,13 +130,12 @@ public class DFA extends ANY
      * tracing code for debugging or a comment.
      */
     @Override
-    public Unit expressionHeader(int s)
+    public void expressionHeader(int s)
     {
       if (_reportResults && _options.verbose(9))
         {
           say("DFA for "+_fuir.siteAsString(s)+" at "+s+": "+_fuir.codeAtAsString(s));
         }
-      return _unit_;
     }
 
 
@@ -165,9 +143,8 @@ public class DFA extends ANY
      * A comment, adds human readable information
      */
     @Override
-    public Unit comment(String s)
+    public void comment(String s)
     {
-      return _unit_;
     }
 
 
@@ -175,9 +152,8 @@ public class DFA extends ANY
      * no operation, like comment, but without giving any comment.
      */
     @Override
-    public Unit nop()
+    public void nop()
     {
-      return _unit_;
     }
 
 
@@ -199,10 +175,9 @@ public class DFA extends ANY
      * @return resulting code of this assignment.
      */
     @Override
-    public Unit assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
+    public void assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
-      return _unit_;
     }
 
 
@@ -217,10 +192,9 @@ public class DFA extends ANY
      * @param avalue the new value to be assigned to the field.
      */
     @Override
-    public Unit assign(int s, Val tvalue, Val avalue)
+    public void assign(int s, Val tvalue, Val avalue)
     {
       var res = access(s, tvalue, new List<>(avalue));
-      return _unit_;
     }
 
 
@@ -254,11 +228,11 @@ public class DFA extends ANY
      * (due to an error or tail recursion optimization).
      */
     @Override
-    public Pair<Val, Unit> call(int s, Val tvalue, List<Val> args)
+    public Val call(int s, Val tvalue, List<Val> args)
     {
       var res = access(s, tvalue, args);
       DFA.this.site(s).recordResult(res == null);
-      return new Pair<>(res, _unit_);
+      return res;
     }
 
 
@@ -326,7 +300,7 @@ public class DFA extends ANY
     Val accessSingleTarget(int s, Value tvalue, List<Val> args, Val res, Val original_tvalue)
     {
       if (PRECONDITIONS) require
-        (Errors.any() || tvalue != Value.UNIT || AbstractInterpreter.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s))
+        (Errors.any() || tvalue != Value.UNIT || AbstractInterpreter2.clazzHasUnitValue(_fuir, _fuir.accessTargetClazz(s))
          // NYI: UNDER DEVELOPMENT: intrinsics create instances like
          // `fuzion.java.Array`. These intrinsics currently do not set the outer
          // refs correctly, so we handle them for now by just assuming they are
@@ -423,7 +397,7 @@ public class DFA extends ANY
               {
                 var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
-                if (res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
+                if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
                     res = newEmbeddedValue(s, res.value());
                   }
@@ -465,10 +439,10 @@ public class DFA extends ANY
      * For a given value v of value type vc create a boxed ref value of type rc.
      */
     @Override
-    public Pair<Val, Unit> box(int s, Val val, int vc, int rc)
+    public Val box(int s, Val val, int vc, int rc)
     {
       var boxed = val.value().box(DFA.this, vc, rc, _call);
-      return new Pair<>(boxed, _unit_);
+      return boxed;
     }
 
 
@@ -476,9 +450,9 @@ public class DFA extends ANY
      * Get the current instance
      */
     @Override
-    public Pair<Val, Unit> current(int s)
+    public Val current(int s)
     {
-      return new Pair<>(_call._instance, _unit_);
+      return _call._instance;
     }
 
 
@@ -486,9 +460,9 @@ public class DFA extends ANY
      * Get the outer instance
      */
     @Override
-    public Pair<Val, Unit> outer(int s)
+    public Val outer(int s)
     {
-      return new Pair<>(_call._target, _unit_);
+      return _call._target;
     }
 
     /**
@@ -505,9 +479,8 @@ public class DFA extends ANY
      * Get a constant value of type constCl with given byte data d.
      */
     @Override
-    public Pair<Val, Unit> constData(int s, int constCl, byte[] d)
+    public Val constData(int s, int constCl, byte[] d)
     {
-      var o = _unit_;
       var r = switch (_fuir.getSpecialClazz(constCl))
         {
         case c_bool -> d[0] == 1 ? True() : False();
@@ -538,7 +511,7 @@ public class DFA extends ANY
               }
           }
         };
-      return new Pair<>(r, o);
+      return r;
     }
 
 
@@ -565,7 +538,7 @@ public class DFA extends ANY
           var f = _fuir.clazzArg(constCl, index);
           var fr = _fuir.clazzArgClazz(constCl, index);
           var bytes = _fuir.deseralizeConst(fr, b);
-          var arg = constData(s, fr, bytes).v0().value();
+          var arg = constData(s, fr, bytes).value();
           args.add(arg);
           result.setField(DFA.this, f, arg);
         }
@@ -611,8 +584,8 @@ public class DFA extends ANY
         {
           var b = _fuir.deseralizeConst(elementClazz, d);
           elements = elements == null
-            ? constData(s, elementClazz, b).v0().value()
-            : elements.join(DFA.this, constData(s, elementClazz, b).v0().value(), elementClazz);
+            ? constData(s, elementClazz, b).value()
+            : elements.join(DFA.this, constData(s, elementClazz, b).value(), elementClazz);
         }
       SysArray sysArray = newSysArray(elements, elementClazz);
 
@@ -627,7 +600,7 @@ public class DFA extends ANY
      * Perform a match on value subv.
      */
     @Override
-    public Pair<Val, Unit> match(int s, AbstractInterpreter<Val,Unit> ai, Val subv)
+    public Val match(int s, AbstractInterpreter2<Val> ai, Val subv)
     {
       Val r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
@@ -662,14 +635,14 @@ public class DFA extends ANY
           if (taken)
             {
               var resv = ai.processCode(_fuir.matchCaseCode(s, mc));
-              if (resv.v0() != null)
+              if (resv != null)
                 { // if at least one case returns (i.e., result is not null), this match returns.
                   r = Value.UNIT;
                 }
             }
         }
       DFA.this.site(s).recordResult(r == null);
-      return new Pair<>(r, _unit_);
+      return r;
     }
 
 
@@ -715,10 +688,10 @@ public class DFA extends ANY
      * Create a tagged value of type newcl from an untagged value.
      */
     @Override
-    public Pair<Val, Unit> tag(int s, Val value, int newcl, int tagNum)
+    public Val tag(int s, Val value, int newcl, int tagNum)
     {
       Val res = value.value().tag(_call._dfa, newcl, tagNum);
-      return new Pair<>(res, _unit_);
+      return res;
     }
 
 
@@ -726,9 +699,9 @@ public class DFA extends ANY
      * Access the effect of type ecl that is installed in the environment.
      */
     @Override
-    public Pair<Val, Unit> env(int s, int ecl)
+    public Val env(int s, int ecl)
     {
-      return new Pair<>(_call.getEffectForce(s, ecl), _unit_);
+      return _call.getEffectForce(s, ecl);
     }
 
 
@@ -738,10 +711,9 @@ public class DFA extends ANY
      * @param msg a message explaining the illegal state
      */
     @Override
-    public Unit reportErrorInCode(String msg)
+    public void reportErrorInCode(String msg)
     {
       // In the DFA, ignore these errors
-      return _unit_;
     }
 
   }
@@ -819,12 +791,6 @@ public class DFA extends ANY
    *   dev_flang_fuir_analysis_dfa_DFA_USE_EMBEDDED_VALUES=false
    */
   static final boolean USE_EMBEDDED_VALUES = FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.USE_EMBEDDED_VALUES", true);
-
-
-  /**
-   * singleton instance of Unit.
-   */
-  static Unit _unit_ = new Unit();
 
 
   /**
@@ -1269,6 +1235,14 @@ public class DFA extends ANY
 
 
         @Override
+        public int matchCaseField(int s, int cix)
+        {
+          var key = ((long)s<<32)|((long)cix);
+          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : -1;
+        }
+
+
+        @Override
         public boolean clazzIsUnitType(int cl)
         {
           return super.clazzIsUnitType(cl) || isUnitType(cl);
@@ -1558,9 +1532,9 @@ public class DFA extends ANY
             i.setField(this, or, c._target);
           }
 
-        var ai = new AbstractInterpreter<Val,Unit>(_fuir, new Analyze(c));
+        var ai = new AbstractInterpreter2<Val>(_fuir, new Analyze(c));
         var r = ai.processClazz(c._cc);
-        if (r.v0() != null)
+        if (r != null)
           {
             c.returns();
           }
@@ -2225,9 +2199,10 @@ public class DFA extends ANY
           var result = cl._dfa.newCall(call, NO_SITE, a1, new List<>(), newEnv, cl).result();
 
           var ev = newEnv.getActualEffectValues(ecl);
-          if (newEnv.isAborted(ecl))
-            { // default result, only if abort is effer called
-              var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1));
+          var aborted = newEnv.isAborted(ecl);
+          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1), aborted);
+          if (aborted)
+            { // default result, only if abort is ever called
               var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), cl._dfa._fuir.clazzResultClazz(cl._cc)) :
@@ -2653,6 +2628,19 @@ public class DFA extends ANY
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
     var clnum = _fuir.clazzId2num(cl);
     _hasFields.set(clnum);
+  }
+
+
+  /**
+   * Is this field ever read?
+   */
+  boolean isRead(int field)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+
+    var fnum = _fuir.clazzId2num(field);
+    return _readFields.get(fnum);
   }
 
 

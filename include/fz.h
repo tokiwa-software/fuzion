@@ -31,6 +31,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 void * fzE_malloc_safe(size_t size);
 
@@ -61,16 +62,7 @@ int fzE_set_blocking(int sockfd, int blocking);
 
 // helper function to retrieve
 // the last error that occurred.
-int fzE_net_error();
-
-// fuzion family number -> system family number
-int get_family(int family);
-
-// fuzion socket type number -> system socket type number
-int get_socket_type(int socktype);
-
-// fuzion protocol number -> system protocol number
-int get_protocol(int protocol);
+int fzE_net_error(void);
 
 // close a socket descriptor
 int fzE_close(int sockfd);
@@ -163,7 +155,7 @@ bool fzE_bitwise_compare_double(double d1, double d2);
 /**
  * returns a monotonically increasing timestamp.
  */
-uint64_t fzE_nanotime();
+uint64_t fzE_nanotime(void);
 
 /**
  * Sleep for `n` nano seconds.
@@ -188,7 +180,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata);
 /**
  * Run plattform specific initialisation code
  */
-void fzE_init();
+void fzE_init(void);
 
 /**
  * Start a new thread, returns a pointer to the thread.
@@ -205,8 +197,8 @@ void fzE_thread_join(int64_t thrd);
 /**
  * Global lock
  */
-void fzE_lock();
-void fzE_unlock();
+void fzE_lock(void);
+void fzE_unlock(void);
 
 /**
  * @param args array of process + arguments
@@ -291,7 +283,7 @@ struct fzE_jvm_result
 void fzE_create_jvm(char * option_string);
 
 // close the JVM.
-void fzE_destroy_jvm();
+void fzE_destroy_jvm(void);
 
 // convert a jstring to a utf-8 byte array
 const char * fzE_java_string_to_utf8_bytes(jstring jstr);
@@ -340,7 +332,7 @@ jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, co
  * initialize a mutex
  * @return NULL on error or pointer to mutex
  */
-void *  fzE_mtx_init     ();
+void *  fzE_mtx_init     (void);
 /**
  * lock a mutex, undefined behaviour if mutex already locked by current thread
  * @return -1 on error, 0 on success
@@ -364,7 +356,7 @@ void    fzE_mtx_destroy  (void * mtx);
  * initialize a condition
  * @return NULL on error or pointer to condition
  */
-void *  fzE_cnd_init     ();
+void *  fzE_cnd_init     (void);
 /**
  * unblocks one thread waiting on this condition
  * @return -1 on error, 0 on success
