@@ -23,6 +23,9 @@
 
 override NAME = native
 
+# NYI:  this will be moved to main Makefile in the future
+#       once we start replacing intrinsics by natives
+
 BUILD_DIR = ../../
 
 A:=$(shell clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/include/libfuzion.so && \
