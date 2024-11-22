@@ -177,7 +177,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  public AbstractFeature _cotypeOrigin;
+  AbstractFeature _cotypeOrigin;
 
 
   /**
@@ -396,15 +396,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
-
-  /**
-   * Does this feature has an arrow "=>" in it's signature, i.e. is a function or an intrinsic
-   * @return true if the signature contains an arrow "=>"
-   */
-  public boolean signatureWithArrow()
-  {
-    return (isRoutine() && !isConstructor()) || isIntrinsic() || isAbstract() || isNative();
-  }
 
 
   /**
@@ -1062,7 +1053,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean hasCotype()
   {
-    return _cotype != null || existingCotype() != null || this == Types.f_ERROR;
+    return _cotype != null || this == Types.f_ERROR;
   }
 
 
@@ -1074,28 +1065,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isCotype() || hasCotype());
 
-    if (_cotype == null)
-      {
-        _cotype = this == Types.f_ERROR ? this :
-                       isCotype()       ? Types.resolved.f_Type
-                                             : existingCotype();
-      }
-    var result = _cotype;
+    var result =
+      this == Types.f_ERROR ? this
+                            : isCotype()
+                              ? Types.resolved.f_Type
+                              : _cotype;
 
     if (POSTCONDITIONS) ensure
       (result != null);
 
     return result;
-  }
-
-
-  /**
-   * If we have an existing type feature (stored in a .fum library file), return that
-   * type feature. return null otherwise.
-   */
-  protected AbstractFeature existingCotype()
-  {
-    return null;
   }
 
 

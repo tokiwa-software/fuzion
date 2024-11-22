@@ -1225,7 +1225,7 @@ EXCLAMATION : "!"
    */
   boolean skipEffects()
   {
-    return skip('!') && skipTypeList();
+    return skip('!') && skipSimpleTypeList();
   }
 
 
@@ -1331,17 +1331,17 @@ inherit     : COLON pureCallList
   /**
    * Parse pureCallList
    *
-pureCallList    : pureCall ( COMMA pureCallList
-                           |
-                           )
+pureCallList    : pureCall0 ( COMMA pureCallList
+                            |
+                            )
                 ;
    */
   List<AbstractCall> pureCallList()
   {
-    var result = new List<AbstractCall>(pureCall(null));
+    var result = new List<AbstractCall>(pureCall0());
     while (skipComma())
       {
-        result.add(pureCall(null));
+        result.add(pureCall0());
       }
     return result;
   }
@@ -1350,17 +1350,17 @@ pureCallList    : pureCall ( COMMA pureCallList
   /**
    * Parse callList
    *
-callList    : call ( COMMA callList
-                   |
-                   )
+callList    : call0 ( COMMA callList
+                    |
+                    )
             ;
    */
   List<Expr> callList()
   {
-    var result = new List<Expr>(call(null));
+    var result = new List<Expr>(call0());
     while (skipComma())
       {
-        result.add(call(null));
+        result.add(call0());
       }
     return result;
   }
@@ -1373,7 +1373,7 @@ callList    : call ( COMMA callList
    */
   boolean skipCallList()
   {
-    var result = isNamePrefix();
+    var result = isNamePrefix() || current(false) == Token.t_universe;
     if (result)
       {
         var ignore = callList();
@@ -1383,12 +1383,45 @@ callList    : call ( COMMA callList
 
 
   /**
+   * Parse pureCall0
+   *
+pureCall0    : universePureCall
+             | pureCall
+             ;
+   */
+  private AbstractCall pureCall0()
+  {
+    return current(false) == Token.t_universe
+      ? universePureCall()
+      : pureCall(null);
+  }
+
+
+  /**
+   * Parse call0
+   *
+call0    : universeCall
+         | call
+         ;
+   */
+  private Expr call0()
+  {
+    return current(false) == Token.t_universe
+      ? universeCall()
+      : call(null);
+  }
+
+
+  /**
    * Parse pure call, i.e. a call that is really a call and not a.b.env or x.y.type.
    *
    * @param target the target of the call or null if none.
    */
-  Call pureCall(Call target)
+  Call pureCall(Expr target)
   {
+    if (PRECONDITIONS) require
+      (target == null || target instanceof Call || target instanceof Universe);
+
     return (Call) call(true, target);
   }
 
@@ -1556,8 +1589,12 @@ callTail    : indexCall  callTail
               {
                 AstErrors.noValidLHSInExpresssion(result, ".env");
                 t = Types.t_ERROR;
+                result = Call.ERROR_VALUE;
               }
-            result = callTail(false, new Env    (sourceRange(target.pos()), t));
+            else
+              {
+                result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), result), new ParsedName(sourceRange(target.pos()), "from_env")));
+              }
           }
         else if (skip(Token.t_type))
           {
@@ -1566,8 +1603,12 @@ callTail    : indexCall  callTail
               {
                 AstErrors.noValidLHSInExpresssion(result, ".type");
                 t = Types.t_ERROR;
+                result = Call.ERROR_VALUE;
               }
-            result = callTail(false, new DotType(sourceRange(target.pos()), t));
+            else
+              {
+                result = callTail(false, new DotType(sourceRange(target.pos()), result));
+              }
           }
         else if (skip(Token.t_this))
           {
@@ -1621,6 +1662,23 @@ typeList    : type ( COMMA typeList
     while (skipComma())
       {
         result = result && skipType(false, true);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position has simpleTypeList and skip it.
+   *
+   * @return true iff the next token(s) form typeList, otherwise no typeList was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipSimpleTypeList()
+  {
+    boolean result = skipSimpletype();
+    while (skipComma())
+      {
+        result = result && skipSimpletype();
       }
     return result;
   }
@@ -3174,8 +3232,25 @@ universeCall      : universe dot call
   Expr universeCall()
   {
     var universe = universe();
-    matchOperator(".",      "universeCall");
+    matchOperator(".", "universeCall");
     return call(universe);
+  }
+
+
+  /**
+   * Parse universePureCall
+   *
+   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
+   * is not possible to get the value of the `universe`.
+   *
+universePureCall  : universe dot pureCall
+                  ;
+   */
+  Call universePureCall()
+  {
+    var universe = universe();
+    matchOperator(".", "universePureCall");
+    return pureCall(universe);
   }
 
 

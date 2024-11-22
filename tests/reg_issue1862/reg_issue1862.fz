@@ -22,6 +22,6 @@
 # -----------------------------------------------------------------------
 
 mi : mutate is
-mi.instate_self ()->
+mi ! ()->
   b := (String.type.from_mutable_array ((mutate.array Any).type.new mi 1 false))
   _ := type_of b

@@ -63,7 +63,7 @@ choicetest is
 
   say "creating array:"
   mi : mutate is
-  a := mi.instate_self ()->
+  a := mi ! ()->
     a := (mutate.array Coin).new mi 10 Penny
     a[0] := Penny
     a[1] := Penny

@@ -61,7 +61,15 @@ public monad (public A type,
   # NYI: useless since redefinition currently not supported for
   # feature with generics.
   #
-  public join(MMA type : monad MA (monad A MA), a MMA) MA => abstract
+  # NYI: BUG: gives to following error currently:
+  #
+  #     Incompatible type parameter
+  #     public join(MMA type : monad MA (monad A MA), a MMA) MA => abstract
+  #
+  #     formal type parameter 'MA' with constraint 'monad monad.MA (monad monad.A monad.MA)'
+  #     actual type parameter 'monad monad.A monad.MA'
+  #
+  # public join(MMA type : monad MA (monad A MA), a MMA) MA => abstract
 
 
   # NYI: fmap:

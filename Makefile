@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA = java
+JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
 JAVA_VERSION = 21
-JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION)
+JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -41,8 +41,9 @@ endif
 
 UNICODE_SOURCE = https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
 
-JAVA_FILE_UTIL_VERSION_IN =  $(SRC)/dev/flang/util/Version.java.in
-JAVA_FILE_UTIL_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/util/Version.java
+JAVA_FILE_UTIL_VERSION_IN                     = $(SRC)/dev/flang/util/Version.java.in
+JAVA_FILE_UTIL_VERSION                        = $(BUILD_DIR)/generated/src/dev/flang/util/Version.java
+JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2 = $(BUILD_DIR)/generated/src/dev/flang/fuir/analysis/AbstractInterpreter2.java
 
 JAVA_FILES_UTIL              = $(wildcard $(SRC)/dev/flang/util/*.java          ) $(JAVA_FILE_UTIL_VERSION)
 JAVA_FILES_UTIL_UNICODE      = $(wildcard $(SRC)/dev/flang/util/unicode/*.java  )
@@ -52,7 +53,7 @@ JAVA_FILES_IR                = $(wildcard $(SRC)/dev/flang/ir/*.java            
 JAVA_FILES_MIR               = $(wildcard $(SRC)/dev/flang/mir/*.java           )
 JAVA_FILES_FE                = $(wildcard $(SRC)/dev/flang/fe/*.java            )
 JAVA_FILES_FUIR              = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
-JAVA_FILES_FUIR_ANALYSIS     = $(wildcard $(SRC)/dev/flang/fuir/analysis/*.java )
+JAVA_FILES_FUIR_ANALYSIS     = $(wildcard $(SRC)/dev/flang/fuir/analysis/*.java ) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 JAVA_FILES_FUIR_ANALYSIS_DFA = $(wildcard $(SRC)/dev/flang/fuir/analysis/dfa/*.java )
 JAVA_FILES_FUIR_CFG          = $(wildcard $(SRC)/dev/flang/fuir/cfg/*.java      )
 JAVA_FILES_OPT               = $(wildcard $(SRC)/dev/flang/opt/*.java           )
@@ -499,6 +500,16 @@ $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR) $(
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
+
+$(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2): $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter.java $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter2.java.patch
+	mkdir -p $(@D)
+	patch -o $@ $^
+
+# phony target to update the .patch files used to generate sources from modified
+# version of those generated sources
+.PHONY: update-java-patches
+update-java-patches:
+	diff $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter.java $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2) >$(SRC)/dev/flang/fuir/analysis/AbstractInterpreter2.java.patch || true
 
 $(CLASS_FILES_FUIR_ANALYSIS): $(JAVA_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
@@ -1217,7 +1228,7 @@ run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $
 .PHONY .SILENT: run_tests_jar
 run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
-	java -jar HelloWorld.jar > /dev/null
+	$(JAVA) -jar HelloWorld.jar > /dev/null
 
 .PHONY: clean
 clean:
@@ -1332,7 +1343,7 @@ lint/javadoc:
 .PHONY: remove_unused_imports
 remove_unused_imports:
 	wget -O /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
-	java -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
+	$(JAVA) -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
 
 
 $(BUILD_DIR)/pmd.zip:
@@ -1405,7 +1416,7 @@ LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
 LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 lsp/debug/stdio: lsp/compile
-	java $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
+	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 
 ########
 # End : Fuzion Language Server

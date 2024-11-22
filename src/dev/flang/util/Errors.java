@@ -694,24 +694,22 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
-
-    if (!_shutting_down_ &&
-        (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1))
+    if (!_shutting_down_)
       {
-        if (warningCount()+1 == MAX_WARNING_MESSAGES)
+        Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+        var isnew = _warnings_.add(e);
+        if (isnew && (warningCount() <= MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1))
           {
-            pos = SourcePosition.builtIn;
-            msg = "Maximum warning count reached, suppressing further warnings";
-            detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
-              "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
-          }
-        if (!_warnings_.contains(e))
-          {
+            if (warningCount() == MAX_WARNING_MESSAGES)
+              {
+                pos = SourcePosition.builtIn;
+                msg = "Maximum warning count reached, suppressing further warnings";
+                detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
+                  "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
+              }
             print(pos, warningMessage(msg), detail);
           }
       }
-    _warnings_.add(e);
   }
 
 

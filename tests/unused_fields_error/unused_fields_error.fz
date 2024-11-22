@@ -36,3 +36,14 @@ unused_fields_error =>
   # no warnings for unused arguments
   a(a i32, _ i32) =>
   b(public a i32, _ i32, c i32) is
+
+
+  c is
+    inner i32 => abstract
+
+  d : c is
+    # no warnings for unused redef
+    redef inner := 4
+    # while error for unused field that is not a redef
+    inner2 := 3
+

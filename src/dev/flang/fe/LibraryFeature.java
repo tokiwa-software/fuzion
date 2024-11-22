@@ -48,7 +48,6 @@ import dev.flang.ast.Cond;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -165,15 +164,6 @@ public class LibraryFeature extends AbstractFeature
     _libModule = lib;
     _index = index;
     _kind = lib.featureKindEnum(index);
-
-    var tf = existingCotype();
-    if (tf != null)
-      {
-        // NYI: HACK: This is somewhat ugly, would be nicer if the type feature
-        // in the fum file would contain a reference to the origin such that we
-        // do not need to patch this into the type feature's field.
-        tf._cotypeOrigin = this;
-      }
   }
 
 
@@ -350,12 +340,38 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * If we have an existing type feature (store in a .fum library file), return that
-   * type feature. return null otherwise.
+   * Check if a cotype exists already, either because this feature was
+   * loaded from a library .fum file that includes a cotype, or because one
+   * was created explicitly using cotype(res).
    */
-  public AbstractFeature existingCotype()
+  @Override
+  public boolean hasCotype()
+  {
+    return _libModule.featureHasCotype(_index);
+  }
+
+
+  /**
+   * Return existing cotype.
+   */
+  @Override
+  public AbstractFeature cotype()
   {
     return _libModule.featureHasCotype(_index) ? _libModule.featureCotype(_index) : null;
+  }
+
+
+  @Override
+  public boolean isCotype()
+  {
+    return _libModule.featureIsCotype(_index);
+  }
+
+
+  @Override
+  public AbstractFeature cotypeOrigin()
+  {
+    return _libModule.featureIsCotype(_index) ? _libModule.featureCotypeOrigin(_index) : null;
   }
 
 
@@ -403,7 +419,7 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType createThisType()
   {
     if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
+      (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
     var ot = o == null ? null : o.selfType();
@@ -708,13 +724,6 @@ public class LibraryFeature extends AbstractFeature
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
               x = new Tag(val, taggedType, Context.NONE);
-              break;
-            }
-          case Env:
-            {
-              var envType = _libModule.envType(iat);
-              x = new Env(LibraryModule.DUMMY_POS, envType)
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case Unit:

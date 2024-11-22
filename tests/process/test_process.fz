@@ -47,43 +47,43 @@ test_process =>
     (os.process.start "cat").bind unit p->
       _ := p.write_string "Hello from the other side."
       say p.wait
-      _ := lm.instate_self ()->
+      _ := lm ! ()->
         _ := p.with_out unit lm ()->
-          say (io.buffered.read_string lm 1E9)
+          say (io.buffered.read_string lm 1E9).val
 
 
 
   test "read stdout of process" ()->
     (os.process.start "echo" ["eecchhoo"]).bind unit p->
-      _ := lm.instate_self ()->
+      _ := lm ! ()->
         _ := p.with_out unit lm ()->
-          say (io.buffered.read_string lm 1E9)
+          say (io.buffered.read_string lm 1E9).val
 
 
 
   test "pass environment variable" ()->
     (os.process.start "printenv" ["MYENVVAR"] (container.map_of [("MYENVVAR", "content")])).bind unit p->
-      _ := lm.instate_self ()->
+      _ := lm ! ()->
         _ := p.with_out unit lm ()->
-          say (io.buffered.read_string lm 1E9)
+          say (io.buffered.read_string lm 1E9).val
 
 
 
   test "feed output of process 1 to process 2" ()->
     (os.process.start "echo" ["'feed me to cat'"]).bind unit p->
       (p | ["cat"]).bind unit p2->
-        _ := lm.instate_self ()->
+        _ := lm ! ()->
           _ := p2.with_out unit lm ()->
-            say (io.buffered.read_string lm 1E9)
+            say (io.buffered.read_string lm 1E9).val
 
 
 
   test "1kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E3)]).bind unit p->
       (p | ["cat"]).bind unit p2->
-        _ := lm.instate_self ()->
+        _ := lm ! ()->
           _ := p2.with_out unit lm ()->
-            say (io.buffered.read_string lm 1E9).byte_length
+            say (io.buffered.read_string lm 1E9).val.byte_length
           say p2.wait
 
 

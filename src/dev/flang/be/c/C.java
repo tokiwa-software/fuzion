@@ -32,6 +32,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -39,7 +40,6 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
-import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.ir.IR.FeatureKind;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -527,27 +527,6 @@ public class C extends ANY
 
 
     /**
-     * Access the effect of type ecl that is installed in the environment.
-     */
-    public Pair<CExpr, CStmnt> env(int s, int ecl)
-    {
-      CExpr res = null;
-      var o = CStmnt.seq(CExpr.fprintfstderr("*** effect `%s` not present in current environment\n",
-                                             CExpr.string(_fuir.clazzAsString(ecl))),
-                         CExpr.exit(1));
-      if (Arrays.binarySearch(_effectClazzes, ecl) >= 0)
-        {
-          res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
-          res = CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr()))
-                     .castTo(_types.clazz(ecl) + " *")
-                     .deref();
-          var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
-          o = CStmnt.iff(evi.not(), o);
-        }
-      return new Pair<>(res, o);
-    }
-
-    /**
      * Generate code to terminate the execution immediately.
      *
      * @param msg a message explaining the illegal state
@@ -683,11 +662,12 @@ public class C extends ANY
   {
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
-    var cf = new CFile(name, _options._keepGeneratedCode);
+    var cf = new CFile(name, _options._keepGeneratedCode, false);
+    var hf = new CFile(name, _options._keepGeneratedCode, true);
     _options.verbosePrintln(" + " + cf.fileName());
     try
       {
-        createCode(cf, _options);
+        createCode(cf, hf, _options);
       }
     catch (IOException io)
       {
@@ -697,6 +677,7 @@ public class C extends ANY
     finally
       {
         cf.close();
+        hf.close();
       }
     Errors.showAndExit();
 
@@ -1069,74 +1050,37 @@ public class C extends ANY
    * the code into this file.
    * @throws IOException
    */
-  private void createCode(CFile cf, COptions _options) throws IOException
+  private void createCode(CFile cf, CFile hf, COptions _options) throws IOException
   {
-    if (_options._useBoehmGC)
-      {
-                 // we need to include winsock2.h before windows.h
-        cf.print("#define GC_DONT_INCLUDE_WINDOWS_H\n" +
-                 "#include <gc.h>\n");
-      }
+    printHeaderFileHeader(hf);
+    printCodeFileHeader(cf, hf, _options);
 
-    // --- C-11 ---
-    cf.print(
-       "#include <stdlib.h>\n"+
-       "#include <stdio.h>\n"+
-       "#include <stdbool.h>\n"+
-       "#include <stdint.h>\n"+
-       "#include <string.h>\n"+
-       "#include <math.h>\n"+
-       "#include <float.h>\n"+
-       "#include <assert.h>\n"+
-       "#include <time.h>\n"+
-       "#include <setjmp.h>\n"+
-       "#include <errno.h>\n"+
-       "#include <stdatomic.h>\n");
-    if (linkJVM())
-      {
-        cf.println("#include <jni.h>");
-      }
-
-    var fzH = _options.pathOf("include/fz.h");
-    cf.println("#include \"" + fzH + "\"\n");
-
-    cf.print
-      (CStmnt.decl("int", CNames.GLOBAL_ARGC));
-    cf.print
-      (CStmnt.decl("char **", CNames.GLOBAL_ARGV));
-
-    var o = new CIdent("of");
-    var s = new CIdent("sz");
-    var r = new CIdent("r");
-    cf.print
-      (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
-    cf.print
-      (CStmnt.functionDecl("void *",
-                           CNames.HEAP_CLONE,
-                           new List<>("void *", "size_t"),
-                           new List<>(o, s),
-                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call(malloc(), new List<>(s))),
-                                                 CExpr.call("fzE_memcpy", new List<>(r, o, s)),
-                                                 r.ret()))));
     var ordered = _types.inOrder();
-
-    // declaration of struct that is meant to passed to
-    // the thread start routine
-    cf.print(CStmnt.struct(CNames.fzThreadStartRoutineArg.code(), new List<>(
-      CStmnt.decl("void *", CNames.fzThreadStartRoutineArgFun),
-      CStmnt.decl("void *", CNames.fzThreadStartRoutineArgArg)
-    )));
-    // declaration of the thread start routine
-    cf.print(threadStartRoutine(false));
 
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
+        Consumer<CStmnt> printStmnt =
+          switch(p)
+            {
+              case TYPES -> (stmnt)->hf.print(stmnt);
+              case STRUCTS -> (stmnt)->hf.print(stmnt);
+              case FORWARDS -> (stmnt)->hf.print(stmnt);
+              case IMPLEMENTATIONS -> (stmnt)->cf.print(stmnt);
+            };
+        Consumer<String> printStr =
+          switch(p)
+            {
+              case TYPES -> (str)->hf.print(str);
+              case STRUCTS -> (str)->hf.print(str);
+              case FORWARDS -> (str)->hf.print(str);
+              case IMPLEMENTATIONS -> (str)->cf.print(str);
+            };
          for (var c : ordered)
            {
-             cf.print(p.compile(this, c));
+            printStmnt.accept(p.compile(this, c));
            }
-         cf.println("");
+         printStr.accept("\n");
 
          // thread local effect environments
          if (p == CompilePhase.STRUCTS)
@@ -1159,7 +1103,7 @@ public class C extends ANY
                 .iterator());
              effectsData.add(CStmnt.decl("jmp_buf*", _names.envJmpBuf()));
 
-             cf.print(
+             printStmnt.accept(
                CStmnt.seq(
                  CStmnt.struct(CNames.fzThreadEffectsEnvironment.code(), effectsData),
                  CStmnt.decl("_Thread_local", "struct " + CNames.fzThreadEffectsEnvironment.code() + "*", CNames.fzThreadEffectsEnvironment)
@@ -1189,6 +1133,83 @@ public class C extends ANY
       }
 
     cf.println("}");
+  }
+
+
+  /*
+   * print header in .h file
+   */
+  private void printHeaderFileHeader(CFile hf)
+  {
+    hf.print("#include <stdint.h>\n");
+    hf.print("#include <stdbool.h>\n"); /* for bool fzEnvInstalled */
+    hf.print("#include <setjmp.h>\n"); /* for jmp_buf */
+
+    hf.print
+      (CStmnt.decl("int", CNames.GLOBAL_ARGC));
+    hf.print
+      (CStmnt.decl("char **", CNames.GLOBAL_ARGV));
+
+    // declaration of struct that is meant to passed to
+    // the thread start routine
+    hf.print(CStmnt.struct(CNames.fzThreadStartRoutineArg.code(), new List<>(
+      CStmnt.decl("void *", CNames.fzThreadStartRoutineArgFun),
+      CStmnt.decl("void *", CNames.fzThreadStartRoutineArgArg)
+    )));
+    // declaration of the thread start routine
+    hf.print(threadStartRoutine(false));
+  }
+
+
+  /*
+   * print header in .c file
+   */
+  private void printCodeFileHeader(CFile cf, CFile hf, COptions _options)
+  {
+    if (_options._useBoehmGC)
+      {
+                 // we need to include winsock2.h before windows.h
+        cf.print("#define GC_DONT_INCLUDE_WINDOWS_H\n" +
+                 "#include <gc.h>\n");
+      }
+
+    // --- C-11 ---
+    cf.print(
+       "#include <stdlib.h>\n"+
+       "#include <stdio.h>\n"+
+       "#include <stdbool.h>\n"+
+       "#include <stdint.h>\n"+
+       "#include <string.h>\n"+
+       "#include <math.h>\n"+
+       "#include <float.h>\n"+
+       "#include <assert.h>\n"+
+       "#include <time.h>\n"+
+       "#include <setjmp.h>\n"+
+       "#include <errno.h>\n"+
+       "#include <stdatomic.h>\n");
+
+    if (linkJVM())
+      {
+        cf.println("#include <jni.h>");
+      }
+
+    var fzH = _options.pathOf("include/fz.h");
+    cf.println("#include \"" + fzH + "\"");
+    cf.println("#include \"" + hf.fileName() + "\"");
+
+    var o = new CIdent("of");
+    var s = new CIdent("sz");
+    var r = new CIdent("r");
+    cf.print
+      (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
+    cf.print
+      (CStmnt.functionDecl("void *",
+                           CNames.HEAP_CLONE,
+                           new List<>("void *", "size_t"),
+                           new List<>(o, s),
+                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call(malloc(), new List<>(s))),
+                                                 CExpr.call("fzE_memcpy", new List<>(r, o, s)),
+                                                 r.ret()))));
   }
 
 
@@ -1857,19 +1878,17 @@ public class C extends ANY
     var l = new List<CStmnt>();
     if (_fuir.clazzNeedsCode(cl))
       {
-        var ck = _fuir.clazzKind(cl);
-        switch (ck)
+        l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
+        var o = switch (_fuir.clazzKind(cl))
           {
-          case Routine:
-          case Intrinsic:
-          case Native:
-            {
-              l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
-              var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl) :
-                      ck == FUIR.FeatureKind.Native  ? codeForNative(cl)
-                                                     : _intrinsics.code(this, cl);
-              l.add(cFunctionDecl(cl, o));
-            }
+            case Routine -> codeForRoutine(cl);
+            case Intrinsic -> _intrinsics.code(this, cl);
+            case Native -> codeForNative(cl);
+            default -> null;
+          };
+        if (o != null)
+          {
+            l.add(cFunctionDecl(cl, o));
           }
       }
     return CStmnt.seq(l);
@@ -1926,17 +1945,7 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var ai = new CIdent("arg" + i);
-        var ac = _fuir.clazzArgClazz(cl, i);
-
-        switch (_fuir.getSpecialClazz(ac))
-          {
-            case c_u8, c_u16, c_u32, c_u64,
-                 c_i8, c_i16, c_i32, c_i64,
-                 c_f32, c_f64              -> args.add(ai);
-            case c_sys_ptr                 -> args.add(ai.castTo("void*"));
-            default                        -> {}
-          };
+        args.add(CIdent.arg(i));
       }
 
     var rc = _fuir.clazzResultClazz(cl);
@@ -1950,7 +1959,11 @@ public class C extends ANY
             heapClone(constString(str, CExpr.call("strlen", new List<>(str))), _fuir.clazz_Const_String())
               .ret());
         }
-        default -> CStmnt.seq(CExpr.call(_fuir.clazzBaseName(cl), args).ret());
+        default ->
+          CStmnt.seq(
+            _fuir.clazzIsUnitType(rc)
+              ? CExpr.call(_fuir.clazzBaseName(cl), args)
+              : CExpr.call(_fuir.clazzBaseName(cl), args).ret());
       };
   }
 

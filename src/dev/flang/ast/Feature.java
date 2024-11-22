@@ -1967,7 +1967,8 @@ A ((Choice)) declaration must not contain a result type.
           && !featureName().isNameless()                     // don't warn for nameless features
           && !isArgument()                                   // don't warn for arguments
           && !res.fieldUsages.contains(this)                 // check if the field is used
-          && !isUniverse())                                  // don't warn for universe
+          && redefines().isEmpty()                           // don't warn if field is a redef
+          )
         {
           AstErrors.unusedField(this);
         }
