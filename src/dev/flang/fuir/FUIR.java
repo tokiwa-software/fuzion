@@ -676,6 +676,20 @@ public abstract class FUIR extends IR
 
 
   /**
+   * For a clazz that is an heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
+   *
+   * @param cl index of a clazz that is an heir of 'Function'.
+   *
+   * @param markAsCalled true to mark the result as called
+   *
+   * @return the index of the requested `Function.call` feature's clazz.
+   */
+  public abstract int lookupCall(int cl, boolean markAsCalled);
+
+
+  /**
    * For a clazz that is an heir of 'effect', find the corresponding inner
    * clazz for 'finally'.  This is used for code generation of intrinsic
    * 'instate0' that has to create code to call 'effect.finally'.
@@ -919,15 +933,6 @@ public abstract class FUIR extends IR
    * `2`.
    */
   public abstract int tagTagNum(int s);
-
-
-  /**
-   * For an instruction of type ExprKind.Env at site s, return the type of the
-   * env value.
-   *
-   * @param s a code site for an Env instruction.
-   */
-  public abstract int envClazz(int s);
 
 
   /**
@@ -1179,7 +1184,6 @@ public abstract class FUIR extends IR
                         yield sb.toString();
                       }
       case Tag     -> "Tag";
-      case Env     -> "Env";
       case Pop     -> "Pop";
       };
   }
@@ -1406,7 +1410,6 @@ public abstract class FUIR extends IR
           yield s;
         }
       case Tag     -> skipBack(codeIndex(s, -1));
-      case Env     -> codeIndex(s, -1);
       case Pop     -> skipBack(codeIndex(s, -1));
       };
   }

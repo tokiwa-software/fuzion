@@ -1410,6 +1410,23 @@ public class Intrinsics extends ANY
         "effect.type.is_instated0",
         "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
 
+    put("effect.type.from_env",
+        "effect.type.unsafe_from_env",
+        (executor, innerClazz) -> args ->
+        {
+          var ecl = executor.fuir().clazzResultClazz(innerClazz); // type
+          var result = FuzionThread.current()._effects.get(ecl);
+          if (result == null)
+            {
+              Errors.fatal("No effect installed: " + executor.fuir().clazzAsStringHuman(ecl));
+            }
+
+          if (POSTCONDITIONS) ensure
+            (executor.fuir().clazzIsUnitType(ecl) || result != Value.NO_VALUE);
+
+          return result;
+        });
+
     putUnsafe("fuzion.sys.process.create"  , (executor, innerClazz) -> args -> {
       var process_and_args = Arrays
         .stream(((Value[])args.get(1).arrayData()._array))

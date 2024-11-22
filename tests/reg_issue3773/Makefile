@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue2368
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-ex_a2 =>
-  x := (array2 i32).new 10 10 i,j->i*10+j
-  say x
-  say x.transpose
-  # NYI: #2662: remove explicit types once type inference works
-  y1 Sequence i32 := [1,2,3].as_list
-  y2 Sequence i32 := [4,5,6].as_list
-  y3 Sequence i32 := [7,8,9].as_list
-  y Sequence (Sequence i32) := [y1,y2,y3].as_list
-  say (array2 i32).create2(y)
+override NAME = reg_issue3773
+include ../simple.mk

@@ -263,8 +263,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
         cf.field(ACC_PUBLIC,
                  Names.TAG_NAME,
-                 PrimitiveType.type_int.descriptor(),
-                 new List<>());
+                 PrimitiveType.type_int.descriptor());
 
         switch (kind(cl))
           {
@@ -306,8 +305,7 @@ public class Choices extends ANY implements ClassFileConstants
                       var u = _names.choiceUnitAsRef(i);
                       cf.field(ACC_PUBLIC | ACC_STATIC,
                                u,
-                               uti.descriptor(),
-                               new List<>());
+                               uti.descriptor());
                       bc_clinit = bc_clinit
                         .andThen(Expr.new0(cf._name, ut))
                         .andThen(Expr.DUP)
@@ -358,8 +356,7 @@ public class Choices extends ANY implements ClassFileConstants
                         {
                           cf.field(ACC_PUBLIC,
                                    Names.CHOICE_REF_ENTRY_NAME,
-                                   Names.ANYI_TYPE.descriptor(),
-                                   new List<>());
+                                   Names.ANYI_TYPE.descriptor());
                         }
                     }
                   else
@@ -369,8 +366,7 @@ public class Choices extends ANY implements ClassFileConstants
                         {
                           cf.field(ACC_PUBLIC,
                                    generalValueFieldName(cl, i),
-                                   ft.descriptor(),
-                                   new List<>());
+                                   ft.descriptor());
                         }
                     }
                 }

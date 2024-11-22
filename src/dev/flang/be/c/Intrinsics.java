@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -35,6 +36,7 @@ import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.Version;
 
 
@@ -1017,6 +1019,26 @@ public class Intrinsics extends ANY
               case "effect.type.replace0"     -> c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e);
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
+        });
+
+    put("effect.type.from_env",
+        "effect.type.unsafe_from_env",
+      (c, cl, outer, in) ->
+        {
+          var ecl = c._fuir.clazzResultClazz(cl); // type
+          var o = CStmnt.seq(CExpr.fprintfstderr("*** effect `%s` not present in current environment\n",
+                                                CExpr.string(c._fuir.clazzAsString(ecl))),
+                            CExpr.exit(1));
+          if (Arrays.binarySearch(c._effectClazzes, ecl) >= 0)
+            {
+              var res = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
+              res = CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr()))
+                        .castTo(c._types.clazz(ecl) + " *")
+                        .deref();
+              var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
+              o = CStmnt.iff(evi.not(), o, c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : res.ret());
+            }
+          return o;
         });
 
     var noJava = CStmnt.seq(

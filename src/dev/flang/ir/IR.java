@@ -33,7 +33,6 @@ import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
-import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
@@ -121,7 +120,6 @@ public abstract class IR extends ANY
     Const,
     Match,
     Tag,
-    Env,
     Pop;
   }
 
@@ -317,13 +315,6 @@ public abstract class IR extends ANY
             l.add(t);
           }
       }
-    else if (e instanceof Env v)
-      {
-        if (!dumpResult)
-          {
-            l.add(v);
-          }
-      }
     else if (e instanceof Nop)
       {
       }
@@ -428,10 +419,6 @@ public abstract class IR extends ANY
     else if (e instanceof Tag)
       {
         result = ExprKind.Tag;
-      }
-    else if (e instanceof Env)
-      {
-        result = ExprKind.Env;
       }
     else if (e instanceof Constant)
       {

@@ -200,7 +200,7 @@ public class Instance extends Value
                                                 why);
           }
       }
-    else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
+    else if (dfa._options.needsEscapeAnalysis() && !dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
       {
         res = dfa.newEmbeddedValue(this, v);
       }

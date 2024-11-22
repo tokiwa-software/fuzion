@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue3773.fz:28:6: error 1: Incompatible type parameter
+say (a bool (Sequence i32) [42])
+-----^
+formal type parameter 'S' with constraint 'Sequence bool'
+actual type parameter 'Sequence i32'
+
+one error.

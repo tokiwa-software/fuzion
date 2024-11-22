@@ -502,6 +502,8 @@ public class CFG extends ANY
     put("effect.type.replace0"              , (cfg, cl) -> { } );
     put("effect.type.abort0"                , (cfg, cl) -> { } );
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
+    put("effect.type.from_env"                   , (cfg, cl) -> { } );
+    put("effect.type.unsafe_from_env"            , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
@@ -588,12 +590,6 @@ public class CFG extends ANY
           break;
         }
       case Tag: break;
-      case Env:
-        {
-          var ecl = _fuir.envClazz(s);
-          addEffect(cl, ecl);
-          break;
-        }
       case Pop: break;
       default:
         {

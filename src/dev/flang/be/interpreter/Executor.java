@@ -595,21 +595,6 @@ public class Executor extends ProcessExpression<Value, Object>
     return pair(Interpreter.tag(newcl, tc, value, tagNum));
   }
 
-  @Override
-  public Pair<Value, Object> env(int s, int ecl)
-  {
-    var result = FuzionThread.current()._effects.get(ecl);
-    if (result == null)
-      {
-        Errors.fatal("No effect installed: " + _fuir.clazzAsStringHuman(ecl));
-      }
-
-    if (POSTCONDITIONS) ensure
-      (fuir().clazzIsUnitType(ecl) || result != unitValue());
-
-    return pair(result);
-  }
-
 
   /**
    * Generate code to terminate the execution immediately.

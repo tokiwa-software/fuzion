@@ -42,7 +42,7 @@ FUZION_CMD=$0
 FUZION_BIN="$(dirname "$(readlink -f "$0")")"
 
 : "${FUZION_HOME="$FUZION_BIN/.."}"
-: "${FUZION_JAVA=java --enable-preview --enable-native-access=ALL-UNNAMED}"
+: "${FUZION_JAVA=java}"
 : "${FUZION_JAVA_ADDITIONAL_CLASSPATH=""}"
 : "${FUZION_JAVA_CLASSPATH="$FUZION_HOME/classes"}"
 # windows (msys2) does not seem to like trailing colons in the class path
@@ -52,6 +52,7 @@ then
 fi
 : "${FUZION_JAVA_STACK_SIZE=5m}"
 : "${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}"
+: "${FUZION_JAVA_ADDITIONAL_OPTIONS=--enable-preview --enable-native-access=ALL-UNNAMED}"
 
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}:$FUZION_HOME/lib
 PATH=${PATH:+:$PATH}:$FUZION_HOME/lib
@@ -60,4 +61,4 @@ DYLD_FALLBACK_LIBRARY_PATH=${DYLD_FALLBACK_LIBRARY_PATH:+:$DYLD_FALLBACK_LIBRARY
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
 PATH=$PATH \
 DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH \
-  $FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dline.separator=$'\n' -Dfile.encoding=UTF-8 -Dfuzion.home="$FUZION_HOME" -Dfuzion.command="$FUZION_CMD" dev.flang.tools.Fuzion "$@"
+  $FUZION_JAVA $FUZION_JAVA_OPTIONS $FUZION_JAVA_ADDITIONAL_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dline.separator=$'\n' -Dfile.encoding=UTF-8 -Dfuzion.home="$FUZION_HOME" -Dfuzion.command="$FUZION_CMD" dev.flang.tools.Fuzion "$@"
