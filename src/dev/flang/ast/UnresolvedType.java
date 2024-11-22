@@ -637,7 +637,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               }
             else if (fo == null)
               {
-                _resolved = addAsFreeType(res, outer);
+                _resolved = addAsFreeType(res, context);
               }
             else if (isFreeType())
               {
