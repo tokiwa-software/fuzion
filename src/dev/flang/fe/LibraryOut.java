@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
@@ -919,20 +918,6 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         type(t.type());
-      }
-    else if (e instanceof Env)
-      {
-        lastPos = exprKindAndPos(MirExprKind.Env, lastPos, e.sourceRange());
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Env                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | The type of this env                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        type(e.type());
       }
     else if (e instanceof Nop)
       {

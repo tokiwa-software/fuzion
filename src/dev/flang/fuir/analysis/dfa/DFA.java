@@ -696,16 +696,6 @@ public class DFA extends ANY
 
 
     /**
-     * Access the effect of type ecl that is installed in the environment.
-     */
-    @Override
-    public Val env(int s, int ecl)
-    {
-      return _call.getEffectForce(s, ecl);
-    }
-
-
-    /**
      * Generate code to terminate the execution immediately.
      *
      * @param msg a message explaining the illegal state
@@ -2056,6 +2046,25 @@ public class DFA extends ANY
     put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("effect.type.from_env"                , cl ->
+    {
+      var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
+      var result = cl.getEffectCheck(ecl);
+      if (result == null && cl._dfa._reportResults)
+        {
+          DfaErrors.usedEffectNotInstalled(cl._dfa._fuir.sitePos(cl._site),
+                                           cl._dfa._fuir.clazzAsString(ecl),
+                                           cl);
+          cl._dfa._missingEffects.put(ecl, ecl);
+        }
+      return result;
+    });
+    put("effect.type.unsafe_from_env"                , cl ->
+    {
+      var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
+      return cl.getEffectForce(cl._site, ecl);
+    });
+
 
     put("fuzion.sys.internal_array_init.alloc", cl ->
         {

@@ -4,6 +4,9 @@
 -------------^^^^^
 Callchain that lead to this point:
 
+effect environment '--empty--' for call to 'test_local_mutate_neg.type.test_sum.type.sum#1.type.m.type.from_env' at --CURDIR--/test_local_mutate_neg.fz:50:14:
+        s := m.env.new 0
+-------------^^^^^
 effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum.sum#1.count' at --CURDIR--/test_local_mutate_neg.fz:79:11:
       say count    # *** will cause compile-time an error, requires m to be installed
 ----------^^^^^

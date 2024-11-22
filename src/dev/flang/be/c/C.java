@@ -527,27 +527,6 @@ public class C extends ANY
 
 
     /**
-     * Access the effect of type ecl that is installed in the environment.
-     */
-    public Pair<CExpr, CStmnt> env(int s, int ecl)
-    {
-      CExpr res = null;
-      var o = CStmnt.seq(CExpr.fprintfstderr("*** effect `%s` not present in current environment\n",
-                                             CExpr.string(_fuir.clazzAsString(ecl))),
-                         CExpr.exit(1));
-      if (Arrays.binarySearch(_effectClazzes, ecl) >= 0)
-        {
-          res = CNames.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
-          res = CExpr.call(CNames.HEAP_CLONE._name, new List<>(res.adrOf(), res.sizeOfExpr()))
-                     .castTo(_types.clazz(ecl) + " *")
-                     .deref();
-          var evi = CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
-          o = CStmnt.iff(evi.not(), o);
-        }
-      return new Pair<>(res, o);
-    }
-
-    /**
      * Generate code to terminate the execution immediately.
      *
      * @param msg a message explaining the illegal state

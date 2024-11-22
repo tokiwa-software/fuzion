@@ -105,127 +105,123 @@
 <     public abstract Pair<VALUE, RESULT> tag(int s, VALUE value, int newcl, int tagNum);
 ---
 >     public abstract VALUE tag(int s, VALUE value, int newcl, int tagNum);
-248c251
-<     public abstract Pair<VALUE, RESULT> env(int s, int ecl);
----
->     public abstract VALUE env(int s, int ecl);
-255c258
+246c249
 <     public RESULT reportErrorInCode(String msg) { return comment(msg); }
 ---
 >     public void reportErrorInCode(String msg) { comment(msg); }
-314c317
+305c308
 <   public final ProcessExpression<VALUE, RESULT> _processor;
 ---
 >   public final ProcessExpression<VALUE> _processor;
-325c328
+316c319
 <   public AbstractInterpreter(FUIR fuir, ProcessExpression<VALUE, RESULT> processor)
 ---
 >   public AbstractInterpreter2(FUIR fuir, ProcessExpression<VALUE> processor)
-452c455
+443c446
 <   void assignOuterAndArgFields(List<RESULT> l, int s)
 ---
 >   void assignOuterAndArgFields(int s)
-460d462
+451d453
 <         l.add(cur.v1());
-462,463c464
+453,454c455
 <         l.add(out.v1());
 <         l.add(_processor.assignStatic(s, cl, or, rt, cur.v0(), out.v0()));
 ---
 >         _processor.assignStatic(s, cl, or, rt, cur, out);
-470d470
+461d461
 <         l.add(cur.v1());
-476c476
+467c467
 <             l.add(_processor.assignStatic(s, cl, af, at, cur.v0(), ai));
 ---
 >             _processor.assignStatic(s, cl, af, at, cur, ai);
-491c491
+482c482
 <   public Pair<VALUE,RESULT> processClazz(int cl)
 ---
 >   public VALUE processClazz(int cl)
-493d492
+484d483
 <     var l = new List<RESULT>();
-497c496
+488c487
 <         assignOuterAndArgFields(l, s);
 ---
 >         assignOuterAndArgFields(s);
-500,502c499,500
+491,493c490,491
 <     l.add(p.v1());
 <     var res = p.v0();
 <     return new Pair<>(res, _processor.sequence(l));
 ---
 >     var res = p;
 >     return res;
-515c513
+506c504
 <   public Pair<VALUE,RESULT> processCode(int s0)
 ---
 >   public VALUE processCode(int s0)
-518d515
+509d506
 <     var l = new List<RESULT>();
-522,523c519,520
+513,514c510,511
 <         l.add(_processor.expressionHeader(s));
 <         l.add(process(s, stack));
 ---
 >         _processor.expressionHeader(s);
 >         process(s, stack);
-532,533c529,530
+523,524c520,521
 <         l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable:\n" +
 <                                            _fuir.siteAsString(last_s)));
 ---
 >         _processor.reportErrorInCode("Severe compiler bug! This code should be unreachable:\n" +
 >                                      _fuir.siteAsString(last_s));
-549c546
+540c537
 <             l.add(_processor.drop(stack.pop(), rt));
 ---
 >             _processor.drop(stack.pop(), rt);
-553c550
+544c541
 <     return new Pair<>(v, _processor.sequence(l));
 ---
 >     return v;
-567c564
+558c555
 <   public RESULT process(int s, Stack<VALUE> stack)
 ---
 >   public void process(int s, Stack<VALUE> stack)
-575d571
+566d562
 <     RESULT res;
-588c584
+579c575
 <               res = _processor.assign(s, tvalue, avalue);
 ---
 >               _processor.assign(s, tvalue, avalue);
-592,593c588,589
+583,584c579,580
 <               res = _processor.sequence(new List<>(_processor.drop(tvalue, tc),
 <                                                     _processor.drop(avalue, ft)));
 ---
 >               _processor.drop(tvalue, tc);
 >               _processor.drop(avalue, ft);
-604c600
+595c591
 <               res = _processor.comment("Box is a NOP, clazz is already a ref");
 ---
 >               _processor.comment("Box is a NOP, clazz is already a ref");
-610,611c606
+601,602c597
 <               push(stack, rc, r.v0());
 <               res = r.v1();
 ---
 >               push(stack, rc, r);
-622c617
+613c608
 <           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
 ---
 >           if (r == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
-629c624
+620c615
 <               push(stack, rt, r.v0());
 ---
 >               push(stack, rt, r);
-631d625
+622d616
 <           res = r.v1();
-636c630
+627c621
 <           res = _processor.comment(_fuir.comment(s));
 ---
 >           _processor.comment(_fuir.comment(s));
-643,644c637
+634,635c628
 <           push(stack, cl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, cl, r);
-653,658c646
+644,649c637
 <           if (CHECKS) check
 <             // check that constant creation has no side effects.
 <             (r.v1() == _processor.nop());
@@ -234,34 +230,29 @@
 <           res = r.v1();
 ---
 >           push(stack, constCl, r);
-666c654
+657c645
 <           if (r.v0() == null)
 ---
 >           if (r == null)
-671,672c659
+662,663c650
 <             (r.v0() == null || r.v0() == _processor.unitValue());
 <           res = r.v1();
 ---
 >             (r == null || r == _processor.unitValue());
-684,685c671
+675,676c662
 <           push(stack, newcl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, newcl, r);
-694,695c680
-<           push(stack, ecl, r.v0());
-<           res = r.v1();
----
->           push(stack, ecl, r);
-709c694
+690c676
 <           res = _processor.drop(v, rt);
 ---
 >           _processor.drop(v, rt);
-715d699
+696d681
 <           res = null;
-724c708
+705c690
 <         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
 ---
 >         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
-726d709
+707d691
 <     return res;
