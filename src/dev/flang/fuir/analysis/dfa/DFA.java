@@ -1259,6 +1259,14 @@ public class DFA extends ANY
 
 
         @Override
+        public int matchCaseField(int s, int cix)
+        {
+          var key = ((long)s<<32)|((long)cix);
+          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : -1;
+        }
+
+
+        @Override
         public boolean clazzIsUnitType(int cl)
         {
           return super.clazzIsUnitType(cl) || isUnitType(cl);

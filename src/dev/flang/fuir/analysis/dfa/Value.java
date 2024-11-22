@@ -191,13 +191,25 @@ public class Value extends Val
 
 
   /**
-   * undefined value, used for not initialized fields.
+   * used for jref field of Java_Objects
    */
   static Value UNKNOWN_JAVA_REF = new Value(-1)
     {
       public String toString()
       {
         return "UNKNOWN_JAVA_REF";
+      }
+    };
+
+
+  /**
+   * used for ADDRESS
+   */
+  static Value ADDRESS = new Value(-1)
+    {
+      public String toString()
+      {
+        return "ADDRESS";
       }
     };
 
