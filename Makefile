@@ -41,8 +41,9 @@ endif
 
 UNICODE_SOURCE = https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
 
-JAVA_FILE_UTIL_VERSION_IN =  $(SRC)/dev/flang/util/Version.java.in
-JAVA_FILE_UTIL_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/util/Version.java
+JAVA_FILE_UTIL_VERSION_IN                     = $(SRC)/dev/flang/util/Version.java.in
+JAVA_FILE_UTIL_VERSION                        = $(BUILD_DIR)/generated/src/dev/flang/util/Version.java
+JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2 = $(BUILD_DIR)/generated/src/dev/flang/fuir/analysis/AbstractInterpreter2.java
 
 JAVA_FILES_UTIL              = $(wildcard $(SRC)/dev/flang/util/*.java          ) $(JAVA_FILE_UTIL_VERSION)
 JAVA_FILES_UTIL_UNICODE      = $(wildcard $(SRC)/dev/flang/util/unicode/*.java  )
@@ -52,7 +53,7 @@ JAVA_FILES_IR                = $(wildcard $(SRC)/dev/flang/ir/*.java            
 JAVA_FILES_MIR               = $(wildcard $(SRC)/dev/flang/mir/*.java           )
 JAVA_FILES_FE                = $(wildcard $(SRC)/dev/flang/fe/*.java            )
 JAVA_FILES_FUIR              = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
-JAVA_FILES_FUIR_ANALYSIS     = $(wildcard $(SRC)/dev/flang/fuir/analysis/*.java )
+JAVA_FILES_FUIR_ANALYSIS     = $(wildcard $(SRC)/dev/flang/fuir/analysis/*.java ) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 JAVA_FILES_FUIR_ANALYSIS_DFA = $(wildcard $(SRC)/dev/flang/fuir/analysis/dfa/*.java )
 JAVA_FILES_FUIR_CFG          = $(wildcard $(SRC)/dev/flang/fuir/cfg/*.java      )
 JAVA_FILES_OPT               = $(wildcard $(SRC)/dev/flang/opt/*.java           )
@@ -499,6 +500,16 @@ $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR) $(
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
+
+$(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2): $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter.java $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter2.java.patch
+	mkdir -p $(@D)
+	patch -o $@ $^
+
+# phony target to update the .patch files used to generate sources from modified
+# version of those generated sources
+.PHONY: update-java-patches
+update-java-patches:
+	diff $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter.java $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2) >$(SRC)/dev/flang/fuir/analysis/AbstractInterpreter2.java.patch || true
 
 $(CLASS_FILES_FUIR_ANALYSIS): $(JAVA_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
