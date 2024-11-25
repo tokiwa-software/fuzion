@@ -117,6 +117,13 @@ public class f64Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.f64Value();
+  }
+
 }
 
 /* end of file */

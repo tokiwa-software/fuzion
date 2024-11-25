@@ -115,6 +115,14 @@ public class f32Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.f32Value();
+  }
+
+
 }
 
 /* end of file */

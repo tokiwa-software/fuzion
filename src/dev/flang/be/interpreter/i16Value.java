@@ -118,6 +118,13 @@ public class i16Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.i16Value();
+  }
+
 }
 
 /* end of file */
