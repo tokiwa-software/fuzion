@@ -69,7 +69,7 @@ public mutate : effect is
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  id := fuzion.sys.misc.unique_id
+  id := fuzion.sys.misc.fzE_unique_id
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the

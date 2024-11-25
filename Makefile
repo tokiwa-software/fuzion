@@ -369,18 +369,21 @@ FUZION_FILES = \
 FZ_JVM = \
 			 $(FZ) \
 			 $(CLASS_FILES_BE_JVM_RUNTIME) \
-			 $(MOD_BASE)
+			 $(MOD_BASE) \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 # files required for fz command with C backend
 FZ_C = \
 			 $(FZ) \
 			 $(BUILD_DIR)/include \
-			 $(MOD_BASE)
+			 $(MOD_BASE) \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 # files required for fz command with interpreter backends
 FZ_INT = \
 			 $(FZ) \
-			 $(MOD_BASE)
+			 $(MOD_BASE) \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
 DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
@@ -1231,7 +1234,10 @@ run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $
 .PHONY .SILENT: run_tests_jar
 run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
-	$(JAVA) -jar HelloWorld.jar > /dev/null
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib \
+	PATH=$(PATH):$(BUILD_DIR)/lib \
+	DYLD_FALLBACK_LIBRARY_PATH=$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib \
+		$(JAVA) -jar HelloWorld.jar > /dev/null
 
 .PHONY: clean
 clean:
@@ -1366,7 +1372,7 @@ lint/pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
 
-$(BUILD_DIR)/lib/libfuzion.so: $(FUZION_FILES_RT)
+$(BUILD_DIR)/lib/libfuzion.so: $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib/dll regardless of which OS.
 	clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so && \
