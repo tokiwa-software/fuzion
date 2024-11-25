@@ -847,9 +847,6 @@ public class Intrinsics extends ANY
     {
       return CExpr.call("fzE_thread_join", new List<>(A0));
     });
-    put("fuzion.std.nano_time", (c,cl,outer,in) -> CExpr.call("fzE_nanotime", new List<>()).ret());
-    put("fuzion.std.nano_sleep", (c,cl,outer,in) -> CExpr.call("fzE_nanosleep", new List<>(A0)));
-
 
     put("fuzion.std.date_time", (c,cl,outer,in) ->
       {

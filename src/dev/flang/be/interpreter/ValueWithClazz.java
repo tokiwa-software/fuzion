@@ -86,6 +86,27 @@ public abstract class ValueWithClazz extends Value
   }
 
 
+  @Override
+  protected Object toNative()
+  {
+    return switch (fuir().getSpecialClazz(_clazz))
+      {
+      case c_i8 -> i8Value();
+      case c_i16 -> i16Value();
+      case c_i32 -> i32Value();
+      case c_i64 -> i64Value();
+      case c_u8 -> u8Value();
+      case c_u16 -> u16Value();
+      case c_u32 -> u32Value();
+      case c_u64 -> u64Value();
+      case c_f32 -> f32Value();
+      case c_f64 -> f64Value();
+      case c_bool -> boolValue();
+      default -> super.toNative();
+      };
+  }
+
+
 }
 
 /* end of file */

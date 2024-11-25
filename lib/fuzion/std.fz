@@ -39,10 +39,10 @@ module fuzion.std is
     std.this.exit 1
 
   # no guarantee can be given for precision nor resolution
-  module nano_time u64 => intrinsic
+  module fzE_nanotime u64 => native
 
   # no guarantee can be given for precision nor resolution
-  module nano_sleep(n u64) unit => intrinsic
+  module fzE_nanosleep(arg1 u64) unit => native
 
 
   # fills arg with current UTC date time

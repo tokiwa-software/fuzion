@@ -115,6 +115,13 @@ public class boolValue extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.boolValue();
+  }
+
 }
 
 /* end of file */

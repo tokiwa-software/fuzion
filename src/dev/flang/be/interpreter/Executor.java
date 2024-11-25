@@ -26,6 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -284,10 +290,72 @@ public class Executor extends ProcessExpression<Value, Object>
       case Choice :
         throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
       case Native:
-        throw new Error("NYI: UNDER DEVELOPMENT: Calling native not yet supported in interpreter.");
+        var mh = Linker.nativeLinker()
+          .downcallHandle(
+            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
+              .or(SymbolLookup.loaderLookup())
+              .or(Linker.nativeLinker().defaultLookup())
+              .find(_fuir.clazzBaseName(cc))
+              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol")),
+
+              _fuir.clazzIsUnitType(rt)
+              ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
+              : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
+
+        try
+          {
+            var tmp = mh.invokeWithArguments(args.stream().map(arg -> arg.toNative()).toList());
+            yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
+          }
+        catch (Throwable e)
+          {
+            say_err(e);
+            System.exit(1);
+            yield null;
+          }
       };
 
     return result;
+  }
+
+
+  /*
+   * get MemoryLayout/ValueLayout of args of cc.
+   */
+  private MemoryLayout[] layoutArgs(int cc)
+  {
+    var result = new MemoryLayout[_fuir.clazzArgCount(cc)];
+    for (int i = 0; i < _fuir.clazzArgCount(cc); i++)
+      {
+        result[i] = layout(_fuir.clazzArgClazz(cc, i));
+      }
+    return result;
+  }
+
+
+  /*
+   * get MemoryLayout/ValueLayout for clazz c.
+   */
+  private MemoryLayout layout(int c)
+  {
+    return switch (_fuir.getSpecialClazz(c))
+      {
+      case c_bool    -> ValueLayout.JAVA_BOOLEAN;
+      case c_i8      -> ValueLayout.JAVA_BYTE;
+      case c_i16     -> ValueLayout.JAVA_SHORT;
+      case c_i32     -> ValueLayout.JAVA_INT;
+      case c_i64     -> ValueLayout.JAVA_LONG;
+      case c_u8      -> ValueLayout.JAVA_BYTE;
+      case c_u16     -> ValueLayout.JAVA_CHAR;
+      case c_u32     -> ValueLayout.JAVA_INT;
+      case c_f32     -> ValueLayout.JAVA_FLOAT;
+      case c_f64     -> ValueLayout.JAVA_DOUBLE;
+      case c_u64     -> ValueLayout.JAVA_LONG;
+      default -> {
+        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
+        yield null;
+      }
+      };
   }
 
 

@@ -1703,7 +1703,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var tf = tp.outer();
         if (tf.isCotype() && tp == tf.arguments().get(0))
           { // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
-            result = tf.cotypeOrigin().selfType().asThis();
+            result = result.isRef()
+              ? tf.cotypeOrigin().selfType().asThis().asRef()
+              : tf.cotypeOrigin().selfType().asThis();
           }
       }
     else

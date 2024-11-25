@@ -487,8 +487,6 @@ public class CFG extends ANY
     put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
 
-    put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
-    put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
     put("fuzion.std.date_time"           , (cfg, cl) -> { } );
 
     put("effect.type.default0"              , (cfg, cl) -> { } );

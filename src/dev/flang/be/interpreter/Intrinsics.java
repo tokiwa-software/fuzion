@@ -1390,20 +1390,6 @@ public class Intrinsics extends ANY
     put("f64.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
     put("f64.type.min_positive" , (executor, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
     put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
-    put("fuzion.std.nano_time"  , (executor, innerClazz) -> args -> new u64Value (System.nanoTime()));
-    put("fuzion.std.nano_sleep" , (executor, innerClazz) -> args ->
-        {
-          var d = args.get(1).u64Value();
-          try
-            {
-              TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE : d);
-            }
-          catch (InterruptedException ie)
-            {
-              throw new Error("unexpected interrupt", ie);
-            }
-          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
-        });
     put("fuzion.std.date_time", (executor, innerClazz) -> args ->
       {
         Date date = new Date();

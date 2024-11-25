@@ -115,6 +115,13 @@ public class i32Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.i32Value();
+  }
+
 }
 
 /* end of file */
