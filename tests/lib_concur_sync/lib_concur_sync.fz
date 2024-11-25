@@ -28,9 +28,11 @@ lib_concur_sync =>
     mtx_res := concur.sync.mutex.new.bind unit mtx->
       cnd_res := mtx.condition.bind unit cnd->
 
+        cnd_met := concur.atomic false
+
         a := concur.threads.spawn ()->
           cnd.synchronized ()->
-            check cnd.wait
+            cnd.wait ()->cnd_met.read
             say "Thread proceeding after signal"
 
         b := concur.threads.spawn ()->
@@ -38,6 +40,7 @@ lib_concur_sync =>
           time.nano.sleep (time.duration.ms 100)
           cnd.synchronized ()->
             say "Thread sending signal"
+            cnd_met.write true
             check cnd.signal
 
         a.join
@@ -55,9 +58,11 @@ lib_concur_sync =>
     mtx_res := concur.sync.mutex.new.bind unit mtx->
       cnd_res := mtx.condition.bind unit cnd->
 
+        cnd_met := concur.atomic false
+
         a := concur.threads.spawn ()->
           cnd.synchronized ()->
-            check cnd.wait
+            cnd.wait ()->cnd_met.read
             say "Thread proceeding after broadcast"
 
         b := concur.threads.spawn ()->
@@ -65,6 +70,7 @@ lib_concur_sync =>
           time.nano.sleep (time.duration.ms 100)
           cnd.synchronized ()->
             say "Thread sending broadcast"
+            cnd_met.write true
             check cnd.broadcast
 
         a.join
