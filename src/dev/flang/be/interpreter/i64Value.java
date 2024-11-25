@@ -116,6 +116,13 @@ public class i64Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.i64Value();
+  }
+
 }
 
 /* end of file */

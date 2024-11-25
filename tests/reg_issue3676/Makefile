@@ -17,30 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test native
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-test_native =>
-
-  fzE_nanotime u64 => native
-  fzE_nanosleep(arg1 u64) unit => native
-
-  start := fzE_nanotime
-  fzE_nanosleep 1E9
-  end := fzE_nanotime
-
-  say (end-start)>=1E9
-
-  fzE_bitwise_compare_float(a,b f32)  bool => native
-  fzE_bitwise_compare_double(a,b f64) bool => native
-  fzE_lock unit => native
-  fzE_unlock unit => native
-
-  say (fzE_bitwise_compare_float 1.1 1.1)
-  say (fzE_bitwise_compare_float 1.1 1.2)
-  say (fzE_bitwise_compare_double 1.1 1.1)
-  say (fzE_bitwise_compare_double 1.1 1.2)
-
-  say "end"
-
+override NAME = reg_issue3676
+include ../simple.mk

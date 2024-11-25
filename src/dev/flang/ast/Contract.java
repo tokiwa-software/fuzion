@@ -509,14 +509,17 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
-    for (var a : outer.valueArguments())
+    if (!outer.isConstructor())
       {
-        var ca = new Call(p,
-                          new Current(p, outer),
-                          a,
-                          -1);
-        ca = ca.resolveTypes(res, context);
-        args.add(ca);
+        for (var a : outer.valueArguments())
+          {
+            var ca = new Call(p,
+                              new Current(p, outer),
+                              a,
+                              -1);
+            ca = ca.resolveTypes(res, context);
+            args.add(ca);
+          }
       }
     if (outer.hasResultField())
       {
@@ -553,8 +556,10 @@ public class Contract extends ANY
           ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
           : in.pos();                // `in` does not have `post` clause, only inherits postconditions. So use the feature position instead
 
-    var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in.context())
-                                    : new Universe();
+    var t = in.isConstructor() ? new This(p, in, in).resolveTypes(res, in.context())
+                               : (in.outerRef() != null)
+                                  ? new This(p, in, in.outer()).resolveTypes(res, in.context())
+                                  : new Universe();
     if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, of, context);
@@ -1032,8 +1037,10 @@ all of their redefinition to `true`. +
     // add postcondition feature
     if (requiresPostConditionsFeature(f) && f._postFeature == null)
       {
+        // TRICKY: if f is constructor, post condition is an inner feature of f
+        //         otherwise it is defined alongside of f.
         var name = postConditionsFeatureName(f);
-        var args = fc._argsSupplier.get();
+        var args = f.isConstructor() ? new List<AbstractFeature>() : fc._argsSupplier.get();
         var pos = fc._hasPost != null ? fc._hasPost : f.pos();
         var resultField = new Feature(pos,
                                       Visi.PRIV,
@@ -1069,7 +1076,7 @@ all of their redefinition to `true`. +
                              new List<>(), // inheritance
                              Contract.EMPTY_CONTRACT,
                              new Impl(pos, code, Impl.Kind.RoutineDef));
-        res._module.findDeclarations(pF, f.outer());
+        res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);
         res.resolveTypes(pF);
         f._postFeature = pF;
