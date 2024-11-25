@@ -102,6 +102,7 @@ FZ_SRC_TESTS         = $(FZ_SRC)/tests
 FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
 FZ_SRC_INCLUDE       = $(FZ_SRC)/include
 FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
+FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE) -name "*.c")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -360,7 +361,8 @@ FUZION_FILES = \
 			 $(BUILD_DIR)/examples \
 			 $(BUILD_DIR)/include \
 			 $(BUILD_DIR)/README.md \
-			 $(BUILD_DIR)/release_notes.md
+			 $(BUILD_DIR)/release_notes.md \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 # files required for fz command with jvm backend
 FZ_JVM = \
@@ -1362,6 +1364,13 @@ $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
 lint/pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
+
+$(BUILD_DIR)/lib/libfuzion.so: $(FUZION_FILES_RT)
+# NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
+# NYI: a bit hacky to have so/dylib/dll regardless of which OS.
+	clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so && \
+		cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib && \
+		cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/fuzion.dll
 
 
 ########
