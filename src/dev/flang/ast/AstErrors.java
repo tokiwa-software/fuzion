@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import dev.flang.ast.AstErrors.PreOrPost;
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.Errors;
@@ -2320,13 +2319,11 @@ public class AstErrors extends ANY
       {
         error(f.pos(), "Unused, non public field " + sbnf(f),
           """
-            To solve this, either
-              - use the field
-              - make it """ + " " + skw("public") +
-          """
-
-            or
-              - explicitly ignore the result """ + " " + ss("_ := …"));
+          To solve this, do either of the following
+            - use the field
+          """ +
+          ((f instanceof Feature && ((Feature)f)._scoped) ? "" : "  - make it " + skw("public") + "\n") +
+          "  - explicitly ignore the result by using " + sbn("_") + " instead of " + sbnf(f));
         Errors.unusedFieldErrCount++;
       }
   }
