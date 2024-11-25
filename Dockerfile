@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-alpine@sha256:c63d8669d87e16bcee66c0379d1deedf844152da449ad48f2c8bd73a3705d36b as builder
 WORKDIR /fuzion
 COPY . .
-RUN apk add --no-cache bash clang18 git make patch && FUZION_REPRODUCIBLE_BUILD="true" PRECONDITIONS="true" POSTCONDITIONS="true" make
+RUN apk add --no-cache bash clang18 git make patch && ln -s /usr/bin/clang-18 /usr/bin/clang && FUZION_REPRODUCIBLE_BUILD="true" PRECONDITIONS="true" POSTCONDITIONS="true" make
 
 FROM eclipse-temurin:21-alpine@sha256:c63d8669d87e16bcee66c0379d1deedf844152da449ad48f2c8bd73a3705d36b as runner
 COPY --from=builder /fuzion/build /fuzion
