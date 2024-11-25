@@ -1410,7 +1410,7 @@ public class Runtime extends ANY
               .or(SymbolLookup.loaderLookup())
               .or(Linker.nativeLinker().defaultLookup())
               .find(str)
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol")),
+              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
             desc);
       }
     catch (Throwable e)
