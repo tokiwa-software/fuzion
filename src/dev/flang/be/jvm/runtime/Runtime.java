@@ -645,29 +645,6 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement `effect.env` expressions.  Returns the instated
-   * effect with the given id.  Causes an error in case no such effect exists.
-   *
-   * @param id the id of the effect that should be loaded.
-   *
-   * @return the instance that was instated for this id
-   *
-   * @throws Error in case no instance was instated.
-   */
-  public static AnyI effect_get(int id)
-  {
-    var t = currentThread();
-
-    var result = t.effect_load(id);
-    if (result == null)
-      {
-        throw new Error("No effect of "+id+" instated");
-      }
-    return result;
-  }
-
-
-  /**
    * Get the message of last exception thrown in the current thread.
    */
   public static String getException()

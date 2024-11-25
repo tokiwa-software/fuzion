@@ -1098,12 +1098,23 @@ public class Intrinsix extends ANY implements ClassFileConstants
       {
         var ecl = jvm._fuir.clazzResultClazz(cc); // type
         var rt = jvm._types.resultType(ecl);
+        var ftCt = new ClassType("dev/flang/be/jvm/runtime/FuzionThread");
         var val =
-          Expr.iconst(jvm.effectId(ecl))
-          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                     Names.RUNTIME_EFFECT_GET,
-                                     Names.RUNTIME_EFFECT_GET_SIG,
-                                     Names.ANY_TYPE))
+          Expr.invokeStatic(Names.RUNTIME_CLASS,
+                            "currentThread",
+                            "()" + ftCt.descriptor(),
+                            ftCt)
+          .andThen(Expr.iconst(jvm.effectId(ecl)))
+          .andThen(Expr.invokeVirtual(ftCt.className(), "effect_load", "(I)" + Names.ANYI_DESCR , Names.ANYI_TYPE))
+          .andThen(Expr.DUP)
+          .andThen(Expr.branch(O_ifnull,
+                       Expr.new0(JAVA_LANG_ERROR.className(), Names.JAVA_LANG_ERROR)
+                           .andThen(Expr.DUP)
+                           .andThen(Expr.stringconst("No effect of "+jvm._fuir.clazzAsStringHuman(ecl)+" instated."))
+                           .andThen(Expr.invokeSpecial(JAVA_LANG_ERROR.className(),
+                                                       "<init>",
+                                                       "(" + Names.JAVA_LANG_STRING.descriptor() + ")V"))
+                           .andThen(Expr.THROW)))
           .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));
         var code = Expr.UNIT;
         return new Pair<>(val, code);
