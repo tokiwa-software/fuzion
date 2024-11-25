@@ -816,7 +816,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var o = outer();
     var oc = o == null || o.isUniverse()
       ? new Universe()
-      : outer().typeCall(p, new List<>(outer().selfType()), res, that);
+      : outer().typeCall(p, new List<>(o.selfType(), o.generics().asActuals()), res, that);
     var tf = cotype(res);
     var typeParameters2 = new List<AbstractType>();
     for (var tp : typeParameters)
