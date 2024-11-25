@@ -115,6 +115,13 @@ public class u32Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.u32Value();
+  }
+
 }
 
 /* end of file */
