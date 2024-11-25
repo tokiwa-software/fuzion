@@ -2861,7 +2861,7 @@ public class GeneratingFUIR extends FUIR
       {
         innerClazz = accessedClazz(s);
         if (CHECKS) check
-          (tclazz == clazzOuterClazz(innerClazz));
+          (Errors.any() || tclazz == clazzOuterClazz(innerClazz));
       }
     if (innerClazz != NO_CLAZZ)
       {
