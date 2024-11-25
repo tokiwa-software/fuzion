@@ -566,7 +566,7 @@ public class Contract extends ANY
       }
     var callPostCondition = new Call(p,
                                      t,
-                                     in.generics().asActuals(),
+                                     origouter.isConstructor() ? new List<>() : in.generics().asActuals(),
                                      args,
                                      origouter.postFeature(),
                                      Types.resolved.t_unit);
