@@ -126,10 +126,7 @@ public class List<T>
   {
     super();
     add(o);
-    for (T x : l)
-      {
-        add(x);
-      }
+    addAll(l);
   }
 
 
@@ -154,6 +151,21 @@ public class List<T>
   {
     super();
     addAll(l);
+  }
+
+
+  /**
+   * Constructor that adds elements of given List.
+   *
+   * @param l
+   *
+   * @param t
+   */
+  public List(T[] l, T t)
+  {
+    super();
+    addAll(l);
+    add(t);
   }
 
 
