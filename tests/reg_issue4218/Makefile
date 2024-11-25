@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stdin
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-write_provider : io.Write_Provider is
-  redef write (b Sequence u8) outcome unit =>
-    fuzion.sys.fileio.write fuzion.sys.out.stdout b.as_array
-
-
-# short-hand to return an io.writer with a write provider
-# allowing to write to stdout.
-#
-public stdout : io.buffered.writer0 write_provider 1024 is
+override NAME = reg_issue4218
+include ../simple.mk

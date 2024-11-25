@@ -69,7 +69,18 @@ public mutate : effect is
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  id := fuzion.sys.misc.unique_id
+  id := u64 0
+
+
+  # make sure this effect instance has a unique value when it is instated.  This
+  # is used, e.g., by `mutate` to ensure that the same instance of `mutate` is
+  # not instated repeatedly to mutate state created by an earlier call to
+  # `instate`.
+  #
+  module redef make_unique_at_instate
+  =>
+    set id := fuzion.sys.misc.unique_id
+    mutate.this
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the
@@ -102,7 +113,10 @@ public mutate : effect is
     module check_and_replace
     =>
       if !is_currently_instated
-        mpanic "*** invalid mutate for {mutate.this.type}"
+        msg := match mutate.this.get_if_instated
+          x mutate.this => "mutatable created by different instate: {my_id.hex} != {x.id.hex}"
+          nil           => "not instated"
+        mpanic "*** mutate of type {mutate.this.type}: $msg"
       mutate.this.env.replace
 
 
