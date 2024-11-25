@@ -68,7 +68,7 @@ public class Block extends AbstractBlock
    * @param s the list of expressions
    *
    */
-  private Block(boolean newScope,
+  public Block(boolean newScope,
                List<Expr> s)
   {
     super(s);
