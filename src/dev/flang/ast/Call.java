@@ -1568,6 +1568,7 @@ public class Call extends AbstractCall
    */
   private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
   {
+    var t00 = t;
     // do not replace this type if target is ref
     // see #3731 for an example
     if (!t.isThisType() || !t.feature().isRef())
@@ -1585,7 +1586,7 @@ public class Call extends AbstractCall
          *
          *   equals(T type : equatable, x, y T) => T.equality x y
          *
-         * For the call `T.equality x y`, we must replace the the formal argument type
+         * For the call `T.equality x y`, we must replace the formal argument type
          * for `a` (and `b`) by `T`.
          */
         var target = target();
@@ -1608,6 +1609,7 @@ public class Call extends AbstractCall
                                                     context);
           }
         }
+    // if (arg) System.out.println("adjustThisType "+t00+" -> "+t+" at "+pos().show());
     return t;
   }
 

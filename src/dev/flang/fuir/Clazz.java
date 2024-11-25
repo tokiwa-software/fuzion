@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
@@ -1705,12 +1708,18 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
+            var err = new List<Consumer<AbstractCall>>();
             var ft = f.resultType();
-            result = handDown(ft, _select, new List<>());
+            result = handDown(ft, _select, new List<>(),
+                              (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, ft, from, to)); });
             if (result.feature().isCotype())
               {
                 var ac = handDown(result._type.generics().get(0), new List<>());
                 result = ac.typeClazz();
+              }
+            if (err.size() > 0)
+              {
+                result._showErrorIfCallResult_ = err.get(0);
               }
           }
         _resultClazz = result;
@@ -1966,6 +1975,10 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz handDown(AbstractType t, int select, List<AbstractCall> inh)
   {
+    return handDown(t, select, inh, null);
+  }
+  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh,  BiConsumer<AbstractType, AbstractType> foundRef)
+  {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
@@ -1975,6 +1988,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var o = feature();
     var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
     var oc = this;
+    //    Runnable[] err = new Consumer<AbstractCall>[1];
     while (!o.isUniverse() && o != null && oc != null &&
 
            /* In case of type features, we can have the following loop
@@ -2002,14 +2016,27 @@ class Clazz extends ANY implements Comparable<Clazz>
                 o = f;
               }
           }
-        t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
+        var t1a = t1;
+        t1 = t1.replace_this_type_by_actual_outer2(oc._type,
+                                                   foundRef,
+                                                   Context.NONE);
+        //if (t1a.toString().indexOf("e.this")>=0) System.out.println(""+t1a+" ==> "+t1);
         oc = oc.getOuter(o);
         o = (LibraryFeature) o.outer();
       }
 
     var t2 = replaceThisType(t1);
-    return _fuir.type2clazz(t2);
+    var res = _fuir.type2clazz(t2);
+    /*
+      if (err[0] != null)
+      {
+        res._showErrorIfCallResult_ = err[0];
+      }
+    */
+    return res;
   }
+
+  Consumer<AbstractCall> _showErrorIfCallResult_ = true ? null : c->{};
 
 
   /**

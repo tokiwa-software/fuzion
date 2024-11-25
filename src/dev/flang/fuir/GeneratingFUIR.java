@@ -2624,6 +2624,18 @@ public class GeneratingFUIR extends FUIR
           {
             innerClazz.doesNeedCode();
           }
+
+        //if (!dynamic)
+        if (innerClazz.resultClazz()._showErrorIfCallResult_ != null)
+          {
+            // System.out.println("CALL "+c+" "+dynamic+" "+clazzIsRef(tclazz._id));
+            //System.out.println("inner: "+innerClazz);
+            //System.out.println("outer: "+outerClazz);
+
+            if (!isConstructor(innerClazz._id) && clazzKind(innerClazz._id) != FeatureKind.Field)
+              if (!c.calledFeature().isOuterRef()) innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
+
+          }
       }
     return innerClazz == null ? error() : innerClazz;
   }
@@ -2690,6 +2702,7 @@ public class GeneratingFUIR extends FUIR
 
   private void addToAccessedClazzes(int s, int tclazz, int innerClazz)
   {
+    var found = false;
     var a = _accessedClazzes.get(s);
     if (a == null)
       {
@@ -2697,7 +2710,6 @@ public class GeneratingFUIR extends FUIR
       }
     else
       {
-        var found = false;
         for (var i=0; i < a.length && !found; i+=2)
           {
             if (a[i] == tclazz)
@@ -2717,6 +2729,30 @@ public class GeneratingFUIR extends FUIR
             n[a.length  ] = tclazz;
             n[a.length+1] = innerClazz;
             _accessedClazzes.put(s, n);
+          }
+      }
+    if (!found)
+      {
+        //        if (clazzIsRef(tclazz) && tclazz != clazzOuterRef(innerClazz))
+          if (id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_ != null)
+          {
+
+            //System.out.println("CALL "+siteAsString(s));
+            //System.out.println("inner: "+id2clazz(innerClazz));
+            //System.out.println("tclazz: "+id2clazz(tclazz));
+
+            if (!isConstructor(innerClazz))
+              {
+                var e = getExpr(s);
+
+                switch (e)
+                  {
+                  case AbstractCall call -> { if (!call.calledFeature().isOuterRef()) id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_.accept(call); }
+                  default -> {}
+                  };
+              }
+
+
           }
       }
   }

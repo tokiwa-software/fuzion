@@ -2068,15 +2068,16 @@ public class AstErrors extends ANY
    *
    * @param to the target type
    */
-  public static void illegalOuterRefTypeInCall(Call c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
+  public static void illegalOuterRefTypeInCall(Object cf, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
   {
     var art = arg ? "argument type" : "result type";
     var tp = calledOrArg.resultTypePos();
-    error(c.pos(),
+    var p = cf instanceof AbstractCall cc ? cc.pos() : ((AbstractFeature) cf).pos();
+    error(p,
           "Call has an ambiguous " + art + " since target of the call is a " + code("ref") + " type.",
           "The " + art + " of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
           "may represent a number of different actual dynamic types, the " + art + " is not clearly defined.\n"+
-          "Called feature: " + s(c.calledFeature()) + "\n" +
+          (cf instanceof AbstractCall c ? "Called feature: " + s(c.calledFeature()) + "\n" : "") +
           "Original " + art + ": " + s(t) +
           (tp != null
            ? " declared at " + tp.show()
@@ -2084,8 +2085,9 @@ public class AstErrors extends ANY
           "Type depending on target: " + s(from) + "\n" +
           "Target type: " + s(to) + "\n" +
           "To solve this, you could try to use a value type as the target type of the call" +
-          (c.calledFeature().outer().isRef() ? " " : ", e,g., " + s(c.calledFeature().outer().selfType()) + ", ") +
-          "or change the " + art + " of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
+          (!(cf instanceof AbstractCall c) ? " " :
+           (c.calledFeature().outer().isRef() ? " " : ", e,g., " + s(c.calledFeature().outer().selfType()) + ", ") +
+           "or change the " + art + " of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + "."));
   }
 
 
@@ -2346,7 +2348,7 @@ public class AstErrors extends ANY
       "Feature " + sbnf(f) + " has an ambiguous result type " + s(f.resultType()) + ".",
       "This is because result type is a this-type and the underlying feature is a reference.\n" +
       "To solve this, either\n" +
-       "  return a values this-type\n" +
+       "  return a value this-type\n" +
        "or\n"
        + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
   }

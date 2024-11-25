@@ -324,7 +324,7 @@ test_local_mutate is
       #  +-------------------------------------------------+
       #
       merge(n0 Mut_Ring LM T) =>
-        a := Mut_Ring.this
+        a Mut_Ring LM T := Mut_Ring.this   // force boxing
         m := a.p.get
         z := n0.n.get
         a.p <- z

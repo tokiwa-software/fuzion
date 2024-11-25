@@ -1467,7 +1467,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
+  public AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
     var att = tt.selfOrConstraint(context);
@@ -1485,6 +1485,37 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
+      }
+    return result;
+  }
+  public AbstractType replace_this_type_by_actual_outer3(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
+  {
+    var result = this;
+    var att = tt.selfOrConstraint(context);
+    if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+        ||
+        isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
+        )
+      {
+        if (false) if (foundRef != null && tt.isRef())
+          {
+            foundRef.accept(this, tt);
+          }
+        result = tt;
+      }
+    else
+      {
+        if (!isGenericArgument())
+          {
+            var g = generics();
+            var ng = g.map(ag -> ag.replace_this_type_by_actual_outer2(tt, foundRef, context));
+            var o = outer();
+            var no = o != null ? o.replace_this_type_by_actual_outer3(tt, foundRef, context) : null;
+            if (ng != g || no != o)
+              {
+                result = ResolvedNormalType.create(this, ng, unresolvedGenerics(), no);
+              }
+          }
       }
     return result;
   }
