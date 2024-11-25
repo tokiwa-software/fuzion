@@ -48,7 +48,6 @@ import dev.flang.ast.Cond;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -725,13 +724,6 @@ public class LibraryFeature extends AbstractFeature
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
               x = new Tag(val, taggedType, Context.NONE);
-              break;
-            }
-          case Env:
-            {
-              var envType = _libModule.envType(iat);
-              x = new Env(LibraryModule.DUMMY_POS, envType)
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
           case Unit:

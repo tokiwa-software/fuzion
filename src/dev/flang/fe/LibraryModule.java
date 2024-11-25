@@ -1538,7 +1538,6 @@ Expression
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match expression
    | k==Tag   | 1      | Tag           | tag expression
-   | k==Env   | 1      | Env           | env expression
 |====
 
 --asciidoc--
@@ -1561,8 +1560,6 @@ Expression
    *   | k==Mat | 1      | Match         | match expression                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Env | 1      | Env           | env expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int expressionKindPos(int at)
@@ -1621,7 +1618,6 @@ Expression
       case Match       -> matchNextPos(eAt);
       case Call        -> callNextPos (eAt);
       case Tag         -> tagNextPos  (eAt);
-      case Env         -> envNextPos  (eAt);
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
@@ -2181,44 +2177,6 @@ Tag
   int tagNextPos(int at)
   {
     return typeNextPos(tagTypePos(at));
-  }
-
-
-
-  /*
-
---asciidoc--
-
-Env
-^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | type of resulting env value
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Env                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | type of resulting env value                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int envTypePos(int at)
-  {
-    return at;
-  }
-  AbstractType envType(int at)
-  {
-    return type(envTypePos(at));
-  }
-  int envNextPos(int at)
-  {
-    return typeNextPos(envTypePos(at));
   }
 
 

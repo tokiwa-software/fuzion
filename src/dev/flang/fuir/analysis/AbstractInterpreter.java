@@ -239,15 +239,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract Pair<VALUE, RESULT> tag(int s, VALUE value, int newcl, int tagNum);
 
     /**
-     * Access the effect of type ecl that is installed in the environment.
-     *
-     * @param s site of the env expression
-     *
-     * @param ecl clazz id of the effect type
-     */
-    public abstract Pair<VALUE, RESULT> env(int s, int ecl);
-
-    /**
      * Generate code to terminate the execution immediately.
      *
      * @param msg a message explaining the illegal state
@@ -682,16 +673,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           int tagNum  = _fuir.tagTagNum(s);
           var r = _processor.tag(s, value, newcl, tagNum);
           push(stack, newcl, r.v0());
-          res = r.v1();
-          break;
-        }
-      case Env:
-        {
-          if (CHECKS) check
-            (!_fuir.alwaysResultsInVoid(s));
-          var ecl = _fuir.envClazz(s);
-          var r = _processor.env(s, ecl);
-          push(stack, ecl, r.v0());
           res = r.v1();
           break;
         }

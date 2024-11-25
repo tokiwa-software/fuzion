@@ -936,15 +936,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For an instruction of type ExprKind.Env at site s, return the type of the
-   * env value.
-   *
-   * @param s a code site for an Env instruction.
-   */
-  public abstract int envClazz(int s);
-
-
-  /**
    * For an instruction of type ExprKind.Box at site s, return the original type
    * of the value that is to be boxed.
    *
@@ -1193,7 +1184,6 @@ public abstract class FUIR extends IR
                         yield sb.toString();
                       }
       case Tag     -> "Tag";
-      case Env     -> "Env";
       case Pop     -> "Pop";
       };
   }
@@ -1420,7 +1410,6 @@ public abstract class FUIR extends IR
           yield s;
         }
       case Tag     -> skipBack(codeIndex(s, -1));
-      case Env     -> codeIndex(s, -1);
       case Pop     -> skipBack(codeIndex(s, -1));
       };
   }
