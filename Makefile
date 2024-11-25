@@ -24,7 +24,8 @@
 # -----------------------------------------------------------------------
 
 JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
-JAVA_VERSION = 21
+MIN_JAVA_VERSION = 21
+JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
 JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
