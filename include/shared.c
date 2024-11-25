@@ -913,3 +913,13 @@ void fzE_cnd_destroy(void * cnd)
 }
 
 */
+
+
+/**
+ * get a unique id > 0
+ */
+uint64_t fzE_unique_id()
+{
+  static atomic_uint_least64_t last_id = 0;
+  return ++last_id;
+}

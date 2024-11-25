@@ -219,14 +219,6 @@ public class Runtime extends ANY
   };
 
 
-  static long _next_unique_id = 0xf0015feedbadf00dL;
-
-  static final long UNIQUE_ID_INCREMENT = 1000000000000223L; // large prime generated using https://www.browserling.com/tools/prime-numbers
-
-
-  static final Object UNIQUE_ID_LOCK = new Object() {};
-
-
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
@@ -1255,18 +1247,6 @@ public class Runtime extends ANY
       {
         var t = new FuzionThread(r, code);
         result = _startedThreads_.add(t);
-      }
-    return result;
-  }
-
-
-  static long unique_id()
-  {
-    long result;
-    synchronized (UNIQUE_ID_LOCK)
-      {
-        result = _next_unique_id;
-        _next_unique_id = result + UNIQUE_ID_INCREMENT;
       }
     return result;
   }
