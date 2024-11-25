@@ -2666,7 +2666,6 @@ public class DFA extends ANY
   boolean isUnitType(int cl)
   {
     var clnum = _fuir.clazzId2num(cl);
-    var oc = _fuir.clazzOuterClazz(cl);
     return
       !_hasFields.get(clnum) &&
       _defaultEffects.get(cl) == null &&
