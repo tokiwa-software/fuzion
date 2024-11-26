@@ -1103,19 +1103,21 @@ public class Intrinsix extends ANY implements ClassFileConstants
           Expr.invokeStatic(Names.RUNTIME_CLASS,
                             "currentThread",
                             "()" + ftCt.descriptor(),
-                            ftCt)
-          .andThen(Expr.iconst(jvm.effectId(ecl)))
-          .andThen(Expr.invokeVirtual(ftCt.className(), "effect_load", "(I)" + Names.ANYI_DESCR , Names.ANYI_TYPE))
-          .andThen(Expr.DUP)
-          .andThen(Expr.branch(O_ifnull,
-                       Expr.new0(JAVA_LANG_ERROR.className(), Names.JAVA_LANG_ERROR)
-                           .andThen(Expr.DUP)
-                           .andThen(Expr.stringconst("No effect of "+jvm._fuir.clazzAsStringHuman(ecl)+" instated."))
-                           .andThen(Expr.invokeSpecial(JAVA_LANG_ERROR.className(),
+                            ftCt)                                                                                     // FuzionThread
+          .andThen(Expr.iconst(jvm.effectId(ecl)))                                                                    // FuzionThread, int
+          .andThen(Expr.invokeVirtual(ftCt.className(), "effect_load", "(I)" + Names.ANYI_DESCR , Names.ANYI_TYPE))   // AnyI
+          .andThen(Expr.DUP)                                                                                          // AnyI, AnyI
+          .andThen(Expr.branch(O_ifnull,                                                                              // AnyI
+                       Expr.POP                                                                                       // -
+                           .andThen(Expr.new0(JAVA_LANG_ERROR.className(), Names.JAVA_LANG_ERROR) )                   // Error
+
+                           .andThen(Expr.DUP)                                                                         // Error, Error
+                           .andThen(Expr.stringconst("No effect of "+jvm._fuir.clazzAsStringHuman(ecl)+" instated.")) // Error, Error, String
+                           .andThen(Expr.invokeSpecial(JAVA_LANG_ERROR.className(),                                   // Error
                                                        "<init>",
                                                        "(" + Names.JAVA_LANG_STRING.descriptor() + ")V"))
-                           .andThen(Expr.THROW)))
-          .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));
+                           .andThen(Expr.THROW)))                                                                     // -
+          .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));                                   // RT
         var code = Expr.UNIT;
         return new Pair<>(val, code);
       });
