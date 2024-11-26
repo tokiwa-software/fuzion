@@ -4,7 +4,7 @@
 ---------^
 To solve this, do either of the following
   - use the field
-  - make it 'public'
+  - set it to 'public'
   - explicitly ignore the result by using '_' instead of 'x'
 
 
@@ -13,7 +13,7 @@ To solve this, do either of the following
 --^
 To solve this, do either of the following
   - use the field
-  - make it 'public'
+  - set it to 'public'
   - explicitly ignore the result by using '_' instead of 'y'
 
 
@@ -30,7 +30,7 @@ To solve this, do either of the following
 ----^^^^^^
 To solve this, do either of the following
   - use the field
-  - make it 'public'
+  - set it to 'public'
   - explicitly ignore the result by using '_' instead of 'inner2'
 
 
