@@ -2067,7 +2067,7 @@ public class AstErrors extends ANY
    *
    * @param to the target type
    */
-  public static void illegalOuterRefTypeInCall(Call c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
+  public static void illegalOuterRefTypeInCall(AbstractCall c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
   {
     var art = arg ? "argument type" : "result type";
     var tp = calledOrArg.resultTypePos();

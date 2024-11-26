@@ -2413,7 +2413,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
+        var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE), null);
         if (rc.isRef() &&
             outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
           {
@@ -2624,6 +2624,13 @@ public class GeneratingFUIR extends FUIR
           {
             innerClazz.doesNeedCode();
           }
+
+        if (innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
+            innerClazz.clazzKind() == FeatureKind.Routine &&
+            !innerClazz.feature().isConstructor())
+          {
+            innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
+          }
       }
     return innerClazz == null ? error() : innerClazz;
   }
@@ -2825,7 +2832,7 @@ public class GeneratingFUIR extends FUIR
       {
         innerClazz = accessedClazz(s);
         if (CHECKS) check
-          (tclazz == clazzOuterClazz(innerClazz));
+          (Errors.any() || tclazz == clazzOuterClazz(innerClazz));
       }
     if (innerClazz != NO_CLAZZ)
       {
