@@ -533,11 +533,11 @@ public class Executor extends ProcessExpression<Value, Object>
     var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
     var field = _fuir.matchCaseField(s, cix);
-    if (field != -1)
+    if (field != -1 && !_fuir.clazzIsUnitType(_cur.clazz()))
       {
         Interpreter.setField(
             field,
-            _cur._clazz,
+            _cur.clazz(),
             _cur,
             tagAndChoiceElement.v1());
       }
