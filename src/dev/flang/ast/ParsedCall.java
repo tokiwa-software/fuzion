@@ -469,6 +469,7 @@ public class ParsedCall extends Call
         var fo = partiallyApplicableAlternative(res, context, expectedType);
         if (fo != null &&
             fo._feature != _calledFeature &&
+            fo._feature.preAndCallFeature() != _calledFeature &&
             newNameForPartial(expectedType) == null)
           {
             AstErrors.partialApplicationAmbiguity(pos(), _calledFeature, fo._feature);
