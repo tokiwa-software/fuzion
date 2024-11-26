@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
-MIN_JAVA_VERSION = 21
+MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
 JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
 JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
