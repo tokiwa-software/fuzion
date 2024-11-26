@@ -258,6 +258,16 @@ class Clazz extends ANY implements Comparable<Clazz>
   String _asStringHuman, _asString;
 
 
+  /**
+   * If this creates a type that depends on a `this` type of an outer ref clazz,
+   * this will be set to code calling AstErrors.illegalOuterRefTypeInCall. If
+   * this clazz is the result clazz in a call, this error will be produced.
+   *
+   * See #4273 and rests/reg_issue4273 for example code that needs this.
+   */
+  private Consumer<AbstractCall> _showErrorIfCallResult_ = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -2011,7 +2021,6 @@ class Clazz extends ANY implements Comparable<Clazz>
                 o = f;
               }
           }
-        var t1a = t1;
         t1 = t1.replace_this_type_by_actual_outer2(oc._type,
                                                    foundRef,
                                                    Context.NONE);
@@ -2022,8 +2031,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     var t2 = replaceThisType(t1);
     return _fuir.type2clazz(t2);
   }
-
-  Consumer<AbstractCall> _showErrorIfCallResult_ = true ? null : c->{};
 
 
   /**

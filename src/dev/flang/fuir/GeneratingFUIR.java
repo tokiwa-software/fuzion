@@ -2697,7 +2697,6 @@ public class GeneratingFUIR extends FUIR
 
   private void addToAccessedClazzes(int s, int tclazz, int innerClazz)
   {
-    var found = false;
     var a = _accessedClazzes.get(s);
     if (a == null)
       {
@@ -2705,6 +2704,7 @@ public class GeneratingFUIR extends FUIR
       }
     else
       {
+        var found = false;
         for (var i=0; i < a.length && !found; i+=2)
           {
             if (a[i] == tclazz)
