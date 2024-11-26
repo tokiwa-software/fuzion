@@ -44,7 +44,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
-import dev.flang.ast.Cond;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
