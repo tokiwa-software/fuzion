@@ -319,8 +319,9 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
 int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
+    return -1;
+  } else if (peeraddr.ss_family == AF_INET) {
     fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
     return 4;
   } else if (peeraddr.ss_family == AF_INET6) {
@@ -339,8 +340,9 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
+    return 0;
+  } else if (peeraddr.ss_family == AF_INET) {
     return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
   } else if (peeraddr.ss_family == AF_INET6) {
     return ntohs(((struct sockaddr_in6 *)&peeraddr)->sin6_port);
