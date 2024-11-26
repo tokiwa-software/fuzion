@@ -3389,11 +3389,8 @@ invariant   : "inv" block
   /**
    * Parse implRout
    *
-implRout    : "is" "abstract"
-            | ARROW "abstract"
-            | "is" "intrinsic"
+implRout    : ARROW "abstract"
             | ARROW "intrinsic"
-            | "is" "native"
             | ARROW "native"
             | "is" block
             | ARROW block
@@ -3411,13 +3408,31 @@ implRout    : "is" "abstract"
       {
         AstErrors.constructorWithReturnType(pos);
       }
-    if      (has_is || has_arrow   ) { SemiState oldSemiSt = semiState(SemiState.END);
-                                       result = skip(Token.t_abstract            ) ? Impl.ABSTRACT            :
-                                                skip(Token.t_intrinsic           ) ? Impl.INTRINSIC           :
-                                                skip(Token.t_native              ) ? Impl.NATIVE              :
-                                                new Impl(pos, block()    , has_is  ? Impl.Kind.Routine        :
-                                                                           hasType ? Impl.Kind.Routine
-                                                                                   : Impl.Kind.RoutineDef);
+    if      (has_arrow || has_is   ) { SemiState oldSemiSt = semiState(SemiState.END);
+                                       result = switch(current())
+                                         {
+                                           case Token.t_abstract, Token.t_intrinsic, Token.t_native ->
+                                             {
+                                               if (has_arrow)
+                                                 {
+                                                   yield skip(Token.t_abstract ) ? Impl.ABSTRACT  :
+                                                         skip(Token.t_intrinsic) ? Impl.INTRINSIC :
+                                                         skip(Token.t_native   ) ? Impl.NATIVE    : Impl.ERROR;
+                                                 }
+                                               else
+                                                 {
+                                                   AstErrors.unimplementetConstructor(tokenSourcePos(), current().toString());
+                                                   next();
+                                                   yield Impl.ERROR;
+                                                 }
+                                             }
+                                           default ->
+                                             {
+                                               yield new Impl(pos, block(), has_is  ? Impl.Kind.Routine :
+                                                                            hasType ? Impl.Kind.Routine
+                                                                                    : Impl.Kind.RoutineDef);
+                                             }
+                                         };
                                         semiState(oldSemiSt);}
     else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
     else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
