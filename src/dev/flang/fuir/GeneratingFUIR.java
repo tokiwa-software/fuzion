@@ -2726,14 +2726,6 @@ public class GeneratingFUIR extends FUIR
             _accessedClazzes.put(s, n);
           }
       }
-    if (!found &&
-        id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_ != null &&
-        !isConstructor(innerClazz) &&
-        getExpr(s) instanceof AbstractCall call &&
-        !call.calledFeature().isOuterRef())
-      {
-        id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_.accept(call);
-      }
   }
 
 
