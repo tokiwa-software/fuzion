@@ -30,6 +30,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0' # every sunday
+  pull_request: {}
 
 jobs:
   run_tests:
@@ -69,6 +70,7 @@ jobs:
 
       - name: echo versions
         run: |
+          env
           clang --version
           javac --version
           whereis jvm.dll
