@@ -1374,10 +1374,13 @@ lint/pmd: $(BUILD_DIR)/pmd
 
 $(BUILD_DIR)/lib/libfuzion.so: $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
-# NYI: a bit hacky to have so/dylib/dll regardless of which OS.
+# NYI: a bit hacky to have so/dylib regardless of which OS.
+ifeq ($(OS),Windows_NT)
+	clang -O3 -shared $(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll
+else
 	clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so && \
-		cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib && \
-		cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/fuzion.dll
+		cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
+endif
 
 
 ########
