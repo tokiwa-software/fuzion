@@ -170,12 +170,6 @@ public class Intrinsics extends ANY
   /*------------------------  static variables  -------------------------*/
 
 
-  /**
-   * the last unique identifier returned by `fuzion.sys.misc.unique_id`.
-   */
-  private static AtomicLong _last_unique_id_ = new AtomicLong();
-
-
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -937,7 +931,6 @@ public class Intrinsics extends ANY
     put("fuzion.sys.env_vars.set0"  , (executor, innerClazz) -> args -> new boolValue(false));
     // unsetting env variable not supported in java
     put("fuzion.sys.env_vars.unset0", (executor, innerClazz) -> args -> new boolValue(false));
-    put("fuzion.sys.misc.unique_id",(executor, innerClazz) -> args -> new u64Value(_last_unique_id_.incrementAndGet()));
     put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);

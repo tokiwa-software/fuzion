@@ -378,4 +378,10 @@ int32_t fzE_cnd_wait     (void * cnd, void * mtx);
 void    fzE_cnd_destroy  (void * cnd);
 
 
+/**
+ * get a unique id > 0
+ */
+uint64_t fzE_unique_id(void);
+
+
 #endif /* fz.h  */

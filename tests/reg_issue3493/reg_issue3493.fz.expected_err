@@ -1,7 +1,7 @@
 
 --CURDIR--/reg_issue3493.fz:25:1: error 1: Syntax error: expected 'is', ':=' or '{', found end-of-file
 ^
-While parsing: impl, parse stack: implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: impl, parse stack: implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/reg_issue3493.fz:24:1: error 2: Missing result type in field declaration with initialization
