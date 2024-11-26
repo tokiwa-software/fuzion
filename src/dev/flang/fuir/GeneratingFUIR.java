@@ -2413,7 +2413,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
+        var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE), null);
         if (rc.isRef() &&
             outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
           {
@@ -2625,16 +2625,11 @@ public class GeneratingFUIR extends FUIR
             innerClazz.doesNeedCode();
           }
 
-        //if (!dynamic)
-        if (innerClazz.resultClazz()._showErrorIfCallResult_ != null)
+        if (innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
+            !isConstructor(innerClazz._id) && clazzKind(innerClazz._id) != FeatureKind.Field &&
+            !c.calledFeature().isOuterRef())
           {
-            // System.out.println("CALL "+c+" "+dynamic+" "+clazzIsRef(tclazz._id));
-            //System.out.println("inner: "+innerClazz);
-            //System.out.println("outer: "+outerClazz);
-
-            if (!isConstructor(innerClazz._id) && clazzKind(innerClazz._id) != FeatureKind.Field)
-              if (!c.calledFeature().isOuterRef()) innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
-
+            innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
           }
       }
     return innerClazz == null ? error() : innerClazz;
@@ -2731,29 +2726,13 @@ public class GeneratingFUIR extends FUIR
             _accessedClazzes.put(s, n);
           }
       }
-    if (!found)
+    if (!found &&
+        id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_ != null &&
+        !isConstructor(innerClazz) &&
+        getExpr(s) instanceof AbstractCall call &&
+        !call.calledFeature().isOuterRef())
       {
-        //        if (clazzIsRef(tclazz) && tclazz != clazzOuterRef(innerClazz))
-          if (id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_ != null)
-          {
-
-            //System.out.println("CALL "+siteAsString(s));
-            //System.out.println("inner: "+id2clazz(innerClazz));
-            //System.out.println("tclazz: "+id2clazz(tclazz));
-
-            if (!isConstructor(innerClazz))
-              {
-                var e = getExpr(s);
-
-                switch (e)
-                  {
-                  case AbstractCall call -> { if (!call.calledFeature().isOuterRef()) id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_.accept(call); }
-                  default -> {}
-                  };
-              }
-
-
-          }
+        id2clazz(innerClazz).resultClazz()._showErrorIfCallResult_.accept(call);
       }
   }
 

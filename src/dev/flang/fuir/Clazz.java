@@ -1973,10 +1973,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param pos a source code position, used to report errors.
    */
-  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh)
-  {
-    return handDown(t, select, inh, null);
-  }
   Clazz handDown(AbstractType t, int select, List<AbstractCall> inh,  BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
@@ -1988,7 +1984,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     var o = feature();
     var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
     var oc = this;
-    //    Runnable[] err = new Consumer<AbstractCall>[1];
     while (!o.isUniverse() && o != null && oc != null &&
 
            /* In case of type features, we can have the following loop
@@ -2020,20 +2015,12 @@ class Clazz extends ANY implements Comparable<Clazz>
         t1 = t1.replace_this_type_by_actual_outer2(oc._type,
                                                    foundRef,
                                                    Context.NONE);
-        //if (t1a.toString().indexOf("e.this")>=0) System.out.println(""+t1a+" ==> "+t1);
         oc = oc.getOuter(o);
         o = (LibraryFeature) o.outer();
       }
 
     var t2 = replaceThisType(t1);
-    var res = _fuir.type2clazz(t2);
-    /*
-      if (err[0] != null)
-      {
-        res._showErrorIfCallResult_ = err[0];
-      }
-    */
-    return res;
+    return _fuir.type2clazz(t2);
   }
 
   Consumer<AbstractCall> _showErrorIfCallResult_ = true ? null : c->{};
@@ -2049,7 +2036,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        !t.isOpenGeneric());
 
-    return handDown(t, -1, inh);
+    return handDown(t, -1, inh, null);
   }
 
 
