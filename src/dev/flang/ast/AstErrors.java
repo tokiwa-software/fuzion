@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import dev.flang.ast.AstErrors.PreOrPost;
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.Errors;
@@ -2349,6 +2348,20 @@ public class AstErrors extends ANY
        "  return a values this-type\n" +
        "or\n"
        + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
+  }
+
+  public static void openGenericMissingDots(SourcePosition pos, AbstractType t)
+  {
+    error(pos, "open type is not followed by " + skw("..."),
+          "An open type must be followed by " + skw("...") + ".\n"
+          + "To solve this add " + skw("...") + " after the highlighted error.");
+  }
+
+  public static void dotsButNotOpenGeneric(SourcePosition pos, AbstractType t)
+  {
+    error(pos, "type is followed by " + skw("...") + " but is not an open type",
+          skw("...") + " is only permitted after open type.\n"
+          + "To solve this remove " + skw("...") + " after the highlighted error.");
   }
 
 }

@@ -119,4 +119,4 @@
 # is a type that has only one single value: '()'.
 #
 public tuple(public A type...,
-             public values A) is
+             public values A...) is

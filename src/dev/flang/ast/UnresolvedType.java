@@ -160,6 +160,11 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   AbstractType _resolved = null;
 
+  /**
+   * Was this Unresolved type followed by '...' when parsed
+   */
+  boolean followedByDots;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -706,6 +711,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               }
           }
       }
+
+    if (_resolved != null && _resolved.isOpenGeneric() && !followedByDots)
+      {
+        AstErrors.openGenericMissingDots(pos(), _resolved);
+      }
+
+    if (_resolved != null && !_resolved.isOpenGeneric() && followedByDots)
+      {
+        AstErrors.dotsButNotOpenGeneric(pos(), _resolved);
+      }
+
     return _resolved;
   }
 
@@ -1031,6 +1047,14 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   protected void usedFeatures(Set<AbstractFeature> s)
   {
     throw new Error("must not be called on unresolved types.");
+  }
+
+  /**
+   * Mark this type as being followed by '...' e.g. 'A...'
+   */
+  public void setFollowedByDots()
+  {
+    followedByDots = true;
   }
 
 

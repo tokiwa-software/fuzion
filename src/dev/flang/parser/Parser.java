@@ -931,6 +931,7 @@ argument    : visibility
               argType
             ;
 argType     : type
+            | type "..."
             | typeType
             | typeType COLON type
             |
@@ -3517,6 +3518,10 @@ freeType    : name ":" type
       {
         result = new FreeType(result.pos(), result.freeTypeName(), type());
       }
+    if (skip("..."))
+      {
+        result.setFollowedByDots();
+      }
     return result;
   }
 
@@ -3610,6 +3615,7 @@ boundType   : onetype ( PIPE onetype ) *
         res = skipOneType(isFunctionReturnType, true);
         hasForbiddenParentheses = false;
       }
+    skip("...");
     return res && !hasForbiddenParentheses && (!skipColon() || skipType());
   }
 
