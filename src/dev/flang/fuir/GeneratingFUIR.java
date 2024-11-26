@@ -2626,8 +2626,8 @@ public class GeneratingFUIR extends FUIR
           }
 
         if (innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
-            !isConstructor(innerClazz._id) && clazzKind(innerClazz._id) != FeatureKind.Field &&
-            !c.calledFeature().isOuterRef())
+            innerClazz.clazzKind() == FeatureKind.Routine &&
+            !innerClazz.feature().isConstructor())
           {
             innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
           }
