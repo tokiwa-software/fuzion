@@ -61,6 +61,7 @@ import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -591,7 +592,7 @@ class LibraryOut extends ANY
         if (t.isGenericArgument())
           {
             if (CHECKS) check
-              (!t.isRef());
+              (t.isRef().no());
             _data.writeInt(-1);
             _data.writeOffset(t.genericArgument().typeParameter());
           }
@@ -599,9 +600,9 @@ class LibraryOut extends ANY
           {
             _data.writeInt(t.generics().size());
             _data.writeOffset(t.feature());
-            _data.writeByte(t.isThisType() ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
-                            t.isRef()      ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                           : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
+            _data.writeByte(t.isThisType()       ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
+                            t.isRef().yes() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                                 : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
             for (var gt : t.generics())
               {
                 type(gt);

@@ -283,7 +283,7 @@ public class GeneratingFUIR extends FUIR
     var ao = actualType.feature().outer();
     while (o != null)
       {
-        if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && !outer.isRef())
+        if (actualType.isRef().yes() && ao != null && ao.inheritsFrom(o.feature()) && outer.isRef().no())
           {
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
@@ -375,7 +375,7 @@ public class GeneratingFUIR extends FUIR
           }
 
         var s = SpecialClazzes.c_NOT_FOUND;
-        if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
+        if (cl.isRef().yes() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
             // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
             s = switch (cl.feature().qualifiedName())
@@ -413,7 +413,7 @@ public class GeneratingFUIR extends FUIR
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init();
 
-        if (cl.feature().isField() && outerR.isRef() && !outerR.isBoxed())
+        if (cl.feature().isField() && outerR.isRef().yes() && !outerR.isBoxed())
           { // NYI: CLEANUP: Duplicate clazzes for fields in corresponding value
             // instance.  This is currently needed for the C backend only since
             // that backend creates ref clazzes by embedding the underlying
@@ -882,7 +882,7 @@ public class GeneratingFUIR extends FUIR
     var fc = id2clazz(field);
     var f = fc.feature();
     return f.isOuterRef() &&
-      !fc.resultClazz().isRef() &&
+      fc.resultClazz().isRef().no() &&
       !fc.resultClazz().isUnitType() &&
       !fc.resultClazz().feature().isBuiltInPrimitive();
   }
@@ -967,7 +967,7 @@ public class GeneratingFUIR extends FUIR
 
     var cc = id2clazz(cl);
     var cg = cc.choiceGenerics().get(i);
-    var res = cg.isRef()          ||
+    var res = cg.isRef().yes()     ||
               cg.isInstantiatedChoice() ? cg
                                         : id2clazz(clazz(SpecialClazzes.c_void));
     return res._id;
@@ -1459,7 +1459,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.isRef();
+    return c.isRef().yes();
   }
 
 
@@ -1476,7 +1476,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.isRef() && !c.feature().isRef();
+    return c.isRef().yes() && !c.feature().isRef();
   }
 
 
@@ -1494,13 +1494,11 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    var cc = id2clazz(cl);
     var vcc = id2clazz(cl).asValue();
-    if (vcc.isRef())
+    if (vcc.isRef().yes())
       {
         throw new Error("vcc.isRef in clazzAsValue for "+clazzAsString(cl)+" is "+vcc);
       }
-    var vc0 = id2clazz(cl).asValue()._id;
     var vc = vcc._id;
 
     if (POSTCONDITIONS) ensure
@@ -1623,7 +1621,7 @@ public class GeneratingFUIR extends FUIR
             var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
             result = newClazz(oc, f.selfType(), -1);
             if (CHECKS) check
-              (f.isRef() == result.isRef());
+              (f.isRef() == (result.isRef().yes()));
           }
         _specialClazzes[s.ordinal()] = result;
       }
@@ -2137,7 +2135,7 @@ public class GeneratingFUIR extends FUIR
       // contains no fields
       ac.calledFeature().code().containsOnlyDeclarations() &&
       // we are calling a value type feature
-      !ac.calledFeature().selfType().isRef() &&
+      ac.calledFeature().selfType().isRef().no() &&
       // only features without args and no fields may be inherited
       ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
       // no unit   // NYI we could allow units that does not contain declarations
@@ -2414,7 +2412,7 @@ public class GeneratingFUIR extends FUIR
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
         var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE), null);
-        if (rc.isRef() &&
+        if (rc.isRef().yes() &&
             outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
           {
             rc = vc.asRef();
@@ -2498,7 +2496,7 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
   {
-    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type, Context.NONE);
+    return ec.isRef().yes() && ec._type.isAssignableFrom(vc.asRef()._type, Context.NONE);
   }
 
 
@@ -2606,7 +2604,7 @@ public class GeneratingFUIR extends FUIR
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
     var callToOuterRef = c.target().isCallToOuterRef();
-    var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    var dynamic = c.isDynamic() && (tclazz.isRef().yes() || callToOuterRef);
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
     if (!tclazz.isVoidType())
@@ -2898,10 +2896,10 @@ public class GeneratingFUIR extends FUIR
     var e = getExpr(s);
     var res = switch (e)
       {
-      case AbstractAssign ass  -> id2clazz(accessTargetClazz(s)).isRef();
-      case Clazz          arg  -> outerClazz.isRef() && !arg.feature().isOuterRef(); // assignment to arg field in inherits call (dynamic if outerClazz is ref)
+      case AbstractAssign ass  -> id2clazz(accessTargetClazz(s)).isRef().yes();
+      case Clazz          arg  -> outerClazz.isRef().yes() && !arg.feature().isOuterRef(); // assignment to arg field in inherits call (dynamic if outerClazz is ref)
                                                                                     // or to outer ref field (not dynamic)
-      case AbstractCall   call -> id2clazz(accessTargetClazz(s)).isRef();
+      case AbstractCall   call -> id2clazz(accessTargetClazz(s)).isRef().yes();
       default                  -> { throw new Error("accessIsDynamic found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
     return res;

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -70,7 +71,7 @@ public class Box extends Expr
   {
     if (PRECONDITIONS) require
       (value != null,
-       frmlT.isGenericArgument() || frmlT.isThisType() || !value.type().isRef() || value.isCallToOuterRef(),
+       frmlT.isGenericArgument() || frmlT.isThisType() || value.type().isRef().noOrDontKnow() || value.isCallToOuterRef(),
        !(value instanceof Box));
 
     this._value = value;

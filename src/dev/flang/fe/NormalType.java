@@ -35,6 +35,7 @@ import dev.flang.ast.Generic;
 import dev.flang.util.List;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -184,13 +185,13 @@ public class NormalType extends LibraryType
   /**
    * A normal type may be an explicit ref type.
    */
-  public boolean isRef()
+  public YesNo isRef()
   {
     return switch (_valRefOrThis)
       {
-      case FuzionConstants.MIR_FILE_TYPE_IS_VALUE -> false;
-      case FuzionConstants.MIR_FILE_TYPE_IS_REF   -> true;
-      case FuzionConstants.MIR_FILE_TYPE_IS_THIS  -> false;
+      case FuzionConstants.MIR_FILE_TYPE_IS_VALUE -> YesNo.no;
+      case FuzionConstants.MIR_FILE_TYPE_IS_REF   -> YesNo.yes;
+      case FuzionConstants.MIR_FILE_TYPE_IS_THIS  -> YesNo.dontKnow;
       default -> throw new Error("unexpected NormalType._valRefOrThis: "+_valRefOrThis);
       };
   }
@@ -221,7 +222,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
+        result = isRef().yes() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -232,7 +233,7 @@ public class NormalType extends LibraryType
     var result = _asValue;
     if (result == null)
       {
-        result = !isRef() && !isThisType() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
+        result = isRef().no() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
         _asValue = result;
       }
     return result;

@@ -33,6 +33,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -439,7 +440,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   /**
    * isRef
    */
-  public boolean isRef()
+  public YesNo isRef()
   {
     throw new Error("isRef not known in unresolved type");
   }
