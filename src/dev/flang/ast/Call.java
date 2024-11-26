@@ -1570,7 +1570,7 @@ public class Call extends AbstractCall
   {
     // do not replace this type if target is ref
     // see #3731 for an example
-    if (!t.isThisType() || !t.feature().isRef())
+    //if (!t.isThisType() || !t.feature().isRef())
       {
         /**
          * For a call `T.f` on a type parameter whose result type contains
@@ -1603,7 +1603,7 @@ public class Call extends AbstractCall
             var inner = ResolvedNormalType.newType(calledFeature().selfType(),
                                               _target.type());
             var t0 = t;
-            t = t.replace_this_type_by_actual_outer(inner,
+            t = t.replace_this_type_by_actual_outer(_target.type(),
                                                     (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
                                                     context);
           }
