@@ -265,7 +265,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * See #4273 and rests/reg_issue4273 for example code that needs this.
    */
-  private Consumer<AbstractCall> _showErrorIfCallResult_ = null;
+  Consumer<AbstractCall> _showErrorIfCallResult_ = null;
 
 
   /*--------------------------  constructors  ---------------------------*/
