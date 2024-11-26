@@ -1585,7 +1585,7 @@ public class Call extends AbstractCall
          *
          *   equals(T type : equatable, x, y T) => T.equality x y
          *
-         * For the call `T.equality x y`, we must replace the the formal argument type
+         * For the call `T.equality x y`, we must replace the formal argument type
          * for `a` (and `b`) by `T`.
          */
         var target = target();
