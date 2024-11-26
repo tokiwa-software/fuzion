@@ -1375,11 +1375,20 @@ lint/pmd: $(BUILD_DIR)/pmd
 $(BUILD_DIR)/lib/libfuzion.so: $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib regardless of which OS.
+# NYI: -DGC_THREADS -DGC_PTHREADS
+	echo "building fuzion runtime"
 ifeq ($(OS),Windows_NT)
-	clang -O3 -shared $(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll
+	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	-DPTW32_STATIC_LIB -DGC_WIN32_PTHREADS \
+	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
+	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
+	-lMswsock -lAdvApi32 -lWs2_32 /ucrt64/bin/libgc-1.dll -lgc
 else
-	clang -O3 -shared $(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so && \
-		cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
+	clang -Wall -Werror -O3 -shared \
+	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
+	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so \
+	-lgc
+	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
 endif
 
 

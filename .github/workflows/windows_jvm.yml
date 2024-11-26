@@ -50,6 +50,14 @@ jobs:
             mingw-w64-ucrt-x86_64-clang
             diffutils
 
+
+      - name: Set environment variables
+        run: |
+          echo "JAVA_HOME=/c/Program Files/OpenJDK/jdk-21.0.2" >> $GITHUB_ENV
+          echo "PATH=/ucrt64/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH" >> $GITHUB_ENV
+          echo "FUZION_CLANG_INSTALLED_DIR=D:/a/_temp/msys64/ucrt64/bin" >> $GITHUB_ENV
+
+
       - name: install choco packages
         shell: powershell
         run: choco install openjdk --version 21.0.2
@@ -57,10 +65,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v2.6.0
 
       - name: echo versions
-        run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
-          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
-          clang --version
+        run: clang --version
           javac --version
           whereis jvm.dll
 
@@ -71,8 +76,4 @@ jobs:
       #     ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
-        run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
-          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
-          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
-          make run_tests_jvm
+        run: make run_tests_jvm
