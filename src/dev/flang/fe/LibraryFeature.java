@@ -203,7 +203,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public boolean isRef()
   {
-    return _libModule.featureIsThisRef(_index);
+    return _libModule.featureIsRef(_index);
   }
 
 
