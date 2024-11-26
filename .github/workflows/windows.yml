@@ -30,6 +30,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0' # every sunday
+  pull_request: {}
 
 jobs:
   run_tests:
@@ -54,13 +55,6 @@ jobs:
             patch
 
 
-      - name: Set environment variables
-        run: |
-          echo "export JAVA_HOME=/c/Program Files/OpenJDK/jdk-21.0.2" >> .bashrc
-          echo "export PATH=/ucrt64/bin:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH" >> .bashrc
-          echo "export FUZION_CLANG_INSTALLED_DIR=D:/a/_temp/msys64/ucrt64/bin" >> .bashrc
-
-
       - name: install choco packages
         shell: powershell
         run: choco install openjdk --version 21.0.2
@@ -69,12 +63,23 @@ jobs:
 
       - name: echo versions
         run: |
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           clang --version
           javac --version
           whereis jvm.dll
 
       - name: build libgc
-        run: ./bin/windows_install_boehm_gc.sh
+        run: |
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
+          ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
-        run: make run_tests
+        run: |
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
+          make run_tests

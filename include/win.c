@@ -42,6 +42,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 // NYI remove POSIX imports
 #include <fcntl.h>      // fcntl
@@ -215,7 +216,7 @@ int fzE_socket(int family, int type, int protocol){
   WSADATA wsaData;
   return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
     ? -1
-    : socket(get_family(family), get_socket_type(type), get_protocol(protocol));
+    : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
 }
 
 
@@ -225,9 +226,9 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
   ZeroMemory(&hints, sizeof(hints));
 
-  hints.ai_family = get_family(family);
-  hints.ai_socktype = get_socket_type(socktype);
-  hints.ai_protocol = get_protocol(protocol);
+  hints.ai_family = fzE_get_family(family);
+  hints.ai_socktype = fzE_get_socket_type(socktype);
+  hints.ai_protocol = fzE_get_protocol(protocol);
   hints.ai_flags = flags;
 
   return getaddrinfo(host, port, &hints, result);
