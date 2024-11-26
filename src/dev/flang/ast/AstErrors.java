@@ -2346,7 +2346,7 @@ public class AstErrors extends ANY
       "Feature " + sbnf(f) + " has an ambiguous result type " + s(f.resultType()) + ".",
       "This is because result type is a this-type and the underlying feature is a reference.\n" +
       "To solve this, either\n" +
-       "  return a value this-type\n" +
+       "  return a values this-type\n" +
        "or\n"
        + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
   }

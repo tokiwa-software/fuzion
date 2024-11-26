@@ -12,7 +12,7 @@ Any.me => Any.this
 ----^^
 This is because result type is a this-type and the underlying feature is a reference.
 To solve this, either
-  return a value this-type
+  return a values this-type
 or
   return the type of the reference itself (instead of 'Any.this' return 'Any').
 
