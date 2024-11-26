@@ -46,7 +46,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 // NYI remove POSIX imports
 #include <fcntl.h>      // fcntl
-#include <sys/stat.h>   // mkdir
+#include <sys/stat.h>   // stat
 
 #include <winsock2.h>
 #include <windows.h>
@@ -465,13 +465,21 @@ int fzE_munmap(void * mapped_address, const int file_size){
  */
 uint64_t fzE_nanotime()
 {
-  struct timespec result;
-  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
-  {
-    fprintf(stderr,"*** clock_gettime failed\012");
-    exit(EXIT_FAILURE);
+  static LARGE_INTEGER frequency = {0};
+  if (frequency.QuadPart == 0) {
+      if (!QueryPerformanceFrequency(&frequency)) {
+          fprintf(stderr, "*** QueryPerformanceFrequency failed\n");
+          exit(EXIT_FAILURE);
+      }
   }
-  return result.tv_sec*1000000000ULL+result.tv_nsec;
+
+  LARGE_INTEGER counter;
+  if (!QueryPerformanceCounter(&counter)) {
+      fprintf(stderr, "*** QueryPerformanceCounter failed\n");
+      exit(EXIT_FAILURE);
+  }
+
+  return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
 
@@ -480,9 +488,17 @@ uint64_t fzE_nanotime()
  */
 void fzE_nanosleep(uint64_t n)
 {
-  // NYI replace with native windows
-  struct timespec req = (struct timespec){n/1000000000LL,n-n/1000000000LL*1000000000LL};
-  while (nanosleep(&req, &req));
+  uint64_t start = fzE_nanotime();
+  uint64_t end = start + n;
+
+  while (fzE_nanotime() < end) {
+      uint64_t remaining_ns = end - fzE_nanotime();
+      if (remaining_ns > 1000000ULL) {
+          Sleep((DWORD)(remaining_ns / 1000000ULL));
+      } else {
+          YieldProcessor();
+      }
+  }
 }
 
 
