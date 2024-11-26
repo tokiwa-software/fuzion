@@ -1568,7 +1568,6 @@ public class Call extends AbstractCall
    */
   private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
   {
-    var t00 = t;
     // do not replace this type if target is ref
     // see #3731 for an example
     if (!t.isThisType() || !t.feature().isRef())
@@ -1609,7 +1608,6 @@ public class Call extends AbstractCall
                                                     context);
           }
         }
-    // if (arg) System.out.println("adjustThisType "+t00+" -> "+t+" at "+pos().show());
     return t;
   }
 
