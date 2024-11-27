@@ -741,15 +741,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                             PrimitiveType.type_byte.array())));
         });
 
-    put("fuzion.sys.internal_array.get",
-        "fuzion.sys.internal_array.setel",
+    put("fuzion.sys.getel",
+        "fuzion.sys.setel",
         "fuzion.sys.internal_array_init.alloc",
 
         (jvm, si, cc, tvalue, args) ->
         {
           var in = jvm._fuir.clazzOriginalName(cc);
-          var at = jvm._fuir.clazzOuterClazz(cc); // array type
-          var et = jvm._fuir.clazzActualGeneric(at, 0); // element type
+          var et = jvm._fuir.clazzActualGeneric(cc, 0); // element type
           var jt = jvm._types.resultType(et);
           var val = Expr.UNIT;
           var code = Expr.UNIT;
@@ -760,14 +759,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
             }
           else
             {
-              if (in.equals("fuzion.sys.internal_array.get"))
+              if (in.equals("fuzion.sys.getel"))
                 {
                   val = args.get(0)
                     .andThen(Expr.checkcast(jt.array()))
                     .andThen(args.get(1))
                     .andThen(jt.xaload());
                 }
-              else if (in.equals("fuzion.sys.internal_array.setel"))
+              else if (in.equals("fuzion.sys.setel"))
                 {
                   var check_frozen = Expr.UNIT;
                   if (CHECKS)

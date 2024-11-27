@@ -442,8 +442,6 @@ public class Intrinsics extends ANY
       A0.castTo("void *"),    // address
       A1.castTo("size_t")     // size
     )).ret());
-    put("fuzion.sys.fileio.mapped_buffer_get", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).ret());
-    put("fuzion.sys.fileio.mapped_buffer_set", (c,cl,outer,in) -> A0.castTo("int8_t*").index(A1).assign(A2.castTo("int8_t")));
     put("fuzion.sys.fileio.open_dir", (c,cl,outer,in) -> CExpr.call("fzE_opendir", new List<CExpr>(
       A0.castTo("char *"),
       A1.castTo("int64_t *")
@@ -756,14 +754,14 @@ public class Intrinsics extends ANY
           return CExpr.call(c.malloc(),
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         });
-    put("fuzion.sys.internal_array.setel", (c,cl,outer,in) ->
+    put("fuzion.sys.setel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         });
-    put("fuzion.sys.internal_array.get", (c,cl,outer,in) ->
+    put("fuzion.sys.getel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)

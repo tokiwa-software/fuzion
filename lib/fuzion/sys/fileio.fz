@@ -305,31 +305,6 @@ module fileio is
   module munmap(address fuzion.sys.Pointer, size i64) i32 => intrinsic
 
 
-  # get a byte from a given mapped buffer
-  #
-  module mapped_buffer_get
-    (# memory address obtained by `mmap`
-     m fuzion.sys.Pointer,
-
-     # index of the byte
-     i i64
-    ) u8 => intrinsic
-
-
-  # set a byte of a given mapped buffer to a new value
-  #
-  module mapped_buffer_set
-    (# memory address obtained by `mmap`
-     m fuzion.sys.Pointer,
-
-     # index of the byte
-     i i64,
-
-     # new value to be written at m[i]
-     o u8
-    ) unit => intrinsic
-
-
   # open the directory given by path
   #
   # accepts as arguments a path (processed by fuzion.sys.c_string) and a pointer to

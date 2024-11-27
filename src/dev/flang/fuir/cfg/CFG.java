@@ -241,8 +241,6 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
     put("fuzion.sys.fileio.mmap"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mapped_buffer_get", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mapped_buffer_set", (cfg, cl) -> { } );
     put("fuzion.sys.fatal_fault0"        , (cfg, cl) -> { } );
     put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
     put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
@@ -455,8 +453,8 @@ public class CFG extends ANY
     put("f64.type.epsilon"               , (cfg, cl) -> { } );
 
     put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
+    put("fuzion.sys.setel", (cfg, cl) -> { } );
+    put("fuzion.sys.getel"  , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.freeze"
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.ensure_not_frozen"
