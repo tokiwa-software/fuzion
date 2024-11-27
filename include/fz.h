@@ -387,5 +387,17 @@ void    fzE_cnd_destroy  (void * cnd);
  */
 uint64_t fzE_unique_id(void);
 
+/**
+ * result is a 32-bit array
+ *
+ * result[0] = year
+ * result[1] = day_in_year
+ * result[2] = hour
+ * result[3] = min
+ * result[4] = sec
+ * result[5] = nanosec;
+ */
+void fzE_date_time(void * result);
+
 
 #endif /* fz.h  */

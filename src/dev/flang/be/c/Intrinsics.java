@@ -835,24 +835,6 @@ public class Intrinsics extends ANY
       return CExpr.call("fzE_thread_join", new List<>(A0));
     });
 
-    put("fuzion.std.date_time", (c,cl,outer,in) ->
-      {
-        var rawTime = new CIdent("rawtime");
-        var ptm = new CIdent("ptm");
-
-        return CStmnt.seq(
-            CStmnt.decl("time_t", rawTime),
-            CExpr.call("time", new List<>(rawTime.adrOf())),
-            CStmnt.decl("struct tm *", ptm, CExpr.call("gmtime", new List<>(rawTime.adrOf()))),
-            A0.castTo("fzT_1i32 *").index(0).assign(ptm.deref().field(new CIdent("tm_year")).add(CExpr.int32const(1900))),
-            A0.castTo("fzT_1i32 *").index(1).assign(ptm.deref().field(new CIdent("tm_yday")).add(CExpr.int32const(1))),
-            A0.castTo("fzT_1i32 *").index(2).assign(ptm.deref().field(new CIdent("tm_hour"))),
-            A0.castTo("fzT_1i32 *").index(3).assign(ptm.deref().field(new CIdent("tm_min"))),
-            A0.castTo("fzT_1i32 *").index(4).assign(ptm.deref().field(new CIdent("tm_sec"))),
-            A0.castTo("fzT_1i32 *").index(5).assign(CExpr.int32const(0)));
-      });
-
-
     put("fuzion.sys.net.bind0",    (c,cl,outer,in) ->
       CExpr.call("fzE_bind", new List<CExpr>(
         A0.castTo("int"),       // family

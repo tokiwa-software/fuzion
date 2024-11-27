@@ -224,6 +224,7 @@ public class Names extends ANY implements ClassFileConstants
   static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT = new ClassType("java/lang/foreign/MemoryLayout");
   static final ClassType CT_JAVA_LANG_INVOKE_METHODHANDLE = new ClassType(Names.JAVA_LANG_INVOKE_METHODHANDLE);
   static final ClassType CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR = new ClassType(Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR);
+  static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT = new ClassType("java/lang/foreign/MemorySegment");
 
 
 

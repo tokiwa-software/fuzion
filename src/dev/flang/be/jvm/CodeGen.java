@@ -572,17 +572,28 @@ class CodeGen
         break;
       case Native   :
         {
-          var invokeDescr = "(" +  args.stream().map(arg -> arg.type().descriptor()).collect(Collectors.joining()) + ")" + _types.javaType(rt).descriptor();
-          Expr call =
+          var invokeDescr = "("
+            + args.stream()
+                .map(arg -> arg.type().isPrimitive()
+                              ? arg.type().descriptor()
+                              : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor())
+                .collect(Collectors.joining())
+            + ")"
+            + _types.javaType(rt).descriptor();
+
+          var localSlotsOfMemorySegments = new List<Integer>();
+          Expr memoryHandlerInvoke =
             Expr.getstatic(_names.javaClass(cc),
                            Names.METHOD_HANDLE_FIELD_NAME,
-                           Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                     // MethodHandle
-                .andThen(argsToStack(args))                                                    // MethodHandle, args...
+                           Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                               // MethodHandle
+                .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments)) // MethodHandle, args...
                 .andThen(Expr.invokeVirtual(
-                  Names.JAVA_LANG_INVOKE_METHODHANDLE, "invoke",
+                  Names.JAVA_LANG_INVOKE_METHODHANDLE,
+                  "invoke",
                   invokeDescr,
-                  _types.javaType(rt)));                                                       // rt
-          res = makePair(call, rt);
+                  _types.javaType(rt)))                                                           // rt
+                .andThen(copyMemorySegmentsToArrays(args, localSlotsOfMemorySegments));           // rt
+          res = makePair(memoryHandlerInvoke, rt);
           break;
         }
       case Intrinsic:
@@ -656,23 +667,68 @@ class CodeGen
     return res;
   }
 
+
   /**
-   * Put all args in the list onto the stack.
-   *
-   * @param args
-   * @return
+   * invoke memorySegment2Obj for any of the args that are not primitives
    */
-  private Expr argsToStack(List<Expr> args)
+  private Expr copyMemorySegmentsToArrays(List<Expr> args, List<Integer> slotsOfMemorySegments)
+  {
+    var result = Expr.UNIT;
+    var slot = 0;
+    for (int i = 0; i < args.size(); i++)
+      {
+        if (!args.get(i).type().isPrimitive())
+          {
+            result = result
+                .andThen(args.get(i))
+                .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
+                .andThen(Expr.invokeStatic(
+                  Names.RUNTIME_CLASS,
+                  "memorySegment2Obj",
+                  "(" + Names.JAVA_LANG_OBJECT.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")V",
+                  PrimitiveType.type_void));
+            slot++;
+          }
+      }
+
+    if (CHECKS) check
+      (slot == slotsOfMemorySegments.size());
+    return result;
+  }
+
+
+  /**
+   * invoke obj2MemorySegment for any of the args that are not primitives
+   * the created MemorySegments are stored in locals and
+   * the slot index is added to the slots list.
+   */
+  private Expr convertArgumentsToMemorySegments(int si, List<Expr> args, List<Integer> slots)
   {
     var result = Expr.UNIT;
     for (int i = 0; i < args.size(); i++)
       {
-        result = result
-          .andThen(args.get(i));
+        if (args.get(i).type().isPrimitive())
+          {
+            result = result
+              .andThen(args.get(i));
+          }
+        else
+          {
+            var slot = _jvm.allocLocal(si, 1);
+            slots.addLast(slot);
+            result = result
+                .andThen(args.get(i))
+                .andThen(Expr.invokeStatic(
+                  Names.RUNTIME_CLASS,
+                  "obj2MemorySegment",
+                  "(" + Names.JAVA_LANG_OBJECT.descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
+                  Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
+                .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
+                .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+          }
       }
     return result;
   }
-
 
 
   /**

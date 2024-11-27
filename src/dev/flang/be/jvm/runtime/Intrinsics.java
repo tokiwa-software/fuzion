@@ -45,11 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -281,20 +277,6 @@ public class Intrinsics extends ANY
   public static void fuzion_std_exit (int code)
   {
     System.exit(code);
-  }
-
-  public static void fuzion_std_date_time(Object data)
-  {
-    int[] arg0 = (int[]) data;
-    var date = new Date();
-    var calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-    calendar.setTime(date);
-    arg0[0] = calendar.get(Calendar.YEAR);
-    arg0[1] = calendar.get(Calendar.DAY_OF_YEAR);
-    arg0[2] = calendar.get(Calendar.HOUR_OF_DAY);
-    arg0[3] = calendar.get(Calendar.MINUTE);
-    arg0[4] = calendar.get(Calendar.SECOND);
-    arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
   }
 
   public static int fuzion_sys_net_bind0(int family, int socketType, int protocol, Object host0, Object port0, Object res)

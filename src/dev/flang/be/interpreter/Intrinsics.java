@@ -29,7 +29,6 @@ package dev.flang.be.interpreter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
 import java.net.BindException;
@@ -47,13 +46,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -1370,20 +1365,6 @@ public class Intrinsics extends ANY
     put("f64.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
     put("f64.type.min_positive" , (executor, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
     put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
-    put("fuzion.std.date_time", (executor, innerClazz) -> args ->
-      {
-        Date date = new Date();
-        Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        calendar.setTime(date);
-        var arg0 = (int[])args.get(1).arrayData()._array;
-        arg0[0] = calendar.get(Calendar.YEAR);
-        arg0[1] = calendar.get(Calendar.DAY_OF_YEAR);
-        arg0[2] = calendar.get(Calendar.HOUR_OF_DAY);
-        arg0[3] = calendar.get(Calendar.MINUTE);
-        arg0[4] = calendar.get(Calendar.SECOND);
-        arg0[5] = calendar.get(Calendar.MILLISECOND) * 1000;
-        return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
-      });
     put("effect.type.abort0"      ,
         "effect.type.default0"    ,
         "effect.type.instate0"    ,
