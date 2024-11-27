@@ -1881,11 +1881,10 @@ class Clazz extends ANY implements Comparable<Clazz>
    * parent. E.g., for `i32` that inherits from `num.wrap_around` the result of
    * `getOuter(num.wrap_around)` will be the result clazz of `num`, while
    * `getOuter(i32)` will be `universe`.
-   *
-   * @param p a feature that is either equal to this or a direct parent of x.
    */
-  Clazz getOuter(AbstractFeature p)
+  Clazz getOuter()
   {
+    var p = feature();
     var res =
       p.hasOuterRef()        ? /* we either inherit from p as in
                                 *
@@ -1900,7 +1899,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       p.outer().isUniverse() ? _fuir.universe()
                              : /* a field or choice, so there is no inherits
                                 * call that could select a different outer:
-                                 */
+                                */
                                _outer;
 
     if (CHECKS) check
@@ -2011,7 +2010,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    var o = feature();
+    AbstractFeature o = feature();
     var oc = this;
     while (!o.isUniverse() && oc != null &&
 
@@ -2035,13 +2034,12 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             t = handDownThroughInheritsCalls(t, select, inh2);
             t = t.applyTypeParsLocally(oc._type, select);
-            o = f;
           }
         t = t.replace_this_type_by_actual_outer2(oc._type,
                                                  foundRef,
                                                  Context.NONE);
-        oc = oc.getOuter(o);
-        o = (LibraryFeature) o.outer();
+        oc = oc.getOuter();
+        o = f.outer();
       }
 
     return _fuir.type2clazz(t);
