@@ -1600,10 +1600,33 @@ public class Call extends AbstractCall
           }
         if (!calledFeature().isOuterRef())
           {
+            var declF = calledFeature().outer();
+            if (!tt.isGenericArgument() && declF != tt.feature()) //  && t.isThisType())
+              {
+                var heir = tt.feature();
+                var inh = heir.findInheritanceChain(declF);
+                if (inh == null)
+                  {
+                    // NYI: strange, happens in list.fz when wrapping Lazy in a Lazy, need to check!
+                    if (false)
+                      {
+                        System.out.println("target is "+target().getClass()+" trgt: "+target()+" "+tt.feature().isOuterRef());
+                        System.out.println("target is "+target().getClass()+" call: "+this);
+                        System.out.println("Calling "+calledFeature().qualifiedName()+" no inh from "+declF.qualifiedName()+" -> "+tt.feature().qualifiedName()+" in "+pos().show());
+                      }
+                  }
+                else
+                for (AbstractCall c : inh)
+                  {
+                    var parent = c.calledFeature();
+                    t = t.replace_this_type(parent, heir);
+                  }
+              }
+
             var inner = ResolvedNormalType.newType(calledFeature().selfType(),
                                               _target.type());
             var t0 = t;
-            t = t.replace_this_type_by_actual_outer(_target.type(),
+            t = t.replace_this_type_by_actual_outer(inner,
                                                     (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
                                                     context);
           }
