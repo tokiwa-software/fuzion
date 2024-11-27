@@ -1585,7 +1585,7 @@ public class Call extends AbstractCall
          *
          *   equals(T type : equatable, x, y T) => T.equality x y
          *
-         * For the call `T.equality x y`, we must replace the the formal argument type
+         * For the call `T.equality x y`, we must replace the formal argument type
          * for `a` (and `b`) by `T`.
          */
         var target = target();
@@ -1781,9 +1781,9 @@ public class Call extends AbstractCall
       { // we failed inferring all type parameters, so report errors
         for (var a : _actuals)
           {
-            if (a instanceof Call ac)
+            if (a instanceof Call)
               {
-                var t = a.type();
+                var ignore = a.type();
               }
           }
       }

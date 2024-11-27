@@ -28,6 +28,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #define _GNU_SOURCE
 
 #ifdef GC_THREADS
+#define GC_DONT_INCLUDE_WINDOWS_H
 #include <gc.h>
 #endif
 

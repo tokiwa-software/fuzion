@@ -320,7 +320,6 @@ public abstract class IR extends ANY
       }
     else if (e instanceof Universe)
       {
-        var un = (Universe) e;
       }
     else
       {

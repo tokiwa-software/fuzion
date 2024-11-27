@@ -43,6 +43,8 @@ private:public array2(
     safety: length0 *? length1 >=? 0
 is
 
+  internal_array.freeze
+
   # indices range in first dimension
   #
   public indices0 => 0..length0-1

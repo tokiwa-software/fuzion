@@ -180,9 +180,8 @@ hw25 is
         */
 
         toStack(code, p.target());
-        var pf = p.calledFeature();
         /* NYI: initialize outer ref
-
+        var pf = p.calledFeature();
         var or = cc._inner.get(pf.outerRef_);
         if (or != null && !or.resultClazz().isUnitType())
           {

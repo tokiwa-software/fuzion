@@ -56,7 +56,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -353,15 +352,6 @@ public class Intrinsics extends ANY
             {
               return  Interpreter.value(executor.options().getBackendArgs().get(i - 1));
             }
-        });
-    put("fuzion.sys.fileio.flush"  , (executor, innerClazz) -> args ->
-        {
-          var s = _openStreams_.get(args.get(1).i64Value());
-          if (s instanceof PrintStream ps)
-            {
-              ps.flush();
-            }
-          return new i32Value(0);
         });
 
     put("fuzion.sys.fatal_fault0", (executor, innerClazz) -> args ->
@@ -748,7 +738,6 @@ public class Intrinsics extends ANY
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
           var statique = in.equals("fuzion.java.set_static_field0");
-          int resultClazz = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return args ->
             {
               Instance clazzOrThizI = (Instance) args.get(1);
@@ -972,7 +961,6 @@ public class Intrinsics extends ANY
 
     putUnsafe("fuzion.sys.net.bind0"    , (executor, innerClazz) -> args -> {
       var family = args.get(1).i32Value();
-      var socketType = args.get(2).i32Value();
       var protocol = args.get(3).i32Value();
       var host = utf8ByteArrayDataToString(args.get(4));
       var port = utf8ByteArrayDataToString(args.get(5));
@@ -1028,7 +1016,7 @@ public class Intrinsics extends ANY
               ((long[])args.get(2).arrayData()._array)[0] = _openStreams_.add(socket);
               return new boolValue(true);
             }
-          else if(asc instanceof DatagramChannel dc)
+          else if(asc instanceof DatagramChannel)
             {
               ((long[])args.get(2).arrayData()._array)[0] = args.get(1).i64Value();
               return new boolValue(true);
@@ -1043,7 +1031,6 @@ public class Intrinsics extends ANY
 
     putUnsafe("fuzion.sys.net.connect0" , (executor, innerClazz) -> args -> {
       var family = args.get(1).i32Value();
-      var socketType = args.get(2).i32Value();
       var protocol = args.get(3).i32Value();
       var host = utf8ByteArrayDataToString(args.get(4));
       var port = utf8ByteArrayDataToString(args.get(5));
@@ -1603,7 +1590,6 @@ public class Intrinsics extends ANY
     return (args) ->
       {
         var fuir = executor.fuir();
-        var m   = args.get(0);
         var in  = fuir.clazzOriginalName(innerClazz);
         int ecl = fuir.effectTypeFromInstrinsic(innerClazz);
         var ev  = args.size() > 1 ? args.get(1) : null;

@@ -2164,7 +2164,7 @@ A ((Choice)) declaration must not contain a result type.
 
     // A call to generics() has the side effects of setting _generics,
     // _arguments and _typeArguments
-    var unused = generics();
+    var ignore = generics();
 
     // Now we patch the new type parameter ta into _arguments, _typeArguments
     // and _generics:

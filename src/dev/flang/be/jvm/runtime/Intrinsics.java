@@ -366,7 +366,7 @@ public class Intrinsics extends ANY
             result[0] = Runtime._openStreams_.add(socket);
             return true;
           }
-        else if(asc instanceof DatagramChannel dc)
+        else if(asc instanceof DatagramChannel)
           {
             result[0] = sockfd;
             return true;
@@ -549,17 +549,6 @@ public class Intrinsics extends ANY
       {
         return -1;
       }
-  }
-
-  public static int fuzion_sys_fileio_flush(long fd)
-  {
-    Runtime.unsafeIntrinsic();
-    var s = Runtime._openStreams_.get(fd);
-    if (s instanceof PrintStream ps)
-      {
-        ps.flush();
-      }
-    return 0;
   }
 
   public static int fuzion_sys_fileio_read(long fd, Object d, int l)

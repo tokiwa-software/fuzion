@@ -203,7 +203,7 @@ public abstract class AbstractCall extends Expr
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
         var git = cpc._generics.iterator();
-        for (var atp : cpc.calledFeature().typeArguments())
+        for (var ignore : cpc.calledFeature().typeArguments())
           {
             typeParameters.add(git.hasNext() ? git.next() : Types.t_UNDEFINED);
           }
@@ -238,7 +238,7 @@ public abstract class AbstractCall extends Expr
       ? new Universe()
       : (target() instanceof AbstractCall ac && !ac.isCallToOuterRef())
       ? ac.typeCall(p, res, that)
-      : o.typeCall(p, new List<>(o.selfType()), res, that);
+      : o.typeCall(p, new List<>(o.selfType(), o.generics().asActuals()), res, that);
 
     var tf = calledFeature().cotype(res);
 

@@ -44,6 +44,8 @@ private:public array3(
     safety: length0 *? length1 *? length2 >=? 0
 is
 
+  internal_array.freeze
+
 
   # indices range in first dimension
   #

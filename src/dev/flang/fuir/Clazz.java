@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
@@ -253,6 +256,16 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Cached result values of `asString(boolean)`
    */
   String _asStringHuman, _asString;
+
+
+  /**
+   * If this creates a type that depends on a `this` type of an outer ref clazz,
+   * this will be set to code calling AstErrors.illegalOuterRefTypeInCall. If
+   * this clazz is the result clazz in a call, this error will be produced.
+   *
+   * See #4273 and rests/reg_issue4273 for example code that needs this.
+   */
+  Consumer<AbstractCall> _showErrorIfCallResult_ = null;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -726,7 +739,6 @@ class Clazz extends ANY implements Comparable<Clazz>
         _isUnitType = YesNo.no;
 
         res = YesNo.yes;
-        var os = _inner.size();
 
         // NOTE: We cannot use `for (var i : _inner)` since `resultClazz` may
         // add inner clazzes even if lookupDone() is set.
@@ -1705,12 +1717,18 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
+            var err = new List<Consumer<AbstractCall>>();
             var ft = f.resultType();
-            result = handDown(ft, _select, new List<>());
+            result = handDown(ft, _select, new List<>(),
+                              (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, ft, from, to)); });
             if (result.feature().isCotype())
               {
                 var ac = handDown(result._type.generics().get(0), new List<>());
                 result = ac.typeClazz();
+              }
+            if (err.size() > 0)
+              {
+                result._showErrorIfCallResult_ = err.get(0);
               }
           }
         _resultClazz = result;
@@ -1964,7 +1982,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param pos a source code position, used to report errors.
    */
-  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh)
+  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh,  BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -2002,7 +2020,9 @@ class Clazz extends ANY implements Comparable<Clazz>
                 o = f;
               }
           }
-        t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
+        t1 = t1.replace_this_type_by_actual_outer2(oc._type,
+                                                   foundRef,
+                                                   Context.NONE);
         oc = oc.getOuter(o);
         o = (LibraryFeature) o.outer();
       }
@@ -2022,7 +2042,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        !t.isOpenGeneric());
 
-    return handDown(t, -1, inh);
+    return handDown(t, -1, inh, null);
   }
 
 
