@@ -1705,8 +1705,27 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
+            var inh = new List<AbstractCall>();
             var ft = f.resultType();
-            result = handDown(ft, _select, new List<>());
+            var oc = _outer;
+            var ff = f.outer();
+            while (oc != null && ff != null && oc.feature() == ff)
+              {
+                oc = oc._outer;
+                ff = ff.outer();
+              }
+            if (CHECKS) check
+              (Errors.any() || (oc == null) == (ff == null));
+            if (oc != null)
+              {
+                var heir = oc.feature();
+                for (AbstractCall c : heir.findInheritanceChain(ff))
+                  {
+                    var parent = c.calledFeature();
+                    ft = ft.replace_this_type(parent, heir);
+                  }
+              }
+            result = handDown(ft, _select, inh);
             if (result.feature().isCotype())
               {
                 var ac = handDown(result._type.generics().get(0), new List<>());
