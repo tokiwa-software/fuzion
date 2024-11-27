@@ -1804,35 +1804,6 @@ public class DFA extends ANY
           return cl._dfa.newSysArray(NumericValue.create(cl._dfa, c_u8), c_u8); // NYI: length wrong, get from arg
         });
     put("fuzion.sys.fileio.munmap"       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.fileio.mapped_buffer_get", cl ->
-        {
-          var array = cl._args.get(0).value();
-          var index = cl._args.get(1).value();
-          if (array instanceof SysArray sa)
-            {
-              return sa.get(index);
-            }
-          else
-            {
-              throw new Error("intrinsic fuzion.sys.internal_array.gel: Expected class SysArray, found "+array.getClass()+" "+array);
-            }
-        });
-    put("fuzion.sys.fileio.mapped_buffer_set", cl ->
-        {
-          var array = cl._args.get(0).value();
-          var index = cl._args.get(1).value();
-          var value = cl._args.get(2).value();
-          if (array instanceof SysArray sa)
-            {
-              sa.setel(index, value);
-              return Value.UNIT;
-            }
-          else
-            {
-              throw new Error("intrinsic fuzion.sys.internal_array.setel: Expected class SysArray, found "+array.getClass()+" "+array);
-            }
-        });
-
     put("fuzion.sys.fatal_fault0"        , cl-> null                                                              );
     put("fuzion.sys.stdin.stdin0"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.out.stdout"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -2069,7 +2040,7 @@ public class DFA extends ANY
           var ec = cl._dfa._fuir.clazzActualGeneric(oc, 0);
           return cl._dfa.newSysArray(null, ec); // NYI: get length from args
         });
-    put("fuzion.sys.internal_array.setel", cl ->
+    put("fuzion.sys.setel", cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();
@@ -2081,10 +2052,10 @@ public class DFA extends ANY
             }
           else
             {
-              throw new Error("intrinsic fuzion.sys.internal_array.setel: Expected class SysArray, found "+array.getClass()+" "+array);
+              throw new Error("intrinsic fuzion.sys.setel: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.internal_array.get"  , cl ->
+    put("fuzion.sys.getel"  , cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();

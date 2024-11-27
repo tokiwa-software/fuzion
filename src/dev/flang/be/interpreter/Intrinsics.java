@@ -690,21 +690,6 @@ public class Intrinsics extends ANY
           _openStreams_.remove(args.get(1).i64Value());
           return new i64Value(0);
         });
-    put("fuzion.sys.fileio.mapped_buffer_get", (executor, innerClazz) -> args ->
-        {
-          return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
-                                              executor.fuir(),
-                                              /* type  */ executor.fuir().clazz(FUIR.SpecialClazzes.c_u8));
-        });
-    put("fuzion.sys.fileio.mapped_buffer_set", (executor, innerClazz) -> args ->
-        {
-          ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
-                                       /* value */ args.get(3),
-                                       executor.fuir(),
-                                       /* type  */ executor.fuir().clazz(FUIR.SpecialClazzes.c_u8));
-          return Value.EMPTY_VALUE;
-        });
-
     put("fuzion.std.exit", (executor, innerClazz) -> args ->
         {
           int rc = args.get(1).i32Value();
@@ -886,19 +871,17 @@ public class Intrinsics extends ANY
                                  executor.fuir(),
                                  /* type */ et);
         });
-    put("fuzion.sys.internal_array.get", (executor, innerClazz) -> args ->
+    put("fuzion.sys.getel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
                                    executor.fuir(),
                                    /* type  */ et);
         });
-    put("fuzion.sys.internal_array.setel", (executor, innerClazz) -> args ->
+    put("fuzion.sys.setel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),

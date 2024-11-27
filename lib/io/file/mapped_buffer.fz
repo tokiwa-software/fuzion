@@ -40,7 +40,8 @@ module:public mapped_buffer
   public redef index [ ] (i i64) u8
   =>
     replace
-    fuzion.sys.fileio.mapped_buffer_get memory i
+    # NYI: UNDER DEVELOPMENT: as_i32 ugly, change array index
+    fuzion.sys.getel u8 memory i.as_i32
 
 
   # set byte at given index i to given value o
@@ -48,7 +49,8 @@ module:public mapped_buffer
   public redef set [ ] (i i64, o u8) unit
   =>
     replace
-    fuzion.sys.fileio.mapped_buffer_set memory i o
+    # NYI: UNDER DEVELOPMENT: as_i32 ugly, change array index
+    fuzion.sys.setel u8 memory i.as_i32 o
 
 
   # cleanup

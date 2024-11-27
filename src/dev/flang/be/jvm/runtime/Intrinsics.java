@@ -820,17 +820,6 @@ public class Intrinsics extends ANY
     return 0;
   }
 
-  public static byte fuzion_sys_fileio_mapped_buffer_get(Object buf, long i)
-  {
-    Runtime.unsafeIntrinsic();
-    return ((ByteBuffer)buf).get((int) i);
-  }
-  public static void fuzion_sys_fileio_mapped_buffer_set(Object buf, long i, byte b)
-  {
-    Runtime.unsafeIntrinsic();
-    ((ByteBuffer)buf).put((int) i, b);
-  }
-
   public static void fuzion_sys_fileio_open_dir(Object s, Object res)
   {
     Runtime.unsafeIntrinsic();
