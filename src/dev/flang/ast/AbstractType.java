@@ -1428,7 +1428,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return the actual type, i.e.`list a` or `list b` in the example above.
    */
   public AbstractType replace_this_type_by_actual_outer(AbstractType tt,
-                                                        BiConsumer<AbstractType, AbstractType> foundRef, Context context)
+                                                        BiConsumer<AbstractType, AbstractType> foundRef,
+                                                        Context context)
   {
     var result = this;
     do
