@@ -32,6 +32,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
+
+static_assert(sizeof(int) == 4, "implementation restriction, int must be 4 bytes");
+
 
 void * fzE_malloc_safe(size_t size);
 
