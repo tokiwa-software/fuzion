@@ -1536,9 +1536,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir)
   {
-    return isThisType() && feature() == parent
-      ? heir.thisType()
-      : applyToGenericsAndOuter(g -> g.replace_this_type(parent, heir));
+    return replace_this_type(parent, heir, null);
+  }
+
+  public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir, BiConsumer<AbstractType, AbstractType> foundRef)
+  {
+    if (isThisType() && feature() == parent)
+      {
+        var tt = heir.thisType();
+        if (foundRef != null && tt.feature().isRef())
+          {
+            foundRef.accept(this, tt);
+          }
+        return tt;
+      }
+    else
+      {
+        return applyToGenericsAndOuter(g -> g.replace_this_type(parent, heir, foundRef));
+      }
   }
 
 

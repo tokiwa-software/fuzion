@@ -1728,17 +1728,19 @@ class Clazz extends ANY implements Comparable<Clazz>
               }
             if (CHECKS) check
               (Errors.any() || (oc == null) == (ff == null));
+            var err = new List<Consumer<AbstractCall>>();
+            var fft = ft;
             if (oc != null)
               {
                 var heir = oc.feature();
-                for (AbstractCall c : heir.findInheritanceChain(ff))
+                for (AbstractCall ic : heir.findInheritanceChain(ff))
                   {
-                    var parent = c.calledFeature();
-                    ft = ft.replace_this_type(parent, heir);
+                    var parent = ic.calledFeature();
+                    var ft0 = ft;
+                    ft = ft.replace_this_type(parent, heir,
+                                              (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, fft, from, to)); });
                   }
               }
-            var err = new List<Consumer<AbstractCall>>();
-            var fft = ft;
             result = handDown(ft, _select, new List<>(),
                               (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, fft, from, to)); });
             if (result.feature().isCotype())
