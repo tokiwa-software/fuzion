@@ -785,15 +785,11 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (cycle != null && Errors.count() <= FuirErrors.count())
       {
         StringBuilder cycleString = new StringBuilder();
-        var tp = _type.declarationPos();
-        for (SourcePosition p : cycle)
+        for (var s: cycle.reversed())
           {
-            if (!p.equals(tp))
-              {
-                cycleString.append(p.show()).append("\n");
-              }
+            cycleString.append(s).append("\n");
           }
-        FuirErrors.error(tp,
+        FuirErrors.error(_type.declarationPos(),
                         "Cyclic field nesting is not permitted",
                         "Cyclic value field nesting would result in infinitely large objects.\n" +
                         "Cycle of nesting found during clazz layout:\n" +
@@ -810,14 +806,14 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return null in case of success, a list of source code positions that shows
    * the recursively nested value types otherwise.
    */
-  private TreeSet<SourcePosition> layout()
+  private List<String> layout()
   {
-    TreeSet<SourcePosition> result = null;
+    List<String> result = null;
     switch (_layouting)
       {
       case During:
-        result = new TreeSet<>();
-        result.add(this.feature().pos());
+        result = new List<>();
+        result.add("Requires layout of "+ Errors.sqn(this.toString()) + ": " + this.feature().pos().show());
         break;
       case Before:
         {
@@ -831,7 +827,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                       result = c.layout();
                       if (result != null)
                         {
-                          result.add(c.feature().pos());
+                          result.add("Choice variant " + Errors.sqn(c.toString()) + ": " + c.feature().pos().show());
                         }
                     }
                 }
@@ -841,6 +837,10 @@ class Clazz extends ANY implements Comparable<Clazz>
               if (result == null && !fc.feature().isOuterRef())
                 {
                   result = layoutFieldType(fc);
+                  if (result != null)
+                    {
+                      result.add("Layout " + Errors.sqn(this.toString()) + ": " + fc.feature().pos().show());
+                    }
                 }
             }
           _layouting = LayoutStatus.After;
@@ -856,9 +856,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param field to be added to this.
    */
-  private TreeSet<SourcePosition> layoutFieldType(Clazz field)
+  private List<String> layoutFieldType(Clazz field)
   {
-    TreeSet<SourcePosition> result = null;
+    List<String> result = null;
     var fieldClazz = field.resultClazz();
     if (!fieldClazz.isRef() &&
         !fieldClazz.feature().isBuiltInPrimitive() &&
@@ -867,7 +867,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         result = fieldClazz.layout();
         if (result != null)
           {
-            result.add(field.feature().pos());
+            result.add("Field: " + Errors.sqn(field.toString()) + " of type " + Errors.sqn(fieldClazz.toString())+": " + field.feature().pos().show());
           }
       }
     return result;
