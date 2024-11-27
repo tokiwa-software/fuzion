@@ -739,7 +739,6 @@ class Clazz extends ANY implements Comparable<Clazz>
         _isUnitType = YesNo.no;
 
         res = YesNo.yes;
-        var os = _inner.size();
 
         // NOTE: We cannot use `for (var i : _inner)` since `resultClazz` may
         // add inner clazzes even if lookupDone() is set.

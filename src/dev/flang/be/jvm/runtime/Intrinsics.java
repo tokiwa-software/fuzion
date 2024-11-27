@@ -366,7 +366,7 @@ public class Intrinsics extends ANY
             result[0] = Runtime._openStreams_.add(socket);
             return true;
           }
-        else if(asc instanceof DatagramChannel dc)
+        else if(asc instanceof DatagramChannel)
           {
             result[0] = sockfd;
             return true;

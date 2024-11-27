@@ -1399,11 +1399,11 @@ public class AstErrors extends ANY
   static void outerFeatureNotFoundInThis(SourcePosition pos,
                                          ANY thisOrType, AbstractFeature feat, String qname, List<String> available, boolean isAmbiguous)
   {
-    if (thisOrType instanceof This t)
+    if (thisOrType instanceof This)
       {
         outerFeatureNotFoundInThisOrThisType(pos, ".this", feat, qname, available, isAmbiguous);
       }
-    else if (thisOrType instanceof AbstractType t)
+    else if (thisOrType instanceof AbstractType)
       {
         outerFeatureNotFoundInThisOrThisType(pos, ".this.type", feat, qname, available, isAmbiguous);
       }

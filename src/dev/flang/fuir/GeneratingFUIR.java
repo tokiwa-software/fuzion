@@ -489,7 +489,7 @@ public class GeneratingFUIR extends FUIR
           }
       }
 
-    else if (e instanceof AbstractCurrent c)
+    else if (e instanceof AbstractCurrent)
       {
         result = outerClazz;
       }
@@ -1495,12 +1495,11 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var cc = id2clazz(cl);
-    var vcc = id2clazz(cl).asValue();
+    var vcc = cc.asValue();
     if (vcc.isRef())
       {
         throw new Error("vcc.isRef in clazzAsValue for "+clazzAsString(cl)+" is "+vcc);
       }
-    var vc0 = id2clazz(cl).asValue()._id;
     var vc = vcc._id;
 
     if (POSTCONDITIONS) ensure
@@ -2593,7 +2592,6 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
 
-    var outer = outerClazz.feature();
     if (c.calledFeature() == null  || c.target() == null)
       {
         return error();  // previous errors, give up

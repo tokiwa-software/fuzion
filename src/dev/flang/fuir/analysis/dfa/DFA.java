@@ -1415,7 +1415,6 @@ public class DFA extends ANY
                      if (_fuir.clazzAsString(c).equals(SHOW_VALUES))
                        {
                          var i = 0;
-                         Value prev = null;
                          for (var v : _uniqueValues)
                            {
                              if (v._clazz == c)
@@ -1423,7 +1422,6 @@ public class DFA extends ANY
                                  System.out.println(i + ": " + v);
                                  i++;
                                }
-                             prev = v;
                            }
                        }
                    });
@@ -1726,7 +1724,7 @@ public class DFA extends ANY
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1).value();
-          var res = atomic.callField(cl._dfa, v, cl.site(), cl);
+          var ignore = atomic.callField(cl._dfa, v, cl.site(), cl);
 
           // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -2118,7 +2116,7 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
+          var ignore = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
