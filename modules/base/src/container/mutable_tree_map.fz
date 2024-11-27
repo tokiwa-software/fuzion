@@ -93,10 +93,15 @@ is
 
   # add the mapping k -> v as a new entry to this map
   #
+  public put(k KEY, v VAL) =>
+    _ := replace k v
+
+  # add the mapping k -> v as a new entry to this map
+  #
   # returns the value that k previously mapped to, or nil if
   # k was not yet contained in this map
   #
-  public put(k KEY, v VAL) =>
+  public replace(k KEY, v VAL) =>
     # helper feature to add a mapping to this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns any new node, or the reference to the existing
@@ -337,7 +342,7 @@ is
   #
   public type.from_key_value(k KEY, v VAL) =>
     new_map := empty
-    _ := new_map.put k v
+    new_map.put k v
 
     new_map
 
@@ -356,7 +361,7 @@ is
   public type.from_array(kvs array (tuple KEY VAL), freeze bool) =>
     new_map := empty
     kvs.for_each x->
-      _ := new_map.put x.values.0 x.values.1
+      new_map.put x.values.0 x.values.1
 
     if freeze
       new_map.freeze
