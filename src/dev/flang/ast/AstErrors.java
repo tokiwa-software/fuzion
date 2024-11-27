@@ -2354,14 +2354,14 @@ public class AstErrors extends ANY
   {
     error(pos, "open type is not followed by " + skw("..."),
           "An open type must be followed by " + skw("...") + ".\n"
-          + "To solve this add " + skw("...") + " after the highlighted error.");
+          + "To solve this, add " + skw("...") + " after the highlighted error.");
   }
 
   public static void dotsButNotOpenGeneric(SourcePosition pos, AbstractType t)
   {
     error(pos, "type is followed by " + skw("...") + " but is not an open type",
           skw("...") + " is only permitted after open type.\n"
-          + "To solve this remove " + skw("...") + " after the highlighted error.");
+          + "To solve this, remove " + skw("...") + " after the highlighted error.");
   }
 
 }

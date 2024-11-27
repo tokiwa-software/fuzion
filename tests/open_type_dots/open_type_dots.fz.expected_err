@@ -3,13 +3,13 @@
   feat(X type : String, x X...) =>
 --------------------------^
 '...' is only permitted after open type.
-To solve this remove '...' after the highlighted error.
+To solve this, remove '...' after the highlighted error.
 
 
 --CURDIR--/open_type_dots.fz:29:15: error 2: open type is not followed by '...'
     my_call(a A) R => abstract
 --------------^
 An open type must be followed by '...'.
-To solve this add '...' after the highlighted error.
+To solve this, add '...' after the highlighted error.
 
 2 errors.
