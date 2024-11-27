@@ -501,8 +501,8 @@ public class CFG extends ANY
     put("effect.type.replace0"              , (cfg, cl) -> { } );
     put("effect.type.abort0"                , (cfg, cl) -> { } );
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
-    put("effect.type.from_env"                   , (cfg, cl) -> { } );
-    put("effect.type.unsafe_from_env"            , (cfg, cl) -> { } );
+    put("effect.type.from_env"              , (cfg, cl) -> { } );
+    put("effect.type.unsafe_from_env"       , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
@@ -614,7 +614,6 @@ public class CFG extends ANY
         var ccs = _fuir.accessedClazzes(s);
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
-            var tt = ccs[cci  ];
             var cc = ccs[cci+1];
             call(cl, cc);
           }
