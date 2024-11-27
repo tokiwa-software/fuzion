@@ -1741,11 +1741,11 @@ class Clazz extends ANY implements Comparable<Clazz>
                                               (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, fft, from, to)); });
                   }
               }
-            result = handDown(ft, _select, new List<>(),
+            result = handDown(ft, _select,
                               (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, fft, from, to)); });
             if (result.feature().isCotype())
               {
-                var ac = handDown(result._type.generics().get(0), new List<>());
+                var ac = handDown(result._type.generics().get(0));
                 result = ac.typeClazz();
               }
             if (err.size() > 0)
@@ -2004,18 +2004,16 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param pos a source code position, used to report errors.
    */
-  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh,  BiConsumer<AbstractType, AbstractType> foundRef)
+  Clazz handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
-       Errors.any() || (t.isOpenGeneric() == (select >= 0)),
-       Errors.any() || inh != null);
+       Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
     var o = feature();
-    var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
     var oc = this;
-    while (!o.isUniverse() && o != null && oc != null &&
+    while (!o.isUniverse() && oc != null &&
 
            /* In case of type features, we can have the following loop
 
@@ -2035,22 +2033,36 @@ class Clazz extends ANY implements Comparable<Clazz>
           (Errors.any() || inh2 != null);
         if (inh2 != null)
           {
-            t1 = handDownThroughInheritsCalls(t1, select, inh2);
-            t1 = t1.applyTypeParsLocally(oc._type, select);
+            t = handDownThroughInheritsCalls(t, select, inh2);
+            t = t.applyTypeParsLocally(oc._type, select);
             if (inh2.size() > 0)
               {
                 o = f;
               }
           }
-        t1 = t1.replace_this_type_by_actual_outer2(oc._type,
-                                                   foundRef,
-                                                   Context.NONE);
+        t = t.replace_this_type_by_actual_outer2(oc._type,
+                                                 foundRef,
+                                                 Context.NONE);
         oc = oc.getOuter(o);
         o = (LibraryFeature) o.outer();
       }
 
-    var t2 = replaceThisType(t1);
+    var t2 = replaceThisType(t);
     return _fuir.type2clazz(t2);
+  }
+
+
+  /**
+   * Convenience version of `handDown` with `select` set to `-1`.
+   */
+  Clazz handDown(AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || t != Types.t_ERROR,
+       !t.isOpenGeneric());
+
+    return handDown(t, -1, null);
   }
 
 
@@ -2062,9 +2074,11 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
-       !t.isOpenGeneric());
+       !t.isOpenGeneric(),
+       inh != null);
 
-    return handDown(t, -1, inh, null);
+    var t1 = handDownThroughInheritsCalls(t, -1, inh);
+    return handDown(t1);
   }
 
 
