@@ -2002,9 +2002,12 @@ class Clazz extends ANY implements Comparable<Clazz>
                 o = f;
               }
           }
-        t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
         oc = oc.getOuter(o);
         o = (LibraryFeature) o.outer();
+        if (oc != null)
+          {
+            t1 = t1.replace_this_type_by_actual_outer(oc._type, Context.NONE);
+          }
       }
 
     var t2 = replaceThisType(t1);
