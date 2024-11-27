@@ -1323,7 +1323,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var inh = heir.findInheritanceChain(outer());
         if (CHECKS) check
-          (inh != null);
+          (Errors.any() || inh != null);
 
         if (inh != null)
           {
