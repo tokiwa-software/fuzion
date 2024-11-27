@@ -1877,20 +1877,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * NYI: Where is the different to _outer?
-   */
-  Clazz getOuter()
-  {
-    var p = feature();
-    var res =
-      p.hasOuterRef() ? lookup(p.outerRef()).resultClazz()
-                      : _outer;
-
-    return res;
-  }
-
-
-  /**
    * Hand down a list of types along a given inheritance chain.
    *
    * @param tl the original list of types to be handed down
@@ -2007,7 +1993,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         t = t.replace_this_type_by_actual_outer2(oc._type,
                                                  foundRef,
                                                  Context.NONE);
-        oc = oc.getOuter();
+
+        // NYI: Where is the different to just using _outer?
+        oc = f.hasOuterRef() ? oc.lookup(f.outerRef()).resultClazz()
+                             : oc._outer;
         o = f.outer();
       }
 
