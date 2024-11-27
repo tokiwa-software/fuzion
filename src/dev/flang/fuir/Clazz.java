@@ -1877,33 +1877,14 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * For a direct parent p of this clazz's feature, find the outer clazz of the
-   * parent. E.g., for `i32` that inherits from `num.wrap_around` the result of
-   * `getOuter(num.wrap_around)` will be the result clazz of `num`, while
-   * `getOuter(i32)` will be `universe`.
+   * NYI: Where is the different to _outer?
    */
   Clazz getOuter()
   {
     var p = feature();
     var res =
-      p.hasOuterRef()        ? /* we either inherit from p as in
-                                *
-                                *     x : a.b.c.p is ...
-                                *
-                                * or x = p.  So the outer of `x` with respect
-                                * to `p` is `a.b.c`, which is the result type
-                                * of `p`'s outer ref:
-                                */
-                               lookup(p.outerRef()).resultClazz() :
-      p.isUniverse() ||
-      p.outer().isUniverse() ? _fuir.universe()
-                             : /* a field or choice, so there is no inherits
-                                * call that could select a different outer:
-                                */
-                               _outer;
-
-    if (CHECKS) check
-      (Errors.any() || res != null);
+      p.hasOuterRef() ? lookup(p.outerRef()).resultClazz()
+                      : _outer;
 
     return res;
   }
@@ -2012,19 +1993,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     AbstractFeature o = feature();
     var oc = this;
-    while (!o.isUniverse() && oc != null &&
-
-           /* In case of type features, we can have the following loop
-
-                oc: (((io.#type io).out.#type io.out).default_print_handler).println o: io.Print_Handler.println
-                oc: ( (io.#type io).out.#type io.out).default_print_handler          o: io.Print_Handler
-                oc:   (io.#type io).out.#type io.out                                 o: io
-                oc:    io.#type io                                                   o: universe
-
-              here, stop at (io.#type io).out.#type vs. io:
-            */
-           !(oc.feature().isCotype() && !o.isCotype())
-           )
+    while (!o.isUniverse() && oc != null)
       {
         var f = oc.feature();
         var inh2 = f.tryFindInheritanceChain(o);
