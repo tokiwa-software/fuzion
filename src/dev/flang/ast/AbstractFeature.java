@@ -813,17 +813,30 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
   {
+    return typeCall(p, typeParameters, res, that, null);
+  }
+  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
+  {
     var o = outer();
     var oc = o == null || o.isUniverse()
       ? new Universe()
+      : (target instanceof AbstractCall ac && !ac.isCallToOuterRef())
+      ? ac.typeCall(p, res, that)
       : outer().typeCall(p, new List<>(o.selfType(), o.generics().asActuals()), res, that);
     var tf = cotype(res);
     var typeParameters2 = new List<AbstractType>();
-    for (var tp : typeParameters)
+    if (target == null)
       {
-        typeParameters2.add(typeParameters2.size() == 0
-                              ? tp
-                              : that.rebaseTypeForCotype(tp));
+        for (var tp : typeParameters)
+          {
+            typeParameters2.add(typeParameters2.isEmpty()
+                                  ? tp
+                                  : that.rebaseTypeForCotype(tp));
+          }
+      }
+    else
+      {
+        typeParameters2 = typeParameters;
       }
     return new Call(p,
                     oc,

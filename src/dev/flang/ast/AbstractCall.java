@@ -233,21 +233,7 @@ public abstract class AbstractCall extends Expr
           }
       }
 
-    var o = calledFeature().outer();
-    Expr oc = o == null || o.isUniverse()
-      ? new Universe()
-      : (target() instanceof AbstractCall ac && !ac.isCallToOuterRef())
-      ? ac.typeCall(p, res, that)
-      : o.typeCall(p, new List<>(o.selfType(), o.generics().asActuals()), res, that);
-
-    var tf = calledFeature().cotype(res);
-
-    return new Call(p,
-                    oc,
-                    typeParameters,
-                    Expr.NO_EXPRS,
-                    tf,
-                    tf.selfType());
+    return calledFeature().typeCall(p, typeParameters, res, that, target());
   }
 
 
