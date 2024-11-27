@@ -989,6 +989,6 @@ int64_t fzE_file_position(void * file)
   return ftell((FILE*)file);
 }
 
-void * fzE_stdin() { return stdin; }
-void * fzE_stdout() { return stdout; }
-void * fzE_stderr() { return stderr; }
+void * fzE_file_stdin() { return stdin; }
+void * fzE_file_stdout() { return stdout; }
+void * fzE_file_stderr() { return stderr; }
