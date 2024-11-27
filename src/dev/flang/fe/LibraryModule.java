@@ -991,7 +991,7 @@ Feature
   {
     return featureKindEnum(at) == AbstractFeature.Kind.Routine;
   }
-  boolean featureIsThisRef(int at)
+  boolean featureIsRef(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;

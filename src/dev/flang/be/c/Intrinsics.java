@@ -36,7 +36,6 @@ import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.Pair;
 import dev.flang.util.Version;
 
 
@@ -812,15 +811,6 @@ public class Intrinsics extends ANY
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());
         });
-     put("fuzion.sys.misc.unique_id",(c,cl,outer,in) ->
-        {
-          var last_id = new CIdent("last_id");
-          return CStmnt.seq(CStmnt.decl("static",
-                                        "atomic_uint_least64_t",
-                                        last_id,
-                                        CExpr.uint64const(0)),
-                            last_id.incr().ret());
-        });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
@@ -847,9 +837,6 @@ public class Intrinsics extends ANY
     {
       return CExpr.call("fzE_thread_join", new List<>(A0));
     });
-    put("fuzion.std.nano_time", (c,cl,outer,in) -> CExpr.call("fzE_nanotime", new List<>()).ret());
-    put("fuzion.std.nano_sleep", (c,cl,outer,in) -> CExpr.call("fzE_nanosleep", new List<>(A0)));
-
 
     put("fuzion.std.date_time", (c,cl,outer,in) ->
       {

@@ -1848,7 +1848,7 @@ bracketTerm : brblock
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return block();
+      case t_lbrace  : return block(true);
       case t_lparen  : return klammer();
       case t_lbracket: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -2538,11 +2538,12 @@ block       : exprs
 brblock     : BRACEL exprs BRACER
             ;
    */
-  Block block()
+  Block block() { return block(false); }
+  Block block(boolean newScope)
   {
     var p0 = lastTokenEndPos();
     var p1 = tokenPos();
-    var b = optionalBrackets(BRACES, "block", () -> new Block(exprs()));
+    var b = optionalBrackets(BRACES, "block", () -> new Block(newScope, exprs()));
     var p2 = lastTokenEndPos();
     b.setSourceRange(sourceRange(p0, p1, p2));
     return b;

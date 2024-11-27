@@ -1467,7 +1467,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  private AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
+  public AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
     var att = tt.selfOrConstraint(context);
@@ -1672,7 +1672,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var tf = tp.outer();
         if (tf.isCotype() && tp == tf.arguments().get(0))
           { // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
-            result = tf.cotypeOrigin().selfType().asThis();
+            result = result.isRef()
+              ? tf.cotypeOrigin().selfType().asThis().asRef()
+              : tf.cotypeOrigin().selfType().asThis();
           }
       }
     else

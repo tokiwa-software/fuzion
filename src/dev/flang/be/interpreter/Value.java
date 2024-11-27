@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import dev.flang.util.Errors;
+
 /**
  * Value <description>
  *
@@ -308,6 +310,18 @@ public abstract class Value extends FUIRContext
   public int tag()
   {
     throw new Error("value "+ this + " of class " + getClass() + " is not a tag");
+  }
+
+
+  /*
+   * convert Interpreter values to:
+   * Long, Double, Integer, etc.
+   */
+  protected Object toNative()
+  {
+    Errors.fatal("NYI: toNative " + this.getClass().getName());
+    System.exit(1);
+    return null;
   }
 
 }

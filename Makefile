@@ -24,7 +24,8 @@
 # -----------------------------------------------------------------------
 
 JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
-JAVA_VERSION = 21
+MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
+JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
 JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
@@ -102,6 +103,7 @@ FZ_SRC_TESTS         = $(FZ_SRC)/tests
 FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
 FZ_SRC_INCLUDE       = $(FZ_SRC)/include
 FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
+FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE) -name "*.c")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -360,24 +362,28 @@ FUZION_FILES = \
 			 $(BUILD_DIR)/examples \
 			 $(BUILD_DIR)/include \
 			 $(BUILD_DIR)/README.md \
-			 $(BUILD_DIR)/release_notes.md
+			 $(BUILD_DIR)/release_notes.md \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 # files required for fz command with jvm backend
 FZ_JVM = \
 			 $(FZ) \
 			 $(CLASS_FILES_BE_JVM_RUNTIME) \
-			 $(MOD_BASE)
+			 $(MOD_BASE) \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 # files required for fz command with C backend
 FZ_C = \
 			 $(FZ) \
 			 $(BUILD_DIR)/include \
-			 $(MOD_BASE)
+			 $(MOD_BASE) \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 # files required for fz command with interpreter backends
 FZ_INT = \
 			 $(FZ) \
-			 $(MOD_BASE)
+			 $(MOD_BASE) \
+			 $(BUILD_DIR)/lib/libfuzion.so
 
 DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
 DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
@@ -1228,7 +1234,10 @@ run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $
 .PHONY .SILENT: run_tests_jar
 run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
-	$(JAVA) -jar HelloWorld.jar > /dev/null
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib \
+	PATH=$(PATH):$(BUILD_DIR)/lib \
+	DYLD_FALLBACK_LIBRARY_PATH=$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib \
+		$(JAVA) -jar HelloWorld.jar > /dev/null
 
 .PHONY: clean
 clean:
@@ -1362,6 +1371,25 @@ $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
 lint/pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
+
+$(BUILD_DIR)/lib/libfuzion.so: $(BUILD_DIR)/include $(FUZION_FILES_RT)
+# NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
+# NYI: a bit hacky to have so/dylib regardless of which OS.
+# NYI: -DGC_THREADS -DGC_PTHREADS
+	echo "building fuzion runtime"
+ifeq ($(OS),Windows_NT)
+	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	-DPTW32_STATIC_LIB -DGC_WIN32_PTHREADS \
+	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
+	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
+	-lMswsock -lAdvApi32 -lWs2_32 /ucrt64/bin/libgc-1.dll -lgc
+else
+	clang -Wall -Werror -O3 -shared \
+	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
+	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so \
+	-lgc
+	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
+endif
 
 
 ########

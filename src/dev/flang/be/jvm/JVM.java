@@ -29,7 +29,6 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
-import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
 
 import static dev.flang.ir.IR.NO_SITE;
@@ -607,7 +606,6 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/Runtime$2.class",
               "dev/flang/be/jvm/runtime/Runtime$3.class",
               "dev/flang/be/jvm/runtime/Runtime$4.class",
-              "dev/flang/be/jvm/runtime/Runtime$5.class",
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
               "dev/flang/util/Errors.class",

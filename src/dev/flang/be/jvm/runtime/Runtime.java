@@ -219,14 +219,6 @@ public class Runtime extends ANY
   };
 
 
-  static long _next_unique_id = 0xf0015feedbadf00dL;
-
-  static final long UNIQUE_ID_INCREMENT = 1000000000000223L; // large prime generated using https://www.browserling.com/tools/prime-numbers
-
-
-  static final Object UNIQUE_ID_LOCK = new Object() {};
-
-
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
@@ -641,29 +633,6 @@ public class Runtime extends ANY
     var instance = t._effectStack.removeLast();
     t.effect_store(id, instance);
     return res;
-  }
-
-
-  /**
-   * Helper method to implement `effect.env` expressions.  Returns the instated
-   * effect with the given id.  Causes an error in case no such effect exists.
-   *
-   * @param id the id of the effect that should be loaded.
-   *
-   * @return the instance that was instated for this id
-   *
-   * @throws Error in case no instance was instated.
-   */
-  public static AnyI effect_get(int id)
-  {
-    var t = currentThread();
-
-    var result = t.effect_load(id);
-    if (result == null)
-      {
-        throw new Error("No effect of "+id+" instated");
-      }
-    return result;
   }
 
 
@@ -1260,18 +1229,6 @@ public class Runtime extends ANY
   }
 
 
-  static long unique_id()
-  {
-    long result;
-    synchronized (UNIQUE_ID_LOCK)
-      {
-        result = _next_unique_id;
-        _next_unique_id = result + UNIQUE_ID_INCREMENT;
-      }
-    return result;
-  }
-
-
   public static byte[] args_get(int i)
   {
     return stringToUtf8ByteArray(i == 0 ? _cmd_
@@ -1430,7 +1387,7 @@ public class Runtime extends ANY
               .or(SymbolLookup.loaderLookup())
               .or(Linker.nativeLinker().defaultLookup())
               .find(str)
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol")),
+              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
             desc);
       }
     catch (Throwable e)

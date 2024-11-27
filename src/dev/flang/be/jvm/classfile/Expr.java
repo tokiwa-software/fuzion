@@ -1940,6 +1940,8 @@ public abstract class Expr extends ByteCode
           // backend does not generate redundant
           // checkcasts anymore.
           isRedundant = type().vti().compareTo(stack.peek()) == 0;
+          stack.pop();
+          stack.push(new VerificationType(type.className(), (cf)->cf.cpClass(type.className()).index()));
         }
         @Override
         public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)

@@ -25,6 +25,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #ifdef GC_THREADS
+#define GC_DONT_INCLUDE_WINDOWS_H
 #include <gc.h>
 #endif
 #include <stdio.h>
@@ -913,3 +914,13 @@ void fzE_cnd_destroy(void * cnd)
 }
 
 */
+
+
+/**
+ * get a unique id > 0
+ */
+uint64_t fzE_unique_id()
+{
+  static atomic_uint_least64_t last_id = 0;
+  return ++last_id;
+}

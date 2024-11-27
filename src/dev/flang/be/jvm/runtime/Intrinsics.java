@@ -81,8 +81,6 @@ public class Intrinsics extends ANY
   public static long    fuzion_sys_out_stdout   () { return Runtime._stdout; }
   public static long    fuzion_sys_err_stderr   () { return Runtime._stderr; }
 
-  public static long    fuzion_sys_misc_unique_id() { return Runtime.unique_id(); }
-
   public static int     i8_as_i32                   (byte   a          ) { return                 (      a); }
   public static byte    i8_cast_to_u8               (byte   a          ) { return                 (      a); }
   public static byte    i8_prefix_minusDEGREE       (byte   a          ) { return (byte)          (  -   a); }
@@ -898,17 +896,6 @@ public class Intrinsics extends ANY
     return 0;
   }
 
-  public static void fuzion_std_nano_sleep(long d)
-  {
-    try
-      {
-        TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE: d);
-      }
-    catch (InterruptedException ie)
-      {
-        throw new Error("unexpected interrupt", ie);
-      }
-  }
 
   public static boolean fuzion_sys_env_vars_has0(Object s)
   {

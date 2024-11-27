@@ -52,6 +52,11 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Set environment variables
+        run: |
+          echo "CPATH=/opt/homebrew/include:$CPATH" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH" >> $GITHUB_ENV
+
       - name: install dependencies
         run: |
           brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils
@@ -73,10 +78,7 @@ jobs:
         run: make doc
 
       - name: run tests
-        run: |
-          export CPATH=/opt/homebrew/include
-          export LIBRARY_PATH=/opt/homebrew/lib
-          make run_tests_parallel
+        run: make run_tests_parallel
 
       - name: syntax check
         run: make syntaxcheck

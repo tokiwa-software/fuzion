@@ -969,15 +969,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                      PrimitiveType.type_byte.array())));
     });
 
-    put("fuzion.std.nano_time", (jvm, si, cc, tvalue, args) -> {
-      var res =
-        tvalue.drop()
-          .andThen(Expr.invokeStatic(System.class.getName().replace(".", "/"),
-            "nanoTime",
-            methodDescriptor(System.class, "nanoTime"),
-            PrimitiveType.type_long));
-      return new Pair<>(res, Expr.UNIT);
-    });
     put("fuzion.sys.env_vars.get0", (jvm, si, cc, tvalue, args) -> {
       return jvm.constString(
         tvalue.drop()
@@ -1107,13 +1098,26 @@ public class Intrinsix extends ANY implements ClassFileConstants
       {
         var ecl = jvm._fuir.clazzResultClazz(cc); // type
         var rt = jvm._types.resultType(ecl);
+        var ftCt = new ClassType("dev/flang/be/jvm/runtime/FuzionThread");
         var val =
-          Expr.iconst(jvm.effectId(ecl))
-          .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                     Names.RUNTIME_EFFECT_GET,
-                                     Names.RUNTIME_EFFECT_GET_SIG,
-                                     Names.ANY_TYPE))
-          .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));
+          Expr.invokeStatic(Names.RUNTIME_CLASS,
+                            "currentThread",
+                            "()" + ftCt.descriptor(),
+                            ftCt)                                                                                     // FuzionThread
+          .andThen(Expr.iconst(jvm.effectId(ecl)))                                                                    // FuzionThread, int
+          .andThen(Expr.invokeVirtual(ftCt.className(), "effect_load", "(I)" + Names.ANYI_DESCR , Names.ANYI_TYPE))   // AnyI
+          .andThen(Expr.DUP)                                                                                          // AnyI, AnyI
+          .andThen(Expr.branch(O_ifnull,                                                                              // AnyI
+                       Expr.POP                                                                                       // -
+                           .andThen(Expr.new0(JAVA_LANG_ERROR.className(), Names.JAVA_LANG_ERROR) )                   // Error
+
+                           .andThen(Expr.DUP)                                                                         // Error, Error
+                           .andThen(Expr.stringconst("No effect of "+jvm._fuir.clazzAsStringHuman(ecl)+" instated.")) // Error, Error, String
+                           .andThen(Expr.invokeSpecial(JAVA_LANG_ERROR.className(),                                   // Error
+                                                       "<init>",
+                                                       "(" + Names.JAVA_LANG_STRING.descriptor() + ")V"))
+                           .andThen(Expr.THROW)))                                                                     // -
+          .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));                                   // RT
         var code = Expr.UNIT;
         return new Pair<>(val, code);
       });

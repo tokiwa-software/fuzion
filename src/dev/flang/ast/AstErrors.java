@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import dev.flang.ast.AstErrors.PreOrPost;
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.Errors;
@@ -2068,7 +2067,7 @@ public class AstErrors extends ANY
    *
    * @param to the target type
    */
-  public static void illegalOuterRefTypeInCall(Call c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
+  public static void illegalOuterRefTypeInCall(AbstractCall c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
   {
     var art = arg ? "argument type" : "result type";
     var tp = calledOrArg.resultTypePos();
@@ -2320,13 +2319,11 @@ public class AstErrors extends ANY
       {
         error(f.pos(), "Unused, non public field " + sbnf(f),
           """
-            To solve this, either
-              - use the field
-              - make it """ + " " + skw("public") +
-          """
-
-            or
-              - explicitly ignore the result """ + " " + ss("_ := …"));
+          To solve this, do either of the following
+            - use the field
+          """ +
+          ((f instanceof Feature && ((Feature)f)._scoped) ? "" : "  - set it to " + skw("public") + "\n") +
+          "  - explicitly ignore the result by using " + sbn("_") + " instead of " + sbnf(f));
         Errors.unusedFieldErrCount++;
       }
   }
@@ -2346,7 +2343,7 @@ public class AstErrors extends ANY
       "Feature " + sbnf(f) + " has an ambiguous result type " + s(f.resultType()) + ".",
       "This is because result type is a this-type and the underlying feature is a reference.\n" +
       "To solve this, either\n" +
-       "  return a values this-type\n" +
+       "  return a value this-type\n" +
        "or\n"
        + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
   }

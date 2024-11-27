@@ -157,7 +157,7 @@ public class FuzionThread extends Thread
    *
    * @param id an effect id.
    */
-  AnyI effect_load(int id)
+  public AnyI effect_load(int id)
   {
     ensure_effect_capacity(id);
     return _installedEffects.get(id);

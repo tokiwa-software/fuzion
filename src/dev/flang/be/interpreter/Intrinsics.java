@@ -56,7 +56,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -168,12 +167,6 @@ public class Intrinsics extends ANY
 
 
   /*------------------------  static variables  -------------------------*/
-
-
-  /**
-   * the last unique identifier returned by `fuzion.sys.misc.unique_id`.
-   */
-  private static AtomicLong _last_unique_id_ = new AtomicLong();
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -937,7 +930,6 @@ public class Intrinsics extends ANY
     put("fuzion.sys.env_vars.set0"  , (executor, innerClazz) -> args -> new boolValue(false));
     // unsetting env variable not supported in java
     put("fuzion.sys.env_vars.unset0", (executor, innerClazz) -> args -> new boolValue(false));
-    put("fuzion.sys.misc.unique_id",(executor, innerClazz) -> args -> new u64Value(_last_unique_id_.incrementAndGet()));
     put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
@@ -1390,20 +1382,6 @@ public class Intrinsics extends ANY
     put("f64.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
     put("f64.type.min_positive" , (executor, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
     put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
-    put("fuzion.std.nano_time"  , (executor, innerClazz) -> args -> new u64Value (System.nanoTime()));
-    put("fuzion.std.nano_sleep" , (executor, innerClazz) -> args ->
-        {
-          var d = args.get(1).u64Value();
-          try
-            {
-              TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE : d);
-            }
-          catch (InterruptedException ie)
-            {
-              throw new Error("unexpected interrupt", ie);
-            }
-          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
-        });
     put("fuzion.std.date_time", (executor, innerClazz) -> args ->
       {
         Date date = new Date();

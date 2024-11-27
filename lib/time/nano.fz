@@ -54,10 +54,10 @@ public nano (p Nano_Time_Handler) : effect is
     ref : time.Nano_Time_Handler
 
       # no guarantee can be given for precision nor resolution
-      redef read => fuzion.std.nano_time
+      redef read => fuzion.std.fzE_nanotime
 
       # no guarantee can be given for precision nor resolution
-      redef sleep(d time.duration) => fuzion.std.nano_sleep d.nanos
+      redef sleep(d time.duration) => fuzion.std.fzE_nanosleep d.nanos
 
 
   # install default effect time using default_nano_time

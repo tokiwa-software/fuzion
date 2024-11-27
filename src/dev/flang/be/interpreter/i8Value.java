@@ -118,6 +118,13 @@ public class i8Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return this.i8Value();
+  }
+
 }
 
 /* end of file */

@@ -2,19 +2,19 @@
 --CURDIR--/choice_negative.fz:137:30: error 1: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
     x bool : choice i64 bool := true  // 27. should flag an error, choice feature must not be field
 -----------------------------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/choice_negative.fz:140:25: error 2: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
     x : choice i64 bool := true  // 28. should flag an error, choice feature must not be field
 ------------------------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/choice_negative.fz:142:30: error 3: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
     x bool : choice i64 bool := any  // 29. should flag an error, choice feature must not be field
 -----------------------------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/choice_negative.fz:61:26: error 4: Repeated inheritance of choice is not permitted

@@ -2,7 +2,7 @@
 --CURDIR--/reg_issue2691_b.fz:34:9: error 1: Syntax error: expected 'is', or '=>' in routine declaration, found keyword 'else'
         else true       # causes a syntax error NYI: an indentation error would be nicer
 --------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block, implRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/reg_issue2691_b.fz:33:14: error 2: Incompatible types in branches of if expression

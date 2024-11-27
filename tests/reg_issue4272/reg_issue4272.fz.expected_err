@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue4272.fz:24:25: error 1: Could not find called feature
+ex is {{x:=42}}; say ex.x
+------------------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'ex'
+In call: 'ex.x'
+
+one error.

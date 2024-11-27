@@ -344,6 +344,10 @@ public class JavaInterface extends FUIRContext
       {
         return o instanceof Byte b ? new i8Value(b): new i8Value(((Value) o).i8Value());
       }
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_u8))
+      {
+        return o instanceof Byte b ? new u8Value(b): new u8Value(((Value) o).u8Value());
+      }
     else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16))
       {
         return o instanceof Character c ? new u16Value(c): new u16Value(((Value) o).u16Value());
@@ -352,6 +356,10 @@ public class JavaInterface extends FUIRContext
       {
         return o instanceof Short s ? new i16Value(s): new i16Value(((Value) o).i16Value());
       }
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_u32))
+      {
+        return o instanceof Integer i ? new u32Value(i): new u32Value(((Value) o).u32Value());
+      }
     else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32))
       {
         return o instanceof Integer i ? new i32Value(i): new i32Value(((Value) o).i32Value());
@@ -359,6 +367,10 @@ public class JavaInterface extends FUIRContext
     else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64))
       {
         return o instanceof Long j ? new i64Value(j): new i64Value(((Value) o).i64Value());
+      }
+    else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_u64))
+      {
+        return o instanceof Long j ? new u64Value(j): new u64Value(((Value) o).u64Value());
       }
     else if (resultClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32))
       {

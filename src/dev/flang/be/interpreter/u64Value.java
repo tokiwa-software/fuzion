@@ -116,6 +116,14 @@ public class u64Value extends Value
       }
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return u64Value();
+  }
+
+
 }
 
 /* end of file */
