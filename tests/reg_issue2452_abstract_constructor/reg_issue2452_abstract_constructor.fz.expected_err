@@ -2,18 +2,21 @@
 --CURDIR--/reg_issue2452_abstract_constructor.fz:25:8: error 1: abstract feature must not be constructor.
   a is abstract
 -------^
-A constructor feature must always be implemented. To solve this, either implement the constructor feature or change it to a function feature by replacing 'abstract' with '=>'.
+A constructor feature must always be implemented.
+To solve this, either implement the constructor feature or change it to a function feature by replacing 'abstract' with '=>'.
 
 
 --CURDIR--/reg_issue2452_abstract_constructor.fz:26:8: error 2: intrinsic feature must not be constructor.
   b is intrinsic
 -------^
-A constructor feature must always be implemented. To solve this, either implement the constructor feature or change it to a function feature by replacing 'intrinsic' with '=>'.
+A constructor feature must always be implemented.
+To solve this, either implement the constructor feature or change it to a function feature by replacing 'intrinsic' with '=>'.
 
 
 --CURDIR--/reg_issue2452_abstract_constructor.fz:27:8: error 3: native feature must not be constructor.
   c is native
 -------^
-A constructor feature must always be implemented. To solve this, either implement the constructor feature or change it to a function feature by replacing 'native' with '=>'.
+A constructor feature must always be implemented.
+To solve this, either implement the constructor feature or change it to a function feature by replacing 'native' with '=>'.
 
 3 errors.

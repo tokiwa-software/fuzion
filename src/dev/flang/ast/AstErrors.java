@@ -2209,10 +2209,10 @@ public class AstErrors extends ANY
         " or remove the return type if you want to define a constructor.");
   }
 
-  public static void unimplementetConstructor(SourcePosition pos, String keyword)
+  public static void unimplementedConstructor(SourcePosition pos, String keyword)
   {
     error(pos, keyword + " feature must not be constructor.",
-        "A constructor feature must always be implemented. " +
+        "A constructor feature must always be implemented.\n" +
         "To solve this, either implement the constructor feature or change it to a function feature by replacing " +
         skw(keyword) + " with " + skw("=>") + ".");
   }
