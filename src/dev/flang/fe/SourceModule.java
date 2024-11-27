@@ -971,8 +971,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
     if (existing != null)
       {
         // NYI: need to check that the scopes are disjunct
-        if (existing instanceof Feature ef
-            && (ef._scoped && f._scoped || visibilityPreventsConflict(f, ef)))
+        if (existing instanceof Feature ef && ef._scoped && f._scoped
+           || visibilityPreventsConflict(f, existing))
           {
             var existingFeatures = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFeatures.size());
@@ -1009,13 +1009,16 @@ A post-condition of a feature that does not redefine an inherited feature must s
   /**
    * Check if both features are fully private and
    * in different files and thus not conflicting
-   * each other.
+   * each other or if f2 is only visible inside of its module.
    */
-  private boolean visibilityPreventsConflict(Feature f1, Feature f2)
+  private boolean visibilityPreventsConflict(Feature f1, AbstractFeature f2)
   {
-    return f2.visibility().typeVisibility() == Visi.PRIV
+    var privAndDifferentFiles = f2.visibility().typeVisibility() == Visi.PRIV
          && f1.visibility().typeVisibility() == Visi.PRIV
          && !f2.pos()._sourceFile._fileName.equals(f1.pos()._sourceFile._fileName);
+    var modAndDifferentModule = f2.visibility().typeVisibility().ordinal() < Visi.PUB.ordinal()
+         && f2 instanceof LibraryFeature;
+    return privAndDifferentFiles || modAndDifferentModule;
   }
 
 

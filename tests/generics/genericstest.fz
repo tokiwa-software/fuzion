@@ -165,7 +165,7 @@ genericstest is
   opengenerics12 =>
 
     F(A type...) ref is
-      f(a A) unit => abstract
+      f(a A...) unit => abstract
 
     G ref : F i32 bool i32 is
       redef f(a0 i32, a1 bool, a2 i32) unit =>

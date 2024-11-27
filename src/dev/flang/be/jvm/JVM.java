@@ -29,7 +29,6 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
-import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
 
 import static dev.flang.ir.IR.NO_SITE;

@@ -42,10 +42,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 // NYI remove POSIX imports
 #include <fcntl.h>      // fcntl
-#include <sys/stat.h>   // mkdir
+#include <sys/stat.h>   // stat
 
 #include <winsock2.h>
 #include <windows.h>
@@ -215,7 +216,7 @@ int fzE_socket(int family, int type, int protocol){
   WSADATA wsaData;
   return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
     ? -1
-    : socket(get_family(family), get_socket_type(type), get_protocol(protocol));
+    : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
 }
 
 
@@ -225,9 +226,9 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
   ZeroMemory(&hints, sizeof(hints));
 
-  hints.ai_family = get_family(family);
-  hints.ai_socktype = get_socket_type(socktype);
-  hints.ai_protocol = get_protocol(protocol);
+  hints.ai_family = fzE_get_family(family);
+  hints.ai_socktype = fzE_get_socket_type(socktype);
+  hints.ai_protocol = fzE_get_protocol(protocol);
   hints.ai_flags = flags;
 
   return getaddrinfo(host, port, &hints, result);
@@ -318,8 +319,9 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
 int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
+    return -1;
+  } else if (peeraddr.ss_family == AF_INET) {
     fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
     return 4;
   } else if (peeraddr.ss_family == AF_INET6) {
@@ -338,8 +340,9 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
+    return 0;
+  } else if (peeraddr.ss_family == AF_INET) {
     return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
   } else if (peeraddr.ss_family == AF_INET6) {
     return ntohs(((struct sockaddr_in6 *)&peeraddr)->sin6_port);
@@ -462,13 +465,21 @@ int fzE_munmap(void * mapped_address, const int file_size){
  */
 uint64_t fzE_nanotime()
 {
-  struct timespec result;
-  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
-  {
-    fprintf(stderr,"*** clock_gettime failed\012");
-    exit(EXIT_FAILURE);
+  static LARGE_INTEGER frequency = {0};
+  if (frequency.QuadPart == 0) {
+      if (!QueryPerformanceFrequency(&frequency)) {
+          fprintf(stderr, "*** QueryPerformanceFrequency failed\n");
+          exit(EXIT_FAILURE);
+      }
   }
-  return result.tv_sec*1000000000ULL+result.tv_nsec;
+
+  LARGE_INTEGER counter;
+  if (!QueryPerformanceCounter(&counter)) {
+      fprintf(stderr, "*** QueryPerformanceCounter failed\n");
+      exit(EXIT_FAILURE);
+  }
+
+  return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
 
@@ -477,9 +488,17 @@ uint64_t fzE_nanotime()
  */
 void fzE_nanosleep(uint64_t n)
 {
-  // NYI replace with native windows
-  struct timespec req = (struct timespec){n/1000000000LL,n-n/1000000000LL*1000000000LL};
-  while (nanosleep(&req, &req));
+  uint64_t start = fzE_nanotime();
+  uint64_t end = start + n;
+
+  while (fzE_nanotime() < end) {
+      uint64_t remaining_ns = end - fzE_nanotime();
+      if (remaining_ns > 1000000ULL) {
+          Sleep((DWORD)(remaining_ns / 1000000ULL));
+      } else {
+          YieldProcessor();
+      }
+  }
 }
 
 

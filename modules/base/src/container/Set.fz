@@ -1,0 +1,148 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Set
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Set -- an abstract set of values
+#
+public Set(public E type : property.equatable) ref : Sequence E is
+
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  public redef finite trit => if size_option?? then trit.yes else trit.unknown
+
+
+  # number of entries in this set.  May be undefined, i.e., a range of
+  # floating point numbers or an infinite set.
+  #
+  public size_option option i32 => nil
+
+
+  # does this set contain the given value?
+  #
+  public redef contains (e E) bool => abstract
+
+
+  # list representation of values in this set
+  #
+  public redef as_list list E => abstract
+
+
+  # create a new Set from a sequence of elements
+  #
+  public type.new (s Sequence E) Set.this => abstract
+
+
+  # create a union of these two Sets
+  #
+  public union(other container.Set E) Set E =>
+    Set.this.new (Set.this ++ other)
+
+
+  # infix variant for Set.union
+  #
+  public infix ∪ (other container.Set E) =>
+    Set.this.union other
+
+
+  # create an intersection of these two Sets
+  #
+  public intersection(other container.Set E) Set E =>
+    Set.this.new (Set.this ++ other).filter(el -> Set.this.contains el && other.contains el)
+
+
+  # infix variant for Set.intersection
+  #
+  public infix ∩ (other container.Set E) =>
+    Set.this.intersection other
+
+
+  # this Set without all elements in other
+  #
+  public difference(other container.Set E) Set E =>
+    Set.this.new filter(el -> !other.contains el)
+
+
+  # infix variant for Set.difference
+  # Note: the operator is NOT a backslash, but the unicode character U+2216 (SET MINUS)
+  #
+  public infix ∖ (other container.Set E) =>
+    Set.this.difference other
+
+
+
+  # is this Set a subset of other?
+  # true, iff other contains all
+  # elements that this Set contains.
+  #
+  public is_subset_of(other container.Set E) =>
+    Set.this ∀ other.contains
+
+
+  # is this Set a superset of other?
+  # true, iff this Set contains all
+  # elements that other contains.
+  #
+  public is_superset_of(other container.Set E) =>
+    other ∀ contains
+
+
+
+  # add new element k to this set.
+  #
+  public add (k E) Set E =>
+    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
+
+
+  public redef as_string =>
+    if is_empty
+      "∅"
+    else
+      ("\{"
+       + (as_list.map x->x.as_string).fold(String.concat ";")
+       + "}")
+
+
+  # equality
+  #
+  # NYI: remove this, since we inherit from Sequence?
+  #
+  public fixed redef type.equality(a, b container.Set E)
+  # NYI: BUG: #3888
+  # pre else
+  #     debug: a.finite
+  #     debug: b.finite
+  =>
+    # NYI: a bit expensive
+    (a ∪ b).size_option.val = a.size_option.val
+
+
+  # monoid of Set with infix ∪ operation.
+  #
+  # NYI: BUG: name clash with union
+  public type.unionize =>
+    ref : Monoid (container.Set E)
+      redef infix ∙ (a, b container.Set E) => a ∪ b
+      redef e => (container.Set E).new []

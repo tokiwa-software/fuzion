@@ -1399,11 +1399,11 @@ public class AstErrors extends ANY
   static void outerFeatureNotFoundInThis(SourcePosition pos,
                                          ANY thisOrType, AbstractFeature feat, String qname, List<String> available, boolean isAmbiguous)
   {
-    if (thisOrType instanceof This t)
+    if (thisOrType instanceof This)
       {
         outerFeatureNotFoundInThisOrThisType(pos, ".this", feat, qname, available, isAmbiguous);
       }
-    else if (thisOrType instanceof AbstractType t)
+    else if (thisOrType instanceof AbstractType)
       {
         outerFeatureNotFoundInThisOrThisType(pos, ".this.type", feat, qname, available, isAmbiguous);
       }
@@ -2067,7 +2067,7 @@ public class AstErrors extends ANY
    *
    * @param to the target type
    */
-  public static void illegalOuterRefTypeInCall(Call c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
+  public static void illegalOuterRefTypeInCall(AbstractCall c, boolean arg, AbstractFeature calledOrArg, AbstractType t, AbstractType from, AbstractType to)
   {
     var art = arg ? "argument type" : "result type";
     var tp = calledOrArg.resultTypePos();
@@ -2346,6 +2346,20 @@ public class AstErrors extends ANY
        "  return a value this-type\n" +
        "or\n"
        + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
+  }
+
+  public static void openGenericMissingDots(SourcePosition pos, AbstractType t)
+  {
+    error(pos, "open type is not followed by " + skw("..."),
+          "An open type must be followed by " + skw("...") + ".\n"
+          + "To solve this, add " + skw("...") + " after the highlighted error.");
+  }
+
+  public static void dotsButNotOpenGeneric(SourcePosition pos, AbstractType t)
+  {
+    error(pos, "type is followed by " + skw("...") + " but is not an open type",
+          skw("...") + " is only permitted after open type.\n"
+          + "To solve this, remove " + skw("...") + " after the highlighted error.");
   }
 
 }
