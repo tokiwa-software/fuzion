@@ -1604,8 +1604,7 @@ public class Call extends AbstractCall
             if (!tt.isGenericArgument() && declF != tt.feature()) //  && t.isThisType())
               {
                 var heir = tt.feature();
-                var inh = heir.findInheritanceChain(declF);
-                if (inh == null)
+                if (!heir.inheritsFrom(declF))
                   {
                     // NYI: strange, happens in list.fz when wrapping Lazy in a Lazy, need to check!
                     if (false)
@@ -1616,10 +1615,13 @@ public class Call extends AbstractCall
                       }
                   }
                 else
-                for (AbstractCall c : inh)
                   {
-                    var parent = c.calledFeature();
-                    t = t.replace_this_type(parent, heir);
+                    var inh = heir.findInheritanceChain(declF);
+                    for (AbstractCall c : inh)
+                      {
+                        var parent = c.calledFeature();
+                        t = t.replace_this_type(parent, heir);
+                      }
                   }
               }
 
