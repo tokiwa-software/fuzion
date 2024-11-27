@@ -151,7 +151,7 @@ is
     while nxt < data.length && !last_err
     do
       sextets := [check_input nxt, check_input nxt+1, check_input nxt+2, check_input nxt+3]
-      is_err := (sextets ∃ el -> el.is_error)
+      is_err := (sextets ∃ .is_error)
 
       # convert sextets in 24 bit number, break up in three bytes
       block := if is_err then 0 else sextets[0].val << 18 | sextets[1].val << 12 | sextets[2].val << 6 | sextets[3].val

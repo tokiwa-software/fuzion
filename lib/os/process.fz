@@ -124,7 +124,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   #
   public infix | (process_and_args Sequence String) outcome os.process
   pre
-    (process_and_args ∀ str -> str.is_ascii)
+    process_and_args ∀ .is_ascii
     !process_and_args[0].contains_whitespace
   =>
     (os.process.start process_and_args.first.val (process_and_args.drop 1)).bind os.process p->
