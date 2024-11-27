@@ -69,6 +69,7 @@ module internal_array(T type, module data fuzion.sys.Pointer, module length i32)
   module set [ ] (i i32, o T) unit
     pre
       safety: 0 ≤ i < length
+      debug : {ensure_not_frozen; true}
   # post   NYI
     # debug: array.this[i] == o
   =>
