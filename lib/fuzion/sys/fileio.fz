@@ -330,13 +330,6 @@ module fileio is
     ) unit => intrinsic
 
 
-  # flush user-space buffers of file descriptor
-  #
-  # return: 0 on success everything else is an error
-  #
-  module flush(fd i64) i32 => intrinsic
-
-
   # open the directory given by path
   #
   # accepts as arguments a path (processed by fuzion.sys.c_string) and a pointer to

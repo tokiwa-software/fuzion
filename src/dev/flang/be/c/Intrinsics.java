@@ -465,9 +465,6 @@ public class Intrinsics extends ANY
     });
     put("fuzion.sys.fileio.close_dir", (c,cl,outer,in) -> CExpr.call("fzE_closedir", new List<>(A0.castTo("intptr_t *"))).ret());
 
-    put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
-      CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());
-
     put("fuzion.sys.fatal_fault0"      , (c,cl,outer,in) ->
         CStmnt.seq(CExpr.fprintfstderr("*** failed %s: `%s`\n", new CExpr[] {A0.castTo("char *"),
                                                                              A1.castTo("char *")}),

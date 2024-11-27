@@ -353,15 +353,6 @@ public class Intrinsics extends ANY
               return  Interpreter.value(executor.options().getBackendArgs().get(i - 1));
             }
         });
-    put("fuzion.sys.fileio.flush"  , (executor, innerClazz) -> args ->
-        {
-          var s = _openStreams_.get(args.get(1).i64Value());
-          if (s instanceof PrintStream ps)
-            {
-              ps.flush();
-            }
-          return new i32Value(0);
-        });
 
     put("fuzion.sys.fatal_fault0", (executor, innerClazz) -> args ->
         {
