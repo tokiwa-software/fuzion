@@ -2035,10 +2035,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             t = handDownThroughInheritsCalls(t, select, inh2);
             t = t.applyTypeParsLocally(oc._type, select);
-            if (inh2.size() > 0)
-              {
-                o = f;
-              }
+            o = f;
           }
         t = t.replace_this_type_by_actual_outer2(oc._type,
                                                  foundRef,
@@ -2047,8 +2044,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         o = (LibraryFeature) o.outer();
       }
 
-    var t2 = replaceThisType(t);
-    return _fuir.type2clazz(t2);
+    return _fuir.type2clazz(t);
   }
 
 
