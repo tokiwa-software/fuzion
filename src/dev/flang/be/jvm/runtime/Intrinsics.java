@@ -551,17 +551,6 @@ public class Intrinsics extends ANY
       }
   }
 
-  public static int fuzion_sys_fileio_flush(long fd)
-  {
-    Runtime.unsafeIntrinsic();
-    var s = Runtime._openStreams_.get(fd);
-    if (s instanceof PrintStream ps)
-      {
-        ps.flush();
-      }
-    return 0;
-  }
-
   public static int fuzion_sys_fileio_read(long fd, Object d, int l)
   {
     Runtime.unsafeIntrinsic();

@@ -243,7 +243,6 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.mapped_buffer_get", (cfg, cl) -> { } );
     put("fuzion.sys.fileio.mapped_buffer_set", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.flush"        , (cfg, cl) -> { } );
     put("fuzion.sys.fatal_fault0"        , (cfg, cl) -> { } );
     put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
     put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
