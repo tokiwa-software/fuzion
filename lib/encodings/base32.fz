@@ -155,7 +155,7 @@ is
     while nxt < data.length && !last_err
     do
       quintets := (nxt :: +1).map(i->dec_input i).take 8
-      is_err := (quintets ∃ el -> el.is_error)
+      is_err := (quintets ∃ .is_error)
 
       # convert quintets in 40 bit number, break up in three bytes
       bits := if is_err then 0

@@ -82,10 +82,10 @@ install_default =>
     pre else
       # NYI: UNDER DEVELOPMENT: allow utf-8?
       # NYI: UNDER DEVELOPMENT: what about quotes(") ?
-      debug: n.as_codepoints                          ∀ (y -> y.is_ascii)
-      debug: args             ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
-      debug: env_vars.keys    ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
-      debug: env_vars.values  ∀ (x -> x.as_codepoints ∀ (y -> y.is_ascii))
+      debug: n.as_codepoints                          ∀ .is_ascii
+      debug: args             ∀ (x -> x.as_codepoints ∀ .is_ascii)
+      debug: env_vars.keys    ∀ (x -> x.as_codepoints ∀ .is_ascii)
+      debug: env_vars.values  ∀ (x -> x.as_codepoints ∀ .is_ascii)
     =>
 
       sys => fuzion.sys

@@ -98,7 +98,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # elements that this Set contains.
   #
   public is_subset_of(other container.Set E) =>
-    Set.this ∀ (el -> other.contains el)
+    Set.this ∀ other.contains
 
 
   # is this Set a superset of other?
