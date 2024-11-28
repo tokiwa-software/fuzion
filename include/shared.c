@@ -35,6 +35,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <stdatomic.h>
+#include <time.h>
 
 
 /**
@@ -923,4 +924,28 @@ uint64_t fzE_unique_id()
 {
   static atomic_uint_least64_t last_id = 0;
   return ++last_id;
+}
+
+
+/**
+ * result is a 32-bit array
+ *
+ * result[0] = year
+ * result[1] = day_in_year
+ * result[2] = hour
+ * result[3] = min
+ * result[4] = sec
+ * result[5] = nanosec;
+ */
+void fzE_date_time(void * result)
+{
+  time_t rawtime;
+  time(&rawtime);
+  struct tm * ptm = gmtime(&rawtime);
+  ((int32_t *)result)[0] = ptm->tm_year+1900;
+  ((int32_t *)result)[1] = ptm->tm_yday+1;
+  ((int32_t *)result)[2] = ptm->tm_hour;
+  ((int32_t *)result)[3] = ptm->tm_min;
+  ((int32_t *)result)[4] = ptm->tm_sec;
+  ((int32_t *)result)[5] = 0;
 }

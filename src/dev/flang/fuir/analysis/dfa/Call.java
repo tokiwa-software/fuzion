@@ -296,6 +296,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
+        markSysArrayArgsAsInitialized();
         result = genericResult();
         if (result == null)
           {
@@ -324,6 +325,24 @@ public class Call extends ANY implements Comparable<Call>, Context
           }
       }
     return result;
+  }
+
+
+  /*
+   * sys array arguments might be written
+   * to in the native features
+   * so we fake that here
+   */
+  private void markSysArrayArgsAsInitialized()
+  {
+    for (var arg : _args)
+      {
+        if (arg instanceof SysArray sa && sa._elements == null)
+          {
+            sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(FUIR.SpecialClazzes.c_i32)),
+                     _dfa.newInstance(sa._elementClazz, _site, _context));
+          }
+      }
   }
 
 

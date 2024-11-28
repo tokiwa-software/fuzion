@@ -43,7 +43,3 @@ module fuzion.std is
 
   # no guarantee can be given for precision nor resolution
   module fzE_nanosleep(arg1 u64) unit => native
-
-
-  # fills arg with current UTC date time
-  module date_time(array_of_i32 fuzion.sys.Pointer) unit => intrinsic

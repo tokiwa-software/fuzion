@@ -34,7 +34,9 @@ import java.io.StringWriter;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -1396,6 +1398,58 @@ public class Runtime extends ANY
         System.exit(1);
         return null;
       }
+  }
+
+  /**
+   * copy the contents of memSeg to obj
+   */
+  public static void memorySegment2Obj(Object obj, MemorySegment memSeg)
+  {
+    if      (obj instanceof byte   [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_BYTE),   0, arr, 0, arr.length );  }
+    else if (obj instanceof short  [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_SHORT),  0, arr, 0, arr.length );  }
+    else if (obj instanceof char   [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_CHAR),   0, arr, 0, arr.length );  }
+    else if (obj instanceof int    [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_INT),    0, arr, 0, arr.length );  }
+    else if (obj instanceof long   [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_LONG),   0, arr, 0, arr.length );  }
+    else if (obj instanceof float  [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_FLOAT),  0, arr, 0, arr.length );  }
+    else if (obj instanceof double [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_DOUBLE), 0, arr, 0, arr.length );  }
+    else if (obj instanceof boolean[] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_INT),    0, arr, 0, arr.length );  }
+    else { throw new Error("NYI"); }
+  }
+
+
+  /**
+   * creates a new MemorySegment and copys
+   * content of object to the memory segment
+   */
+  public static MemorySegment obj2MemorySegment(Object obj)
+  {
+    var length = -1;
+    var bytes = -1;
+
+    if      (obj instanceof byte   [] arr) { length = arr.length; bytes = 1; }
+    else if (obj instanceof short  [] arr) { length = arr.length; bytes = 2; }
+    else if (obj instanceof char   [] arr) { length = arr.length; bytes = 2; }
+    else if (obj instanceof int    [] arr) { length = arr.length; bytes = 4; }
+    else if (obj instanceof long   [] arr) { length = arr.length; bytes = 8; }
+    else if (obj instanceof float  [] arr) { length = arr.length; bytes = 4; }
+    else if (obj instanceof double [] arr) { length = arr.length; bytes = 8; }
+    else if (obj instanceof boolean[] arr) { length = arr.length; bytes = 4; }
+    else { throw new Error("NYI"); }
+
+    var memSegment = Arena.ofAuto().allocate(length * bytes);
+
+    for (int i = 0; i < length; i++)
+      {
+        if      (obj instanceof byte   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BYTE,   i, arr[i]);}
+        else if (obj instanceof short  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_SHORT,  i, arr[i]);}
+        else if (obj instanceof char   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_CHAR,   i, arr[i]);}
+        else if (obj instanceof int    [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_INT,    i, arr[i]);}
+        else if (obj instanceof long   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_LONG,   i, arr[i]);}
+        else if (obj instanceof float  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_FLOAT,  i, arr[i]);}
+        else if (obj instanceof double [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_DOUBLE, i, arr[i]);}
+        else if (obj instanceof boolean[] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BOOLEAN,i, arr[i]);}
+      }
+    return memSegment;
   }
 
 

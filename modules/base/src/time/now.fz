@@ -39,8 +39,13 @@ public now (p () -> time.date_time) : effect is
   # the system is giving us.
   #
   type.default_now ()->time.date_time => () ->
+
+    # fills arg with current UTC date time
+    #
+    fzE_date_time(a fuzion.sys.Pointer) unit => native
+
     a := fuzion.sys.internal_array_init i32 6
-    fuzion.std.date_time a.data
+    fzE_date_time a.data
     time.date_time a[0] a[1] a[2] a[3] a[4] a[5]
 
 
