@@ -37,26 +37,26 @@ FUZION_OPTIONS ?=
 all: jvm int c
 
 jvm:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk jvm
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk jvm
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../negative.mk jvm
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../simple.mk jvm
 c:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk c
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk c
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../negative.mk c
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../simple.mk c
 int:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk int
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk int
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../negative.mk int
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../simple.mk int
 
 show:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk show
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../negative.mk show
 
 record:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../simple.mk record
 
 record_jvm:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_jvm
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../simple.mk record_jvm
 
 record_c:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_c
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../simple.mk record_c
 
 record_int:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_int
+	FILE=$(FILE) NAME=$(NAME) FUZION_OPTIONS='$(FUZION_OPTIONS)' make -f ../simple.mk record_int
