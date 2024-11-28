@@ -820,52 +820,24 @@ int fzE_pipe_close(int64_t desc){
 // open_results[0] the error number
 void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
+  assert( mode >= 0 && mode <= 2 );
   // NYI use lock to make fopen and fcntl _atomic_.
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
   // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
   // to a race condition that may unintentionally leak the file descriptor to the
   // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
   // for details and a remedy to the problem."
-  FILE * fp;
   errno = 0;
-  switch (mode)
+  FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
+  if (fp!=NULL)
   {
-    case 0:
-    {
-      fp = fopen(file_name,"rb");
-      if (fp!=NULL)
-      {
-        fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
-        return fp;
-      }
-      break;
-    }
-    case 1:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
-        return fp;
-      }
-    }
-    case 2:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
-        return fp;
-      }
-    }
-    default:
-    {
-      fprintf(stderr,"*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\012");
-      exit(1);
-    }
+    fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
   }
-  open_results[0] = (int64_t)errno;
-  return NULL;
+  else
+  {
+    open_results[0] = (int64_t)errno;
+  }
+  return fp;
 }
 
 
