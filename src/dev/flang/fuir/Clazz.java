@@ -1717,39 +1717,8 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            var oc = this;
-            AbstractFeature ff = f;
-            while (oc != null && oc.feature() == ff)
-              {
-                oc = oc._outer;
-                ff = ff.outer();
-              }
-            if (CHECKS) check
-              (Errors.any() || (oc == null) == (ff == null));
-            var err = new List<Consumer<AbstractCall>>();
             var ft = f.resultType();
-            var fft = ft;
-            if (oc != null)
-              {
-                var heir = oc.feature();
-                for (AbstractCall ic : heir.findInheritanceChain(ff))
-                  {
-                    var parent = ic.calledFeature();
-                    ft = ft.replace_this_type(parent, heir,
-                                              (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, fft, from, to)); });
-                  }
-              }
-            result = handDown(ft, _select,
-                              (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, fft, from, to)); });
-            if (result.feature().isCotype())
-              {
-                var ac = handDown(result._type.generics().get(0));
-                result = ac.typeClazz();
-              }
-            if (err.size() > 0)
-              {
-                result._showErrorIfCallResult_ = err.get(0);
-              }
+            result = handDown(ft, _select);
           }
         _resultClazz = result;
       }
@@ -1968,7 +1937,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param pos a source code position, used to report errors.
    */
-  Clazz handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef)
+  Clazz handDown(AbstractType t, int select)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -1976,6 +1945,44 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
     AbstractFeature o = feature();
+    var fo = o;
+    var ft = t;
+
+    var child = this;
+    AbstractFeature parent = o;
+    // find outer that inherits this clazz, e.g.
+    //
+    //   Any.me =>
+    //     res := Any.this
+    //     res
+    //   x : Any is
+    //
+    // here. for `x.me.res` inherited from `Any.me.res`, the inheritance
+    // is two features out when `x` inherits form `Any`.
+    while (child != null && child.feature() == parent)
+      {
+        child = child._outer;
+        parent = parent.outer();
+      }
+
+    if (CHECKS) check
+      (Errors.any() || (child == null) == (parent == null));
+
+    // error handling for replacing `.this` types of `ref` types in a call result, see #4273
+    var err = new List<Consumer<AbstractCall>>();
+    BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
+      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, fo, ft, from, to)); };
+
+    if (child != null)
+      {
+        var childf = child.feature();
+        for (AbstractCall ic : childf.findInheritanceChain(parent))
+          {
+            var parentf = ic.calledFeature();
+            t = t.replace_this_type(parentf, childf, foundRef);
+          }
+      }
+
     var oc = this;
     while (!o.isUniverse() && oc != null)
       {
@@ -1998,7 +2005,18 @@ class Clazz extends ANY implements Comparable<Clazz>
         o = f.outer();
       }
 
-    return _fuir.type2clazz(t);
+    var res = _fuir.type2clazz(t);
+
+    if (res.feature().isCotype())
+      {
+        var ac = handDown(res._type.generics().get(0));
+        res = ac.typeClazz();
+      }
+    if (err.size() > 0)
+      {
+        res._showErrorIfCallResult_ = err.get(0);
+      }
+    return res;
   }
 
 
@@ -2012,12 +2030,13 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        !t.isOpenGeneric());
 
-    return handDown(t, -1, null);
+    return handDown(t, -1);
   }
 
 
   /**
-   * Convenience version of `handDown` with `select` set to `-1`.
+   * Convenience version of `handDown` with `select` set to `-1`. Used for
+   * inlined code in inheritance for code inherited via the given inh chain.
    */
   Clazz handDown(AbstractType t, List<AbstractCall> inh)
   {
