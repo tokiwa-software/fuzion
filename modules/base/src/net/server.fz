@@ -32,7 +32,7 @@
 #      `server.accept`
 #
 module:public server(
-  state outcome i64,
+  state outcome i32,
   p protocol.val
 ) : effect
 is
@@ -69,7 +69,7 @@ is
   public accept outcome net.connection =>
     state.bind net.connection d->
       match fuzion.sys.net.accept d
-        desc i64 =>
+        desc i32 =>
           net.connections.add desc
           net.connection desc
         e error =>
@@ -107,11 +107,11 @@ is
 
     # bind to port
     (fuzion.sys.net.bind f.as_num s.as_num p.as_num addr port)
-      .bind i64 sd->
+      .bind i32 sd->
         match p
           net.protocol.tcp =>
             # listen
-            listen_res := fuzion.sys.net.listen sd backlog
+            listen_res := fuzion.sys.net.fzE_listen sd backlog
             if listen_res != 0
               _ := fuzion.sys.net.close sd
               error "listening on socket failed with error $listen_res."

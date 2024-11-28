@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-module:public connection(desc i64) is
+module:public connection(desc i32) is
 
   # close connection manually.
   # note that connections are closed automatically

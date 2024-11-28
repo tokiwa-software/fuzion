@@ -23,11 +23,11 @@
 
 # effect to hold active connections
 #
-module:public connections(active container.Set i64) : effect is
+module:public connections(active container.Set i32) : effect is
 
   # add to active connections
   #
-  module add(desc i64) =>
+  module add(desc i32) =>
     connections (active.union (container.set_of_ordered [desc]))
       .replace
 
@@ -36,13 +36,13 @@ module:public connections(active container.Set i64) : effect is
   # note that connections are closed automatically
   # when effect is uninstalled, i.e. on abort or when thread is finished.
   #
-  module close(desc i64) =>
+  module close(desc i32) =>
     connections (active.difference (container.set_of_ordered [desc]))
       .replace
     fuzion.sys.net.close desc # NYI: handle errors
 
 
-  module is_active(desc i64) => active.contains desc
+  module is_active(desc i32) => active.contains desc
 
 
   # cleanup active connections that
@@ -57,5 +57,5 @@ module:public connections(active container.Set i64) : effect is
 #
 public connections =>
   if !net.connections.is_instated
-    (connections (container.set_of_ordered i64 [])).default
+    (connections (container.set_of_ordered i32 [])).default
   net.connections.env
