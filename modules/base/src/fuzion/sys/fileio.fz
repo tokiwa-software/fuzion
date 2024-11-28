@@ -80,7 +80,7 @@ module fileio is
   module write(fd fuzion.sys.Pointer, content array u8) outcome unit =>
     res := fzE_file_write fd content.internal_array.data content.length
 
-    if res != 0
+    if res < 0
       error "write error: {res}"
 
   # intrinsic to write bytes (internal array data) in a file using the file descriptor
@@ -121,7 +121,7 @@ module fileio is
               new_path String) outcome unit =>
     arr0 := fuzion.sys.c_string old_path
     arr1 := fuzion.sys.c_string new_path
-    if fzE_file_move arr0 arr1 unit != 0
+    if fzE_file_move arr0 arr1 != 0
       error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
 
   # intrinsic that returns true in case the move was successful and false in case not
@@ -130,9 +130,7 @@ module fileio is
                # the internal array data representing the old file/dir path in bytes
                old_path fuzion.sys.Pointer,
                # the internal array data representing the new file/dir path in bytes
-               new_path fuzion.sys.Pointer,
-               # dummy parameter for overloading
-               _ unit) i32 => native
+               new_path fuzion.sys.Pointer) i32 => native
 
 
   # creates a directory using the specified path
@@ -230,13 +228,10 @@ module fileio is
               # file descriptor
               fd fuzion.sys.Pointer,
               # the offset to seek from the beginning of this file
-              offset i64) outcome i64 =>
-    arr := fuzion.sys.internal_array_init i64 2
-    fzE_file_seek fd offset arr.data
-    if arr[1] = 0
-      arr[0]
-    else
-      error "error number: {arr[1]}"
+              offset i64) outcome unit =>
+    res := fzE_file_seek fd offset
+    if res = -1
+      error "error number: {res}"
 
   # intrinsic to set the file-pointer offset at which the next read or write occurs
   # the offset is measured from the beginning of the file indicated by the file descriptor
@@ -247,9 +242,7 @@ module fileio is
                # file descriptor
                fd fuzion.sys.Pointer,
                # the offset to seek from the beginning of this file
-               offset i64,
-               # Array data [new file position, error number]
-               seek_results fuzion.sys.Pointer) unit => native
+               offset i64) i32 => native
 
 
   # returns the current file-pointer offset as an outcome i64,
@@ -259,21 +252,18 @@ module fileio is
   module file_position(
                        # file descriptor
                        fd fuzion.sys.Pointer) outcome i64 =>
-    arr := fuzion.sys.internal_array_init i64 2
-    fzE_file_position fd arr.data
-    if arr[1] = 0
-      arr[0]
+    res := fzE_file_position fd
+    if res = -1
+      error "error number: {res}"
     else
-      error "error number: {arr[1]}"
+      res
 
   # intrinsic that fills a Fuzion object with the current file stream position
   # and the error number from C back-end/ -1 in the interpreter
   #
   fzE_file_position(
                 # file descriptor
-                fd fuzion.sys.Pointer,
-                # Array data [new file position, error number]
-                position_results fuzion.sys.Pointer) unit => native
+                fd fuzion.sys.Pointer) i64 => native
 
 
   # memory map a file

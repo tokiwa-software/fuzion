@@ -76,5 +76,5 @@ module seek =>
 # reference to the seek operations that could be provided
 #
 public Seek_Handler ref is
-  public seek(fd fuzion.sys.Pointer, offset i64) outcome i64 => abstract
+  public seek(fd fuzion.sys.Pointer, offset i64) outcome unit => abstract
   public file_position(fd fuzion.sys.Pointer) outcome i64 => abstract
