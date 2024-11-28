@@ -1717,11 +1717,9 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            var inh = new List<AbstractCall>();
-            var ft = f.resultType();
-            var oc = _outer;
-            var ff = f.outer();
-            while (oc != null && ff != null && oc.feature() == ff)
+            var oc = this;
+            AbstractFeature ff = f;
+            while (oc != null && oc.feature() == ff)
               {
                 oc = oc._outer;
                 ff = ff.outer();
@@ -1729,6 +1727,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             if (CHECKS) check
               (Errors.any() || (oc == null) == (ff == null));
             var err = new List<Consumer<AbstractCall>>();
+            var ft = f.resultType();
             var fft = ft;
             if (oc != null)
               {
@@ -1736,7 +1735,6 @@ class Clazz extends ANY implements Comparable<Clazz>
                 for (AbstractCall ic : heir.findInheritanceChain(ff))
                   {
                     var parent = ic.calledFeature();
-                    var ft0 = ft;
                     ft = ft.replace_this_type(parent, heir,
                                               (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, fft, from, to)); });
                   }
