@@ -1947,7 +1947,14 @@ class Clazz extends ANY implements Comparable<Clazz>
     AbstractFeature f = feature();
     var ff = f;
     var ft = t;
+    // error handling for replacing `.this` types of `ref` types in a call result, see #4273
+    var err = new List<Consumer<AbstractCall>>();
+    BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
+      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, ff, ft, from, to)); };
 
+    for (var i = 0; i<2; i++)
+      {
+    var first = true;
     var child = this;
     AbstractFeature parent = f;
     // find outer that inherits this clazz, e.g.
@@ -1959,44 +1966,51 @@ class Clazz extends ANY implements Comparable<Clazz>
     //
     // here. for `x.me.res` inherited from `Any.me.res`, the inheritance
     // is two features out when `x` inherits form `Any`.
-    while (child != null && child.feature() == parent)
-      {
-        child = child._outer;
-        parent = parent.outer();
-      }
-
-    if (CHECKS) check
-      (Errors.any() || (child == null) == (parent == null));
-
-    // error handling for replacing `.this` types of `ref` types in a call result, see #4273
-    var err = new List<Consumer<AbstractCall>>();
-    BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
-      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, ff, ft, from, to)); };
-
-    if (child != null)
+    while (child != null)//  && child.feature() == parent)
       {
         var childf = child.feature();
-        var inh = childf.tryFindInheritanceChain(parent);
-        if (CHECKS) check
-          (Errors.any() || inh != null);
-        if (inh != null)
+        if (i == 0)
+        if (childf != parent && first)
           {
-            for (AbstractCall ic : inh)
-              {
-                var parentf = ic.calledFeature();
-                t = t.replace_this_type(parentf, childf, foundRef);
-              }
-            //  t = handDownThroughInheritsCalls(t, select, inh);
-            // t = t.applyTypeParsLocally(child._type, select);
+            first = false;
+
+            //    if (child != parent)
+            {
+              var inh = childf.tryFindInheritanceChain(parent);
+              if (CHECKS) check
+                            (Errors.any() || inh != null);
+              if (inh != null)
+                {
+                  for (AbstractCall ic : inh)
+                    {
+                      var parentf = ic.calledFeature();
+                      t = t.replace_this_type(parentf, childf, foundRef);
+                    }
+                  //  t = handDownThroughInheritsCalls(t, select, inh);
+                  // t = t.applyTypeParsLocally(child._type, select);
+                }
+            }
           }
+
+        //child = child._outer;
+        // parent = parent.outer();
+        // NYI: Where is the different to just using _outer?
+        /*
+        child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
+                                     : child._outer;
+        parent = childf.outer();
       }
 
+
     child = this;
-    var o = f;
+    parent = f;
     while (child != null)
       {
         var childf = child.feature();
-        var inh2 = childf.tryFindInheritanceChain(o);
+        */
+        if (i == 1)
+          {
+        var inh2 = childf.tryFindInheritanceChain(parent);
         if (CHECKS) check
           (Errors.any() || inh2 != null);
         if (inh2 != null)
@@ -2007,12 +2021,16 @@ class Clazz extends ANY implements Comparable<Clazz>
         t = t.replace_this_type_by_actual_outer2(child._type,
                                                  foundRef,
                                                  Context.NONE);
-
+          }
         // NYI: Where is the different to just using _outer?
         child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
                                      : child._outer;
-        o = childf.outer();
+        parent = childf.outer();
       }
+    if (CHECKS) check
+      (Errors.any() || (child == null) == (parent == null));
+      }
+
 
     var res = _fuir.type2clazz(t);
 
