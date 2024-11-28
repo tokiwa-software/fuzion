@@ -52,13 +52,13 @@ int fzE_setenv(const char *name, const char *value, int overwrite);
 // unset environment variable, return zero on success
 int fzE_unsetenv(const char *name);
 
-void fzE_opendir(const char *pathname, int64_t * result);
+void * fzE_opendir(const char *pathname, int64_t * result);
 
-char * fzE_readdir(intptr_t * dir);
+int fzE_read_dir(intptr_t * dir, void * result);
 
 int fzE_read_dir_has_next(intptr_t * dir);
 
-int fzE_closedir(intptr_t * dir);
+int fzE_close_dir(intptr_t * dir);
 
 // 0 = blocking
 // 1 = none_blocking
@@ -254,12 +254,12 @@ int fzE_pipe_close(int64_t desc);
  *
  * @param file_name the files name
  *
- * @param open_results [file descriptor, error number]
+ * @param open_results [error number]
  *
  * @param mode 0 read, 1 write, 2 append
  *
  */
-void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
 
 int64_t fzE_file_read(void * file, void * buf, int32_t size);
 int64_t fzE_file_write(void * file, void * buf, int32_t size);
@@ -267,9 +267,11 @@ int32_t fzE_file_move(const char *oldpath, const char *newpath);
 int32_t fzE_file_close(void * file);
 int32_t fzE_file_seek(void * file, int64_t offset);
 int64_t fzE_file_position(void * file);
-void * fzE_file_stdin();
-void * fzE_file_stdout();
-void * fzE_file_stderr();
+void *  fzE_file_stdin(void);
+void *  fzE_file_stdout(void);
+void *  fzE_file_stderr(void);
+uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx);
+void    fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x);
 
 
 #ifdef FUZION_LINK_JVM

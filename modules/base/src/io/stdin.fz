@@ -39,7 +39,7 @@ public stdin (LM type : mutate) io.buffered.reader LM =>
   read_provider : io.Read_Provider is
     redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := fuzion.sys.internal_array_init u8 count
-      v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
+      v := fuzion.sys.fileio.fzE_file_read fuzion.sys.fzE_file_stdin arr.data count
       if v < -1
         error "an error occurred while reading stdin"
       else if v <= 0

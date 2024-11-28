@@ -989,6 +989,17 @@ int64_t fzE_file_position(void * file)
   return ftell((FILE*)file);
 }
 
-void * fzE_file_stdin() { return stdin; }
-void * fzE_file_stdout() { return stdout; }
-void * fzE_file_stderr() { return stderr; }
+void * fzE_file_stdin(void) { return stdin; }
+void * fzE_file_stdout(void) { return stdout; }
+void * fzE_file_stderr(void) { return stderr; }
+
+
+uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
+{
+  return ((uint8_t *)addr)[idx];
+}
+void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
+{
+  ((uint8_t *)addr)[idx] = x;
+}
+
