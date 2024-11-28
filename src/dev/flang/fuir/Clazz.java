@@ -1969,58 +1969,36 @@ class Clazz extends ANY implements Comparable<Clazz>
     while (child != null)//  && child.feature() == parent)
       {
         var childf = child.feature();
-        if (i == 0)
-        if (childf != parent && first)
-          {
-            first = false;
-
-            //    if (child != parent)
-            {
-              var inh = childf.tryFindInheritanceChain(parent);
-              if (CHECKS) check
-                            (Errors.any() || inh != null);
-              if (inh != null)
-                {
-                  for (AbstractCall ic : inh)
-                    {
-                      var parentf = ic.calledFeature();
-                      t = t.replace_this_type(parentf, childf, foundRef);
-                    }
-                  //  t = handDownThroughInheritsCalls(t, select, inh);
-                  // t = t.applyTypeParsLocally(child._type, select);
-                }
-            }
-          }
-
-        //child = child._outer;
-        // parent = parent.outer();
-        // NYI: Where is the different to just using _outer?
-        /*
-        child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
-                                     : child._outer;
-        parent = childf.outer();
-      }
-
-
-    child = this;
-    parent = f;
-    while (child != null)
-      {
-        var childf = child.feature();
-        */
-        if (i == 1)
-          {
-        var inh2 = childf.tryFindInheritanceChain(parent);
+        var inh = childf.tryFindInheritanceChain(parent);
         if (CHECKS) check
-          (Errors.any() || inh2 != null);
-        if (inh2 != null)
+          (Errors.any() || inh != null);
+        if (i == 0)
           {
-            t = handDownThroughInheritsCalls(t, select, inh2);
-            t = t.applyTypeParsLocally(child._type, select);
+            if (childf != parent && first)
+              {
+                first = false;
+                if (inh != null)
+                  {
+                    for (AbstractCall ic : inh)
+                      {
+                        var parentf = ic.calledFeature();
+                        t = t.replace_this_type(parentf, childf, foundRef);
+                      }
+                    //  t = handDownThroughInheritsCalls(t, select, inh);
+                    // t = t.applyTypeParsLocally(child._type, select);
+                  }
+              }
           }
-        t = t.replace_this_type_by_actual_outer2(child._type,
-                                                 foundRef,
-                                                 Context.NONE);
+        else
+          {
+            if (inh != null)
+              {
+                t = handDownThroughInheritsCalls(t, select, inh);
+                t = t.applyTypeParsLocally(child._type, select);
+              }
+            t = t.replace_this_type_by_actual_outer2(child._type,
+                                                     foundRef,
+                                                     Context.NONE);
           }
         // NYI: Where is the different to just using _outer?
         child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
