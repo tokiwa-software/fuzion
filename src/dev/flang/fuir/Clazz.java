@@ -1954,7 +1954,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     for (var i = 0; i<2; i++)
       {
-    var first = true;
     var child = this;
     AbstractFeature parent = f;
     // find outer that inherits this clazz, e.g.
@@ -1969,33 +1968,27 @@ class Clazz extends ANY implements Comparable<Clazz>
     while (child != null)//  && child.feature() == parent)
       {
         var childf = child.feature();
-        var inh = childf.tryFindInheritanceChain(parent);
-        if (CHECKS) check
-          (Errors.any() || inh != null);
         if (i == 0)
           {
-            if (childf != parent && first)
+            var inh = childf.tryFindInheritanceChain(parent);
+            if (CHECKS) check
+              (Errors.any() || inh != null);
+            if (inh != null)
               {
-                first = false;
-                if (inh != null)
+                if (childf != parent)
                   {
                     for (AbstractCall ic : inh)
                       {
                         var parentf = ic.calledFeature();
                         t = t.replace_this_type(parentf, childf, foundRef);
                       }
-                    //  t = handDownThroughInheritsCalls(t, select, inh);
-                    // t = t.applyTypeParsLocally(child._type, select);
                   }
+                t = handDownThroughInheritsCalls(t, select, inh);
+                t = t.applyTypeParsLocally(child._type, select);
               }
           }
         else
           {
-            if (inh != null)
-              {
-                t = handDownThroughInheritsCalls(t, select, inh);
-                t = t.applyTypeParsLocally(child._type, select);
-              }
             t = t.replace_this_type_by_actual_outer2(child._type,
                                                      foundRef,
                                                      Context.NONE);
