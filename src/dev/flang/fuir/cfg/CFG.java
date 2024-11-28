@@ -467,17 +467,6 @@ public class CFG extends ANY
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 
-    put("fuzion.sys.net.bind0"           , (cfg, cl) -> { } );
-    put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.connect0"        , (cfg, cl) -> { } );
-    put("fuzion.sys.net.get_peer_address", (cfg, cl) -> { } );
-    put("fuzion.sys.net.get_peer_port"   , (cfg, cl) -> { } );
-    put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
-    put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
-    put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
-
     put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
     put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
