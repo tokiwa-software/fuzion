@@ -33,6 +33,7 @@
 #
 
 FUZION_OPTIONS ?=
+FILE ?= $(NAME).fz
 
 all: jvm int c
 
