@@ -2199,14 +2199,12 @@ public class DFA extends ANY
         });
     put("fuzion.java.array_get"             , cl ->
         {
-          var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-          cl._dfa.readField(jref);
+          cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
           return wrappedJavaObject(cl);
         });
     put("fuzion.java.array_length"          , cl ->
       {
-        var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-        cl._dfa.readField(jref);
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
       }
     );
@@ -2227,25 +2225,18 @@ public class DFA extends ANY
     put("fuzion.java.f64_to_java_object"    , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.get_field0"            , cl ->
       {
-        var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
-        var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
-        // mark Java_Ref fields as read
-        cl._dfa.readField(jref0);
-        cl._dfa.readField(jref1);
-        // NYI: UNDER DEVELOPMENT: setField Java_Ref, see get_static_field0
-        var x = wrappedJavaObject(cl);
-        // Causes Error // x.setField(cl._dfa, jrefres, Value.UNKNOWN_JAVA_REF);
-        return x;
+        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+        var jobj = wrappedJavaObject(cl);
+        // otherwise it is a primitive like int, boolean
+        if (cl._dfa._fuir.clazzIsRef(rc))
+          {
+            var jref = cl._dfa._fuir.lookupJavaRef(rc);
+            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+          }
+        return jobj;
       });
     put("fuzion.java.set_field0"            , cl ->
       {
-        var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
-        var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
-        var jref2 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(2))._clazz);
-        // mark Java_Ref fields as read
-        cl._dfa.readField(jref0);
-        cl._dfa.readField(jref1);
-        cl._dfa.readField(jref2);
         return Value.UNIT;
       });
     put("fuzion.java.i16_to_java_object"    , cl -> wrappedJavaObject(cl) );
@@ -2391,15 +2382,8 @@ public class DFA extends ANY
       });
     put("fuzion.java.set_static_field0"     , cl ->
       {
-        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
-        var jobj = wrappedJavaObject(cl);
-        // otherwise it is a primitive like int, boolean
-        if (cl._dfa._fuir.clazzIsRef(rc))
-          {
-            var jref = cl._dfa._fuir.lookupJavaRef(rc);
-            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-          }
-          return Value.UNIT;
+
+        return Value.UNIT;
       });
     put("fuzion.java.u16_to_java_object"    , cl -> wrappedJavaObject(cl) );
 

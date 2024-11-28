@@ -329,10 +329,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.array_length",
         (jvm, si, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
           var res = args.get(0)
-            .andThen(jvm.getfield(jref))
             .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
             .andThen(Expr.ARRAYLENGTH);
           return new Pair<>(res, Expr.UNIT);
@@ -341,10 +339,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.array_get",
         (jvm, si, cc, tvalue, args) ->
         {
-          var jref = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc,0));
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
           var res = args.get(0)
-            .andThen(jvm.getfield(jref))
             .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
             .andThen(args.get(1))
             .andThen((et.isPrimitive() ? et : ClassFileConstants.JAVA_LANG_OBJECT).xaload());
@@ -363,16 +359,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
-          var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var sref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
-          var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
           var res = args.get(0)
-            .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(sref0)) // class name as String
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(1))
-            .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(sref1)) // class name as String, field name as String
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                         "fuzion_java_get_static_field0",
@@ -384,16 +373,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.set_static_field0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var jt = jvm._types.javaType(jvm._fuir.clazz_fuzionJavaObject());
-          var sref0 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 0));
-          var sref1 = jvm._fuir.lookupJavaRef(jvm._fuir.clazzArgClazz(cc, 1));
           var res = args.get(0)
-            .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(sref0)) // class name as String
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(1))
-            .andThen(Expr.checkcast(jt))
-            .andThen(jvm.getfield(sref1)) // class name as String, field name as String
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(2))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
@@ -412,17 +394,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var javaRefFieldName = jvm._names.field(jO);
           var res = args
             .get(0)
-            .andThen(Expr.stringconst(javaRefFieldName))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "fuzion_java_get_field0",
-                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT))
             .andThen(args.get(1))
-            .andThen(Expr.stringconst(javaRefFieldName))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "fuzion_java_get_field0",
-                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT))
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_get_field0",
@@ -436,28 +408,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.set_field0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var jO = jvm._fuir.clazz_fuzionJavaObject_Ref();
-          var javaRefFieldName = jvm._names.field(jO);
           var res = args
             .get(0)
-            .andThen(Expr.stringconst(javaRefFieldName))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "fuzion_java_get_field0",
-                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT))
             .andThen(args.get(1))
-            .andThen(Expr.stringconst(javaRefFieldName))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "fuzion_java_get_field0",
-                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT))
             .andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(2))
-            .andThen(Expr.stringconst(javaRefFieldName))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "fuzion_java_get_field0",
-                                       "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
-                                       Names.JAVA_LANG_OBJECT))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "fuzion_java_set_field0",
                                        "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)V",
