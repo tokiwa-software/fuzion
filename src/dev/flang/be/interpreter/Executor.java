@@ -30,6 +30,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
@@ -304,7 +305,15 @@ public class Executor extends ProcessExpression<Value, Object>
 
         try
           {
-            var tmp = mh.invokeWithArguments(args.stream().map(arg -> arg.toNative()).toList());
+            var arguments = args.stream().map(arg -> arg.toNative()).toList();
+            var tmp = mh.invokeWithArguments(arguments);
+            for (int i = 0; i < args.size(); i++)
+              {
+                if (args.get(i) instanceof ArrayData ad)
+                  {
+                    ad.set((MemorySegment)arguments.get(i));
+                  }
+              }
             yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
           }
         catch (Throwable e)
@@ -351,6 +360,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case c_f32     -> ValueLayout.JAVA_FLOAT;
       case c_f64     -> ValueLayout.JAVA_DOUBLE;
       case c_u64     -> ValueLayout.JAVA_LONG;
+      case c_sys_ptr -> ValueLayout.ADDRESS;
       default -> {
         Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
         yield null;
@@ -465,21 +475,7 @@ public class Executor extends ProcessExpression<Value, Object>
               {
                 var b = _fuir.deseralizeConst(elementType, bb);
                 var c = constData(s, elementType, b).v0();
-                switch (_fuir.getSpecialClazz(elementType))
-                  {
-                    case c_i8   : ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); break;
-                    case c_i16  : ((short[])  (arrayData._array))[idx] = (short)c.i16Value(); break;
-                    case c_i32  : ((int[])    (arrayData._array))[idx] = c.i32Value(); break;
-                    case c_i64  : ((long[])   (arrayData._array))[idx] = c.i64Value(); break;
-                    case c_u8   : ((byte[])   (arrayData._array))[idx] = (byte)c.u8Value(); break;
-                    case c_u16  : ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); break;
-                    case c_u32  : ((int[])    (arrayData._array))[idx] = c.u32Value(); break;
-                    case c_u64  : ((long[])   (arrayData._array))[idx] = c.u64Value(); break;
-                    case c_f32  : ((float[])  (arrayData._array))[idx] = c.f32Value(); break;
-                    case c_f64  : ((double[]) (arrayData._array))[idx] = c.f64Value(); break;
-                    case c_bool : ((boolean[])(arrayData._array))[idx] = c.boolValue(); break;
-                    default     : ((Value[])  (arrayData._array))[idx] = c;
-                  }
+                arrayData.set(idx, c, fuir(), elementType);
               }
 
             Instance result = new Instance(constCl);
@@ -533,11 +529,11 @@ public class Executor extends ProcessExpression<Value, Object>
     var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
     var field = _fuir.matchCaseField(s, cix);
-    if (field != -1)
+    if (field != -1 && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(field)))
       {
         Interpreter.setField(
             field,
-            _cur._clazz,
+            _cur.clazz(),
             _cur,
             tagAndChoiceElement.v1());
       }

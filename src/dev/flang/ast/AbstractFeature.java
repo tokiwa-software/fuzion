@@ -1323,7 +1323,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var inh = heir.findInheritanceChain(outer());
         if (CHECKS) check
-          (inh != null);
+          (Errors.any() || inh != null);
 
         if (inh != null)
           {
@@ -1462,7 +1462,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public List<AbstractCall> findInheritanceChain(AbstractFeature ancestor)
   {
     if (PRECONDITIONS) require
-      (ancestor != null);
+      (ancestor != null,
+       this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.any() || inheritsFrom(ancestor));
 
     List<AbstractCall> result = tryFindInheritanceChain(ancestor);
 

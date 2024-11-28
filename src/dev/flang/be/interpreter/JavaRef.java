@@ -69,6 +69,13 @@ public class JavaRef extends Value
     return "Java_Ref[" + _javaRef + "]";
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    return _javaRef;
+  }
+
 }
 
 /* end of file */

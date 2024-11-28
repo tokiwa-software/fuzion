@@ -1399,11 +1399,11 @@ public class AstErrors extends ANY
   static void outerFeatureNotFoundInThis(SourcePosition pos,
                                          ANY thisOrType, AbstractFeature feat, String qname, List<String> available, boolean isAmbiguous)
   {
-    if (thisOrType instanceof This t)
+    if (thisOrType instanceof This)
       {
         outerFeatureNotFoundInThisOrThisType(pos, ".this", feat, qname, available, isAmbiguous);
       }
-    else if (thisOrType instanceof AbstractType t)
+    else if (thisOrType instanceof AbstractType)
       {
         outerFeatureNotFoundInThisOrThisType(pos, ".this.type", feat, qname, available, isAmbiguous);
       }
@@ -2208,6 +2208,14 @@ public class AstErrors extends ANY
         " or remove the return type if you want to define a constructor.");
   }
 
+  public static void unimplementedConstructor(SourcePosition pos, String keyword)
+  {
+    error(pos, keyword + " feature must not be constructor.",
+        "A constructor feature must always be implemented.\n" +
+        "To solve this, either implement the constructor feature or change it to a function feature by replacing " +
+        skw(keyword) + " with " + skw("=>") + ".");
+  }
+
   public static void abstractFeaturesVisibilityMoreRestrictiveThanOuter(Feature f)
   {
     error(f.pos(), "Abstract features visibility must not be more restrictive than outer features visibility.",
@@ -2337,15 +2345,18 @@ public class AstErrors extends ANY
           "Therefore, only valid effects may follow after it.");
   }
 
-  public static void ambiguousResultType(Feature f)
+  public static void openGenericMissingDots(SourcePosition pos, AbstractType t)
   {
-    error(f.pos(),
-      "Feature " + sbnf(f) + " has an ambiguous result type " + s(f.resultType()) + ".",
-      "This is because result type is a this-type and the underlying feature is a reference.\n" +
-      "To solve this, either\n" +
-       "  return a value this-type\n" +
-       "or\n"
-       + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
+    error(pos, "open type is not followed by " + skw("..."),
+          "An open type must be followed by " + skw("...") + ".\n"
+          + "To solve this, add " + skw("...") + " after the highlighted error.");
+  }
+
+  public static void dotsButNotOpenGeneric(SourcePosition pos, AbstractType t)
+  {
+    error(pos, "type is followed by " + skw("...") + " but is not an open type",
+          skw("...") + " is only permitted after open type.\n"
+          + "To solve this, remove " + skw("...") + " after the highlighted error.");
   }
 
 }

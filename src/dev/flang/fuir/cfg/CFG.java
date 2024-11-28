@@ -230,7 +230,6 @@ public class CFG extends ANY
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.read"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.write"        , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.delete"       , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.move"         , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.create_dir"   , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.stats"        , (cfg, cl) -> { } );
@@ -243,7 +242,6 @@ public class CFG extends ANY
     put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
     put("fuzion.sys.fileio.mapped_buffer_get", (cfg, cl) -> { } );
     put("fuzion.sys.fileio.mapped_buffer_set", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.flush"        , (cfg, cl) -> { } );
     put("fuzion.sys.fatal_fault0"        , (cfg, cl) -> { } );
     put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
     put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
@@ -469,24 +467,11 @@ public class CFG extends ANY
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 
-    put("fuzion.sys.net.bind0"           , (cfg, cl) -> { } );
-    put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.connect0"        , (cfg, cl) -> { } );
-    put("fuzion.sys.net.get_peer_address", (cfg, cl) -> { } );
-    put("fuzion.sys.net.get_peer_port"   , (cfg, cl) -> { } );
-    put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
-    put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
-    put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
-
     put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
     put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
-
-    put("fuzion.std.date_time"           , (cfg, cl) -> { } );
 
     put("effect.type.default0"              , (cfg, cl) -> { } );
     put("effect.type.instate0"              , (cfg, cl) ->
@@ -501,8 +486,8 @@ public class CFG extends ANY
     put("effect.type.replace0"              , (cfg, cl) -> { } );
     put("effect.type.abort0"                , (cfg, cl) -> { } );
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
-    put("effect.type.from_env"                   , (cfg, cl) -> { } );
-    put("effect.type.unsafe_from_env"            , (cfg, cl) -> { } );
+    put("effect.type.from_env"              , (cfg, cl) -> { } );
+    put("effect.type.unsafe_from_env"       , (cfg, cl) -> { } );
     put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
@@ -614,7 +599,6 @@ public class CFG extends ANY
         var ccs = _fuir.accessedClazzes(s);
         for (var cci = 0; cci < ccs.length; cci += 2)
           {
-            var tt = ccs[cci  ];
             var cc = ccs[cci+1];
             call(cl, cc);
           }

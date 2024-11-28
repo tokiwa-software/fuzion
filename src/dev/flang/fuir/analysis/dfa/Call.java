@@ -28,7 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
@@ -296,6 +296,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
+        markSysArrayArgsAsInitialized();
         result = genericResult();
         if (result == null)
           {
@@ -327,6 +328,24 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
 
+  /*
+   * sys array arguments might be written
+   * to in the native features
+   * so we fake that here
+   */
+  private void markSysArrayArgsAsInitialized()
+  {
+    for (var arg : _args)
+      {
+        if (arg instanceof SysArray sa && sa._elements == null)
+          {
+            sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(FUIR.SpecialClazzes.c_i32)),
+                     _dfa.newInstance(sa._elementClazz, _site, _context));
+          }
+      }
+  }
+
+
   /**
    * create a generic result for this call.
    * used for results of native and not implemented intrinsics.
@@ -341,8 +360,7 @@ public class Call extends ANY implements Comparable<Call>, Context
              c_f32, c_f64              -> NumericValue.create(_dfa, rc);
         case c_bool                    -> _dfa.bool();
         case c_Const_String, c_String  -> _dfa.newConstString(null, this);
-        case c_NOT_FOUND               -> null;
-        case c_sys_ptr                 -> Value.ADDRESS;
+        case c_sys_ptr                 -> _dfa.newInstance(_dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), _site, _context);
         default                        ->
           _dfa._fuir.clazzIsUnitType(rc)
             ? Value.UNIT

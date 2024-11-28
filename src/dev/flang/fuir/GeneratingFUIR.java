@@ -489,7 +489,7 @@ public class GeneratingFUIR extends FUIR
           }
       }
 
-    else if (e instanceof AbstractCurrent c)
+    else if (e instanceof AbstractCurrent)
       {
         result = outerClazz;
       }
@@ -1494,7 +1494,8 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    var vcc = id2clazz(cl).asValue();
+    var cc = id2clazz(cl);
+    var vcc = cc.asValue();
     if (vcc.isRef().yes())
       {
         throw new Error("vcc.isRef in clazzAsValue for "+clazzAsString(cl)+" is "+vcc);
@@ -2411,7 +2412,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE), null);
+        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE));
         if (rc.isRef().yes() &&
             outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
           {
@@ -2591,7 +2592,6 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
 
-    var outer = outerClazz.feature();
     if (c.calledFeature() == null  || c.target() == null)
       {
         return error();  // previous errors, give up

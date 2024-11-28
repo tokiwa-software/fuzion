@@ -1415,7 +1415,6 @@ public class DFA extends ANY
                      if (_fuir.clazzAsString(c).equals(SHOW_VALUES))
                        {
                          var i = 0;
-                         Value prev = null;
                          for (var v : _uniqueValues)
                            {
                              if (v._clazz == c)
@@ -1423,7 +1422,6 @@ public class DFA extends ANY
                                  System.out.println(i + ": " + v);
                                  i++;
                                }
-                             prev = v;
                            }
                        }
                    });
@@ -1726,7 +1724,7 @@ public class DFA extends ANY
           var atomic    = cl._target;
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1).value();
-          var res = atomic.callField(cl._dfa, v, cl.site(), cl);
+          var ignore = atomic.callField(cl._dfa, v, cl.site(), cl);
 
           // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -1786,7 +1784,6 @@ public class DFA extends ANY
           return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.fileio.write"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.fileio.delete"       , cl -> cl._dfa.bool() );
     put("fuzion.sys.fileio.move"         , cl -> cl._dfa.bool() );
     put("fuzion.sys.fileio.create_dir"   , cl -> cl._dfa.bool() );
     put("fuzion.sys.fileio.open"         , cl ->
@@ -1835,7 +1832,6 @@ public class DFA extends ANY
             }
         });
 
-    put("fuzion.sys.fileio.flush"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.fatal_fault0"        , cl-> null                                                              );
     put("fuzion.sys.stdin.stdin0"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.out.stdout"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -2118,55 +2114,16 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ncl = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
+          var ignore = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
-
-    // NYI these intrinsics manipulate an array passed as an arg.
-    put("fuzion.sys.net.bind0"           , cl ->
-        {
-          setArrayI64ElementsToAnything(cl, 5, "fuzion.sys.net.bind0");
-          return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-        });
-    put("fuzion.sys.net.listen"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.accept"          , cl ->
-        {
-          setArrayI64ElementsToAnything(cl, 1, "fuzion.sys.net.accept");
-          return cl._dfa.bool();
-        });
-    put("fuzion.sys.net.connect0"        , cl ->
-        {
-          setArrayI64ElementsToAnything(cl, 5, "fuzion.sys.net.connect0");
-          return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-        });
-    put("fuzion.sys.net.get_peer_address", cl ->
-        {
-          setArrayU8ElementsToAnything(cl, 1, "fuzion.sys.net.get_peer_address");
-          return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-        });
-    put("fuzion.sys.net.get_peer_port"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.read"            , cl ->
-        {
-          setArrayU8ElementsToAnything(cl, 1, "fuzion.sys.net.read");
-          setArrayI64ElementsToAnything(cl, 3, "fuzion.sys.net.read");
-          return cl._dfa.bool();
-        });
-    put("fuzion.sys.net.write"           , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.close0"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.set_blocking0"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
     put("fuzion.sys.process.create" , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.process.wait"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.pipe.read"      , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.pipe.write"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.pipe.close"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-
-    put("fuzion.std.date_time"           , cl ->
-        {
-          setArrayI32ElementsToAnything(cl, 0, "fuzion.sys.net.date_time");
-          return Value.UNIT;
-        });
 
     put("effect.type.replace0"              , cl ->
         {

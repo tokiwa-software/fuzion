@@ -220,7 +220,7 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 // create a new socket and bind to given host:port
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int64_t * result){
+int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
@@ -267,7 +267,7 @@ int fzE_accept(int sockfd){
 // create connection for given parameters
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int64_t * result){
+int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
   // get socket
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
@@ -349,9 +349,9 @@ int fzE_read(int sockfd, void * buf, size_t count){
 // may block if socket is set to blocking.
 // return error code or zero on success
 int fzE_write(int sockfd, const void * buf, size_t count){
-return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
-  ? fzE_net_error()
-  : 0;
+  return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
+    ? fzE_net_error()
+    : 0;
 }
 
 
@@ -495,7 +495,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 }
 
 #ifdef FUZION_ENABLE_THREADS
-pthread_mutex_t fzE_global_mutex;
+static pthread_mutex_t fzE_global_mutex;
 #endif
 
 /**

@@ -32,6 +32,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
+
+static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 bytes");
+static_assert(sizeof(long)   == 8, "implementation restriction, long must be 8 bytes");
+static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8 bytes");
+
 
 void * fzE_malloc_safe(size_t size);
 
@@ -74,7 +80,7 @@ int fzE_socket(int family, int type, int protocol);
 // create a new socket and bind to given host:port
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int64_t * result);
+int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
 
 // set the given socket to listening
 // backlog = queuelength of pending connections
@@ -87,7 +93,7 @@ int fzE_accept(int sockfd);
 // create connection for given parameters
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int64_t * result);
+int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
 
 // get the peer's ip address
 // result is the length of the ip address written to buf
@@ -382,6 +388,18 @@ void    fzE_cnd_destroy  (void * cnd);
  * get a unique id > 0
  */
 uint64_t fzE_unique_id(void);
+
+/**
+ * result is a 32-bit array
+ *
+ * result[0] = year
+ * result[1] = day_in_year
+ * result[2] = hour
+ * result[3] = min
+ * result[4] = sec
+ * result[5] = nanosec;
+ */
+void fzE_date_time(void * result);
 
 
 #endif /* fz.h  */

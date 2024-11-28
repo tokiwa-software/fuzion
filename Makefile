@@ -97,8 +97,6 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
-FZ_SRC_LIB           = $(FZ_SRC)/lib
-FUZION_FILES_LIB     = $(shell find $(FZ_SRC_LIB) -name "*.fz")
 FZ_SRC_TESTS         = $(FZ_SRC)/tests
 FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
 FZ_SRC_INCLUDE       = $(FZ_SRC)/include
@@ -613,35 +611,34 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	rm -f $@.tmp.pdf
 	touch $@
 
-$(BUILD_DIR)/lib: $(FUZION_FILES_LIB)
-	rm -rf $@
-	mkdir -p $(@D)
-	cp -rf $(FZ_SRC_LIB) $@
-
-$(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
+$(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
 
-$(MOD_BASE): $(BUILD_DIR)/lib $(FZ)
+$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
 	mkdir -p $(@D)
-	$(FZ) -sourceDirs=$(BUILD_DIR)/lib -XloadBaseLib=off -saveLib=$@ -XenableSetKeyword
+	cp -rf $(FZ_SRC)/modules/base $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseLib=off -saveLib=$@ -XenableSetKeyword
 	$(FZ) -XXcheckIntrinsics
 
 # keep make from deleting $(MOD_BASE) on ctrl-C:
 .PRECIOUS: $(MOD_BASE)
 
-$(MOD_TERMINAL): $(MOD_BASE) $(FZ) $(FZ_SRC)/modules/terminal/src/terminal.fz
+$(MOD_TERMINAL): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/terminal/src -name "*.fz")
 	mkdir -p $(@D)
-	$(FZ) -sourceDirs=$(FZ_SRC)/modules/terminal/src -saveLib=$@
+	cp -rf $(FZ_SRC)/modules/terminal $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/terminal/src -saveLib=$@
 
-$(MOD_LOCK_FREE): $(MOD_BASE) $(FZ) $(FZ_SRC)/modules/lock_free/src/lock_free.fz
+$(MOD_LOCK_FREE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/lock_free/src -name "*.fz")
 	mkdir -p $(@D)
-	$(FZ) -sourceDirs=$(FZ_SRC)/modules/lock_free/src -saveLib=$@
+	cp -rf $(FZ_SRC)/modules/lock_free $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/lock_free/src -saveLib=$@
 
-$(MOD_NOM): $(MOD_BASE) $(FZ) $(FZ_SRC)/modules/nom/src/nom.fz
+$(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz")
 	mkdir -p $(@D)
-	$(FZ) -sourceDirs=$(FZ_SRC)/modules/nom/src -saveLib=$@
+	cp -rf $(FZ_SRC)/modules/nom $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveLib=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
@@ -1375,21 +1372,37 @@ lint/pmd: $(BUILD_DIR)/pmd
 $(BUILD_DIR)/lib/libfuzion.so: $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib regardless of which OS.
-# NYI: -DGC_THREADS -DGC_PTHREADS
+# NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
 	echo "building fuzion runtime"
+	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
-	-DPTW32_STATIC_LIB -DGC_WIN32_PTHREADS \
+	-DFUZION_ENABLE_THREADS \
+	-DPTW32_STATIC_LIB \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
-	-lMswsock -lAdvApi32 -lWs2_32 /ucrt64/bin/libgc-1.dll -lgc
+	-lMswsock -lAdvApi32 -lWs2_32
 else
 	clang -Wall -Werror -O3 -shared \
+	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
-	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so \
-	-lgc
+	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so
 	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
 endif
+# NYI: eventuall link libgc
+# ifeq ($(OS),Windows_NT)
+# 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+# 	-DPTW32_STATIC_LIB -DGC_WIN32_PTHREADS \
+# 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
+# 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
+# 	-lMswsock -lAdvApi32 -lWs2_32 /ucrt64/bin/libgc-1.dll -lgc
+# else
+# 	clang -Wall -Werror -O3 -shared \
+# 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
+# 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so \
+# 	-lgc
+# 	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
+# endif
 
 
 ########

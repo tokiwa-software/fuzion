@@ -1572,46 +1572,63 @@ public class Call extends AbstractCall
    */
   private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
   {
-    // do not replace this type if target is ref
-    // see #3731 for an example
-    if (!t.isThisType() || !t.feature().isRef())
+    /**
+     * For a call `T.f` on a type parameter whose result type contains
+     * `this.type`, make sure we replace the implicit type parameter to
+     * `this.type`.
+     *
+     * example:
+     *
+     *   equatable is
+     *
+     *     type.equality(a, b equatable.this.type) bool is abstract
+     *
+     *   equals(T type : equatable, x, y T) => T.equality x y
+     *
+     * For the call `T.equality x y`, we must replace the formal argument type
+     * for `a` (and `b`) by `T`.
+     */
+    var target = target();
+    var tt = target().type();
+    if (target instanceof Call tc &&
+        tc.calledFeature().isTypeParameter() &&
+        !tt.isGenericArgument())
       {
-        /**
-         * For a call `T.f` on a type parameter whose result type contains
-         * `this.type`, make sure we replace the implicit type parameter to
-         * `this.type`.
-         *
-         * example:
-         *
-         *   equatable is
-         *
-         *     type.equality(a, b equatable.this.type) bool is abstract
-         *
-         *   equals(T type : equatable, x, y T) => T.equality x y
-         *
-         * For the call `T.equality x y`, we must replace the formal argument type
-         * for `a` (and `b`) by `T`.
-         */
-        var target = target();
-        var tt = target().type();
-        if (target instanceof Call tc &&
-            tc.calledFeature().isTypeParameter() &&
-            !tt.isGenericArgument())
+        t = t.replace_type_parameter_used_for_this_type_in_cotype
+          (tt.feature(),
+           tc);
+      }
+    if (!calledFeature().isOuterRef())
+      {
+        var t0 = t;
+        var declF = calledFeature().outer();
+        if (!tt.isGenericArgument() && declF != tt.feature())
           {
-            t = t.replace_type_parameter_used_for_this_type_in_cotype
-              (tt.feature(),
-               tc);
+            var heir = tt.feature();
+            if (!heir.inheritsFrom(declF))
+              {
+                // NYI: UNDER DEVELOPMENT: This is likely a bug in handling of
+                // `Lazy` or partial application. This happens in list.fz when
+                // wrapping `Lazy` in a `Lazy`, need to check!
+                if (false)
+                  {
+                    System.out.println("target is "+target().getClass()+" trgt: "+target()+" "+tt.feature().isOuterRef());
+                    System.out.println("target is "+target().getClass()+" call: "+this);
+                    System.out.println("Calling "+calledFeature().qualifiedName()+" no inh from "+declF.qualifiedName()+" -> "+tt.feature().qualifiedName()+" in "+pos().show());
+                  }
+              }
+            else
+              {
+                t = t.replace_inherited_this_type(declF, heir,
+                                                  (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
+              }
           }
-        if (!calledFeature().isOuterRef())
-          {
-            var inner = ResolvedNormalType.newType(calledFeature().selfType(),
-                                              _target.type());
-            var t0 = t;
-            t = t.replace_this_type_by_actual_outer(inner,
-                                                    (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
-                                                    context);
-          }
-        }
+        var inner = ResolvedNormalType.newType(calledFeature().selfType(),
+                                               _target.type());
+        t = t.replace_this_type_by_actual_outer(inner,
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
+                                                context);
+      }
     return t;
   }
 
@@ -1785,9 +1802,9 @@ public class Call extends AbstractCall
       { // we failed inferring all type parameters, so report errors
         for (var a : _actuals)
           {
-            if (a instanceof Call ac)
+            if (a instanceof Call)
               {
-                var t = a.type();
+                var ignore = a.type();
               }
           }
       }

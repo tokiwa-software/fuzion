@@ -36,7 +36,6 @@ import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.Pair;
 import dev.flang.util.Version;
 
 
@@ -354,12 +353,6 @@ public class Intrinsics extends ANY
             CExpr.int32const(0).ret()
           );
         });
-    put("fuzion.sys.fileio.delete"       ,  (c,cl,outer,in) ->
-      CExpr.iff(
-        CExpr.call("fzE_rm", new List<>(A0.castTo("char *")))
-          .eq(new CIdent("0")),
-            c._names.FZ_TRUE.ret(),
-            c._names.FZ_FALSE.ret()));
     put("fuzion.sys.fileio.move"         , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
@@ -465,9 +458,6 @@ public class Intrinsics extends ANY
         c._names.FZ_TRUE.ret());
     });
     put("fuzion.sys.fileio.close_dir", (c,cl,outer,in) -> CExpr.call("fzE_closedir", new List<>(A0.castTo("intptr_t *"))).ret());
-
-    put("fuzion.sys.fileio.flush"      , (c,cl,outer,in) ->
-      CExpr.call("fflush", new List<>(A0.castTo("FILE *"))).ret());
 
     put("fuzion.sys.fatal_fault0"      , (c,cl,outer,in) ->
         CStmnt.seq(CExpr.fprintfstderr("*** failed %s: `%s`\n", new CExpr[] {A0.castTo("char *"),
@@ -838,83 +828,6 @@ public class Intrinsics extends ANY
     {
       return CExpr.call("fzE_thread_join", new List<>(A0));
     });
-
-    put("fuzion.std.date_time", (c,cl,outer,in) ->
-      {
-        var rawTime = new CIdent("rawtime");
-        var ptm = new CIdent("ptm");
-
-        return CStmnt.seq(
-            CStmnt.decl("time_t", rawTime),
-            CExpr.call("time", new List<>(rawTime.adrOf())),
-            CStmnt.decl("struct tm *", ptm, CExpr.call("gmtime", new List<>(rawTime.adrOf()))),
-            A0.castTo("fzT_1i32 *").index(0).assign(ptm.deref().field(new CIdent("tm_year")).add(CExpr.int32const(1900))),
-            A0.castTo("fzT_1i32 *").index(1).assign(ptm.deref().field(new CIdent("tm_yday")).add(CExpr.int32const(1))),
-            A0.castTo("fzT_1i32 *").index(2).assign(ptm.deref().field(new CIdent("tm_hour"))),
-            A0.castTo("fzT_1i32 *").index(3).assign(ptm.deref().field(new CIdent("tm_min"))),
-            A0.castTo("fzT_1i32 *").index(4).assign(ptm.deref().field(new CIdent("tm_sec"))),
-            A0.castTo("fzT_1i32 *").index(5).assign(CExpr.int32const(0)));
-      });
-
-
-    put("fuzion.sys.net.bind0",    (c,cl,outer,in) ->
-      CExpr.call("fzE_bind", new List<CExpr>(
-        A0.castTo("int"),       // family
-        A1.castTo("int"),       // socktype
-        A2.castTo("int"),       // protocol
-        A3.castTo("char *"),    // host
-        A4.castTo("char *"),    // port
-        A5.castTo("int64_t *")  // result
-    )).ret());
-
-    put("fuzion.sys.net.listen",  (c,cl,outer,in) -> CExpr.call("fzE_listen", new List<CExpr>(
-      A0.castTo("int"), // socket descriptor
-      A1.castTo("int")  // size of backlog
-    )).ret());
-
-    put("fuzion.sys.net.accept",  (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_accept", new List<CExpr>(
-      A0.castTo("int") // socket descriptor
-    )), A1));
-
-    put("fuzion.sys.net.connect0",    (c,cl,outer,in) ->
-    CExpr.call("fzE_connect", new List<CExpr>(
-      A0.castTo("int"),       // family
-      A1.castTo("int"),       // socktype
-      A2.castTo("int"),       // protocol
-      A3.castTo("char *"),    // host
-      A4.castTo("char *"),    // port
-      A5.castTo("int64_t *")  // result (err or descriptor)
-    )).ret());
-
-    put("fuzion.sys.net.get_peer_address", (c,cl,outer,in) ->
-      CExpr.call("fzE_get_peer_address", new List<>(A0.castTo("int"), A1.castTo("void *"))).castTo("fzT_1i32").ret()
-    );
-
-    put("fuzion.sys.net.get_peer_port", (c,cl,outer,in) ->
-      CExpr.call("fzE_get_peer_port", new List<>(A0.castTo("int"))).castTo("fzT_1u16").ret()
-    );
-
-    put("fuzion.sys.net.read", (c,cl,outer,in) -> assignNetErrorOnError(c, CExpr.call("fzE_read", new List<CExpr>(
-      A0.castTo("int"),    // socket descriptor
-      A1.castTo("void *"), // buffer
-      A2.castTo("size_t")  // buffer length
-    )), A3));
-
-    put("fuzion.sys.net.write", (c,cl,outer,in) -> CExpr.call("fzE_write", new List<CExpr>(
-      A0.castTo("int"),    // socket descriptor
-      A1.castTo("void *"), // buffer
-      A2.castTo("size_t")  // buffer length
-    )).ret());
-
-    put("fuzion.sys.net.close0", (c,cl,outer,in) -> CExpr.call("fzE_close", new List<CExpr>(
-      A0.castTo("int") // socket descriptor
-    )).ret());
-
-    put("fuzion.sys.net.set_blocking0", (c,cl,outer,in) -> CExpr.call("fzE_set_blocking", new List<CExpr>(
-      A0.castTo("int"), // socket descriptor
-      A1.castTo("int")  // blocking
-    )).ret());
-
 
     put("effect.type.abort0"     ,
         "effect.type.default0"   ,
