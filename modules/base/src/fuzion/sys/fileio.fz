@@ -106,12 +106,8 @@ module fileio is
     if fzE_rm arr != 0
       error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
 
-  # intrinsic that deletes the file/dir represented by the path returning true in case of success
-  # and false in case of failure
-  #
-  fzE_rm(
-                 # the internal array data representing the file/dir path in bytes
-                 path fuzion.sys.Pointer) i32 => native
+  fzE_rm(path fuzion.sys.Pointer) i32 => native
+
 
 
   #  moves file/dir from an old path to a the new path

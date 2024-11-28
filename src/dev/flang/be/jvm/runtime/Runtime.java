@@ -1408,6 +1408,7 @@ public class Runtime extends ANY
     else if (obj instanceof float  [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_FLOAT),  0, arr, 0, arr.length );  }
     else if (obj instanceof double [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_DOUBLE), 0, arr, 0, arr.length );  }
     else if (obj instanceof boolean[] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_INT),    0, arr, 0, arr.length );  }
+    else if (obj instanceof MemorySegment) {}
     else { throw new Error("NYI"); }
   }
 
@@ -1429,6 +1430,7 @@ public class Runtime extends ANY
     else if (obj instanceof float  [] arr) { length = arr.length; bytes = 4; }
     else if (obj instanceof double [] arr) { length = arr.length; bytes = 8; }
     else if (obj instanceof boolean[] arr) { length = arr.length; bytes = 4; }
+    else if (obj instanceof MemorySegment memSeg) { return memSeg; }
     else { throw new Error("NYI"); }
 
     var memSegment = Arena.ofAuto().allocate(length * bytes);

@@ -21,25 +21,25 @@
 #
 # -----------------------------------------------------------------------
 
-module:public connection(desc i64) is
+module:public connection(desc i32) is
 
   # close connection manually.
   # note that connections are closed automatically
   # when effect is uninstalled, i.e. on abort or when thread is finished.
   #
-  public close ! net.connections =>
-    net.connections.env.close desc
+  public close =>
+    fuzion.sys.net.close desc
 
 
   # is the connection still active?
   #
-  public is_active ! net.connections =>
-    net.connections.env.is_active desc
+  public is_active =>
+    true # NYI
 
 
   # this installs reader, writer and channel for the given connection
   #
-  public with(T type, LM type : mutate, fn ()->T) ! net.connections
+  public with(T type, LM type : mutate, fn ()->T)
   pre is_active
   =>
     with0 T LM fn
@@ -48,7 +48,7 @@ module:public connection(desc i64) is
   # helper feature, without precondition `is_active`
   # to make this usable from any thread
   #
-  with0(T type, LM type : mutate, fn ()->T) ! net.connections
+  with0(T type, LM type : mutate, fn ()->T)
   =>
     (io.buffered.reader LM (read_provider desc) 1024) ! ()->
       (io.buffered.writer (write_provider desc) 1024) ! ()->
@@ -60,7 +60,7 @@ module:public connection(desc i64) is
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
-  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) ! net.connections
+  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T)
   pre is_active
   =>
     TP.env.submit (outcome T) ()->

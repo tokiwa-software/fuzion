@@ -1490,7 +1490,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       /* to contains original    .this.type and
        * tr contains redefinition.this.type
        */
-      to.replace_this_type(original.outer(), redefinition.outer())
+      to.replace_this_type(original.outer(), redefinition.outer(), null)
         .compareTo(tr) == 0                                                       ||
 
       /* to depends on original.this.type, redefinition is fixed and tr is
@@ -1738,12 +1738,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           {
             AstErrors.illegalResultTypeThisType(f);
           }
-
-        if (!(f.isField() || f.isAbstract() || !f.resultType().feature().isRef()))
-          {
-            AstErrors.ambiguousResultType(f);
-          }
-
       }
   }
 

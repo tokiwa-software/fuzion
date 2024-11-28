@@ -2059,39 +2059,6 @@ public class DFA extends ANY
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
-    // NYI these intrinsics manipulate an array passed as an arg.
-    put("fuzion.sys.net.bind0"           , cl ->
-        {
-          setArrayI64ElementsToAnything(cl, 5, "fuzion.sys.net.bind0");
-          return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-        });
-    put("fuzion.sys.net.listen"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.accept"          , cl ->
-        {
-          setArrayI64ElementsToAnything(cl, 1, "fuzion.sys.net.accept");
-          return cl._dfa.bool();
-        });
-    put("fuzion.sys.net.connect0"        , cl ->
-        {
-          setArrayI64ElementsToAnything(cl, 5, "fuzion.sys.net.connect0");
-          return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-        });
-    put("fuzion.sys.net.get_peer_address", cl ->
-        {
-          setArrayU8ElementsToAnything(cl, 1, "fuzion.sys.net.get_peer_address");
-          return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-        });
-    put("fuzion.sys.net.get_peer_port"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.read"            , cl ->
-        {
-          setArrayU8ElementsToAnything(cl, 1, "fuzion.sys.net.read");
-          setArrayI64ElementsToAnything(cl, 3, "fuzion.sys.net.read");
-          return cl._dfa.bool();
-        });
-    put("fuzion.sys.net.write"           , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.close0"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.net.set_blocking0"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-
     put("fuzion.sys.process.create" , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.process.wait"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.pipe.read"      , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );

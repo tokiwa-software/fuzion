@@ -238,7 +238,7 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 // create a new socket and bind to given host:port
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int64_t * result){
+int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
@@ -285,7 +285,7 @@ int fzE_accept(int sockfd){
 // create connection for given parameters
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int64_t * result){
+int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
   // get socket
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)

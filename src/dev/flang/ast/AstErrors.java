@@ -2208,6 +2208,14 @@ public class AstErrors extends ANY
         " or remove the return type if you want to define a constructor.");
   }
 
+  public static void unimplementedConstructor(SourcePosition pos, String keyword)
+  {
+    error(pos, keyword + " feature must not be constructor.",
+        "A constructor feature must always be implemented.\n" +
+        "To solve this, either implement the constructor feature or change it to a function feature by replacing " +
+        skw(keyword) + " with " + skw("=>") + ".");
+  }
+
   public static void abstractFeaturesVisibilityMoreRestrictiveThanOuter(Feature f)
   {
     error(f.pos(), "Abstract features visibility must not be more restrictive than outer features visibility.",
@@ -2335,17 +2343,6 @@ public class AstErrors extends ANY
           "Feature " + sbnf(f) + " is not an effect.",
           "Effects required by a feature are specified with " + skw("!") + " in the signature. " +
           "Therefore, only valid effects may follow after it.");
-  }
-
-  public static void ambiguousResultType(Feature f)
-  {
-    error(f.pos(),
-      "Feature " + sbnf(f) + " has an ambiguous result type " + s(f.resultType()) + ".",
-      "This is because result type is a this-type and the underlying feature is a reference.\n" +
-      "To solve this, either\n" +
-       "  return a value this-type\n" +
-       "or\n"
-       + "  return the type of the reference itself (instead of " + s(f.resultType()) + " return " + s(f.resultType().asRef()) + ").");
   }
 
   public static void openGenericMissingDots(SourcePosition pos, AbstractType t)
