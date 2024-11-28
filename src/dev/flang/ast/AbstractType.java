@@ -1533,12 +1533,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param parent the parent feature we are inheriting `this` type from.
    *
    * @param heir the redefining feature
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.  This will
+   * be used to check for AstErrors.illegalOuterRefTypeInCall.
    */
-  public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir)
-  {
-    return replace_this_type(parent, heir, null);
-  }
-
   public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (isThisType() && feature() == parent)
@@ -1555,6 +1554,52 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         return applyToGenericsAndOuter(g -> g.replace_this_type(parent, heir, foundRef));
       }
   }
+
+
+  /**
+   * replace `x.this` types along inheritance chain from `declF` to `heir`.
+   *
+   * find outer that inherits this clazz, e.g.
+   *
+   *   x.me x.this => ...
+   *   y : x is
+   *     _ := y.me
+   *
+   * a the call `y.me`, type `x.this` is declared in `x` (`declF`) and used in
+   * `y` (`heir`), the type will be replaced by `y.this`.
+   *
+   * @param declF the parent feature that contains the inherited feature where
+   * this type is used
+   *
+   * @param heir the child feature that inherits from `declF` and uses this type
+   * in the new context
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.  This will
+   * be used to check for AstErrors.illegalOuterRefTypeInCall.
+   *
+   * @return the inheritd type.
+   */
+  public AbstractType replace_inherited_this_type(AbstractFeature declF, AbstractFeature heir, BiConsumer<AbstractType, AbstractType> foundRef)
+  {
+    if (PRECONDITIONS) require
+      (heir.inheritsFrom(declF));
+
+    var t = this;
+    var inh = heir.tryFindInheritanceChain(declF);
+    if (CHECKS) check
+      (Errors.any() || inh != null);
+    if (inh != null)
+      {
+        for (AbstractCall c : inh)
+          {
+            var parent = c.calledFeature();
+            t = t.replace_this_type(parent, heir, foundRef);
+          }
+      }
+    return t;
+  }
+
 
 
   /**

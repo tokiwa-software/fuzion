@@ -1944,45 +1944,43 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    AbstractFeature f = feature();
-    var ff = f;
-    var ft = t;
     // error handling for replacing `.this` types of `ref` types in a call result, see #4273
     var err = new List<Consumer<AbstractCall>>();
+    var ft = t; // final variant of t to be used in lambda
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
-      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, ff, ft, from, to)); };
+      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
     for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
       {
+        // iterate using `child` and `parent` over outer clazzes starting at
+        // `this` where `child` is the current outer clazz and `parent` is the
+        // parent feature the previous inner clazz' feature was inherted from.
         var child = this;
-        AbstractFeature parent = f;
-        // find outer that inherits this clazz, e.g.
-        //
-        //   Any.me =>
-        //     res := Any.this
-        //     res
-        //   x : Any is
-        //
-        // here. for `x.me.res` inherited from `Any.me.res`, the inheritance
-        // is two features out when `x` inherits form `Any`.
-        while (child != null)//  && child.feature() == parent)
+        AbstractFeature parent = feature();
+        while (child != null)
           {
             var childf = child.feature();
             if (i == 0)
               {
+                // find outer that inherits this clazz, e.g.
+                //
+                //   Any.me =>
+                //     res := Any.this
+                //     res
+                //   x : Any is
+                //
+                // here, for `x.me.res` inherited from `Any.me.res`, the
+                // inheritance is two features out when `x` (`childf`) inherits
+                // form `Any` (`parent`).
+                t = t.replace_inherited_this_type(parent, childf, foundRef);
                 var inh = childf.tryFindInheritanceChain(parent);
                 if (CHECKS) check
                   (Errors.any() || inh != null);
                 if (inh != null)
                   {
-                    for (AbstractCall ic : inh)
-                      {
-                        var parentf = ic.calledFeature();
-                        t = t.replace_this_type(parentf, childf, foundRef);
-                      }
                     t = handDownThroughInheritsCalls(t, select, inh);
-                    t = t.applyTypeParsLocally(child._type, select);
                   }
+                t = t.applyTypeParsLocally(child._type, select);
               }
             else
               {

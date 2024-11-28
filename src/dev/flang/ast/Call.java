@@ -1603,7 +1603,9 @@ public class Call extends AbstractCall
             var heir = tt.feature();
             if (!heir.inheritsFrom(declF))
               {
-                // NYI: strange, happens in list.fz when wrapping Lazy in a Lazy, need to check!
+                // NYI: UNDER DEVELOPMENT: This is likely a bug in handling of
+                // `Lazy` or partial application. This happens in list.fz when
+                // wrapping `Lazy` in a `Lazy`, need to check!
                 if (false)
                   {
                     System.out.println("target is "+target().getClass()+" trgt: "+target()+" "+tt.feature().isOuterRef());
@@ -1613,13 +1615,8 @@ public class Call extends AbstractCall
               }
             else
               {
-                var inh = heir.findInheritanceChain(declF);
-                for (AbstractCall c : inh)
-                  {
-                    var parent = c.calledFeature();
-                    t = t.replace_this_type(parent, heir,
-                                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
-                  }
+                t = t.replace_inherited_this_type(declF, heir,
+                                                  (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
               }
           }
         var inner = ResolvedNormalType.newType(calledFeature().selfType(),
