@@ -1784,7 +1784,6 @@ public class DFA extends ANY
           return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.fileio.write"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.fileio.delete"       , cl -> cl._dfa.bool() );
     put("fuzion.sys.fileio.move"         , cl -> cl._dfa.bool() );
     put("fuzion.sys.fileio.create_dir"   , cl -> cl._dfa.bool() );
     put("fuzion.sys.fileio.open"         , cl ->

@@ -1377,12 +1377,14 @@ $(BUILD_DIR)/lib/libfuzion.so: $(BUILD_DIR)/include $(FUZION_FILES_RT)
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	-DFUZION_ENABLE_THREADS \
 	-DPTW32_STATIC_LIB \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
 	-lMswsock -lAdvApi32 -lWs2_32
 else
 	clang -Wall -Werror -O3 -shared \
+	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so
 	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
