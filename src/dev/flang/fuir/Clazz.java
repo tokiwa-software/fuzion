@@ -1975,13 +1975,10 @@ class Clazz extends ANY implements Comparable<Clazz>
               (Errors.any() || inh != null);
             if (inh != null)
               {
-                if (childf != parent)
+                for (AbstractCall ic : inh)
                   {
-                    for (AbstractCall ic : inh)
-                      {
-                        var parentf = ic.calledFeature();
-                        t = t.replace_this_type(parentf, childf, foundRef);
-                      }
+                    var parentf = ic.calledFeature();
+                    t = t.replace_this_type(parentf, childf, foundRef);
                   }
                 t = handDownThroughInheritsCalls(t, select, inh);
                 t = t.applyTypeParsLocally(child._type, select);
