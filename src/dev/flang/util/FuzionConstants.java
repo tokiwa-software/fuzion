@@ -81,7 +81,12 @@ public class FuzionConstants extends ANY
   /**
    * Prefix of artificially generated name of outer refs.
    */
-  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^";
+  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^<";
+
+  /**
+   * Suffix of artificially generated name of outer refs.
+   */
+  public static final String OUTER_REF_SUFFIX = ">";
 
   /**
    * Name of Any feature, i.e., the implicit parent feature of all other
