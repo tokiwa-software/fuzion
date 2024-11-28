@@ -433,7 +433,7 @@ public class Intrinsics extends ANY
         );
 
     put("fuzion.sys.fileio.mmap"  , (c,cl,outer,in) -> CExpr.call("fzE_mmap", new List<CExpr>(
-      A0.castTo("FILE * "),   // file
+      A0.castTo("void * "),   // file
       A1.castTo("uint64_t"),  // offset
       A2.castTo("size_t"),    // size
       A3.castTo("int *")      // int[1] contains success=0 or error=-1

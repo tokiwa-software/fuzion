@@ -949,3 +949,46 @@ void fzE_date_time(void * result)
   ((int32_t *)result)[4] = ptm->tm_sec;
   ((int32_t *)result)[5] = 0;
 }
+
+
+int64_t fzE_file_read(void * file, void * buf, int32_t size)
+{
+  size_t result = fread(buf, 1, size, (FILE*)file);
+  return ferror((FILE*)file)!=0
+    ? -2
+    : result==0 && feof((FILE*)file)!=0
+    ? -1
+    : (int64_t)result;
+}
+
+int64_t fzE_file_write(void * file, void * buf, int32_t size)
+{
+  size_t result = fwrite(buf, 1, size, (FILE*)file);
+  return ferror((FILE*)file)!=0
+    ? -1
+    : (int64_t)result;
+}
+
+int32_t fzE_file_move(const char *oldpath, const char *newpath)
+{
+  return rename(oldpath, newpath);
+}
+
+int32_t fzE_file_close(void * file)
+{
+  return fclose((FILE*)file);
+}
+
+int32_t fzE_file_seek(void * file, int64_t offset)
+{
+  return fseek((FILE*)file, offset, SEEK_SET);
+}
+
+int64_t fzE_file_position(void * file)
+{
+  return ftell((FILE*)file);
+}
+
+void * fzE_stdin() { return stdin; }
+void * fzE_stdout() { return stdout; }
+void * fzE_stderr() { return stderr; }

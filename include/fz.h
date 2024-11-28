@@ -113,8 +113,6 @@ int fzE_read(int sockfd, void * buf, size_t count);
 // return error code or zero on success
 int fzE_write(int sockfd, const void * buf, size_t count);
 
-// returns -1 on error, size of file in bytes otherwise
-long fzE_get_file_size(FILE* file);
 
 /*
  * create a memory map of a file at an offset.
@@ -126,7 +124,7 @@ long fzE_get_file_size(FILE* file);
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result);
+void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
 
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
@@ -262,6 +260,16 @@ int fzE_pipe_close(int64_t desc);
  *
  */
 void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+
+int64_t fzE_file_read(void * file, void * buf, int32_t size);
+int64_t fzE_file_write(void * file, void * buf, int32_t size);
+int32_t fzE_file_move(const char *oldpath, const char *newpath);
+int32_t fzE_file_close(void * file);
+int32_t fzE_file_seek(void * file, int64_t offset);
+int64_t fzE_file_position(void * file);
+void * fzE_file_stdin();
+void * fzE_file_stdout();
+void * fzE_file_stderr();
 
 
 #ifdef FUZION_LINK_JVM

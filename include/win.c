@@ -394,17 +394,17 @@ DWORD low_word(off_t value) {
 
 
 // returns -1 on error, size of file in bytes otherwise
-long fzE_get_file_size(FILE* file) {
+long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = ftell(file);
-  if(cur_pos == -1 || fseek(file, 0, SEEK_END) == -1){
+  long cur_pos = ftell((FILE *)file);
+  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
     return -1;
   }
 
-  long size = ftell(file);
+  long size = ftell((FILE *)file);
 
   // reset seek position
-  fseek(file, cur_pos, SEEK_SET);
+  fseek((FILE *)file, cur_pos, SEEK_SET);
 
   return size;
 }
@@ -420,14 +420,14 @@ long fzE_get_file_size(FILE* file) {
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 
-  if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
+  if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
     result[0] = -1;
     return NULL;
   }
 
-  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno(file));
+  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno((FILE *)file));
 
   /* "If dwMaximumSizeLow and dwMaximumSizeHigh are 0 (zero), the maximum size of the file mapping
       object is equal to the current size of the file that hFile identifies.
