@@ -1944,12 +1944,12 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    AbstractFeature o = feature();
-    var fo = o;
+    AbstractFeature f = feature();
+    var ff = f;
     var ft = t;
 
     var child = this;
-    AbstractFeature parent = o;
+    AbstractFeature parent = f;
     // find outer that inherits this clazz, e.g.
     //
     //   Any.me =>
@@ -1971,38 +1971,47 @@ class Clazz extends ANY implements Comparable<Clazz>
     // error handling for replacing `.this` types of `ref` types in a call result, see #4273
     var err = new List<Consumer<AbstractCall>>();
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
-      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, fo, ft, from, to)); };
+      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, ff, ft, from, to)); };
 
     if (child != null)
       {
         var childf = child.feature();
-        for (AbstractCall ic : childf.findInheritanceChain(parent))
+        var inh = childf.tryFindInheritanceChain(parent);
+        if (CHECKS) check
+          (Errors.any() || inh != null);
+        if (inh != null)
           {
-            var parentf = ic.calledFeature();
-            t = t.replace_this_type(parentf, childf, foundRef);
+            for (AbstractCall ic : inh)
+              {
+                var parentf = ic.calledFeature();
+                t = t.replace_this_type(parentf, childf, foundRef);
+              }
+            //  t = handDownThroughInheritsCalls(t, select, inh);
+            // t = t.applyTypeParsLocally(child._type, select);
           }
       }
 
-    var oc = this;
-    while (!o.isUniverse() && oc != null)
+    child = this;
+    var o = f;
+    while (child != null)
       {
-        var f = oc.feature();
-        var inh2 = f.tryFindInheritanceChain(o);
+        var childf = child.feature();
+        var inh2 = childf.tryFindInheritanceChain(o);
         if (CHECKS) check
           (Errors.any() || inh2 != null);
         if (inh2 != null)
           {
             t = handDownThroughInheritsCalls(t, select, inh2);
-            t = t.applyTypeParsLocally(oc._type, select);
+            t = t.applyTypeParsLocally(child._type, select);
           }
-        t = t.replace_this_type_by_actual_outer2(oc._type,
+        t = t.replace_this_type_by_actual_outer2(child._type,
                                                  foundRef,
                                                  Context.NONE);
 
         // NYI: Where is the different to just using _outer?
-        oc = f.hasOuterRef() ? oc.lookup(f.outerRef()).resultClazz()
-                             : oc._outer;
-        o = f.outer();
+        child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
+                                     : child._outer;
+        o = childf.outer();
       }
 
     var res = _fuir.type2clazz(t);
