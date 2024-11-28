@@ -584,20 +584,6 @@ public class Intrinsics extends ANY
       }
   }
 
-  public static boolean fuzion_sys_fileio_delete(Object s)
-  {
-    Runtime.unsafeIntrinsic();
-    Path path = Path.of(Runtime.utf8ByteArrayDataToString((byte[]) s));
-    try
-      {
-        return Files.deleteIfExists(path);
-      }
-    catch (Throwable e)
-      {
-        return false;
-      }
-  }
-
   public static boolean fuzion_sys_fileio_move(Object o, Object n)
   {
     Runtime.unsafeIntrinsic();

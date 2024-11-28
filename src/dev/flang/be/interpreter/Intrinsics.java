@@ -420,19 +420,6 @@ public class Intrinsics extends ANY
               return new i32Value(-1);
             }
         });
-    putUnsafe("fuzion.sys.fileio.delete", (executor, innerClazz) -> args ->
-        {
-          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          try
-            {
-              boolean b = Files.deleteIfExists(path);
-              return new boolValue(b);
-            }
-          catch (Throwable e)
-            {
-              return new boolValue(false);
-            }
-        });
     putUnsafe("fuzion.sys.fileio.move", (executor, innerClazz) -> args ->
         {
           Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));

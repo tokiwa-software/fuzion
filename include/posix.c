@@ -495,7 +495,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 }
 
 #ifdef FUZION_ENABLE_THREADS
-pthread_mutex_t fzE_global_mutex;
+static pthread_mutex_t fzE_global_mutex;
 #endif
 
 /**

@@ -353,12 +353,6 @@ public class Intrinsics extends ANY
             CExpr.int32const(0).ret()
           );
         });
-    put("fuzion.sys.fileio.delete"       ,  (c,cl,outer,in) ->
-      CExpr.iff(
-        CExpr.call("fzE_rm", new List<>(A0.castTo("char *")))
-          .eq(new CIdent("0")),
-            c._names.FZ_TRUE.ret(),
-            c._names.FZ_FALSE.ret()));
     put("fuzion.sys.fileio.move"         , (c,cl,outer,in) ->
         {
           var resultIdent = new CIdent("result");
