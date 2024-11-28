@@ -1952,56 +1952,59 @@ class Clazz extends ANY implements Comparable<Clazz>
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
       { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, ff, ft, from, to)); };
 
-    for (var i = 0; i<2; i++)
+    for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
       {
-    var child = this;
-    AbstractFeature parent = f;
-    // find outer that inherits this clazz, e.g.
-    //
-    //   Any.me =>
-    //     res := Any.this
-    //     res
-    //   x : Any is
-    //
-    // here. for `x.me.res` inherited from `Any.me.res`, the inheritance
-    // is two features out when `x` inherits form `Any`.
-    while (child != null)//  && child.feature() == parent)
-      {
-        var childf = child.feature();
-        if (i == 0)
+        var child = this;
+        AbstractFeature parent = f;
+        // find outer that inherits this clazz, e.g.
+        //
+        //   Any.me =>
+        //     res := Any.this
+        //     res
+        //   x : Any is
+        //
+        // here. for `x.me.res` inherited from `Any.me.res`, the inheritance
+        // is two features out when `x` inherits form `Any`.
+        while (child != null)//  && child.feature() == parent)
           {
-            var inh = childf.tryFindInheritanceChain(parent);
-            if (CHECKS) check
-              (Errors.any() || inh != null);
-            if (inh != null)
+            var childf = child.feature();
+            if (i == 0)
               {
-                for (AbstractCall ic : inh)
+                var inh = childf.tryFindInheritanceChain(parent);
+                if (CHECKS) check
+                  (Errors.any() || inh != null);
+                if (inh != null)
                   {
-                    var parentf = ic.calledFeature();
-                    t = t.replace_this_type(parentf, childf, foundRef);
+                    for (AbstractCall ic : inh)
+                      {
+                        var parentf = ic.calledFeature();
+                        t = t.replace_this_type(parentf, childf, foundRef);
+                      }
+                    t = handDownThroughInheritsCalls(t, select, inh);
+                    t = t.applyTypeParsLocally(child._type, select);
                   }
-                t = handDownThroughInheritsCalls(t, select, inh);
-                t = t.applyTypeParsLocally(child._type, select);
               }
+            else
+              {
+                // NYI: UNDER DEVELOPMENT: This currently cannot be done during
+                // the first pass of the loop, need to check why (most likely it
+                // performs something thst i in conflict with the call to
+                // `t.replace_this_type(parentf, childf, foundRef)` a few lines
+                // above.
+                t = t.replace_this_type_by_actual_outer2(child._type,
+                                                         foundRef,
+                                                         Context.NONE);
+              }
+            // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
+            child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
+                                         : child._outer;
+            parent = childf.outer();
           }
-        else
-          {
-            t = t.replace_this_type_by_actual_outer2(child._type,
-                                                     foundRef,
-                                                     Context.NONE);
-          }
-        // NYI: Where is the different to just using _outer?
-        child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
-                                     : child._outer;
-        parent = childf.outer();
+        if (CHECKS) check
+          (Errors.any() || (child == null) == (parent == null));
       }
-    if (CHECKS) check
-      (Errors.any() || (child == null) == (parent == null));
-      }
-
 
     var res = _fuir.type2clazz(t);
-
     if (res.feature().isCotype())
       {
         var ac = handDown(res._type.generics().get(0));
