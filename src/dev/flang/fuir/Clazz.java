@@ -1950,57 +1950,46 @@ class Clazz extends ANY implements Comparable<Clazz>
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
       { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
-    for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
+    // iterate using `child` and `parent` over outer clazzes starting at
+    // `this` where `child` is the current outer clazz and `parent` is the
+    // parent feature the previous inner clazz' feature was inherted from.
+    var child = this;
+    AbstractFeature parent = feature();
+    while (child != null)
       {
-        // iterate using `child` and `parent` over outer clazzes starting at
-        // `this` where `child` is the current outer clazz and `parent` is the
-        // parent feature the previous inner clazz' feature was inherted from.
-        var child = this;
-        AbstractFeature parent = feature();
-        while (child != null)
-          {
-            var childf = child.feature();
-            if (i == 0)
-              {
-                // find outer that inherits this clazz, e.g.
-                //
-                //   Any.me =>
-                //     res := Any.this
-                //     res
-                //   x : Any is
-                //
-                // here, for `x.me.res` inherited from `Any.me.res`, the
-                // inheritance is two features out when `x` (`childf`) inherits
-                // form `Any` (`parent`).
-                t = t.replace_inherited_this_type(parent, childf, foundRef);
-                var inh = childf.tryFindInheritanceChain(parent);
-                if (CHECKS) check
-                  (Errors.any() || inh != null);
-                if (inh != null)
-                  {
-                    t = handDownThroughInheritsCalls(t, select, inh);
-                  }
-                t = t.applyTypeParsLocally(child._type, select);
-              }
-            else
-              {
-                // NYI: UNDER DEVELOPMENT: This currently cannot be done during
-                // the first pass of the loop, need to check why (most likely it
-                // performs something thst i in conflict with the call to
-                // `t.replace_this_type(parentf, childf, foundRef)` a few lines
-                // above.
-                t = t.replace_this_type_by_actual_outer2(child._type,
-                                                         foundRef,
-                                                         Context.NONE);
-              }
-            // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
-            child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
-                                         : child._outer;
-            parent = childf.outer();
-          }
+        var childf = child.feature();
+
+        // find outer that inherits this clazz, e.g.
+        //
+        //   Any.me =>
+        //     res := Any.this
+        //     res
+        //   x : Any is
+        //
+        // here, for `x.me.res` inherited from `Any.me.res`, the
+        // inheritance is two features out when `x` (`childf`) inherits
+        // form `Any` (`parent`).
+        t = t.replace_inherited_this_type(parent, childf, foundRef);
+        var inh = childf.tryFindInheritanceChain(parent);
         if (CHECKS) check
-          (Errors.any() || (child == null) == (parent == null));
+          (Errors.any() || inh != null);
+        if (inh != null)
+          {
+            t = handDownThroughInheritsCalls(t, select, inh);
+          }
+        t = t.applyTypeParsLocally(child._type, select);
+        t = t.replace_this_type_by_actual_outer3(child._type,
+                                                 foundRef,
+                                                 Context.NONE);
+
+        // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
+        child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
+                                     : child._outer;
+        parent = childf.outer();
       }
+
+    if (CHECKS) check
+      (Errors.any() || (child == null) == (parent == null));
 
     var res = _fuir.type2clazz(t);
     if (res.feature().isCotype())

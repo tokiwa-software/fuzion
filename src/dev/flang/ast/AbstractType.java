@@ -1489,6 +1489,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
+  public AbstractType replace_this_type_by_actual_outer3(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
+  {
+    var result = this;
+    var att = tt.selfOrConstraint(context);
+    if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+        ||
+        isThisType() && att.feature() == feature()  // we have abc.this.type with att inheriting from abc, so use tt
+        )
+      {
+        if (foundRef != null && tt.isRef())
+          {
+            foundRef.accept(this, tt);
+          }
+        result = tt;
+      }
+    else
+      {
+        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
+      }
+    return result;
+  }
 
 
   /**
