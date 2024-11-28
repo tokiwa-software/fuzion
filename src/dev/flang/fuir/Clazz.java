@@ -1717,19 +1717,8 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            var err = new List<Consumer<AbstractCall>>();
             var ft = f.resultType();
-            result = handDown(ft, _select, new List<>(),
-                              (from,to) -> { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, f, ft, from, to)); });
-            if (result.feature().isCotype())
-              {
-                var ac = handDown(result._type.generics().get(0), new List<>());
-                result = ac.typeClazz();
-              }
-            if (err.size() > 0)
-              {
-                result._showErrorIfCallResult_ = err.get(0);
-              }
+            result = handDown(ft, _select);
           }
         _resultClazz = result;
       }
@@ -1855,40 +1844,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * For a direct parent p of this clazz's feature, find the outer clazz of the
-   * parent. E.g., for `i32` that inherits from `num.wrap_around` the result of
-   * `getOuter(num.wrap_around)` will be the result clazz of `num`, while
-   * `getOuter(i32)` will be `universe`.
-   *
-   * @param p a feature that is either equal to this or a direct parent of x.
-   */
-  Clazz getOuter(AbstractFeature p)
-  {
-    var res =
-      p.hasOuterRef()        ? /* we either inherit from p as in
-                                *
-                                *     x : a.b.c.p is ...
-                                *
-                                * or x = p.  So the outer of `x` with respect
-                                * to `p` is `a.b.c`, which is the result type
-                                * of `p`'s outer ref:
-                                */
-                               lookup(p.outerRef()).resultClazz() :
-      p.isUniverse() ||
-      p.outer().isUniverse() ? _fuir.universe()
-                             : /* a field or choice, so there is no inherits
-                                * call that could select a different outer:
-                                 */
-                               _outer;
-
-    if (CHECKS) check
-      (Errors.any() || res != null);
-
-    return res;
-  }
-
-
-  /**
    * Hand down a list of types along a given inheritance chain.
    *
    * @param tl the original list of types to be handed down
@@ -1982,67 +1937,113 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param pos a source code position, used to report errors.
    */
-  Clazz handDown(AbstractType t, int select, List<AbstractCall> inh,  BiConsumer<AbstractType, AbstractType> foundRef)
+  Clazz handDown(AbstractType t, int select)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
-       Errors.any() || (t.isOpenGeneric() == (select >= 0)),
-       Errors.any() || inh != null);
+       Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    var o = feature();
-    var t1 = inh == null ? t : handDownThroughInheritsCalls(t, select, inh);
-    var oc = this;
-    while (!o.isUniverse() && o != null && oc != null &&
+    // error handling for replacing `.this` types of `ref` types in a call result, see #4273
+    var err = new List<Consumer<AbstractCall>>();
+    var ft = t; // final variant of t to be used in lambda
+    BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
+      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
-           /* In case of type features, we can have the following loop
-
-                oc: (((io.#type io).out.#type io.out).default_print_handler).println o: io.Print_Handler.println
-                oc: ( (io.#type io).out.#type io.out).default_print_handler          o: io.Print_Handler
-                oc:   (io.#type io).out.#type io.out                                 o: io
-                oc:    io.#type io                                                   o: universe
-
-              here, stop at (io.#type io).out.#type vs. io:
-            */
-           !(oc.feature().isCotype() && !o.isCotype())
-           )
+    for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
       {
-        var f = oc.feature();
-        var inh2 = f.tryFindInheritanceChain(o);
-        if (CHECKS) check
-          (Errors.any() || inh2 != null);
-        if (inh2 != null)
+        // iterate using `child` and `parent` over outer clazzes starting at
+        // `this` where `child` is the current outer clazz and `parent` is the
+        // parent feature the previous inner clazz' feature was inherted from.
+        var child = this;
+        AbstractFeature parent = feature();
+        while (child != null)
           {
-            t1 = handDownThroughInheritsCalls(t1, select, inh2);
-            t1 = t1.applyTypeParsLocally(oc._type, select);
-            if (inh2.size() > 0)
+            var childf = child.feature();
+            if (i == 0)
               {
-                o = f;
+                // find outer that inherits this clazz, e.g.
+                //
+                //   Any.me =>
+                //     res := Any.this
+                //     res
+                //   x : Any is
+                //
+                // here, for `x.me.res` inherited from `Any.me.res`, the
+                // inheritance is two features out when `x` (`childf`) inherits
+                // form `Any` (`parent`).
+                t = t.replace_inherited_this_type(parent, childf, foundRef);
+                var inh = childf.tryFindInheritanceChain(parent);
+                if (CHECKS) check
+                  (Errors.any() || inh != null);
+                if (inh != null)
+                  {
+                    t = handDownThroughInheritsCalls(t, select, inh);
+                  }
+                t = t.applyTypeParsLocally(child._type, select);
               }
+            else
+              {
+                // NYI: UNDER DEVELOPMENT: This currently cannot be done during
+                // the first pass of the loop, need to check why (most likely it
+                // performs something thst i in conflict with the call to
+                // `t.replace_this_type(parentf, childf, foundRef)` a few lines
+                // above.
+                t = t.replace_this_type_by_actual_outer2(child._type,
+                                                         foundRef,
+                                                         Context.NONE);
+              }
+            // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
+            child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
+                                         : child._outer;
+            parent = childf.outer();
           }
-        t1 = t1.replace_this_type_by_actual_outer2(oc._type,
-                                                   foundRef,
-                                                   Context.NONE);
-        oc = oc.getOuter(o);
-        o = (LibraryFeature) o.outer();
+        if (CHECKS) check
+          (Errors.any() || (child == null) == (parent == null));
       }
 
-    var t2 = replaceThisType(t1);
-    return _fuir.type2clazz(t2);
+    var res = _fuir.type2clazz(t);
+    if (res.feature().isCotype())
+      {
+        var ac = handDown(res._type.generics().get(0));
+        res = ac.typeClazz();
+      }
+    if (err.size() > 0)
+      {
+        res._showErrorIfCallResult_ = err.get(0);
+      }
+    return res;
   }
 
 
   /**
    * Convenience version of `handDown` with `select` set to `-1`.
    */
-  Clazz handDown(AbstractType t, List<AbstractCall> inh)
+  Clazz handDown(AbstractType t)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
        !t.isOpenGeneric());
 
-    return handDown(t, -1, inh, null);
+    return handDown(t, -1);
+  }
+
+
+  /**
+   * Convenience version of `handDown` with `select` set to `-1`. Used for
+   * inlined code in inheritance for code inherited via the given inh chain.
+   */
+  Clazz handDown(AbstractType t, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || t != Types.t_ERROR,
+       !t.isOpenGeneric(),
+       inh != null);
+
+    var t1 = handDownThroughInheritsCalls(t, -1, inh);
+    return handDown(t1);
   }
 
 

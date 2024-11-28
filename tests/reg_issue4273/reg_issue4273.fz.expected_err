@@ -6,7 +6,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'case1.e.me'
 Original result type: 'case1.this.e.this'
 Type depending on target: 'case1.this.e.this'
-Target type: 'case1.p'
+Target type: 'case1.this.p.this'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'case1.e', or change the result type of 'case1.e.me' to no longer depend on 'case1.this.e.this'.
 
 
@@ -17,7 +17,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'case3.e.me'
 Original result type: 'option case3.this.e.this'
 Type depending on target: 'case3.this.e.this'
-Target type: 'case3.p'
+Target type: 'case3.this.p.this'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'case3.e', or change the result type of 'case3.e.me' to no longer depend on 'case3.this.e.this'.
 
 
@@ -28,7 +28,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'case4.e.me'
 Original result type: 'option case4.this.e.this'
 Type depending on target: 'case4.this.e.this'
-Target type: 'case4.p'
+Target type: 'case4.this.p.this'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'case4.e', or change the result type of 'case4.e.me' to no longer depend on 'case4.this.e.this'.
 
 
@@ -39,7 +39,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'option'
 Original result type: 'option case4.this.e.this'
 Type depending on target: 'case4.this.e.this'
-Target type: 'case4.p'
+Target type: 'case4.this.p.this'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'universe', or change the result type of 'option' to no longer depend on 'case4.this.e.this'.
 
 4 errors.
