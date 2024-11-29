@@ -749,7 +749,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
 
     # add new element k to this set.
     #
-    # NYI: this should be intergrated in the mutate effect!
+    # NYI: this should be integrated in the mutate effect!
     #
     public redef add (k K) Set K =>
       ss := map.snapshot false

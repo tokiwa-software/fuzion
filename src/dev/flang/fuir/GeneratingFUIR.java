@@ -3370,7 +3370,7 @@ public class GeneratingFUIR extends FUIR
     for (int i = 0; i < args; i++)
       {
         var rt = clazzArgClazz(cl, i);
-        argBytes += deseralizeConst(rt, bbb).length;
+        argBytes += deserializeConst(rt, bbb).length;
       }
     return bb.slice(bb.position(), argBytes);
   }
@@ -3386,7 +3386,7 @@ public class GeneratingFUIR extends FUIR
    *           like strings, arrays, etc.
    */
   @Override
-  public byte[] deseralizeConst(int cl, ByteBuffer bb)
+  public byte[] deserializeConst(int cl, ByteBuffer bb)
   {
     var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
     bb.position(bb.position()+elBytes.remaining());
@@ -3415,7 +3415,7 @@ public class GeneratingFUIR extends FUIR
     var elBytes = 0;
     for (int i = 0; i < elCount; i++)
       {
-        elBytes += deseralizeConst(elementClazz, bbb).length;
+        elBytes += deserializeConst(elementClazz, bbb).length;
       }
     return bb.slice(bb.position(), 4+elBytes);
   }

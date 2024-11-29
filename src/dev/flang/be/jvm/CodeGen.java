@@ -961,7 +961,7 @@ class CodeGen
 
               for (int idx = 0; idx < elCount; idx++)
                 {
-                  var b = _fuir.deseralizeConst(elementType, bb);
+                  var b = _fuir.deserializeConst(elementType, bb);
                   var c = createConstant(si, elementType, b);
                   result = result
                     .andThen(Expr.DUP)                             // T[], T[]
@@ -980,7 +980,7 @@ class CodeGen
               for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
                 {
                   var fr = _fuir.clazzArgClazz(constCl, index);
-                  var bytes = _fuir.deseralizeConst(fr, b);
+                  var bytes = _fuir.deserializeConst(fr, b);
                   var c = createConstant(si, fr, bytes);
                   result = result
                     .andThen(c.v1())

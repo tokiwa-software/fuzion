@@ -1935,7 +1935,7 @@ A ((Choice)) declaration must not contain a result type.
             public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
             public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
             public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
-            public void action(AbstractCall c) { c.recordUsage(res.fieldUsages); };
+            public void  action(AbstractCall c) { c.recordUsage(res.fieldUsages); };
           });
 
         _state = State.BOXED;

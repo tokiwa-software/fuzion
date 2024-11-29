@@ -81,7 +81,7 @@ is
   # the new handle can be accessed by 'result.last'
   #
   public new (
-    # initial value refered to by the new handle
+    # initial value referred to by the new handle
     w T
     ) handles T X
   post
@@ -110,14 +110,14 @@ is
   #
   /* env */
   public create (
-    # initial value refered to by the new handle
+    # initial value referred to by the new handle
     w T
     )
   =>
     (new w).last
 
 
-  # get the value refered to by a given handle
+  # get the value referred to by a given handle
   #
   public get (
     # a handle created by 'new'
@@ -127,7 +127,7 @@ is
     ar[h.x]
 
 
-  # create a new instance with new value refered to by a given handle
+  # create a new instance with new value referred to by a given handle
   #
   public put (
     # a handle created by 'new'
@@ -139,28 +139,28 @@ is
     handles v (ar.put h.x w) mode.next
 
 
-  # create a new instance with the value refered to by a given handle read and
+  # create a new instance with the value referred to by a given handle read and
   # updated.
   #
   public update (
     # a handle created by 'new'
     h handle0 T,
 
-    # function calculcating the new value from the old value
+    # function calculating the new value from the old value
     f T->T
     )
   =>
     update0 h.x f
 
 
-  # create a new instance with the value refered to by a given handle read and
+  # create a new instance with the value referred to by a given handle read and
   # updated.
   #
   update0 (
     # a handle created by 'new'
     x i32,
 
-    # function calculcating the new value from the old value
+    # function calculating the new value from the old value
     f T->T
     )
   =>

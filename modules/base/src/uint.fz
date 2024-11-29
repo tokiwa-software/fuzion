@@ -261,7 +261,7 @@ is
   public fixed redef prefix -! bool => uint.this = uint.zero
   public fixed redef infix -! (other uint) bool => uint.this ≥ other
 
-  # exponentation always works, even though it might be
+  # exponentiation always works, even though it might be
   # slow for large numbers
 
   public fixed redef infix **?(other uint) option uint => uint.this ** other

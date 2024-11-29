@@ -185,7 +185,7 @@ module:public array(
 
       # check if argument is a valid index in this array.
       #
-      # Unlike for general Sequences, this perfoms in O(1).
+      # Unlike for general Sequences, this performs in O(1).
       #
       public redef is_valid_index(i i32) => 0 ≤ i ≤ arrayslice.this.count
 
