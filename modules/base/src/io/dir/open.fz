@@ -24,7 +24,7 @@
 
 # effect for manipulating open directories
 #
-module:public open(fd i64,
+module:public open(fd fuzion.sys.Pointer,
                    public path String) : effect is
 
   # reads the next entry of this directory

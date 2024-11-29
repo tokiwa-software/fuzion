@@ -286,7 +286,8 @@ VERSION = $(shell cat $(FZ_SRC)/version.txt)
 FUZION_BASE = \
 			$(FZ) \
 			$(FZJAVA) \
-			$(FZ_MODULES)
+			$(FZ_MODULES) \
+			$(BUILD_DIR)/lib/libfuzion.so
 
 
 # NYI: This is missing the following modules from JDK 17:

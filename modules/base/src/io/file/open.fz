@@ -24,7 +24,7 @@
 
 # effect for manipulating open files
 #
-module:public open(fd i64,
+module:public open(fd fuzion.sys.Pointer,
                    public file_name String) : effect is
 
   # seek in file
@@ -56,7 +56,7 @@ module:public open(fd i64,
   =>
 
     res := fuzion.sys.internal_array_init i32 1
-    mapped_memory := fuzion.sys.fileio.mmap fd offset size res.data
+    mapped_memory := fuzion.sys.fileio.fzE_mmap fd offset size res.data
 
     if res[0] = -1
       error "mmap failed"

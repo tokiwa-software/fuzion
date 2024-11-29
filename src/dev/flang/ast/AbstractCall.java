@@ -257,6 +257,10 @@ public abstract class AbstractCall extends Expr
    */
   public void recordUsage(Set<AbstractFeature> usages)
   {
+    if ((this instanceof Call c) && !c.calledFeatureKnown())
+      {
+        return;
+      }
     var feat = calledFeature();
 
     // don't collect features that should never be warned about, see Feature.java for reasons

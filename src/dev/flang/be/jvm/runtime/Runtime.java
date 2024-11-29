@@ -189,11 +189,6 @@ public class Runtime extends ANY
     }
   };
 
-  static long _stdin  = _openStreams_.add(System.in );
-  static long _stdout = _openStreams_.add(System.out);
-  static long _stderr = _openStreams_.add(System.err);
-
-
   /**
    * This contains all open processes.
    */

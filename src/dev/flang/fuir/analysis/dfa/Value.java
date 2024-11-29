@@ -202,18 +202,6 @@ public class Value extends Val
     };
 
 
-  /**
-   * used for ADDRESS
-   */
-  static Value ADDRESS = new Value(-1)
-    {
-      public String toString()
-      {
-        return "ADDRESS";
-      }
-    };
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
