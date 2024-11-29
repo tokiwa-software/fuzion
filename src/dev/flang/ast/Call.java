@@ -1601,23 +1601,8 @@ public class Call extends AbstractCall
         if (!tt.isGenericArgument() && declF != tt.feature())
           {
             var heir = tt.feature();
-            if (!heir.inheritsFrom(declF))
-              {
-                // NYI: UNDER DEVELOPMENT: This is likely a bug in handling of
-                // `Lazy` or partial application. This happens in list.fz when
-                // wrapping `Lazy` in a `Lazy`, need to check!
-                if (false)
-                  {
-                    System.out.println("target is "+target().getClass()+" trgt: "+target()+" "+tt.feature().isOuterRef());
-                    System.out.println("target is "+target().getClass()+" call: "+this);
-                    System.out.println("Calling "+calledFeature().qualifiedName()+" no inh from "+declF.qualifiedName()+" -> "+tt.feature().qualifiedName()+" in "+pos().show());
-                  }
-              }
-            else
-              {
-                t = t.replace_inherited_this_type(declF, heir,
-                                                  (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
-              }
+            t = t.replace_inherited_this_type(declF, heir,
+                                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
           }
         var inner = ResolvedNormalType.newType(calledFeature().selfType(),
                                                _target.type());
