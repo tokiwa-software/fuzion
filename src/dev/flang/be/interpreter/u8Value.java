@@ -122,7 +122,7 @@ public class u8Value extends Value
   @Override
   protected Object toNative()
   {
-    return this.u8Value();
+    return (byte)this.u8Value();
   }
 
 }
