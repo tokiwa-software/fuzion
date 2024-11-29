@@ -99,21 +99,6 @@ public class StrConst extends Constant
 
 
   /**
-   * The type of the constant that is created is not `String`, but
-   * `Const_String`.
-   *
-   * @return Types.resolved.t_Const_String
-   */
-  @Override
-  public AbstractType typeOfConstant()
-  {
-    return isCodepointLiteral()
-      ? Types.resolved.t_codepoint
-      : Types.resolved.t_Const_String;
-  }
-
-
-  /**
    * Serialized form of the data of this constant.
    */
   public byte[] data()

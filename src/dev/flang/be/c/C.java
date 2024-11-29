@@ -266,8 +266,7 @@ public class C extends ANY
           case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_String, c_Const_String
-                      -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
+          case c_String -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
           default     -> {
             if (CHECKS)
               check(!_fuir.clazzIsRef(constCl)); // NYI currently no refs
@@ -1957,7 +1956,7 @@ public class C extends ANY
         case
           c_i8, c_i16, c_i32, c_i64, c_u8,
           c_u16, c_u32, c_u64, c_f32, c_f64 -> call.ret();
-        case c_Const_String, c_String ->
+        case c_String ->
           {
             var str = new CIdent("str");
             yield CStmnt.seq(
@@ -2139,7 +2138,7 @@ public class C extends ANY
         return CExpr.seq(sideEffect, result);
       case c_unit :
         return expr;
-      case c_Const_String :
+      case c_String :
       case c_false_ :
       case c_true_ :
       case c_sys_ptr :
@@ -2199,7 +2198,7 @@ public class C extends ANY
       case c_NOT_FOUND :
       case c_unit :
         return val;
-      case c_Const_String :
+      case c_String :
       case c_false_ :
       case c_true_ :
       case c_sys_ptr :
