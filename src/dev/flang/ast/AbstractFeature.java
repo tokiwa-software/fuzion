@@ -1484,7 +1484,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean inheritsFrom(AbstractFeature parent)
   {
     if (PRECONDITIONS) require
-                         (state().atLeast(State.LOADED),
+      (state().atLeast(State.LOADED),
        parent != null && parent.state().atLeast(State.LOADED));
 
     if (this == parent)
