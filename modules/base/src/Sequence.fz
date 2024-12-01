@@ -467,9 +467,14 @@ public Sequence(public T type) ref : property.equatable is
   #
   public sort
   pre
-    T : property.partially_orderable
+    T : property.orderable
+  post
+    # NYI: BUG: #4346 constraint from pre-condition is not propagated to post-condition
+    #
+    # result.map_pairs (<=)
+    #       .reduce true (&&)
   =>
-    sort_by ((a,b) -> T.lteq a b)
+    sort_by (<=)
 
 
   # create a new list from the result of applying 'f' to the
