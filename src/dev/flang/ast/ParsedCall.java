@@ -419,7 +419,7 @@ public class ParsedCall extends Call
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionType());
+      (expectedType.isFunctionTypeExcludingLazy());
 
     // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
     Expr l = this;
@@ -429,7 +429,7 @@ public class ParsedCall extends Call
           {
             res.resolveTypes(_calledFeature);
             var rt = _calledFeature.resultTypeIfPresent(res);
-            if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
+            if (rt != null && (!rt.isFunctionType() || rt.arity() != expectedType.arity()))
               {
                 l = applyPartially(res, context, expectedType);
               }
@@ -650,7 +650,7 @@ public class ParsedCall extends Call
         @Override
         public Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
         {
-          if (expectedType.isFunctionType())
+          if (expectedType.isFunctionTypeExcludingLazy())
             { // produce an error if the original call is ambiguous with partial application
               ParsedCall.this.checkPartialAmbiguity(res, context, expectedType);
             }
@@ -707,7 +707,7 @@ public class ParsedCall extends Call
   private boolean isImmediateFunctionCall()
   {
     return
-      _type.isFunctionType()                      &&
+      _type.isFunctionTypeExcludingLazy()                      &&
       _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       _actuals != NO_PARENTHESES

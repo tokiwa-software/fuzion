@@ -859,7 +859,7 @@ public class Call extends AbstractCall
   FeatureAndOuter partiallyApplicableAlternative(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionType(),
+      (expectedType.isFunctionTypeExcludingLazy(),
        _name != null);
 
     FeatureAndOuter result = null;
@@ -1852,7 +1852,7 @@ public class Call extends AbstractCall
           {
             var actual = aargs.next();
             var t = frml.resultTypeIfPresent(res);
-            if (t != null && t.isFunctionType())
+            if (t != null && t.isFunctionTypeExcludingLazy())
               {
                 var a = resultExpression(actual);
                 Expr l = a.propagateExpectedTypeForPartial(res, context, t);
@@ -2233,7 +2233,7 @@ public class Call extends AbstractCall
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = new boolean[] { false };
-    if (formalType.isFunctionType() || formalType.isLazyType())
+    if (formalType.isFunctionTypeExcludingLazy() || formalType.isLazyType())
       {
         var at = actualArgType(res, formalType, frml, context);
         if (!at.containsUndefined(true))
@@ -2679,10 +2679,10 @@ public class Call extends AbstractCall
   public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     Expr r = this;
-    if (t.isFunctionType()         &&
+    if (t.isFunctionTypeExcludingLazy()         &&
         !_wasImplicitImmediateCall &&
         _type != Types.t_ERROR     &&
-        (_type == null || !_type.isAnyFunctionType()))
+        (_type == null || !_type.isFunctionType()))
       {
         r = propagateExpectedTypeForPartial(res, context, t);
         if (r != this)
