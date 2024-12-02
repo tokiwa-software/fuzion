@@ -1234,9 +1234,9 @@ run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $
 .PHONY .SILENT: run_tests_jar
 run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib \
-	PATH=$(PATH):$(BUILD_DIR)/lib \
-	DYLD_FALLBACK_LIBRARY_PATH=$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib \
+	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib" \
+	PATH="$(PATH):$(BUILD_DIR)/lib" \
+	DYLD_FALLBACK_LIBRARY_PATH="$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib" \
 		$(JAVA) -jar HelloWorld.jar > /dev/null
 
 .PHONY: clean
