@@ -1023,8 +1023,8 @@ public class Runtime extends ANY
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_"+what+" for class" +
-                           clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
+        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_"+what+" for class " +
+                     clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
         cl = Object.class; // not reached.
       }
 
