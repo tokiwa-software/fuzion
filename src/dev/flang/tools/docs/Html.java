@@ -138,7 +138,8 @@ public class Html extends ANY
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.asString(false, context));
+        return htmlEncodeNbsp(at.asString(false, context))
+               + (at.isOpenGeneric() ? "..." : "");
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString(false, context)))
       .replace("$2", featureAbsoluteURL(at.feature()));
@@ -796,9 +797,12 @@ public class Html extends ANY
   {
     if (f.resultType().dependsOnGenerics())
       {
-        return "<div class='fd-keyword'>type</div> <span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
+        return "<div class='fd-keyword'>type</div>"
+               + (f.isOpenTypeParameter() ? "..." : "")
+               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
       }
-    return "<div class='fd-keyword'>type</div>";
+    return "<div class='fd-keyword'>type</div>"
+            + (f.isOpenTypeParameter() ? "..." : "");
   }
 
 
