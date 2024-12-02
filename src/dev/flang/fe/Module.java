@@ -297,7 +297,7 @@ public abstract class Module extends ANY implements FeatureLookup
   protected void addDeclaredOrInherited(SortedMap<FeatureName, List<AbstractFeature>> set, AbstractFeature outer, FeatureName fn, AbstractFeature f)
   {
     if (PRECONDITIONS)
-      require(!f.isFixed() || outer == f.outer());
+      require(Errors.any() || !f.isFixed() || outer == f.outer());
 
     var it = get(set, fn).listIterator();
     while (f != null && it.hasNext())
