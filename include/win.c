@@ -420,14 +420,14 @@ long fzE_get_file_size(FILE* file) {
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 
-  if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
+  if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
     result[0] = -1;
     return NULL;
   }
 
-  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno(file));
+  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno((FILE *)file));
 
   /* "If dwMaximumSizeLow and dwMaximumSizeHigh are 0 (zero), the maximum size of the file mapping
       object is equal to the current size of the file that hFile identifies.
