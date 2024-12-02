@@ -385,6 +385,7 @@ FZ_INT = \
 
 DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
 DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
+DOC_JAVA          = $(BUILD_DIR)/doc/java/index.html
 
 REF_MANUAL_SOURCE  = $(FZ_SRC)/doc/ref_manual/fuzion_reference_manual.adoc
 REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
@@ -1403,6 +1404,10 @@ endif
 # 	-lgc
 # 	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
 # endif
+
+
+$(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+	javadoc -d $(dir $(DOC_JAVA)) $(shell find ./src -name "*.java" | cut -c3- | grep -v lsp | grep -v FuzionLogo) $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 
 
 ########
