@@ -35,6 +35,7 @@ import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -748,11 +749,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
          */
         return frmlT;
       }
-    else if (t.isRef() && !isCallToOuterRef())
+    else if (t.isRef().yes() && !isCallToOuterRef())
       {
         return null;
       }
-    else if (frmlT.isRef())
+    else if (frmlT.isRef().yes())
       {
         return frmlT;
       }

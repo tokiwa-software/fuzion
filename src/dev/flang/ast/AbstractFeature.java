@@ -718,7 +718,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isRef(),
+       Errors.any() || result.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this);
 
@@ -1096,7 +1096,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isRef(),
+       Errors.any() || result.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this,
        result.feature().generics().sizeMatches(result.generics()));

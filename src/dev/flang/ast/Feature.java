@@ -39,6 +39,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -1754,7 +1755,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (Errors.any() || t != null);
-        if (t != null && !t.isRef())
+        if (t != null && t.isRef().noOrDontKnow())
           {
             if (t.compareTo(thisType()) == 0)
               {

@@ -136,8 +136,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Is this type denoting a reference type?
+   *
+   * yes = reference
+   * no  = value
+   * dontKnow = this-type and not known if boxed or not.
    */
-  public abstract boolean isRef();
+  public abstract YesNo isRef();
 
 
   /**
@@ -406,7 +410,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       actual_type.isVoid() ||
       target_type == Types.t_ERROR                      ||
       actual_type == Types.t_ERROR;
-    if (!result && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
+    if (!result && !target_type.isGenericArgument() && isRef().yes() && actual_type.isRef().yes())
       {
         if (actual_type.isGenericArgument())
           {
@@ -421,7 +425,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 for (var p: actual_type.feature().inherits())
                   {
                     var pt = actual_type.actualType(p.type(), context);
-                    if (actual_type.isRef())
+                    if (actual_type.isRef().yes())
                       {
                         pt = pt.asRef();
                       }
@@ -456,7 +460,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!isGenericArgument() && feature() != null || Errors.any());
 
     boolean result = false;
-    if (!isGenericArgument() && !isRef() && feature().isChoice())
+    if (!isGenericArgument() && isRef().noOrDontKnow() && feature().isChoice())
       {
         for (var t : choiceGenerics(context))
           {
@@ -1074,7 +1078,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         var g = choiceGenerics(context);
         if (CHECKS) check
-          (Errors.any() || !isRef());
+          (Errors.any() || isRef().noOrDontKnow());
 
         int i1 = 0;
         for (var t1 : g)
@@ -1375,9 +1379,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = artificialBuiltInID() - other.artificialBuiltInID();
           }
-        if (result == 0 && isRef() ^ other.isRef())
+        if (result == 0 && isRef().yes() ^ other.isRef().yes())
           {
-            result = isRef() ? -1 : 1;
+            result = isRef().yes() ? -1 : 1;
           }
         if (result == 0 && isThisType() ^ other.isThisType())
           {
@@ -1477,7 +1481,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
         )
       {
-        if (foundRef != null && tt.isRef())
+        if (foundRef != null && tt.isRef().yes())
           {
             foundRef.accept(this, tt);
           }
@@ -1733,7 +1737,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var tf = tp.outer();
         if (tf.isCotype() && tp == tf.arguments().get(0))
           { // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
-            result = result.isRef()
+            result = result.isRef().yes()
               ? tf.cotypeOrigin().selfType().asThis().asRef()
               : tf.cotypeOrigin().selfType().asThis();
           }
@@ -1908,7 +1912,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = ga.toLongString(context) + (this.isRef() ? " (boxed)" : "");
+        result = ga.toLongString(context) + (isRef().yes() ? " (boxed)" : "");
       }
     else
       {
@@ -1940,7 +1944,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
 
         result = outer
-              + (!isThisType() && isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "" )
+              + (!isThisType() && isRef().yes() != feature().isRef() ? (isRef().yes() ? "ref " : "value ") : "" )
               + fname;
         if (isThisType())
           {

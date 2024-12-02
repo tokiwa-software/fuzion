@@ -60,6 +60,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -424,12 +425,12 @@ public class LibraryFeature extends AbstractFeature
     var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this,
                                          isRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                                     : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                                 : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                          generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isRef(),
+       Errors.any() || result.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this);
 

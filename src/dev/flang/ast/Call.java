@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 import dev.flang.util.Pair;
 
 
@@ -1164,7 +1165,10 @@ public class Call extends AbstractCall
   @Override
   AbstractType typeForInferencing()
   {
-    return (_calledFeature instanceof Feature f) && f.isAnonymousInnerFeature() && f.inherits().getFirst().typeForInferencing() != null && f.inherits().getFirst().typeForInferencing().isRef()
+    return (_calledFeature instanceof Feature f)
+      && f.isAnonymousInnerFeature()
+      && f.inherits().getFirst().typeForInferencing() != null
+      && f.inherits().getFirst().typeForInferencing().isRef() == YesNo.yes
       ? f.inherits().getFirst().typeForInferencing()
       : _type;
   }
@@ -2810,7 +2814,7 @@ public class Call extends AbstractCall
         while (o != null && !o.isGenericArgument())
           {
             o = o.outer();
-            if (o != null && o.isRef() && !o.feature().isRef())
+            if (o != null && o.isRef() == YesNo.yes && !o.feature().isRef())
               {
                 AstErrors.illegalCallResultType(this, _type, o);
                 o = null;
