@@ -101,7 +101,7 @@ FZ_SRC_TESTS         = $(FZ_SRC)/tests
 FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
 FZ_SRC_INCLUDE       = $(FZ_SRC)/include
 FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
-FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE) -name "*.c")
+FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE))
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -281,12 +281,15 @@ MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
 MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
 MOD_FZ_CMD = $(MOD_FZ_CMD_DIR).fum
 
+FUZION_RT = $(BUILD_DIR)/lib/__marker_for_make__
+
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
 FUZION_BASE = \
 			$(FZ) \
 			$(FZJAVA) \
-			$(FZ_MODULES)
+			$(FZ_MODULES) \
+			$(FUZION_RT)
 
 
 # NYI: This is missing the following modules from JDK 17:
@@ -361,27 +364,27 @@ FUZION_FILES = \
 			 $(BUILD_DIR)/include \
 			 $(BUILD_DIR)/README.md \
 			 $(BUILD_DIR)/release_notes.md \
-			 $(BUILD_DIR)/lib/libfuzion.so
+			 $(FUZION_RT)
 
 # files required for fz command with jvm backend
 FZ_JVM = \
 			 $(FZ) \
 			 $(CLASS_FILES_BE_JVM_RUNTIME) \
 			 $(MOD_BASE) \
-			 $(BUILD_DIR)/lib/libfuzion.so
+			 $(FUZION_RT)
 
 # files required for fz command with C backend
 FZ_C = \
 			 $(FZ) \
 			 $(BUILD_DIR)/include \
 			 $(MOD_BASE) \
-			 $(BUILD_DIR)/lib/libfuzion.so
+			 $(FUZION_RT)
 
 # files required for fz command with interpreter backends
 FZ_INT = \
 			 $(FZ) \
 			 $(MOD_BASE) \
-			 $(BUILD_DIR)/lib/libfuzion.so
+			 $(FUZION_RT)
 
 DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
 DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
@@ -441,7 +444,7 @@ base-only: $(FZ) $(MOD_BASE) $(FUZION_FILES)
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
 
-.PHONY: lint-c
+.PHONY: lint/c
 lint/c:
 	clang-tidy $(C_FILES) -- -std=c11
 
@@ -1369,7 +1372,7 @@ lint/pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
 
-$(BUILD_DIR)/lib/libfuzion.so: $(BUILD_DIR)/include $(FUZION_FILES_RT)
+$(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib regardless of which OS.
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
@@ -1382,12 +1385,14 @@ ifeq ($(OS),Windows_NT)
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
 	-lMswsock -lAdvApi32 -lWs2_32
+	touch $(FUZION_RT)
 else
 	clang -Wall -Werror -O3 -shared \
 	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so
 	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
+	touch $(FUZION_RT)
 endif
 # NYI: eventuall link libgc
 # ifeq ($(OS),Windows_NT)

@@ -1405,14 +1405,13 @@ public class Runtime extends ANY
    */
   public static void memorySegment2Obj(Object obj, MemorySegment memSeg)
   {
-    if      (obj instanceof byte   [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_BYTE),   0, arr, 0, arr.length );  }
-    else if (obj instanceof short  [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_SHORT),  0, arr, 0, arr.length );  }
-    else if (obj instanceof char   [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_CHAR),   0, arr, 0, arr.length );  }
-    else if (obj instanceof int    [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_INT),    0, arr, 0, arr.length );  }
-    else if (obj instanceof long   [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_LONG),   0, arr, 0, arr.length );  }
-    else if (obj instanceof float  [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_FLOAT),  0, arr, 0, arr.length );  }
-    else if (obj instanceof double [] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_DOUBLE), 0, arr, 0, arr.length );  }
-    else if (obj instanceof boolean[] arr) { System.arraycopy( memSeg.toArray(ValueLayout.JAVA_INT),    0, arr, 0, arr.length );  }
+    if      (obj instanceof byte   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof short  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof char   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof int    [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof long   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof MemorySegment) {}
     else { throw new Error("NYI"); }
   }
@@ -1424,34 +1423,16 @@ public class Runtime extends ANY
    */
   public static MemorySegment obj2MemorySegment(Object obj)
   {
-    var length = -1;
-    var bytes = -1;
-
-    if      (obj instanceof byte   [] arr) { length = arr.length; bytes = 1; }
-    else if (obj instanceof short  [] arr) { length = arr.length; bytes = 2; }
-    else if (obj instanceof char   [] arr) { length = arr.length; bytes = 2; }
-    else if (obj instanceof int    [] arr) { length = arr.length; bytes = 4; }
-    else if (obj instanceof long   [] arr) { length = arr.length; bytes = 8; }
-    else if (obj instanceof float  [] arr) { length = arr.length; bytes = 4; }
-    else if (obj instanceof double [] arr) { length = arr.length; bytes = 8; }
-    else if (obj instanceof boolean[] arr) { length = arr.length; bytes = 4; }
+    if      (obj instanceof byte   [] arr) { return Arena.ofAuto().allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof short  [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof char   [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof int    [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof long   [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof float  [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof double [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
     else if (obj instanceof MemorySegment memSeg) { return memSeg; }
     else { throw new Error("NYI"); }
 
-    var memSegment = Arena.ofAuto().allocate(length * bytes);
-
-    for (int i = 0; i < length; i++)
-      {
-        if      (obj instanceof byte   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BYTE,   i, arr[i]);}
-        else if (obj instanceof short  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_SHORT,  i, arr[i]);}
-        else if (obj instanceof char   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_CHAR,   i, arr[i]);}
-        else if (obj instanceof int    [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_INT,    i, arr[i]);}
-        else if (obj instanceof long   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_LONG,   i, arr[i]);}
-        else if (obj instanceof float  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_FLOAT,  i, arr[i]);}
-        else if (obj instanceof double [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_DOUBLE, i, arr[i]);}
-        else if (obj instanceof boolean[] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BOOLEAN,i, arr[i]);}
-      }
-    return memSegment;
   }
 
 

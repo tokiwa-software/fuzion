@@ -60,6 +60,17 @@ public class ParsedCall extends Call
   private final ParsedName _parsedName;
 
 
+  /**
+   * An implicit call to `Function.call` might be added during resolution of a
+   * Function value like `Lazy`.  To prevent repeated resolution to do this
+   * repeatedly, this flag records that a call `x` has been pushed down to be
+   * the target of a call `x.call`.
+   *
+   * Without this, this might happen repeatedly.
+   */
+  boolean _pushedImplicitImmediateCall = false;
+
+
   /*---------------------------  constructors  --------------------------*/
 
 
@@ -680,8 +691,9 @@ public class ParsedCall extends Call
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
-    if (isImmediateFunctionCall())
+    if (isImmediateFunctionCall() && !_pushedImplicitImmediateCall)
       {
+        _pushedImplicitImmediateCall = true;
         result = pushCall(res, context, "call").resolveTypes(res, context);
       }
     return result;
@@ -702,9 +714,8 @@ public class ParsedCall extends Call
       ||
       _type.isLazyType()                          &&   // we are `Lazy T`
       _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
-      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `c.call.call a`
-      _actuals.isEmpty()                          &&   // dto.
-      originalLazyValue() == this;                     // prevent repeated `l.call.call` when resolving the newly created Call to `call`.
+      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
+      _actuals.isEmpty();                              // dto.
   }
 
 }

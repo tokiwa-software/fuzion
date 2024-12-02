@@ -257,17 +257,20 @@ public abstract class AbstractCall extends Expr
    */
   public void recordUsage(Set<AbstractFeature> usages)
   {
-    var feat = calledFeature();
-
-    // don't collect features that should never be warned about, see Feature.java for reasons
-    if (feat.kind() == AbstractFeature.Kind.Field
-        && feat.visibility().eraseTypeVisibility() != Visi.PUB
-        && !feat.featureName().isInternal()
-        && !feat.outer().featureName().isInternal()
-        && !feat.featureName().isNameless()
-        && !feat.isArgument())
+    if (!(this instanceof Call c) || c.calledFeatureKnown())
       {
-        usages.add(feat);
+        var feat = calledFeature();
+
+        // don't collect features that should never be warned about, see Feature.java for reasons
+        if (feat.kind() == AbstractFeature.Kind.Field
+            && feat.visibility().eraseTypeVisibility() != Visi.PUB
+            && !feat.featureName().isInternal()
+            && !feat.outer().featureName().isInternal()
+            && !feat.featureName().isNameless()
+            && !feat.isArgument())
+          {
+            usages.add(feat);
+          }
       }
   }
 

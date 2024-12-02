@@ -473,7 +473,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
             for (int idx = 0; idx < elCount; idx++)
               {
-                var b = _fuir.deseralizeConst(elementType, bb);
+                var b = _fuir.deserializeConst(elementType, bb);
                 var c = constData(s, elementType, b).v0();
                 arrayData.set(idx, c, fuir(), elementType);
               }
@@ -496,7 +496,7 @@ public class Executor extends ProcessExpression<Value, Object>
               {
                 var fr = _fuir.clazzArgClazz(constCl, index);
 
-                var bytes = _fuir.deseralizeConst(fr, b);
+                var bytes = _fuir.deserializeConst(fr, b);
                 var c = constData(s, fr, bytes).v0();
                 var acl = _fuir.clazzArg(constCl, index);
                 Interpreter.setField(acl, constCl, result, c);

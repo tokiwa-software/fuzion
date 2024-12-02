@@ -306,7 +306,7 @@ public class Errors extends ANY
 
 
   /**
-   * Where any errors encountered so far?
+   * Were any errors encountered so far?
    */
   public static synchronized boolean any()
   {

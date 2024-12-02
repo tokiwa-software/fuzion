@@ -2292,7 +2292,7 @@ public class GeneratingFUIR extends FUIR
    */
   private
   synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> tagValueAndReusltClazz(int s)
+  Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2336,7 +2336,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
-    return tagValueAndReusltClazz(s).v0()._id;
+    return tagValueAndResultClazz(s).v0()._id;
   }
 
 
@@ -2358,7 +2358,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
-    return tagValueAndReusltClazz(s).v1()._id;
+    return tagValueAndResultClazz(s).v1()._id;
   }
 
 
@@ -2480,35 +2480,6 @@ public class GeneratingFUIR extends FUIR
   public String comment(int s)
   {
     throw new Error("NYI");
-  }
-
-
-  /*
-   * Is vc.asRef assignable to ec?
-   */
-  private boolean asRefAssignable(Clazz ec, Clazz vc)
-  {
-    return asRefDirectlyAssignable(ec, vc) || asRefAssignableToChoice(ec, vc);
-  }
-
-
-  /*
-   * Is vc.asRef directly assignable to ec, i.e. without the need for tagging?
-   */
-  private boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
-  {
-    return ec.isRef().yes() && ec._type.isAssignableFrom(vc.asRef()._type, Context.NONE);
-  }
-
-
-  /*
-   * Is ec a choice and vc.asRef assignable to ec?
-   */
-  private boolean asRefAssignableToChoice(Clazz ec, Clazz vc)
-  {
-    return ec._type.isChoice() &&
-      !ec._type.isAssignableFrom(vc._type, Context.NONE) &&
-      ec._type.isAssignableFrom(vc._type.asRef(), Context.NONE);
   }
 
 
@@ -3370,7 +3341,7 @@ public class GeneratingFUIR extends FUIR
     for (int i = 0; i < args; i++)
       {
         var rt = clazzArgClazz(cl, i);
-        argBytes += deseralizeConst(rt, bbb).length;
+        argBytes += deserializeConst(rt, bbb).length;
       }
     return bb.slice(bb.position(), argBytes);
   }
@@ -3386,7 +3357,7 @@ public class GeneratingFUIR extends FUIR
    *           like strings, arrays, etc.
    */
   @Override
-  public byte[] deseralizeConst(int cl, ByteBuffer bb)
+  public byte[] deserializeConst(int cl, ByteBuffer bb)
   {
     var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
     bb.position(bb.position()+elBytes.remaining());
@@ -3415,7 +3386,7 @@ public class GeneratingFUIR extends FUIR
     var elBytes = 0;
     for (int i = 0; i < elCount; i++)
       {
-        elBytes += deseralizeConst(elementClazz, bbb).length;
+        elBytes += deserializeConst(elementClazz, bbb).length;
       }
     return bb.slice(bb.position(), 4+elBytes);
   }

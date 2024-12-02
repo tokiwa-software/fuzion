@@ -307,7 +307,7 @@ public class C extends ANY
         {
           var arg = _fuir.clazzArg(constCl, i);
           var fr = _fuir.clazzArgClazz(constCl, i);
-          var bytes = _fuir.deseralizeConst(fr, bb);
+          var bytes = _fuir.deserializeConst(fr, bb);
           sb.append("." + _names.fieldName(arg).code());
           sb.append(" = ");
           var cd = constData(_fuir.clazzResultClazz(arg), bytes, false);
@@ -396,7 +396,7 @@ public class C extends ANY
 
           for (int idx = 0; idx < elCount; idx++)
             {
-              var b = _fuir.deseralizeConst(elementType, bb);
+              var b = _fuir.deserializeConst(elementType, bb);
 
               constData(elementType, b, false)
                 .v0()

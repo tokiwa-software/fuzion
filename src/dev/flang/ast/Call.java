@@ -1500,11 +1500,11 @@ public class Call extends AbstractCall
         _target.type().feature().selfType()
       : targetType(res, context);
 
-    var t1 = resolveSelect(frmlT, tt);
-    var t2 = t1.applyTypePars(tt);
-    var t3 = tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
-    var t4 = adjustThisTypeForTarget(t3, false, calledFeature(), context);
-    var t5 = resolveForCalledFeature(res, t4, tt, context);
+    var t1 = tt == Types.t_ERROR ? tt : resolveSelect(frmlT, tt);
+    var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
+    var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
+    var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
+    var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
     _type = t5;
   }
 
@@ -1605,23 +1605,8 @@ public class Call extends AbstractCall
         if (!tt.isGenericArgument() && declF != tt.feature())
           {
             var heir = tt.feature();
-            if (!heir.inheritsFrom(declF))
-              {
-                // NYI: UNDER DEVELOPMENT: This is likely a bug in handling of
-                // `Lazy` or partial application. This happens in list.fz when
-                // wrapping `Lazy` in a `Lazy`, need to check!
-                if (false)
-                  {
-                    System.out.println("target is "+target().getClass()+" trgt: "+target()+" "+tt.feature().isOuterRef());
-                    System.out.println("target is "+target().getClass()+" call: "+this);
-                    System.out.println("Calling "+calledFeature().qualifiedName()+" no inh from "+declF.qualifiedName()+" -> "+tt.feature().qualifiedName()+" in "+pos().show());
-                  }
-              }
-            else
-              {
-                t = t.replace_inherited_this_type(declF, heir,
-                                                  (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
-              }
+            t = t.replace_inherited_this_type(declF, heir,
+                                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
           }
         var inner = ResolvedNormalType.newType(calledFeature().selfType(),
                                                _target.type());
