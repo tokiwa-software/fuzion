@@ -2218,7 +2218,10 @@ simpleterm  : bracketTerm
                           }
       };
     result = callTail(false, result);
-    result.setSourceRange(sourceRange(pos));
+    if (result != Call.ERROR)
+      {
+        result.setSourceRange(sourceRange(pos));
+      }
     return result;
   }
 
