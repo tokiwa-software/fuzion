@@ -46,7 +46,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 // NYI remove POSIX imports
 #include <fcntl.h>      // fcntl
-#include <sys/stat.h>   // stat
 
 #include <winsock2.h>
 #include <windows.h>
@@ -507,12 +506,15 @@ void fzE_nanosleep(uint64_t n)
  */
 int fzE_rm(char * path)
 {
-  // NYI replace with native windows
-  return unlink(path) == 0
-    ? 0
-    : rmdir(path) == 0
-    ? 0
-    : -1;
+  if (DeleteFileA(path)) {
+    return 0;
+  }
+
+  if (RemoveDirectoryA(path)) {
+    return 0;
+  }
+
+  return -1;
 }
 
 
@@ -521,20 +523,31 @@ int fzE_rm(char * path)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
-  struct stat statbuf;
-  // NYI replace with native windows
-  if (stat(pathname,&statbuf)==((int8_t) 0))
-  {
-    metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+  WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+
+  if (GetFileAttributesExA(pathname, GetFileExInfoStandard, &fileInfo)) {
+    LARGE_INTEGER fileSize;
+    fileSize.HighPart = fileInfo.nFileSizeHigh;
+    fileSize.LowPart = fileInfo.nFileSizeLow;
+
+    FILETIME ft = fileInfo.ftLastWriteTime;
+    ULARGE_INTEGER ull;
+    ull.LowPart = ft.dwLowDateTime;
+    ull.HighPart = ft.dwHighDateTime;
+
+    metadata[0] = fileSize.QuadPart;
+    metadata[1] = (ull.QuadPart / 10000000ULL) - 11644473600ULL;
+    metadata[2] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[3] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+
     return 0;
   }
-  metadata[0] = errno;
+
+  metadata[0] = (int64_t)GetLastError();
   metadata[1] = 0LL;
   metadata[2] = 0LL;
   metadata[3] = 0LL;
+
   return -1;
 }
 
@@ -544,21 +557,7 @@ int fzE_stat(const char *pathname, int64_t * metadata)
  */
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
-  struct stat statbuf;
-  // NYI replace with native windows
-  if (stat(pathname,&statbuf)==((int8_t) 0))
-  {
-    metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
-    return 0;
-  }
-  metadata[0] = errno;
-  metadata[1] = 0LL;
-  metadata[2] = 0LL;
-  metadata[3] = 0LL;
-  return -1;
+  return fzE_stat(pathname, metadata);
 }
 
 #ifdef FUZION_ENABLE_THREADS
