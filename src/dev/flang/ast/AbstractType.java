@@ -1144,16 +1144,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunctionType checks if this is a function type used for lambda expressions,
+   * isFunctionTypeExcludingLazy checks if this is a function type used for lambda expressions,
    * e.g., "(i32, i32) -> String".
    *
    * @return true iff this is a function type but not a `Lazy`.
    */
-  public boolean isFunctionType()
+  public boolean isFunctionTypeExcludingLazy()
   {
     return
       this != Types.t_ERROR &&
-      isAnyFunctionType() &&
+      isFunctionType() &&
       feature() != Types.resolved.f_Lazy;
   }
 
@@ -1164,12 +1164,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true if this is a type based on a feature that is or inherits from `Function`.
    */
-  public boolean isAnyFunctionType()
+  public boolean isFunctionType()
   {
     return
       !isGenericArgument() &&
       (feature() == Types.resolved.f_Function ||
-       feature().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isAnyFunctionType()));
+       feature().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isFunctionType()));
   }
 
 
@@ -1180,16 +1180,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @return if this is a choice and there is exactly one choice for which
-   * isFunctionType() holds, return that type, otherwise return this.
+   * isFunctionTypeExcludingLazy() holds, return that type, otherwise return this.
    */
   AbstractType functionTypeFromChoice(Context context)
   {
-    return findInChoice(cg -> cg.isFunctionType(), context);
+    return findInChoice(cg -> cg.isFunctionTypeExcludingLazy(), context);
   }
 
 
   /**
-   * For a function type (see isAnyFunctionType()), return the arity of the
+   * For a function type (see isFunctionType()), return the arity of the
    * function.
    *
    * @return the number of arguments to be passed to this function type.
@@ -1197,7 +1197,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   int arity()
   {
     if (PRECONDITIONS) require
-      (isAnyFunctionType());
+      (isFunctionType());
 
     var f = feature();
     if (f == Types.resolved.f_Function)
