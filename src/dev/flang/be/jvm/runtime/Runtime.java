@@ -212,9 +212,9 @@ public class Runtime extends ANY
   /**
    * This contains all started threads.
    */
-  static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
+  static OpenResources<FuzionThread> _startedThreads_ = new OpenResources<FuzionThread>() {
     @Override
-    protected boolean close(Thread f)
+    protected boolean close(FuzionThread f)
     {
       return true;
     };
@@ -294,7 +294,7 @@ public class Runtime extends ANY
   public static FuzionThread currentThread()
   {
     FuzionThread result = null;
-    var ct = Thread.currentThread();
+    var ct = FuzionThread.currentThread();
     if (ct instanceof FuzionThread ft)
       {
         result = ft;
@@ -643,7 +643,7 @@ public class Runtime extends ANY
    */
   public static String getException()
   {
-    var result = ((FuzionThread)Thread.currentThread())._thrownException.getMessage();
+    var result = (FuzionThread.currentThread())._thrownException.getMessage();
     if (result == null)
       {
         result = "";
@@ -678,7 +678,7 @@ public class Runtime extends ANY
   public static synchronized Map<String,String> classNameToFeatureName()
   {
     Map<String,String> result = null;
-    var l = Thread.currentThread() instanceof FuzionThread ft ? ft._loader : null;
+    var l = FuzionThread.currentThread()._loader;
     if (l != null)
       {
         result = _classNameToFeatureName.get(l);
@@ -1095,12 +1095,12 @@ public class Runtime extends ANY
       }
     catch (InvocationTargetException e)
       {
-        ((FuzionThread)Thread.currentThread())._thrownException = e.getCause();
+        (FuzionThread.currentThread())._thrownException = e.getCause();
         res = _JAVA_ERROR_;
       }
     catch (Throwable e)
       {
-        ((FuzionThread)Thread.currentThread())._thrownException = e;
+        (FuzionThread.currentThread())._thrownException = e;
         res = _JAVA_ERROR_;
       }
     return res;

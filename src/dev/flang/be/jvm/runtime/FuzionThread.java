@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.runtime;
 
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 
@@ -38,7 +39,7 @@ import java.lang.reflect.Method;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FuzionThread extends Thread
+public class FuzionThread extends ANY
 {
 
 
@@ -80,8 +81,29 @@ public class FuzionThread extends Thread
   final ClassLoader _loader;
 
 
+  /**
+   * The thread local holding the fuzion thread.
+   */
+  static ThreadLocal<FuzionThread> _current =
+    new ThreadLocal<>()
+    {
+      protected FuzionThread initialValue() { return new FuzionThread(); }
+    };
+
+
+  /**
+   * The actual thread
+   */
+  private final Thread _thread ;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
+  public FuzionThread()
+  {
+    _loader = null;
+    _thread = null;
+  }
 
   /**
    * Create and start a new thread for the given code.
@@ -117,7 +139,19 @@ public class FuzionThread extends Thread
    */
   FuzionThread(Main main)
   {
-    this((Runnable) ()->main.fz_run(), main.getClass().getClassLoader());
+    _loader = main.getClass().getClassLoader();
+    _current.set(this);
+    _thread = Thread
+      .ofVirtual()
+      .start(()->main.fz_run());
+    try
+      {
+        _thread.join();
+      }
+    catch (InterruptedException e)
+      {
+        // TODO: handle exception
+      }
   }
 
 
@@ -129,9 +163,11 @@ public class FuzionThread extends Thread
    */
   private FuzionThread(Runnable r, ClassLoader l)
   {
-    super(()->Errors.runAndExit(r), "Fuzion thread");
     _loader = l;
-    start();
+    _current.set(this);
+    _thread = Thread
+      .ofVirtual()
+      .start(()->Errors.runAndExit(r));
   }
 
 
@@ -173,6 +209,24 @@ public class FuzionThread extends Thread
   {
     ensure_effect_capacity(id);
     _installedEffects.set(id, instance);
+  }
+
+
+  /**
+   * The current FuzionThread
+   */
+  public static FuzionThread currentThread()
+  {
+    return _current.get();
+  }
+
+
+  /**
+   * @throws InterruptedException
+   */
+  public void join() throws InterruptedException
+  {
+    _thread.join();
   }
 
 
