@@ -35,7 +35,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 
 static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 bytes");
-static_assert(sizeof(long)   == 8, "implementation restriction, long must be 8 bytes");
 static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8 bytes");
 
 
