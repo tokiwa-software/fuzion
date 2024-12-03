@@ -222,7 +222,7 @@ public Sequence(public T type) ref : property.equatable is
   # NOTE: this may have performance in O(n) unless it is backed by an immutable array.
   #
   #
-  public drop (n i32) => as_list.drop n
+  public drop (n i32) Sequence T => as_list.drop n
 
 
   # get a function that, given an index, returns the element at that index
@@ -257,13 +257,13 @@ public Sequence(public T type) ref : property.equatable is
 
   # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
-  public drop_while (p T -> bool) => as_list.drop_while p
+  public drop_while (p T -> bool) Sequence T => as_list.drop_while p
 
 
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public concat_sequences (s Sequence T) list T => as_list.concat s.as_list
+  public concat_sequences (s Sequence T) Sequence T => as_list.concat s.as_list
 
 
   # infix operand synonym for concat_sequences
@@ -562,7 +562,7 @@ public Sequence(public T type) ref : property.equatable is
     if is_array_backed
       if (is_valid_index n) then Sequence.this[n] else nil
     else
-      (drop n).head
+      (drop n).first
 
 
   # check if argument is a valid index in this sequence.
@@ -887,6 +887,13 @@ public Sequence(public T type) ref : property.equatable is
       T : float
   =>
     ((map x->x**T.two).fold T.sum).sqrt
+
+
+
+  # create an empty Sequence
+  #
+  public fixed type.empty Sequence T =>
+    (list T).type.empty
 
 
   # monoid of Sequences with infix concatentation operation.

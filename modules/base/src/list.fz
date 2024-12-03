@@ -143,7 +143,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     list.this ? nil => fuzion.std.panic "list.init called on empty list"
               | c Cons =>
                 c.tail ? nil => res
-                       | Cons => c.tail.init (res ++ [c.head])
+                       | Cons => c.tail.init (res ++ [c.head]).as_list
 
 
   # get the last element of this list
@@ -198,7 +198,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
           c2 Cons =>
             ref : Cons B (list B)
               redef head => c2.head
-              redef tail => c2.tail ++ c.tail.flat_map_to_list f
+              redef tail => (c2.tail ++ c.tail.flat_map_to_list f).as_list
 
 
   # fold the elements of this list using the given monoid.
@@ -309,7 +309,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   prepend_to_all(sep A, res list A) list A =>
     match head
       nil => res
-      x A => tail.prepend_to_all sep (res ++ [sep, x])
+      x A => tail.prepend_to_all sep (res ++ [sep, x]).as_list
 
 
   # add an element sep between every element of this list.
@@ -317,7 +317,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public intersperse(sep A) list A =>
     match head
       nil => nil
-      x A => [x] ++ tail.prepend_to_all sep
+      x A => ([x] ++ tail.prepend_to_all sep).as_list
 
 
   # List concatenation, O(count)
@@ -346,7 +346,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # infix operand synonym for concat
   #
-  public redef infix ++ (t Sequence A) => concat t.as_list
+  public redef infix ++ (t Sequence A) Sequence A =>
+    concat t.as_list
 
 
 
@@ -371,12 +372,19 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  public redef drop (n i32) list A =>
+  public redef drop (n i32) Sequence A =>
+    drop_list n
+
+
+  # create a list from the tail of list.this dropping n elements (or fewer
+  # if the list is shorter than n).
+  #
+  drop_list (n i32) list A =>
     if n ≤ 0
       list.this
     else
       list.this ? nil    => nil
-                | c Cons => c.tail.drop n-1
+                | c Cons => c.tail.drop_list n-1
 
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
@@ -396,13 +404,19 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
-  public redef drop_while (p A -> bool) list A
+  public redef drop_while (p A -> bool) Sequence A
   =>
+    drop_while_list p
+
+
+  # Lazily drop the first elements of a list for which predicate 'p' holds.
+  #
+  drop_while_list (p A -> bool) list A =>
     match list.this
       nil    => nil
       c Cons =>
         if p c.head
-          c.tail.drop_while p
+          c.tail.drop_while_list p
         else
           c
 
@@ -413,7 +427,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # is true.
   #
   public redef filter (p A -> bool) list A =>
-    match drop_while (a -> !(p a))
+    match drop_while_list (a -> !(p a))
       nil    => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head
@@ -482,7 +496,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # create an empty list
   #
-  public type.empty list A =>
+  public fixed type.empty list A =>
     nil
 
 

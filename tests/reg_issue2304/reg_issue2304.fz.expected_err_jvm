@@ -10,7 +10,7 @@ panic#1
 p
 λ.call#1
 (list i32).filter#1.λ.call#1
-(list i32).drop_while#1
+(list i32).drop_while_list#1
 (list i32).filter#1
 (array i32).filter#1
 universe

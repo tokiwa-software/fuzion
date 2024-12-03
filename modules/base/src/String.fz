@@ -716,16 +716,16 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # evaluated to be true by p, this does not cause empty strings to be added to
   # the result list, rather this case is being treated as being one big separator.
   #
-  public fields_func(p codepoint -> bool) list String =>
-    state_wrapper(l list String, in_run bool, start_pos, current_pos i32) is
+  public fields_func(p codepoint -> bool) Sequence String =>
+    state_wrapper(l Sequence String, in_run bool, start_pos, current_pos i32) is
 
-    i := state_wrapper (list String).empty false 0 0
+    i := state_wrapper (Sequence String).empty false 0 0
     last_state := as_codepoints.reduce state_wrapper i (r,c)->
       if p c
         if r.in_run
           state_wrapper r.l true r.current_pos (r.current_pos + 1)
         else
-          state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))].as_list) true r.current_pos (r.current_pos + 1)
+          state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))]) true r.current_pos (r.current_pos + 1)
       else
         if r.in_run
           state_wrapper r.l false r.current_pos (r.current_pos + 1)
