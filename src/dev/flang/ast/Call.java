@@ -502,7 +502,7 @@ public class Call extends AbstractCall
       .applyTypePars(_calledFeature, _generics);
 
     if (POSTCONDITIONS) ensure
-      (result != null && result != Types.resolved.t_Const_String);
+      (result != null);
 
     return result;
   }

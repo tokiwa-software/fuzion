@@ -94,21 +94,6 @@ public abstract class Constant extends Expr
 
 
   /**
-   * The type of the constant.  This may be different to the the user-visible
-   * `type()` of this constant, in particular, for a constant string, `type()`
-   * returns `String`, while `typeOfConstant` is the actual child of `String`
-   * used for constants: `Const_String`.
-   *
-   * @return the type to be used to create the constant value. Is assignment
-   * compatible to `type()`.
-   */
-  public AbstractType typeOfConstant()
-  {
-    return type();
-  }
-
-
-  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on

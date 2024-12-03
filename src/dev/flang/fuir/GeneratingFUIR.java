@@ -506,7 +506,7 @@ public class GeneratingFUIR extends FUIR
 
     else if (e instanceof Constant c)
       {
-        result = outerClazz.handDown(c.typeOfConstant(), inh);
+        result = outerClazz.handDown(c.type(), inh);
       }
 
     else if (e instanceof Tag tg)
@@ -1653,7 +1653,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public int clazzAny()
   {
-    return clazz(SpecialClazzes.c_Const_String);
+    return clazz(SpecialClazzes.c_Any);
   }
 
 
@@ -3314,7 +3314,7 @@ public class GeneratingFUIR extends FUIR
   {
     return switch (getSpecialClazz(cl))
       {
-      case c_Const_String, c_String :
+      case c_String :
         var len = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
         yield bb.slice(bb.position(), 4+len);
       case c_bool :

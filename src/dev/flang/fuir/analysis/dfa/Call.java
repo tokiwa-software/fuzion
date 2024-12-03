@@ -359,7 +359,7 @@ public class Call extends ANY implements Comparable<Call>, Context
              c_u8, c_u16, c_u32, c_u64,
              c_f32, c_f64              -> NumericValue.create(_dfa, rc);
         case c_bool                    -> _dfa.bool();
-        case c_Const_String, c_String  -> _dfa.newConstString(null, this);
+        case c_String                  -> _dfa.newConstString(null, this);
         case c_sys_ptr                 -> _dfa.newInstance(_dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), _site, _context);
         default                        ->
           _dfa._fuir.clazzIsUnitType(rc)

@@ -494,7 +494,7 @@ public class DFA extends ANY
              c_u64  ,
              c_f32  ,
              c_f64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
-        case c_Const_String, c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
+        case c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
         default ->
           {
             if (!_fuir.clazzIsChoice(constCl))

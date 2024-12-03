@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.AstErrors;
 import dev.flang.ast.Context;
 import dev.flang.ast.Expr;
 import dev.flang.ast.ResolvedNormalType;
@@ -52,7 +53,6 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.YesNo;
 
@@ -1948,7 +1948,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var err = new List<Consumer<AbstractCall>>();
     var ft = t; // final variant of t to be used in lambda
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
-      { err.add((c)->dev.flang.ast.AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
+      { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
     for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
       {
