@@ -56,6 +56,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -892,12 +893,25 @@ should be avoided as much as possible.
                                   """
                                   #!/bin/sh
 
-                                  java -D%s="$0" %s "$@"
+                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:." \
+                                  PATH="$PATH:." \
+                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:." \
+                                  java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                   """,
                                   FUZION_COMMAND_PROPERTY,
                                   args));
         out.close();
         f.setExecutable(true);
+        for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
+          {
+            var file = Path.of(System.getProperty("user.dir")).resolve("build/lib/" + str);
+            if (file.toFile().exists())
+              {
+                Files.copy(file,
+                           Path.of(str),
+                           StandardCopyOption.REPLACE_EXISTING);
+              }
+          }
       }
     catch (IOException io)
       {

@@ -1231,13 +1231,23 @@ run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $
 	printf "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
-.PHONY .SILENT: run_tests_jar
-run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
+.PHONY .SILENT: run_tests_jar_build
+run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
 	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib" \
 	PATH="$(PATH):$(BUILD_DIR)/lib" \
 	DYLD_FALLBACK_LIBRARY_PATH="$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib" \
 		$(JAVA) -jar HelloWorld.jar > /dev/null
+
+.PHONY .SILENT: run_tests_jar
+run_tests_jar: run_tests_jar_build
+	output1="Hello World!"; \
+	output2=$$(./HelloWorld); \
+	if [ "$$output1" != "$$output2" ]; then \
+		echo "Outputs are different $$output1, $$output2!"; \
+		exit 1; \
+	fi
+	rm -f HelloWorld HelloWorld.jar libfuzion.so libfuzion.dylib fuzion.dll
 
 .PHONY: clean
 clean:
