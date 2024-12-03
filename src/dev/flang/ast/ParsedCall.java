@@ -557,7 +557,7 @@ public class ParsedCall extends Call
       }
     else
       {
-        result = ERROR_VALUE;
+        result = ERROR;
       }
     return result;
   }

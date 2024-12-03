@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 import dev.flang.util.YesNo;
 import dev.flang.util.Pair;
 
@@ -763,7 +764,7 @@ public class Call extends AbstractCall
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
-       Errors.any() || _target        != Expr.ERROR_VALUE,
+       Errors.any() || _target        != Call.ERROR,
        Errors.any() || _calledFeature != null || _pendingError != null || targetTypeUndefined(),
        Errors.any() || _target        != null || _pendingError != null);
 
@@ -834,7 +835,7 @@ public class Call extends AbstractCall
     if (!Types._options.isLanguageServer())
       {
         _calledFeature = Types.f_ERROR;
-        _target = Expr.ERROR_VALUE;
+        _target = Call.ERROR;
         _actuals = new List<>();
         _generics = new List<>();
         _type = Types.t_ERROR;
@@ -2833,8 +2834,8 @@ public class Call extends AbstractCall
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (CHECKS) check
-                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR_VALUE));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR_VALUE && !frmlT.isDirectlyAssignableFrom(actl.type(), context))
+                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && !frmlT.isDirectlyAssignableFrom(actl.type(), context))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
@@ -2995,6 +2996,13 @@ public class Call extends AbstractCall
       }
       @Override
       Expr box(AbstractType frmlT, Context context)
+      {
+        return this;
+      }
+      public void setSourceRange(SourceRange r)
+      { // do not change the source position if there was an error.
+      }
+      public Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         return this;
       }

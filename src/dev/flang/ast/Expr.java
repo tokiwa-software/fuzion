@@ -62,34 +62,6 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public static Call NO_VALUE;
 
 
-  /**
-   * Dummy Expr value. Used to represent error values.
-   */
-  public static final Expr ERROR_VALUE = new Expr()
-    {
-      public SourcePosition pos()
-      {
-        return SourcePosition.builtIn;
-      }
-      public void setSourceRange(SourceRange r)
-      { // do not change the source position if there was an error.
-      }
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
-      {
-        return this;
-      }
-      @Override
-      AbstractType typeForInferencing()
-      {
-        return Types.t_ERROR;
-      }
-      public String toString()
-      {
-        return Errors.ERROR_STRING;
-      }
-    };
-
-
   /*-------------------------  static variables -------------------------*/
 
 
@@ -148,7 +120,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   {
     if (PRECONDITIONS) require
       (/* make sure we do not accidentally set this repeatedly, as for special
-        * Exprs like ERROR_VALUE, but we might extend it as in adding
+        * Exprs like Call.ERROR, but we might extend it as in adding
         * parentheses around the Expr:
         */
        _range == null ||
@@ -470,7 +442,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           }
         else
           {
-            result = ERROR_VALUE;
+            result = Call.ERROR;
           }
       }
     return result;
@@ -693,7 +665,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
               .count() > 1)
       {
         AstErrors.ambiguousAssignmentToChoice(frmlT, value);
-        return Expr.ERROR_VALUE;
+        return Call.ERROR;
       }
     // Case 2.2: no nested tagging necessary:
     // there is a choice generic in this choice
@@ -727,7 +699,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           (Errors.any() || cgs.size() == 1);
 
         return cgs.size() == 1 ? tag(frmlT, tag(cgs.get(0), value, context), context)
-                               : Expr.ERROR_VALUE;
+                               : Call.ERROR;
       }
   }
 
@@ -796,7 +768,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
-    return this != ERROR_VALUE && t != Types.t_ERROR
+    return this != Call.ERROR && t != Types.t_ERROR
       && !expectedType.isAssignableFrom(t, context)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
