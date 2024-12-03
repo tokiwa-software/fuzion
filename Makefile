@@ -1474,7 +1474,7 @@ lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
 LSP_FUZION_HOME = fuzion/build
 LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
-LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 
