@@ -73,10 +73,6 @@ public class Value extends Val
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
         else if (a._id >= 0 && b._id >= 0) { return Integer.compare(a._id, b._id); }
-        else if (a == Value.UNKNOWN_JAVA_REF || b == Value.UNKNOWN_JAVA_REF)
-          {
-            return a == Value.UNKNOWN_JAVA_REF && b == Value.UNKNOWN_JAVA_REF ? 0 : -1;
-          }
         else
           {
             throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass()+ System.lineSeparator() + a + System.lineSeparator() + b);
