@@ -101,9 +101,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Counter for assigning unique names to cotype() results. This is
    * currently used only for non-constructors since they do not create a type
    * name.
-   *
-   * NYI (see #285): This might create name clashes since equal ids might be
-   * assigned to type features in different modules.
    */
   static int _cotypeId_ = 0;
 
@@ -918,7 +915,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var name = featureName().baseName() + ".";
             if (!isConstructor() && !isChoice())
               {
-                name = name + "_" + (_cotypeId_++);
+                name = name + "_" + (_cotypeId_++) + "_" + res._module.name();
               }
             name = name + FuzionConstants.TYPE_NAME;
 
@@ -954,7 +951,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (inh.isEmpty() && !Errors.any())
               { // let `Any.type` inherit from `Type`
                 if (CHECKS) check
-                  (this instanceof Feature && featureName().baseName().equals("Any"));
+                  (this instanceof Feature && featureName().baseName().equals(FuzionConstants.ANY_NAME));
                 inh.add(new Call(pos(), "Type"));
               }
             existingOrNewCotype(res, name, typeArgs, inh);

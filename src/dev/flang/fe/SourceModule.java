@@ -144,9 +144,9 @@ public class SourceModule extends Module implements SrcModule
 
 
   @Override
-  String name()
+  public String name()
   {
-    return "*** source module ***";
+    return _options._moduleName;
   }
 
 
@@ -1982,11 +1982,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
 
   /**
-   * Create a ByteBuffer containing the .mir file binary data for this module.
+   * Create a ByteBuffer containing the .fum file binary data for this module.
    */
-  public ByteBuffer data(String name)
+  public ByteBuffer data()
   {
-    return new LibraryOut(this, name).buffer();
+    return new LibraryOut(this, _options._moduleName).buffer();
   }
 
 

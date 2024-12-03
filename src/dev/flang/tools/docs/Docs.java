@@ -73,6 +73,7 @@ public class Docs extends ANY
     /* readStdin               */ false,
     /* executeCode             */ null,
     /* main                    */ null,
+    /* moduleName              */ null,
     /* loadSources             */ false,
     /* needsEscapeAnalysis     */ false,
     /* timer                   */ s->{});
