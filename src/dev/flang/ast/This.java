@@ -233,7 +233,7 @@ public class This extends ExprWithPos
       }
     if (f == Types.f_ERROR)
       {
-        getOuter = Expr.ERROR_VALUE;
+        getOuter = Call.ERROR;
       }
     else if (f.isUniverse())
       {

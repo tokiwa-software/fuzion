@@ -1590,7 +1590,7 @@ callTail    : indexCall  callTail
               {
                 AstErrors.noValidLHSInExpresssion(result, ".env");
                 t = Types.t_ERROR;
-                result = Call.ERROR_VALUE;
+                result = Call.ERROR;
               }
             else
               {
@@ -1604,7 +1604,7 @@ callTail    : indexCall  callTail
               {
                 AstErrors.noValidLHSInExpresssion(result, ".type");
                 t = Types.t_ERROR;
-                result = Call.ERROR_VALUE;
+                result = Call.ERROR;
               }
             else
               {
@@ -2211,7 +2211,7 @@ simpleterm  : bracketTerm
                                 if (res == null)
                                   {
                                     syntaxError(pos, "term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name)", "term");
-                                    res = Expr.ERROR_VALUE;
+                                    res = Call.ERROR;
                                   }
                                 yield res;
                               }

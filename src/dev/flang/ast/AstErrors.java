@@ -1308,7 +1308,7 @@ public class AstErrors extends ANY
 
   private static boolean noErrorInArguments(Call call)
   {
-    return call.actuals().stream().allMatch(x -> x != Call.ERROR_VALUE);
+    return call.actuals().stream().allMatch(x -> x != Call.ERROR);
   }
 
   private static String solutionLambda(Call call)

@@ -178,7 +178,7 @@ public class Assign extends AbstractAssign
         else
           {
             AstErrors.assignmentTargetNotFound(this, context.outerFeature());
-            _target = AbstractCall.ERROR_VALUE;
+            _target = Call.ERROR;
             f = Types.f_ERROR;
           }
         _assignedField = f;
