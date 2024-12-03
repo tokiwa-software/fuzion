@@ -171,14 +171,14 @@ public Sequence(public T type) ref : property.equatable is
   # create a new list that contains the first elements of
   # this Sequence for which 'f e' is false
   #
-  public before(f T -> bool) list T =>
+  public before(f T -> bool) Sequence T =>
     take_while (x -> !(f x))
 
 
   # filter elements using predicate f
   # values for which f is false are dropped
   #
-  public filter   (f T -> bool) list T => as_list.filter f
+  public filter   (f T -> bool) Sequence T => as_list.filter f
 
 
   # filter elements using predicate f, infix operator
@@ -208,7 +208,7 @@ public Sequence(public T type) ref : property.equatable is
   # create a list that consists only of the first n elements of this
   # Sequence, fewer if this Sequence has fewer elements
   #
-  public take (n i32) => as_list.take n
+  public take (n i32) Sequence T => as_list.take n
 
 
   # reverse the order of the elements in this Sequence
@@ -252,7 +252,7 @@ public Sequence(public T type) ref : property.equatable is
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
-  public take_while (p T -> bool) => as_list.take_while p
+  public take_while (p T -> bool) Sequence T => as_list.take_while p
 
 
   # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
@@ -274,7 +274,7 @@ public Sequence(public T type) ref : property.equatable is
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  public cycle list T => as_list.cycle
+  public cycle Sequence T => as_list.cycle
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
@@ -378,7 +378,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   # results in `[1,2,2,4,2,4,2,4,6]`
   #
-  public map_pairs(B type, f (T,T)->B) list B =>
+  public map_pairs(B type, f (T,T)->B) Sequence B =>
     zip (drop 1) f
 
 
@@ -480,7 +480,7 @@ public Sequence(public T type) ref : property.equatable is
   # create a new list from the result of applying 'f' to the
   # elements of this Sequence and 'b' in order.
   #
-  public zip(U,V type, b Sequence U, f (T,U)->V) => as_list.zip b.as_list f
+  public zip(U,V type, b Sequence U, f (T,U)->V) Sequence V => as_list.zip b f
 
 
   # create a new Sequence from the result of applying 'f' to the
@@ -587,14 +587,14 @@ public Sequence(public T type) ref : property.equatable is
   # adds the corresponding index to
   # every element in the sequence
   #
-  public indexed list (tuple i32 T) =>
+  public indexed Sequence (tuple i32 T) =>
     indexed 0
 
 
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  public indexed(I type : has_interval, start_idx I) list (tuple I T) =>
+  public indexed(I type : has_interval, start_idx I) Sequence (tuple I T) =>
     zip (start_idx..) (a,b -> (b, a))
 
 
@@ -607,13 +607,13 @@ public Sequence(public T type) ref : property.equatable is
   # chop this Sequence into chunks of `chunk_size`.
   # the last chunk may be smaller than `chunk_size`.
   #
-  public chunk(chunk_size i32) list (list T)
+  public chunk(chunk_size i32) Sequence (Sequence T)
   pre debug: chunk_size > 0
   =>
     if is_empty
-      nil
+      (Sequence (Sequence T)).empty
     else
-      (take chunk_size).as_list : ((drop chunk_size).chunk chunk_size)
+      (take chunk_size) : ((drop chunk_size).chunk chunk_size).as_list
 
 
   # does this sequence start with l?

@@ -40,7 +40,7 @@ is
 
 
   # get the peer's ip address (tcp)
-  public get_peer_address outcome (list u8) =>
+  public get_peer_address outcome (Sequence u8) =>
     fuzion.sys.net.get_peer_address desc
 
 
