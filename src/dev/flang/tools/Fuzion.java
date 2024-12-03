@@ -323,25 +323,18 @@ public class Fuzion extends Tool
          */
         if (!Errors.any())
           {
-            var p = f._saveLib;
-            var n = p.getFileName().toString();
-            var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
-            if (n.endsWith(sfx))
-              {
-                n = n.substring(0, n.length() - sfx.length());
-              }
-            var data = fe.sourceModule().data(n);
+            var data = fe.sourceModule().data();
             if (data != null)
               {
-                try (var os = Files.newOutputStream(p))
+                try (var os = Files.newOutputStream(f._saveLib))
                   {
                     Channels.newChannel(os).write(data);
-                    say(" + " + p + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
+                    say(" + " + f._saveLib + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
                   }
                 catch (IOException io)
                   {
                     Errors.error("-saveLib: I/O error when writing module file",
-                                 "While trying to write file '"+ p + "' received '" + io + "'");
+                                 "While trying to write file '"+ f._saveLib + "' received '" + io + "'");
                   }
               }
           }
@@ -1053,6 +1046,7 @@ public class Fuzion extends Tool
                                           _readStdin,
                                           _executeCode,
                                           _main,
+                                          moduleName(),
                                           _backend.needsSources(),
                                           _backend.needsEscapeAnalysis(),
                                           s -> timer(s));
@@ -1065,6 +1059,26 @@ public class Fuzion extends Tool
         timer("be");
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
+  }
+
+
+  /**
+   * The name of the module we are compiling.
+   */
+  private String moduleName()
+  {
+    var n = "main";
+    if (_saveLib != null)
+       {
+         var p = _saveLib;
+         n = p.getFileName().toString();
+         var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
+         if (n.endsWith(sfx))
+           {
+             n = n.substring(0, n.length() - sfx.length());
+           }
+       }
+    return n;
   }
 
 

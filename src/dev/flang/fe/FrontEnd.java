@@ -388,7 +388,7 @@ public class FrontEnd extends ANY
         _sourceModule.checkMain();
         Errors.showAndExit();
 
-        var data = _sourceModule.data("main");
+        var data = _sourceModule.data();
         reset();
         _mainModule = libModule(data, af -> loadModules(af), null /* use universe of module */);
         var ignore = new Types.Resolved(_mainModule, _mainModule.libraryUniverse(), false);

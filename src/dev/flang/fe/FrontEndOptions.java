@@ -98,6 +98,12 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
+   * The name of the module we are compiling.
+   */
+  final String _moduleName;
+
+
+  /**
    * true to load base library (false if we are creating it)
    */
   final boolean _loadBaseLib;
@@ -148,6 +154,7 @@ public class FrontEndOptions extends FuzionOptions
                          boolean readStdin,
                          byte[] executeCode,
                          String main,
+                         String moduleName,
                          boolean loadSources,
                          boolean needsEscapeAnalysis,
                          Consumer<String> timer)
@@ -205,6 +212,7 @@ public class FrontEndOptions extends FuzionOptions
     _moduleDirs = moduleDirs;
     _dumpModules = dumpModules;
     _main = main;
+    _moduleName = moduleName;
     _loadSources = loadSources;
     _needsEscapeAnalysis = needsEscapeAnalysis;
     if (sourceDirs == null)
