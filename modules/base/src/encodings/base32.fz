@@ -147,7 +147,7 @@ is
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
 
     for
-      res list u8 := nil, res ++ bytes  # contains the decoded data at the end
+      res := (Sequence u8).empty, res ++ bytes  # contains the decoded data at the end
       nxt := 0, nxt + 8
       last_err := false, is_err
       qnt_last list (outcome u64) := nil, quintets

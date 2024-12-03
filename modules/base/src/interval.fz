@@ -150,7 +150,7 @@ public has_interval : integer is
   # has_interval.this.max
   #
   public postfix .. =>
-    interval has_interval.this has_interval.this nil has_interval.this.one
+    interval has_interval.this nil has_interval.this.one
 
 
   # an infinite integer Sequence starting from this up to the maximum value
