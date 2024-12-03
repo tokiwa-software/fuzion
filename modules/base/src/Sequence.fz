@@ -77,6 +77,16 @@ public Sequence(public T type) ref : property.equatable is
   => (map i32 (_ -> 1)).fold i32.sum
 
 
+  # count the number of elements in this Sequence that match the
+  # given predicate. Note that this typically
+  # runs forever if executed on an endless list.
+  #
+  # For lists that are not array backed, this might require time in O(count).
+  #
+  public count_by(f T->bool) =>
+    (filter f).count
+
+
   # get the first element of this Sequence
   #
   public first
