@@ -740,7 +740,11 @@ public class Html extends ANY
    */
   private static String urlEncode(String s)
   {
-    return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    var tmp = Docs.nonAsciiPattern
+      .matcher(s)
+      .replaceAll(match ->String.format("U+%04X", match.group().codePointAt(0)));
+    return URLEncoder
+      .encode(tmp, StandardCharsets.UTF_8);
   }
 
 

@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -104,6 +105,9 @@ public class Docs extends ANY
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
   private final AbstractFeature universe = fe._feUniverse;
+
+  public final static Pattern nonAsciiPattern = Pattern
+    .compile("[^\\x00-\\x7F]");
 
 
   /**
@@ -272,7 +276,9 @@ public class Docs extends ANY
    */
   private static String featurePath(AbstractFeature f, LibraryModule module)
   {
-    return featurePath(f, module, true);
+    return nonAsciiPattern
+      .matcher(featurePath(f, module, true))
+      .replaceAll(match ->String.format("U+%04X", match.group().codePointAt(0)));
   }
 
 
