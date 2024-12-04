@@ -685,7 +685,14 @@ public class Contract extends ANY
                          args,
                          new List<>(), // inheritance
                          Contract.EMPTY_CONTRACT,
-                         new Impl(pos, code, Impl.Kind.Routine));
+                         new Impl(pos, code, Impl.Kind.Routine))
+                         {
+                          @Override
+                          public Contract originalContract()
+                          {
+                            return f.contract();
+                          }
+                         };
     res._module.findDeclarations(pF, f.outer());
     res.resolveDeclarations(pF);
     res.resolveTypes(pF);
@@ -1075,7 +1082,14 @@ all of their redefinition to `true`. +
                              args,
                              new List<>(), // inheritance
                              Contract.EMPTY_CONTRACT,
-                             new Impl(pos, code, Impl.Kind.RoutineDef));
+                             new Impl(pos, code, Impl.Kind.RoutineDef))
+          {
+            @Override
+            public Contract originalContract()
+            {
+              return f.contract();
+            }
+          };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);
         res.resolveTypes(pF);
