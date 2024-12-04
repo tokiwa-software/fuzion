@@ -132,7 +132,7 @@ public class RefValue extends Value
    */
   public String toString()
   {
-    return "boxed("+_dfa._fuir.clazzAsString(_clazz)+"):" + _original;
+    return "boxed["+_id+","+_original._id+"]("+_dfa._fuir.clazzAsString(_clazz)+"):" + _original;
   }
 
 }

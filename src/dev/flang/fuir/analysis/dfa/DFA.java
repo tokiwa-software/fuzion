@@ -259,6 +259,15 @@ public class DFA extends ANY
               res = accessSingleTarget(s, t, args, res, tvalue);
             }
         }
+      else if (tv instanceof AllValuesOfOneType tvalues)
+        {
+          tvalues._iterating++;
+          for (var t : tvalues._componentsList)
+            {
+              res = accessSingleTarget(s, t, args, res, tvalue);
+            }
+          tvalues._iterating--;
+        }
       else
         {
           res = accessSingleTarget(s, tvalue.value(), args, res, tvalue);
@@ -308,7 +317,8 @@ public class DFA extends ANY
          || true
          ,
 
-         !(tvalue instanceof ValueSet));
+         !(tvalue instanceof ValueSet),
+         !(tvalue instanceof AllValuesOfOneType));
       var t_cl = tvalue == Value.UNIT ? _fuir.accessTargetClazz(s) : tvalue._clazz;
       var cc = _fuir.lookup(s, t_cl);
       if (cc != FUIR.NO_CLAZZ)
@@ -616,6 +626,15 @@ public class DFA extends ANY
                     {
                       taken = matchSingleSubject(s, v, mc, t) || taken;
                     }
+                }
+              else if (sv instanceof AllValuesOfOneType vs)
+                {
+                  vs._iterating++;
+                  for (var v : vs._componentsList)
+                    {
+                      taken = matchSingleSubject(s, v, mc, t) || taken;
+                    }
+                  vs._iterating--;
                 }
               else
                 {
@@ -1069,6 +1088,10 @@ public class DFA extends ANY
   List<NumericValue> _numericValuesAny = new List<>();
 
 
+  List<Instance> _oneInstanceOfClazz = new List<>();
+  List<AllValuesOfOneType> _allValuesOfClazz = new List<>();
+
+
   /**
    * Flag to control output of errors.  This is set to true after a fix point
    * has been reached to report errors that should disappear when fix point is
@@ -1397,7 +1420,7 @@ public class DFA extends ANY
           {
             var i = counts.getOrDefault(v._clazz, 0);
             counts.put(v._clazz, i+1);
-            if (v._clazz == -1 && ((i&(i-1))==0)) System.out.println("clazz is null for "+v.getClass()+" "+v);
+            //            if (_fuir.clazzAsString(v._clazz).equals("array u8")) System.out.println("v "+v.getClass()+": "+v);
           }
         counts
           .keySet()
@@ -2531,7 +2554,20 @@ public class DFA extends ANY
       }
     else
       {
-        if (_fuir.clazzIsRef(cl))
+        if (onlyOneInstance(cl))
+          {
+            var cnum = _fuir.clazzId2num(cl);
+            var a = _oneInstanceOfClazz.getIfExists(cnum);
+            if (a == null)
+              {
+                var ni = new Instance(this, cl, site, context);
+                makeUnique(ni);
+                _oneInstanceOfClazz.force(cnum, ni);
+                a = ni;
+              }
+            r = a;
+          }
+        else if (_fuir.clazzIsRef(cl))
           {
             var vc = _fuir.clazzAsValue(cl);
             check(!_fuir.clazzIsRef(vc));
@@ -2745,17 +2781,139 @@ public class DFA extends ANY
         res = _joined.get(k);
         if (res == null)
           {
-            if      (v.contains(w)) { res = v; }
-            else if (w.contains(v)) { res = w; }
+            if (onlyOneValueSet(clazz))
+              {
+                var cnum = _fuir.clazzId2num(clazz);
+                var a = _allValuesOfClazz.getIfExists(cnum);
+                if (a == null)
+                  {
+                    a = new AllValuesOfOneType(this, clazz);
+                    makeUnique(a);
+                    _allValuesOfClazz.force(cnum, a);
+                  }
+                a.add(v);
+                a.add(w);
+                res = a;
+            /*
+            if (
+
+                if      (v.contains(w)) { res = v; }
+                else if (w.contains(v)) { res = w; }
+                else
+                  {
+                    res = _allValuesOfClazz.getIfExists(cnum);
+                    if (res == null)
+                      {
+                        res = new ValueSet(this, v, w, clazz);
+                        check(res._clazz == clazz);
+                        res = cache(res);
+                        if (false) if (res._clazz != clazz)
+                          {
+                            say("PROBLEM after cache(res): "+res._clazz+" "+_fuir.clazzAsString(res._clazz)+" "+_fuir.clazzIsRef(res._clazz));
+                            say("PROBLEM after cache(res): "+clazz     +" "+_fuir.clazzAsString(clazz     )+" "+_fuir.clazzIsRef(clazz));
+                          }
+                      }
+                    else
+                      {
+                        if (false) if (res._clazz != clazz)
+                          {
+                            say(""+res._clazz+" "+clazz+" "+_fuir.clazzAsString(res._clazz)+" "+_fuir.clazzAsString(clazz));
+                          }
+                        // check(res._clazz == clazz);
+                        var cv = res.contains(v);
+                        var cw = res.contains(w);
+                        if (!cv || !cw)
+                          {
+                            if (!cv) { res = new ValueSet(this, res, v, clazz); res = cache(res); }
+                            if (!cw) { res = new ValueSet(this, res, w, clazz); res = cache(res); }
+                          }
+                      }
+                    check(cnum == _fuir.clazzId2num(clazz));
+                    _allValuesOfClazz.force(cnum, (ValueSet) res);
+                    check(res._clazz == clazz);
+                  }
+            */
+              }
             else
               {
-                res = new ValueSet(this, v, w, clazz);
-                res = cache(res);
+                if      (v.contains(w)) { res = v; }
+                else if (w.contains(v)) { res = w; }
+                else
+                  {
+                    res = new ValueSet(this, v, w, clazz);
+                    res = cache(res);
+                  }
               }
             _joined.put(k, res);
           }
       }
     return res;
+  }
+
+
+  static boolean ONLY_ONE_VALUE_SET = false;
+  static boolean ONLY_ONE_INSTANCE  = false;
+  static boolean NO_SET_OF_REFS     = false;
+
+
+  List<Boolean> _onlyOneValueSet = new List<>();
+
+
+  boolean onlyOneValueSet(int clazz)
+  {
+    if (!ONLY_ONE_VALUE_SET) return false;
+    var cnum = _fuir.clazzId2num(clazz);
+    var b = _onlyOneValueSet.getIfExists(cnum);
+    if (b == null)
+      {
+        // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
+        // this should be something generic instead, e.g.
+        //
+        //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
+        //
+        b = switch (_fuir.clazzAsString(clazz))
+          {
+          case
+            "ref array u8", "i32", "ref list u8", "codepoint",
+            // "Any",        -- Any causes abstract methods errors
+            // "list u8",    -- choice does not work yet
+            "u32",
+            // "String",     -- String causes abstract methods errors
+            "ref codepoint", "Sequence u8", "array u8",
+            "fuzion.sys.internal_array u8",
+            "Cons"
+            -> true;
+          default -> false;
+          };
+        _onlyOneValueSet.force(cnum, b);
+      }
+    return b;
+  }
+
+  List<Boolean> _onlyOneInstance = new List<>();
+
+
+  boolean onlyOneInstance(int clazz)
+  {
+    if (!ONLY_ONE_INSTANCE) return false;
+    var cnum = _fuir.clazzId2num(clazz);
+    var b = _onlyOneInstance.getIfExists(cnum);
+    if (b == null)
+      {
+        // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
+        // this should be something generic instead, e.g.
+        //
+        //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
+        //
+        b = switch (_fuir.clazzAsString(clazz))
+          {
+          case
+            "codepoint"  -> true;
+          default -> false;
+          };
+        _onlyOneInstance.force(cnum, b);
+      }
+    return b;
   }
 
 
@@ -2984,6 +3142,11 @@ public class DFA extends ANY
         var k2 = tvalue._id;
         var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
         var k4 = env == null ? 0 : env._id + 1;
+        if (CHECKS) check
+          (k1 >= 0,
+           k2 >= 0,
+           k3 >= 0,
+           k4 >= 0);
         // We use a LongMap in case we manage to fiddle k1..k4 into a long
         //
         // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
@@ -2999,6 +3162,14 @@ public class DFA extends ANY
             k4 <= 0x03FF)
           {
             var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
+            /*
+            if (!(((k >> (18*2+10)) & 0x3FFFF) == k1))
+              {
+                System.out.println("k1: "+Long.toHexString(k1));
+                System.out.println("k: "+Long.toHexString(k));
+                System.out.println("k >> (18*2+10): "+Long.toHexString(k >> (18*2+10)));
+              }
+            */
             if (CHECKS) check
               (((k >> (18*2+10)) & 0x3FFFF) == k1,
                ((k >> (18  +10)) & 0x3FFFF) == k2,
@@ -3031,6 +3202,8 @@ public class DFA extends ANY
           }
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
+        //        if (_fuir.clazzAsString(cl).equals("array u8"))
+        //          dev.flang.util.Debug.uprintln("new call for "+_fuir.clazzAsString(cl)+" at "+_fuir.siteAsString(site));
         e = r;
         var rf = r;
         wasChanged(() -> "DFA.newCall to " + rf);

@@ -71,8 +71,10 @@ public class Value extends Val
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
-        else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
-        else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
+        else if (a instanceof AllValuesOfOneType aa && b instanceof AllValuesOfOneType ba) { return aa.compareTo(ba); }
+        else if (a instanceof TaggedValue       ) { return +1; } else if (b instanceof TaggedValue       ) { return -1; }
+        else if (a instanceof ValueSet          ) { return +1; } else if (b instanceof ValueSet          ) { return -1; }
+        else if (a instanceof AllValuesOfOneType) { return +1; } else if (b instanceof AllValuesOfOneType) { return -1; }
         else if (a._id >= 0 && b._id >= 0) { return Integer.compare(a._id, b._id); }
         else
           {
@@ -421,6 +423,11 @@ public class Value extends Val
    * such as i32, bool, etc.
    */
   Value box(DFA dfa, int vc, int rc, Context context)
+  {
+    return box0(dfa, vc, rc, context);
+  }
+
+  Value box0(DFA dfa, int vc, int rc, Context context)
   {
     Value result;
     if (this == UNIT)
