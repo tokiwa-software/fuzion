@@ -970,13 +970,13 @@ public class Intrinsics extends ANY
           return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
             .call("fzE_array_get",
               new List<CExpr>(
-                c.javaRefField(A0).castTo("jarray"),
+                A0.castTo("jarray"),
                 A1,
                 A2.castTo("char *"))),
             false);
         }
     });
-    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(c.javaRefField(A0).castTo("jarray"))).ret());
+    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(A0.castTo("jarray"))).ret());
     put("fuzion.java.array_to_java_object0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
@@ -1013,8 +1013,8 @@ public class Intrinsics extends ANY
           ? noJava
           : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
               .call("fzE_get_field0",
-                new List<>(c.javaRefField(A0).castTo("jobject"),
-                  c.javaRefField(A1).castTo("jstring"),
+                new List<>(A0.castTo("jobject"),
+                  A1.castTo("jstring"),
                   A2.castTo("char *"))),
             false));
     put("fuzion.java.get_static_field0",
@@ -1023,8 +1023,8 @@ public class Intrinsics extends ANY
           ? noJava
           : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
               .call("fzE_get_static_field0",
-                new List<>(c.javaRefField(A0).castTo("jstring"),
-                  c.javaRefField(A1).castTo("jstring"),
+                new List<>(A0.castTo("jstring"),
+                  A1.castTo("jstring"),
                   A2.castTo("char *"))),
               false));
     put("fuzion.java.set_field0",
@@ -1033,9 +1033,9 @@ public class Intrinsics extends ANY
           ? noJava
           : CExpr
               .call("fzE_set_field0",
-                new List<>(c.javaRefField(A0).castTo("jobject"),
-                  c.javaRefField(A1).castTo("jstring"),
-                  c.javaRefField(A2).castTo("jvalue"),
+                new List<>(A0.castTo("jobject"),
+                  A1.castTo("jstring"),
+                  A2.castTo("jvalue"),
                   A3.castTo("char *"))));
     put("fuzion.java.set_static_field0",
       (c, cl, outer, in) ->
@@ -1043,9 +1043,9 @@ public class Intrinsics extends ANY
           ? noJava
           : CExpr
               .call("fzE_set_static_field0",
-                new List<>(c.javaRefField(A0).castTo("jstring"),
-                  c.javaRefField(A1).castTo("jstring"),
-                  c.javaRefField(A2).castTo("jvalue"),
+                new List<>(A0.castTo("jstring"),
+                  A1.castTo("jstring"),
+                  A2.castTo("jvalue"),
                   A3.castTo("char *"))));
     put("fuzion.java.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)

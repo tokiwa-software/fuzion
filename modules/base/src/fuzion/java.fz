@@ -38,8 +38,8 @@ public fuzion.java is
   # an instance of T.
   #
   public get_static_field(T type, clazz String, field String, signature String) =>
-    c := string_to_java_object clazz
-    f := string_to_java_object field
+    c := (string_to_java_object clazz).Java_Ref
+    f := (string_to_java_object field).Java_Ref
     get_static_field0 T c f (sys.c_string signature)
 
 
@@ -47,43 +47,43 @@ public fuzion.java is
   # an instance of T.
   #
   public get_field(T type, thiz Java_Object, field String, signature String) =>
-    f := string_to_java_object field
-    get_field0 T thiz f (sys.c_string signature)
+    f := (string_to_java_object field).Java_Ref
+    get_field0 T thiz.Java_Ref f (sys.c_string signature)
 
 
   # set a static field of given name in class with given name.
   #
   public set_static_field(clazz String, field String, val Java_Object, signature String) =>
-    c := string_to_java_object clazz
-    f := string_to_java_object field
+    c := (string_to_java_object clazz).Java_Ref
+    f := (string_to_java_object field).Java_Ref
     set_static_field0 c f val.Java_Ref (sys.c_string signature)
 
 
   # set a field of given name from given object instance thiz.
   #
   public set_field(thiz Java_Object, field String, val Java_Object, signature String) =>
-    f := string_to_java_object field
-    set_field0 thiz f val (sys.c_string signature)
+    f := (string_to_java_object field).Java_Ref
+    set_field0 thiz.Java_Ref f val.Java_Ref (sys.c_string signature)
 
 
   # intrinsic to read static field
   #
-  get_static_field0(T type, clazz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic
+  get_static_field0(T type, clazz, field, signature fuzion.sys.Pointer) T => intrinsic
 
 
   # intrinsic to read instance field
   #
-  get_field0(T type, thiz Java_Object, field Java_Object, signature fuzion.sys.Pointer) T => intrinsic
+  get_field0(T type, thiz, field, signature fuzion.sys.Pointer) T => intrinsic
 
 
   # intrinsic to set static field
   #
-  set_static_field0(clazz Java_Object, field Java_Object, val fuzion.sys.Pointer, signature fuzion.sys.Pointer) unit => intrinsic
+  set_static_field0(clazz, field, val, signature fuzion.sys.Pointer) unit => intrinsic
 
 
   # intrinsic to set instance field
   #
-  set_field0(thiz Java_Object, field Java_Object, val Java_Object, signature fuzion.sys.Pointer) unit => intrinsic
+  set_field0(thiz, field, val, signature fuzion.sys.Pointer) unit => intrinsic
 
 
   # A Java reference
@@ -105,9 +105,9 @@ public fuzion.java is
   public Array(public T type,
                redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
   is
-    public length                  => array_length Array.this
+    public length                  => array_length T Java_Ref
     public redef finite trit       => trit.yes
-    public redef index [ ] (i i32) => array_get    Array.this i (sys.c_string signature)
+    public redef index [ ] (i i32) => array_get    T Java_Ref i (sys.c_string signature)
     public redef as_list => as_list 0
 
 
@@ -257,12 +257,12 @@ public fuzion.java is
 
   # intrinsic to get the length of a Java array of arbitrary type
   #
-  array_length(T type, a Array T) i32 => intrinsic
+  array_length(T type, a fuzion.sys.Pointer) i32 => intrinsic
 
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  array_get(T type, a Array T, ix i32, signature fuzion.sys.Pointer) T => intrinsic
+  array_get(T type, a fuzion.sys.Pointer, ix i32, signature fuzion.sys.Pointer) T => intrinsic
 
 
   # convert a Sequence to a Java Array object

@@ -707,11 +707,9 @@ public class Intrinsics extends ANY
           int resultClazz = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return args ->
             {
-              Instance clazzOrThizI = (Instance) args.get(1);
-              Instance fieldI = (Instance) args.get(2);
-              String clazz = !statique ? null : (String) JavaInterface.instanceToJavaObject(clazzOrThizI);
-              Object thiz  = statique  ? null :          JavaInterface.instanceToJavaObject(clazzOrThizI);
-              String field = (String) JavaInterface.instanceToJavaObject(fieldI);
+              String clazz = !statique ? null : (String) ((JavaRef) args.get(1))._javaRef;
+              Object thiz  = statique  ? null :          ((JavaRef) args.get(1))._javaRef;
+              String field = (String) (((JavaRef) args.get(2))._javaRef);
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
@@ -722,13 +720,10 @@ public class Intrinsics extends ANY
           var statique = in.equals("fuzion.java.set_static_field0");
           return args ->
             {
-              Instance clazzOrThizI = (Instance) args.get(1);
-              Instance fieldI = (Instance) args.get(2);
-              Instance value = (Instance) args.get(3);
-              String clazz = !statique ? null : (String) JavaInterface.instanceToJavaObject(clazzOrThizI);
-              Object thiz  = statique  ? null :          JavaInterface.instanceToJavaObject(clazzOrThizI);
-              String field = (String) JavaInterface.instanceToJavaObject(fieldI);
-              Object val  = JavaInterface.instanceToJavaObject(value);
+              String clazz = !statique ? null : (String) ((JavaRef) args.get(1))._javaRef;
+              Object thiz  = statique  ? null :          ((JavaRef) args.get(1))._javaRef;
+              String field = (String) ((JavaRef) args.get(2))._javaRef;
+              Object val  = ((JavaRef) args.get(3))._javaRef;
               JavaInterface.setField(clazz, thiz, field, val);
               return Value.EMPTY_VALUE;
             };
@@ -768,12 +763,11 @@ public class Intrinsics extends ANY
         });
     putUnsafe("fuzion.java.array_length",  (executor, innerClazz) -> args ->
         {
-          var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
-          return new i32Value(Array.getLength(arr));
+          return new i32Value(Array.getLength(((JavaRef) args.get(1))._javaRef));
         });
     putUnsafe("fuzion.java.array_get", (executor, innerClazz) -> args ->
         {
-          var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
+          var arr = ((JavaRef) args.get(1))._javaRef;
           var ix  = args.get(2).i32Value();
           var res = Array.get(arr, ix);
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
