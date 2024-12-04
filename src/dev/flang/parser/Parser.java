@@ -1300,20 +1300,20 @@ inherits    : inherit
     // NOTE: this uses skipCallList instead of skipPureCallList
     // that the parser does not throw syntax errors when testing for isFeaturePrefix
     // for `debug` in expressions like: `pre debug: u128.this ≤ i8.max.as_u128`
-    return !skipColon() || skipCallList();
+    return !skipColon() || skipInheritanceCallList();
   }
 
 
   /**
    * Parse inherit clause
    *
-inherit     : COLON pureCallList
+inherit     : COLON inheritanceCallList
             ;
    */
   List<AbstractCall> inherit()
   {
     matchOperator(":", "inherit");
-    return pureCallList();
+    return inheritanceCallList();
   }
 
 
@@ -1330,86 +1330,72 @@ inherit     : COLON pureCallList
 
 
   /**
-   * Parse pureCallList
+   * Parse inheritanceCallList
    *
-pureCallList    : pureCall0 ( COMMA pureCallList
-                            |
-                            )
-                ;
+inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
+                                         |
+                                         )
+                       ;
    */
-  List<AbstractCall> pureCallList()
+  List<AbstractCall> inheritanceCallList()
   {
-    var result = new List<AbstractCall>(pureCall0());
+    var result = new List<AbstractCall>(inheritanceCall());
     while (skipComma())
       {
-        result.add(pureCall0());
+        result.add(inheritanceCall());
       }
     return result;
   }
 
 
   /**
-   * Parse callList
+   * Check if the current position is an inheritanceCallList. If so, skip it.
    *
-callList    : call0 ( COMMA callList
-                    |
-                    )
-            ;
+   * @return true iff the next token(s) are an inheritanceCallList.
    */
-  List<Expr> callList()
+  boolean skipInheritanceCallList()
   {
-    var result = new List<Expr>(call0());
-    while (skipComma())
+    var result = skipInheritanceCall();
+    while (result && skipComma())
       {
-        result.add(call0());
+        result = skipInheritanceCall();
       }
     return result;
   }
 
 
   /**
-   * Check if the current position is a callList. If so, skip it.
-   *
-   * @return true iff the next token(s) are a callList.
+   * True if the current position matches an inheritance call and skip it.
    */
-  boolean skipCallList()
+  private boolean skipInheritanceCall()
   {
-    var result = isNamePrefix() || current(false) == Token.t_universe;
-    if (result)
+    return call0() instanceof AbstractCall
+      ? true
+      : expr() instanceof AbstractCall;
+  }
+
+
+  /**
+   * Parse an inheritanceCall
+   *
+inheritanceCall    : call0
+                   | expr
+                   ;
+   */
+  private AbstractCall inheritanceCall()
+  {
+    var result = call0();
+    if (!(result instanceof AbstractCall))
       {
-        var ignore = callList();
+        result = expr();
+      if (!(result instanceof AbstractCall))
+        {
+          var pos = result != null ? result.pos().bytePos() : bytePos();
+          syntaxError(pos, "Expected inheritance call.", "Found other expression.");
+          return Call.ERROR;
+        }
       }
-    return result;
-  }
-
-
-  /**
-   * Parse pureCall0
-   *
-pureCall0    : universePureCall
-             | pureCall
-             ;
-   */
-  private AbstractCall pureCall0()
-  {
-    return current(false) == Token.t_universe
-      ? universePureCall()
-      : pureCall(null);
-  }
-
-
-  /**
-   * Parse call0
-   *
-call0    : universeCall
-         | call
-         ;
-   */
-  private Expr call0()
-  {
-    return current(false) == Token.t_universe
-      ? universeCall()
-      : call(null);
+    return (AbstractCall) result;
   }
 
 
@@ -3193,8 +3179,7 @@ destructrDcl: formArgs               ":=" exprInLine
    *
 callOrFeatOrThis  : anonymous
                   | plainLambda
-                  | universeCall
-                  | call
+                  | call0
                   ;
    */
   Expr callOrFeatOrThis(boolean mayUseCommas)
@@ -3202,9 +3187,22 @@ callOrFeatOrThis  : anonymous
     return
       isAnonymousPrefix()               ? anonymous()      : // starts with value/ref/:/fun/name
       isPlainLambdaPrefix(mayUseCommas) ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
-      current() == Token.t_universe     ? universeCall()   :
-      isNamePrefix()                    ? call(null)         // starts with name
-                                        : null;
+      call0();
+  }
+
+
+  /**
+   * Parse call0
+   *
+call0             : universeCall
+                  | call
+                  ;
+   */
+  private Expr call0()
+  {
+    return current() == Token.t_universe     ? universeCall()   :
+           isNamePrefix()                    ? call(null)         // starts with name
+                                             : null;
   }
 
 
