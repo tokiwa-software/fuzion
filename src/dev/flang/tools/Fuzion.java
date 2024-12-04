@@ -264,9 +264,13 @@ public class Fuzion extends Tool
       {
         return "";
       }
-      void process(FuzionOptions options, FUIR fuir)
+      @Override
+      void processFrontEnd(Fuzion f, FrontEnd fe)
       {
-        new Effects(options, fuir).find();
+        var o    = fe._options;
+        var mir  = fe.createMIR();                             f.timer("createMIR");
+        var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
+        new Effects(o, new DFA(o, fuir)).find();
       }
     },
 
