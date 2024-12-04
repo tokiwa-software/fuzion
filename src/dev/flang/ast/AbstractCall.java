@@ -233,9 +233,9 @@ public abstract class AbstractCall extends Expr
           }
       }
 
-      var typeCallResult = (target() instanceof AbstractCall ac && !ac.isCallToOuterRef())
-                              ? ac.typeCall(p, res, that)
-                              :  null;
+    var typeCallResult = (target() instanceof AbstractCall ac && !ac.isCallToOuterRef())
+                            ? ac.typeCall(p, res, that)
+                            :  null;
 
     return calledFeature().typeCall(p, typeParameters, res, that, typeCallResult);
   }
