@@ -250,30 +250,6 @@ public abstract class AbstractCall extends Expr
                     tf.selfType());
   }
 
-
-  /**
-   * Collect used fields to be able to warn about unused ones.
-   * @param usages set to which the used fields should be collected to
-   */
-  public void recordUsage(Set<AbstractFeature> usages)
-  {
-    if (!(this instanceof Call c) || c.calledFeatureKnown())
-      {
-        var feat = calledFeature();
-
-        // don't collect features that should never be warned about, see Feature.java for reasons
-        if (feat.kind() == AbstractFeature.Kind.Field
-            && feat.visibility().eraseTypeVisibility() != Visi.PUB
-            && !feat.featureName().isInternal()
-            && !feat.outer().featureName().isInternal()
-            && !feat.featureName().isNameless()
-            && !feat.isArgument())
-          {
-            usages.add(feat);
-          }
-      }
-  }
-
 }
 
 /* end of file */

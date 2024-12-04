@@ -382,6 +382,11 @@ public class Feature extends AbstractFeature
 
   private List<AbstractType> _effects;
 
+  /**
+   * has this feature been used?
+   */
+  private boolean _isUsed = false;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -1936,7 +1941,18 @@ A ((Choice)) declaration must not contain a result type.
             public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
             public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
             public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
-            public void  action(AbstractCall c) { c.recordUsage(res.fieldUsages); };
+            public void  action(AbstractCall c)
+              {
+                if (!(c instanceof Call cc) || cc.calledFeatureKnown())
+                  {
+                    var feat = c.calledFeature();
+
+                    if (feat instanceof Feature f)
+                      {
+                        f.recordUsage();
+                      }
+                  }
+              };
           });
 
         _state = State.BOXED;
@@ -1961,15 +1977,7 @@ A ((Choice)) declaration must not contain a result type.
       res._module.checkTypes(this, context);
 
       // warn about unused, non public, non ignored fields
-      if (kind() == AbstractFeature.Kind.Field
-          && visibility().eraseTypeVisibility() != Visi.PUB  // public fields may be unused
-          && !featureName().isInternal()                     // don't warn for internal features
-          && !this.outer().featureName().isInternal()        // don't warn for inner features of internal features
-          && !featureName().isNameless()                     // don't warn for nameless features
-          && !isArgument()                                   // don't warn for arguments
-          && !res.fieldUsages.contains(this)                 // check if the field is used
-          && redefines().isEmpty()                           // don't warn if field is a redef
-          )
+      if (isUsageCheckRequired() && !isUsed())
         {
           AstErrors.unusedField(this);
         }
@@ -2498,6 +2506,37 @@ A ((Choice)) declaration must not contain a result type.
   public boolean definesUsableType()
   {
     return definesType() && !featureName().isInternal();
+  }
+
+  /**
+   * Record usage of this feature, i.e. mark it as used.
+   */
+  private void recordUsage()
+  {
+    _isUsed = true;
+  }
+
+  /**
+   * Has this feature been used?
+   */
+  private boolean isUsed()
+  {
+    return _isUsed;
+  }
+
+  /**
+   * Is this a feature for which an error should be shown if it is never used?
+   * i.e. a field that meets certain conditions
+   */
+  private boolean isUsageCheckRequired()
+  {
+    return kind() == AbstractFeature.Kind.Field
+          && visibility().eraseTypeVisibility() != Visi.PUB  // public fields may be unused
+          && !featureName().isInternal()                     // don't warn for internal features
+          && !this.outer().featureName().isInternal()        // don't warn for inner features of internal features
+          && !featureName().isNameless()                     // don't warn for nameless features
+          && !isArgument()                                   // don't warn for arguments
+          && redefines().isEmpty();                          // don't warn for unused redefinitions
   }
 
 
