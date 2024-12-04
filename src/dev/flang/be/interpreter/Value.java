@@ -320,7 +320,6 @@ public abstract class Value extends FUIRContext
   protected Object toNative()
   {
     Errors.fatal("NYI: toNative " + this.getClass().getName());
-    System.exit(1);
     return null;
   }
 
