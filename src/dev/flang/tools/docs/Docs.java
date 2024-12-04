@@ -52,6 +52,7 @@ import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
@@ -182,8 +183,7 @@ public class Docs extends ANY
   {
     if (args.length < 1)
       {
-        say_err(usage());
-        System.exit(1);
+        Errors.fatal(usage());
       }
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))

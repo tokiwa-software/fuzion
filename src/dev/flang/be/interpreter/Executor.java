@@ -303,25 +303,25 @@ public class Executor extends ProcessExpression<Value, Object>
               ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
               : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
 
+        var arguments = args.stream().map(arg -> arg.toNative()).toList();
+        Object tmp = null;
         try
           {
-            var arguments = args.stream().map(arg -> arg.toNative()).toList();
-            var tmp = mh.invokeWithArguments(arguments);
-            for (int i = 0; i < args.size(); i++)
-              {
-                if (args.get(i) instanceof ArrayData ad)
-                  {
-                    ad.set((MemorySegment)arguments.get(i));
-                  }
-              }
-            yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
+            tmp = mh.invokeWithArguments(arguments);
           }
         catch (Throwable e)
           {
-            say_err(e);
-            System.exit(1);
+            Errors.fatal(e);
             yield null;
           }
+        for (int i = 0; i < args.size(); i++)
+         {
+            if (args.get(i) instanceof ArrayData ad)
+              {
+                ad.set((MemorySegment)arguments.get(i));
+              }
+          }
+        yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
       };
 
     return result;
@@ -600,8 +600,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Object reportErrorInCode(String msg)
   {
-    say_err(msg);
-    System.exit(1);
+    Errors.fatal(msg);
     return null;
   }
 
