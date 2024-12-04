@@ -62,7 +62,7 @@ public class ValueSet extends Value
 
     /**
      * Map for value ids to values in this set. This is unused in case the
-     * values are TaggedValue instances.  Allocated on demand.
+     * values are not TaggedValue instances.  Allocated on demand.
      */
     IntMap<Value> _components;
 
@@ -72,6 +72,8 @@ public class ValueSet extends Value
      * the original values.  Allocated on demand.
      */
     List<Value> _forTags;
+
+    IntMap<RefValue> _forRefs;
 
 
     /**
@@ -116,8 +118,32 @@ public class ValueSet extends Value
       if (PRECONDITIONS) require
         (!(v instanceof ValueSet));
 
-      if (v instanceof TaggedValue tv)
+      if (DFA.NO_SET_OF_REFS && v instanceof RefValue rv)
         {
+          if (_forRefs == null)
+            {
+              _forRefs = new IntMap<>();
+            }
+          var r = _forRefs.get(rv._clazz);
+          if (r != null)
+            {
+              var orig1 = r._original;
+              var orig2 = rv._original;
+              var ov = _dfa.newValueSet(orig1, orig2, rv._clazz);
+              rv = (RefValue) ov.box0(_dfa, orig1._clazz, rv._clazz, Context._MAIN_ENTRY_POINT_ /* NYI: why? */);
+            }
+          _forRefs.put(rv._clazz, rv);
+        }
+      else if (v instanceof TaggedValue tv)
+        {
+          if (_components != null)
+            {
+              System.out.println("ADDING TAGGED "+tv+" to "+_dfa._fuir.clazzAsString(_clazz));
+              for (var c : _componentsArray)
+                {
+                  System.out.println("  has "+c);
+                }
+            }
           if (_forTags == null)
             {
               _forTags = new List<>();
@@ -134,12 +160,28 @@ public class ValueSet extends Value
         }
       else
         {
+          if (_forTags != null)
+            {
+              System.out.println("ADDING UN-TAGGED "+v+" to "+_dfa._fuir.clazzAsString(_clazz));
+              for (var c : _forTags)
+                {
+                  if (c != null)
+                    System.out.println("  has "+c);
+                }
+            }
           if (_components == null)
             {
               _components = new IntMap<>();
             }
           _components.put(v._id, v);
         }
+      if (false) if (((_forTags == null) == (_components == null)))
+        {
+          System.out.println("Added "+v+" ("+_dfa._fuir.clazzAsString(v._clazz)+") to "+_dfa._fuir.clazzAsString(_clazz)+": "+this);
+        }
+
+      if (CHECKS) check
+        ((_forTags == null) != (_components == null));
     }
 
 
@@ -152,6 +194,18 @@ public class ValueSet extends Value
       if (CHECKS) check
         ((_forTags == null) != (_components == null));
 
+      if (_forRefs != null)
+        {
+          if (_components == null)
+            {
+              _components = new IntMap<>();
+            }
+          for (var k : _forRefs.keySet())
+            {
+              var r = _forRefs.get(k);
+              _components.put(r._id, r);
+            }
+        }
       var comp = _components;
       if (comp == null)
         {
@@ -241,7 +295,7 @@ public class ValueSet extends Value
                 return res;
               }
           }
-        return 0;
+        return Integer.compare(_clazz, other._clazz);
       }
     else if (s1 < s2)
       {
@@ -373,6 +427,24 @@ public class ValueSet extends Value
       {
         var u = v.unbox(dfa, vc);
         result = result == null ? u : dfa.newValueSet(result, u, vc);
+      }
+    return result;
+  }
+
+
+
+  /**
+   * Get set of values of given field within this instance.
+   */
+  Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
+  {
+    Val result = null;
+    var rt = dfa._fuir.clazzResultClazz(field);
+    // NYI: performance in O(_components.size()²)
+    for (var v : _componentsArray)
+      {
+        var u = v.readFieldFromInstance(dfa, field, site, why);
+        result = result == null ? u : dfa.newValueSet(result.value(), u.value(), rt);
       }
     return result;
   }
