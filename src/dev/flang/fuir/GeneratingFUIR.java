@@ -94,7 +94,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzResultClazz.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_RESULT_CLAZZ = true;
@@ -103,7 +103,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzArgClazz and clazzArgCount.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_ARG_CLAZZES = true;
@@ -2333,11 +2333,11 @@ public class GeneratingFUIR extends FUIR
    *
    * This is used to feed information back from static analysis tools like DFA
    * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accesedClazzes.
+   * targets / inner clazzes tuples returned by accessedClazzes.
    *
    * @param s site of the access
    *
-   * @param tclazz the target clazz of the acces.
+   * @param tclazz the target clazz of the access.
    *
    * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
    * i.e., an abstract feature is missing.

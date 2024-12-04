@@ -896,10 +896,11 @@ public class LibraryFeature extends AbstractFeature
   }
 
   /**
-   * Does this feature belong to or contain inner features of the given module?
-   * And should therefore be shown on the api page for that module
+   * Does this feature belong to or contain inner features of the given module
+   * and should therefore be shown on the API doc page for that module?
+   *
    * @param module the module for which the belonging is to be checked
-   * @return true iff this feature needs to be included in the api page for module
+   * @return true iff this feature needs to be included in the API doc page for module
    */
   public boolean showInMod(LibraryModule module)
   {

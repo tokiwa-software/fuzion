@@ -317,7 +317,7 @@ public Sequence(public T type) ref : property.equatable is
   # and ']'.
   #
   # NOTE: In case this Sequence is not finite, this will attempt to create an
-  # infinitely long string resulting in failure due to resource exchaustion.
+  # infinitely long string resulting in failure due to resource exhaustion.
   #
   public as_string_all => "[{as_string ", "}]"
 
@@ -326,7 +326,7 @@ public Sequence(public T type) ref : property.equatable is
   # representations of its contents, separated by 'sep'.
   #
   # NOTE: In case this Sequence is not finite, this will attempt to create an
-  # infinitely long string resulting in failure due to resource exchaustion.
+  # infinitely long string resulting in failure due to resource exhaustion.
   #
   public as_string (sep String) => as_list.as_string sep
 
