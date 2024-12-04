@@ -1,0 +1,4 @@
+fuzion.runtime.pre_fault
+fuzion.runtime.fault
+exit
+fuzion.runtime.post_fault

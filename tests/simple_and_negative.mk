@@ -60,3 +60,5 @@ record_c:
 
 record_int:
 	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_int
+
+effect:

@@ -1,0 +1,8 @@
+fuzion.runtime.pre_fault
+fuzion.runtime.fault
+state unit (cache#2 encodings.unicode.mappings.upper_case.upper_case).cache_item
+exit
+fuzion.runtime.post_fault
+io.out
+panic
+state unit (cache#2 encodings.unicode.mappings.lower_case.lower_case).cache_item

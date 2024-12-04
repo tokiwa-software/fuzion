@@ -66,6 +66,9 @@ jvm: $(FUZION_DEPENDENCIES)
 c: $(FUZION_DEPENDENCIES)
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
+effect: $(FUZION_DEPENDENCIES)
+	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
 record: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
 
@@ -77,3 +80,6 @@ record_jvm: $(FUZION_DEPENDENCIES)
 
 record_c: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+
+record_effect: $(FUZION_DEPENDENCIES)
+	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)
