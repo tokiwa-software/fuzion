@@ -754,6 +754,7 @@ public class C extends ANY
           "-Wpedantic",
           "-Wformat=2",
           "-Wno-unused-parameter",
+          "-Wno-unused-but-set-parameter", // needed for #1777
           "-Wshadow",
           "-Wwrite-strings",
           "-Wold-style-definition",
