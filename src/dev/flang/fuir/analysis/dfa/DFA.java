@@ -2853,7 +2853,7 @@ public class DFA extends ANY
 
   static boolean ONLY_ONE_VALUE_SET = false;
   static boolean ONLY_ONE_INSTANCE  = false;
-  static boolean NO_SET_OF_REFS     = false;
+  static boolean NO_SET_OF_REFS     = !false;
 
 
   List<Boolean> _onlyOneValueSet = new List<>();
