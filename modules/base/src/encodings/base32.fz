@@ -150,7 +150,7 @@ is
       res := (Sequence u8).empty, res ++ bytes  # contains the decoded data at the end
       nxt := 0, nxt + 8
       last_err := false, is_err
-      qnt_last list (outcome u64) := nil, quintets
+      qnt_last Sequence (outcome u64) := (Sequence (outcome u64)).empty, quintets
 
     while nxt < data.length && !last_err
     do

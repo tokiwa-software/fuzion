@@ -259,7 +259,15 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
-  public redef take (n i32) list A
+  public redef take (n i32) Sequence A
+  =>
+    take_list n
+
+
+  # Lazily take the first n elements of a list, alternatively the whole list if it
+  # is shorter than n, or the empty list if n <= 0
+  #
+  take_list (n i32) list A
   =>
     if n ≤ 0
       nil
@@ -269,7 +277,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
         c Cons =>
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
-            redef tail => if n = 1 then nil else c.tail.take n-1
+            redef tail => if n = 1 then nil else c.tail.take_list n-1
 
 
   # reverse the order of the elements in this list
@@ -389,7 +397,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
-  public redef take_while (p A -> bool) list A
+  public redef take_while (p A -> bool) Sequence A
+  =>
+    take_while_list p
+
+
+  # Lazily take the first elements of a list for which predicate 'p' holds.
+  #
+  take_while_list (p A -> bool) list A
   =>
     match list.this
       nil    => nil
@@ -397,7 +412,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
         if p c.head
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
-            redef tail => c.tail.take_while p
+            redef tail => c.tail.take_while_list p
         else
           nil
 
@@ -426,18 +441,34 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # The result contains exactly those elements for which p
   # is true.
   #
-  public redef filter (p A -> bool) list A =>
+  public redef filter (p A -> bool) Sequence A =>
+    filter_list p
+
+
+  # Lazily filter the elements of a list.
+  #
+  # The result contains exactly those elements for which p
+  # is true.
+  #
+  filter_list (p A -> bool) list A =>
     match drop_while_list (a -> !(p a))
       nil    => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head
-                  redef tail => c.tail.filter p
+                  redef tail => c.tail.filter_list p
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'
   # is 'nil', returns 'nil'
   #
-  public redef cycle list A =>
+  public redef cycle Sequence A =>
+    cycle_list
+
+
+  # create a list that repeats the current list indefinitely.  In case 'list.this'
+  # is 'nil', returns 'nil'
+  #
+  cycle_list list A =>
     match list.this
       nil    => nil
       c Cons =>
@@ -463,13 +494,20 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  public redef zip(U, V type, b Sequence U, f (A,U)->V) list V =>
+  public redef zip(U, V type, b Sequence U, f (A,U)->V) Sequence V =>
+    zip_list b f
+
+
+  # create a new list from the result of applying 'f' to the
+  # elements of this list and 'b' in order.
+  #
+  zip_list(U, V type, b Sequence U, f (A,U)->V) list V =>
     match list.this
       c1 Cons =>
         b.as_list ? c2 Cons =>
                       zip_cons : Cons V (list V) is
                         redef head => f c1.head c2.head
-                        redef tail => c1.tail.zip c2.tail f
+                        redef tail => c1.tail.zip_list c2.tail f
                       zip_cons
                   | nil    => nil
       nil => nil
