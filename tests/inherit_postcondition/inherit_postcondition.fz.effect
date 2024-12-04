@@ -1,0 +1,7 @@
+mutate
+io.out
+fuzion.runtime.pre_fault
+fuzion.runtime.fault
+panic
+exit
+fuzion.runtime.post_fault

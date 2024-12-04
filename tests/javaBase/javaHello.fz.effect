@@ -1,0 +1,9 @@
+fuzion.runtime.pre_fault
+fuzion.runtime.fault
+panic
+io.out
+fuzion.runtime.post_fault
+state unit (cache#2 (num.ryū f64).step_3#7.pow5_split_cache_key).cache_item
+state unit (cache#2 (num.ryū f64).step_3#7.pow5_inv_split_cache_key).cache_item
+state unit (cache#2 (num.ryū f32).step_3#7.pow5_split_cache_key).cache_item
+state unit (cache#2 (num.ryū f32).step_3#7.pow5_inv_split_cache_key).cache_item
