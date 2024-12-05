@@ -686,13 +686,13 @@ public class Contract extends ANY
                          new List<>(), // inheritance
                          Contract.EMPTY_CONTRACT,
                          new Impl(pos, code, Impl.Kind.Routine))
-                         {
-                          @Override
-                          public Contract originalContract()
                           {
-                            return f.contract();
-                          }
-                         };
+                            @Override
+                            public Contract originalContract()
+                            {
+                              return f.contract();
+                            }
+                          };
     res._module.findDeclarations(pF, f.outer());
     res.resolveDeclarations(pF);
     res.resolveTypes(pF);
