@@ -136,11 +136,6 @@ public class Resolution extends ANY
 
   /*----------------------------  variables  ----------------------------*/
 
-  /*
-   * For recording usages of (non-public) fields.
-   */
-  public final Set<AbstractFeature> fieldUsages = new TreeSet<AbstractFeature>();
-
 
   /**
    * FeatureVisitor to call resolve() on all types.
