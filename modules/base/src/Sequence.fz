@@ -469,10 +469,8 @@ public Sequence(public T type) ref : property.equatable is
   pre
     T : property.orderable
   post
-    # NYI: BUG: #4346 constraint from pre-condition is not propagated to post-condition
-    #
-    # result.map_pairs (<=)
-    #       .reduce true (&&)
+    result.map_pairs (<=)
+          .reduce true (&&)
   =>
     sort_by (<=)
 

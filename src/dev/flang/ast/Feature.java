@@ -202,6 +202,17 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * For pre and post features the contract of the features
+   * the pre/post features originate from. Otherwise the contract of
+   * the feature itself.
+   */
+  public Contract originalContract()
+  {
+    return contract();
+  }
+
+
+  /**
    * Lists of features we redefine and hence from which we inherit pre or post
    * conditions.  Used during front end only to create calls to redefined
    * features post conditions when generating post condition feature for this

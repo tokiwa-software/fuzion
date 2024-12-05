@@ -117,7 +117,7 @@ public abstract class Context extends ANY
         {
           if (f instanceof Feature ff)
             {
-              for (var c : ff.contract()._declared_preconditions)
+              for (var c : ff.originalContract()._declared_preconditions)
                 {
                   if (c.cond instanceof Call cc &&
                       cc.calledFeatureKnown() &&
