@@ -27,7 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
@@ -158,7 +158,7 @@ public class Choices extends ANY implements ClassFileConstants
           }
       }
 
-    if (_fuir.clazzIs(cl, FUIR.SpecialClazzes.c_bool))
+    if (_fuir.clazzIs(cl, SpecialClazzes.c_bool))
       { // very small examples may use only `TRUE` or only `FALSE`, or none of
         // these values, which would then turn `bool` into a `unitlike` or even
         // `voidlike` choice, but we do not want to deal with this exotic case:

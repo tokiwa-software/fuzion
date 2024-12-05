@@ -32,7 +32,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -109,19 +109,19 @@ public class Intrinsics extends ANY
           var new_value = A1;
           var tmp = new CIdent("tmp");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
               if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
@@ -156,19 +156,19 @@ public class Intrinsics extends ANY
           var tmp = new CIdent("tmp");
           var res = new CIdent("set_successful");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
               if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
@@ -183,8 +183,8 @@ public class Intrinsics extends ANY
                 }
               else
                 {
-                  if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32) ||
-                      c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64))
+                  if (c._fuir.clazzIs(rc, SpecialClazzes.c_f32) ||
+                      c._fuir.clazzIs(rc, SpecialClazzes.c_f64))
                     {
                       eq = CExpr.eq(tmp, expected);
                     }
@@ -211,18 +211,18 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var r =
             c._fuir.clazzIsRef(rc) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_f64 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_unit);
           return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
         });
 
@@ -233,20 +233,20 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var tmp = new CIdent("tmp");
           CStmnt code;
-          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(
@@ -275,20 +275,20 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var new_value = A0;
           var code = CStmnt.EMPTY;
-          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
             {
               var f = c.accessField(outer, ac, v);
               code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
@@ -509,19 +509,19 @@ public class Intrinsics extends ANY
         /* NYI: The C standard does not guarantee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
          */
-    put("i8.prefix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int8const (0), outer, '-', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
-    put("i16.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int16const(0), outer, '-', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int32const(0), outer, '-', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int64const(0), outer, '-', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
-    put("i8.infix -°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
-    put("i16.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
-    put("i8.infix +°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
-    put("i16.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
-    put("i8.infix *°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
+    put("i8.prefix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int8const (0), outer, '-', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
+    put("i16.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int16const(0), outer, '-', SpecialClazzes.c_u16, SpecialClazzes.c_i16).ret());
+    put("i32.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int32const(0), outer, '-', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int64const(0), outer, '-', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
+    put("i8.infix -°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
+    put("i16.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u16, SpecialClazzes.c_i16).ret());
+    put("i32.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
+    put("i8.infix +°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
+    put("i16.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u16, SpecialClazzes.c_i16).ret());
+    put("i32.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
+    put("i8.infix *°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
     /**
      * This is intentionally cast to u32 and not u16.
      * Read why here:
@@ -529,9 +529,9 @@ public class Intrinsics extends ANY
      * https://github.com/llvm/llvm-project/issues/25954
      * https://stackoverflow.com/questions/23994293/inconsistent-behaviour-of-implicit-conversion-between-unsigned-and-bigger-signed
      */
-    put("i16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
+    put("i16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u32, SpecialClazzes.c_i16).ret());
+    put("i32.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
     put("i8.div"               ,
         "i16.div"              ,
         "i32.div"              ,
@@ -592,7 +592,7 @@ public class Intrinsics extends ANY
      * https://github.com/llvm/llvm-project/issues/25954
      * https://stackoverflow.com/questions/23994293/inconsistent-behaviour-of-implicit-conversion-between-unsigned-and-bigger-signed
      */
-    put("u16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i16).ret());
+    put("u16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u32, SpecialClazzes.c_i16).ret());
     put("u8.div"               ,
         "u16.div"              ,
         "u32.div"              ,
@@ -1376,7 +1376,7 @@ public class Intrinsics extends ANY
    * @param signed the signed type of a and b and the type the result has to be
    * casted to.
    */
-  static CExpr castToUnsignedForArithmetic(C c, CExpr a, CExpr b, char op, FUIR.SpecialClazzes unsigned, FUIR.SpecialClazzes signed)
+  static CExpr castToUnsignedForArithmetic(C c, CExpr a, CExpr b, char op, SpecialClazzes unsigned, SpecialClazzes signed)
   {
     // C type
     var ut = CTypes.scalar(unsigned);
@@ -1471,22 +1471,22 @@ public class Intrinsics extends ANY
         result = tmp.assign(new CIdent("true"));
       }
     else if (c._fuir.clazzIsRef(rt) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i8  ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i16 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i32 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i64 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u8  ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u16 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u32 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u64 )    )
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i8  ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i16 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i32 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i64 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u8  ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u16 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u32 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u64 )    )
       {
         result = tmp.assign(CExpr.eq(value1, value2));
       }
-    else if (c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_f32))
+    else if (c._fuir.clazzIs(rt, SpecialClazzes.c_f32))
       {
         result = tmp.assign(CExpr.call("fzE_bitwise_compare_float", new List<>(value1, value2)));
       }
-    else if (c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_f64))
+    else if (c._fuir.clazzIs(rt, SpecialClazzes.c_f64))
       {
         result = tmp.assign(CExpr.call("fzE_bitwise_compare_float", new List<>(value1, value2)));
       }

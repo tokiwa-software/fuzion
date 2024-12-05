@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 
 /**
@@ -134,7 +135,7 @@ class Layout extends FUIRContext
           {
             var f = fuir().clazzField(cl, i);
             // NYI: Ugly special handling, clean up:
-            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
+            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(SpecialClazzes.c_sys_ptr)
                                                        : fuir().clazzResultClazz(f);
             var fsz = fuir().clazzIsRef(fc)
               ? 1

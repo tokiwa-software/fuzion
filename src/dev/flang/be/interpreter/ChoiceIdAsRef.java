@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
-
 import java.util.ArrayList;
+
+import dev.flang.fuir.SpecialClazzes;
 
 
 /**
@@ -155,7 +155,7 @@ public class ChoiceIdAsRef extends Value
            idAsRef instanceof ArrayData  );
 
         var cl = (idAsRef instanceof ValueWithClazz id) ? id._clazz
-                                                        : fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr);
+                                                        : fuir().clazz(SpecialClazzes.c_sys_ptr);
         do
           {
             result++;

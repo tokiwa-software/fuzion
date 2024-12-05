@@ -38,9 +38,7 @@ import dev.flang.be.jvm.classfile.Label;
 
 import dev.flang.be.jvm.runtime.Intrinsics;
 import dev.flang.be.jvm.runtime.Runtime;
-
-import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -129,17 +127,17 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var rc  = jvm._fuir.clazzResultClazz(v);
           var r =
             jvm._fuir.clazzIsRef(rc) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
-            jvm._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_unit);
           return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 

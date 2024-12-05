@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 
@@ -519,7 +520,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> match(int s, AbstractInterpreter<Value, Object> ai, Value subv)
   {
-    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(FUIR.SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
+    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
 
     if (CHECKS) check
       (fuir().clazzIsChoice(staticSubjectClazz));
@@ -560,7 +561,7 @@ public class Executor extends ProcessExpression<Value, Object>
         val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
         tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
       }
-    else if (staticSubjectClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool))
+    else if (staticSubjectClazz == fuir().clazz(SpecialClazzes.c_bool))
       {
         tag = sub.boolValue() ? 1 : 0;
         val = sub;

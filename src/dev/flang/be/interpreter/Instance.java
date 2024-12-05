@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * Instance <description>
@@ -145,8 +145,8 @@ public class Instance extends ValueWithClazz
   public int i8Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i8) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i8));
+      (_clazz == fuir().clazz(SpecialClazzes.c_i8) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_i8));
 
     return nonrefs[0];
   }
@@ -160,8 +160,8 @@ public class Instance extends ValueWithClazz
   public int i16Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i16) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i16));
+      (_clazz == fuir().clazz(SpecialClazzes.c_i16) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_i16));
 
     return nonrefs[0];
   }
@@ -175,8 +175,8 @@ public class Instance extends ValueWithClazz
   public int i32Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i32));
+      (_clazz == fuir().clazz(SpecialClazzes.c_i32) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_i32));
 
     return nonrefs[0];
   }
@@ -190,8 +190,8 @@ public class Instance extends ValueWithClazz
   public long i64Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i64) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_i64));
+      (_clazz == fuir().clazz(SpecialClazzes.c_i64) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_i64));
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -207,8 +207,8 @@ public class Instance extends ValueWithClazz
   public int u8Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u8));
+      (_clazz == fuir().clazz(SpecialClazzes.c_u8) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_u8));
 
     return nonrefs[0];
   }
@@ -223,8 +223,8 @@ public class Instance extends ValueWithClazz
   public int u16Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u16) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u16));
+      (_clazz == fuir().clazz(SpecialClazzes.c_u16) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_u16));
 
     return nonrefs[0];
   }
@@ -238,8 +238,8 @@ public class Instance extends ValueWithClazz
   public int u32Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u32));
+      (_clazz == fuir().clazz(SpecialClazzes.c_u32) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_u32));
 
     return nonrefs[0];
   }
@@ -253,8 +253,8 @@ public class Instance extends ValueWithClazz
   public long u64Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_u64) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_u64));
+      (_clazz == fuir().clazz(SpecialClazzes.c_u64) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_u64));
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -270,8 +270,8 @@ public class Instance extends ValueWithClazz
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_f32) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_f32));
+      (_clazz == fuir().clazz(SpecialClazzes.c_f32) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_f32));
 
     return Float.intBitsToFloat(nonrefs[0]);
   }
@@ -285,8 +285,8 @@ public class Instance extends ValueWithClazz
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_f64) ||
-       fuir().clazzAsValue(_clazz) == fuir().clazz(FUIR.SpecialClazzes.c_f64));
+      (_clazz == fuir().clazz(SpecialClazzes.c_f64) ||
+       fuir().clazzAsValue(_clazz) == fuir().clazz(SpecialClazzes.c_f64));
 
     var l =
         nonrefs[0    ] & 0xFFFFffffL |
@@ -303,13 +303,13 @@ public class Instance extends ValueWithClazz
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_true_) ||
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_false_) ||
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_bool));
+      (_clazz == fuir().clazz(SpecialClazzes.c_true_) ||
+       _clazz == fuir().clazz(SpecialClazzes.c_false_) ||
+       _clazz == fuir().clazz(SpecialClazzes.c_bool));
 
     return
-      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_true_)  ? true  :
-      _clazz == fuir().clazz(FUIR.SpecialClazzes.c_false_) ? false
+      _clazz == fuir().clazz(SpecialClazzes.c_true_)  ? true  :
+      _clazz == fuir().clazz(SpecialClazzes.c_false_) ? false
                                                : nonrefs[0] == 1;
   }
 
@@ -473,12 +473,12 @@ public class Instance extends ValueWithClazz
   public String toString()
   {
     var result = "instance[" + fuir().clazzAsString(_clazz) + "]" + this.hashCode() +
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32)  ? " (" + i32Value() + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32)  ? " (" + u32Value() + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8)   ? " (" + u8Value() + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i64)  ? " (" + i64Value() + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u64)  ? " (" + u64Value() + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_bool) ? " (" + boolValue() + ")" : "");
+      (_clazz == fuir().clazz(SpecialClazzes.c_i32)  ? " (" + i32Value() + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_u32)  ? " (" + u32Value() + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_u8)   ? " (" + u8Value() + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_i64)  ? " (" + i64Value() + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_u64)  ? " (" + u64Value() + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_bool) ? " (" + boolValue() + ")" : "");
     return result;
   }
 

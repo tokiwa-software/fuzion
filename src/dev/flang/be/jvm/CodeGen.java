@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import static dev.flang.ir.IR.NO_SITE;
@@ -331,7 +332,7 @@ class CodeGen
     var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
-    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(FUIR.SpecialClazzes.c_unit);
+    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(SpecialClazzes.c_unit);
     if (ccs.length == 0)
       {
         s = s.andThen(tvalue.drop());
