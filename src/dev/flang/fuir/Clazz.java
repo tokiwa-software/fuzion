@@ -235,7 +235,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Special clazz id to quickly check if this is a given special clazz.
    */
-  FUIR.SpecialClazzes _specialClazzId = FUIR.SpecialClazzes.c_NOT_FOUND;
+  SpecialClazzes _specialClazzId = SpecialClazzes.c_NOT_FOUND;
 
 
   /**
@@ -722,7 +722,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     var res = YesNo.no;
-    if (_specialClazzId == FUIR.SpecialClazzes.c_unit)
+    if (_specialClazzId == SpecialClazzes.c_unit)
       {
         res = YesNo.yes;
       }
@@ -771,7 +771,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isVoidType()
   {
-    return this._specialClazzId == FUIR.SpecialClazzes.c_void;
+    return this._specialClazzId == SpecialClazzes.c_void;
   }
 
 
@@ -1578,7 +1578,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       // NYI: Once Clazz.normalize() is implemented better, a clazz C has
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
-      o._specialClazzId == FUIR.SpecialClazzes.c_Any    ||
+      o._specialClazzId == SpecialClazzes.c_Any    ||
 
       o._isNormalized ||
 

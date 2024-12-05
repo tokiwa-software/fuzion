@@ -28,8 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 import static dev.flang.ir.IR.NO_SITE;
 
-import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.Errors;
 import dev.flang.util.IntMap;
 
@@ -308,8 +307,8 @@ public class Value extends Val
       // `fuzion.java.Array`. These intrinsics currently do not set the outer
       // refs correctly, so we handle them here for now by just assuming they
       // are unit type values:
-      dfa._fuir.clazzIsOuterRef(field) && (rt == dfa._fuir.clazz(FUIR.SpecialClazzes.c_java  ) ||
-                                           rt == dfa._fuir.clazz(FUIR.SpecialClazzes.c_fuzion)    )
+      dfa._fuir.clazzIsOuterRef(field) && (rt == dfa._fuir.clazz(SpecialClazzes.c_java  ) ||
+                                           rt == dfa._fuir.clazz(SpecialClazzes.c_fuzion)    )
       ? Value.UNIT
       : readFieldFromInstance(dfa, field, site, why);
     return res;

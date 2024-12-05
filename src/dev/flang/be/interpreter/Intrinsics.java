@@ -56,6 +56,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 import static dev.flang.ir.IR.NO_SITE;
 
@@ -291,14 +292,14 @@ public class Intrinsics extends ANY
           var t = executor.fuir().clazzActualGeneric(executor.fuir().clazzOuterClazz(innerClazz), 0);
           return new boolValue
             (executor.fuir().clazzIsRef(t)                            ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_i8  )) ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_i16 )) ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_i32 )) ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_u8  )) ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_u16 )) ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_u32 )) ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_f32 )) ||
-             (t == executor.fuir().clazz(FUIR.SpecialClazzes.c_bool)));
+             (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i16 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
         });
     put("concur.atomic.read0",  (executor, innerClazz) -> args ->
         {
@@ -319,19 +320,19 @@ public class Intrinsics extends ANY
             {
               Interpreter.setField(f, a, thiz, args.get(1));
             }
-          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
+          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
         });
 
     put("concur.util.loadFence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
+          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
         });
 
     put("concur.util.storeFence",  (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(FUIR.SpecialClazzes.c_unit));
+          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
         });
 
     put("fuzion.sys.args.count", (executor, innerClazz) -> args -> new i32Value(executor.options().getBackendArgs().size() + 1));
@@ -675,14 +676,14 @@ public class Intrinsics extends ANY
         {
           return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
                                               executor.fuir(),
-                                              /* type  */ executor.fuir().clazz(FUIR.SpecialClazzes.c_u8));
+                                              /* type  */ executor.fuir().clazz(SpecialClazzes.c_u8));
         });
     put("fuzion.sys.fileio.mapped_buffer_set", (executor, innerClazz) -> args ->
         {
           ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
                                        /* value */ args.get(3),
                                        executor.fuir(),
-                                       /* type  */ executor.fuir().clazz(FUIR.SpecialClazzes.c_u8));
+                                       /* type  */ executor.fuir().clazz(SpecialClazzes.c_u8));
           return Value.EMPTY_VALUE;
         });
 

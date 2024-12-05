@@ -37,7 +37,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
 import dev.flang.ir.IR.FeatureKind;

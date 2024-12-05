@@ -28,7 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
@@ -311,7 +311,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             result = _instance;
           }
-        else if (FUIR.SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
+        else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
           {
             result = Value.UNIT;
           }
@@ -339,7 +339,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         if (arg instanceof SysArray sa && sa._elements == null)
           {
-            sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(FUIR.SpecialClazzes.c_i32)),
+            sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(SpecialClazzes.c_i32)),
                      _dfa.newInstance(sa._elementClazz, _site, _context));
           }
       }

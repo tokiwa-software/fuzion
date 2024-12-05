@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * u16Value is a value of type u16
@@ -112,7 +112,7 @@ public class u16Value extends Value
    */
   void checkStaticClazz(int expected)
   {
-    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_u16))
+    if (expected != fuir().clazz(SpecialClazzes.c_u16))
       {
         throw new Error("u16 value not allowed for clazz " + expected);
       }

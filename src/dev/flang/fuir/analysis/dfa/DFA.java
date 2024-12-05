@@ -41,8 +41,8 @@ import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
-import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.GeneratingFUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter2;
 import dev.flang.ir.IR.ExprKind;
 import dev.flang.ir.IR.FeatureKind;
@@ -1104,7 +1104,7 @@ public class DFA extends ANY
   {
     if (_boolX == null)
       {
-        var bool = _fuir.clazz(FUIR.SpecialClazzes.c_bool);
+        var bool = _fuir.clazz(SpecialClazzes.c_bool);
         if (bool != FUIR.NO_CLAZZ)
           {
             _trueX  = newTaggedValue(bool, Value.UNIT, 1);
@@ -1650,12 +1650,12 @@ public class DFA extends ANY
    *
    * @param elementClazz the element type of the array.
    */
-  static void setArrayElementsToAnything(Call cl, int argnum, String intrinsicName, FUIR.SpecialClazzes elementClazz)
+  static void setArrayElementsToAnything(Call cl, int argnum, String intrinsicName, SpecialClazzes elementClazz)
   {
     var array = cl._args.get(argnum);
     if (array instanceof SysArray sa)
       {
-        sa.setel(NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_i32)),
+        sa.setel(NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(SpecialClazzes.c_i32)),
                  NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(elementClazz)));
       }
     else
@@ -1674,9 +1674,9 @@ public class DFA extends ANY
    *
    * @param intrinsicName name of the intrinsic, just of error handling
    */
-  static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_u8 ); }
-  static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i32); }
-  static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i64); }
+  static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_u8 ); }
+  static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i32); }
+  static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i64); }
 
 
   /**
@@ -1799,7 +1799,7 @@ public class DFA extends ANY
     put("fuzion.sys.fileio.mmap"         , cl ->
         {
           setArrayI32ElementsToAnything(cl, 3, "fuzion.sys.fileio.mmap");
-          var c_u8 = cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8);
+          var c_u8 = cl._dfa._fuir.clazz(SpecialClazzes.c_u8);
           return cl._dfa.newSysArray(NumericValue.create(cl._dfa, c_u8), c_u8); // NYI: length wrong, get from arg
         });
     put("fuzion.sys.fileio.munmap"       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -2392,7 +2392,7 @@ public class DFA extends ANY
         return outcome(cl._dfa,
                        cl,
                        cl._dfa._fuir.clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       cl._dfa.newInstance(cl._dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
@@ -2420,7 +2420,7 @@ public class DFA extends ANY
         return outcome(cl._dfa,
                        cl,
                        cl._dfa._fuir.clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       cl._dfa.newInstance(cl._dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
@@ -2890,7 +2890,7 @@ public class DFA extends ANY
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var c_u8          = _fuir.clazz(FUIR.SpecialClazzes.c_u8);
+    var c_u8          = _fuir.clazz(SpecialClazzes.c_u8);
     var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
     var r = newInstance(cs, NO_SITE, context);
     var arr = newInstance(ar, NO_SITE, context);

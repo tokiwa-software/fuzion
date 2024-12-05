@@ -29,6 +29,7 @@ package dev.flang.be.c;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -183,7 +184,7 @@ public class CTypes extends ANY
    * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
-  static String scalar(FUIR.SpecialClazzes sc)
+  static String scalar(SpecialClazzes sc)
   {
     return switch (sc)
       {
