@@ -1381,23 +1381,14 @@ public class Runtime extends ANY
 
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc)
   {
-    try
-      {
-        return Linker.nativeLinker()
-          .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-              .or(SymbolLookup.loaderLookup())
-              .or(Linker.nativeLinker().defaultLookup())
-              .find(str)
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
-            desc);
-      }
-    catch (Throwable e)
-      {
-        say_err(e);
-        System.exit(1);
-        return null;
-      }
+    return Linker.nativeLinker()
+      .downcallHandle(
+        SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
+          .or(SymbolLookup.loaderLookup())
+          .or(Linker.nativeLinker().defaultLookup())
+          .find(str)
+          .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
+        desc);
   }
 
   /**

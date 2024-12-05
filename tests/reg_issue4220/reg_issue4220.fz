@@ -17,11 +17,25 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test reg_issue4220
 #
 # -----------------------------------------------------------------------
 
-override NAME = issue118
-include ../simple.mk
+reg_issue4220 =>
+
+  m : mutate is
+  m1 := m
+
+  v := m1.instate_self ()->
+    say "start"
+    r := m.env.new 42
+    say "r = $r"
+    r
+
+  # f uses no effects, but mutates `v`
+  f ! io.out =>
+    _ := m1.instate_self ()->
+      v <- 4711 + v
+      say "updated v via m1: $v"
+
+  f; f; f
