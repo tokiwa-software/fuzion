@@ -670,7 +670,7 @@ public class ParsedCall extends Call
   Call resolveImplicitSelect(Resolution res, Context context, AbstractType t)
   {
     Call result = this;
-    if (_select >= 0 && !t.isGenericArgument())
+    if (_select >= 0 && !t.isGenericArgument() && !calledFeature().resultType().isOpenGeneric())
       {
         var f = res._module.lookupOpenTypeParameterResult(t.feature(), this);
         if (f != null)
