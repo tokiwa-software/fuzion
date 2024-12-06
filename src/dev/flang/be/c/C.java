@@ -1992,7 +1992,7 @@ public class C extends ANY
    * pointer in case _fuir.clazzIsRef(cl), or the C struct corresponding to cl
    * otherwise.
    *
-   * @param cl id of clazz we are generating code for
+   * @param s id of clazz we are generating code for
    */
   CExpr current(int s)
   {

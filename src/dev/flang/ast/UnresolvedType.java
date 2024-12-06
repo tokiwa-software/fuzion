@@ -536,8 +536,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outerfeat the outer feature this type is declared in. Lookup of
-   * unqualified types will happen in this feature.
+   * @param context the source code context where this assignment is used
    */
   @Override
   AbstractType resolve(Resolution res, Context context)

@@ -413,7 +413,7 @@ public class Impl extends ANY
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this implementation.
+   * @param context the source code context where this assignment is used
    */
   public void resolveSyntacticSugar2(Resolution res, Context context)
   {

@@ -192,7 +192,6 @@ public class Html extends ANY
   /**
    * summary for feature af
    * @param af
-   * @param printArgs whether or not arguments of the feature should be included in output
    * @return
    */
   private String summary(AbstractFeature af, AbstractFeature outer)
@@ -684,7 +683,7 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param af
+   * @param qualifiedName
    * @param bareHtml
    * @return
    */

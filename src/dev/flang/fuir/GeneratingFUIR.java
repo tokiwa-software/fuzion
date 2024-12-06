@@ -2880,8 +2880,6 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the target (outer) clazz of a feature access
    *
-   * @param cl index of clazz containing the access
-   *
    * @param s site of the access
    *
    * @return index of the static outer clazz of the accessed feature.
@@ -2922,8 +2920,6 @@ public class GeneratingFUIR extends FUIR
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
    * f32, f64, or Const_String. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
-   *
-   * @param cl index of clazz containing the constant
    *
    * @param s site of the constant
    */
@@ -3462,7 +3458,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param f the inner clazz that is called and that is missing an implementation
    *
-   * @param instantiationPos if known, the site where `cl` was instantiated,
+   * @param instantiationSite if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
   @Override

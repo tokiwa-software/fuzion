@@ -138,7 +138,7 @@ public class SysArray extends Value
    *
    * @param v the value this value should be joined with.
    *
-   * @param clazz the clazz of the resulting value. This is usually the same as
+   * @param cl the clazz of the resulting value. This is usually the same as
    * the clazz of `this` or `v`, unless we are joining `ref` type values.
    */
   @Override

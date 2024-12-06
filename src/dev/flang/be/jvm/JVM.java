@@ -1341,9 +1341,9 @@ should be avoided as much as possible.
   /**
    * Alloc local var slots for the given routine.
    *
-   * @param cl id of clazz to generate code for
+   * @param si id of clazz to generate code for
    *
-   * @param numSlots the number of slots to be alloced
+   * @param numSlots the number of slots to be allocated
    *
    * @return the local var index of the allocated slots
    */

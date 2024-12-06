@@ -273,7 +273,6 @@ public class Partial extends AbstractLambda
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
    */
   public Expr resolveSyntacticSugar2X(Resolution res)
   {

@@ -171,8 +171,6 @@ public class DFA extends ANY
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
-     *
-     * @return resulting code of this assignment.
      */
     @Override
     public void assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)

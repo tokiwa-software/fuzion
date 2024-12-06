@@ -160,9 +160,9 @@ public abstract class IR extends ANY
    *
    * This also sets _siteStart in case `b` was not already added.
    *
-   * @param b a list of Exprs, might contain non-Expr values for special cases.
+   * @param code a list of Exprs, might contain non-Expr values for special cases.
    *
-   * @return the index of b
+   * @return the index of code
    */
   protected int addCode(List<Object> code)
   {
@@ -439,7 +439,7 @@ public abstract class IR extends ANY
   /**
    * Get the source code position of an expr at the given site if it is available.
    *
-   * @param site a site
+   * @param s a site
    *
    * @return the source code position or null if not available.
    */

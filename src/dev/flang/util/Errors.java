@@ -592,7 +592,7 @@ public class Errors extends ANY
   /**
    * Record the given runtime error and exit immediately with exit code 1.
    *
-   * @param k the kind of error we encountered, currently "postcondition" is the
+   * @param kind the kind of error we encountered, currently "postcondition" is the
    * only supported kind that is treated specially.
    *
    * @param msg a message to be shown

@@ -153,8 +153,6 @@ class CodeGen
    * Called before each statement is processed.  May be used to, e.g., produce
    * tracing code for debugging or a comment.
    *
-   * @param cl the clazz we are compiling
-   *
    * @param s site of the next expression
    */
   @Override
@@ -517,8 +515,6 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    *
-   * @param si site of the access
-   *
    * @return the result and code to perform the access.
    */
   Pair<Expr, Expr> staticAccess(int si, int tt, int cc, Expr tv, List<Expr> args, boolean isCall)
@@ -554,8 +550,6 @@ class CodeGen
    * @param cc clazz that is called
    *
    * @return the code to perform the call
-   *
-   * @param si site of the call
    */
   Pair<Expr, Expr> staticCall(int si, Expr tvalue, List<Expr> args, int cc)
   {
@@ -1024,7 +1018,7 @@ class CodeGen
   /**
    * Create a tagged value of type newcl from an untagged value for type valuecl.
    *
-   * @param cl the clazz we are compiling
+   * @param s site of the match
    *
    * @param value code to produce the value we are tagging
    *

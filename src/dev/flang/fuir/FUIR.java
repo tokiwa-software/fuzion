@@ -236,7 +236,7 @@ public abstract class FUIR extends IR
   /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
-   * @param field a clazz id, not necessarily a field
+   * @param fcl a clazz id, not necessarily a field
    *
    * @return true iff the field is an outer ref field that holds an address of
    * an outer value, false for normal fields our outer ref fields that store the
@@ -993,8 +993,6 @@ public abstract class FUIR extends IR
   /**
    * Get the target (outer) clazz of a feature access
    *
-   * @param cl index of clazz containing the access
-   *
    * @param s site of the access
    *
    * @return index of the static outer clazz of the accessed feature.
@@ -1008,8 +1006,6 @@ public abstract class FUIR extends IR
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
    * f32, f64, or Const_String. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
-   *
-   * @param cl index of clazz containing the constant
    *
    * @param s site of the constant
    */
@@ -1465,7 +1461,7 @@ public abstract class FUIR extends IR
    *
    * @param f the inner clazz that is called and that is missing an implementation
    *
-   * @param instantiationPos if known, the site where `cl` was instantiated,
+   * @param instantiationSite if known, the site where `cl` was instantiated,
    * `NO_SITE` if unknown.
    */
   public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite);
