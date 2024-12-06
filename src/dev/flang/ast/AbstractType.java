@@ -227,7 +227,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * is this a formal generic argument that is open, i.e., the last argument in
    * a formal generic arguments list and followed by ... as A in
-   * Function<R,A...>.
+   * {@code Function<R,A...>}.
    *
    * This type needs very special treatment, it is allowed only as an argument
    * type of the last argument in an abstract feature declaration.  When
@@ -815,7 +815,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * In case this is a cotype, determine the actual types for the types in {@code g}
    * by apply the actual type parameters passed to {@code THIS_TYPE}.
    *
-   * @param {@code g} list of generics, must be derived from {@code generics()}
+   * @param g list of generics, must be derived from {@code generics()}
    *
    * @return the actual generics after {@code THIS_TYPE.actualType} was applied.
    */

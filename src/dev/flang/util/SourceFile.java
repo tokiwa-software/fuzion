@@ -1036,8 +1036,8 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    *
    * @param l a line number
    *
-   * @return if 0 < l < lines().length, the contents of that line. Otherwise,
-   * if l <= 0, "<line does not exist>", otherwise "<end of file>".
+   * @return {@literal if 0 < l < lines().length, the contents of that line. Otherwise,
+   * if l <= 0, <line does not exist>, otherwise <end of file>.}
    */
   public String line(int l)
   {

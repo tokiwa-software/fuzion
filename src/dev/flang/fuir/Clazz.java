@@ -1867,17 +1867,21 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Helper for {@code handDown}: Change type {@code t}'s type parameters along the
    * inheritance chain {@code inh}.
    *
-   * ex: in this code
+   * <pre>{@code
+   *  ex: in this code
    *
    *    a(T type) is
    *      x T => ...
    *    b(U type) : a Sequence U  is
    *    c(V type) : b option V is
-   *
+   * }</pre>
+   * 
    * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
    *
-   *    `a Sequence U'
-   *    'b option B'
+   * <pre>{@code
+   *    a Sequence U
+   *    b option B
+   * }</pre>
    *
    * so it will be replaced by {@code Sequence (option V)}.
    *

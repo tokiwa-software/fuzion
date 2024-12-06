@@ -51,8 +51,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * Pre-allocated empty type list. NOTE: There is a specific empty type List
-   * Call.NO_GENERICS which is used to distinguish "a.b<>()" (using UnresolvedType.NONE)
-   * from "a.b()" (using Call.NO_GENERICS).
+   * {@code Call.NO_GENERICS} which is used to distinguish {@code a.b<>()} (using {@codeUnresolvedType.NONE})
+   * from {@code a.b()} (using {@code Call.NO_GENERICS}).
    */
   public static final List<AbstractType> NONE = new List<AbstractType>();
   static { NONE.freeze(); }
@@ -98,9 +98,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * the name of this type.  For a type 'map<string,i32>.entry', this is just
-   * the base name 'entry'. For a type parameter 'A', this is 'A'. For an
-   * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
+   * the name of this type.  For a type {@code map<string,i32>.entry}, this is just
+   * the base name {@code entry}. For a type parameter {@code A}, this is {@code A}. For an
+   * artificial type, this is one of {@code Types.INTERNAL_NAMES} (e.g., {@code --ADDRESS--}).
    */
   protected String _name;
   protected String name()

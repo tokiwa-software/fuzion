@@ -50,8 +50,8 @@ public abstract class AbstractCall extends Expr
 
   /**
    * Special value for an empty generics list to distinguish a call without
-   * generics ("a.b(x,y)") from a call with an empty actual generics list
-   * ("a.b<>(x,y)").
+   * generics ({@code a.b(x,y)}) from a call with an empty actual generics list
+   * ({@code a.b<>(x,y)}).
    */
   public static final List<AbstractType> NO_GENERICS = new List<>();
 
