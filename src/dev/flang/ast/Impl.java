@@ -73,9 +73,9 @@ public class Impl extends ANY
 
 
   /**
-   * For a field declared using `:=` this
+   * For a field declared using {@code :=} this
    * gives the initial value of that field or function.
-   * For a function declared using `=>` this
+   * For a function declared using {@code =>} this
    * gives the code of that function.
    */
   private Expr _expr;
@@ -380,7 +380,7 @@ public class Impl extends ANY
 
 
   /**
-   * Inform the expression of this implementation that its expected type is `t`.
+   * Inform the expression of this implementation that its expected type is {@code t}.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -407,7 +407,7 @@ public class Impl extends ANY
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -466,8 +466,8 @@ public class Impl extends ANY
    *
    *   x := f 3 4
    *
-   * where the argument types for `a` and `b` are inferred from the actual
-   * arguments `3` and `4`.
+   * where the argument types for {@code a} and {@code b} are inferred from the actual
+   * arguments {@code 3} and {@code 4}.
    *
    * @param call an actual argument expression
    */

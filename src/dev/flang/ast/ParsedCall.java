@@ -61,10 +61,10 @@ public class ParsedCall extends Call
 
 
   /**
-   * An implicit call to `Function.call` might be added during resolution of a
-   * Function value like `Lazy`.  To prevent repeated resolution to do this
-   * repeatedly, this flag records that a call `x` has been pushed down to be
-   * the target of a call `x.call`.
+   * An implicit call to {@code Function.call} might be added during resolution of a
+   * Function value like {@code Lazy}.  To prevent repeated resolution to do this
+   * repeatedly, this flag records that a call {@code x} has been pushed down to be
+   * the target of a call {@code x.call}.
    *
    * Without this, this might happen repeatedly.
    */
@@ -139,14 +139,14 @@ public class ParsedCall extends Call
 
 
   /**
-   * Is this an operator expression of the form `expr1 | expr2`?  This is used
-   * by `asParsedType` for choice-type syntax sugar.
+   * Is this an operator expression of the form {@code expr1 | expr2}?  This is used
+   * by {@code asParsedType} for choice-type syntax sugar.
    *
-   * @param parenthesesAllowed if true, `(expr1 | expr2)` is accepted, with an
+   * @param parenthesesAllowed if true, {@code (expr1 | expr2)} is accepted, with an
    * arbitrary number of parentheses, if false there must not be any surrounding
    * parentheses.
    *
-   * @true iff this is a call to `infix |`, possibly with surrounding
+   * @true iff this is a call to {@code infix |}, possibly with surrounding
    * parentheses depending on the argument's value.
    */
   boolean isInfixPipe(boolean parenthesesAllowed)
@@ -156,10 +156,10 @@ public class ParsedCall extends Call
 
 
   /**
-   * Is this an operator expression of the form `expr1 -> expr2`?  This is used
-   * by `asParsedType` for function-type syntax sugar.
+   * Is this an operator expression of the form {@code expr1 -> expr2}?  This is used
+   * by {@code asParsedType} for function-type syntax sugar.
    *
-   * @true iff this is a call to `infix ->`.
+   * @true iff this is a call to {@code infix ->}.
    */
   boolean isInfixArrow()
   {
@@ -270,11 +270,11 @@ public class ParsedCall extends Call
    *
    * check if we have a call of the form
    *
-   *   a < b <= c
+   * <pre>{@code a < b <= c}</pre>
    *
    * and convert it to
    *
-   *   a < {tmp := b; tmp} && tmp <= c
+   * <pre>{@code a < {tmp := b; tmp} && tmp <= c}</pre>
    *
    * @param res Resolution instance
    *
@@ -367,15 +367,19 @@ public class ParsedCall extends Call
   /**
    * Check if this call is a chained boolean call of the form
    *
+   * <pre>{@code
    *   b <= c < d
+   * }</pre>
    *
    * or, if the LHS is also a chained bool
    *
+   * <pre>{@code
    *   (a < {t1 := b; t1} && t1 <= c) < d
+   * }</pre>
    *
    * and return the part of the LHS that has the term that will need to be
-   * stored in a temp variable, 'c', as an argument, i.e., 'b <= c' or 't1 <=
-   * c', resp.
+   * stored in a temp variable, {@code c}, as an argument, i.e., {@code b <= c} or {@code t1 <=
+   * c}, resp.
    *
    * @param res Resolution instance
    *
@@ -618,9 +622,9 @@ public class ParsedCall extends Call
 
   /**
    * Create a new call and push the current call to the target of that call.
-   * This is used for implicit calls to Function and Lazy values where `f()` is
-   * converted to `f.call()`, and for implicit fields in a select call such as,
-   * e.g., a tuple access `t.3` that is converted to `t.values.3`.
+   * This is used for implicit calls to Function and Lazy values where {@code f()} is
+   * converted to {@code f.call()}, and for implicit fields in a select call such as,
+   * e.g., a tuple access {@code t.3} that is converted to {@code t.values.3}.
    *
    * The actual arguments and _select of this call are moved over to the new
    * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls

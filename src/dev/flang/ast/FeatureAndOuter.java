@@ -92,8 +92,8 @@ public class FeatureAndOuter extends ANY
    *          say p    -- _nextInner for p will be b
    *          say q    -- _nextInner for q will be y
    *
-   * This is important since the type of `q` in `x` is
-   * `a.this.type.b.this.type.q`, while `q` in `fixed y` is `a.this.type.b.q`.
+   * This is important since the type of {@code q} in {@code x} is
+   * {@code a.this.type.b.this.type.q}, while {@code q} in {@code fixed y} is {@code a.this.type.b.q}.
    *
    */
   public final AbstractFeature _nextInner;
@@ -124,7 +124,7 @@ public class FeatureAndOuter extends ANY
 
   /**
    * check if _nextInner exists and is fixed. If this is the case, we know that
-   * the outer type is exact and cannot be a child (`.this.type`).
+   * the outer type is exact and cannot be a child ({@code .this.type}).
    */
   public boolean isNextInnerFixed()
   {

@@ -544,7 +544,7 @@ abstract class CStmnt extends ANY
 
 
   /**
-   * A for-loop that loops `count` times.
+   * A for-loop that loops {@code count} times.
    *
    * example code:
    *

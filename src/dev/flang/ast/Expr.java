@@ -98,7 +98,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    *    f (x.q y)
    *
-   * The argument to f is the call `x.q y` whose position is
+   * The argument to f is the call {@code x.q y} whose position is
    *
    *    f (x.q y)
    * --------^
@@ -327,16 +327,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * A lazy value v (one of type `Lazy T`) will automatically be replaced by
-   * `v.call` during type resolution, such that it behaves as if it was of type
-   * `T`.
+   * A lazy value v (one of type {@code Lazy T}) will automatically be replaced by
+   * {@code v.call} during type resolution, such that it behaves as if it was of type
+   * {@code T}.
    *
-   * However, when `v` is passed to a value of type `Lazy T`, it does not make
-   * sense to wrap this call into `Lazy` again. Instead. we would like to pass
-   * the lazy value `v` directly.  So this method gives the original value for a
-   * lazy value `v` t was replaced by `v.call`.
+   * However, when {@code v} is passed to a value of type {@code Lazy T}, it does not make
+   * sense to wrap this call into {@code Lazy} again. Instead. we would like to pass
+   * the lazy value {@code v} directly.  So this method gives the original value for a
+   * lazy value {@code v} t was replaced by {@code v.call}.
    *
-   * @return `this` in case this was not replaced by a `call` to a `Lazy` value,
+   * @return {@code this} in case this was not replaced by a {@code call} to a {@code Lazy} value,
    * the original lazy value if it was.
    */
   Expr originalLazyValue()
@@ -474,12 +474,12 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
   /**
    * Try to perform partial application such that this expression matches
-   * `expectedType`.  Note that this may happen twice:
+   * {@code expectedType}.  Note that this may happen twice:
    *
    * 1. during RESOLVING_DECLARATIONS phase of outer when resolving arguments to
-   *    a call such as `l.map +1`. In this case, expectedType may be a function
-   *    type `Function R A` with generic arguments not yet replaced by actual
-   *    arguments, in particular the result type `R` is unknown since it is the
+   *    a call such as {@code l.map +1}. In this case, expectedType may be a function
+   *    type {@code Function R A} with generic arguments not yet replaced by actual
+   *    arguments, in particular the result type {@code R} is unknown since it is the
    *    result type of this expression.
    *
    * 2. during TYPES_INFERENCING phase when the target variable's type is fully
@@ -754,7 +754,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * Do automatic unwrapping of features inheriting `unwrap`
+   * Do automatic unwrapping of features inheriting {@code unwrap}
    * if the expected type fits the unwrapped type.
    *
    * @param res the resolution instance

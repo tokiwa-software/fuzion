@@ -139,7 +139,7 @@ public abstract class AbstractCall extends Expr
 
       /**
        * actuals are serialized in order. example
-       * `tuple (u8 5) (codepoint u32 72)` results in
+       * {@code tuple (u8 5) (codepoint u32 72)} results in
        * the following data:
        *        b b b b b
        * u8 ----^ ^^^^^^^--- codepoint u32 (both little endian)

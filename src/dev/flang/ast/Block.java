@@ -78,7 +78,7 @@ public class Block extends AbstractBlock
 
   /**
    * Generate an empty block of expressions. This is called from the Parser when
-   * the body of a routine contains no code but just a `.`.
+   * the body of a routine contains no code but just a {@code .}.
    */
   public Block()
   {

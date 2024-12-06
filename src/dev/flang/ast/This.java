@@ -290,10 +290,10 @@ public class This extends ExprWithPos
 
 
   /**
-   * getThisFeature find the outer feature `x.y.z.a.b.c` for a given qualified name 'a.b.c' as
-   * seen for a feature within outer `x.y.z.a.b.c.d.e.f.`.
+   * getThisFeature find the outer feature {@code x.y.z.a.b.c} for a given qualified name 'a.b.c' as
+   * seen for a feature within outer {@code x.y.z.a.b.c.d.e.f.}.
    *
-   * @param thisOrType instance of `This` or `Type` depending on whether this is a lookup for `this` as a value or as a type.
+   * @param thisOrType instance of {@code This} or {@code Type} depending on whether this is a lookup for {@code this} as a value or as a type.
    *
    * @param qual the qualified name
    *

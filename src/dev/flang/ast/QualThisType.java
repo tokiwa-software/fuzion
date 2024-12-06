@@ -31,7 +31,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Type created by parser for types like `a.b.this`.
+ * Type created by parser for types like {@code a.b.this}.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

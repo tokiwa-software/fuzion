@@ -253,13 +253,13 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Cached result values of `asString(boolean)`
+   * Cached result values of {@code asString(boolean)}
    */
   String _asStringHuman, _asString;
 
 
   /**
-   * If this creates a type that depends on a `this` type of an outer ref clazz,
+   * If this creates a type that depends on a {@code this} type of an outer ref clazz,
    * this will be set to code calling AstErrors.illegalOuterRefTypeInCall. If
    * this clazz is the result clazz in a call, this error will be produced.
    *
@@ -496,7 +496,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Set of heirs of this clazz, including this itself.  This is defined for
    * clazzes with isRef() only.
    *
-   * This set is initially empty, it will be filled by `registerAsHeir()`
+   * This set is initially empty, it will be filled by {@code registerAsHeir()}
    * which is called for every new Clazz created via _clazzes.create().
    *
    * @return the heirs including this.
@@ -618,12 +618,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    *     i : h i is
    *     x := i.type
    *
-   * Here, in the inherits call to `h i`, the type parameter is
-   * `t.this.type.i`. So in the corresponding type feature has two
+   * Here, in the inherits call to {@code h i}, the type parameter is
+   * {@code t.this.type.i}. So in the corresponding type feature has two
    *
    *   t.type.h.type t.i t.this.type.i
    *
-   * the second type parameter for `B` has to get it's `this.type` types
+   * the second type parameter for {@code B} has to get it's {@code this.type} types
    * replaced by the actual types given in the first type parameter
    */
   AbstractType replaceThisTypeForCotype(AbstractType t)
@@ -656,7 +656,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     var result = this._type.replaceGenerics(generics);
 
-    // Replace any `a.this.type` actual generics by the actual outer clazz:
+    // Replace any {@code a.this.type} actual generics by the actual outer clazz:
     result = result.map(t->replaceThisType(t));
 
     if (_outer != null)
@@ -740,7 +740,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
         res = YesNo.yes;
 
-        // NOTE: We cannot use `for (var i : _inner)` since `resultClazz` may
+        // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
         // add inner clazzes even if lookupDone() is set.
         for (var ix = 0; ix < _inner.size(); ix++)
           {
@@ -962,7 +962,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Convenience function that calls `lookup` followed `doesNeedCod()` on the
+   * Convenience function that calls {@code lookup} followed {@code doesNeedCod()} on the
    * result.
    */
   Clazz lookupNeeded(AbstractFeature f)
@@ -1059,7 +1059,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         if (f.isTypeParameter())
           { // type parameters do not get inherited, but replaced by the actual
             // type given in the inherits call:
-            t = f.selfType();   // e.g., `(Types.get T).T`
+            t = f.selfType();   // e.g., {@code (Types.get T).T}
             if (CHECKS)
               check(Errors.any() || fa._tp.isEmpty());  // there should not be an actual type parameters to a type parameter
           }
@@ -1079,11 +1079,11 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.actualType(t, Context.NONE);  // e.g., `(Types.get (array f64)).T` -> `array f64`
+            t = _type.actualType(t, Context.NONE);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
 
 /*
-  We have the following possibilities when calling a feature `f` declared in do `on`
-  actual outer clazz `oa`:
+  We have the following possibilities when calling a feature {@code f} declared in do {@code on}
+  actual outer clazz {@code oa}:
 
   inheritsCall: called normally or as a direct parent
 
@@ -1105,7 +1105,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        f is
          stmnts
 
-  declared for value / declared for ref: `on` may be a `ref` instance
+  declared for value / declared for ref: {@code on} may be a {@code ref} instance
 
      # f declared for value
      on is
@@ -1116,7 +1116,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        f ... is
          stmnts
 
-  called on value / ref / boxed: `oa` is a value instance, a ref instance, a boxed value instance
+  called on value / ref / boxed: {@code oa} is a value instance, a ref instance, a boxed value instance
 
      # f called on value:
      oa : on is ...
@@ -1231,7 +1231,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
 
         // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
-        // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
+        // {@code f.isPostFeature()}. Note that this would need to be saved in .fum file as well!
         //
         if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
           {
@@ -1436,8 +1436,8 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * The actual type parameters of this clazz. E.g. for `list i32` this returns
-   * `[ i32 ]`.
+   * The actual type parameters of this clazz. E.g. for {@code list i32} this returns
+   * {@code [ i32 ]}.
    */
   Clazz[] actualTypeParameters()
   {
@@ -1563,7 +1563,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Check of _outer is instantiated.
    *
-   * NYI: UNDER DEVELOPMENT: Check if this can be replaced by just `true`
+   * NYI: UNDER DEVELOPMENT: Check if this can be replaced by just {@code true}
    */
   private boolean isOuterInstantiated()
   {
@@ -1738,7 +1738,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * Example:
    *
-   * For `(Types.get (array f64)).T` this results in `array f64`.
+   * For {@code (Types.get (array f64)).T} this results in {@code array f64}.
    */
   public Clazz typeParameterActualType()
   {
@@ -1803,11 +1803,11 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Find outer clazz of this corresponding to feature `o`.
+   * Find outer clazz of this corresponding to feature {@code o}.
    *
    * @param o the outer feature whose clazz we are searching for.
    *
-   * @return the outer clazz of this corresponding feature `o`.
+   * @return the outer clazz of this corresponding feature {@code o}.
    */
   Clazz findOuter(AbstractType o)
   {
@@ -1864,8 +1864,8 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Helper for `handDown`: Change type `t`'s type parameters along the
-   * inheritance chain `inh`.
+   * Helper for {@code handDown}: Change type {@code t}'s type parameters along the
+   * inheritance chain {@code inh}.
    *
    * ex: in this code
    *
@@ -1874,12 +1874,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    *    b(U type) : a Sequence U  is
    *    c(V type) : b option V is
    *
-   * the result type `T` of `x` if used within `c` must be handed down via the inheritance chain
+   * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
    *
    *    `a Sequence U'
    *    'b option B'
    *
-   * so it will be replaced by `Sequence (option V)`.
+   * so it will be replaced by {@code Sequence (option V)}.
    *
    * @param t the type to hand down
    *
@@ -1888,7 +1888,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param inh the inheritance call chain
    *
-   * @return the type `t` as seen after inheritance
+   * @return the type {@code t} as seen after inheritance
    */
   AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
   {
@@ -1924,7 +1924,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    // error handling for replacing `.this` types of `ref` types in a call result, see #4273
+    // error handling for replacing {@code .this} types of {@code ref} types in a call result, see #4273
     var err = new List<Consumer<AbstractCall>>();
     var ft = t; // final variant of t to be used in lambda
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
@@ -1932,8 +1932,8 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
       {
-        // iterate using `child` and `parent` over outer clazzes starting at
-        // `this` where `child` is the current outer clazz and `parent` is the
+        // iterate using {@code child} and {@code parent} over outer clazzes starting at
+        // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
         // parent feature the previous inner clazz' feature was inherited from.
         var child = this;
         AbstractFeature parent = feature();
@@ -1949,9 +1949,9 @@ class Clazz extends ANY implements Comparable<Clazz>
                 //     res
                 //   x : Any is
                 //
-                // here, for `x.me.res` inherited from `Any.me.res`, the
-                // inheritance is two features out when `x` (`childf`) inherits
-                // form `Any` (`parent`).
+                // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
+                // inheritance is two features out when {@code x} ({@code childf}) inherits
+                // form {@code Any} ({@code parent}).
                 t = t.replace_inherited_this_type(parent, childf, foundRef);
                 var inh = childf.tryFindInheritanceChain(parent);
                 if (CHECKS) check
@@ -1967,7 +1967,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 // NYI: UNDER DEVELOPMENT: This currently cannot be done during
                 // the first pass of the loop, need to check why (most likely it
                 // performs something thst i in conflict with the call to
-                // `t.replace_this_type(parentf, childf, foundRef)` a few lines
+                // {@code t.replace_this_type(parentf, childf, foundRef)} a few lines
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,
                                                          foundRef,
@@ -1997,7 +1997,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Convenience version of `handDown` with `select` set to `-1`.
+   * Convenience version of {@code handDown} with {@code select} set to {@code -1}.
    */
   Clazz handDown(AbstractType t)
   {
@@ -2011,7 +2011,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Convenience version of `handDown` with `select` set to `-1`. Used for
+   * Convenience version of {@code handDown} with {@code select} set to {@code -1}. Used for
    * inlined code in inheritance for code inherited via the given inh chain.
    */
   Clazz handDown(AbstractType t, List<AbstractCall> inh)

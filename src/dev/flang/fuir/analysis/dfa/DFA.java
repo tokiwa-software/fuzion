@@ -514,18 +514,18 @@ public class DFA extends ANY
 
 
     /**
-     * deserialize value constant of type `constCl` from `b`
+     * deserialize value constant of type {@code constCl} from {@code b}
      *
      * @param s the site of the constant
      *
-     * @param constCl the constants clazz, e.g. `(tuple u32 codepoint)`
+     * @param constCl the constants clazz, e.g. {@code (tuple u32 codepoint)}
      *
      * @param context for debugging: Reason that causes this const string to be
      * part of the analysis.
      *
      * @param b the serialized data to be used when creating this constant
      *
-     * @return an instance of `constCl` with fields initialized using the data from `b`.
+     * @return an instance of {@code constCl} with fields initialized using the data from {@code b}.
      */
     private Value newValueConst(int s, int constCl, Context context, ByteBuffer b)
     {
@@ -550,18 +550,18 @@ public class DFA extends ANY
 
 
     /**
-     * deserialize array constant of type `constCl` from `d`
+     * deserialize array constant of type {@code constCl} from {@code d}
      *
      * @param s the site of the constant
      *
-     * @param constCl the constants clazz, e.g. `array (tuple i32 codepoint)`
+     * @param constCl the constants clazz, e.g. {@code array (tuple i32 codepoint)}
      *
      * @param context for debugging: Reason that causes this const string to be
      * part of the analysis.
      *
      * @param d the serialized data to be used when creating this constant
      *
-     * @return an instance of `constCl` with fields initialized using the data from `d`.
+     * @return an instance of {@code constCl} with fields initialized using the data from {@code d}.
      */
     private Value newArrayConst(int s, int constCl, Context context, ByteBuffer d)
     {
@@ -730,7 +730,7 @@ public class DFA extends ANY
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=on
    *
-   * To show more details for feature `io.out.replace`
+   * To show more details for feature {@code io.out.replace}
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=io.out.replace
    *
@@ -747,7 +747,7 @@ public class DFA extends ANY
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=on
    *
-   * To show more details for feature `u32`
+   * To show more details for feature {@code u32}
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=u32
    *
@@ -758,7 +758,7 @@ public class DFA extends ANY
 
   /**
    * Should the DFA analysis be call-site-sensitive? If set, this treats two
-   * equals calls `t.f args` if they occur at different sites, i.e., location in
+   * equals calls {@code t.f args} if they occur at different sites, i.e., location in
    * the source code.
    *
    * To enable, use fz with
@@ -794,7 +794,7 @@ public class DFA extends ANY
 
 
   /**
-   * Maximum recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * Maximum recursive analysis of newly created Calls, see {@code analyzeNewCall} for
    * details.
    *
    * This was optimized using
@@ -913,7 +913,7 @@ public class DFA extends ANY
 
   /**
    * For different element types, pre-allocated SysArrays for uninitialized
-   * arrays.  Used to store results of `newSysArray`.
+   * arrays.  Used to store results of {@code newSysArray}.
    */
   IntMap<SysArray> _uninitializedSysArray = new IntMap<>();
 
@@ -961,7 +961,7 @@ public class DFA extends ANY
 
 
   /**
-   * Current number of recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * Current number of recursive analysis of newly created Calls, see {@code analyzeNewCall} for
    * details.
    */
   private int _newCallRecursiveAnalyzeCalls = 0;
@@ -969,7 +969,7 @@ public class DFA extends ANY
 
   /**
    * Clazz ids for clazzes for of newly created calls for which recursive analysis is performed,
-   * see `analyzeNewCall` for details.
+   * see {@code analyzeNewCall} for details.
    *
    * This is set by method dfa() after the initial call was created to avoid the
    * initial cal to be treated outside the first iteration.
@@ -1475,7 +1475,7 @@ public class DFA extends ANY
 
 
   /**
-   * During analysis, mark the given call as `hot`, i.e., unless it is already
+   * During analysis, mark the given call as {@code hot}, i.e., unless it is already
    * scheduled to be analyzed or re-analyzed in the current iteration, schedule
    * it to be.
    *
@@ -1529,7 +1529,7 @@ public class DFA extends ANY
 
 
   /**
-   * Print out details on the analysis of call `c`
+   * Print out details on the analysis of call {@code c}
    */
   void analyzeShowDetails(Call c)
   {
@@ -1615,7 +1615,7 @@ public class DFA extends ANY
    *
    * @param v value we are taking an address of
    *
-   * @param adrField field the address of `v` is assigned to.
+   * @param adrField field the address of {@code v} is assigned to.
    *
    */
   void tempEscapes(int s, Val v, int adrField)
@@ -2304,7 +2304,7 @@ public class DFA extends ANY
 
 
   /**
-   * Create a fuzion outcome of type `rc` with the value res.
+   * Create a fuzion outcome of type {@code rc} with the value res.
    *
    * @param cl The call in which we are creating this outcome
    * @param rc the resulting outcome clazz.
@@ -2595,7 +2595,7 @@ public class DFA extends ANY
    *
    * @oaran cl a clazz id, must not be NO_CLAZZ
    *
-   * @return true if, as for what we now about used fields at this pointer, `cl`
+   * @return true if, as for what we now about used fields at this pointer, {@code cl}
    * defines a unit type.
    */
   boolean isUnitType(int cl)
@@ -2914,7 +2914,7 @@ public class DFA extends ANY
    * @param cc a clazz that is called
    *
    * @return true iff the call site should be taken into account when compating
-   * calls to `cc`.
+   * calls to {@code cc}.
    */
   boolean siteSensitive(int cc)
   {
@@ -3041,7 +3041,7 @@ public class DFA extends ANY
    * MAX_NEW_CALL_RECURSION new calls being analyzed right now.
    *
    * This might run into quadratic performance for code like the code above if
-   * `a` would itself perform a new call to `b`, and `b` to `c`, etc. to a depth
+   * {@code a} would itself perform a new call to {@code b}, and {@code b} to {@code c}, etc. to a depth
    * that exceeds MAX_NEW_CALL_RECURSION.
    */
   private void analyzeNewCall(Call e)

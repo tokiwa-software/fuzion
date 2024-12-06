@@ -57,7 +57,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Class representing tokens like t_lparen or specific operators like '<', '<'.
+   * Class representing tokens like t_lparen or specific operators like {@code <}, {@code >}.
    */
   static class TokenOrOp
   {
@@ -91,7 +91,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Class representing parentheses like '(', ')' or '<', '<'.
+   * Class representing parentheses like {@code (}, {@code )} or {@code <}, {@code >}.
    */
   static class Parens
   {
@@ -113,7 +113,7 @@ public class Lexer extends SourceFile
 
 
     /**
-     * Create Parens for operators like '<', '>'
+     * Create Parens for operators like {@code <}, {@code >}
      */
     Parens(String l, String r)
     {

@@ -75,9 +75,9 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Constructor for a partially applied operator expression like `+` or
-   * `**`. This can expand to a lambda of the form `x -> +x`, `x -> x+`, or `x,y
-   * -> x+y`.
+   * Constructor for a partially applied operator expression like {@code +} or
+   * {@code **}. This can expand to a lambda of the form {@code x -> +x}, {@code x -> x+}, or
+   * {@code x,y -> x+y}.
    *
    * @param pos the source code position of the operator
    *
@@ -115,7 +115,7 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Create a partial call of the form `.f` that will be turned into a lambda `x -> x.f`.
+   * Create a partial call of the form {@code .f} that will be turned into a lambda {@code x -> x.f}.
    *
    * @param pos the source position of the call
    *

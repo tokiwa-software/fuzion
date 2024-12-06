@@ -556,7 +556,7 @@ public class Resolution extends ANY
 
 
   /**
-   * Returns the state the feature `af` is in
+   * Returns the state the feature {@code af} is in
    * w.r.t. this resolution.
    */
   public State state(AbstractFeature af)

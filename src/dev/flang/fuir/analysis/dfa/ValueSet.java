@@ -201,7 +201,7 @@ public class ValueSet extends Value
    * @param v2 some value
    *
    * @param cl the clazz of the resulting value. This is usually the same as the
-   * clazz of `this` or `v`, unless we are joining `ref` type values.
+   * clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   public ValueSet(DFA dfa, Value v1, Value v2, int cl)
   {

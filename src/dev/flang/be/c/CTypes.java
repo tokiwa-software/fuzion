@@ -336,7 +336,7 @@ public class CTypes extends ANY
 
 
   /**
-   * Get the matching atomic type for `rc`.
+   * Get the matching atomic type for {@code rc}.
    *
    * For references this is: atomic_uintptr_t
    * For scalars this is: e.g. atomic_uint_least32_t

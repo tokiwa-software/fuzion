@@ -33,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Function represents a lambda expression `(x,y) -> f x y` in Fuzion.
+ * Function represents a lambda expression {@code (x,y) -> f x y} in Fuzion.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -67,7 +67,7 @@ public class Function extends AbstractLambda
 
 
   /**
-   * The implementation of `Function.call` that contains the code of this lambda.
+   * The implementation of {@code Function.call} that contains the code of this lambda.
    */
   Feature _feature;
 
@@ -90,14 +90,14 @@ public class Function extends AbstractLambda
 
 
   /**
-   * The feature that inherits from `Function/Unary/Binary/Nullary/Lazy/...` that implements this lambda in
-   * its `call` feature.
+   * The feature that inherits from {@code Function/Unary/Binary/Nullary/Lazy/...} that implements this lambda in
+   * its {@code call} feature.
    */
   Feature _wrapper;
 
 
   /**
-   * Names of argument fields `x, y` of a lambda `x, y -> f x y`
+   * Names of argument fields {@code x, y} of a lambda {@code x, y -> f x y}
    */
   final List<Expr> _namesAsExprs;
   final List<ParsedName> _names;
@@ -200,8 +200,8 @@ public class Function extends AbstractLambda
    * This must be called after this Function's resolveTypes was resolved since
    * this creates the new feature surrounding the expression.
    *
-   * What this does is for all calls `c` in the expression that is wrapped in
-   * this lambda, call `c.updateTarget` with this lambda's feature as `outer`
+   * What this does is for all calls {@code c} in the expression that is wrapped in
+   * this lambda, call {@code c.updateTarget} with this lambda's feature as {@code outer}
    * argument.
    *
    * @param res the resolution instance.

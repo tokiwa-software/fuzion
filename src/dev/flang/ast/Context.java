@@ -38,8 +38,8 @@ import dev.flang.util.ANY;
  *      else if T : integer then
  *        say "integer, neg is {-v}"
  *
- * The context of the calls to `say` would contain the constraints `T : String`
- * or `T : integer`.
+ * The context of the calls to {@code say} would contain the constraints {@code T : String}
+ * or {@code T : integer}.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -84,12 +84,12 @@ public abstract class Context extends ANY
   /**
    * Create the default context for the given feature f.
    *
-   * The result is a context whose `outerFeature()` equals to `f` and whose
-   * `exterior()` context is the contains the source code context of the
-   * declaration of `f`.
+   * The result is a context whose {@code outerFeature()} equals to {@code f} and whose
+   * {@code exterior()} context is the contains the source code context of the
+   * declaration of {@code f}.
    *
    * This means that any type constraints that are made outside of the
-   * declaration of `f` will be part of the constraints on the result.
+   * declaration of {@code f} will be part of the constraints on the result.
    */
   static Context forFeature(AbstractFeature f)
   {
@@ -174,7 +174,7 @@ public abstract class Context extends ANY
 
 
   /**
-   * Create a new context that adds the constraint imposed by a call `T : x` to
+   * Create a new context that adds the constraint imposed by a call {@code T : x} to
    * this context.
    */
   public Context addTypeConstraint(AbstractCall infix_colon_call)

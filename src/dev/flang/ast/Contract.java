@@ -55,7 +55,7 @@ public class Contract extends ANY
   /**
    * Empty contract. Note that this is currently not useable in the general case
    * since a feature that does not define a contract may still inherit one from
-   * those features it redefines, which will require the `argsSupplier` to be
+   * those features it redefines, which will require the {@code argsSupplier} to be
    * set.
    */
   public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, null, null,
@@ -86,7 +86,7 @@ public class Contract extends ANY
 
   /**
    * List of declared preconditions in this contract. This might be null if
-   * there is no `pre` clause or it might be NO_COND if there is a `pre` clause
+   * there is no {@code pre} clause or it might be NO_COND if there is a {@code pre} clause
    * with no conditions.
    *
    * This does not include inherited preconditions.
@@ -103,7 +103,7 @@ public class Contract extends ANY
 
   /**
    * List of declared postconditions in this contract. This might be null if
-   * there is no `post` clause or it might be NO_COND if there is a `post`
+   * there is no {@code post} clause or it might be NO_COND if there is a {@code post}
    * clause with no conditions.
    *
    * This does not include inherited postconditions.
@@ -120,7 +120,7 @@ public class Contract extends ANY
 
 
   /**
-   * Did the parser find `pre` / `post` or even `pre else` / `post then` ? These
+   * Did the parser find {@code pre} / {@code post} or even {@code pre else} / {@code post then} ? These
    * might be present even if the condition list is NO_COND.
    */
   public final SourceRange _hasPre,     _hasPost;
@@ -145,16 +145,16 @@ public class Contract extends ANY
    * @param r1, r2 the preconditions, parsed twice since we will need them
    * twice.  null if not present.
    *
-   * @param hasPre if `pre` was found, this gives its position, otherwise it is null.
+   * @param hasPre if {@code pre} was found, this gives its position, otherwise it is null.
    *
-   * @param hasElse if `else` after `pre` was found, this gives its proposition,
+   * @param hasElse if {@code else} after {@code pre} was found, this gives its proposition,
    * otherwise it is null.
    *
    * @param e the postcondition or null if not present.
    *
-   * @param hasPost if `post` was found, this gives its position, otherwise it is null
+   * @param hasPost if {@code post} was found, this gives its position, otherwise it is null
    *
-   * @param hasThen if `then` after `post` was found, this gives its proposition,
+   * @param hasThen if {@code then} after {@code post} was found, this gives its proposition,
    * otherwise it is null.
    *
    * @param args supplier that forks of the parser to re-parse the formal
@@ -179,7 +179,7 @@ public class Contract extends ANY
 
 
   /**
-   * Get and cache the name of the pre feature of `f`.
+   * Get and cache the name of the pre feature of {@code f}.
    */
   static String preConditionsFeatureName(Feature f)
   {
@@ -196,7 +196,7 @@ public class Contract extends ANY
 
 
   /**
-   * Get and cache the name of the pre bool feature of `f`.
+   * Get and cache the name of the pre bool feature of {@code f}.
    */
   static String preBoolConditionsFeatureName(AbstractFeature f)
   {
@@ -213,7 +213,7 @@ public class Contract extends ANY
 
 
   /**
-   * Get and cache the name of the pre and call feature of `f`.
+   * Get and cache the name of the pre and call feature of {@code f}.
    */
   static String preConditionsAndCallFeatureName(AbstractFeature f)
   {
@@ -230,7 +230,7 @@ public class Contract extends ANY
 
 
   /**
-   * Get and cache the name of the post feature of `f`.
+   * Get and cache the name of the post feature of {@code f}.
    */
   static String postConditionsFeatureName(AbstractFeature f)
   {
@@ -282,12 +282,12 @@ public class Contract extends ANY
 
   /**
    * Does the given feature either have a precondition feature or, for a
-   * `dev.flang.ast.Feature`, will it get one due to inherited or declared pre
+   * {@code dev.flang.ast.Feature}, will it get one due to inherited or declared pre
    * conditions?
    *
    * @param f a feature
    *
-   * @return true if there will be a precondition feature for `f`.
+   * @return true if there will be a precondition feature for {@code f}.
    */
   static boolean hasPreConditionsFeature(AbstractFeature f)
   {
@@ -302,7 +302,7 @@ public class Contract extends ANY
    *
    * @param f a feature
    *
-   * @return true if there will be a postcondition feature for `f`.
+   * @return true if there will be a postcondition feature for {@code f}.
    */
   static boolean hasPostConditionsFeature(AbstractFeature f)
   {
@@ -373,7 +373,7 @@ public class Contract extends ANY
 
 
   /**
-   * Create call to outer's precondition feature to be added to code of feature `outer`.
+   * Create call to outer's precondition feature to be added to code of feature {@code outer}.
    *
    * @param res resolution instance
    *
@@ -539,7 +539,7 @@ public class Contract extends ANY
 
 
   /**
-   * Create call to outer's postcondition feature to be added to code of feature `in`.
+   * Create call to outer's postcondition feature to be added to code of feature {@code in}.
    *
    * @param res resolution instance
    *
@@ -576,7 +576,7 @@ public class Contract extends ANY
 
 
   /**
-   * Helper to create `ParsedCall` to `n` at position `p`
+   * Helper to create {@code ParsedCall} to {@code n} at position {@code p}
    */
   private static ParsedCall pc(SourcePosition p, String n)
   {
@@ -584,7 +584,7 @@ public class Contract extends ANY
   }
 
   /**
-   * Helper to create `ParsedCall` to `t`.`n` at position `p`
+   * Helper to create {@code ParsedCall} to {@code t}.{@code n} at position {@code p}
    */
   private static ParsedCall pc(Expr t, SourcePosition p, String n)
   {
@@ -592,7 +592,7 @@ public class Contract extends ANY
   }
 
   /**
-   * Helper to create `ParsedCall` to `n[0]`.`n[1]`..`n[n.length-1] a`  at position `p`
+   * Helper to create {@code ParsedCall} to {@code n[0]}.{@code n[1]}..{@code n[n.length-1] a}  at position {@code p}
    */
   private static ParsedCall pc(SourcePosition p, String[] n, List<Expr> a)
   {

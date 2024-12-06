@@ -298,7 +298,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * create a new LibraryModule from `data`
+   * create a new LibraryModule from {@code data}
    */
   private LibraryModule libModule(ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
   {

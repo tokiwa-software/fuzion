@@ -112,8 +112,8 @@ public class If extends ExprWithPos
 
 
   /**
-   * Is this a normal if (`false`) or one created to implement a contract such
-   * as pre- or postconditions (`true`)?
+   * Is this a normal if ({@code false}) or one created to implement a contract such
+   * as pre- or postconditions ({@code true})?
    *
    * @return true iff this is an artificially generated if that originates in a
    * condition of a contract.

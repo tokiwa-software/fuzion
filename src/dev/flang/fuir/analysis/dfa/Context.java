@@ -155,13 +155,13 @@ public interface Context
 
 
   /**
-   * Convenience function for `contextString(true)`
+   * Convenience function for {@code contextString(true)}
    */
   default String contextStringForEnv() { return contextString(true); }
 
 
   /**
-   * Convenience function for `contextString(false)`
+   * Convenience function for {@code contextString(false)}
    */
   default String contextString()       { return contextString(false); }
 

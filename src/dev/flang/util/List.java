@@ -488,7 +488,7 @@ public class List<T>
 
 
   /**
-   * Set an element of this list using `set(i,x)`, but first make sure the
+   * Set an element of this list using {@code set(i,x)}, but first make sure the
    * list's capacity is sufficient.
    *
    * @param i index of element to set

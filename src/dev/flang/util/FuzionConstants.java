@@ -109,25 +109,25 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of intrinsic `effect.type.instate0`.
+   * Name of intrinsic {@code effect.type.instate0}.
    */
   public static final String EFFECT_INSTATE_NAME = "effect.type.instate0";
 
 
   /**
-   * Name of feature `index []`.
+   * Name of feature {@code index []}.
    */
   public static final String FEATURE_NAME_INDEX = "index [ ]";
 
 
   /**
-   * Name of feature `index [..]`.
+   * Name of feature {@code index [..]}.
    */
   public static final String FEATURE_NAME_INDEX_DOTDOT = "index [..]";
 
 
   /**
-   * Name of feature `index [] :=`.
+   * Name of feature {@code index [] :=}.
    */
   public static final String FEATURE_NAME_INDEX_ASSIGN = "index [ ] := ";
 
@@ -150,8 +150,8 @@ public class FuzionConstants extends ANY
 
   /**
    * An operator that should match both, prefix and postfix operators. This is
-   * used for partial application where `-` applied used as a unary function may
-   * result in `prefix -` or `postfix -`.
+   * used for partial application where {@code -} applied used as a unary function may
+   * result in {@code prefix -} or {@code postfix -}.
    */
   public static final String UNARY_OPERATOR_PREFIX = "unary ";
   public static final String TERNARY_OPERATOR_PREFIX = "ternary ";

@@ -479,7 +479,7 @@ class CodeGen
             na.add(t.load(1));
           }
         var p = staticAccess(/* *** NOTE ***: The site must be NO_SITE since we are not generating
-                              * code for `_fuir.clazzAt(si)`, but for the stub. If we would pass the
+                              * code for {@code _fuir.clazzAt(si)}, but for the stub. If we would pass the
                               * site here, the access might otherwise be optimized as a tail call!
                               */
                              FUIR.NO_SITE,
@@ -845,7 +845,7 @@ class CodeGen
    *
    * @param val the value of the argument.
    *
-   * @return code that stores `val` into the slot of arg #i.
+   * @return code that stores {@code val} into the slot of arg #i.
    */
   Expr setArg(int cl, int i, Expr val)
   {
@@ -1062,7 +1062,7 @@ class CodeGen
   /**
    * For debugging output
    *
-   * @return "`<clazz c>`".
+   * @return "{@code <clazz c>}".
    */
   private String clazzInQuotes(int c)
   {

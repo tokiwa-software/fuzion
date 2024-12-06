@@ -121,7 +121,7 @@ public abstract class Module extends ANY implements FeatureLookup
    *
    * @param fn a name we are looking for
    *
-   * @return the list of features store for `fn`, never null.
+   * @return the list of features store for {@code fn}, never null.
    */
   protected static List<AbstractFeature> get(SortedMap<FeatureName, List<AbstractFeature>> s, FeatureName fn)
   {
@@ -131,14 +131,14 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Add feature `f` for name `fn` to the map `s`. If a mapping exists that does
-   * not contain `f`, add `f` to the existing mapping.  Otherwise, create a new
-   * mapping that only contains `f`.
+   * Add feature {@code f} for name {@code fn} to the map {@code s}. If a mapping exists that does
+   * not contain {@code f}, add {@code f} to the existing mapping.  Otherwise, create a new
+   * mapping that only contains {@code f}.
    *
    * @param s a set of features we are modifying.
    *
-   * @param fn a name we want to map to `f`. Note that `fn` might be different
-   * to `f.featureName()`.
+   * @param fn a name we want to map to {@code f}. Note that {@code fn} might be different
+   * to {@code f.featureName()}.
    *
    * @param f a feature.
    */
@@ -333,8 +333,8 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Is type defined by feature `af` visible in file `usedIn`?
-   * If `af` does not define a type, result is false.
+   * Is type defined by feature {@code af} visible in file {@code usedIn}?
+   * If {@code af} does not define a type, result is false.
    *
    * @param usedIn
    * @param af
@@ -363,12 +363,12 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Is type defined by feature `af` visible in file `usedIn`?
-   * If `af` does not define a type, result is false.
+   * Is type defined by feature {@code af} visible in file {@code usedIn}?
+   * If {@code af} does not define a type, result is false.
    *
    * @param usedIn
    * @param af
-   * @param ignoreDefinesType leave checking whether `af` defines a type to the caller
+   * @param ignoreDefinesType leave checking whether {@code af} defines a type to the caller
    * @return
    */
   protected boolean typeVisible(SourceFile usedIn, AbstractFeature af, boolean ignoreDefinesType)
@@ -385,7 +385,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Is feature `af` visible in file `usedIn`?
+   * Is feature {@code af} visible in file {@code usedIn}?
    * @param usedIn
    * @param af
    * @return
@@ -409,7 +409,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Is `a` visible for feature `b`?
+   * Is {@code a} visible for feature {@code b}?
    *
    * @param a
    * @param b
@@ -537,7 +537,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Are `a` and `b` defined in the same module?
+   * Are {@code a} and {@code b} defined in the same module?
    */
   private boolean sameModule(AbstractFeature a, AbstractFeature b)
   {
