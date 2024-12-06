@@ -34,7 +34,6 @@ import dev.flang.fuir.analysis.TailCall;
 import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
-import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
@@ -51,19 +50,30 @@ import dev.flang.util.Pair;
 import dev.flang.util.QuietThreadTermination;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import java.lang.classfile.*;
+import java.lang.classfile.constantpool.ClassEntry;
+import java.lang.classfile.instruction.*;
+import java.lang.constant.ClassDesc;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -593,39 +603,7 @@ should be avoided as much as possible.
 
         try
           {
-            String[] dependencies = {
-              "dev/flang/be/jvm/runtime/Any.class",
-              "dev/flang/be/jvm/runtime/AnyI.class",
-              "dev/flang/be/jvm/runtime/FuzionThread.class",
-              "dev/flang/be/jvm/runtime/Intrinsics.class",
-              "dev/flang/be/jvm/runtime/JavaError.class",
-              "dev/flang/be/jvm/runtime/Main.class",
-              "dev/flang/be/jvm/runtime/OpenResources.class",
-              "dev/flang/be/jvm/runtime/Runtime.class",
-              "dev/flang/be/jvm/runtime/Runtime$1.class",
-              "dev/flang/be/jvm/runtime/Runtime$2.class",
-              "dev/flang/be/jvm/runtime/Runtime$3.class",
-              "dev/flang/be/jvm/runtime/Runtime$Abort.class",
-              "dev/flang/util/ANY.class",
-              "dev/flang/util/Errors.class",
-              "dev/flang/util/Errors$Error.class",
-              "dev/flang/util/Errors$Id.class",
-              "dev/flang/util/Errors$SRCF.class",
-              "dev/flang/util/Errors$SRCF$1.class",
-              "dev/flang/util/FatalError.class",
-              "dev/flang/util/FuzionOptions.class",
-              "dev/flang/util/HasSourcePosition.class",
-              "dev/flang/util/List.class",
-              "dev/flang/util/QuietThreadTermination.class",
-              "dev/flang/util/SourceFile.class",
-              "dev/flang/util/SourcePosition.class",
-              "dev/flang/util/SourcePosition$1.class",
-              "dev/flang/util/SourcePosition$2.class",
-              "dev/flang/util/SourceRange.class",
-              "dev/flang/util/Terminal.class",
-            };
-
-            for (var d : dependencies)
+            for (var d : getDependencies())
               {
                 jvm._jos.putNextEntry(new JarEntry(d));
                 jvm._jos.write(Files.readAllBytes(jvm._options.fuzionHome()
@@ -1509,7 +1487,7 @@ should be avoided as much as possible.
 
     var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
                                     bc_cl,
-                                    new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
+                                    new List<>(), dev.flang.be.jvm.classfile.ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
 
     cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl), new List<>(code_cl));
   }
@@ -2344,6 +2322,89 @@ should be avoided as much as possible.
       (ecl != FUIR.NO_CLAZZ);
 
     return _effectIds.add(ecl);
+  }
+
+  private static String[] getDependencies()
+  {
+    String packagePath = "dev/flang/be/jvm/runtime";
+
+    Set<ClassDesc> dependencies = new HashSet<>();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    try
+      {
+        Path packageDir = Paths.get(classLoader.getResource(packagePath).getPath());
+
+        Queue<Path> queue = Files.walk(packageDir)
+              .filter(Files::isRegularFile)
+              .filter(path -> path.toString().endsWith(".class"))
+              .collect(Collectors.toCollection(LinkedList::new));
+        Set<Path> processed = new HashSet<>();
+
+        while (!queue.isEmpty())
+          {
+            var path = queue.poll();
+            processed.add(path);
+
+            try (FileInputStream fis = new FileInputStream(path.toFile()))
+              {
+                ClassModel cm = java.lang.classfile.ClassFile.of().parse(fis.readAllBytes());
+
+                cm.elementStream()
+                  .flatMap(ce -> ce instanceof MethodModel mm ? mm.elementStream() : Stream.empty())
+                  .flatMap(me -> me instanceof CodeModel com ? com.elementStream() : Stream.empty())
+                  .forEach((e) ->
+                    {
+                      // helper to add a dependency and add its dependencies to the queue if not yet processed
+                      Consumer<ClassEntry> processDependency = classEntry ->
+                        {
+                          var cdesc = classEntry.asSymbol();
+                          if (cdesc.isClassOrInterface() && !cdesc.packageName().startsWith("java."))
+                            {
+                              dependencies.add(cdesc);
+
+                              // add to class to queue if not yet processed
+                              var cPathStr = (cdesc.packageName() + "." + cdesc.displayName()).replace(".", "/") + ".class";
+                              if (!cPathStr.contains("$"))
+                                {
+                                  var cpath = Paths.get(classLoader.getResource(cPathStr).getPath());
+                                  if (!processed.contains(cpath))
+                                    {
+                                      queue.add(cpath);
+                                    }
+                                }
+                            }
+                        };
+                      switch (e)
+                        {
+                          case InvokeInstruction i -> processDependency.accept(i.owner());
+                          case FieldInstruction  i -> processDependency.accept(i.owner());
+                          default -> { }
+                        }
+                    }
+                  );
+              }
+            catch (IOException e)
+              {
+                Errors.error("JVM backend I/O error",
+                             "This is either a bug or the files in " + packagePath
+                             + " changed while processing the directory.");
+                e.printStackTrace();
+              }
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.error("JVM backend I/O error",
+                     "This is either a bug or the files in " + packagePath
+                     + " changed while processing the directory.");
+        e.printStackTrace();
+      }
+
+    return dependencies.stream()
+                .map(dep->dep.packageName() + "." +  dep.displayName())
+                .map(s->s.replace(".", "/") + ".class")
+                .toArray(String[]::new);
   }
 
 
