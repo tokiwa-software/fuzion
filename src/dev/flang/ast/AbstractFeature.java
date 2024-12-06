@@ -806,25 +806,39 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param that the original feature that is used to lookup types.
    *
+   * @param abstractCallTypeCall inheritance call for a parent feature in case this was called from an
+   *                             AbstractCall.typeCall that is not a call to an outer ref, might be null otherwise
+   *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
+  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Call abstractCallTypeCall)
   {
     var o = outer();
-    var oc = o == null || o.isUniverse()
-      ? new Universe()
-      : outer().typeCall(p, new List<>(o.selfType(), o.generics().asActuals()), res, that);
-    var tf = cotype(res);
-    var typeParameters2 = new List<AbstractType>();
-    for (var tp : typeParameters)
+    Expr oc;
+    if (o == null || o.isUniverse())
       {
-        typeParameters2.add(typeParameters2.size() == 0
-                              ? tp
-                              : that.rebaseTypeForCotype(tp));
+        oc = new Universe();
       }
+    else if (abstractCallTypeCall != null)
+      {
+        oc = abstractCallTypeCall;
+      }
+    else
+      {
+        var typeParameters2 = new List<AbstractType>();
+        for (var tp : new List<>(o.selfType(), o.generics().asActuals()))
+          {
+            typeParameters2.add(typeParameters2.isEmpty()
+                                  ? tp
+                                  : that.rebaseTypeForCotype(tp));
+          }
+        oc = outer().typeCall(p, typeParameters2, res, that, null);
+      }
+
+    var tf = cotype(res);
     return new Call(p,
                     oc,
-                    typeParameters2,
+                    typeParameters,
                     Expr.NO_EXPRS,
                     tf,
                     tf.selfType());
