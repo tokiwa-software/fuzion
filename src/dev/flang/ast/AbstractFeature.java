@@ -951,7 +951,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               { // let `Any.type` inherit from `Type`
                 if (CHECKS) check
                   (this instanceof Feature && featureName().baseName().equals(FuzionConstants.ANY_NAME));
-                inh.add(new Call(pos(), "Type"));
+                inh.add(new Call(pos(), FuzionConstants.TYPE_FEAT));
               }
             existingOrNewCotype(res, name, typeArgs, inh);
           }
@@ -1171,16 +1171,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return !isUniverse()
       && outer() != null
       && outer().isUniverse()
-      && (   "i8"  .equals(featureName().baseName())
-          || "i16" .equals(featureName().baseName())
-          || "i32" .equals(featureName().baseName())
-          || "i64" .equals(featureName().baseName())
-          || "u8"  .equals(featureName().baseName())
-          || "u16" .equals(featureName().baseName())
-          || "u32" .equals(featureName().baseName())
-          || "u64" .equals(featureName().baseName())
-          || "f32" .equals(featureName().baseName())
-          || "f64" .equals(featureName().baseName())
+      && (   FuzionConstants.I8_NAME  .equals(featureName().baseName())
+          || FuzionConstants.I16_NAME .equals(featureName().baseName())
+          || FuzionConstants.I32_NAME .equals(featureName().baseName())
+          || FuzionConstants.I64_NAME .equals(featureName().baseName())
+          || FuzionConstants.U8_NAME  .equals(featureName().baseName())
+          || FuzionConstants.U16_NAME .equals(featureName().baseName())
+          || FuzionConstants.U32_NAME .equals(featureName().baseName())
+          || FuzionConstants.U64_NAME .equals(featureName().baseName())
+          || FuzionConstants.F32_NAME .equals(featureName().baseName())
+          || FuzionConstants.F64_NAME .equals(featureName().baseName())
           || "bool".equals(featureName().baseName()));
   }
 
