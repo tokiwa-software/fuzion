@@ -135,8 +135,6 @@ public class This extends ExprWithPos
    *
    * @param context the source code context where this This is to be used
    *
-   * @param cur the current feature that contains this this expression
-   *
    * @param f the outer feature whose instance we want to access.
    *
    * @return the type resolved expression to access f.this.

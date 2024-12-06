@@ -132,7 +132,6 @@ public class Executor extends ProcessExpression<Value, Object>
    * The constructor to initialize the executor
    * with a custom current, outer and args.
    *
-   * @param fuir
    * @param cur
    * @param outer
    * @param args
@@ -654,9 +653,13 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Helper for callStack() to show one single frame
    *
+   * @param fuir
+   *
+   * @param sb used to append the output
+   *
    * @param frame the clazz of the entry to show
    *
-   * @param call the call of the entry to show
+   * @param callSite the call of the entry to show
    */
   private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
   {
@@ -671,6 +674,8 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Helper for callStack() to show a repeated frame
    *
+   * @param fuir
+   *
    * @param sb used to append the output
    *
    * @param repeat how often was the previous entry repeated? >= 0 where 0 means
@@ -679,7 +684,7 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @param frame the clazz of the previous entry
    *
-   * @param call the call of the previous entry
+   * @param callSite the call of the previous entry
    */
   private static void showRepeat(FUIR fuir, StringBuilder sb, int repeat, int frame, int callSite)
   {

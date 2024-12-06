@@ -111,7 +111,7 @@ public class Assign extends AbstractAssign
    *
    * @param v
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this assignment is used
    */
   public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {

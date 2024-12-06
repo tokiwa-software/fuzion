@@ -345,7 +345,7 @@ public class Contract extends ANY
    *
    * @param f a feature with a precondition that should be called.
    *
-   * @param outer the outer feature the call will be used in.
+   * @param context the source code context where this assignment is used
    *
    * @return a call to f.preFeature() to be added to code of outer.
    */
@@ -498,7 +498,7 @@ public class Contract extends ANY
    *
    * @param res resolution instance
    *
-   * @param outer a feature with a postcondition whose body the result will be
+   * @param context the source code context where this assignment is used
    * added to
    *
    * @return a call to outer.postFeature() to be added to code of outer.

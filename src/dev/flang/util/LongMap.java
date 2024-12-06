@@ -67,7 +67,7 @@ public class LongMap<T>
 
 
   /**
-   * @see java.util.Map.size
+   * @see java.util.Map#size()
    */
   public int size()
   {
@@ -76,7 +76,7 @@ public class LongMap<T>
 
 
   /**
-   * @see java.util.Map.get
+   * @see java.util.Map#get(Object)
    */
   public T get(long i)
   {
@@ -85,7 +85,7 @@ public class LongMap<T>
 
 
   /**
-   * @see java.util.Map.getOrDefault
+   * @see java.util.Map#getOrDefault(Object, Object)
    */
   public T getOrDefault(long i, T def)
   {
@@ -94,7 +94,7 @@ public class LongMap<T>
 
 
   /**
-   * @see java.util.Map.put
+   * @see java.util.Map#put(Object, Object)
    */
   public T put(long i, T v)
   {
@@ -106,7 +106,7 @@ public class LongMap<T>
    * All keys in this map.  This is sorted by the long values to ensure
    * repeatable behaviour when iterating.
    *
-   * @see java.util.Map.keySet
+   * @see java.util.Map#keySet()
    */
   public Set<Long> keySet()
   {

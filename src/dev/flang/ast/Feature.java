@@ -98,6 +98,9 @@ public class Feature extends AbstractFeature
   private final SourcePosition _posOfReturnType;
 
 
+  Context _sourceCodeContext = Context.NONE;
+
+
   /**
    * The visibility of this feature
    */
@@ -1487,7 +1490,6 @@ public class Feature extends AbstractFeature
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  Context _sourceCodeContext = Context.NONE;
   void internalResolveTypes(Resolution res)
   {
     if (PRECONDITIONS) require

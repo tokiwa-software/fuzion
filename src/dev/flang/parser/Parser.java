@@ -3696,10 +3696,6 @@ typeOpt     : type
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
    *
-   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
-   * parsed as expressions such as lambdas types with argument types that are
-   * not just argNames.
-   *
    * @return true iff the next token(s) is a onetype, otherwise no onetype was
    * found and the parser/lexer is at an undefined position.
    */

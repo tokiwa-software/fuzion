@@ -115,8 +115,6 @@ public class TailCall extends ANY
    * check if the first argument in the given call is the current instance's
    * outer reference.
    *
-   * @param cl index of clazz containing the call
-   *
    * @param s site of the call
    */
   public boolean firstArgIsOuter(int s)

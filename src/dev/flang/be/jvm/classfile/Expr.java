@@ -2050,7 +2050,7 @@ public abstract class Expr extends ByteCode
    *
    * @param try_handler label marking the catch code
    *
-   * @param type the exception type that is to be caught, must not be null.
+   * @param exc_type the exception type that is to be caught, must not be null.
    */
   public static Expr tryCatch(Label try_end,
                               Label try_handler,

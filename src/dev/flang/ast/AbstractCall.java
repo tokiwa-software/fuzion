@@ -185,8 +185,6 @@ public abstract class AbstractCall extends Expr
    *
    * @param p the source position
    *
-   * @param typeParameters the type parameters passed to the call
-   *
    * @param res Resolution instance used to resolve types in this call.
    *
    * @param that the original feature that is used to lookup types.

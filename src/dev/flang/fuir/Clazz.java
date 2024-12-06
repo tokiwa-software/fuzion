@@ -1007,11 +1007,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @param select in case f is a field of open generic type, this selects the
    * actual field.  -1 otherwise.
    *
-   * @param p if this lookup would result in the returned feature to be called,
-   * p gives the position in the source code that causes this call.  p must be
-   * null if the lookup does not cause a call, but it just done to determine
-   * the type.
-   *
    * @param isInheritanceCall true iff this is a call in an inheritance clause.  In
    * this case, the result clazz will not be marked as instantiated since the
    * call will work on the instance of the inheriting clazz.
@@ -1921,21 +1916,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @param select in case t is an open generic, the variant of the actual type
    * that is to be chosen.  -1 otherwise.
    *
-   * @param inh the inheritance change that brought is here. This is usually an
-   * empty list, only in case this is used in a (recursively) inlined inherits
-   * call, then inh gives the sequence of inherits calls from bottom (child) to
-   * top (parent).  E.g., in
-   *
-   *    sum(T type : numeric, a, b T) is
-   *       res := a + b
-   *
-   *    sum_of_3_and_5 : sum i32 3 5 is
-   *
-   * the type `T` used in `res := a + b` gets replaced by `i32` when this code
-   * is inlined to the constructor of `sum_of_3_and_5` via the inherits call
-   * `sum i32 3 5`.
-   *
-   * @param pos a source code position, used to report errors.
    */
   Clazz handDown(AbstractType t, int select)
   {
@@ -1954,7 +1934,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         // iterate using `child` and `parent` over outer clazzes starting at
         // `this` where `child` is the current outer clazz and `parent` is the
-        // parent feature the previous inner clazz' feature was inherted from.
+        // parent feature the previous inner clazz' feature was inherited from.
         var child = this;
         AbstractFeature parent = feature();
         while (child != null)

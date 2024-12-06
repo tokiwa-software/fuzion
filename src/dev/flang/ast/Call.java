@@ -181,6 +181,9 @@ public class Call extends AbstractCall
   AbstractType[] _resolvedFormalArgumentTypes = null;
 
 
+  private boolean _recursiveResolveType = false;
+
+
   /**
    * Will be set to true for a call to a direct parent feature in an inheritance
    * call.
@@ -959,7 +962,7 @@ public class Call extends AbstractCall
    * called repeatedly with different outer arguments as a result of this call
    * being moved into a different feature (lambda, lazy, etc.).
    *
-   * @param re the resolution instance
+   * @param res the resolution instance
    *
    * @param context the source code context where this Call is used
    */
@@ -1286,7 +1289,7 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this assignment is used
    *
    * @return result this in case this was not an immediate call, otherwise the
    * resulting call to Function/Routine.call.
@@ -1564,7 +1567,7 @@ public class Call extends AbstractCall
    *
    * @param arg true if `t` is the type of an argument, false if `t` is the result type
    *
-   * @param the declared argument (if arg == true) or the called feature (otherwise).
+   * @param calledOrArg the declared argument (if arg == true) or the called feature (otherwise).
    *
    * @param context the source code context where this Call is used
    *
@@ -2478,7 +2481,6 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  private boolean _recursiveResolveType = false;
   public Call resolveTypes(Resolution res, Context context)
   {
     Call result = this;

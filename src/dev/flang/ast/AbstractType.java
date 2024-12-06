@@ -2183,7 +2183,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Return constraint if type is a generic, unmodified type otherwise
-   * @param tt the type
    * @param context the context
    * @return constraint for generics, unmodified type otherwise
    */
@@ -2195,7 +2194,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Return constraint if type is a generic, unmodified type otherwise
-   * @param tt the type
    * @param res the resolution
    * @param context the context
    * @return constraint for generics, unmodified type otherwise
