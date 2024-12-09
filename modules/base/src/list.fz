@@ -64,15 +64,15 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # count the elements of this list
   #
-  public redef count => count 0
+  public redef count => count_n 0
 
 
   # count the elements of this list starting at n.
   # carries n around to make this tail-recursive
   #
-  count (n i32) i32 =>
+  count_n (n i32) i32 =>
     list.this ? nil    => n
-              | c Cons => c.tail.count n+1
+              | c Cons => c.tail.count_n n+1
 
 
   # get the head of this list if it exists, nil if it does
