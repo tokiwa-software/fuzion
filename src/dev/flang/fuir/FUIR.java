@@ -97,7 +97,7 @@ public abstract class FUIR extends IR
    *
    * @return a valid clazz id
    */
-  public abstract int mainClazzId();
+  public abstract int mainClazz();
 
 
   /**
@@ -1206,7 +1206,7 @@ public abstract class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
+    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazz() ? " *** main *** " : ""));
     dumpCode(cl, clazzCode(cl));
   }
 

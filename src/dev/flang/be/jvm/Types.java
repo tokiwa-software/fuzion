@@ -175,7 +175,7 @@ public class Types extends ANY implements ClassFileConstants
         if (cl == _fuir.clazzUniverse())
           {
             cf.addImplements(Names.MAIN_INTERFACE);
-            var maincl = _fuir.mainClazzId();
+            var maincl = _fuir.mainClazz();
             var bc_run =
               Expr.UNIT
               .andThen(invokeStatic(maincl, -1)).drop()

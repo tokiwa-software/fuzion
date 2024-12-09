@@ -613,7 +613,7 @@ public class GeneratingFUIR extends FUIR
    * @return a valid clazz id
    */
   @Override
-  public int mainClazzId()
+  public int mainClazz()
   {
     return _mainClazz;
   }

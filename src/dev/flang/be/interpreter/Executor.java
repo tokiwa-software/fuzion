@@ -122,7 +122,7 @@ public class Executor extends ProcessExpression<Value, Object>
     _options_ = opt;
     _universe = new Instance(_fuir.clazzUniverse());
     _tailCall = new TailCall(fuir);
-    this._cur = _fuir.mainClazzId() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazzId());
+    this._cur = _fuir.mainClazz() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazz());
     this._outer = _universe;
     this._args = new List<>();
   }

@@ -1261,7 +1261,7 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
 
     newCall(cl,
             NO_SITE,

@@ -134,7 +134,7 @@ public class CFG extends ANY
    */
   public void createCallGraph()
   {
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
     _newCalledClazzesToBeProcessed.add(cl);
     while (_newCalledClazzesToBeProcessed.size() > 0)
       {
