@@ -1061,8 +1061,8 @@ public class Intrinsics extends ANY
               CExpr
                 .call("fzE_call_c0",
                   new List<CExpr>(
-                    c.javaRefField(A0).castTo("jstring"),
-                    c.javaRefField(A1).castTo("jstring"),
+                    A0.castTo("jstring"),
+                    A1.castTo("jstring"),
                     A2.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
@@ -1092,9 +1092,9 @@ public class Intrinsics extends ANY
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_s0",
                   new List<CExpr>(
-                    c.javaRefField(A0).castTo("jstring"),
-                    c.javaRefField(A1).castTo("jstring"),
-                    c.javaRefField(A2).castTo("jstring"),
+                    A0.castTo("jstring"),
+                    A1.castTo("jstring"),
+                    A2.castTo("jstring"),
                     A3.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
@@ -1112,9 +1112,9 @@ public class Intrinsics extends ANY
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_v0",
                   new List<CExpr>(
-                    c.javaRefField(A0).castTo("jstring"),
-                    c.javaRefField(A1).castTo("jstring"),
-                    c.javaRefField(A2).castTo("jstring"),
+                    A0.castTo("jstring"),
+                    A1.castTo("jstring"),
+                    A2.castTo("jstring"),
                     A3.castTo("jobject"),
                     A4.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }

@@ -38,8 +38,8 @@ public fuzion.java is
   # an instance of T.
   #
   public get_static_field(T type, clazz String, field String, signature String) =>
-    c := (string_to_java_object clazz).Java_Ref
-    f := (string_to_java_object field).Java_Ref
+    c := string_to_java_object1 clazz
+    f := string_to_java_object1 field
     get_static_field0 T c f (sys.c_string signature)
 
 
@@ -47,22 +47,22 @@ public fuzion.java is
   # an instance of T.
   #
   public get_field(T type, thiz Java_Object, field String, signature String) =>
-    f := (string_to_java_object field).Java_Ref
+    f := string_to_java_object1 field
     get_field0 T thiz.Java_Ref f (sys.c_string signature)
 
 
   # set a static field of given name in class with given name.
   #
   public set_static_field(clazz String, field String, val Java_Object, signature String) =>
-    c := (string_to_java_object clazz).Java_Ref
-    f := (string_to_java_object field).Java_Ref
+    c := string_to_java_object1 clazz
+    f := string_to_java_object1 field
     set_static_field0 c f val.Java_Ref (sys.c_string signature)
 
 
   # set a field of given name from given object instance thiz.
   #
   public set_field(thiz Java_Object, field String, val Java_Object, signature String) =>
-    f := (string_to_java_object field).Java_Ref
+    f := string_to_java_object1 field
     set_field0 thiz.Java_Ref f val.Java_Ref (sys.c_string signature)
 
 
@@ -173,9 +173,9 @@ public fuzion.java is
   pre
     safety: !thiz.is_null
   =>
-    c := string_to_java_object class_name
-    n := string_to_java_object name
-    s := string_to_java_object signature
+    c := string_to_java_object1 class_name
+    n := string_to_java_object1 name
+    s := string_to_java_object1 signature
     t := thiz.Java_Ref
     a := (args.map_to_array (x -> x.Java_Ref)).internal_array
     call_v0 T c n s t a
@@ -190,9 +190,9 @@ public fuzion.java is
                     signature String,
                     args array Java_Object) outcome T
   =>
-    c := string_to_java_object class_name
-    n := string_to_java_object name
-    s := string_to_java_object signature
+    c := string_to_java_object1 class_name
+    n := string_to_java_object1 name
+    s := string_to_java_object1 signature
     a := (args.map_to_array (x -> x.Java_Ref)).internal_array
     call_s0 T c n s a
 
@@ -205,8 +205,8 @@ public fuzion.java is
                          signature String,
                          args array Java_Object) outcome T
   =>
-    c := string_to_java_object class_name
-    s := string_to_java_object signature
+    c := string_to_java_object1 class_name
+    s := string_to_java_object1 signature
     a := (args.map_to_array (x -> x.Java_Ref)).internal_array
     call_c0 T c s a
 
@@ -214,26 +214,26 @@ public fuzion.java is
   # intrinsic to call given Java instance method
   #
   call_v0(T type,
-                 class_name Java_Object,
-                 name Java_Object,
-                 signature Java_Object,
+                 class_name fuzion.sys.Pointer,
+                 name fuzion.sys.Pointer,
+                 signature fuzion.sys.Pointer,
                  thiz fuzion.sys.Pointer,
                  args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
   # intrinsic to call given Java static method
   #
   call_s0(T type,
-                 class_name Java_Object,
-                 name Java_Object,
-                 signature Java_Object,
+                 class_name fuzion.sys.Pointer,
+                 name fuzion.sys.Pointer,
+                 signature fuzion.sys.Pointer,
                  args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
 
   # intrinsic to call given Java constructor
   #
   call_c0(T type,
-                 class_name Java_Object,
-                 signature Java_Object,
+                 class_name fuzion.sys.Pointer,
+                 signature fuzion.sys.Pointer,
                  args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
 
 
@@ -286,8 +286,11 @@ public fuzion.java is
   # convert a string to a Java String object
   #
   public string_to_java_object(s String) Java_Object =>
-    string_to_java_object0 s.utf8.as_array.internal_array
+    Java_Object (string_to_java_object1 s)
 
+
+  string_to_java_object1(s String) =>
+    (string_to_java_object0 s.utf8.as_array.internal_array).Java_Ref
 
   # intrinsic to convert a string to a Java String object
   #
