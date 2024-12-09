@@ -1860,17 +1860,16 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-        if (CHECKS) check
-          (_resultType == null
-           || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-           );
-
-        if (outer() instanceof Feature o)
+       if (outer() instanceof Feature o)
           {
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresentUrgent(res, true);
+        if (_resultType == null)
+          {
+            _resultType = resultTypeIfPresentUrgent(res, true);
+          }
+
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -2279,6 +2278,13 @@ A ((Choice)) declaration must not contain a result type.
     if (res != null && result != null && outer() != null)
       {
         result = result.resolve(res, outer().context());
+      }
+
+    // NYI: CLEANUP: result != Types.resolved.t_void is currently necessary
+    // to enable cyclic type inference e.g. in reg_issue2182
+    if (result != null && result != Types.resolved.t_void)
+      {
+        _resultType = result;
       }
 
     return result;
