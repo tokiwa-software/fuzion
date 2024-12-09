@@ -140,9 +140,9 @@ class LibraryOut extends ANY
     if (v != null)
       {
         _data = new FixUps();
-        _data.write(FuzionConstants.MIR_FILE_MAGIC);
-        _data.writeName(name);
-        _data.write(v);
+        _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
+        _data.writeString(name);
+        _data.writeBytes(v);
         _data.writeInt(rm.size());
         for (var m : rm)
           {
@@ -211,8 +211,8 @@ class LibraryOut extends ANY
    */
   void moduleRef(LibraryModule m)
   {
-    _data.writeName(m.name());
-    _data.write(m.hash());
+    _data.writeString(m.name());
+    _data.writeBytes(m.hash());
   }
 
 
@@ -490,7 +490,7 @@ class LibraryOut extends ANY
       {
         bn = "";
       }
-    _data.writeName(bn);
+    _data.writeString(bn);
     var argCount = n.argCount() + f.freeTypesCount();
     _data.writeInt (argCount);      // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
@@ -769,7 +769,7 @@ class LibraryOut extends ANY
         type(c.type());
         var d = c.data();
         _data.writeInt(d.length);
-        _data.write(d);
+        _data.writeBytes(d);
       }
     else if (e instanceof AbstractCurrent ac)
       {
@@ -1076,10 +1076,10 @@ class LibraryOut extends ANY
       {
         var sf = e.getValue();
         var n = fileName(sf);
-        _data.writeName(n);
+        _data.writeString(n);
         _data.writeInt(sf.byteLength());
         _data.addSourceFilePosition(n);
-        _data.write(sf.bytes());
+        _data.writeBytes(sf.bytes());
       }
   }
 
