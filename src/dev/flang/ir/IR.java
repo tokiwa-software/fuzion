@@ -62,15 +62,15 @@ public abstract class IR extends ANY
    * integers to detect wrong values quickly.
    */
   protected static final int CLAZZ_BASE   = 0x10000000;
-  protected static final int CLAZZ_END    = 0x2fffffff;
+  protected static final int CLAZZ_END    = CLAZZ_BASE + 0x1FFFFFFF; // 0x2fffffff
 
 
   /**
    * For FUIR code represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  public static final int SITE_BASE    = 0x30000000;
-  public static final int SITE_END     = 0x4fffffff;
+  public static final int SITE_BASE    = CLAZZ_END + 1; // 0x30000000;
+  public static final int SITE_END     = SITE_BASE + 0x1FFFFFFF; // 0x4fffffff
 
 
   /**
@@ -93,7 +93,7 @@ public abstract class IR extends ANY
    * For Features represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  protected static final int FEATURE_BASE = 0x50000000;
+  protected static final int FEATURE_BASE = SITE_END + 1; // 0x50000000
 
 
   /**
