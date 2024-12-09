@@ -1337,7 +1337,7 @@ lint/java:
 
 .PHONY: lint/javadoc
 lint/javadoc:
-	$(JAVAC) -Xdoclint:all,-syntax,-html,-missing -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+	$(JAVAC) -Xdoclint:all,-missing -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
 		$(JAVA_FILES_AST) \
