@@ -263,12 +263,12 @@ public Sequence(public T type) ref : property.equatable is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public concat_sequences (s Sequence T) Sequence T => as_list.concat s.as_list
+  public concat (s Sequence T) Sequence T => as_list.concat_list s.as_list
 
 
-  # infix operand synonym for concat_sequences
+  # infix operand synonym for concat
   #
-  public infix ++ (s Sequence T) => concat_sequences s.as_list
+  public infix ++ (s Sequence T) => concat s
 
 
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
@@ -902,7 +902,7 @@ public Sequence(public T type) ref : property.equatable is
 
       # associative operation
       #
-      redef infix ∙ (a, b Sequence T) Sequence T => a.concat_sequences b
+      redef infix ∙ (a, b Sequence T) Sequence T => a.concat b
 
       # identity element
       #
