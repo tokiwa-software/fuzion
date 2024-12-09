@@ -133,7 +133,7 @@ public class DataOut extends ANY
   /**
    * Write given bytes to this buffer and increase offset by a.length.
    */
-  public void write(byte[] a)
+  public void writeBytes(byte[] a)
   {
     var l = a.length;
     while (_data.length <= _pos + l)
@@ -162,11 +162,11 @@ public class DataOut extends ANY
    *   |        | l      | byte          | name as utf8 bytes                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-  public void writeName(String n)
+  public void writeString(String n)
   {
     var utf8Name = n.getBytes(StandardCharsets.UTF_8);
     writeInt(utf8Name.length);
-    write(utf8Name);
+    writeBytes(utf8Name);
   }
 
 
