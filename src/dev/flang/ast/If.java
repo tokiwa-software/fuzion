@@ -33,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * If <description>
+ * If
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

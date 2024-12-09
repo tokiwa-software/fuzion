@@ -113,8 +113,8 @@ class FeatureWriter extends ANY
 
 
   /**
-   * For a name that is separated by '.', find all parts that are Fuzion
-   * keywords and replace them by "_k_" + <keyword>
+   * For a name that is separated by {@code .}, find all parts that are Fuzion
+   * keywords and replace them by {@code _k_} + {@code <keyword>}
    *
    * @param n a string, e.g., "java/lang/ref/PhantomReference"
    *

@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * StrConst <description>
+ * StrConst
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

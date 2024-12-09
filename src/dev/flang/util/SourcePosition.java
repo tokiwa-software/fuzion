@@ -371,7 +371,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
   /**
    * Convert this position to a string of the form
-   * "<filename>:<line>:<column>:".
+   * {@code <filename>:<line>:<column>:}.
    */
   public String toString()
   {

@@ -38,7 +38,7 @@ import java.nio.ByteOrder;
 import java.util.stream.Collectors;
 
 /**
- * NumLiteral <description>
+ * NumLiteral
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

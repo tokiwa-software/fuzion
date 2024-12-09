@@ -414,8 +414,8 @@ public class Fuzion extends Tool
 
     /**
      * parse the argument that activates this backend. This is not needed for
-     * backends like '-c' or '-dfa', but for those that require additional
-     * argument like '-saveLib=<path>'.
+     * backends like {@code -c} or {@code -dfa}, but for those that require additional
+     * argument like {@code -saveLib=<path>}.
      */
     void parseBackendArg(Fuzion f, String a)
     {
@@ -469,7 +469,7 @@ public class Fuzion extends Tool
     }
 
     /**
-     * Does this backend require a main feature or main file or '-' for stdin?
+     * Does this backend require a main feature or main file or {@code -} for stdin?
      */
     boolean needsMain()
     {
@@ -549,25 +549,25 @@ public class Fuzion extends Tool
 
 
   /**
-   * List of modules added using '-modules'.
+   * List of modules added using {@code -modules}.
    */
   List<String> _modules = new List<>();
 
 
   /**
-   * List of module directories added using '-moduleDirs'.
+   * List of module directories added using {@code -moduleDirs}.
    */
   List<String> _moduleDirs = new List<>();
 
 
   /**
-   * List of modules added using '-XdumpModules'.
+   * List of modules added using {@code -XdumpModules}.
    */
   List<String> _dumpModules = new List<>();
 
 
   /**
-   * List of source directories added using '-sourceDirs'.
+   * List of source directories added using {@code -sourceDirs}.
    */
   List<String> _sourceDirs = null;
 

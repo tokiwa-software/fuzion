@@ -84,7 +84,7 @@ public class Function extends AbstractLambda
    * will be used put the correct return type in case of a fun declaration using
    * => that requires type inference.
    *
-   * I.e. a call to (Function/Unary/Binary/Nullary/Lazy <generics>)
+   * I.e. a call to ({@code Function}/{@code Unary}/{@code Binary}/{@code Nullary}/{@code Lazy <generics>})
    */
   Call _inheritsCall;
 

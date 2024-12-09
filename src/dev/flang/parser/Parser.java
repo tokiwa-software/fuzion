@@ -342,7 +342,7 @@ field       : returnType
    *
    * @param inh the inheritance call list.
    *
-   * @param v the visibility to be used for the features defined in of <block>
+   * @param v the visibility to be used for the features defined in of {@code <block>}
    *
    */
   Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh, Visi v)
@@ -388,7 +388,7 @@ field       : returnType
    *
    * @param p Impl that contains the position of 'of' for error messages.
    *
-   * @param v the visibility to be used for the features defined in of <block>
+   * @param v the visibility to be used for the features defined in of {@code <block>}
    *
    */
   private void addFeaturesFromBlock(boolean first, List<Feature> list, Expr e, List<AbstractType> g, Impl p, Visi v)
