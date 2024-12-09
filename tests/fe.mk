@@ -40,3 +40,5 @@ jvm:
 
 c:
 	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+
+effect:

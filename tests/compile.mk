@@ -30,6 +30,7 @@
 
 FUZION_OPTIONS ?=
 FUZION = ../../bin/fz $(FUZION_OPTIONS)
+FILE = $(NAME).fz
 
 all: jvm c int
 
@@ -41,3 +42,9 @@ jvm:
 
 c:
 	$(FUZION) -c $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+
+effect:
+	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
+record_effect:
+	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)
