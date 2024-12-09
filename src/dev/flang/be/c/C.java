@@ -659,7 +659,7 @@ public class C extends ANY
    */
   public void compile()
   {
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
     var cf = new CFile(name, _options._keepGeneratedCode, false);
     var hf = new CFile(name, _options._keepGeneratedCode, true);
@@ -1120,7 +1120,7 @@ public class C extends ANY
 
     cf.print(initializeEffectsEnvironment());
 
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
 
     cf.print(CStmnt.seq(CNames.GLOBAL_ARGC.assign(new CIdent("argc")),
                         CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
