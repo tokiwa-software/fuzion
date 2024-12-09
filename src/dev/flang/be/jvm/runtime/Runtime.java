@@ -538,7 +538,7 @@ public class Runtime extends ANY
    *
    * @param id an effect type id.
    *
-   * @instance a new instance to replace the old one
+   * @param instance a new instance to replace the old one
    */
   public static void effect_replace(int id, Any instance)
   {

@@ -448,7 +448,7 @@ public abstract class FUIR extends IR
   /**
    * Is the given clazz a ref clazz?
    *
-   * @parm cl a constructor clazz id
+   * @param cl a constructor clazz id
    *
    * @return true for non-value-type clazzes
    */
@@ -1061,7 +1061,7 @@ public abstract class FUIR extends IR
    *
    * @param s site of the match
    *
-   * @paramc cix index of the case in the match
+   * @param cix index of the case in the match
    *
    * @return clazz id of field the value in this case is assigned to, -1 if this
    * case does not have a field or the field is unused.
@@ -1086,7 +1086,7 @@ public abstract class FUIR extends IR
    *
    * @param s site of the match
    *
-   * @paramc cix index of the case in the match
+   * @param cix index of the case in the match
    *
    * @return array of tag numbers this case matches
    */
@@ -1098,7 +1098,7 @@ public abstract class FUIR extends IR
    *
    * @param s site of the match
    *
-   * @paramc cix index of the case in the match
+   * @param cix index of the case in the match
    *
    * @return code block for the case
    */
