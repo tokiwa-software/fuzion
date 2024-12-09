@@ -87,7 +87,7 @@ public abstract class Val extends ANY
    * @param v the value this value should be joined with.
    *
    * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   Val joinVal(DFA dfa, Val v, int clazz)
   {

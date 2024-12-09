@@ -77,7 +77,7 @@ public abstract class FUIR extends IR
 
   /**
    * The clazz ids form a contiguous range of integers. This method gives the
-   * smallest clazz id.  Together with `lastClazz`, this permits iteration.
+   * smallest clazz id.  Together with {@code lastClazz}, this permits iteration.
    *
    * @return a valid clazz id such that for all clazz ids id: result {@literal <=} id.
    */
@@ -86,7 +86,7 @@ public abstract class FUIR extends IR
 
   /**
    * The clazz ids form a contiguous range of integers. This method gives the
-   * largest clazz id.  Together with `firstClazz`, this permits iteration.
+   * largest clazz id.  Together with {@code firstClazz}, this permits iteration.
    *
    * @return a valid clazz id such that for all clazz ids id: result >= id.
    */
@@ -135,7 +135,7 @@ public abstract class FUIR extends IR
    * Return the base name of this clazz, i.e., the name excluding the outer
    * clazz' name and excluding the actual type parameters
    *
-   * @return String like `"Set"` if `cl` corresponds to `container.Set u32`.
+   * @return String like {@code "Set"} if {@code cl} corresponds to {@code container.Set u32}.
    */
   public abstract String clazzBaseName(int cl);
 
@@ -228,12 +228,12 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Number of value fields in clazz `cl`, including argument value fields,
+   * Number of value fields in clazz {@code cl}, including argument value fields,
    * inherited fields, artificial fields like outer refs.
    *
    * @param cl a clazz id
    *
-   * @return number of value fields in `cl`
+   * @return number of value fields in {@code cl}
    */
   public abstract int clazzNumFields(int cl);
 
@@ -479,7 +479,7 @@ public abstract class FUIR extends IR
   /**
    * For a clazz that represents a Fuzion type such as 'i32.type', return the
    * corresponding name of the type such as 'i32'.  This value is returned by
-   * intrinsic `Type.name`.
+   * intrinsic {@code Type.name}.
    *
    * @param cl a clazz id of a cotype
    *
@@ -566,7 +566,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz `array u8`
+   * Get the id of clazz {@code array u8}
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */
@@ -622,7 +622,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * On `cl` lookup field `Java_Ref`
+   * On {@code cl} lookup field {@code Java_Ref}
    *
    * @param cl Java_Object or inheriting from Java_Object
    *
@@ -632,7 +632,7 @@ public abstract class FUIR extends IR
 
   /**
    * Check if the given clazz is a --possibly inherited--
-   * `fuzion.java.Java_Object.Java_Ref` field.
+   * {@code fuzion.java.Java_Object.Java_Ref} field.
    *
    * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
    *
@@ -648,7 +648,7 @@ public abstract class FUIR extends IR
    *
    * @param cl index of a clazz that is an heir of 'Function'.
    *
-   * @return the index of the requested `Function.call` feature's clazz.
+   * @return the index of the requested {@code Function.call} feature's clazz.
    */
   public abstract int lookupCall(int cl);
 
@@ -662,7 +662,7 @@ public abstract class FUIR extends IR
    *
    * @param markAsCalled true to mark the result as called
    *
-   * @return the index of the requested `Function.call` feature's clazz.
+   * @return the index of the requested {@code Function.call} feature's clazz.
    */
   public abstract int lookupCall(int cl, boolean markAsCalled);
 
@@ -674,7 +674,7 @@ public abstract class FUIR extends IR
    *
    * @param cl index of a clazz that is an heir of 'effect'.
    *
-   * @return the index of the requested `effect.finally` feature's clazz.
+   * @return the index of the requested {@code effect.finally} feature's clazz.
    */
   public abstract int lookup_static_finally(int cl);
 
@@ -684,7 +684,7 @@ public abstract class FUIR extends IR
    *
    * @param cl index of a clazz representing cl's value field
    *
-   * @return the index of the requested `concur.atomic.value` field's clazz.
+   * @return the index of the requested {@code concur.atomic.value} field's clazz.
    */
   public abstract int lookupAtomicValue(int cl);
 
@@ -692,9 +692,9 @@ public abstract class FUIR extends IR
   /**
    * For a clazz of array, lookup the inner clazz of the internal_array field.
    *
-   * @param cl index of a clazz `array T` for some type parameter `T`
+   * @param cl index of a clazz {@code array T} for some type parameter {@code T}
    *
-   * @return the index of the requested `array.internal_array` field's clazz.
+   * @return the index of the requested {@code array.internal_array} field's clazz.
    */
   public abstract int lookup_array_internal_array(int cl);
 
@@ -703,9 +703,9 @@ public abstract class FUIR extends IR
    * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
    * data field.
    *
-   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
    *
-   * @return the index of the requested `fuzion.sys.internal_array.data` field's clazz.
+   * @return the index of the requested {@code fuzion.sys.internal_array.data} field's clazz.
    */
   public abstract int lookup_fuzion_sys_internal_array_data(int cl);
 
@@ -714,9 +714,9 @@ public abstract class FUIR extends IR
    * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
    * length field.
    *
-   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
    *
-   * @return the index of the requested `fuzion.sys.internal_array.length` field's clazz.
+   * @return the index of the requested {@code fuzion.sys.internal_array.length} field's clazz.
    */
   public abstract int lookup_fuzion_sys_internal_array_length(int cl);
 
@@ -724,9 +724,9 @@ public abstract class FUIR extends IR
   /**
    * For a clazz of error, lookup the inner clazz of the msg field.
    *
-   * @param cl index of a clazz `error`
+   * @param cl index of a clazz {@code error}
    *
-   * @return the index of the requested `error.msg` field's clazz.
+   * @return the index of the requested {@code error.msg} field's clazz.
    */
   public abstract int lookup_error_msg(int cl);
 
@@ -736,9 +736,9 @@ public abstract class FUIR extends IR
 
   /**
    * Is there just one single value of this class, so this type is essentially a
-   * C/Java `void` type?
+   * C/Java {@code void} type?
    *
-   * NOTE: This is false for Fuzion's `void` type!
+   * NOTE: This is false for Fuzion's {@code void} type!
    */
   public abstract boolean clazzIsUnitType(int cl);
 
@@ -853,7 +853,7 @@ public abstract class FUIR extends IR
    * Get the clazz id at the given site
    *
    * @param s a site, may be !withinCode(s), i.e., this may be used on
-   * `clazzCode(cl)` if the code is empty.
+   * {@code clazzCode(cl)} if the code is empty.
    *
    * @return the clazz id that code at site s belongs to.
    */
@@ -884,7 +884,7 @@ public abstract class FUIR extends IR
    *
    * @param s a code site for an Env instruction.
    *
-   * @return the original type, i.e., for `o option i32 := 42`, this is `i32`.
+   * @return the original type, i.e., for {@code o option i32 := 42}, this is {@code i32}.
    */
   public abstract int tagValueClazz(int s);
 
@@ -895,8 +895,8 @@ public abstract class FUIR extends IR
    *
    * @param s a code site for an Env instruction.
    *
-   * @return the new choice type, i.e., for `o option i32 := 42`, this is
-   * `option i32`.
+   * @return the new choice type, i.e., for {@code o option i32 := 42}, this is
+   * {@code option i32}.
    */
   public abstract int tagNewClazz(int s);
 
@@ -907,8 +907,8 @@ public abstract class FUIR extends IR
    *
    * @param s a code site for an Env instruction.
    *
-   * @return the tag number, i.e., for `o choice a b i32 c d := 42`, this is
-   * `2`.
+   * @return the tag number, i.e., for {@code o choice a b i32 c d := 42}, this is
+   * {@code 2}.
    */
   public abstract int tagTagNum(int s);
 
@@ -1076,7 +1076,7 @@ public abstract class FUIR extends IR
    *
    * @param tag e.g. 0,1,2,...
    *
-   * @return the index of the case for tag `tag`
+   * @return the index of the case for tag {@code tag}
    */
   public abstract int matchCaseIndex(int s, int tag);
 
@@ -1178,7 +1178,7 @@ public abstract class FUIR extends IR
    *
    * @param c a code block;
    *
-   * @return a String that can be used as a unique label for code block `c`.
+   * @return a String that can be used as a unique label for code block {@code c}.
    */
   private String label(int c)
   {
@@ -1421,15 +1421,15 @@ public abstract class FUIR extends IR
   /**
    * the clazz of the elements of the array
    *
-   * @param constCl, e.g. `array (tuple i32 codepoint)`
+   * @param constCl, e.g. {@code array (tuple i32 codepoint)}
    *
-   * @return e.g. `tuple i32 codepoint`
+   * @return e.g. {@code tuple i32 codepoint}
    */
   public abstract int inlineArrayElementClazz(int constCl);
 
 
   /**
-   * Is `constCl` an array?
+   * Is {@code constCl} an array?
    */
   public abstract boolean clazzIsArray(int constCl);
 
@@ -1438,7 +1438,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Extract bytes from `bb` that should be used when deserializing for `cl`.
+   * Extract bytes from {@code bb} that should be used when deserializing for {@code cl}.
    *
    * @param cl the constants clazz
    *
@@ -1559,21 +1559,21 @@ public abstract class FUIR extends IR
    * If a called to an abstract feature was found, the DFA will use this to
    * record the missing implementation of an abstract features.
    *
-   * Later, this will be reported as an error via `reportAbstractMissing()`.
+   * Later, this will be reported as an error via {@code reportAbstractMissing()}.
    *
    * @param cl clazz is of the clazz that is missing an implementation of an
    * abstract features.
    *
    * @param f the inner clazz that is called and that is missing an implementation
    *
-   * @param instantiationSite if known, the site where `cl` was instantiated,
-   * `NO_SITE` if unknown.
+   * @param instantiationSite if known, the site where {@code cl} was instantiated,
+   * {@code NO_SITE} if unknown.
    */
   public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite);
 
 
   /**
-   * In case any errors were recorded via `recordAbstractMissing` this will
+   * In case any errors were recorded via {@code recordAbstractMissing} this will
    * create the corresponding error messages.  The errors reported will be
    * cumulative, i.e., if a clazz is missing several implementations of abstract
    * features, there will be only one error for that clazz.

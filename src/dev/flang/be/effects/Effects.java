@@ -71,7 +71,7 @@ public class Effects extends ANY
   /**
    * Create Effects code backend for given intermediate code.
    *
-   * @param options arguments provided to `fz -effects` command.
+   * @param options arguments provided to {@code fz -effects} command.
    *
    * @param dfa the DFA.
    */

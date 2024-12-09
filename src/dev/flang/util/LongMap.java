@@ -36,7 +36,7 @@ import java.util.TreeSet;
  *
  * This permits exchanging the internal implementation easily without changing
  * all the places that use this map. This intentionally does not inherit from
- * `java.util.Map` to provide only the essential operations.
+ * {@code java.util.Map} to provide only the essential operations.
  *
  * Even though this might internally be use hashing, all operations should be
  * implemented in a way that provides reproducible execution, i.e, iteration do

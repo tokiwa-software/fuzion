@@ -138,7 +138,7 @@ public class FrontEndOptions extends FuzionOptions
    * Constructor initializing fields as given.
    *
    * @param timer can be called with a phase name to measure the time spent in
-   * this phase, printed if `-verbose` level is sufficiently high.
+   * this phase, printed if {@code -verbose} level is sufficiently high.
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,

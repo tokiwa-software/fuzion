@@ -134,7 +134,7 @@ public class Instance extends Value
 
   /**
    * Compare this to another instance, used to compare effect instances in
-   * Env[ironmnents].  The main different to `compareTo` is that the effect
+   * Env[ironmnents].  The main different to {@code compareTo} is that the effect
    * environment is ignored since that would lead to an explosion of
    * Environments.
    */

@@ -357,7 +357,7 @@ public class NumLiteral extends Constant
   /**
    * Create new constant by removing the added sign.
    *
-   * @return a NumLiteral equal to the original one `addSign` was called on.
+   * @return a NumLiteral equal to the original one {@code addSign} was called on.
    */
   public NumLiteral stripSign()
   {
@@ -371,7 +371,7 @@ public class NumLiteral extends Constant
 
 
   /**
-   * If this NumLiteral has an explicit sign as in `+127 or `-128`, return that
+   * If this NumLiteral has an explicit sign as in {@code +127} or {@code -128}, return that
    * sign as a String, return null otherwise.
    *
    * @return "+", "-", or null,
@@ -644,7 +644,7 @@ public class NumLiteral extends Constant
 
 
   /**
-   * Helper routine to shift BigInteger v left (sh > 0) or right (sh < 0) and
+   * Helper routine to shift BigInteger v left (sh &gt; 0) or right (sh &lt; 0) and
    * perform rounding in case of a right shift.
    *
    * @param v a BigInteger value
@@ -790,7 +790,7 @@ public class NumLiteral extends Constant
 
   /**
    * Perform partial application for a NumLiteral. In particular, this converts
-   * a literal with a sign such as `-2` into a lambda of the form `x -> x - 2`.
+   * a literal with a sign such as {@code -2} into a lambda of the form {@code x -> x - 2}.
    *
    * @see Expr#propagateExpectedTypeForPartial for details.
    *

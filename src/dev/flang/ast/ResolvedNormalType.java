@@ -353,7 +353,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Helper to extract `RefOrVal` from given type.
+   * Helper to extract {@code RefOrVal} from given type.
    *
    * @param t a type, must not be generic argument.
    */
@@ -576,11 +576,11 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Is this the type of a type feature, e.g., the type of `(list
-   * i32).type`. Will return false for an instance of Type for which this is
-   * still unknown since Type.resolve() was not called yet.
+   * Is this the type of a type feature, e.g., the type of {@code (list i32).type}.
+   * Will return false for an instance of Type for which this is
+   * still unknown since {@code Type.resolve()} was not called yet.
    *
-   * This is redefined here since `feature` might still be null while this type
+   * This is redefined here since {@code feature} might still be null while this type
    * was not resolved yet.
    */
   boolean isTypeType()

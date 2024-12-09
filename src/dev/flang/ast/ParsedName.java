@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * ParsedName represents a name created by the parser for the rule for `name`.
+ * ParsedName represents a name created by the parser for the rule for {@code name}.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

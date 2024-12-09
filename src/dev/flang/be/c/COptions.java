@@ -105,8 +105,8 @@ public class COptions extends FuzionOptions
 
 
   /*
-   * Get the absolute path of `p` as a String.
-   * `p` is relative to fuzionHome.
+   * Get the absolute path of {@code p} as a String.
+   * {@code p} is relative to fuzionHome.
    */
   public String pathOf(String p)
   {

@@ -141,8 +141,8 @@ public abstract class Expr extends ByteCode
    * This inherits from Label that defines the start of this try-catch.
    *
    * The main thing that this does when it is part of the code is inform the
-   * `ByteCodeWriter` passed to `code()` about its existance by calling
-   * `by.addExceptionTable`.
+   * {@code ByteCodeWriter} passed to {@code code()} about its existance by calling
+   * {@code by.addExceptionTable}.
    */
   static class TryCatch extends Label
   {
@@ -1715,7 +1715,7 @@ public abstract class Expr extends ByteCode
 
   /**
    * Create conditional branch with one Expr executed if the condition holds
-   * (`pos`) and one if it does not (`neg`).
+   * ({@code pos}) and one if it does not ({@code neg}).
    *
    * @param bc a condition bytecode O_if*
    *
@@ -1870,7 +1870,7 @@ public abstract class Expr extends ByteCode
   /**
    * Create conditional branch with one Expr executed if the condition
    * holds. I.e., this typically results in a branch using the negated condition
-   * that jumps behind the code given as `pos`.
+   * that jumps behind the code given as {@code pos}.
    *
    * @param bc a condition bytecode O_if*
    *
@@ -2085,7 +2085,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Create a sequence of two Expr: `this` followed by `s`.
+   * Create a sequence of two Expr: {@code this} followed by {@code s}.
    *
    * @param s another Expr that is to be execute after this.
    */

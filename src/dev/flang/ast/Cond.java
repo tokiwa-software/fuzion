@@ -65,11 +65,11 @@ public class Cond
 
 
   /**
-   * Wrap Expr instances from given list into new `Cond` instances
+   * Wrap Expr instances from given list into new {@code Cond} instances
    *
-   * @param b a list of `Expr` to be used as conditions
+   * @param b a list of {@code Expr} to be used as conditions
    *
-   * @return a new list with each `Expr` form `l` wrapped into a `Cond`.
+   * @return a new list with each {@code Expr} form {@code l} wrapped into a {@code Cond}.
    */
   public static List<Cond> from(Block b)
   {

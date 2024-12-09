@@ -212,7 +212,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * For debugging: Why did `compareTo(other)` return a value != 0?
+   * For debugging: Why did {@code compareTo(other)} return a value != 0?
    */
   String compareToWhy(Call other)
   {

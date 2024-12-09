@@ -1058,7 +1058,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   /**
    * Check if outer defines or inherits exactly one feature with no arguments
    * and an open type parameter as its result type. If such a feature exists and
-   * is visible by `use`, it will be returned.
+   * is visible by {@code use}, it will be returned.
    *
    * @param outer the declaring or inheriting feature
    *
@@ -1195,8 +1195,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
 
 
   /**
-   * true if `use` is happening in same or some
-   * inner scope of where definition of `v` is.
+   * true if {@code use} is happening in same or some
+   * inner scope of where definition of {@code v} is.
    *
    * see also: tests/visibility_scoping
    * see also: tests/visibility_negative
@@ -1467,18 +1467,18 @@ A post-condition of a feature that does not redefine an inherited feature must s
    *
    * @param redefinition the heir feature.
    *
-   * @param to original argument type in `original`.
+   * @param to original argument type in {@code original}.
    *
-   * @param tr new argument type in `redefinition`.
+   * @param tr new argument type in {@code redefinition}.
    *
-   * @param fixed true to perform the test as if `redefinition` is `fixed`. This
-   * is used in two ways: first, to check if `redefinition` is fixed, and then,
-   * when an error is reported, to suggest adding `fixed` if that would solve
+   * @param fixed true to perform the test as if {@code redefinition} is {@code fixed}. This
+   * is used in two ways: first, to check if {@code redefinition} is fixed, and then,
+   * when an error is reported, to suggest adding {@code fixed} if that would solve
    * the error.
    *
    * @param context the source code context
    *
-   * @return true if `to` may be replaced with `tr` or if `to` or `tr` contain
+   * @return true if {@code to} may be replaced with {@code tr} or if {@code to} or {@code tr} contain
    * an error.
    */
   boolean isLegalCovariantThisType(AbstractFeature original,
@@ -1512,17 +1512,17 @@ A post-condition of a feature that does not redefine an inherited feature must s
        *       else
        *         h
        *
-       * here, the result type of inherited `p.maybe` is `option p.this.type`,
-       * which gets turned into `option h.this.type` when inherited. However,
-       * since `h.maybe` is fixed, we can use the actual type in the outer
-       * feature `h`, i.e., `option h`, which is equal to the result type of the
-       * redefinition `h.maybe`.
+       * here, the result type of inherited {@code p.maybe} is {@code option p.this.type},
+       * which gets turned into {@code option h.this.type} when inherited. However,
+       * since {@code h.maybe} is fixed, we can use the actual type in the outer
+       * feature {@code h}, i.e., {@code option h}, which is equal to the result type of the
+       * redefinition {@code h.maybe}.
        */
       fixed &&
       redefinition.outer().thisType(true).actualType(to, Context.NONE).compareTo(tr) == 0       ||
 
-      /* original and redefinition are inner features of type features, `to` is
-       * `this.type` and `tr` is the underlying non-type feature's selfType.
+      /* original and redefinition are inner features of type features, {@code to} is
+       * {@code this.type} and {@code tr} is the underlying non-type feature's selfType.
        *
        * E.g.,
        *
@@ -1532,7 +1532,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
        *
        *   equatable.type.equality(a, b equatable.this.type) bool is abstract
        *
-       * so we allow `equatable.this.type` to become `i32`.
+       * so we allow {@code equatable.this.type} to become {@code i32}.
        */
       fixed                                &&
       original    .outer().isCotype() &&
@@ -1712,7 +1712,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
 
   /**
-   * check that all `.this` are legal,
+   * check that all {@code .this} are legal,
    * i.e. that f or any outer of f are
    * what is supposed to be qualified
    *
@@ -1780,7 +1780,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
 
   /**
-   * Check that `f` does not have more restrictive
+   * Check that {@code f} does not have more restrictive
    * visibility than every feature it redefines.
    */
   private void checkRedefVisibility(Feature f)
@@ -1833,7 +1833,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
 
   /**
-   * Check that `f` defines type if type visibility is explicitly specified.
+   * Check that {@code f} defines type if type visibility is explicitly specified.
    *
    * @param f
    */
@@ -1851,7 +1851,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
 
   /**
-   * Check that the types of the arguments are at least as visible as `f`.
+   * Check that the types of the arguments are at least as visible as {@code f}.
    *
    * @param f
    */
@@ -1872,7 +1872,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
 
 
   /**
-   * Check that result type is at least as visible as feature `f`.
+   * Check that result type is at least as visible as feature {@code f}.
    *
    * @param f
    */
@@ -1927,7 +1927,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   }
 
   /**
-   * Check outer's declared or inherited features with effective name `fn` for duplicates and flag errors if
+   * Check outer's declared or inherited features with effective name {@code fn} for duplicates and flag errors if
    * incompatible duplicates are encountered.
    *
    * @param outer a feature
@@ -1971,7 +1971,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   /**
    * Check that code in contract does not access inner features apart from
    * arguments, result field, outer refs or case fields (in case condition uses
-   * a `match`). Produce AstErrors if needed.
+   * a {@code match}). Produce AstErrors if needed.
    *
    * @parm f the feature whose contract should be checked.
    */

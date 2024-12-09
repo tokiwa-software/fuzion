@@ -258,7 +258,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * The inherits calls of this feature.
-   * Almost never empty since almost every feature inherits from `Any`.
+   * Almost never empty since almost every feature inherits from {@code Any}.
    */
   public abstract List<AbstractCall> inherits();
 
@@ -352,14 +352,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * If this feature has a pre condition or redefines a feature from which it
    * inherits a pre condition, this gives the feature that combines a call to
    * preFeature() and a call to this feature.  This is used at call sites as a
-   * replacement to a call to this to implement precondition checking.
+   * replacement to a call to this to implement precondition checking.<p>
    *
    * Note that dynamic binding is done by the preAndCallFeature, i.e., on a call
-   * `a.f` where `a` is of a ref type `A` containing a reference to an instance
-   * of `B`, calling the preAndCallFeature of `a.f` results in checking the
-   * precondition of `A.f` and then calling `B.f`, i.e., the precondition that
+   * {@code a.f} where {@code a} is of a ref type {@code A} containing a reference to an instance
+   * of {@code B}, calling the preAndCallFeature of {@code a.f} results in checking the
+   * precondition of {@code A.f} and then calling {@code B.f}, i.e., the precondition that
    * is checked is that of the static type, not the (possibly relaxed)
-   * precondition of the dynamic actual type.
+   * precondition of the dynamic actual type.<p>
    *
    * The preBoolFeature has the same outer feature as the original feature and
    * the same arguments.
@@ -373,7 +373,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * If this feature has a post condition or redefines a feature from which it
    * inherits a post condition, this gives the feature that implements the post
    * condition check.  The postFeature has tha same outer feature as the
-   * original feature and the same arguments except for an additional `result`
+   * original feature and the same arguments except for an additional {@code result}
    * argument in case the feature has a non-unit result.
    */
   public abstract AbstractFeature postFeature();
@@ -1594,7 +1594,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this feature marked with the `fixed` modifier. If so, this feature is
+   * Is this feature marked with the {@code fixed} modifier. If so, this feature is
    * not inherited, i.e., we know that at runtime, the outer feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()
    * could might be a heir.
@@ -1728,7 +1728,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * During type resolution, add a type parameter created for a free type like
-   * `T` in `f(x T) is ...`.
+   * {@code T} in {@code f(x T) is ...}.
    *
    * @param res the resolution instance.
    *
@@ -1866,8 +1866,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * The Context associated with this feature without any context from
-   * statements like `if T : x then`.  This provides a way to get this as an
-   * outer feature via `result.outerFeature()'.
+   * statements like {@code if T : x then}.  This provides a way to get this as an
+   * outer feature via {@code result.outerFeature()}.
    *
    * @return the context for this feature.
    */
