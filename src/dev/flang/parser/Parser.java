@@ -1388,12 +1388,12 @@ inheritanceCall    : call0
     if (!(result instanceof AbstractCall))
       {
         result = expr();
-      if (!(result instanceof AbstractCall))
-        {
-          var pos = result != null ? result.pos().bytePos() : bytePos();
-          syntaxError(pos, "Expected inheritance call.", "Found other expression.");
-          return Call.ERROR;
-        }
+        if (!(result instanceof AbstractCall))
+          {
+            var pos = result != null ? result.pos().bytePos() : bytePos();
+            syntaxError(pos, "Expected inheritance call.", "Found other expression.");
+            return Call.ERROR;
+          }
       }
     return (AbstractCall) result;
   }
