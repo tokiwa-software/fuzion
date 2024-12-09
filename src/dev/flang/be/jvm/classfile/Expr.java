@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 import dev.flang.be.jvm.classfile.ClassFile.StackMapTable;
@@ -2057,6 +2058,20 @@ public abstract class Expr extends ByteCode
                               ClassType exc_type)
   {
     return new TryCatch(try_end, try_handler, exc_type);
+  }
+
+
+  /**
+   * For debugging only.
+   *
+   * Add a comment to byte code containing the stack trace.
+   *
+   * Useful to find out how an expression was inserted into the byte code.
+   */
+  public static Expr trace()
+  {
+    var st = Arrays.toString(Thread.currentThread().getStackTrace()).replace(',', '\n');
+    return Expr.commentAlways(st);
   }
 
 
