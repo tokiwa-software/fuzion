@@ -889,7 +889,7 @@ public class DFA extends ANY
   /**
    * Cache for results of newInstance.
    *
-   * site -> (long) clazz << 32 | call id -> Instance
+   * {@code site -> (long) clazz << 32 | call id -> Instance}
    */
   List<LongMap<Instance>> _instancesForSite = new List<>();
 

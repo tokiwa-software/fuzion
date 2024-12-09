@@ -2614,12 +2614,14 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
   /**
    * Class to handle a block of indented code.  The code should follow this pattern:
    *
-   *    var in = new Indentation();
+   * <pre>{@code
+   *    var in = new Indentation();
    *    while (!curTokenWouldTerminateListInSingleLine() && in.ok())
    *      {
    *        ... parse element ...
    *      }
    *    in.end();
+   * }</pre>
    */
   class Indentation
   {

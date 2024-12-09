@@ -452,10 +452,10 @@ public class JavaInterface extends FUIRContext
 
 
   /**
-   * Convert an instance of 'fuzion.sys.array<fuzion.sys.Pointer>' to a
-   * Java Object[] with the corresponding Java values.
+   * Convert an instance of {@code fuzion.sys.array<fuzion.sys.Pointer>} to a
+   * Java {@code Object[]} with the corresponding Java values.
    *
-   * @param v a value of type ArrayData as it is stored in 'fuzion.sys.array.data'.
+   * @param v a value of type ArrayData as it is stored in {@code fuzion.sys.array.data}.
    *
    * @return corresponding Java array.
    */

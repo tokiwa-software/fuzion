@@ -333,7 +333,7 @@ public abstract class IR extends ANY
    *
    * @param s a site
    *
-   * @return the size of code block c, i.e., withinCode(s+0..s+result-1) <==> true.
+   * @return the size of code block c, i.e. {@code withinCode(s+0..s+result-1) <==> true}.
    */
   public int codeSize(int s)
   {
