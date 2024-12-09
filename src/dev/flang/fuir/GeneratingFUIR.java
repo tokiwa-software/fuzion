@@ -1290,12 +1290,9 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     var result = c._code;
-    if (result == NO_SITE)
+    if (result == NO_SITE && !_lookupDone)
       {
-        if (!_lookupDone)
-          {
-            c.doesNeedCode();
-          }
+        c.doesNeedCode();
         result = addCode(cl, c);
         c._code = result;
       }
