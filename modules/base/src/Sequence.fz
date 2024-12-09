@@ -83,7 +83,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   # For lists that are not array backed, this might require time in O(count).
   #
-  public count_by(f T->bool) =>
+  public count(f T->bool) =>
     (filter f).count
 
 
