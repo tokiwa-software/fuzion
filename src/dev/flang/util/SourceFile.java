@@ -865,7 +865,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    * @param end the byte position of first code point after the desired portion
    * of the file
    *
-   * @pram s a String
+   * @param s a String
    *
    * @return -1, 0, +1 if the string in the file is smaller, equal or larger
    * than s comparing each single code point until the end. If all are equal,

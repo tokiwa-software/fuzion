@@ -110,7 +110,7 @@ public class ParsedName extends ANY implements HasSourcePosition
   /**
    * toString creates a string representation for debug output.
    *
-   * @retur just the name.
+   * @return just the name.
    */
   public String toString()
   {

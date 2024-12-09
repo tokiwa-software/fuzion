@@ -1973,7 +1973,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    * arguments, result field, outer refs or case fields (in case condition uses
    * a {@code match}). Produce AstErrors if needed.
    *
-   * @parm f the feature whose contract should be checked.
+   * @param f the feature whose contract should be checked.
    */
   private void checkContractAccesses(AbstractFeature f)
   { //NYI: CLEANUP:  remove, has no effect.
