@@ -739,25 +739,25 @@ public class Intrinsics extends ANY
           return args ->
             {
               int a = 1;
-              var clNameI =                      (Instance) args.get(a++);
-              var nameI   = constructor ? null : (Instance) args.get(a++);
-              var sigI    =                      (Instance) args.get(a++);
+              var clNameI =                       (JavaRef) args.get(a++);
+              var nameI   = constructor ? null :  (JavaRef) args.get(a++);
+              var sigI    =                       (JavaRef) args.get(a++);
               var thizR   = !virtual    ? null :  (JavaRef) args.get(a++);
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
               var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
 
-              String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
-              String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
-              String sig    =                          (String) JavaInterface.instanceToJavaObject(sigI   );
-              Object thiz   = thizR   == null ? null :          JavaInterface.javaRefToJavaObject (thizR  );
+              String clName =                          (String) clNameI._javaRef;
+              String name   = nameI   == null ? null : (String) nameI._javaRef;
+              String sig    =                          (String) sigI._javaRef;
+              Object thiz   = thizR   == null ? null :          thizR._javaRef;
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
     putUnsafe("fuzion.java.cast0", (executor, innerClazz) -> args ->
         {
-          var arg = JavaInterface.javaRefToJavaObject((JavaRef) args.get(1));
+          var arg = ((JavaRef) args.get(1))._javaRef;
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(arg, null, resultClazz);
         });

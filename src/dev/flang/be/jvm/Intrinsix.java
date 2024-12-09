@@ -421,30 +421,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
   }
 
 
-  /**
-   * Helper to convert String arguments passed to call_* into Java Strings.
-   *
-   * NYI: CLEANUP: This might profit from some cleanup: These arguments are
-   * currently always instances of fuzion.java.Java_Object created by
-   * string_to_java_object, and this fact is used here to access the
-   * javaRef-field using static binding.
-   *
-   * It would be easier if string_to_java_object would just return the
-   * java.lang.String as a fuzion.sys.Pointer, then we could avoid the first
-   * checkcast and the getfield here.
-   */
-  static Expr call_jlStringArg(JVM jvm, int cc, List<Expr> args, int argi)
-  {
-    var at = jvm._fuir.clazzArgClazz(cc, argi);
-    var jt = jvm._types.javaType(at);
-    var sref = jvm._fuir.lookupJavaRef(at);
-    return args.get(argi)
-      .andThen(Expr.checkcast(jt)) /* ugly: String is passed as fuzion.Java_Object, not fuzion.Java_String or Java.java.lang._jString */
-      .andThen(jvm.getfield(sref)) // class_name
-      .andThen(Expr.checkcast(JAVA_LANG_STRING));
-  }
-
-
   /*
    * creates byte code to convert to
    * object on top of the stack to a fuzion object.
@@ -616,9 +592,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 4), 0);
-          var exec = call_jlStringArg(jvm, cc, args, 0)
-            .andThen(call_jlStringArg(jvm, cc, args, 1))
-            .andThen(call_jlStringArg(jvm, cc, args, 2))
+          var exec = args.get(0).andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(1)).andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(2)).andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(3))
             .andThen(args.get(4))
             .andThen(jvm.getfield(data)) // args
@@ -635,9 +611,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 3), 0);
-          var exec = call_jlStringArg(jvm, cc, args, 0)
-            .andThen(call_jlStringArg(jvm, cc, args, 1))
-            .andThen(call_jlStringArg(jvm, cc, args, 2))
+          var exec = args.get(0).andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(1)).andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(2)).andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(3))
             .andThen(jvm.getfield(data)) // args
             .andThen(Expr.checkcast(JAVA_LANG_OBJECT.array()))
@@ -653,8 +629,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
           var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
-          var exec = call_jlStringArg(jvm, cc, args, 0)
-            .andThen(call_jlStringArg(jvm, cc, args, 1))
+          var exec = args.get(0).andThen(Expr.checkcast(JAVA_LANG_STRING))
+            .andThen(args.get(1)).andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(2))
             .andThen(jvm.getfield(data)) // args
             .andThen(Expr.checkcast(JAVA_LANG_OBJECT.array()))

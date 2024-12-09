@@ -71,7 +71,7 @@ public class Value extends Val
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
-        else if (a._id >= 0 && b._id >= 0) { return Integer.compare(a._id, b._id); }
+        else if (a._id >= 0 && b._id >= 0 ) { return Integer.compare(a._id, b._id); }
         else
           {
             throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass()+ System.lineSeparator() + a + System.lineSeparator() + b);
@@ -193,6 +193,26 @@ public class Value extends Val
    */
   static Value UNKNOWN_JAVA_REF = new Value(-1)
     {
+
+      /**
+       * Add v to the set of values of given field within this instance.
+       */
+      @Override
+      public void setField(DFA dfa, int field, Value v)
+      {
+        throw new Error("setField");
+      }
+
+      /**
+       * Get set of values of given field within this value.  This works for unit
+       * type results even if this is not an instance (but a unit type itself).
+       */
+      @Override
+      public Val readField(DFA dfa, int field, int site, Context why)
+      {
+        throw new Error("readField");
+      }
+
       public String toString()
       {
         return "UNKNOWN_JAVA_REF";
