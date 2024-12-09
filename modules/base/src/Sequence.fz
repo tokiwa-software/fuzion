@@ -81,8 +81,6 @@ public Sequence(public T type) ref : property.equatable is
   # given predicate. Note that this typically
   # runs forever if executed on an endless list.
   #
-  # For lists that are not array backed, this might require time in O(count).
-  #
   public count(f T->bool) =>
     (filter f).count
 
