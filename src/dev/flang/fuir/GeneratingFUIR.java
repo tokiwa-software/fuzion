@@ -2199,14 +2199,6 @@ public class GeneratingFUIR extends FUIR
   /*--------------------------  accessing code  -------------------------*/
 
 
-  /*
-  @Override
-  public boolean withinCode(int s)
-  {
-    return (s != NO_SITE) && false;
-  }
-  */
-
   /**
    * Get the clazz id at the given site
    *
