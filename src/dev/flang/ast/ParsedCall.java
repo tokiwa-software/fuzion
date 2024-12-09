@@ -324,14 +324,18 @@ public class ParsedCall extends Call
    * Predicate that is true if this call is the result of pushArgToTemp in a
    * chain of boolean operators.  This is used for longer chains such as
    *
-   *   a < b <= c < d
+   * <pre>
+   *   {@code a < b <= c < d }
+   * </pre>
    *
    * which is first converted into
    *
-   *   (a < {t1 := b; t1} && t1 <= c) < d
+   * <pre>
+   *   {@code (a < {t1 := b; t1} && t1 <= c) < d}
+   * </pre>
    *
-   * where this returns 'true' for the call 't1 <= c', that in the next steps
-   * needs to get 'c' stored into a temporary variable as well.
+   * where this returns {@code true} for the call {@code t1 <= c}, that in the next steps
+   * needs to get {@code c} stored into a temporary variable as well.
    */
   boolean isChainedBoolRHS()
   {
@@ -342,7 +346,7 @@ public class ParsedCall extends Call
   /**
    * Is this a call to an operator that may be
    * considered valid in a chained boolean?
-   * I.e.: <,>,≤,≥,=,<=,>=,!=
+   * I.e.: {@literal <,>,≤,≥,=,<=,>=,!=}
    */
   private boolean isValidOperatorInChainedBoolean()
   {

@@ -89,8 +89,8 @@ class Layout extends FUIRContext
 
 
   /**
-   * The size of the clazz, -1 if layout has not started yet, <-1 if layout is
-   * in progress, Integer.MIN_VALUE if layout is done but clazz cannot be
+   * The size of the clazz, -1 if layout has not started yet, &lt; -1 if layout is
+   * in progress, {@code Integer.MIN_VALUE} if layout is done but clazz cannot be
    * instantiated.
    */
   private final int _size;

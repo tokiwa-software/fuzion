@@ -889,7 +889,7 @@ public class DFA extends ANY
   /**
    * Cache for results of newInstance.
    *
-   * site -> (long) clazz << 32 | call id -> Instance
+   * {@code site -> (long) clazz << 32 | call id -> Instance}
    */
   List<LongMap<Instance>> _instancesForSite = new List<>();
 
@@ -1261,7 +1261,7 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
 
     newCall(cl,
             NO_SITE,

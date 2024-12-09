@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import dev.flang.ir.IR;
 import dev.flang.util.SourcePosition;
@@ -78,7 +79,7 @@ public abstract class FUIR extends IR
    * The clazz ids form a contiguous range of integers. This method gives the
    * smallest clazz id.  Together with `lastClazz`, this permits iteration.
    *
-   * @return a valid clazz id such that for all clazz ids id: result <= id.
+   * @return a valid clazz id such that for all clazz ids id: result {@literal <=} id.
    */
   public abstract int firstClazz();
 
@@ -97,7 +98,7 @@ public abstract class FUIR extends IR
    *
    * @return a valid clazz id
    */
-  public abstract int mainClazzId();
+  public abstract int mainClazz();
 
 
   /**
@@ -179,15 +180,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get a String representation of a given clazz including a list of arguments
-   * and the result type. For debugging only, names might be ambiguous.
-   *
-   * @param cl a clazz id.
-   */
-  public abstract String clazzAsStringWithArgsAndResult(int cl);
-
-
-  /**
    * Get the outer clazz of the given clazz.
    *
    * @param cl a clazz id
@@ -195,6 +187,41 @@ public abstract class FUIR extends IR
    * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe.
    */
   public abstract int clazzOuterClazz(int cl);
+
+
+   /**
+   * Get a String representation of a given clazz including a list of arguments
+   * and the result type. For debugging only, names might be ambiguous.
+   *
+   * @param cl a clazz id.
+   */
+  public String clazzAsStringWithArgsAndResult(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= firstClazz(),
+       cl <= lastClazz());
+
+    var sb = new StringBuilder();
+    sb.append(clazzAsString(cl))
+      .append("(");
+    var o = clazzOuterClazz(cl);
+    if (o != -1)
+      {
+        sb.append("outer ")
+          .append(clazzAsString(o));
+      }
+    for (var i = 0; i < clazzArgCount(cl); i++)
+      {
+        var ai = clazzArg(cl,i);
+        sb.append(o != -1 || i > 0 ? ", " : "")
+          .append(clazzBaseName(ai))
+          .append(" ")
+          .append(clazzAsString(clazzResultClazz(ai)));
+      }
+    sb.append(") ")
+      .append(clazzAsString(clazzResultClazz(cl)));
+    return sb.toString();
+  }
 
 
   /*------------------------  accessing fields  ------------------------*/
@@ -1206,7 +1233,7 @@ public abstract class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazzId() ? " *** main *** " : ""));
+    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazz() ? " *** main *** " : ""));
     dumpCode(cl, clazzCode(cl));
   }
 
@@ -1228,8 +1255,8 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a given site 's', go 'delta' expressions further or back (in case
-   * 'delta < 0').
+   * For a given site {@code s}, go {@code delta} expressions further or back (in case
+   * {@code delta < 0}).
    *
    * @param s a site
    *
@@ -1256,9 +1283,9 @@ public abstract class FUIR extends IR
 
   /**
    * Helper routine for codeIndex to recursively find the index of expression
-   * 'n' before expression at 'ix' where 'n == -delta' and 'delta < 0'.
+   * {@code n} before expression at {@code ix} where {@code n == -delta} and {@code delta < 0}.
    *
-   * NYI: Performance: This requires time 'O(codeSize(c))', so using this
+   * NYI: Performance: This requires time {@code O(codeSize(c))}, so using this
    * quickly results in quadratic performance!
    *
    * @param si a site, our current position we are checking
@@ -1267,8 +1294,8 @@ public abstract class FUIR extends IR
    *
    * @param delta the negative number of instructions to go back.
    *
-   * @return the site of the expression 'delta' expressions before 's', or a
-   * negative value '-m' if that instruction can be found 'm' recursive calls up.
+   * @return the site of the expression {@code delta} expressions before {@code s}, or a
+   * negative value {@code -m} if that instruction can be found {@code m} recursive calls up.
    */
   private int codeIndex2(int si, int s, int delta)
   {
@@ -1419,7 +1446,85 @@ public abstract class FUIR extends IR
    *           May be more than necessary for variable length constants
    *           like strings, arrays, etc.
    */
-  public abstract byte[] deserializeConst(int cl, ByteBuffer bb);
+  private ByteBuffer deserializeClazz(int cl, ByteBuffer bb)
+  {
+    return switch (getSpecialClazz(cl))
+      {
+      case c_String :
+        var len = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
+        yield bb.slice(bb.position(), 4+len);
+      case c_bool :
+        yield bb.slice(bb.position(), 1);
+      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
+        var bytes = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
+        yield bb.slice(bb.position(), 4+bytes);
+      default:
+        yield this.clazzIsArray(cl)
+          ? deserializeArray(this.inlineArrayElementClazz(cl), bb)
+          : deserializeValueConst(cl, bb);
+      };
+  }
+
+
+  /**
+   * bytes used when serializing call that results in this type.
+   */
+  private ByteBuffer deserializeValueConst(int cl, ByteBuffer bb)
+  {
+    var args = clazzArgCount(cl);
+    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
+    var argBytes = 0;
+    for (int i = 0; i < args; i++)
+      {
+        var rt = clazzArgClazz(cl, i);
+        argBytes += deserializeConst(rt, bbb).length;
+      }
+    return bb.slice(bb.position(), argBytes);
+  }
+
+
+
+  /**
+   * Extract bytes from `bb` that should be used when deserializing for `cl`.
+   *
+   * @param cl the constants clazz
+   *
+   * @param bb the bytes to be used when deserializing this constant.
+   *           May be more than necessary for variable length constants
+   *           like strings, arrays, etc.
+   */
+  public byte[] deserializeConst(int cl, ByteBuffer bb)
+  {
+    var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
+    bb.position(bb.position()+elBytes.remaining());
+    var b = new byte[elBytes.remaining()];
+    elBytes.get(b);
+    return b;
+  }
+
+
+  /**
+   * Extract bytes from `bb` that should be used when deserializing this inline array.
+   *
+   * @param elementClazz the elements clazz
+   *
+   * @elementCount the count of elements in this array.
+   *
+   * @param bb the bytes to be used when deserializing this constant.
+   *           May be more than necessary for variable length constants
+   *           like strings, arrays, etc.
+   */
+  private ByteBuffer deserializeArray(int elementClazz, ByteBuffer bb)
+  {
+    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
+    var elCount = bbb.getInt();
+    var elBytes = 0;
+    for (int i = 0; i < elCount; i++)
+      {
+        elBytes += deserializeConst(elementClazz, bbb).length;
+      }
+    return bb.slice(bb.position(), 4+elBytes);
+  }
 
 
   /*----------------------  accessing source code  ----------------------*/

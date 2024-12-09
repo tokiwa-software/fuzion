@@ -140,9 +140,9 @@ class LibraryOut extends ANY
     if (v != null)
       {
         _data = new FixUps();
-        _data.write(FuzionConstants.MIR_FILE_MAGIC);
-        _data.writeName(name);
-        _data.write(v);
+        _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
+        _data.writeString(name);
+        _data.writeBytes(v);
         _data.writeInt(rm.size());
         for (var m : rm)
           {
@@ -199,7 +199,8 @@ class LibraryOut extends ANY
    *
    * Data format for module references:
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | ModuleRef                                                                       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -208,11 +209,12 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | u128          | module hash                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    */
   void moduleRef(LibraryModule m)
   {
-    _data.writeName(m.name());
-    _data.write(m.hash());
+    _data.writeString(m.name());
+    _data.writeBytes(m.hash());
   }
 
 
@@ -240,7 +242,8 @@ class LibraryOut extends ANY
    *
    * Data format for declFeatures:
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | DeclFeatures                                                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -249,6 +252,7 @@ class LibraryOut extends ANY
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner Features                                |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    */
   void declFeatures(AbstractFeature outer)
   {
@@ -280,7 +284,8 @@ class LibraryOut extends ANY
    *
    * Data format for inner features:
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | InnerFeatures                                                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -289,7 +294,7 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Features      | inner Features                                |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *
+   * </pre>
    * The count n is not stored explicitly, the list of inner Features ends after
    * size bytes.
    */
@@ -359,14 +364,15 @@ class LibraryOut extends ANY
   /**
    * Collect the binary data for a list of features.
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | Features                                                                        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | n      | Feature       | (inner) Features                              |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *
+   * </pre>
    */
   void features(List<AbstractFeature> fs)
   {
@@ -384,8 +390,8 @@ class LibraryOut extends ANY
    * Collect the binary data for given feature.
    *
    * Data format for a feature:
-   *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>{@literal
+   *   +---------------------------------------------------------------------------------+
    *   | Feature                                                                         |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -441,6 +447,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner features of this feature                |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * }</pre>
    */
   void feature(Feature f)
   {
@@ -490,7 +497,7 @@ class LibraryOut extends ANY
       {
         bn = "";
       }
-    _data.writeName(bn);
+    _data.writeString(bn);
     var argCount = n.argCount() + f.freeTypesCount();
     _data.writeInt (argCount);      // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
@@ -543,7 +550,8 @@ class LibraryOut extends ANY
    *
    * Data format for a type:
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | Type                                                                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -566,6 +574,7 @@ class LibraryOut extends ANY
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Type          | outer type                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    */
   void type(AbstractType t)
   {
@@ -618,7 +627,8 @@ class LibraryOut extends ANY
    *
    * Data format for a Code:
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | Code                                                                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -627,6 +637,7 @@ class LibraryOut extends ANY
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Expressions   | the actual code                               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    *
    */
   void code(Expr code)
@@ -650,13 +661,15 @@ class LibraryOut extends ANY
    *
    * Data format for Expressions:
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | Expressions                                                                     |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | n      | Expression    | the single expressions                        |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    *
    * @param e the expression to write
    */
@@ -670,7 +683,8 @@ class LibraryOut extends ANY
    *
    * Data format for Expression:
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | Expression                                                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -690,6 +704,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    *
    * @param e the expression to write
    *
@@ -769,7 +784,7 @@ class LibraryOut extends ANY
         type(c.type());
         var d = c.data();
         _data.writeInt(d.length);
-        _data.write(d);
+        _data.writeBytes(d);
       }
     else if (e instanceof AbstractCurrent ac)
       {
@@ -1046,7 +1061,8 @@ class LibraryOut extends ANY
   /**
    * Collect the binary data for source files used in this module
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | SourceFiles                                                                     |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -1055,8 +1071,10 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | n      | SourceFile    | source file                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    *
-   *   +---------------------------------------------------------------------------------+
+   * <pre>
+   *   +---------------------------------------------------------------------------------+
    *   | SourceFile                                                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
@@ -1067,6 +1085,7 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | s      | byte          | source file data                              |
    *   +--------+--------+---------------+-----------------------------------------------+
+   * </pre>
    *
    */
   void sourceFiles()
@@ -1076,10 +1095,10 @@ class LibraryOut extends ANY
       {
         var sf = e.getValue();
         var n = fileName(sf);
-        _data.writeName(n);
+        _data.writeString(n);
         _data.writeInt(sf.byteLength());
         _data.addSourceFilePosition(n);
-        _data.write(sf.bytes());
+        _data.writeBytes(sf.bytes());
       }
   }
 

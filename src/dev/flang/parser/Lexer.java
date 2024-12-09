@@ -616,46 +616,46 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Minimum indentation required for the current token: current() must have
-   * indentation > _minIndent, while currentAtMinIndent() must have indentation
-   * >= _minIndent.
+   * Minimum indentation required for the current token: {@code current()} must have
+   * {@code indentation > _minIndent}, while {@code currentAtMinIndent()} must have {@code indentation
+   * >= _minIndent}.
    */
   private int _minIndent = -1;
 
 
   /**
-   * Token at this pos will be returned by current() even if its indentation is
-   * at <= _minIndent. If set to the first token of a expression that sets
-   * _minIndent, this ensures that we can still parse the first token of this
+   * Token at this pos will be returned by {@code current()} even if its indentation is
+   * at {@code <= _}minIndent. If set to the first token of a expression that sets
+   * {@code _minIndent}, this ensures that we can still parse the first token of this
    * expression.
    */
   private int _minIndentStartPos = -1;
 
 
   /**
-   * Line restriction for current()/currentAtMinIndent(): Symbols not in this
+   * Line restriction for {@code current()}/{@code currentAtMinIndent()}: Symbols not in this
    * line will be replaced by t_lineLimit.
    */
   private int _sameLine = -1;
 
 
   /**
-   * White space and semicolon restriction for current()/currentAtMinIndent(): Symbols after
+   * White space and semicolon restriction for {@code current()}/{@code currentAtMinIndent()}: Symbols after
    * this position that are preceded by white space or semicolon will be replaced by
-   * t_spaceLimit.
+   * {@code t_spaceLimit}.
    */
   private int _endAtSpace = Integer.MAX_VALUE;
 
 
   /**
-   * ':' operator restriction for current()/currentAtMinIndent(): if set,
-   * operator ":" will be replaced by t_colonLimit.
+   * {@code :} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
+   * operator ":" will be replaced by {@code t_colonLimit}.
    */
   private boolean _endAtColon = false;
 
 
   /**
-   * '|' operator restriction for current()/currentAtMinIndent(): if set,
+   * {@code |} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
    * operator "|" will be replaced by t_barLimit.
    */
   private boolean _endAtBar = false;
@@ -664,8 +664,8 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Has the raw token before current() been skipped because ignore(t) resulted
-   * in true?
+   * Has the raw token before {@code current()} been skipped because {@code ignore(t)} resulted
+   * in {@code true}?
    */
   private boolean _ignoredTokenBefore = false;
 
@@ -2665,8 +2665,8 @@ PIPE        : "|"
    * remaining string.
    *
    * This is useful, e.g., to parse nested generics lists such as
-   * Stack<List<i32>>, where the last token is seen by the lexer as a single
-   * operator >>, while the parser prefers to see two consecutive operators >.
+   * {@code Stack<List<i32>>}, where the last token is seen by the lexer as a single
+   * operator {@code >>}, while the parser prefers to see two consecutive operators {@code >}.
    */
   void splitOperator(String op)
   {

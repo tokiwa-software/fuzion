@@ -342,7 +342,7 @@ public class Intrinsics extends ANY
           var fuir = executor.fuir();
           if (i == 0)
             {
-              return  Interpreter.value(fuir.clazzAsString(fuir.mainClazzId()));
+              return  Interpreter.value(fuir.clazzAsString(fuir.mainClazz()));
             }
           else
             {

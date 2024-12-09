@@ -20,14 +20,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FUIR
+ * Source of class GeneratingFUIR
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.fuir;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import java.nio.charset.StandardCharsets;
 
@@ -585,7 +582,7 @@ public class GeneratingFUIR extends FUIR
    * The clazz ids form a contiguous range of integers. This method gives the
    * smallest clazz id.  Together with `lastClazz`, this permits iteration.
    *
-   * @return a valid clazz id such that for all clazz ids id: result <= id.
+   * @return a valid clazz id such that for all clazz ids id: result {@literal <=} id.
    */
   @Override
   public int firstClazz()
@@ -613,7 +610,7 @@ public class GeneratingFUIR extends FUIR
    * @return a valid clazz id
    */
   @Override
-  public int mainClazzId()
+  public int mainClazz()
   {
     return _mainClazz;
   }
@@ -741,42 +738,6 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     return c.asString(true);
-  }
-
-
-  /**
-   * Get a String representation of a given clazz including a list of arguments
-   * and the result type. For debugging only, names might be ambiguous.
-   *
-   * @param cl a clazz id.
-   */
-  @Override
-  public String clazzAsStringWithArgsAndResult(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var sb = new StringBuilder();
-    sb.append(clazzAsString(cl))
-      .append("(");
-    var o = clazzOuterClazz(cl);
-    if (o != -1)
-      {
-        sb.append("outer ")
-          .append(clazzAsString(o));
-      }
-    for (var i = 0; i < clazzArgCount(cl); i++)
-      {
-        var ai = clazzArg(cl,i);
-        sb.append(o != -1 || i > 0 ? ", " : "")
-          .append(clazzBaseName(ai))
-          .append(" ")
-          .append(clazzAsString(clazzResultClazz(ai)));
-      }
-    sb.append(") ")
-      .append(clazzAsString(clazzResultClazz(cl)));
-    return sb.toString();
   }
 
 
@@ -1290,12 +1251,9 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     var result = c._code;
-    if (result == NO_SITE)
+    if (result == NO_SITE && !_lookupDone)
       {
-        if (!_lookupDone)
-          {
-            c.doesNeedCode();
-          }
+        c.doesNeedCode();
         result = addCode(cl, c);
         c._code = result;
       }
@@ -2165,7 +2123,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @param gix indec of the generic parameter
+   * @param gix index of the generic parameter
    *
    * @return id of cl's actual generic parameter #gix
    */
@@ -2198,14 +2156,6 @@ public class GeneratingFUIR extends FUIR
 
   /*--------------------------  accessing code  -------------------------*/
 
-
-  /*
-  @Override
-  public boolean withinCode(int s)
-  {
-    return (s != NO_SITE) && false;
-  }
-  */
 
   /**
    * Get the clazz id at the given site
@@ -3296,96 +3246,6 @@ public class GeneratingFUIR extends FUIR
 
 
 
-
-  /**
-   * Extract bytes from `bb` that should be used when deserializing for `cl`.
-   *
-   * @param cl the constants clazz
-   *
-   * @param bb the bytes to be used when deserializing this constant.
-   *           May be more than necessary for variable length constants
-   *           like strings, arrays, etc.
-   */
-  private ByteBuffer deserializeClazz(int cl, ByteBuffer bb)
-  {
-    return switch (getSpecialClazz(cl))
-      {
-      case c_String :
-        var len = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
-        yield bb.slice(bb.position(), 4+len);
-      case c_bool :
-        yield bb.slice(bb.position(), 1);
-      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
-        var bytes = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
-        yield bb.slice(bb.position(), 4+bytes);
-      default:
-        yield this.clazzIsArray(cl)
-          ? deserializeArray(this.inlineArrayElementClazz(cl), bb)
-          : deserializeValueConst(cl, bb);
-      };
-  }
-
-
-  /**
-   * bytes used when serializing call that results in this type.
-   */
-  private ByteBuffer deserializeValueConst(int cl, ByteBuffer bb)
-  {
-    var args = clazzArgCount(cl);
-    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
-    var argBytes = 0;
-    for (int i = 0; i < args; i++)
-      {
-        var rt = clazzArgClazz(cl, i);
-        argBytes += deserializeConst(rt, bbb).length;
-      }
-    return bb.slice(bb.position(), argBytes);
-  }
-
-
-  /**
-   * Extract bytes from `bb` that should be used when deserializing for `cl`.
-   *
-   * @param cl the constants clazz
-   *
-   * @param bb the bytes to be used when deserializing this constant.
-   *           May be more than necessary for variable length constants
-   *           like strings, arrays, etc.
-   */
-  @Override
-  public byte[] deserializeConst(int cl, ByteBuffer bb)
-  {
-    var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
-    bb.position(bb.position()+elBytes.remaining());
-    var b = new byte[elBytes.remaining()];
-    elBytes.get(b);
-    return b;
-  }
-
-
-
-  /**
-   * Extract bytes from `bb` that should be used when deserializing this inline array.
-   *
-   * @param elementClazz the elements clazz
-   *
-   * @elementCount the count of elements in this array.
-   *
-   * @param bb the bytes to be used when deserializing this constant.
-   *           May be more than necessary for variable length constants
-   *           like strings, arrays, etc.
-   */
-  private ByteBuffer deserializeArray(int elementClazz, ByteBuffer bb)
-  {
-    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
-    var elCount = bbb.getInt();
-    var elBytes = 0;
-    for (int i = 0; i < elCount; i++)
-      {
-        elBytes += deserializeConst(elementClazz, bbb).length;
-      }
-    return bb.slice(bb.position(), 4+elBytes);
-  }
 
 
   /*----------------------  accessing source code  ----------------------*/

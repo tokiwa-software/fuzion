@@ -825,7 +825,7 @@ should be avoided as much as possible.
    */
   String mainName()
   {
-    return _fuir.clazzBaseName(_fuir.mainClazzId());
+    return _fuir.clazzBaseName(_fuir.mainClazz());
   }
 
 

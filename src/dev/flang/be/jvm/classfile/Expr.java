@@ -2144,7 +2144,7 @@ public abstract class Expr extends ByteCode
 
   /**
    * Create a sequence of this Expr, followed by a statement and a value from a
-   * Pair<> of value and statement.
+   * {@code Pair<>} of value and statement.
    *
    * @param p a pair of value and statement, both encoded as expr. value may be
    * null to indicate the statements do not return.
