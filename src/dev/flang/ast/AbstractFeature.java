@@ -806,25 +806,24 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param that the original feature that is used to lookup types.
    *
+   * @param target the target of this typeCall, null for recursive calls for
+   * outer typeCalls of to this method.
+   *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
+  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
   {
     var o = outer();
-    var oc = o == null || o.isUniverse()
-      ? new Universe()
-      : outer().typeCall(p, new List<>(o.selfType(), o.generics().asActuals()), res, that);
+    var oc = o == null || o.isUniverse()                            ? new Universe()
+      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.typeCall(p, res, that)
+      : o.typeCall(p, new List<>(o.selfType(),
+                                 o.generics().asActuals().map(that::rebaseTypeForCotype)),
+                   res, that, null);
+
     var tf = cotype(res);
-    var typeParameters2 = new List<AbstractType>();
-    for (var tp : typeParameters)
-      {
-        typeParameters2.add(typeParameters2.size() == 0
-                              ? tp
-                              : that.rebaseTypeForCotype(tp));
-      }
     return new Call(p,
                     oc,
-                    typeParameters2,
+                    typeParameters,
                     Expr.NO_EXPRS,
                     tf,
                     tf.selfType());
