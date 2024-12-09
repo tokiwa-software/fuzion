@@ -1188,7 +1188,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   AbstractType functionTypeFromChoice(Context context)
   {
-    return findInChoice(cg -> cg.isFunctionTypeExcludingLazy(), context);
+    return findInChoice(cg -> cg.isFunctionType(), context);
   }
 
 

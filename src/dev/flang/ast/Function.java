@@ -250,7 +250,7 @@ public class Function extends AbstractLambda
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
-        if (!t.isFunctionTypeExcludingLazy() && !t.isLazyType())
+        if (!t.isFunctionType())
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t);
             t = Types.t_ERROR;
