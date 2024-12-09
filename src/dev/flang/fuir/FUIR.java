@@ -78,7 +78,7 @@ public abstract class FUIR extends IR
    * The clazz ids form a contiguous range of integers. This method gives the
    * smallest clazz id.  Together with `lastClazz`, this permits iteration.
    *
-   * @return a valid clazz id such that for all clazz ids id: result <= id.
+   * @return a valid clazz id such that for all clazz ids id: result {@literal <=} id.
    */
   public abstract int firstClazz();
 
@@ -1228,8 +1228,8 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a given site 's', go 'delta' expressions further or back (in case
-   * 'delta < 0').
+   * For a given site {@code s}, go {@code delta} expressions further or back (in case
+   * {@code delta < 0}).
    *
    * @param s a site
    *
@@ -1256,9 +1256,9 @@ public abstract class FUIR extends IR
 
   /**
    * Helper routine for codeIndex to recursively find the index of expression
-   * 'n' before expression at 'ix' where 'n == -delta' and 'delta < 0'.
+   * {@code n} before expression at {@code ix} where {@code n == -delta} and {@code delta < 0}.
    *
-   * NYI: Performance: This requires time 'O(codeSize(c))', so using this
+   * NYI: Performance: This requires time {@code O(codeSize(c))}, so using this
    * quickly results in quadratic performance!
    *
    * @param si a site, our current position we are checking
@@ -1267,8 +1267,8 @@ public abstract class FUIR extends IR
    *
    * @param delta the negative number of instructions to go back.
    *
-   * @return the site of the expression 'delta' expressions before 's', or a
-   * negative value '-m' if that instruction can be found 'm' recursive calls up.
+   * @return the site of the expression {@code delta} expressions before {@code s}, or a
+   * negative value {@code -m} if that instruction can be found {@code m} recursive calls up.
    */
   private int codeIndex2(int si, int s, int delta)
   {

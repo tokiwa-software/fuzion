@@ -548,10 +548,12 @@ abstract class CStmnt extends ANY
    *
    * example code:
    *
+   * <pre>{@code
    * for (int ..loopVar.. = 0; ..loopVar.. < ..countExpr..; ..loopVar..++)
    * {
    *   ..body..;
    * }
+   * }</pre>
    * @param loopVar
    * @param count
    * @param body

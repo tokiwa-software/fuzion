@@ -585,7 +585,7 @@ public class GeneratingFUIR extends FUIR
    * The clazz ids form a contiguous range of integers. This method gives the
    * smallest clazz id.  Together with `lastClazz`, this permits iteration.
    *
-   * @return a valid clazz id such that for all clazz ids id: result <= id.
+   * @return a valid clazz id such that for all clazz ids id: result {@literal <=} id.
    */
   @Override
   public int firstClazz()
