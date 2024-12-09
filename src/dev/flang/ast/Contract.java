@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Contract <description>
+ * Contract
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

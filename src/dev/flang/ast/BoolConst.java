@@ -30,7 +30,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * BoolConst <description>
+ * BoolConst
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

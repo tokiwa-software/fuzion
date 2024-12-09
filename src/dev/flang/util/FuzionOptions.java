@@ -46,7 +46,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   * Get the value of a Java property (set via {@code -D<name>=...})  or env variable.
    *
    * @param name property or env variable name.  Should usually be a fully
    * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since {@code .}
@@ -63,7 +63,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   * Get the value of a Java property (set via {@code -D<name>=...})  or env variable.
    *
    * @param name property or env variable name.  Should usually be a fully
    * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since {@code .}
@@ -97,7 +97,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of boolean a Java property (set via -D<name>=...)  or env
+   * Get the value of boolean a Java property (set via {@code -D<name>=...})  or env
    * variable.
    *
    * @param name property or env variable name.  Should usually be a fully
@@ -114,7 +114,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of boolean a Java property (set via -D<name>=...) or env
+   * Get the value of boolean a Java property (set via {@code -D<name>=...}) or env
    * variable.
    *
    * @param name property or env variable name.  Should usually be a fully
@@ -135,7 +135,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of int a Java property (set via -D<name>=...) or env
+   * Get the value of int a Java property (set via {@code -D<name>=...}) or env
    * variable.
    *
    * @param name property or env variable name.  Should usually be a fully

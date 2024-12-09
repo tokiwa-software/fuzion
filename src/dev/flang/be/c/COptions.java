@@ -68,7 +68,7 @@ public class COptions extends FuzionOptions
 
   /**
    * Target to use for compilation
-   * <arch><sub>-<vendor>-<sys>-<env>
+   * {@code <arch><sub>-<vendor>-<sys>-<env>}
    *
    * e.g.: x86_64-pc-linux-gnu
    */

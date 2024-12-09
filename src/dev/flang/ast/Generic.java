@@ -32,7 +32,7 @@ import dev.flang.util.List;
 
 
 /**
- * Generic <description>
+ * Generic
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -228,7 +228,7 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    * If this is the generic C in the formal generics list {@code <A,B,C...>} and the
    * actual generics are {@code <a,b,c,d>}, then the actual generics for the open
-   * argument C are c, d.<p>
+   * argument C are c, d.
    *
    * @param actuals the actual generics list
    *

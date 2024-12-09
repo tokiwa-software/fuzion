@@ -49,7 +49,7 @@ public class QualThisType extends UnresolvedType
 
 
   /**
-   * Create the type corresponding to "<qual>.this".
+   * Create the type corresponding to {@code <qual>.this}.
    *
    * @param qual the qualifier
    */

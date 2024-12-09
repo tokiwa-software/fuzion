@@ -1661,7 +1661,7 @@ A Fuzion identifier starts with a codepoint that is a xref:fuzion_letter[Fuzion 
    *
    * @param cp a code point
    *
-   * @return true iff cp may be part of an identifier, e.g., 'i', '3', '²', etc.
+   * @return true iff cp may be part of an identifier, e.g., {@code i}, {@code 3}, {@code ²}, etc.
    */
   private boolean partOfIdentifier(int cp)
   {
@@ -1898,7 +1898,7 @@ PLUSMINUS   : "+"
     public final Digits _exponent;
 
     /**
-     * Is the exponent given with 'P' (and not with 'E').  E.g., for
+     * Is the exponent given with {@code P} (and not with {@code E}).  E.g., for
      * "0x_de_ad.c0deP0o123", this will be true.
      */
     public final boolean _binaryExponent;
@@ -1964,8 +1964,8 @@ PLUSMINUS   : "+"
 
 
     /**
-     * The value of the mantissa, ignoring decimal '.' position (i.e., value of
-     * '123.456' is 123456).
+     * The value of the mantissa, ignoring decimal {@code .} position (i.e., value of
+     * {@code 123.456} is 123456).
      */
     BigInteger mantissaValue()
     {
@@ -2033,14 +2033,14 @@ PLUSMINUS   : "+"
 
 
     /**
-     * The base as indicated by prefix '0b', '0o', '0d', '0x'. E.g., for
+     * The base as indicated by prefix {@code 0b}, {@code 0o}, {@code 0d}, {@code 0x}. E.g., for
      * "0x_de_ad.c0de", this will be hex.
      */
     public final Base _base;
 
 
     /**
-     * The digits, without base prefix and without '_' separators.  E.g., for
+     * The digits, without base prefix and without {@code _} separators.  E.g., for
      * "0x_de_ad.c0de", this will be "deadc0de"
      */
     public final String _digits;
@@ -2052,7 +2052,7 @@ PLUSMINUS   : "+"
     public int _dotAt = 0;
 
     /**
-     * Was there a '-' preceding these digits?
+     * Was there a {@code -} preceding these digits?
      */
     public final boolean _negative;
 
@@ -2064,7 +2064,7 @@ PLUSMINUS   : "+"
 
     /**
      * Helper routine to check if codepoint p is a digit for base. This is
-     * generous, i.e., it will consider any digits '0'..'9' a digit even for
+     * generous, i.e., it will consider any digits {@code 0}..{@code 9} a digit even for
      * bases bin and oct and it will consider any letter a digit for base hex.
      */
     boolean isDigit(int p)
@@ -2079,7 +2079,7 @@ PLUSMINUS   : "+"
      *
      * @param allowDot true to parse DIGITS_W_DOT, false to parse DIGITS
      *
-     * @param negative true if a '-' was encountered before firstDigit.
+     * @param negative true if a {@code -} was encountered before firstDigit.
      *
 DIGITS      :         DEC_DIGIT_ DEC_DIGITS_
             | "0" "b" BIN_DIGIT_ BIN_DIGITS_
@@ -2292,7 +2292,7 @@ HEX_TAIL    : "." HEX_DIGITS
 
 
     /**
-     * The value, ignoring '-' and ignoring decimal '.' position (i.e., value of '123.456' is
+     * The value, ignoring {@code -} and ignoring decimal {@code .} position (i.e., value of {@code 123.456} is
      * 123456).
      */
     BigInteger absValue()
@@ -2301,7 +2301,7 @@ HEX_TAIL    : "." HEX_DIGITS
     }
 
     /**
-     * The value, ignoring decimal '.' position (i.e., value of '123.456' is
+     * The value, ignoring decimal {@code .} position (i.e., value of {@code 123.456} is
      * 123456).
      */
     BigInteger signedValue()
@@ -2314,8 +2314,8 @@ HEX_TAIL    : "." HEX_DIGITS
 
 
   /**
-   * Skip comments of the form '/''*' .. '*''/', skip them recursively if nested
-   * comments are found.  Called with the current code point at the first '*'.
+   * Skip comments of the form {@code /}{@code *} .. {@code *}{@code /}, skip them recursively if nested
+   * comments are found.  Called with the current code point at the first {@code *}.
    */
   private Token skipComment()
   {
@@ -2762,7 +2762,7 @@ PIPE        : "|"
 
 
   /**
-   * Parse state to decide between normal parsing and $<id> and {<expr>} within
+   * Parse state to decide between normal parsing and {@code $<id>} and {@code {<expr>}} within
    * strings.
    */
   private enum StringState
@@ -2802,8 +2802,8 @@ PIPE        : "|"
 
 
   /**
-   * For a given string token, return if that string starts with '"' or follows
-   * an embedded '$<id>' or '{<expr>}'.
+   * For a given string token, return if that string starts with {@code "} or follows
+   * an embedded {@code $<id>} or {@code {<expr>}}.
    */
   StringEnd beginning(Token t)
   {
@@ -2828,8 +2828,8 @@ PIPE        : "|"
 
 
   /**
-   * For a given string token, return if that string ends with '"' or with an
-   * embedded '$<id>' or '{<expr>}'.
+   * For a given string token, return if that string ends with {@code "} or with an
+   * embedded {@code $<id>} or {@code {<expr>}}.
    */
   StringEnd end(Token t)
   {
@@ -2859,8 +2859,8 @@ PIPE        : "|"
   private class StringLexer
   {
     /**
-     * The original string that started with '"', i.e., disregarding any partial
-     * strings following '$<id>' or '{<expr>}'.  Used for proper error messages.
+     * The original string that started with {@code "}, i.e., disregarding any partial
+     * strings following {@code $<id>} or {@code {<expr>}}.  Used for proper error messages.
      */
     final int _stringStart;
 
@@ -3344,7 +3344,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is started, i.e., it is not
-   * preceded by an embedded identifier '$id' or expression '{expr}.
+   * preceded by an embedded identifier {@code $id} or expression {@code {expr}}.
    *
    * @param t a token
    *
@@ -3358,7 +3358,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is completed, i.e., it is not
-   * followed by an embedded identifier '$id' or expression '{expr}.
+   * followed by an embedded identifier {@code $id} or expression {@code {expr}}.
    *
    * @param t a token
    *

@@ -30,7 +30,7 @@ import dev.flang.util.List;
 
 
 /**
- * Cond <description>
+ * Cond
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

@@ -36,7 +36,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * This <description>
+ * This
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

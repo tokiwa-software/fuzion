@@ -324,12 +324,12 @@ public class Errors extends ANY
 
 
   /**
-   * Convert given message into an error message preceded by "error <count>: "
+   * Convert given message into an error message preceded by {@code error <count>}: "
    * and increment the count.
    *
    * @param s a message, e.g., "undefined variable".
    *
-   * @return a message including error count, e..g, "error 23: undefined variable".
+   * @return a message including error count, e.g., "error 23: undefined variable".
    */
   static String errorMessage(String s)
   {

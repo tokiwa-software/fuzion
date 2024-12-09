@@ -47,7 +47,7 @@ public class FreeType extends UnresolvedType
 
 
   /**
-   * Create the type corresponding to "<name> : <constraint>"
+   * Create the type corresponding to {@code <name> : <constraint>}
    *
    * @param pos the source position
    *

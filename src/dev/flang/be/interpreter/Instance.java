@@ -29,7 +29,7 @@ package dev.flang.be.interpreter;
 import dev.flang.fuir.SpecialClazzes;
 
 /**
- * Instance <description>
+ * Instance
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

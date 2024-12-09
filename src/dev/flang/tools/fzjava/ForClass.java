@@ -919,7 +919,7 @@ class ForClass extends ANY
    *
    * @param me the Java Method
    *
-   * @return the corresponding Fuzion type, e.g., "i32", "outcome<string>",
+   * @return the corresponding Fuzion type, e.g., {@code i32}, {@code outcome<string>},
    * "Java.java.util.Vector".
    */
   String resultType(Method me)

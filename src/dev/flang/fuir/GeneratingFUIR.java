@@ -1665,9 +1665,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the id of clazz fuzion.sys.array<u8>
+   * Get the id of clazz {@code fuzion.sys.array<u8>}
    *
-   * @return the id of fuzion.sys.array<u8> or -1 if that clazz was not created.
+   * @return the id of {@code fuzion.sys.array<u8>} or -1 if that clazz was not created.
    */
   @Override
   public int clazz_fuzionSysArray_u8()
@@ -1680,9 +1680,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the id of clazz fuzion.sys.array<u8>.data
+   * Get the id of clazz {@code fuzion.sys.array<u8>.data}
    *
-   * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
+   * @return the id of {@code fuzion.sys.array<u8>.data} or -1 if that clazz was not created.
    */
   @Override
   public int clazz_fuzionSysArray_u8_data()
@@ -1693,9 +1693,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the id of clazz fuzion.sys.array<u8>.length
+   * Get the id of clazz {@code fuzion.sys.array<u8>.length}
    *
-   * @return the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
+   * @return the id of {@code fuzion.sys.array<u8>.length} or -1 if that clazz was not created.
    */
   @Override
   public int clazz_fuzionSysArray_u8_length()
@@ -1706,9 +1706,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the id of clazz fuzion.java.Java_Object
+   * Get the id of clazz {@code fuzion.java.Java_Object}
    *
-   * @return the id of fuzion.java.Java_Object or -1 if that clazz was not created.
+   * @return the id of {@code fuzion.java.Java_Object} or -1 if that clazz was not created.
    */
   @Override
   public int clazz_fuzionJavaObject()
@@ -1718,9 +1718,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the id of clazz fuzion.java.Java_Object.Java_Ref
+   * Get the id of clazz {@code fuzion.java.Java_Object.Java_Ref}
    *
-   * @return the id of fuzion.java.Java_Object.Java_Ref or -1 if that clazz was not created.
+   * @return the id of {@code fuzion.java.Java_Object.Java_Ref} or -1 if that clazz was not created.
    */
   @Override
   public int clazz_fuzionJavaObject_Ref()
@@ -1897,7 +1897,7 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
    * data field.
    *
    * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
@@ -1917,7 +1917,7 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
    * length field.
    *
    * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}

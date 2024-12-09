@@ -37,7 +37,7 @@ import dev.flang.util.Errors;
 
 
 /**
- * JavaInterface <description>
+ * JavaInterface
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -379,7 +379,7 @@ public class JavaInterface extends FUIRContext
 
 
   /**
-   * Convert an instance of 'fuzion.sys.array<Object>' to a Java Object[] with
+   * Convert an instance of {@code fuzion.sys.array<Object>} to a Java Object[] with
    * the corresponding Java values.
    *
    * @param v a value of type ArrayData as it is stored in 'fuzion.sys.array.data'.
@@ -433,7 +433,7 @@ public class JavaInterface extends FUIRContext
    * constructor call
    *
    * @param args array of arguments to be passed to the method or constructor,
-   * must be of type array data, i.e., the value in fuzion.sys.array<JavaObject>.data.
+   * must be of type array data, i.e., the value in {@code fuzion.sys.array<JavaObject>.data}.
    *
    * @param resultClazz the result type of the constructed instance
    */

@@ -61,7 +61,7 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Read code from command line '-e/-execute <code>', or null if option not
+   * Read code from command line {@code -e/-execute <code>}, or null if option not
    * given.
    */
   final byte[] _executeCode;
