@@ -129,7 +129,7 @@ public class ValueSet extends Value
             {
               var orig1 = r._original;
               var orig2 = rv._original;
-              var ov = _dfa.newValueSet(orig1, orig2, rv._clazz);
+              var ov = _dfa.newValueSet(orig1, orig2, orig1._clazz);
               rv = (RefValue) ov.box0(_dfa, orig1._clazz, rv._clazz, Context._MAIN_ENTRY_POINT_ /* NYI: why? */);
             }
           _forRefs.put(rv._clazz, rv);
