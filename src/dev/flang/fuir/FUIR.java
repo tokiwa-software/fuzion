@@ -688,7 +688,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz `array u8`
+   * Get the id of clazz {@code array u8}
    *
    * @return the id of Const_String.array or -1 if that clazz was not created.
    */
@@ -700,9 +700,9 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz fuzion.sys.array<u8>
+   * Get the id of clazz {@code fuzion.sys.array u8}
    *
-   * @return the id of fuzion.sys.array<u8> or -1 if that clazz was not created.
+   * @return the id of {@code fuzion.sys.array u8} or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8()
   {
@@ -714,9 +714,9 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz fuzion.sys.array<u8>.data
+   * Get the id of clazz {@code (fuzion.sys.array u8).data}
    *
-   * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
+   * @return the id of {@code (fuzion.sys.array u8).data} or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_data()
   {
@@ -726,9 +726,9 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz fuzion.sys.array<u8>.length
+   * Get the id of clazz {@code (fuzion.sys.array u8).length}
    *
-   * @return the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
+   * @return the id of {@code (fuzion.sys.array u8).length} or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_length()
   {
