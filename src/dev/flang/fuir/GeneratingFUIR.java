@@ -1566,7 +1566,7 @@ public class GeneratingFUIR extends FUIR
       (s != SpecialClazzes.c_NOT_FOUND);
 
     var result = _specialClazzes[s.ordinal()];
-    if (result == null)
+    if (result == null && !_lookupDone)
       {
         if (s == SpecialClazzes.c_universe)
           {
@@ -1599,7 +1599,8 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (s != SpecialClazzes.c_NOT_FOUND);
 
-    return specialClazz(s)._id;
+    var sc = specialClazz(s);
+    return sc == null ? NO_CLAZZ : sc._id;
   }
 
 
@@ -1963,6 +1964,20 @@ public class GeneratingFUIR extends FUIR
   }
 
 
+  @Override
+  public int[] clazzActualGenerics(int cl)
+  {
+    var cc = id2clazz(cl);
+    var generics = cc.actualTypeParameters();
+    var result = new int[generics.length];
+    for (int gix = 0; gix < result.length; gix++)
+      {
+        result[gix] = generics[gix]._id;
+      }
+    return result;
+  }
+
+
   /*---------------------  analysis results  ---------------------*/
 
 
@@ -2082,7 +2097,7 @@ public class GeneratingFUIR extends FUIR
     if (res == null)
       {
         if (CHECKS) check
-          (!_lookupDone);
+          (!_lookupDone || true);
         var cl = clazzAt(s);
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
