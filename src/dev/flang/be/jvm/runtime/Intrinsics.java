@@ -389,8 +389,7 @@ public class Intrinsics extends ANY
             break;
           default:
             open_results[1] = -1;
-            say_err("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
-            System.exit(1);
+            Errors.fatal("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
           }
       }
     catch (Throwable e)

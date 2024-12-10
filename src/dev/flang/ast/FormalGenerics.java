@@ -128,7 +128,7 @@ public class FormalGenerics extends ANY
    * i.e., "call" or "type".
    *
    * @param detail2 optional extra lines of detail message giving further
-   * information, like "Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n".
+   * information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
    *
    * @return true iff size and type of actualGenerics does match
    */

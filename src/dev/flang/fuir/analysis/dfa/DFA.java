@@ -41,8 +41,8 @@ import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
-import dev.flang.fuir.FUIR.SpecialClazzes;
 import dev.flang.fuir.GeneratingFUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter2;
 import dev.flang.ir.IR.ExprKind;
 import dev.flang.ir.IR.FeatureKind;
@@ -171,8 +171,6 @@ public class DFA extends ANY
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
-     *
-     * @return resulting code of this assignment.
      */
     @Override
     public void assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
@@ -504,7 +502,7 @@ public class DFA extends ANY
              c_u64  ,
              c_f32  ,
              c_f64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
-        case c_Const_String, c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
+        case c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
         default ->
           {
             if (!_fuir.clazzIsChoice(constCl))
@@ -526,18 +524,18 @@ public class DFA extends ANY
 
 
     /**
-     * deserialize value constant of type `constCl` from `b`
+     * deserialize value constant of type {@code constCl} from {@code b}
      *
      * @param s the site of the constant
      *
-     * @param constCl the constants clazz, e.g. `(tuple u32 codepoint)`
+     * @param constCl the constants clazz, e.g. {@code (tuple u32 codepoint)}
      *
      * @param context for debugging: Reason that causes this const string to be
      * part of the analysis.
      *
      * @param b the serialized data to be used when creating this constant
      *
-     * @return an instance of `constCl` with fields initialized using the data from `b`.
+     * @return an instance of {@code constCl} with fields initialized using the data from {@code b}.
      */
     private Value newValueConst(int s, int constCl, Context context, ByteBuffer b)
     {
@@ -562,18 +560,18 @@ public class DFA extends ANY
 
 
     /**
-     * deserialize array constant of type `constCl` from `d`
+     * deserialize array constant of type {@code constCl} from {@code d}
      *
      * @param s the site of the constant
      *
-     * @param constCl the constants clazz, e.g. `array (tuple i32 codepoint)`
+     * @param constCl the constants clazz, e.g. {@code array (tuple i32 codepoint)}
      *
      * @param context for debugging: Reason that causes this const string to be
      * part of the analysis.
      *
      * @param d the serialized data to be used when creating this constant
      *
-     * @return an instance of `constCl` with fields initialized using the data from `d`.
+     * @return an instance of {@code constCl} with fields initialized using the data from {@code d}.
      */
     private Value newArrayConst(int s, int constCl, Context context, ByteBuffer d)
     {
@@ -751,7 +749,7 @@ public class DFA extends ANY
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=on
    *
-   * To show more details for feature `io.out.replace`
+   * To show more details for feature {@code io.out.replace}
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_CALLS=io.out.replace
    *
@@ -768,7 +766,7 @@ public class DFA extends ANY
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=on
    *
-   * To show more details for feature `u32`
+   * To show more details for feature {@code u32}
    *
    *   dev_flang_fuir_analysis_dfa_DFA_SHOW_VALUES=u32
    *
@@ -779,7 +777,7 @@ public class DFA extends ANY
 
   /**
    * Should the DFA analysis be call-site-sensitive? If set, this treats two
-   * equals calls `t.f args` if they occur at different sites, i.e., location in
+   * equals calls {@code t.f args} if they occur at different sites, i.e., location in
    * the source code.
    *
    * To enable, use fz with
@@ -815,7 +813,7 @@ public class DFA extends ANY
 
 
   /**
-   * Maximum recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * Maximum recursive analysis of newly created Calls, see {@code analyzeNewCall} for
    * details.
    *
    * This was optimized using
@@ -910,7 +908,7 @@ public class DFA extends ANY
   /**
    * Cache for results of newInstance.
    *
-   * site -> (long) clazz << 32 | call id -> Instance
+   * {@code site -> (long) clazz << 32 | call id -> Instance}
    */
   List<LongMap<Instance>> _instancesForSite = new List<>();
 
@@ -934,7 +932,7 @@ public class DFA extends ANY
 
   /**
    * For different element types, pre-allocated SysArrays for uninitialized
-   * arrays.  Used to store results of `newSysArray`.
+   * arrays.  Used to store results of {@code newSysArray}.
    */
   IntMap<SysArray> _uninitializedSysArray = new IntMap<>();
 
@@ -982,7 +980,7 @@ public class DFA extends ANY
 
 
   /**
-   * Current number of recursive analysis of newly created Calls, see `analyzeNewCall` for
+   * Current number of recursive analysis of newly created Calls, see {@code analyzeNewCall} for
    * details.
    */
   private int _newCallRecursiveAnalyzeCalls = 0;
@@ -990,7 +988,7 @@ public class DFA extends ANY
 
   /**
    * Clazz ids for clazzes for of newly created calls for which recursive analysis is performed,
-   * see `analyzeNewCall` for details.
+   * see {@code analyzeNewCall} for details.
    *
    * This is set by method dfa() after the initial call was created to avoid the
    * initial cal to be treated outside the first iteration.
@@ -1127,7 +1125,7 @@ public class DFA extends ANY
   {
     if (_boolX == null)
       {
-        var bool = _fuir.clazz(FUIR.SpecialClazzes.c_bool);
+        var bool = _fuir.clazz(SpecialClazzes.c_bool);
         if (bool != FUIR.NO_CLAZZ)
           {
             _trueX  = newTaggedValue(bool, Value.UNIT, 1);
@@ -1286,7 +1284,7 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
 
     newCall(cl,
             NO_SITE,
@@ -1500,7 +1498,7 @@ public class DFA extends ANY
 
 
   /**
-   * During analysis, mark the given call as `hot`, i.e., unless it is already
+   * During analysis, mark the given call as {@code hot}, i.e., unless it is already
    * scheduled to be analyzed or re-analyzed in the current iteration, schedule
    * it to be.
    *
@@ -1554,7 +1552,7 @@ public class DFA extends ANY
 
 
   /**
-   * Print out details on the analysis of call `c`
+   * Print out details on the analysis of call {@code c}
    */
   void analyzeShowDetails(Call c)
   {
@@ -1640,7 +1638,7 @@ public class DFA extends ANY
    *
    * @param v value we are taking an address of
    *
-   * @param adrField field the address of `v` is assigned to.
+   * @param adrField field the address of {@code v} is assigned to.
    *
    */
   void tempEscapes(int s, Val v, int adrField)
@@ -1673,12 +1671,12 @@ public class DFA extends ANY
    *
    * @param elementClazz the element type of the array.
    */
-  static void setArrayElementsToAnything(Call cl, int argnum, String intrinsicName, FUIR.SpecialClazzes elementClazz)
+  static void setArrayElementsToAnything(Call cl, int argnum, String intrinsicName, SpecialClazzes elementClazz)
   {
     var array = cl._args.get(argnum);
     if (array instanceof SysArray sa)
       {
-        sa.setel(NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_i32)),
+        sa.setel(NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(SpecialClazzes.c_i32)),
                  NumericValue.create(cl._dfa, cl._dfa._fuir.clazz(elementClazz)));
       }
     else
@@ -1697,9 +1695,9 @@ public class DFA extends ANY
    *
    * @param intrinsicName name of the intrinsic, just of error handling
    */
-  static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_u8 ); }
-  static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i32); }
-  static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, FUIR.SpecialClazzes.c_i64); }
+  static void setArrayU8ElementsToAnything (Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_u8 ); }
+  static void setArrayI32ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i32); }
+  static void setArrayI64ElementsToAnything(Call cl, int argnum, String intrinsicName) { setArrayElementsToAnything(cl, argnum, intrinsicName, SpecialClazzes.c_i64); }
 
 
   /**
@@ -1822,7 +1820,7 @@ public class DFA extends ANY
     put("fuzion.sys.fileio.mmap"         , cl ->
         {
           setArrayI32ElementsToAnything(cl, 3, "fuzion.sys.fileio.mmap");
-          var c_u8 = cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_u8);
+          var c_u8 = cl._dfa._fuir.clazz(SpecialClazzes.c_u8);
           return cl._dfa.newSysArray(NumericValue.create(cl._dfa, c_u8), c_u8); // NYI: length wrong, get from arg
         });
     put("fuzion.sys.fileio.munmap"       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -2222,14 +2220,12 @@ public class DFA extends ANY
         });
     put("fuzion.java.array_get"             , cl ->
         {
-          var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-          cl._dfa.readField(jref);
+          cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
           return wrappedJavaObject(cl);
         });
     put("fuzion.java.array_length"          , cl ->
       {
-        var jref = cl._dfa._fuir.lookupJavaRef(cl._dfa._fuir.clazzArgClazz(cl._cc, 0));
-        cl._dfa.readField(jref);
+        cl._dfa.readField(cl._dfa._fuir.clazzArg(cl._cc, 0));
         return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
       }
     );
@@ -2250,25 +2246,18 @@ public class DFA extends ANY
     put("fuzion.java.f64_to_java_object"    , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.get_field0"            , cl ->
       {
-        var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
-        var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
-        // mark Java_Ref fields as read
-        cl._dfa.readField(jref0);
-        cl._dfa.readField(jref1);
-        // NYI: UNDER DEVELOPMENT: setField Java_Ref, see get_static_field0
-        var x = wrappedJavaObject(cl);
-        // Causes Error // x.setField(cl._dfa, jrefres, Value.UNKNOWN_JAVA_REF);
-        return x;
+        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
+        var jobj = wrappedJavaObject(cl);
+        // otherwise it is a primitive like int, boolean
+        if (cl._dfa._fuir.clazzIsRef(rc))
+          {
+            var jref = cl._dfa._fuir.lookupJavaRef(rc);
+            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+          }
+        return jobj;
       });
     put("fuzion.java.set_field0"            , cl ->
       {
-        var jref0 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(0))._clazz);
-        var jref1 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(1))._clazz);
-        var jref2 = cl._dfa._fuir.lookupJavaRef(((RefValue)cl._args.get(2))._clazz);
-        // mark Java_Ref fields as read
-        cl._dfa.readField(jref0);
-        cl._dfa.readField(jref1);
-        cl._dfa.readField(jref2);
         return Value.UNIT;
       });
     put("fuzion.java.i16_to_java_object"    , cl -> wrappedJavaObject(cl) );
@@ -2277,14 +2266,7 @@ public class DFA extends ANY
     put("fuzion.java.i8_to_java_object"     , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.java.create_jvm", cl -> Value.UNIT);
-    put("fuzion.java.string_to_java_object0", cl ->
-      {
-        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
-        var jref = cl._dfa._fuir.lookupJavaRef(rc);
-        var jobj = wrappedJavaObject(cl);
-        jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-        return jobj;
-      });
+    put("fuzion.java.string_to_java_object0", cl -> newFuzionJavaCall(cl));
   }
   static Value newFuzionJavaCall(Call cl) {
     var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
@@ -2338,7 +2320,7 @@ public class DFA extends ANY
 
 
   /**
-   * Create a fuzion outcome of type `rc` with the value res.
+   * Create a fuzion outcome of type {@code rc} with the value res.
    *
    * @param cl The call in which we are creating this outcome
    * @param rc the resulting outcome clazz.
@@ -2361,42 +2343,24 @@ public class DFA extends ANY
       {
         var cc = cl._cc;
         var fuir = cl._dfa._fuir;
-        var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
-        var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
-        var data2 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
-        cl._dfa.readField(sref0);
-        cl._dfa.readField(sref1);
-        cl._dfa.readField(data2);
+        var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
+        cl._dfa.readField(data);
         return newFuzionJavaCall(cl);
       });
     put("fuzion.java.call_s0"               , cl ->
       {
         var cc = cl._cc;
         var fuir = cl._dfa._fuir;
-        var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
-        var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
-        var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
-        var data3 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
-        cl._dfa.readField(sref0);
-        cl._dfa.readField(sref1);
-        cl._dfa.readField(sref2);
-        cl._dfa.readField(data3);
+        var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
+        cl._dfa.readField(data);
         return newFuzionJavaCall(cl);
       });
     put("fuzion.java.call_v0"               , cl ->
       {
         var cc = cl._cc;
         var fuir = cl._dfa._fuir;
-        var sref0 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 0));
-        var sref1 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 1));
-        var sref2 = fuir.lookupJavaRef(fuir.clazzArgClazz(cc, 2));
-        var sref3 = fuir.clazzArg(cc, 3);
-        var data4 = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
-        cl._dfa.readField(sref0);
-        cl._dfa.readField(sref1);
-        cl._dfa.readField(sref2);
-        cl._dfa.readField(sref3);
-        cl._dfa.readField(data4);
+        var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
+        cl._dfa.readField(data);
         return newFuzionJavaCall(cl);
       });
     put("fuzion.java.cast0", cl -> newFuzionJavaCall(cl));
@@ -2414,15 +2378,8 @@ public class DFA extends ANY
       });
     put("fuzion.java.set_static_field0"     , cl ->
       {
-        var rc = cl._dfa._fuir.clazzResultClazz(cl._cc);
-        var jobj = wrappedJavaObject(cl);
-        // otherwise it is a primitive like int, boolean
-        if (cl._dfa._fuir.clazzIsRef(rc))
-          {
-            var jref = cl._dfa._fuir.lookupJavaRef(rc);
-            jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-          }
-          return Value.UNIT;
+
+        return Value.UNIT;
       });
     put("fuzion.java.u16_to_java_object"    , cl -> wrappedJavaObject(cl) );
 
@@ -2431,7 +2388,7 @@ public class DFA extends ANY
         return outcome(cl._dfa,
                        cl,
                        cl._dfa._fuir.clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       cl._dfa.newInstance(cl._dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
@@ -2459,7 +2416,7 @@ public class DFA extends ANY
         return outcome(cl._dfa,
                        cl,
                        cl._dfa._fuir.clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(cl._dfa._fuir.clazz(FUIR.SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       cl._dfa.newInstance(cl._dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
@@ -2649,7 +2606,7 @@ public class DFA extends ANY
    *
    * @oaran cl a clazz id, must not be NO_CLAZZ
    *
-   * @return true if, as for what we now about used fields at this pointer, `cl`
+   * @return true if, as for what we now about used fields at this pointer, {@code cl}
    * defines a unit type.
    */
   boolean isUnitType(int cl)
@@ -3064,7 +3021,7 @@ public class DFA extends ANY
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var c_u8          = _fuir.clazz(FUIR.SpecialClazzes.c_u8);
+    var c_u8          = _fuir.clazz(SpecialClazzes.c_u8);
     var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
     var r = newInstance(cs, NO_SITE, context);
     var arr = newInstance(ar, NO_SITE, context);
@@ -3090,7 +3047,7 @@ public class DFA extends ANY
    * @param cc a clazz that is called
    *
    * @return true iff the call site should be taken into account when compating
-   * calls to `cc`.
+   * calls to {@code cc}.
    */
   boolean siteSensitive(int cc)
   {
@@ -3232,7 +3189,7 @@ public class DFA extends ANY
    * MAX_NEW_CALL_RECURSION new calls being analyzed right now.
    *
    * This might run into quadratic performance for code like the code above if
-   * `a` would itself perform a new call to `b`, and `b` to `c`, etc. to a depth
+   * {@code a} would itself perform a new call to {@code b}, and {@code b} to {@code c}, etc. to a depth
    * that exceeds MAX_NEW_CALL_RECURSION.
    */
   private void analyzeNewCall(Call e)

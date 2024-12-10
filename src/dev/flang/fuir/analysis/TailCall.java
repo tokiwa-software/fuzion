@@ -115,8 +115,6 @@ public class TailCall extends ANY
    * check if the first argument in the given call is the current instance's
    * outer reference.
    *
-   * @param cl index of clazz containing the call
-   *
    * @param s site of the call
    */
   public boolean firstArgIsOuter(int s)
@@ -171,8 +169,8 @@ public class TailCall extends ANY
   }
 
   /**
-   * Check if `a` and `b` refer to the same field are both NO_CLAZZ. A field
-   * with unit type result clazz is considered the same as `NO_CLAZZ`.
+   * Check if {@code a} and {@code b} refer to the same field are both NO_CLAZZ. A field
+   * with unit type result clazz is considered the same as {@code NO_CLAZZ}.
    *
    * @param a a field or NO_CLAZZ
    *

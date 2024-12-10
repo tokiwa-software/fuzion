@@ -30,6 +30,7 @@ package dev.flang.be.interpreter;
 import java.nio.charset.StandardCharsets;
 
 import dev.flang.fuir.GeneratingFUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
@@ -83,8 +84,8 @@ public class Interpreter extends FUIRContext
   {
     try
       {
-        FuzionThread.current()._callStackFrames.push(_fuir.mainClazzId());
-        _ai.processClazz(_fuir.mainClazzId());
+        FuzionThread.current()._callStackFrames.push(_fuir.mainClazz());
+        _ai.processClazz(_fuir.mainClazz());
       }
     catch (FatalError e)
       {
@@ -119,7 +120,7 @@ public class Interpreter extends FUIRContext
   /**
    * Create runtime value of given String constant.
    *
-   * @bytes the string in UTF-16
+   * @param bytes the string in UTF-16
    */
   public static Value value(byte[] bytes)
   {
@@ -171,7 +172,7 @@ public class Interpreter extends FUIRContext
   private static int clazzForField(int thiz)
   {
     return fuir().clazzFieldIsAdrOfValue(thiz)
-      ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
+      ? fuir().clazz(SpecialClazzes.c_sys_ptr)
       : fuir().clazzResultClazz(thiz);
   }
 
@@ -233,17 +234,17 @@ public class Interpreter extends FUIRContext
     if (PRECONDITIONS) require
       (// NYI: thiz.feature().isField(),
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
-       curValue instanceof i8Value   && staticClazzSpecial == FUIR.SpecialClazzes.c_i8   ||
-       curValue instanceof i16Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_i16  ||
-       curValue instanceof i32Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_i32  ||
-       curValue instanceof i64Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_i64  ||
-       curValue instanceof u8Value   && staticClazzSpecial == FUIR.SpecialClazzes.c_u8   ||
-       curValue instanceof u16Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_u16  ||
-       curValue instanceof u32Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_u32  ||
-       curValue instanceof u64Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_u64  ||
-       curValue instanceof f32Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_f32  ||
-       curValue instanceof f64Value  && staticClazzSpecial == FUIR.SpecialClazzes.c_f64  ||
-       curValue instanceof boolValue && staticClazzSpecial == FUIR.SpecialClazzes.c_bool,
+       curValue instanceof i8Value   && staticClazzSpecial == SpecialClazzes.c_i8   ||
+       curValue instanceof i16Value  && staticClazzSpecial == SpecialClazzes.c_i16  ||
+       curValue instanceof i32Value  && staticClazzSpecial == SpecialClazzes.c_i32  ||
+       curValue instanceof i64Value  && staticClazzSpecial == SpecialClazzes.c_i64  ||
+       curValue instanceof u8Value   && staticClazzSpecial == SpecialClazzes.c_u8   ||
+       curValue instanceof u16Value  && staticClazzSpecial == SpecialClazzes.c_u16  ||
+       curValue instanceof u32Value  && staticClazzSpecial == SpecialClazzes.c_u32  ||
+       curValue instanceof u64Value  && staticClazzSpecial == SpecialClazzes.c_u64  ||
+       curValue instanceof f32Value  && staticClazzSpecial == SpecialClazzes.c_f32  ||
+       curValue instanceof f64Value  && staticClazzSpecial == SpecialClazzes.c_f64  ||
+       curValue instanceof boolValue && staticClazzSpecial == SpecialClazzes.c_bool,
        staticClazz > 0
       //  NYI: thiz.feature().isOpenGenericField() == (thiz._select != -1)
        );

@@ -110,3 +110,10 @@ is
   #
   public type.new (LM type : mutate) container.Mutable_Array T LM =>
     LM.env.array 0 (fuzion.sys.internal_array_init T 0) unit
+
+
+# convenience feature for creating a new array,
+# in some cases even with type inference
+#
+public new_array (T type, length i64, init T) =>
+  (mutate.array T).new mutate.this length init

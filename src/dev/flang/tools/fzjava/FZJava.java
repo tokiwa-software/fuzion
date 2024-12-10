@@ -235,6 +235,7 @@ public class FZJava extends Tool
                                             /* readStdin */ false,
                                             /* executeCode */ null,
                                             /* main */ null,
+                                            /* moduleName */ null,
                                             /* loadSources */ true,
                                             /* needsEscapeAnalysis */ false,
                                             /* timer */ s -> timer(s));

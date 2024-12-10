@@ -36,7 +36,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * This <description>
+ * This
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -135,8 +135,6 @@ public class This extends ExprWithPos
    *
    * @param context the source code context where this This is to be used
    *
-   * @param cur the current feature that contains this this expression
-   *
    * @param f the outer feature whose instance we want to access.
    *
    * @return the type resolved expression to access f.this.
@@ -233,7 +231,7 @@ public class This extends ExprWithPos
       }
     if (f == Types.f_ERROR)
       {
-        getOuter = Expr.ERROR_VALUE;
+        getOuter = Call.ERROR;
       }
     else if (f.isUniverse())
       {
@@ -292,10 +290,10 @@ public class This extends ExprWithPos
 
 
   /**
-   * getThisFeature find the outer feature `x.y.z.a.b.c` for a given qualified name 'a.b.c' as
-   * seen for a feature within outer `x.y.z.a.b.c.d.e.f.`.
+   * getThisFeature find the outer feature {@code x.y.z.a.b.c} for a given qualified name 'a.b.c' as
+   * seen for a feature within outer {@code x.y.z.a.b.c.d.e.f.}.
    *
-   * @param thisOrType instance of `This` or `Type` depending on whether this is a lookup for `this` as a value or as a type.
+   * @param thisOrType instance of {@code This} or {@code Type} depending on whether this is a lookup for {@code this} as a value or as a type.
    *
    * @param qual the qualified name
    *

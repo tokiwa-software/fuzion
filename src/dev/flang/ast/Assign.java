@@ -111,7 +111,7 @@ public class Assign extends AbstractAssign
    *
    * @param v
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this assignment is used
    */
   public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {
@@ -178,7 +178,7 @@ public class Assign extends AbstractAssign
         else
           {
             AstErrors.assignmentTargetNotFound(this, context.outerFeature());
-            _target = AbstractCall.ERROR_VALUE;
+            _target = Call.ERROR;
             f = Types.f_ERROR;
           }
         _assignedField = f;

@@ -175,7 +175,7 @@ public class Types extends ANY implements ClassFileConstants
         if (cl == _fuir.clazzUniverse())
           {
             cf.addImplements(Names.MAIN_INTERFACE);
-            var maincl = _fuir.mainClazzId();
+            var maincl = _fuir.mainClazz();
             var bc_run =
               Expr.UNIT
               .andThen(invokeStatic(maincl, -1)).drop()
@@ -496,8 +496,8 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Add `jt` to the list of locals.
-   * If `jt` is javaVoid-like it is not added.
+   * Add {@code jt} to the list of locals.
+   * If {@code jt} is javaVoid-like it is not added.
    * longs and doubles are added twice.
    *
    * @param locals

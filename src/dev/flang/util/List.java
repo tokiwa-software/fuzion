@@ -457,9 +457,9 @@ public class List<T>
    *
    * @param i index of element to set
    *
-   * @return the element at index i or null if size() <= i.
+   * @return the element at index i or null if size() {@literal <=} i.
    *
-   * @throws IndexOutOfBoundsException if i < 0.
+   * @throws IndexOutOfBoundsException if i &lt; 0.
    */
   public T getIfExists(int i)
   {
@@ -488,7 +488,7 @@ public class List<T>
 
 
   /**
-   * Set an element of this list using `set(i,x)`, but first make sure the
+   * Set an element of this list using {@code set(i,x)}, but first make sure the
    * list's capacity is sufficient.
    *
    * @param i index of element to set

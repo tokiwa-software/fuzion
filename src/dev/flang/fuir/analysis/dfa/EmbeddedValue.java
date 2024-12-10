@@ -80,9 +80,7 @@ public class EmbeddedValue extends Val
    *
    * @param instance the instance containing this embedded value
    *
-   * @param code code block index
-   *
-   * @param index expr index in code block
+   * @param site expr index in code block
    *
    * @param value the value of the embedded field
    */

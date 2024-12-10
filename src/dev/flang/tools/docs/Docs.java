@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,6 +52,7 @@ import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
@@ -73,6 +75,7 @@ public class Docs extends ANY
     /* readStdin               */ false,
     /* executeCode             */ null,
     /* main                    */ null,
+    /* moduleName              */ null,
     /* loadSources             */ false,
     /* needsEscapeAnalysis     */ false,
     /* timer                   */ s->{});
@@ -104,6 +107,9 @@ public class Docs extends ANY
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
   private final AbstractFeature universe = fe._feUniverse;
+
+  public final static Pattern nonAsciiPattern = Pattern
+    .compile("[^\\x00-\\x7F]");
 
 
   /**
@@ -177,8 +183,7 @@ public class Docs extends ANY
   {
     if (args.length < 1)
       {
-        say_err(usage());
-        System.exit(1);
+        Errors.fatal(usage());
       }
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
@@ -272,7 +277,9 @@ public class Docs extends ANY
    */
   private static String featurePath(AbstractFeature f, LibraryModule module)
   {
-    return featurePath(f, module, true);
+    return nonAsciiPattern
+      .matcher(featurePath(f, module, true))
+      .replaceAll(match ->String.format("U+%04X", match.group().codePointAt(0)));
   }
 
 

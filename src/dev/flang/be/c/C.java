@@ -37,7 +37,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
 import dev.flang.ir.IR.FeatureKind;
@@ -266,8 +266,7 @@ public class C extends ANY
           case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_String, c_Const_String
-                      -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
+          case c_String -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
           default     -> {
             if (CHECKS)
               check(!_fuir.clazzIsRef(constCl)); // NYI currently no refs
@@ -292,7 +291,7 @@ public class C extends ANY
     /**
      * create a value constant via means of compound literals.
      *
-     * @param constCl, e.g. `codepoint 65`
+     * @param constCl, e.g. {@code codepoint 65}
      *
      * @param d the serialized data for initializing the code
      */
@@ -326,7 +325,7 @@ public class C extends ANY
     /**
      * create a constant fuzion array
      *
-     * @param constCl, e.g. `array (codepoint u32)`
+     * @param constCl, e.g. {@code array (codepoint u32)}
      *
      * @param d the serialized data
      */
@@ -660,7 +659,7 @@ public class C extends ANY
    */
   public void compile()
   {
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
     var cf = new CFile(name, _options._keepGeneratedCode, false);
     var hf = new CFile(name, _options._keepGeneratedCode, true);
@@ -755,6 +754,7 @@ public class C extends ANY
           "-Wpedantic",
           "-Wformat=2",
           "-Wno-unused-parameter",
+          "-Wno-unused-but-set-parameter", // needed for #1777
           "-Wshadow",
           "-Wwrite-strings",
           "-Wold-style-definition",
@@ -1120,7 +1120,7 @@ public class C extends ANY
 
     cf.print(initializeEffectsEnvironment());
 
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
 
     cf.print(CStmnt.seq(CNames.GLOBAL_ARGC.assign(new CIdent("argc")),
                         CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
@@ -1530,7 +1530,7 @@ public class C extends ANY
    * @param bytes the serialized bytes of the UTF-8 string.
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * {@code (fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}}
    */
   CExpr constString(byte[] bytes)
   {
@@ -1557,7 +1557,7 @@ public class C extends ANY
    * @param len CExpr that returns the size_t of the string
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * {@code (fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}}
    */
   CExpr constString(CExpr str, CExpr len)
   {
@@ -1957,7 +1957,7 @@ public class C extends ANY
         case
           c_i8, c_i16, c_i32, c_i64, c_u8,
           c_u16, c_u32, c_u64, c_f32, c_f64 -> call.ret();
-        case c_Const_String, c_String ->
+        case c_String ->
           {
             var str = new CIdent("str");
             yield CStmnt.seq(
@@ -1992,7 +1992,7 @@ public class C extends ANY
    * pointer in case _fuir.clazzIsRef(cl), or the C struct corresponding to cl
    * otherwise.
    *
-   * @param cl id of clazz we are generating code for
+   * @param s id of clazz we are generating code for
    */
   CExpr current(int s)
   {
@@ -2059,11 +2059,11 @@ public class C extends ANY
 
 
   /**
-   * Create and return a `Java_Object` from result of `expr`.
+   * Create and return a {@code Java_Object} from result of {@code expr}.
    *
    * @param cl the type we are returning
    * @param expr the expr producing the result (fzE_jvm_result or jvalue)
-   * @param complexResult is the result of `expr` `fzE_jvm_result` or `jvalue`
+   * @param complexResult is the result of {@code expr} {@code fzE_jvm_result} or {@code jvalue}
    * @return
    */
   public CStmnt returnJavaObject(int cl, CExpr expr, boolean complexResult)
@@ -2139,7 +2139,7 @@ public class C extends ANY
         return CExpr.seq(sideEffect, result);
       case c_unit :
         return expr;
-      case c_Const_String :
+      case c_String :
       case c_false_ :
       case c_true_ :
       case c_sys_ptr :
@@ -2161,10 +2161,37 @@ public class C extends ANY
   private CExpr javaValue2Fuzion(boolean complexResult, CLocal tmp, int cl)
   {
     var successResult = (complexResult ? tmp.field(CNames.CHOICE_UNION_NAME).field(new CIdent("v0")) : tmp);
+    return switch (_fuir.getSpecialClazz(cl))
+      {
+        case c_i8 -> successResult.field(new CIdent("b")).castTo(_types.scalar(cl));
+        case c_i16 -> successResult.field(new CIdent("s")).castTo(_types.scalar(cl));
+        case c_i32 -> successResult.field(new CIdent("i")).castTo(_types.scalar(cl));
+        case c_i64 -> successResult.field(new CIdent("j")).castTo(_types.scalar(cl));
+        case c_u16 -> successResult.field(new CIdent("c")).castTo(_types.scalar(cl));
+        case c_f32 -> successResult.field(new CIdent("f")).castTo(_types.scalar(cl));
+        case c_f64 -> successResult.field(new CIdent("d")).castTo(_types.scalar(cl));
+        case c_bool -> successResult.field(new CIdent("z")).cond(_names.FZ_TRUE, _names.FZ_FALSE);
+        case c_unit -> successResult;
+        case c_NOT_FOUND -> asJava_Object(cl, successResult);
+        default -> throw new Error("error in implementation.");
+      };
+  }
+
+
+  /**
+   * wrap successResult in the appropriate Java_Object
+   *
+   * @param cl
+   * @param successResult
+   * @return
+   */
+  private CExpr asJava_Object(int cl, CExpr successResult)
+  {
+    var rc = _fuir.clazzAsValue(cl);
     var obj = CExpr
       .compoundLiteral(
-        _types.clazz(_fuir.clazzAsValue(cl)),
-        "." + _names.fieldName(_fuir.clazz_fuzionJavaObject_Ref()).code() + " = "
+        _types.clazz(rc),
+        "." + _names.fieldName(_fuir.lookupJavaRef(rc)).code() + " = "
           + successResult
             .field(new CIdent("l"))
             .castTo("void *" /* J_Value */)
@@ -2177,38 +2204,7 @@ public class C extends ANY
           "." + CNames.FIELDS_IN_REF_CLAZZ.code() + " = " + obj.code());
 
     val = CExpr.call(CNames.HEAP_CLONE._name, new List<>(val.adrOf(), val.sizeOfExpr()));
-
-    switch (_fuir.getSpecialClazz(cl))
-      {
-      case c_i8 :
-        return successResult.field(new CIdent("b")).castTo(_types.scalar(cl));
-      case c_i16 :
-        return successResult.field(new CIdent("s")).castTo(_types.scalar(cl));
-      case c_i32 :
-        return successResult.field(new CIdent("i")).castTo(_types.scalar(cl));
-      case c_i64 :
-        return successResult.field(new CIdent("j")).castTo(_types.scalar(cl));
-      case c_u16 :
-        return successResult.field(new CIdent("c")).castTo(_types.scalar(cl));
-      case c_f32 :
-        return successResult.field(new CIdent("f")).castTo(_types.scalar(cl));
-      case c_f64 :
-        return successResult.field(new CIdent("d")).castTo(_types.scalar(cl));
-      case c_bool :
-        return successResult.field(new CIdent("z")).cond(_names.FZ_TRUE, _names.FZ_FALSE);
-      case c_NOT_FOUND :
-      case c_unit :
-        return val;
-      case c_Const_String :
-      case c_false_ :
-      case c_true_ :
-      case c_sys_ptr :
-      case c_u32 :
-      case c_u64 :
-      case c_u8 :
-      default:
-        throw new Error("error in implementation.");
-      }
+    return val;
   }
 
 
@@ -2284,52 +2280,9 @@ public class C extends ANY
 
 
   /**
-   * `args` is a sys_array of Java_Objects.
-   * `l` gets assigned an array of jvalues
-   * which are the java_ref fields of the Java_Objects in the `args` array.
-   */
-  public CStmnt extractJValues(CLocal l, CIdent args)
-  {
-    var data = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var loopVar = _names.newTemp();
-
-    // e.g.: fzM_3[i] = (jvalue)(jobject) ((fzT__L5001fuzion__ja___u_Object**)arg4.fzF_0_data)[i]->fields.fzF_0_Java_u_Ref;
-    var body = l.index(loopVar)
-     .assign(
-       args.field(data)
-           .castTo(_types.clazz(_fuir.clazz_fuzionJavaObject())+"*")
-           .index(loopVar)
-           .deref().field(CNames.FIELDS_IN_REF_CLAZZ)
-           .field(_names.fieldName(_fuir.clazz_fuzionJavaObject_Ref()))
-              .castTo("jobject")
-              .castTo("jvalue"));
-
-    return CStmnt.seq(
-      CStmnt.decl("jvalue *", l),
-      l.assign(
-        CExpr.call(malloc(), new List<>(args.field(length).mul(CExpr.sizeOfType("jvalue*"))))),
-        CStmnt.forLoop(loopVar, args.field(length), body)
-    );
-  }
-
-
-  /**
-   * access the java_ref field of a java object.
-   */
-  public CExpr javaRefField(CExpr expr)
-  {
-    return expr
-      .deref()
-      .field(CNames.FIELDS_IN_REF_CLAZZ)
-      .field(_names.fieldName(_fuir.clazz_fuzionJavaObject_Ref()));
-  }
-
-
-  /**
    * For debugging output
    *
-   * @return "`<clazz c>`".
+   * @return "{@code <clazz c>}".
    */
   private String clazzInQuotes(int c)
   {
