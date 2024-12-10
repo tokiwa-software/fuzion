@@ -61,167 +61,180 @@
 <     public abstract RESULT nop();
 ---
 >     public abstract void nop();
-119c122
+116,117d118
+<      *
+<      * @return code to perform the side effects of v and ignoring the produced value.
+119c120
 <     public RESULT drop(VALUE v, int type)
 ---
 >     public void drop(VALUE v, int type)
-121c124
+121c122
 <       return nop(); // NYI, should be implemented by BEs.
 ---
 >       nop(); // NYI, should be implemented by BEs.
-141c144
+138,139d138
+<      *
+<      * @return resulting code of this assignment.
+141c140
 <     public abstract RESULT assignStatic(int s, int tc, int f, int rt, VALUE tvalue, VALUE val);
 ---
 >     public abstract void assignStatic(int s, int tc, int f, int rt, VALUE tvalue, VALUE val);
-153c156
+153c152
 <     public abstract RESULT assign(int s, VALUE tvalue, VALUE avalue);
 ---
 >     public abstract void assign(int s, VALUE tvalue, VALUE avalue);
-169c172
+169c168
 <     public abstract Pair<VALUE, RESULT> call(int s, VALUE tvalue, List<VALUE> args);
 ---
 >     public abstract VALUE call(int s, VALUE tvalue, List<VALUE> args);
-180c183
+180c179
 <     public abstract Pair<VALUE, RESULT> box(int s, VALUE v, int vc, int rc);
 ---
 >     public abstract VALUE box(int s, VALUE v, int vc, int rc);
-187c190
+187c186
 <     public abstract Pair<VALUE, RESULT> current(int s);
 ---
 >     public abstract VALUE current(int s);
-194c197
+194c193
 <     public abstract Pair<VALUE, RESULT> outer(int s);
 ---
 >     public abstract VALUE outer(int s);
-214c217
+214c213
 <     public abstract Pair<VALUE, RESULT> constData(int s, int constCl, byte[] d);
 ---
 >     public abstract VALUE constData(int s, int constCl, byte[] d);
-225c228
+225c224
 <     public abstract Pair<VALUE, RESULT> match(int s, AbstractInterpreter<VALUE, RESULT> ai, VALUE subv);
 ---
 >     public abstract VALUE match(int s, AbstractInterpreter2<VALUE> ai, VALUE subv);
-239c242
+239c238
 <     public abstract Pair<VALUE, RESULT> tag(int s, VALUE value, int newcl, int tagNum);
 ---
 >     public abstract VALUE tag(int s, VALUE value, int newcl, int tagNum);
-246c249
+246c245
 <     public RESULT reportErrorInCode(String msg) { return comment(msg); }
 ---
 >     public void reportErrorInCode(String msg) { comment(msg); }
-305c308
+305c304
 <   public final ProcessExpression<VALUE, RESULT> _processor;
 ---
 >   public final ProcessExpression<VALUE> _processor;
-316c319
+316c315
 <   public AbstractInterpreter(FUIR fuir, ProcessExpression<VALUE, RESULT> processor)
 ---
 >   public AbstractInterpreter2(FUIR fuir, ProcessExpression<VALUE> processor)
-443c446
+439,440d437
+<    * @param l list that will receive the result
+<    *
+443c440
 <   void assignOuterAndArgFields(List<RESULT> l, int s)
 ---
 >   void assignOuterAndArgFields(int s)
-451d453
+451d447
 <         l.add(cur.v1());
-453,454c455
+453,454c449
 <         l.add(out.v1());
 <         l.add(_processor.assignStatic(s, cl, or, rt, cur.v0(), out.v0()));
 ---
 >         _processor.assignStatic(s, cl, or, rt, cur, out);
-461d461
+461d455
 <         l.add(cur.v1());
-467c467
+467c461
 <             l.add(_processor.assignStatic(s, cl, af, at, cur.v0(), ai));
 ---
 >             _processor.assignStatic(s, cl, af, at, cur, ai);
-482c482
+482c476
 <   public Pair<VALUE,RESULT> processClazz(int cl)
 ---
 >   public VALUE processClazz(int cl)
-484d483
+484d477
 <     var l = new List<RESULT>();
-488c487
+488c481
 <         assignOuterAndArgFields(l, s);
 ---
 >         assignOuterAndArgFields(s);
-491,493c490,491
+491,493c484,485
 <     l.add(p.v1());
 <     var res = p.v0();
 <     return new Pair<>(res, _processor.sequence(l));
 ---
 >     var res = p;
 >     return res;
-506c504
+506c498
 <   public Pair<VALUE,RESULT> processCode(int s0)
 ---
 >   public VALUE processCode(int s0)
-509d506
+509d500
 <     var l = new List<RESULT>();
-513,514c510,511
+513,514c504,505
 <         l.add(_processor.expressionHeader(s));
 <         l.add(process(s, stack));
 ---
 >         _processor.expressionHeader(s);
 >         process(s, stack);
-523,524c520,521
+523,524c514,515
 <         l.add(_processor.reportErrorInCode("Severe compiler bug! This code should be unreachable:\n" +
 <                                            _fuir.siteAsString(last_s)));
 ---
 >         _processor.reportErrorInCode("Severe compiler bug! This code should be unreachable:\n" +
 >                                      _fuir.siteAsString(last_s));
-540c537
+540c531
 <             l.add(_processor.drop(stack.pop(), rt));
 ---
 >             _processor.drop(stack.pop(), rt);
-544c541
+544c535
 <     return new Pair<>(v, _processor.sequence(l));
 ---
 >     return v;
-558c555
+554,556d544
+<    *
+<    * @return the result of the abstract interpretation, e.g., the generated
+<    * code.
+558c546
 <   public RESULT process(int s, Stack<VALUE> stack)
 ---
 >   public void process(int s, Stack<VALUE> stack)
-566d562
+566d553
 <     RESULT res;
-579c575
+579c566
 <               res = _processor.assign(s, tvalue, avalue);
 ---
 >               _processor.assign(s, tvalue, avalue);
-583,584c579,580
+583,584c570,571
 <               res = _processor.sequence(new List<>(_processor.drop(tvalue, tc),
 <                                                     _processor.drop(avalue, ft)));
 ---
 >               _processor.drop(tvalue, tc);
 >               _processor.drop(avalue, ft);
-595c591
+595c582
 <               res = _processor.comment("Box is a NOP, clazz is already a ref");
 ---
 >               _processor.comment("Box is a NOP, clazz is already a ref");
-601,602c597
+601,602c588
 <               push(stack, rc, r.v0());
 <               res = r.v1();
 ---
 >               push(stack, rc, r);
-613c608
+613c599
 <           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
 ---
 >           if (r == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
-620c615
+620c606
 <               push(stack, rt, r.v0());
 ---
 >               push(stack, rt, r);
-622d616
+622d607
 <           res = r.v1();
-627c621
+627c612
 <           res = _processor.comment(_fuir.comment(s));
 ---
 >           _processor.comment(_fuir.comment(s));
-634,635c628
+634,635c619
 <           push(stack, cl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, cl, r);
-644,649c637
+644,649c628
 <           if (CHECKS) check
 <             // check that constant creation has no side effects.
 <             (r.v1() == _processor.nop());
@@ -230,29 +243,29 @@
 <           res = r.v1();
 ---
 >           push(stack, constCl, r);
-657c645
+657c636
 <           if (r.v0() == null)
 ---
 >           if (r == null)
-662,663c650
+662,663c641
 <             (r.v0() == null || r.v0() == _processor.unitValue());
 <           res = r.v1();
 ---
 >             (r == null || r == _processor.unitValue());
-675,676c662
+675,676c653
 <           push(stack, newcl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, newcl, r);
-690c676
+690c667
 <           res = _processor.drop(v, rt);
 ---
 >           _processor.drop(v, rt);
-696d681
+696d672
 <           res = null;
-705c690
+705c681
 <         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
 ---
 >         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
-707d691
+707d682
 <     return res;

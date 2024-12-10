@@ -28,7 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
@@ -212,7 +212,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * For debugging: Why did `compareTo(other)` return a value != 0?
+   * For debugging: Why did {@code compareTo(other)} return a value != 0?
    */
   String compareToWhy(Call other)
   {
@@ -311,7 +311,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             result = _instance;
           }
-        else if (FUIR.SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
+        else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
           {
             result = Value.UNIT;
           }
@@ -339,7 +339,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         if (arg instanceof SysArray sa && sa._elements == null)
           {
-            sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(FUIR.SpecialClazzes.c_i32)),
+            sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(SpecialClazzes.c_i32)),
                      _dfa.newInstance(sa._elementClazz, _site, _context));
           }
       }
@@ -359,7 +359,7 @@ public class Call extends ANY implements Comparable<Call>, Context
              c_u8, c_u16, c_u32, c_u64,
              c_f32, c_f64              -> NumericValue.create(_dfa, rc);
         case c_bool                    -> _dfa.bool();
-        case c_Const_String, c_String  -> _dfa.newConstString(null, this);
+        case c_String                  -> _dfa.newConstString(null, this);
         case c_sys_ptr                 -> _dfa.newInstance(_dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), _site, _context);
         default                        ->
           _dfa._fuir.clazzIsUnitType(rc)

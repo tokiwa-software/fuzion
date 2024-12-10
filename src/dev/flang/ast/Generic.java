@@ -32,7 +32,7 @@ import dev.flang.util.List;
 
 
 /**
- * Generic <description>
+ * Generic
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -156,8 +156,8 @@ public class Generic extends ANY implements Comparable<Generic>
 
 
   /**
-   * For a feature `f(A, B type)` the corresponding type feature has an implicit
-   * THIS#TYPE type parameter: `f.type(THIS#TYPE, A, B type)`.
+   * For a feature {@code f(A, B type)} the corresponding type feature has an implicit
+   * THIS#TYPE type parameter: {@code f.type(THIS#TYPE, A, B type)}.
    *
    + This checks if this Generic is this implicit type parameter.
    */
@@ -188,9 +188,9 @@ public class Generic extends ANY implements Comparable<Generic>
    *
    *      type.empty => stack E
    *
-   * the `stack.type.E` that is used in `type.empty` would be replaced by `stack.E`.
+   * the {@code stack.type.E} that is used in {@code type.empty} would be replaced by {@code stack.E}.
    *
-   * @return the origin of `E` if it is in a type feature, `this` otherwise.
+   * @return the origin of {@code E} if it is in a type feature, {@code this} otherwise.
    */
   Generic cotypeOrigin()
   {
@@ -224,10 +224,10 @@ public class Generic extends ANY implements Comparable<Generic>
 
   /**
    * Get the list of actual generics that are represented by this open formal
-   * generic argument.
+   * generic argument.<p>
    *
-   * If this is the generic C in the formal generics list <A,B,C...> and the
-   * actual generics are <a,b,c,d>, then the actual generics for the open
+   * If this is the generic C in the formal generics list {@code <A,B,C...>} and the
+   * actual generics are {@code <a,b,c,d>}, then the actual generics for the open
    * argument C are c, d.
    *
    * @param actuals the actual generics list
@@ -273,7 +273,7 @@ public class Generic extends ANY implements Comparable<Generic>
 
 
   /**
-   * short string of this Generic, e.g. `T`
+   * short string of this Generic, e.g. {@code T}
    *
    * @return
    */
@@ -284,7 +284,7 @@ public class Generic extends ANY implements Comparable<Generic>
 
 
   /**
-   * long string of this Generic, e.g. `Sequence.map.B`
+   * long string of this Generic, e.g. {@code Sequence.map.B}
    *
    * @return
    */
@@ -294,7 +294,7 @@ public class Generic extends ANY implements Comparable<Generic>
   }
 
   /**
-   * long string of this Generic relative to feature context, e.g. `map.B` if context is `Sequence`
+   * long string of this Generic relative to feature context, e.g. {@code map.B} if context is {@code Sequence}
    *
    * @return
    */

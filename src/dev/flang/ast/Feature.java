@@ -39,6 +39,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -97,6 +98,9 @@ public class Feature extends AbstractFeature
   private final SourcePosition _posOfReturnType;
 
 
+  Context _sourceCodeContext = Context.NONE;
+
+
   /**
    * The visibility of this feature
    */
@@ -119,7 +123,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * This is used for feature defined using `choice of`
+   * This is used for feature defined using {@code choice of}
    * to set same visibility for choice elements as for choice in Parser.
    *
    * @param v
@@ -198,6 +202,17 @@ public class Feature extends AbstractFeature
    */
   private final Contract _contract;
   public Contract contract() { return _contract; }
+
+
+  /**
+   * For pre and post features the contract of the features
+   * the pre/post features originate from. Otherwise the contract of
+   * the feature itself.
+   */
+  public Contract originalContract()
+  {
+    return contract();
+  }
 
 
   /**
@@ -318,7 +333,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * Is this a loop's variable that is being iterated over using the {@code in} keyword?
    * If so, also store the internal list name.
    */
   boolean _isLoopIterator = false;
@@ -380,6 +395,11 @@ public class Feature extends AbstractFeature
   public boolean _scoped = false;
 
   private List<AbstractType> _effects;
+
+  /**
+   * has this feature been used?
+   */
+  private boolean _isUsed = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -1470,7 +1490,6 @@ public class Feature extends AbstractFeature
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  Context _sourceCodeContext = Context.NONE;
   void internalResolveTypes(Resolution res)
   {
     if (PRECONDITIONS) require
@@ -1550,7 +1569,7 @@ public class Feature extends AbstractFeature
 
   /**
    * Syntactic sugar resolution of a feature f after type resolution. Currently
-   * used for lazy boolean operations like &&, || and for compile-time constants
+   * used for lazy boolean operations like {@code &&}, {@code ||} and for compile-time constants
    * safety, debug_level, debug.
    *
    * @param res the resolution instance.
@@ -1754,7 +1773,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (Errors.any() || t != null);
-        if (t != null && !t.isRef())
+        if (t != null && t.isRef().noOrDontKnow())
           {
             if (t.compareTo(thisType()) == 0)
               {
@@ -1841,17 +1860,16 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-        if (CHECKS) check
-          (_resultType == null
-           || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-           );
-
-        if (outer() instanceof Feature o)
+       if (outer() instanceof Feature o)
           {
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresentUrgent(res, true);
+        if (_resultType == null)
+          {
+            _resultType = resultTypeIfPresentUrgent(res, true);
+          }
+
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -1890,7 +1908,7 @@ A ((Choice)) declaration must not contain a result type.
 
         /*
          * extra pass to automatically wrap values into 'Lazy'
-         * or unwrap values inheriting `unwrap`
+         * or unwrap values inheriting {@code unwrap}
          */
         visit(new ContextVisitor(context()) {
             // we must do this from the outside of calls towards the inside to
@@ -1935,7 +1953,18 @@ A ((Choice)) declaration must not contain a result type.
             public void  action(AbstractAssign a, AbstractFeature outer) { a.boxVal     (_context);           }
             public Call  action(Call           c, AbstractFeature outer) { c.boxArgs    (_context); return c; }
             public Expr  action(InlineArray    i, AbstractFeature outer) { i.boxElements(_context); return i; }
-            public void  action(AbstractCall c) { c.recordUsage(res.fieldUsages); };
+            public void  action(AbstractCall c)
+              {
+                if (!(c instanceof Call cc) || cc.calledFeatureKnown())
+                  {
+                    var feat = c.calledFeature();
+
+                    if (feat instanceof Feature f)
+                      {
+                        f.recordUsage();
+                      }
+                  }
+              };
           });
 
         _state = State.BOXED;
@@ -1960,15 +1989,7 @@ A ((Choice)) declaration must not contain a result type.
       res._module.checkTypes(this, context);
 
       // warn about unused, non public, non ignored fields
-      if (kind() == AbstractFeature.Kind.Field
-          && visibility().eraseTypeVisibility() != Visi.PUB  // public fields may be unused
-          && !featureName().isInternal()                     // don't warn for internal features
-          && !this.outer().featureName().isInternal()        // don't warn for inner features of internal features
-          && !featureName().isNameless()                     // don't warn for nameless features
-          && !isArgument()                                   // don't warn for arguments
-          && !res.fieldUsages.contains(this)                 // check if the field is used
-          && redefines().isEmpty()                           // don't warn if field is a redef
-          )
+      if (isUsageCheckRequired() && !isUsed())
         {
           AstErrors.unusedField(this);
         }
@@ -2042,7 +2063,7 @@ A ((Choice)) declaration must not contain a result type.
    * Syntactic sugar resolution of a feature f: For all expressions and
    * expressions in f's inheritance clause, contract, and implementation, resolve
    * syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -2149,7 +2170,7 @@ A ((Choice)) declaration must not contain a result type.
 
   /**
    * During type resolution, add a type parameter created for a free type like
-   * `T` in `f(x T) is ...`.
+   * {@code T} in {@code f(x T) is ...}.
    *
    * @param res the resolution instance.
    *
@@ -2259,8 +2280,12 @@ A ((Choice)) declaration must not contain a result type.
         result = result.resolve(res, outer().context());
       }
 
-    if (POSTCONDITIONS) ensure
-      (isCoTypesThisType() || Types.resolved == null || selfType() == Types.resolved.t_Const_String || result != Types.resolved.t_Const_String);
+    // NYI: CLEANUP: result != Types.resolved.t_void is currently necessary
+    // to enable cyclic type inference e.g. in reg_issue2182
+    if (result != null && result != Types.resolved.t_void)
+      {
+        _resultType = result;
+      }
 
     return result;
   }
@@ -2456,7 +2481,7 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Is this the `call` implementation of a lambda?
+   * Is this the {@code call} implementation of a lambda?
    */
   public boolean isLambdaCall()
   {
@@ -2500,6 +2525,37 @@ A ((Choice)) declaration must not contain a result type.
   public boolean definesUsableType()
   {
     return definesType() && !featureName().isInternal();
+  }
+
+  /**
+   * Record usage of this feature, i.e. mark it as used.
+   */
+  private void recordUsage()
+  {
+    _isUsed = true;
+  }
+
+  /**
+   * Has this feature been used?
+   */
+  private boolean isUsed()
+  {
+    return _isUsed;
+  }
+
+  /**
+   * Is this a feature for which an error should be shown if it is never used?
+   * i.e. a field that meets certain conditions
+   */
+  private boolean isUsageCheckRequired()
+  {
+    return kind() == AbstractFeature.Kind.Field
+          && visibility().eraseTypeVisibility() != Visi.PUB  // public fields may be unused
+          && !featureName().isInternal()                     // don't warn for internal features
+          && !this.outer().featureName().isInternal()        // don't warn for inner features of internal features
+          && !featureName().isNameless()                     // don't warn for nameless features
+          && !isArgument()                                   // don't warn for arguments
+          && redefines().isEmpty();                          // don't warn for unused redefinitions
   }
 
 

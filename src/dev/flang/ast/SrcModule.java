@@ -88,6 +88,9 @@ public interface SrcModule extends AbstractModule
    */
   Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
 
+
+  String name();
+
 }
 
 /* end of file */

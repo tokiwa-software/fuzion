@@ -29,7 +29,7 @@ package dev.flang.be.interpreter;
 import dev.flang.util.Errors;
 
 /**
- * Value <description>
+ * Value
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -320,7 +320,6 @@ public abstract class Value extends FUIRContext
   protected Object toNative()
   {
     Errors.fatal("NYI: toNative " + this.getClass().getName());
-    System.exit(1);
     return null;
   }
 

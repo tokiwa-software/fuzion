@@ -68,7 +68,7 @@ public class COptions extends FuzionOptions
 
   /**
    * Target to use for compilation
-   * <arch><sub>-<vendor>-<sys>-<env>
+   * {@code <arch><sub>-<vendor>-<sys>-<env>}
    *
    * e.g.: x86_64-pc-linux-gnu
    */
@@ -105,8 +105,8 @@ public class COptions extends FuzionOptions
 
 
   /*
-   * Get the absolute path of `p` as a String.
-   * `p` is relative to fuzionHome.
+   * Get the absolute path of {@code p} as a String.
+   * {@code p} is relative to fuzionHome.
    */
   public String pathOf(String p)
   {

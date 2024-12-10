@@ -388,6 +388,7 @@ FZ_INT = \
 
 DOC_FILES_FUMFILE = $(BUILD_DIR)/doc/files/fumfile.html     # fum file format documentation created with asciidoc
 DOC_DESIGN_JVM    = $(BUILD_DIR)/doc/design/jvm.html
+DOC_JAVA          = $(BUILD_DIR)/doc/java/index.html
 
 REF_MANUAL_SOURCE  = $(FZ_SRC)/doc/ref_manual/fuzion_reference_manual.adoc
 REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
@@ -410,8 +411,9 @@ REF_MANUAL_HTML    = $(BUILD_DIR)/doc/reference_manual/html/index.html
 DOCUMENTATION = \
 	$(DOC_FILES_FUMFILE) \
 	$(DOC_DESIGN_JVM)    \
-        $(REF_MANUAL_PDF)    \
-        $(REF_MANUAL_HTML)
+	$(REF_MANUAL_PDF)    \
+	$(REF_MANUAL_HTML)   \
+	$(DOC_JAVA)
 
 SHELL_SCRIPTS = \
 	bin/fz \
@@ -1113,7 +1115,7 @@ REF_MANUAL_ATTRIBUTES = \
 
 $(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
-	cd $(FZ_SRC) && git log lib/encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
@@ -1166,8 +1168,7 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	mkdir -p $(BUILD_DIR)/debugdocs
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
 	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
-# NYI replace with jwebserver?
-	python3 -m http.server 15306 --directory $(BUILD_DIR)/debugdocs
+	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
 
 # phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
 # This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would
@@ -1231,13 +1232,23 @@ run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $
 	printf "testing JVM backend: "; \
 	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) jvm
 
-.PHONY .SILENT: run_tests_jar
-run_tests_jar: $(FZ_JVM) $(BUILD_DIR)/tests
+.PHONY .SILENT: run_tests_jar_build
+run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
 	$(FZ) -jar $(BUILD_DIR)/tests/hello/HelloWorld.fz
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib \
-	PATH=$(PATH):$(BUILD_DIR)/lib \
-	DYLD_FALLBACK_LIBRARY_PATH=$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib \
+	LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(BUILD_DIR)/lib" \
+	PATH="$(PATH):$(BUILD_DIR)/lib" \
+	DYLD_FALLBACK_LIBRARY_PATH="$(DYLD_FALLBACK_LIBRARY_PATH):$(BUILD_DIR)/lib" \
 		$(JAVA) -jar HelloWorld.jar > /dev/null
+
+.PHONY .SILENT: run_tests_jar
+run_tests_jar: run_tests_jar_build
+	output1="Hello World!"; \
+	output2=$$(./HelloWorld); \
+	if [ "$$output1" != "$$output2" ]; then \
+		echo "Outputs are different $$output1, $$output2!"; \
+		exit 1; \
+	fi
+	rm -f HelloWorld HelloWorld.jar libfuzion.so libfuzion.dylib fuzion.dll
 
 .PHONY: clean
 clean:
@@ -1326,7 +1337,7 @@ lint/java:
 
 .PHONY: lint/javadoc
 lint/javadoc:
-	$(JAVAC) -Xdoclint:all,-syntax,-html,-missing -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+	$(JAVAC) -Xdoclint:all,-missing -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
 		$(JAVA_FILES_AST) \
@@ -1410,6 +1421,10 @@ endif
 # endif
 
 
+$(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(shell find ./src -name "*.java" | cut -c3- | grep -v lsp | grep -v FuzionLogo) $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+
+
 ########
 # Begin : Fuzion Language Server
 ########
@@ -1460,7 +1475,7 @@ lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
 LSP_FUZION_HOME = fuzion/build
 LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
-LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 

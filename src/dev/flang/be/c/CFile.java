@@ -82,7 +82,7 @@ public class CFile extends ANY
    *
    * @param name the name of the binary
    *
-   * @param keepGeneratedCode true to create a file `name + ".c"` in the current
+   * @param keepGeneratedCode true to create a file {@code name + ".c"} in the current
    * directory and keep it, false to create a temp file that will be deleted on
    * exit.
    *

@@ -86,7 +86,7 @@ public class Tag extends ExprWithPos
         || taggedType
             .choiceGenerics(context)
             .stream()
-            .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))
+            .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
             .count() == 1
         // NYI why is value.type() sometimes unit
         // even though none of the choice elements is unit
@@ -97,7 +97,7 @@ public class Tag extends ExprWithPos
     this._tagNum = (int)_taggedType
       .choiceGenerics(context)
       .stream()
-      .takeWhile(cg -> !cg.isDirectlyAssignableFrom(value.type(), context))
+      .takeWhile(cg -> !cg.isAssignableFromWithoutTagging(value.type(), context))
       .count();
   }
 

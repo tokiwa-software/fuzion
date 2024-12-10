@@ -143,7 +143,7 @@ is
         63
 
     for
-      res list u8 := nil, res ++ [b0, b1, b2] # contains the decoded data at the end
+      res := (Sequence u8).empty, res ++ [b0, b1, b2] # contains the decoded data at the end
       nxt := 0, nxt + 4
       last_err := false, is_err
       sxt_last array (outcome u32) := [], sextets

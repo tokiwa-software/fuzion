@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.ip_address
+#
+# -----------------------------------------------------------------------
+
+# ip_address - stores an IP address an an unsigned 128-bit integer,
+# regardless of whether it is an IPv4 or IPv6 address.
+#
+# in the case of an IPv4 address, this is the canonical mapping of that
+# address to an IPv6 address.
+#
+public ip_address (val u128) : property.equatable is
+
+  # is the stored IP address an IPv4 or IPv6 address?
+  #
+  public version ip_version =>
+    ipv4_prefix_netmask := u128 0x0000_0000_0000_0000 0x0000_ffff_0000_0000
+    if (val & ipv4_prefix_netmask) = (ipv4_prefix_netmask & ipv4_prefix_netmask)
+      family.ipv4
+    else
+      family.ipv6
+
+
+  # are two given IP addresses equal?
+  #
+  public redef type.equality (a, b ip_address.this) bool =>
+    a.val = b.val
+
+
+# version of an IP address, either IPv4 or IPv6
+#
+public ip_version : choice family.ipv4 family.ipv6 is

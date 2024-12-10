@@ -197,7 +197,7 @@ module net is
   #
   # not useful for UDP sockets (information not necessarily available)
   #
-  module get_peer_address(sockfd i32) outcome (list u8) =>
+  module get_peer_address(sockfd i32) outcome (Sequence u8) =>
     iarr := fuzion.sys.internal_array_init u8 16
     l := fzE_get_peer_address sockfd iarr.data
     iarr.as_array.take l

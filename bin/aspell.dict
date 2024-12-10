@@ -1731,7 +1731,6 @@ Trigraphs
 tslot
 typeFromDescriptor
 typeinference
-typeOfConstant
 unicodes
 unresolvedGenerics
 valueOf

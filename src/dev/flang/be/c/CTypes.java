@@ -29,6 +29,7 @@ package dev.flang.be.c;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -183,7 +184,7 @@ public class CTypes extends ANY
    * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
-  static String scalar(FUIR.SpecialClazzes sc)
+  static String scalar(SpecialClazzes sc)
   {
     return switch (sc)
       {
@@ -335,7 +336,7 @@ public class CTypes extends ANY
 
 
   /**
-   * Get the matching atomic type for `rc`.
+   * Get the matching atomic type for {@code rc}.
    *
    * For references this is: atomic_uintptr_t
    * For scalars this is: e.g. atomic_uint_least32_t

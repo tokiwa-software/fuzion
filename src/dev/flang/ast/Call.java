@@ -35,6 +35,8 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
+import dev.flang.util.YesNo;
 import dev.flang.util.Pair;
 
 
@@ -179,6 +181,9 @@ public class Call extends AbstractCall
   AbstractType[] _resolvedFormalArgumentTypes = null;
 
 
+  private boolean _recursiveResolveType = false;
+
+
   /**
    * Will be set to true for a call to a direct parent feature in an inheritance
    * call.
@@ -188,8 +193,8 @@ public class Call extends AbstractCall
 
 
   /**
-   * Flag that is set be resolveImmediateFunctionCall if a call `f()` is
-   * converted to `f.call` for nullary functions or lazy values.  This is needed
+   * Flag that is set be resolveImmediateFunctionCall if a call {@code f()} is
+   * converted to {@code f.call} for nullary functions or lazy values.  This is needed
    * to avoid a possible error for a potential partial application ambiguity.
    */
   boolean _wasImplicitImmediateCall = false;
@@ -198,10 +203,10 @@ public class Call extends AbstractCall
 
   /**
    * A call that has been moved to a new instance of Call due to syntax sugar.
-   * In particular, a call "a < b" on the right hand side of a chained boolean
+   * In particular, a call {@code a < b} on the right hand side of a chained boolean
    * call will be moved here while this will be replaced by a call to
-   * `bool.infix &&`.  Also, an implicit call like `f()` that is turned into
-   * `f.call`  will see the  new call moved to this.
+   * {@code bool.infix &&}.  Also, an implicit call like {@code f()} that is turned into
+   * {@code f.call}  will see the  new call moved to this.
    */
   Call _movedTo = null;
 
@@ -501,7 +506,7 @@ public class Call extends AbstractCall
       .applyTypePars(_calledFeature, _generics);
 
     if (POSTCONDITIONS) ensure
-      (result != null && result != Types.resolved.t_Const_String);
+      (result != null);
 
     return result;
   }
@@ -511,8 +516,8 @@ public class Call extends AbstractCall
   /**
    * Is the target of this call a type parameter?
    *
-   * @return true for a call to `T.xyz`, `U.xyz` or `V.xyz` in a feature
-   * `f(T,U,V type)`, false otherwise.
+   * @return true for a call to {@code T.xyz}, {@code U.xyz} or {@code V.xyz} in a feature
+   * {@code f(T,U,V type)}, false otherwise.
    */
   private boolean targetIsTypeParameter()
   {
@@ -523,8 +528,8 @@ public class Call extends AbstractCall
   /**
    * Get the type of the target as seen by this call
    *
-   * When calling `X.f` and `X` is a type parameter and `f` is a constructor,
-   * then `X`'s type is the type `X`, while for a function `f` the type is `X`'s
+   * When calling {@code X.f} and {@code X} is a type parameter and {@code f} is a constructor,
+   * then {@code X}'s type is the type {@code X}, while for a function {@code f} the type is {@code X}'s
    * constraint.
    *
    * @param context the source code context where this Call is used
@@ -607,11 +612,15 @@ public class Call extends AbstractCall
    *
    * check if we have a call of the form
    *
+   * <pre>{@code
    *   a < b <= c
+   * }</pre>
    *
    * and convert it to
    *
+   * <pre>{@code
    *   a < {tmp := b; tmp} && tmp <= c
+   * }</pre>
    *
    * @param res Resolution instance
    *
@@ -762,7 +771,7 @@ public class Call extends AbstractCall
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
-       Errors.any() || _target        != Expr.ERROR_VALUE,
+       Errors.any() || _target        != Call.ERROR,
        Errors.any() || _calledFeature != null || _pendingError != null || targetTypeUndefined(),
        Errors.any() || _target        != null || _pendingError != null);
 
@@ -833,7 +842,7 @@ public class Call extends AbstractCall
     if (!Types._options.isLanguageServer())
       {
         _calledFeature = Types.f_ERROR;
-        _target = Expr.ERROR_VALUE;
+        _target = Call.ERROR;
         _actuals = new List<>();
         _generics = new List<>();
         _type = Types.t_ERROR;
@@ -859,7 +868,7 @@ public class Call extends AbstractCall
   FeatureAndOuter partiallyApplicableAlternative(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionType(),
+      (expectedType.isFunctionTypeExcludingLazy(),
        _name != null);
 
     FeatureAndOuter result = null;
@@ -883,11 +892,11 @@ public class Call extends AbstractCall
 
 
   /**
-   * Is this an operator call like `a+b` or `-x` in contrast to a named call `f`
-   * or `t.g`?
+   * Is this an operator call like {@code a+b} or {@code -x} in contrast to a named call {@code f}
+   * or {@code t.g}?
    *
    * @param parenthesesAllowed true if an operator call in parentheses is still
-   * ok.  (+x)`.
+   * ok.  {@code (+x)}.
    */
   boolean isOperatorCall(boolean parenthesesAllowed)
   {
@@ -957,7 +966,7 @@ public class Call extends AbstractCall
    * called repeatedly with different outer arguments as a result of this call
    * being moved into a different feature (lambda, lazy, etc.).
    *
-   * @param re the resolution instance
+   * @param res the resolution instance
    *
    * @param context the source code context where this Call is used
    */
@@ -1164,7 +1173,10 @@ public class Call extends AbstractCall
   @Override
   AbstractType typeForInferencing()
   {
-    return (_calledFeature instanceof Feature f) && f.isAnonymousInnerFeature() && f.inherits().getFirst().typeForInferencing() != null && f.inherits().getFirst().typeForInferencing().isRef()
+    return (_calledFeature instanceof Feature f)
+      && f.isAnonymousInnerFeature()
+      && f.inherits().getFirst().typeForInferencing() != null
+      && f.inherits().getFirst().typeForInferencing().isRef() == YesNo.yes
       ? f.inherits().getFirst().typeForInferencing()
       : _type;
   }
@@ -1252,7 +1264,7 @@ public class Call extends AbstractCall
    * with an open type parameter result in case _select >= 0 and t is not a type
    * parameter.
    *
-   * This converts, e.g., `t.3` for a tuple `t` to `t.values.3`.
+   * This converts, e.g., {@code t.3} for a tuple {@code t} to {@code t.values.3}.
    *
    * @param res the resolution instance.
    *
@@ -1270,18 +1282,18 @@ public class Call extends AbstractCall
    * Helper function called during resolveTypes to resolve syntactic sugar that
    * allows directly calling a function returned by a call.
    *
-   * If this is a normal call (e.g. `f.g`) whose result is a function type,
-   * (`(i32,i32) -> f64`), and if `g` does not take any arguments, syntactic
-   * sugar allows an implicit call to `Function.call`, i.e., `f.g 3 5` is
-   * a short form of `f.g.call 3 5`.
+   * If this is a normal call (e.g. {@code f.g}) whose result is a function type,
+   * ({@code (i32,i32) -> f64}), and if {@code g} does not take any arguments, syntactic
+   * sugar allows an implicit call to {@code Function.call}, i.e., {@code f.g 3 5} is
+   * a short form of {@code f.g.call 3 5}.
    *
-   * NYI: we could also permit `(f.g x y) 3 5` as a short form for `(f.g x
-   * y).call 3 5` in case `g` takes arguments.  But this might be too confusing
+   * NYI: we could also permit {@code (f.g x y) 3 5} as a short form for {@code (f.g x
+   * y).call 3 5{@code  in case }g} takes arguments.  But this might be too confusing
    * and it would require a change in the grammar.
    *
    * @param res the resolution instance.
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this assignment is used
    *
    * @return result this in case this was not an immediate call, otherwise the
    * resulting call to Function/Routine.call.
@@ -1506,7 +1518,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper for resolveType to process _select, i.e., check that _select is < 0
+   * Helper for resolveType to process _select, i.e., check that _select is &lt; 0
    * and t is not open generic, or else _select chooses the actual open generic
    * type.
    *
@@ -1557,21 +1569,21 @@ public class Call extends AbstractCall
    *
    * @param t the formal type to be adjusted.
    *
-   * @param arg true if `t` is the type of an argument, false if `t` is the result type
+   * @param arg true if {@code t} is the type of an argument, false if {@code t} is the result type
    *
-   * @param the declared argument (if arg == true) or the called feature (otherwise).
+   * @param calledOrArg the declared argument (if arg == true) or the called feature (otherwise).
    *
    * @param context the source code context where this Call is used
    *
-   * @return a type derived from t where `this.type` is replaced by actual types
+   * @return a type derived from t where {@code this.type} is replaced by actual types
    * from the call's target where this is possible.
    */
   private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
   {
     /**
-     * For a call `T.f` on a type parameter whose result type contains
-     * `this.type`, make sure we replace the implicit type parameter to
-     * `this.type`.
+     * For a call {@code T.f} on a type parameter whose result type contains
+     * {@code this.type}, make sure we replace the implicit type parameter to
+     * {@code this.type}.
      *
      * example:
      *
@@ -1581,8 +1593,8 @@ public class Call extends AbstractCall
      *
      *   equals(T type : equatable, x, y T) => T.equality x y
      *
-     * For the call `T.equality x y`, we must replace the formal argument type
-     * for `a` (and `b`) by `T`.
+     * For the call {@code T.equality x y}, we must replace the formal argument type
+     * for {@code a} (and {@code b}) by {@code T}.
      */
     var target = target();
     var tt = target().type();
@@ -1852,7 +1864,7 @@ public class Call extends AbstractCall
           {
             var actual = aargs.next();
             var t = frml.resultTypeIfPresent(res);
-            if (t != null && t.isFunctionType())
+            if (t != null && t.isFunctionTypeExcludingLazy())
               {
                 var a = resultExpression(actual);
                 Expr l = a.propagateExpectedTypeForPartial(res, context, t);
@@ -2016,9 +2028,9 @@ public class Call extends AbstractCall
 
   /**
    * During type inference for type parameters, determine the type of an actual
-   * argument in the context of `outer`.
+   * argument in the context of {@code outer}.
    *
-   * In case `actual`'s type depends on a type parameter g of a feature f and
+   * In case {@code actual}'s type depends on a type parameter g of a feature f and
    * the context is the corresponding type feature ft, then g will be replaced
    * by the corresponding type parameter of ft.
    *
@@ -2233,7 +2245,7 @@ public class Call extends AbstractCall
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = new boolean[] { false };
-    if (formalType.isFunctionType() || formalType.isLazyType())
+    if (formalType.isFunctionTypeExcludingLazy() || formalType.isLazyType())
       {
         var at = actualArgType(res, formalType, frml, context);
         if (!at.containsUndefined(true))
@@ -2473,7 +2485,6 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  private boolean _recursiveResolveType = false;
   public Call resolveTypes(Resolution res, Context context)
   {
     Call result = this;
@@ -2679,10 +2690,10 @@ public class Call extends AbstractCall
   public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     Expr r = this;
-    if (t.isFunctionType()         &&
+    if (t.isFunctionTypeExcludingLazy()         &&
         !_wasImplicitImmediateCall &&
         _type != Types.t_ERROR     &&
-        (_type == null || !_type.isAnyFunctionType()))
+        (_type == null || !_type.isFunctionType()))
       {
         r = propagateExpectedTypeForPartial(res, context, t);
         if (r != this)
@@ -2726,7 +2737,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper for propagateExpectedType and wrapActualsInLazy to apply `f` to all
+   * Helper for propagateExpectedType and wrapActualsInLazy to apply {@code f} to all
    * actual value arguments and their formal types.
    *
    * @param f function to apply to all actuals
@@ -2810,7 +2821,7 @@ public class Call extends AbstractCall
         while (o != null && !o.isGenericArgument())
           {
             o = o.outer();
-            if (o != null && o.isRef() && !o.feature().isRef())
+            if (o != null && o.isRef() == YesNo.yes && !o.feature().isRef())
               {
                 AstErrors.illegalCallResultType(this, _type, o);
                 o = null;
@@ -2829,8 +2840,8 @@ public class Call extends AbstractCall
               {
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (CHECKS) check
-                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR_VALUE));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR_VALUE && !frmlT.isDirectlyAssignableFrom(actl.type(), context))
+                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && !frmlT.isAssignableFromWithoutTagging(actl.type(), context))
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
@@ -2883,9 +2894,9 @@ public class Call extends AbstractCall
 
 
   /**
-   * Syntactic sugar resolution: This does the following:
+   * Syntactic sugar resolution: This does the following:<p>
    *
-   *  - convert boolean operations &&, || and : into if-expressions
+   *  - convert boolean operations {@code &&}, {@code ||} and {@code :} into if-expressions
    *  - convert repeated boolean operations ! into identity   // NYI
    *  - perform constant propagation for basic algebraic ops  // NYI
    *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI
@@ -2946,12 +2957,12 @@ public class Call extends AbstractCall
 
 
   /**
-   * This is `true` if the precondition does not need to be checked before this
+   * This is {@code true} if the precondition does not need to be checked before this
    * call is done.
    *
-   * @return `true` for a call to a feature `f` in `f.preAndCallFeature()` since
+   * @return {@code true} for a call to a feature {@code f} in {@code f.preAndCallFeature()} since
    * this call does not require precondition checking and replacing it by a call
-   * to `f.preAndCallFeature()` would result in endless recursion.
+   * to {@code f.preAndCallFeature()} would result in endless recursion.
    */
   boolean preChecked()
   {
@@ -2991,6 +3002,13 @@ public class Call extends AbstractCall
       }
       @Override
       Expr box(AbstractType frmlT, Context context)
+      {
+        return this;
+      }
+      public void setSourceRange(SourceRange r)
+      { // do not change the source position if there was an error.
+      }
+      public Expr visit(FeatureVisitor v, AbstractFeature outer)
       {
         return this;
       }
