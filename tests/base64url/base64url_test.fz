@@ -67,7 +67,7 @@ base64url_test is
 
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
       (plain, code_expected) := tup
@@ -103,7 +103,7 @@ base64url_test is
       \n
       Testing base64url decoding..."""
   dec_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
       (plain_exp, code) := tup

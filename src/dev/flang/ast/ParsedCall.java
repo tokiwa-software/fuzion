@@ -61,10 +61,10 @@ public class ParsedCall extends Call
 
 
   /**
-   * An implicit call to `Function.call` might be added during resolution of a
-   * Function value like `Lazy`.  To prevent repeated resolution to do this
-   * repeatedly, this flag records that a call `x` has been pushed down to be
-   * the target of a call `x.call`.
+   * An implicit call to {@code Function.call} might be added during resolution of a
+   * Function value like {@code Lazy}.  To prevent repeated resolution to do this
+   * repeatedly, this flag records that a call {@code x} has been pushed down to be
+   * the target of a call {@code x.call}.
    *
    * Without this, this might happen repeatedly.
    */
@@ -139,14 +139,14 @@ public class ParsedCall extends Call
 
 
   /**
-   * Is this an operator expression of the form `expr1 | expr2`?  This is used
-   * by `asParsedType` for choice-type syntax sugar.
+   * Is this an operator expression of the form {@code expr1 | expr2}?  This is used
+   * by {@code asParsedType} for choice-type syntax sugar.
    *
-   * @param parenthesesAllowed if true, `(expr1 | expr2)` is accepted, with an
+   * @param parenthesesAllowed if true, {@code (expr1 | expr2)} is accepted, with an
    * arbitrary number of parentheses, if false there must not be any surrounding
    * parentheses.
    *
-   * @true iff this is a call to `infix |`, possibly with surrounding
+   * @true iff this is a call to {@code infix |}, possibly with surrounding
    * parentheses depending on the argument's value.
    */
   boolean isInfixPipe(boolean parenthesesAllowed)
@@ -156,10 +156,10 @@ public class ParsedCall extends Call
 
 
   /**
-   * Is this an operator expression of the form `expr1 -> expr2`?  This is used
-   * by `asParsedType` for function-type syntax sugar.
+   * Is this an operator expression of the form {@code expr1 -> expr2}?  This is used
+   * by {@code asParsedType} for function-type syntax sugar.
    *
-   * @true iff this is a call to `infix ->`.
+   * @true iff this is a call to {@code infix ->}.
    */
   boolean isInfixArrow()
   {
@@ -270,11 +270,11 @@ public class ParsedCall extends Call
    *
    * check if we have a call of the form
    *
-   *   a < b <= c
+   * <pre>{@code a < b <= c}</pre>
    *
    * and convert it to
    *
-   *   a < {tmp := b; tmp} && tmp <= c
+   * <pre>{@code a < {tmp := b; tmp} && tmp <= c}</pre>
    *
    * @param res Resolution instance
    *
@@ -324,14 +324,18 @@ public class ParsedCall extends Call
    * Predicate that is true if this call is the result of pushArgToTemp in a
    * chain of boolean operators.  This is used for longer chains such as
    *
-   *   a < b <= c < d
+   * <pre>
+   *   {@code a < b <= c < d }
+   * </pre>
    *
    * which is first converted into
    *
-   *   (a < {t1 := b; t1} && t1 <= c) < d
+   * <pre>
+   *   {@code (a < {t1 := b; t1} && t1 <= c) < d}
+   * </pre>
    *
-   * where this returns 'true' for the call 't1 <= c', that in the next steps
-   * needs to get 'c' stored into a temporary variable as well.
+   * where this returns {@code true} for the call {@code t1 <= c}, that in the next steps
+   * needs to get {@code c} stored into a temporary variable as well.
    */
   boolean isChainedBoolRHS()
   {
@@ -342,7 +346,7 @@ public class ParsedCall extends Call
   /**
    * Is this a call to an operator that may be
    * considered valid in a chained boolean?
-   * I.e.: <,>,≤,≥,=,<=,>=,!=
+   * I.e.: {@literal <,>,≤,≥,=,<=,>=,!=}
    */
   private boolean isValidOperatorInChainedBoolean()
   {
@@ -363,15 +367,19 @@ public class ParsedCall extends Call
   /**
    * Check if this call is a chained boolean call of the form
    *
+   * <pre>{@code
    *   b <= c < d
+   * }</pre>
    *
    * or, if the LHS is also a chained bool
    *
+   * <pre>{@code
    *   (a < {t1 := b; t1} && t1 <= c) < d
+   * }</pre>
    *
    * and return the part of the LHS that has the term that will need to be
-   * stored in a temp variable, 'c', as an argument, i.e., 'b <= c' or 't1 <=
-   * c', resp.
+   * stored in a temp variable, {@code c}, as an argument, i.e., {@code b <= c} or {@code t1 <=
+   * c}, resp.
    *
    * @param res Resolution instance
    *
@@ -419,7 +427,7 @@ public class ParsedCall extends Call
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionType());
+      (expectedType.isFunctionTypeExcludingLazy());
 
     // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
     Expr l = this;
@@ -429,7 +437,7 @@ public class ParsedCall extends Call
           {
             res.resolveTypes(_calledFeature);
             var rt = _calledFeature.resultTypeIfPresent(res);
-            if (rt != null && (!rt.isAnyFunctionType() || rt.arity() != expectedType.arity()))
+            if (rt != null && (!rt.isFunctionType() || rt.arity() != expectedType.arity()))
               {
                 l = applyPartially(res, context, expectedType);
               }
@@ -557,7 +565,7 @@ public class ParsedCall extends Call
       }
     else
       {
-        result = ERROR_VALUE;
+        result = ERROR;
       }
     return result;
   }
@@ -614,9 +622,9 @@ public class ParsedCall extends Call
 
   /**
    * Create a new call and push the current call to the target of that call.
-   * This is used for implicit calls to Function and Lazy values where `f()` is
-   * converted to `f.call()`, and for implicit fields in a select call such as,
-   * e.g., a tuple access `t.3` that is converted to `t.values.3`.
+   * This is used for implicit calls to Function and Lazy values where {@code f()} is
+   * converted to {@code f.call()}, and for implicit fields in a select call such as,
+   * e.g., a tuple access {@code t.3} that is converted to {@code t.values.3}.
    *
    * The actual arguments and _select of this call are moved over to the new
    * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
@@ -650,7 +658,7 @@ public class ParsedCall extends Call
         @Override
         public Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
         {
-          if (expectedType.isFunctionType())
+          if (expectedType.isFunctionTypeExcludingLazy())
             { // produce an error if the original call is ambiguous with partial application
               ParsedCall.this.checkPartialAmbiguity(res, context, expectedType);
             }
@@ -670,9 +678,10 @@ public class ParsedCall extends Call
   Call resolveImplicitSelect(Resolution res, Context context, AbstractType t)
   {
     Call result = this;
-    if (_select >= 0 && !t.isGenericArgument())
+    if (_select >= 0 && !calledFeature().resultType().isOpenGeneric())
       {
-        var f = res._module.lookupOpenTypeParameterResult(t.feature(), this);
+        var typeParameter = t.isGenericArgument() ? t.genericArgument().constraint(context).feature() : t.feature();
+        var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
         if (f != null)
           {
             // replace Function call `c.123` by `c.f.123`:
@@ -707,7 +716,7 @@ public class ParsedCall extends Call
   private boolean isImmediateFunctionCall()
   {
     return
-      _type.isFunctionType()                      &&
+      _type.isFunctionTypeExcludingLazy()                      &&
       _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       _actuals != NO_PARENTHESES

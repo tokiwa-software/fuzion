@@ -140,7 +140,6 @@ public class Types extends ANY
     public final AbstractType t_Any;
     private final AbstractType t_fuzion;
     public final AbstractType t_String;
-    public final AbstractType t_Const_String;
     public final AbstractType t_unit;
 
     /* void will be used as the initial result type of tail recursive calls of
@@ -167,7 +166,6 @@ public class Types extends ANY
     public final AbstractFeature f_bool_TERNARY;
     public final AbstractFeature f_debug;
     public final AbstractFeature f_debug_level;
-    public final AbstractFeature f_Const_String_utf8_data;
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
     public final AbstractFeature f_safety;
@@ -215,7 +213,6 @@ public class Types extends ANY
       t_bool                    = universe.get(mod, "bool", 0).selfType();
       t_fuzion                  = universe.get(mod, "fuzion", 0).selfType();
       t_String                  = universe.get(mod, FuzionConstants.STRING_NAME, 0).selfType();
-      t_Const_String            = universe.get(mod, "Const_String", 0).selfType();
       t_Any                     = universe.get(mod, FuzionConstants.ANY_NAME, 0).selfType();
       t_unit                    = universe.get(mod, FuzionConstants.UNIT_NAME, 0).selfType();
       t_void                    = universe.get(mod, "void", 0).selfType();
@@ -233,7 +230,6 @@ public class Types extends ANY
       f_bool_OR                 = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||"   , 1) : null;
       f_bool_IMPLIES            = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":"    , 1) : null;
       f_bool_TERNARY            = forFrontEnd ? f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :", 3) : null;
-      f_Const_String_utf8_data  = universe.get(mod, "Const_String", 0).get(mod, "utf8_data", 0);
       f_debug                   = universe.get(mod, "debug", 0);
       f_debug_level             = universe.get(mod, "debug_level", 0);
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
@@ -313,7 +309,6 @@ public class Types extends ANY
         t_bool       ,
         t_fuzion     ,
         t_String     ,
-        t_Const_String,
         t_Any        ,
         t_unit       ,
         t_void       ,

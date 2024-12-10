@@ -60,9 +60,9 @@ public class Effects extends ANY
 
 
   /**
-   * The intermediate representation
+   * The dfa
    */
-  final FUIR _fuir;
+  final DFA _dfa;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -71,13 +71,13 @@ public class Effects extends ANY
   /**
    * Create Effects code backend for given intermediate code.
    *
-   * @param options arguments provided to `fz -effects` command.
+   * @param options arguments provided to {@code fz -effects} command.
    *
-   * @param fuir the intermediate code.
+   * @param dfa the DFA.
    */
-  public Effects(FuzionOptions options, FUIR fuir)
+  public Effects(FuzionOptions options, DFA dfa)
   {
-    _fuir = fuir;
+    _dfa = dfa;
     this._options = options;
   }
 
@@ -90,18 +90,17 @@ public class Effects extends ANY
    */
   public void find()
   {
-    var dfa = new DFA(_options, _fuir);
-    dfa.dfa();
-    dfa._defaultEffects
+    var _fuir = _dfa.new_fuir();
+    _dfa._defaultEffects
       .keySet()
       .stream()
       .forEach(t ->
                {
                  if (_options.verbose(1))
                    {
-                     say("EFFECT type "+_fuir.clazzAsString(t)+" default used is "+dfa._defaultEffects.get(t));
+                     say("EFFECT type "+_fuir.clazzAsString(t)+" default used is "+_dfa._defaultEffects.get(t));
                      var sb = new StringBuilder();
-                     var ignore = dfa._defaultEffectContexts.get(t).showWhy(sb);
+                     var ignore = _dfa._defaultEffectContexts.get(t).showWhy(sb);
                      say(sb);
                    }
                  else

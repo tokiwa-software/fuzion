@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * i64Value is a value of type i64
@@ -110,7 +110,7 @@ public class i64Value extends Value
    */
   void checkStaticClazz(int expected)
   {
-    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_i64))
+    if (expected != fuir().clazz(SpecialClazzes.c_i64))
       {
         throw new Error("i64 value not allowed for clazz " + expected);
       }

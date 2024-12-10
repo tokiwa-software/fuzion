@@ -434,7 +434,7 @@ public class AstErrors extends ANY
           }
         else
           {
-            remedy = !frmlT.isRef() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
+            remedy = frmlT.isRef().no() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
                         "To solve this you could:\n" + //
                             (frmlT.isChoice() ? "" : "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n") +
                             "  • change the type of the target " + ss(target) + " to " + s(actlT) + ", or\n" +
@@ -1244,8 +1244,8 @@ public class AstErrors extends ANY
    *
    *   f(x some_type_with_a_typo) => x.g
    *
-   * where `x.g` is not found since the type of `x` has a typo and is hence
-   * turned into a free type with constraint `Any`, which does not declare `x`
+   * where {@code x.g} is not found since the type of {@code x} has a typo and is hence
+   * turned into a free type with constraint {@code Any}, which does not declare {@code x}
    */
   static String solutionAccidentalFreeType(Expr target)
   {
@@ -1308,7 +1308,7 @@ public class AstErrors extends ANY
 
   private static boolean noErrorInArguments(Call call)
   {
-    return call.actuals().stream().allMatch(x -> x != Call.ERROR_VALUE);
+    return call.actuals().stream().allMatch(x -> x != Call.ERROR);
   }
 
   private static String solutionLambda(Call call)
@@ -2053,8 +2053,8 @@ public class AstErrors extends ANY
    *   v r := if rand 2 = 1 then h1 else h2
    *   x := v.g
    *
-   * The problem is that `v` may refer to `h1` or `h2` such that `v.g` will
-   * result in either `h1.e` or `h2.e`.
+   * The problem is that {@code v} may refer to {@code h1} or {@code h2} such that {@code v.g} will
+   * result in either {@code h1.e} or {@code h2.e}.
    *
    * @param c the call with this problem
    *

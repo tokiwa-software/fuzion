@@ -32,7 +32,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.FUIR.SpecialClazzes;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -109,19 +109,19 @@ public class Intrinsics extends ANY
           var new_value = A1;
           var tmp = new CIdent("tmp");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
               if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
@@ -156,19 +156,19 @@ public class Intrinsics extends ANY
           var tmp = new CIdent("tmp");
           var res = new CIdent("set_successful");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
               if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ))
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
@@ -183,8 +183,8 @@ public class Intrinsics extends ANY
                 }
               else
                 {
-                  if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32) ||
-                      c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64))
+                  if (c._fuir.clazzIs(rc, SpecialClazzes.c_f32) ||
+                      c._fuir.clazzIs(rc, SpecialClazzes.c_f64))
                     {
                       eq = CExpr.eq(tmp, expected);
                     }
@@ -211,18 +211,18 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var r =
             c._fuir.clazzIsRef(rc) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f32 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_f64 ) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool) ||
-            c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit);
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_f64 ) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
+            c._fuir.clazzIs(rc, SpecialClazzes.c_unit);
           return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
         });
 
@@ -233,20 +233,20 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var tmp = new CIdent("tmp");
           CStmnt code;
-          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(
@@ -275,20 +275,20 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var new_value = A0;
           var code = CStmnt.EMPTY;
-          if (c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_unit))
+          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
           else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, FUIR.SpecialClazzes.c_bool))
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
             {
               var f = c.accessField(outer, ac, v);
               code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
@@ -509,19 +509,19 @@ public class Intrinsics extends ANY
         /* NYI: The C standard does not guarantee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
          */
-    put("i8.prefix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int8const (0), outer, '-', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
-    put("i16.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int16const(0), outer, '-', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int32const(0), outer, '-', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int64const(0), outer, '-', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
-    put("i8.infix -°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
-    put("i16.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
-    put("i8.infix +°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
-    put("i16.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
-    put("i8.infix *°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret());
+    put("i8.prefix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int8const (0), outer, '-', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
+    put("i16.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int16const(0), outer, '-', SpecialClazzes.c_u16, SpecialClazzes.c_i16).ret());
+    put("i32.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int32const(0), outer, '-', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.prefix -°"        , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int64const(0), outer, '-', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
+    put("i8.infix -°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
+    put("i16.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u16, SpecialClazzes.c_i16).ret());
+    put("i32.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.infix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '-', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
+    put("i8.infix +°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
+    put("i16.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u16, SpecialClazzes.c_i16).ret());
+    put("i32.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.infix +°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '+', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
+    put("i8.infix *°"          , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
     /**
      * This is intentionally cast to u32 and not u16.
      * Read why here:
@@ -529,9 +529,9 @@ public class Intrinsics extends ANY
      * https://github.com/llvm/llvm-project/issues/25954
      * https://stackoverflow.com/questions/23994293/inconsistent-behaviour-of-implicit-conversion-between-unsigned-and-bigger-signed
      */
-    put("i16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i16).ret());
-    put("i32.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret());
-    put("i64.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret());
+    put("i16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u32, SpecialClazzes.c_i16).ret());
+    put("i32.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u32, SpecialClazzes.c_i32).ret());
+    put("i64.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u64, SpecialClazzes.c_i64).ret());
     put("i8.div"               ,
         "i16.div"              ,
         "i32.div"              ,
@@ -592,7 +592,7 @@ public class Intrinsics extends ANY
      * https://github.com/llvm/llvm-project/issues/25954
      * https://stackoverflow.com/questions/23994293/inconsistent-behaviour-of-implicit-conversion-between-unsigned-and-bigger-signed
      */
-    put("u16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i16).ret());
+    put("u16.infix *°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, outer, A0, '*', SpecialClazzes.c_u32, SpecialClazzes.c_i16).ret());
     put("u8.div"               ,
         "u16.div"              ,
         "u32.div"              ,
@@ -955,7 +955,7 @@ public class Intrinsics extends ANY
                                                                                          "fzE_java_object_is_null",
                                                                                          new List<CExpr>(outer.field(
                                                                                            c._names.fieldName(c._fuir
-                                                                                             .clazz_fuzionJavaObject_Ref()))
+                                                                                             .lookupJavaRef(c._fuir.clazzOuterClazz(cl))))
                                                                                            .castTo("jobject")))
                                                                                          .cond(c._names.FZ_TRUE,
                                                                                            c._names.FZ_FALSE)
@@ -970,13 +970,13 @@ public class Intrinsics extends ANY
           return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
             .call("fzE_array_get",
               new List<CExpr>(
-                c.javaRefField(A0).castTo("jarray"),
+                A0.castTo("jarray"),
                 A1,
                 A2.castTo("char *"))),
             false);
         }
     });
-    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(c.javaRefField(A0).castTo("jarray"))).ret());
+    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(A0.castTo("jarray"))).ret());
     put("fuzion.java.array_to_java_object0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
@@ -991,9 +991,6 @@ public class Intrinsics extends ANY
           var elements = c._names.newTemp();
           return CStmnt
             .seq(
-              c._fuir.getSpecialClazz(elementType) == SpecialClazzes.c_NOT_FOUND
-                                                                              ? c.extractJValues(elements, A0)
-                                                                              : CStmnt.EMPTY,
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_array_to_java_object0",
                   new List<CExpr>(
@@ -1013,8 +1010,8 @@ public class Intrinsics extends ANY
           ? noJava
           : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
               .call("fzE_get_field0",
-                new List<>(c.javaRefField(A0).castTo("jobject"),
-                  c.javaRefField(A1).castTo("jstring"),
+                new List<>(A0.castTo("jobject"),
+                  A1.castTo("jstring"),
                   A2.castTo("char *"))),
             false));
     put("fuzion.java.get_static_field0",
@@ -1023,8 +1020,8 @@ public class Intrinsics extends ANY
           ? noJava
           : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
               .call("fzE_get_static_field0",
-                new List<>(c.javaRefField(A0).castTo("jstring"),
-                  c.javaRefField(A1).castTo("jstring"),
+                new List<>(A0.castTo("jstring"),
+                  A1.castTo("jstring"),
                   A2.castTo("char *"))),
               false));
     put("fuzion.java.set_field0",
@@ -1033,9 +1030,9 @@ public class Intrinsics extends ANY
           ? noJava
           : CExpr
               .call("fzE_set_field0",
-                new List<>(c.javaRefField(A0).castTo("jobject"),
-                  c.javaRefField(A1).castTo("jstring"),
-                  c.javaRefField(A2).castTo("jvalue"),
+                new List<>(A0.castTo("jobject"),
+                  A1.castTo("jstring"),
+                  A2.castTo("jvalue"),
                   A3.castTo("char *"))));
     put("fuzion.java.set_static_field0",
       (c, cl, outer, in) ->
@@ -1043,9 +1040,9 @@ public class Intrinsics extends ANY
           ? noJava
           : CExpr
               .call("fzE_set_static_field0",
-                new List<>(c.javaRefField(A0).castTo("jstring"),
-                  c.javaRefField(A1).castTo("jstring"),
-                  c.javaRefField(A2).castTo("jvalue"),
+                new List<>(A0.castTo("jstring"),
+                  A1.castTo("jstring"),
+                  A2.castTo("jvalue"),
                   A3.castTo("char *"))));
     put("fuzion.java.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
@@ -1061,8 +1058,8 @@ public class Intrinsics extends ANY
               CExpr
                 .call("fzE_call_c0",
                   new List<CExpr>(
-                    c.javaRefField(A0).castTo("jstring"),
-                    c.javaRefField(A1).castTo("jstring"),
+                    A0.castTo("jstring"),
+                    A1.castTo("jstring"),
                     A2.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
@@ -1092,9 +1089,9 @@ public class Intrinsics extends ANY
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_s0",
                   new List<CExpr>(
-                    c.javaRefField(A0).castTo("jstring"),
-                    c.javaRefField(A1).castTo("jstring"),
-                    c.javaRefField(A2).castTo("jstring"),
+                    A0.castTo("jstring"),
+                    A1.castTo("jstring"),
+                    A2.castTo("jstring"),
                     A3.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
@@ -1112,9 +1109,9 @@ public class Intrinsics extends ANY
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_v0",
                   new List<CExpr>(
-                    c.javaRefField(A0).castTo("jstring"),
-                    c.javaRefField(A1).castTo("jstring"),
-                    c.javaRefField(A2).castTo("jstring"),
+                    A0.castTo("jstring"),
+                    A1.castTo("jstring"),
+                    A2.castTo("jstring"),
                     A3.castTo("jobject"),
                     A4.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
@@ -1123,49 +1120,49 @@ public class Intrinsics extends ANY
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_bool_to_java_object", new List<CExpr>(A0.field(CNames.TAG_NAME))), false));
     put("fuzion.java.f32_to_java_object",
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_f32_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.f64_to_java_object",
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_f64_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i8_to_java_object",
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_i8_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i16_to_java_object",
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_i16_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i32_to_java_object",
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_i32_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.i64_to_java_object",
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_i64_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.u16_to_java_object",
       (c, cl, outer, in) -> C.JAVA_HOME == null
                                                   ? noJava
                                                   : c
-                                                    .returnJavaObject(c._fuir.clazz_fuzionJavaObject(),
+                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
                                                       CExpr.call("fzE_u16_to_java_object", new List<CExpr>(A0)), false));
     put("fuzion.java.java_string_to_string" , (c,cl,outer,in) ->
         {
@@ -1190,7 +1187,7 @@ public class Intrinsics extends ANY
           var length        = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
           return C.JAVA_HOME == null
             ? noJava
-            : c.returnJavaObject(c._fuir.clazz_fuzionJavaObject(), CExpr
+            : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_string_to_java_object", new List<CExpr>(
                   A0.field(c._names.fieldName(data)),
                   A0.field(c._names.fieldName(length))
@@ -1376,7 +1373,7 @@ public class Intrinsics extends ANY
    * @param signed the signed type of a and b and the type the result has to be
    * casted to.
    */
-  static CExpr castToUnsignedForArithmetic(C c, CExpr a, CExpr b, char op, FUIR.SpecialClazzes unsigned, FUIR.SpecialClazzes signed)
+  static CExpr castToUnsignedForArithmetic(C c, CExpr a, CExpr b, char op, SpecialClazzes unsigned, SpecialClazzes signed)
   {
     // C type
     var ut = CTypes.scalar(unsigned);
@@ -1449,8 +1446,8 @@ public class Intrinsics extends ANY
    *
    * @param rt the Fuzion type of the value
    *
-   * @param tmp local variable to type `bool` to be set to `true` iff `value1`
-   * equals `value2`, and to `false` otherwise.
+   * @param tmp local variable to type {@code bool} to be set to {@code true} iff {@code value1}
+   * equals {@code value2}, and to {@code false} otherwise.
    *
    * @return code to perform the comparison
    */
@@ -1471,22 +1468,22 @@ public class Intrinsics extends ANY
         result = tmp.assign(new CIdent("true"));
       }
     else if (c._fuir.clazzIsRef(rt) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i8  ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i16 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i32 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_i64 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u8  ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u16 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u32 ) ||
-             c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_u64 )    )
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i8  ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i16 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i32 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_i64 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u8  ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u16 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u32 ) ||
+             c._fuir.clazzIs(rt, SpecialClazzes.c_u64 )    )
       {
         result = tmp.assign(CExpr.eq(value1, value2));
       }
-    else if (c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_f32))
+    else if (c._fuir.clazzIs(rt, SpecialClazzes.c_f32))
       {
         result = tmp.assign(CExpr.call("fzE_bitwise_compare_float", new List<>(value1, value2)));
       }
-    else if (c._fuir.clazzIs(rt, FUIR.SpecialClazzes.c_f64))
+    else if (c._fuir.clazzIs(rt, SpecialClazzes.c_f64))
       {
         result = tmp.assign(CExpr.call("fzE_bitwise_compare_float", new List<>(value1, value2)));
       }

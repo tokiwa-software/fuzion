@@ -119,7 +119,7 @@ public class Runner extends ClassLoader
    *
    * @param name the name of the resource.
    *
-   * @return  Corresponding input stream or `null`.
+   * @return  Corresponding input stream or {@code null}.
    *
    */
   public InputStream getResourceAsStream(String name)

@@ -204,7 +204,7 @@ public class NumericValue extends Value
    * @param v the value this value should be joined with.
    *
    * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   @Override
   public Value joinInstances(DFA dfa, Value v, int clazz)

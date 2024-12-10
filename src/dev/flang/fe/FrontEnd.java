@@ -250,7 +250,7 @@ public class FrontEnd extends ANY
 
   /**
    * Determine the path to load module 'name' from.  E.g., for module 'base',
-   * this returns the path '<fuzionHome>/modules/base.fum'.
+   * this returns the path {@code <fuzionHome>/modules/base.fum}.
    *
    * @param name module name, without path or suffix
    *
@@ -298,7 +298,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * create a new LibraryModule from `data`
+   * create a new LibraryModule from {@code data}
    */
   private LibraryModule libModule(ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
   {
@@ -388,7 +388,7 @@ public class FrontEnd extends ANY
         _sourceModule.checkMain();
         Errors.showAndExit();
 
-        var data = _sourceModule.data("main");
+        var data = _sourceModule.data();
         reset();
         _mainModule = libModule(data, af -> loadModules(af), null /* use universe of module */);
         var ignore = new Types.Resolved(_mainModule, _mainModule.libraryUniverse(), false);

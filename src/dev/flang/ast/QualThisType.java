@@ -31,7 +31,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Type created by parser for types like `a.b.this`.
+ * Type created by parser for types like {@code a.b.this}.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -49,7 +49,7 @@ public class QualThisType extends UnresolvedType
 
 
   /**
-   * Create the type corresponding to "<qual>.this".
+   * Create the type corresponding to {@code <qual>.this}.
    *
    * @param qual the qualifier
    */

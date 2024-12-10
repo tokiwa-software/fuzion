@@ -33,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * If <description>
+ * If
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -112,8 +112,8 @@ public class If extends ExprWithPos
 
 
   /**
-   * Is this a normal if (`false`) or one created to implement a contract such
-   * as pre- or postconditions (`true`)?
+   * Is this a normal if ({@code false}) or one created to implement a contract such
+   * as pre- or postconditions ({@code true})?
    *
    * @return true iff this is an artificially generated if that originates in a
    * condition of a contract.
@@ -311,7 +311,7 @@ public class If extends ExprWithPos
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution

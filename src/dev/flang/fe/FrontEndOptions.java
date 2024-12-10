@@ -61,7 +61,7 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Read code from command line '-e/-execute <code>', or null if option not
+   * Read code from command line {@code -e/-execute <code>}, or null if option not
    * given.
    */
   final byte[] _executeCode;
@@ -95,6 +95,12 @@ public class FrontEndOptions extends FuzionOptions
    * main feature name, null iff _readStdin || _executeCode != null
    */
   final String _main;
+
+
+  /**
+   * The name of the module we are compiling.
+   */
+  final String _moduleName;
 
 
   /**
@@ -132,7 +138,7 @@ public class FrontEndOptions extends FuzionOptions
    * Constructor initializing fields as given.
    *
    * @param timer can be called with a phase name to measure the time spent in
-   * this phase, printed if `-verbose` level is sufficiently high.
+   * this phase, printed if {@code -verbose} level is sufficiently high.
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,
@@ -148,6 +154,7 @@ public class FrontEndOptions extends FuzionOptions
                          boolean readStdin,
                          byte[] executeCode,
                          String main,
+                         String moduleName,
                          boolean loadSources,
                          boolean needsEscapeAnalysis,
                          Consumer<String> timer)
@@ -205,6 +212,7 @@ public class FrontEndOptions extends FuzionOptions
     _moduleDirs = moduleDirs;
     _dumpModules = dumpModules;
     _main = main;
+    _moduleName = moduleName;
     _loadSources = loadSources;
     _needsEscapeAnalysis = needsEscapeAnalysis;
     if (sourceDirs == null)

@@ -224,7 +224,7 @@ is
 
   # find k in linked nodes
   find_key(k CTK) choice restart not_found CTV =>
-    match from.drop_while(sn -> sn.k != k).head
+    match from.drop_while(sn -> sn.k != k).first
       nil => not_found
       sn singleton_node => sn.v
 
@@ -771,15 +771,15 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
 #
 # f determines the key of an element
 #
-public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.Map K (list T) =>
+public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.Map K (Sequence T) =>
 
   # NYI It should be possible to choose the map implementation that is used.
-  res := (lock_free.Map K (list T)).empty
+  res := (lock_free.Map K (Sequence T)).empty
 
   for_each x->
     key := f x
     match res[key]
-      nil => res.add key [x].as_list
-      s list T => res.add key (s ++ [x].as_list)
+      nil => res.add key [x]
+      s Sequence T => res.add key s++[x]
 
   res

@@ -106,7 +106,7 @@ public class JVMOptions extends FuzionOptions
 
 
   /**
-   * Custom output name when using option `-classes` or `-jvm`.
+   * Custom output name when using option {@code -classes} or {@code -jvm}.
    */
   final Optional<String> _outputName;
 

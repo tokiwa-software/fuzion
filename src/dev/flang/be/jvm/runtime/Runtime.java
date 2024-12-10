@@ -133,7 +133,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Value used for `FuzionThread.effect_store` and `FuzionThread.effect_load`
+   * Value used for {@code FuzionThread.effect_store} and {@code FuzionThread.effect_load}
    * to distinguish a unit value effect from a not existing effect
    */
   public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI() { };
@@ -225,7 +225,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The result of `envir.args[0]`
+   * The result of {@code envir.args[0]}
    */
   public static String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
@@ -236,7 +236,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The results of `envir.args[1..n]`
+   * The results of {@code envir.args[1..n]}
    */
   public static String[] _args_ = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
@@ -319,7 +319,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for a `Const_String` from data in the
+   * Create the internal (Java) array for a {@code Const_String} from data in the
    * chars of a Java String.
    *
    * @param str the Java string as unicodes.
@@ -333,7 +333,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i8` or `array u8` from data
+   * Create the internal (Java) array for an {@code array i8} or {@code array u8} from data
    * in the chars of a Java String.
    *
    * @param str the Java string, lower byte is the first, upper the second byte.
@@ -357,7 +357,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i16` from data in the chars
+   * Create the internal (Java) array for an {@code array i16} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, each char is one i16.
@@ -378,7 +378,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array u16` from data in the chars
+   * Create the internal (Java) array for an {@code array u16} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, each char is one u16.
@@ -399,7 +399,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i32` or `array u32` from
+   * Create the internal (Java) array for an {@code array i32} or {@code array u32} from
    * data in the chars of a Java String.
    *
    * @param str the Java string, two char form one i32 or u32 in little endian order.
@@ -422,7 +422,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i64` or `array u64` from
+   * Create the internal (Java) array for an {@code array i64} or {@code array u64} from
    * data in the chars of a Java String.
    *
    * @param str the Java string, four char form one i64 or u64 in little endian
@@ -448,7 +448,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array f32` from data in the chars
+   * Create the internal (Java) array for an {@code array f32} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, two chars form the bits of one f32 in little
@@ -471,7 +471,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array f64` from data in the chars
+   * Create the internal (Java) array for an {@code array f64} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, four chars form the bits of one f64 in little
@@ -538,7 +538,7 @@ public class Runtime extends ANY
    *
    * @param id an effect type id.
    *
-   * @instance a new instance to replace the old one
+   * @param instance a new instance to replace the old one
    */
   public static void effect_replace(int id, Any instance)
   {
@@ -599,7 +599,7 @@ public class Runtime extends ANY
    *
    * @param id the id of the effect type that is instated
    *
-   * @param instance the effect instance that is instated, NOTE: This is `_UNIT_TYPE_EFFECT_`
+   * @param instance the effect instance that is instated, NOTE: This is {@code _UNIT_TYPE_EFFECT_}
    * for a unit type effect.
    */
   public static void effect_push(int id, AnyI instance)
@@ -665,7 +665,7 @@ public class Runtime extends ANY
 
 
   /**
-   * cached results of `classNameToFeatureName`.
+   * cached results of {@code classNameToFeatureName}.
    */
   static WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
 
@@ -1381,23 +1381,14 @@ public class Runtime extends ANY
 
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc)
   {
-    try
-      {
-        return Linker.nativeLinker()
-          .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-              .or(SymbolLookup.loaderLookup())
-              .or(Linker.nativeLinker().defaultLookup())
-              .find(str)
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
-            desc);
-      }
-    catch (Throwable e)
-      {
-        say_err(e);
-        System.exit(1);
-        return null;
-      }
+    return Linker.nativeLinker()
+      .downcallHandle(
+        SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
+          .or(SymbolLookup.loaderLookup())
+          .or(Linker.nativeLinker().defaultLookup())
+          .find(str)
+          .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
+        desc);
   }
 
   /**
