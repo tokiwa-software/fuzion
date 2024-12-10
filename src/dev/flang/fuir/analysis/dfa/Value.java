@@ -220,7 +220,7 @@ public class Value extends Val
   /**
    * The clazz this is an instance of.
    */
-  int _clazz;
+  final int _clazz;
 
 
   /**

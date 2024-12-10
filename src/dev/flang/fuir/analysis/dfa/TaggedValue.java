@@ -54,7 +54,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   /**
    * The original, un-tagged value.
    */
-  Value _original;
+  final Value _original;
 
 
   /**
@@ -81,6 +81,8 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   public TaggedValue(DFA dfa, int nc, Value original, int tag)
   {
     super(nc);
+    if (PRECONDITIONS) require
+      (nc != original._clazz);
 
     _dfa = dfa;
     _original = original;
@@ -133,7 +135,11 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   {
     if (v instanceof TaggedValue tv && _tag == tv._tag)
       {
-        return _dfa.newTaggedValue(_clazz, _original.join(dfa, tv._original, clazz), _tag);
+        if (CHECKS) check
+          (tv._clazz == clazz);
+
+        var oc = dfa._fuir.clazzChoice(tv._clazz, tv._tag);
+        return _dfa.newTaggedValue(_clazz, _original.join(dfa, tv._original, oc), _tag);
       }
     else
       {
