@@ -32,6 +32,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -95,7 +96,7 @@ public class ResolvedNormalType extends ResolvedType
    * Cached result of isRef(). Even though this function looks harmless, it is
    * surprisingly performance critical.
    */
-  Boolean _isRef;
+  YesNo _isRef;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -352,17 +353,21 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Helper to extract `RefOrVal` from given type.
+   * Helper to extract {@code RefOrVal} from given type.
    *
    * @param t a type, must not be generic argument.
    */
   private static RefOrVal refOrVal(AbstractType t)
   {
     return
-      t instanceof ResolvedNormalType tt         ? tt._refOrVal                   :
-      t.isRef() == t.feature().isRef() ? RefOrVal.LikeUnderlyingFeature :
-      t.isRef()                                  ? RefOrVal.Boxed
-                                                 : RefOrVal.Value;
+      t instanceof ResolvedNormalType tt              ? tt._refOrVal                   :
+      (t.isRef() == YesNo.yes) == t.feature().isRef() ? RefOrVal.LikeUnderlyingFeature :
+      switch(t.isRef())
+        {
+          case YesNo.no -> RefOrVal.Value;
+          case YesNo.yes -> RefOrVal.Boxed;
+          case YesNo.dontKnow -> RefOrVal.ThisType;
+        };
   }
 
 
@@ -416,7 +421,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asRef()
   {
     AbstractType result = this;
-    if (!isRef() && !isVoid() && this != Types.t_ERROR)
+    if (isRef().noOrDontKnow() && !isVoid() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, RefOrVal.Boxed);
       }
@@ -451,7 +456,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asValue()
   {
     AbstractType result = this;
-    if (isRef() && this != Types.t_ERROR)
+    if (isRef().yesOrDontKnow() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, RefOrVal.Value);
       }
@@ -462,17 +467,18 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * isRef
    */
-  public boolean isRef()
+  @Override
+  public YesNo isRef()
   {
     var r = _isRef;
     if (r == null)
       {
         r = switch (this._refOrVal)
           {
-          case Boxed                -> true;
-          case Value                -> false;
-          case LikeUnderlyingFeature-> feature().isRef();
-          case ThisType             -> false;
+          case Boxed                -> YesNo.yes;
+          case Value                -> YesNo.no;
+          case LikeUnderlyingFeature-> feature().isRef() ? YesNo.yes : YesNo.no;
+          case ThisType             -> YesNo.dontKnow;
           };
         this._isRef = r;
       }
@@ -570,11 +576,11 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Is this the type of a type feature, e.g., the type of `(list
-   * i32).type`. Will return false for an instance of Type for which this is
-   * still unknown since Type.resolve() was not called yet.
+   * Is this the type of a type feature, e.g., the type of {@code (list i32).type}.
+   * Will return false for an instance of Type for which this is
+   * still unknown since {@code Type.resolve()} was not called yet.
    *
-   * This is redefined here since `feature` might still be null while this type
+   * This is redefined here since {@code feature} might still be null while this type
    * was not resolved yet.
    */
   boolean isTypeType()

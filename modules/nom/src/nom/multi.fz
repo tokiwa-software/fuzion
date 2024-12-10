@@ -48,7 +48,7 @@ module multi is
   =>
     parser I I (Sequence O) input->
       (rest, acc) := (1..n)
-        .reduce (input, (list O).type.empty) r,t->
+        .reduce (input, (Sequence O).type.empty) r,t->
           (rest, acc) := r
           match p.call rest
             s success =>

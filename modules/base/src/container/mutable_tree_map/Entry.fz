@@ -57,6 +57,6 @@ module Entry(module key KEY, module val VAL) ref is
   # get a sequence of all key/value pairs in this Entry
   #
   module items Sequence (tuple KEY VAL) =>
-    list (key,val) ()->
+    [(key,val)] ++
       (left.get.bind (Sequence (tuple KEY VAL)) x->x.items).or_else (list (tuple KEY VAL)).empty ++
-        (right.get.bind (Sequence (tuple KEY VAL)) x->x.items).or_else (list (tuple KEY VAL)).empty
+      (right.get.bind (Sequence (tuple KEY VAL)) x->x.items).or_else (list (tuple KEY VAL)).empty

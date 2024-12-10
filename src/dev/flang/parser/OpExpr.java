@@ -38,7 +38,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 
 /**
- * OpExpr <description>
+ * OpExpr
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -105,7 +105,7 @@ public class OpExpr extends ANY
    */
   Expr toExprUsePrecedence()
   {
-    while (_els.size() > 1)
+    while (_els.size() > 1 && _els.get(0) != Call.ERROR)
       {
         // show();
         int max = -1;

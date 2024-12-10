@@ -138,7 +138,8 @@ public class Html extends ANY
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.asString(false, context));
+        return htmlEncodeNbsp(at.asString(false, context))
+               + (at.isOpenGeneric() ? "..." : "");
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString(false, context)))
       .replace("$2", featureAbsoluteURL(at.feature()));
@@ -191,7 +192,6 @@ public class Html extends ANY
   /**
    * summary for feature af
    * @param af
-   * @param printArgs whether or not arguments of the feature should be included in output
    * @return
    */
   private String summary(AbstractFeature af, AbstractFeature outer)
@@ -395,11 +395,11 @@ public class Html extends ANY
 
   /**
    * helper for redefines. returns the list of features that are redefined by feature
-   * af. unlike redefine, which wraps the result of this in a <div></div> container, this
-   * just wraps the redefined features in <li><a></a></li> tags.
+   * af. unlike redefine, which wraps the result of this in a {@code <div></div>} container, this
+   * just wraps the redefined features in {@code <li><a></a></li>} tags.
    *
    * @param af
-   * @return list of redefined features, wrapped in <li> and <a> HTML tags
+   * @return list of redefined features, wrapped in {@code <li>} and {@code <a>} HTML tags
    */
   private String redefines0(AbstractFeature af)
   {
@@ -683,7 +683,7 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param af
+   * @param qualifiedName
    * @param bareHtml
    * @return
    */
@@ -739,7 +739,11 @@ public class Html extends ANY
    */
   private static String urlEncode(String s)
   {
-    return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    var tmp = Docs.nonAsciiPattern
+      .matcher(s)
+      .replaceAll(match ->String.format("U+%04X", match.group().codePointAt(0)));
+    return URLEncoder
+      .encode(tmp, StandardCharsets.UTF_8);
   }
 
 
@@ -796,9 +800,12 @@ public class Html extends ANY
   {
     if (f.resultType().dependsOnGenerics())
       {
-        return "<div class='fd-keyword'>type</div> <span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
+        return "<div class='fd-keyword'>type</div>"
+               + (f.isOpenTypeParameter() ? "..." : "")
+               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
       }
-    return "<div class='fd-keyword'>type</div>";
+    return "<div class='fd-keyword'>type</div>"
+            + (f.isOpenTypeParameter() ? "..." : "");
   }
 
 

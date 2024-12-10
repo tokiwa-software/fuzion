@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * ParsedName represents a name created by the parser for the rule for `name`.
+ * ParsedName represents a name created by the parser for the rule for {@code name}.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -110,7 +110,7 @@ public class ParsedName extends ANY implements HasSourcePosition
   /**
    * toString creates a string representation for debug output.
    *
-   * @retur just the name.
+   * @return just the name.
    */
   public String toString()
   {

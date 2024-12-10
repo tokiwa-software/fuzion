@@ -264,9 +264,13 @@ public class Fuzion extends Tool
       {
         return "";
       }
-      void process(FuzionOptions options, FUIR fuir)
+      @Override
+      void processFrontEnd(Fuzion f, FrontEnd fe)
       {
-        new Effects(options, fuir).find();
+        var o    = fe._options;
+        var mir  = fe.createMIR();                             f.timer("createMIR");
+        var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
+        new Effects(o, new DFA(o, fuir)).find();
       }
     },
 
@@ -323,25 +327,18 @@ public class Fuzion extends Tool
          */
         if (!Errors.any())
           {
-            var p = f._saveLib;
-            var n = p.getFileName().toString();
-            var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
-            if (n.endsWith(sfx))
-              {
-                n = n.substring(0, n.length() - sfx.length());
-              }
-            var data = fe.sourceModule().data(n);
+            var data = fe.sourceModule().data();
             if (data != null)
               {
-                try (var os = Files.newOutputStream(p))
+                try (var os = Files.newOutputStream(f._saveLib))
                   {
                     Channels.newChannel(os).write(data);
-                    say(" + " + p + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
+                    say(" + " + f._saveLib + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
                   }
                 catch (IOException io)
                   {
                     Errors.error("-saveLib: I/O error when writing module file",
-                                 "While trying to write file '"+ p + "' received '" + io + "'");
+                                 "While trying to write file '"+ f._saveLib + "' received '" + io + "'");
                   }
               }
           }
@@ -417,8 +414,8 @@ public class Fuzion extends Tool
 
     /**
      * parse the argument that activates this backend. This is not needed for
-     * backends like '-c' or '-dfa', but for those that require additional
-     * argument like '-saveLib=<path>'.
+     * backends like {@code -c} or {@code -dfa}, but for those that require additional
+     * argument like {@code -saveLib=<path>}.
      */
     void parseBackendArg(Fuzion f, String a)
     {
@@ -472,7 +469,7 @@ public class Fuzion extends Tool
     }
 
     /**
-     * Does this backend require a main feature or main file or '-' for stdin?
+     * Does this backend require a main feature or main file or {@code -} for stdin?
      */
     boolean needsMain()
     {
@@ -552,25 +549,25 @@ public class Fuzion extends Tool
 
 
   /**
-   * List of modules added using '-modules'.
+   * List of modules added using {@code -modules}.
    */
   List<String> _modules = new List<>();
 
 
   /**
-   * List of module directories added using '-moduleDirs'.
+   * List of module directories added using {@code -moduleDirs}.
    */
   List<String> _moduleDirs = new List<>();
 
 
   /**
-   * List of modules added using '-XdumpModules'.
+   * List of modules added using {@code -XdumpModules}.
    */
   List<String> _dumpModules = new List<>();
 
 
   /**
-   * List of source directories added using '-sourceDirs'.
+   * List of source directories added using {@code -sourceDirs}.
    */
   List<String> _sourceDirs = null;
 
@@ -588,7 +585,7 @@ public class Fuzion extends Tool
 
 
   /**
-   * Code provided via comment line argument `-e` or `-exec`, null if none.
+   * Code provided via comment line argument {@code -e} or {@code -exec}, null if none.
    */
   byte[] _executeCode = null;
 
@@ -752,9 +749,9 @@ public class Fuzion extends Tool
 
 
   /**
-   * Check if `a` is `-e` or `-execute`.
+   * Check if {@code a} is {@code -e} or {@code -execute}.
    *
-   * Cause an error in case of repeated `-e` or `-execute` arguments.
+   * Cause an error in case of repeated {@code -e} or {@code -execute} arguments.
    *
    * @return true if that is that case and the next argument gives the code.
    */
@@ -783,10 +780,10 @@ public class Fuzion extends Tool
 
   /**
    * This must be called after a argument parsing loop that contains
-   * parseExecute() to check that code was actually given following `-e` or
-   * `-execute`.
+   * parseExecute() to check that code was actually given following {@code -e} or
+   * {@code -execute}.
    *
-   * @param nextIsCode did the call to `parseExecute` return true for the last
+   * @param nextIsCode did the call to {@code parseExecute} return true for the last
    * argument?
    */
   private void checkMissingCode(boolean nextIsCode)
@@ -891,7 +888,7 @@ public class Fuzion extends Tool
    * Parse the given command line args for the acemode generator and create a
    * runnable that executes it.  System.exit() in case of error or -help.
    * A mode provides syntax highlighting, code folding etc. for text editor ace.
-   * For more information see: https://ace.c9.io/#nav=higlighter&api=tokenizer
+   * For more information see: {@see https://ace.c9.io/#nav=higlighter&api=tokenizer}
    *
    * @param args the command line arguments
    *
@@ -1053,6 +1050,7 @@ public class Fuzion extends Tool
                                           _readStdin,
                                           _executeCode,
                                           _main,
+                                          moduleName(),
                                           _backend.needsSources(),
                                           _backend.needsEscapeAnalysis(),
                                           s -> timer(s));
@@ -1065,6 +1063,26 @@ public class Fuzion extends Tool
         timer("be");
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
+  }
+
+
+  /**
+   * The name of the module we are compiling.
+   */
+  private String moduleName()
+  {
+    var n = "main";
+    if (_saveLib != null)
+       {
+         var p = _saveLib;
+         n = p.getFileName().toString();
+         var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
+         if (n.endsWith(sfx))
+           {
+             n = n.substring(0, n.length() - sfx.length());
+           }
+       }
+    return n;
   }
 
 

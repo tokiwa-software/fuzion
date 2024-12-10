@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import static dev.flang.ir.IR.NO_SITE;
@@ -151,8 +152,6 @@ class CodeGen
   /**
    * Called before each statement is processed.  May be used to, e.g., produce
    * tracing code for debugging or a comment.
-   *
-   * @param cl the clazz we are compiling
    *
    * @param s site of the next expression
    */
@@ -331,7 +330,7 @@ class CodeGen
     var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
-    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(FUIR.SpecialClazzes.c_unit);
+    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(SpecialClazzes.c_unit);
     if (ccs.length == 0)
       {
         s = s.andThen(tvalue.drop());
@@ -480,7 +479,7 @@ class CodeGen
             na.add(t.load(1));
           }
         var p = staticAccess(/* *** NOTE ***: The site must be NO_SITE since we are not generating
-                              * code for `_fuir.clazzAt(si)`, but for the stub. If we would pass the
+                              * code for {@code _fuir.clazzAt(si)}, but for the stub. If we would pass the
                               * site here, the access might otherwise be optimized as a tail call!
                               */
                              FUIR.NO_SITE,
@@ -515,8 +514,6 @@ class CodeGen
    *
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
-   *
-   * @param si site of the access
    *
    * @return the result and code to perform the access.
    */
@@ -553,8 +550,6 @@ class CodeGen
    * @param cc clazz that is called
    *
    * @return the code to perform the call
-   *
-   * @param si site of the call
    */
   Pair<Expr, Expr> staticCall(int si, Expr tvalue, List<Expr> args, int cc)
   {
@@ -850,7 +845,7 @@ class CodeGen
    *
    * @param val the value of the argument.
    *
-   * @return code that stores `val` into the slot of arg #i.
+   * @return code that stores {@code val} into the slot of arg #i.
    */
   Expr setArg(int cl, int i, Expr val)
   {
@@ -880,7 +875,7 @@ class CodeGen
         {
           var ucl = _types.classFile(_fuir.clazzUniverse());
           var f = _names.preallocatedConstantField(constCl, d);
-          var jt = _types.javaType(constCl);
+          var jt = _types.resultType(constCl);
           if (!ucl.hasField(f))
             {
               ucl.field(ACC_STATIC | ACC_PUBLIC,
@@ -942,8 +937,7 @@ class CodeGen
       case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
       case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ())                                   , Expr.UNIT);
       case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
-      case c_Const_String, c_String
-                          -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
+      case c_String       -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
       default             ->
         {
           if (_fuir.clazzIsArray(constCl))
@@ -1024,7 +1018,7 @@ class CodeGen
   /**
    * Create a tagged value of type newcl from an untagged value for type valuecl.
    *
-   * @param cl the clazz we are compiling
+   * @param s site of the match
    *
    * @param value code to produce the value we are tagging
    *
@@ -1068,7 +1062,7 @@ class CodeGen
   /**
    * For debugging output
    *
-   * @return "`<clazz c>`".
+   * @return "{@code <clazz c>}".
    */
   private String clazzInQuotes(int c)
   {

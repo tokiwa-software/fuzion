@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 
 /**
@@ -88,8 +89,8 @@ class Layout extends FUIRContext
 
 
   /**
-   * The size of the clazz, -1 if layout has not started yet, <-1 if layout is
-   * in progress, Integer.MIN_VALUE if layout is done but clazz cannot be
+   * The size of the clazz, -1 if layout has not started yet, &lt; -1 if layout is
+   * in progress, {@code Integer.MIN_VALUE} if layout is done but clazz cannot be
    * instantiated.
    */
   private final int _size;
@@ -134,7 +135,7 @@ class Layout extends FUIRContext
           {
             var f = fuir().clazzField(cl, i);
             // NYI: Ugly special handling, clean up:
-            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
+            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(SpecialClazzes.c_sys_ptr)
                                                        : fuir().clazzResultClazz(f);
             var fsz = fuir().clazzIsRef(fc)
               ? 1

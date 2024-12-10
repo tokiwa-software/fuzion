@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Impl <description>
+ * Impl
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -73,9 +73,9 @@ public class Impl extends ANY
 
 
   /**
-   * For a field declared using `:=` this
+   * For a field declared using {@code :=} this
    * gives the initial value of that field or function.
-   * For a function declared using `=>` this
+   * For a function declared using {@code =>} this
    * gives the code of that function.
    */
   private Expr _expr;
@@ -380,7 +380,7 @@ public class Impl extends ANY
 
 
   /**
-   * Inform the expression of this implementation that its expected type is `t`.
+   * Inform the expression of this implementation that its expected type is {@code t}.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -407,13 +407,13 @@ public class Impl extends ANY
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this implementation.
+   * @param context the source code context where this assignment is used
    */
   public void resolveSyntacticSugar2(Resolution res, Context context)
   {
@@ -466,8 +466,8 @@ public class Impl extends ANY
    *
    *   x := f 3 4
    *
-   * where the argument types for `a` and `b` are inferred from the actual
-   * arguments `3` and `4`.
+   * where the argument types for {@code a} and {@code b} are inferred from the actual
+   * arguments {@code 3} and {@code 4}.
    *
    * @param call an actual argument expression
    */
@@ -546,7 +546,7 @@ public class Impl extends ANY
         exprs.add(iv);
       }
     var result = Expr.union(exprs, Context.NONE);
-    // the following line is currently necessary
+    // NYI: CLEANUP: the following line is currently necessary
     // to enable cyclic type inference e.g. in reg_issue2182
     result = result == null ? Types.resolved.t_void : result;
     if (reportError)
@@ -588,7 +588,11 @@ public class Impl extends ANY
    */
   public boolean typeInferable()
   {
-    return _kind == Kind.RoutineDef || _kind == Kind.FieldDef || _kind == Kind.FieldActual;
+    return _kind == Kind.RoutineDef
+        || _kind == Kind.FieldDef
+        // field actual is inferable via initial call(s)
+        || _kind == Kind.FieldActual
+      ;
   }
 
 

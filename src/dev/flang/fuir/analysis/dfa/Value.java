@@ -28,8 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 import static dev.flang.ir.IR.NO_SITE;
 
-import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.Errors;
 import dev.flang.util.IntMap;
 
@@ -66,7 +65,6 @@ public class Value extends Val
        */
       public int compare(Value a, Value b)
       {
-
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
@@ -78,7 +76,7 @@ public class Value extends Val
         else if (a._id >= 0 && b._id >= 0) { return Integer.compare(a._id, b._id); }
         else
           {
-            throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass());
+            throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass()+ System.lineSeparator() + a + System.lineSeparator() + b);
           }
       }
   }
@@ -197,21 +195,29 @@ public class Value extends Val
    */
   static Value UNKNOWN_JAVA_REF = new Value(-1)
     {
+
+      /**
+       * Add v to the set of values of given field within this instance.
+       */
+      @Override
+      public void setField(DFA dfa, int field, Value v)
+      {
+        throw new Error("setField");
+      }
+
+      /**
+       * Get set of values of given field within this value.  This works for unit
+       * type results even if this is not an instance (but a unit type itself).
+       */
+      @Override
+      public Val readField(DFA dfa, int field, int site, Context why)
+      {
+        throw new Error("readField");
+      }
+
       public String toString()
       {
         return "UNKNOWN_JAVA_REF";
-      }
-    };
-
-
-  /**
-   * used for ADDRESS
-   */
-  static Value ADDRESS = new Value(-1)
-    {
-      public String toString()
-      {
-        return "ADDRESS";
       }
     };
 
@@ -323,8 +329,8 @@ public class Value extends Val
       // `fuzion.java.Array`. These intrinsics currently do not set the outer
       // refs correctly, so we handle them here for now by just assuming they
       // are unit type values:
-      dfa._fuir.clazzIsOuterRef(field) && (rt == dfa._fuir.clazz(FUIR.SpecialClazzes.c_java  ) ||
-                                           rt == dfa._fuir.clazz(FUIR.SpecialClazzes.c_fuzion)    )
+      dfa._fuir.clazzIsOuterRef(field) && (rt == dfa._fuir.clazz(SpecialClazzes.c_java  ) ||
+                                           rt == dfa._fuir.clazz(SpecialClazzes.c_fuzion)    )
       ? Value.UNIT
       : readFieldFromInstance(dfa, field, site, why);
     return res;
@@ -378,7 +384,7 @@ public class Value extends Val
    * @param v the value this value should be joined with.
    *
    * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   public Value join(DFA dfa, Value v, int clazz)
   {
@@ -410,7 +416,7 @@ public class Value extends Val
    * @param v the value this value should be joined with.
    *
    * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   public Value joinInstances(DFA dfa, Value v, int clazz)
   {

@@ -35,10 +35,11 @@ import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.YesNo;
 
 
 /**
- * Expr <description>
+ * Expr
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -59,34 +60,6 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * of the actual.
    */
   public static Call NO_VALUE;
-
-
-  /**
-   * Dummy Expr value. Used to represent error values.
-   */
-  public static final Expr ERROR_VALUE = new Expr()
-    {
-      public SourcePosition pos()
-      {
-        return SourcePosition.builtIn;
-      }
-      public void setSourceRange(SourceRange r)
-      { // do not change the source position if there was an error.
-      }
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
-      {
-        return this;
-      }
-      @Override
-      AbstractType typeForInferencing()
-      {
-        return Types.t_ERROR;
-      }
-      public String toString()
-      {
-        return Errors.ERROR_STRING;
-      }
-    };
 
 
   /*-------------------------  static variables -------------------------*/
@@ -125,7 +98,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    *    f (x.q y)
    *
-   * The argument to f is the call `x.q y` whose position is
+   * The argument to f is the call {@code x.q y} whose position is
    *
    *    f (x.q y)
    * --------^
@@ -147,7 +120,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   {
     if (PRECONDITIONS) require
       (/* make sure we do not accidentally set this repeatedly, as for special
-        * Exprs like ERROR_VALUE, but we might extend it as in adding
+        * Exprs like Call.ERROR, but we might extend it as in adding
         * parentheses around the Expr:
         */
        _range == null ||
@@ -354,16 +327,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * A lazy value v (one of type `Lazy T`) will automatically be replaced by
-   * `v.call` during type resolution, such that it behaves as if it was of type
-   * `T`.
+   * A lazy value v (one of type {@code Lazy T}) will automatically be replaced by
+   * {@code v.call} during type resolution, such that it behaves as if it was of type
+   * {@code T}.
    *
-   * However, when `v` is passed to a value of type `Lazy T`, it does not make
-   * sense to wrap this call into `Lazy` again. Instead. we would like to pass
-   * the lazy value `v` directly.  So this method gives the original value for a
-   * lazy value `v` t was replaced by `v.call`.
+   * However, when {@code v} is passed to a value of type {@code Lazy T}, it does not make
+   * sense to wrap this call into {@code Lazy} again. Instead. we would like to pass
+   * the lazy value {@code v} directly.  So this method gives the original value for a
+   * lazy value {@code v} t was replaced by {@code v.call}.
    *
-   * @return `this` in case this was not replaced by a `call` to a `Lazy` value,
+   * @return {@code this} in case this was not replaced by a {@code call} to a {@code Lazy} value,
    * the original lazy value if it was.
    */
   Expr originalLazyValue()
@@ -469,7 +442,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           }
         else
           {
-            result = ERROR_VALUE;
+            result = Call.ERROR;
           }
       }
     return result;
@@ -501,12 +474,12 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
   /**
    * Try to perform partial application such that this expression matches
-   * `expectedType`.  Note that this may happen twice:
+   * {@code expectedType}.  Note that this may happen twice:
    *
    * 1. during RESOLVING_DECLARATIONS phase of outer when resolving arguments to
-   *    a call such as `l.map +1`. In this case, expectedType may be a function
-   *    type `Function R A` with generic arguments not yet replaced by actual
-   *    arguments, in particular the result type `R` is unknown since it is the
+   *    a call such as {@code l.map +1}. In this case, expectedType may be a function
+   *    type {@code Function R A} with generic arguments not yet replaced by actual
+   *    arguments, in particular the result type {@code R} is unknown since it is the
    *    result type of this expression.
    *
    * 2. during TYPES_INFERENCING phase when the target variable's type is fully
@@ -688,11 +661,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     else if (frmlT
              .choiceGenerics(context)
               .stream()
-             .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))
+             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
               .count() > 1)
       {
         AstErrors.ambiguousAssignmentToChoice(frmlT, value);
-        return Expr.ERROR_VALUE;
+        return Call.ERROR;
       }
     // Case 2.2: no nested tagging necessary:
     // there is a choice generic in this choice
@@ -700,7 +673,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     else if (frmlT
               .choiceGenerics(context)
               .stream()
-             .anyMatch(cg -> cg.isDirectlyAssignableFrom(value.type(), context)))
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type(), context)))
       {
         return new Tag(value, frmlT, context);
       }
@@ -726,7 +699,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           (Errors.any() || cgs.size() == 1);
 
         return cgs.size() == 1 ? tag(frmlT, tag(cgs.get(0), value, context), context)
-                               : Expr.ERROR_VALUE;
+                               : Call.ERROR;
       }
   }
 
@@ -748,11 +721,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
          */
         return frmlT;
       }
-    else if (t.isRef() && !isCallToOuterRef())
+    else if (t.isRef().yes() && !isCallToOuterRef())
       {
         return null;
       }
-    else if (frmlT.isRef())
+    else if (frmlT.isRef().yes())
       {
         return frmlT;
       }
@@ -781,7 +754,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * Do automatic unwrapping of features inheriting `unwrap`
+   * Do automatic unwrapping of features inheriting {@code unwrap}
    * if the expected type fits the unwrapped type.
    *
    * @param res the resolution instance
@@ -795,7 +768,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
-    return this != ERROR_VALUE && t != Types.t_ERROR
+    return this != Call.ERROR && t != Types.t_ERROR
       && !expectedType.isAssignableFrom(t, context)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()

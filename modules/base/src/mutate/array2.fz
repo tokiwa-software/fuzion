@@ -83,7 +83,7 @@ is
     length1 i64,
 
     # initial value for elements
-    init2 (i64, i64) -> T
+    init T
 
    ) container.Mutable_Array2 T LM
   =>
@@ -91,6 +91,13 @@ is
 
     for i1 in (i64 0)..length0-1 do
       for i2 in (i64 0)..length1-1 do
-        data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init2 i1 i2
+        data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init
 
     LM.env.array2 length0 length1 data unit
+
+
+# convenience feature for creating a new array2,
+# in some cases even with type inference
+#
+public new_array2 (T type, length0, length1 i64, init T) =>
+  (mutate.array2 T).new mutate.this length0 length1 init

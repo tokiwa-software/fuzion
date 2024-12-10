@@ -48,7 +48,7 @@ public interface HasSourcePosition
    *
    *    f (x.q y)
    *
-   * The argument to f is the call `x.q y` whose position is
+   * The argument to f is the call {@code x.q y} whose position is
    *
    *    f (x.q y)
    * --------^

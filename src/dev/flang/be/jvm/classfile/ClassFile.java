@@ -1258,7 +1258,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
     /**
-     * @return A union all locals states that have been found for `byteCodePos`.
+     * @return A union all locals states that have been found for {@code byteCodePos}.
      */
     public List<VerificationType> unifiedLocals(int byteCodePos)
     {

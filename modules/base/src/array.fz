@@ -73,7 +73,7 @@ module:public array(
   #
   # For arrays, this has performance in O(1).
   #
-  public redef drop (n i32) =>
+  public redef drop (n i32) Sequence T =>
     as_list (max 0 n)
 
 
@@ -197,7 +197,6 @@ module:public array(
       #
       public redef drop (n i32) =>
         array.this.slice from+(max 0 n) to
-                  .as_list
 
     arrayslice
 

@@ -197,7 +197,7 @@ public class InlineArray extends ExprWithPos
    *
    * @param t any type
    *
-   * @return if t is Array<T>; the element type T. Types.t_ERROR otherwise.
+   * @return if {@code t} is {@code Array<T>}; the element type {@code T}. {@code Types.t_ERROR} otherwise.
    */
   private AbstractType elementType(AbstractType t)
   {
@@ -220,7 +220,7 @@ public class InlineArray extends ExprWithPos
   /**
    * For this array's type(), return the element type
    *
-   * @return if type() is Array<T>; the element type T. Types.t_ERROR otherwise.
+   * @return if {@code type()} is {@code Array<T>}; the element type {@code T}. {@code Types.t_ERROR} otherwise.
    */
   public AbstractType elementType()
   {
@@ -306,7 +306,7 @@ public class InlineArray extends ExprWithPos
 
     for (var e : _elements)
       {
-        if (!elementType.isDirectlyAssignableFrom(e.type(), context))
+        if (!elementType.isAssignableFromWithoutBoxing(e.type(), context))
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e, context);
           }
@@ -391,7 +391,7 @@ public class InlineArray extends ExprWithPos
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res the resolution instance.
