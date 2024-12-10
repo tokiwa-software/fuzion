@@ -63,7 +63,7 @@ base32_test is
       Testing base32 encoding..."""
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
       (plain, code_expected) := tup
@@ -99,7 +99,7 @@ base32_test is
       \n
       Testing base32 decoding..."""
   dec_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
       (plain_exp, code) := tup
