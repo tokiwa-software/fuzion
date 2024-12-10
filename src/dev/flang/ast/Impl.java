@@ -546,7 +546,7 @@ public class Impl extends ANY
         exprs.add(iv);
       }
     var result = Expr.union(exprs, Context.NONE);
-    // the following line is currently necessary
+    // NYI: CLEANUP: the following line is currently necessary
     // to enable cyclic type inference e.g. in reg_issue2182
     result = result == null ? Types.resolved.t_void : result;
     if (reportError)
