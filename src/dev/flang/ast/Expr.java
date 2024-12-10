@@ -661,7 +661,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     else if (frmlT
              .choiceGenerics(context)
               .stream()
-             .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))
+             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
               .count() > 1)
       {
         AstErrors.ambiguousAssignmentToChoice(frmlT, value);
@@ -673,7 +673,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     else if (frmlT
               .choiceGenerics(context)
               .stream()
-             .anyMatch(cg -> cg.isDirectlyAssignableFrom(value.type(), context)))
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type(), context)))
       {
         return new Tag(value, frmlT, context);
       }

@@ -327,7 +327,7 @@ public class Instance extends ValueWithClazz
     if (fuir().clazzIsRef(expected))
       {
         // NYI:
-        // if (!expected.isDirectlyAssignableFrom(clazz()))
+        // if (!expected.isAssignableFromWithoutTagging(clazz()))
         //   {
         //     throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);
         //   }
