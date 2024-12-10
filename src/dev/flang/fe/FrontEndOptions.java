@@ -61,7 +61,7 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Read code from command line '-e/-execute <code>', or null if option not
+   * Read code from command line {@code -e/-execute <code>}, or null if option not
    * given.
    */
   final byte[] _executeCode;
@@ -138,7 +138,7 @@ public class FrontEndOptions extends FuzionOptions
    * Constructor initializing fields as given.
    *
    * @param timer can be called with a phase name to measure the time spent in
-   * this phase, printed if `-verbose` level is sufficiently high.
+   * this phase, printed if {@code -verbose} level is sufficiently high.
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,

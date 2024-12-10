@@ -64,15 +64,15 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # count the elements of this list
   #
-  public redef count => count 0
+  public redef count => count_n 0
 
 
   # count the elements of this list starting at n.
   # carries n around to make this tail-recursive
   #
-  count (n i32) i32 =>
+  count_n (n i32) i32 =>
     list.this ? nil    => n
-              | c Cons => c.tail.count n+1
+              | c Cons => c.tail.count_n n+1
 
 
   # get the head of this list if it exists, nil if it does
@@ -342,21 +342,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # source and the next buffer chunk, the tail should only
   # be created when actually necessary.
   #
-  public concat (t Lazy (list A)) list A =>
+  public concat_list (t Lazy (list A)) list A =>
     match list.this
       nil    => t()
       c Cons =>
         # tricky, Lazy wrapping a Lazy.
         # The expression following the colon
         # is a Lazy and t is also a Lazy.
-        c.head : c.tail.concat t
-
-
-  # infix operand synonym for concat
-  #
-  public redef infix ++ (t Sequence A) Sequence A =>
-    concat t.as_list
-
+        c.head : c.tail.concat_list t
 
 
   # check if predicate f holds for all elements
@@ -556,7 +549,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
       # associative operation
       #
-      redef infix ∙ (a, b list A) list A => a.concat b
+      redef infix ∙ (a, b list A) list A => a.concat_list b
 
       # identity element
       #

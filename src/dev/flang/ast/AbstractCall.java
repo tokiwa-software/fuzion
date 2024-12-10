@@ -50,8 +50,8 @@ public abstract class AbstractCall extends Expr
 
   /**
    * Special value for an empty generics list to distinguish a call without
-   * generics ("a.b(x,y)") from a call with an empty actual generics list
-   * ("a.b<>(x,y)").
+   * generics ({@code a.b(x,y)}) from a call with an empty actual generics list
+   * ({@code a.b<>(x,y)}).
    */
   public static final List<AbstractType> NO_GENERICS = new List<>();
 
@@ -139,7 +139,7 @@ public abstract class AbstractCall extends Expr
 
       /**
        * actuals are serialized in order. example
-       * `tuple (u8 5) (codepoint u32 72)` results in
+       * {@code tuple (u8 5) (codepoint u32 72)} results in
        * the following data:
        *        b b b b b
        * u8 ----^ ^^^^^^^--- codepoint u32 (both little endian)
@@ -231,21 +231,7 @@ public abstract class AbstractCall extends Expr
           }
       }
 
-    var o = calledFeature().outer();
-    Expr oc = o == null || o.isUniverse()
-      ? new Universe()
-      : (target() instanceof AbstractCall ac && !ac.isCallToOuterRef())
-      ? ac.typeCall(p, res, that)
-      : o.typeCall(p, new List<>(o.selfType(), o.generics().asActuals()), res, that);
-
-    var tf = calledFeature().cotype(res);
-
-    return new Call(p,
-                    oc,
-                    typeParameters,
-                    Expr.NO_EXPRS,
-                    tf,
-                    tf.selfType());
+    return calledFeature().typeCall(p, typeParameters, res, that, target());
   }
 
 }

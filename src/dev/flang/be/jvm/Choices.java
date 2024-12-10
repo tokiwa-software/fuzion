@@ -60,7 +60,7 @@ public class Choices extends ANY implements ClassFileConstants
     voidlike,
 
     /* a single value `choice X` is equivalent to `X`. This includes the case of
-     * a single unit type `choice nil`, but not `choice void`
+     * a single unit type {@code choice nil}, but not {@code choice void}
      */
     unitlike,
 
@@ -78,8 +78,8 @@ public class Choices extends ANY implements ClassFileConstants
      */
     nullable,
 
-    /* A choice of disjoint ref values and unit values only such as `option String (Sequence u8)
-     * TRUE nil` (provided no feature exists that inherits from `String` and `Sequence u8`).
+    /* A choice of disjoint ref values and unit values only such as {@code option String (Sequence u8)
+     * TRUE nil} (provided no feature exists that inherits from {@code String}  and {@code Sequence u8}).
      * Implemented using an interface that is implemented by all ref types and that has specific
      * singleton instances for each unit type.
      */

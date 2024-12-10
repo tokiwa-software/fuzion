@@ -109,25 +109,25 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of intrinsic `effect.type.instate0`.
+   * Name of intrinsic {@code effect.type.instate0}.
    */
   public static final String EFFECT_INSTATE_NAME = "effect.type.instate0";
 
 
   /**
-   * Name of feature `index []`.
+   * Name of feature {@code index []}.
    */
   public static final String FEATURE_NAME_INDEX = "index [ ]";
 
 
   /**
-   * Name of feature `index [..]`.
+   * Name of feature {@code index [..]}.
    */
   public static final String FEATURE_NAME_INDEX_DOTDOT = "index [..]";
 
 
   /**
-   * Name of feature `index [] :=`.
+   * Name of feature {@code index [] :=}.
    */
   public static final String FEATURE_NAME_INDEX_ASSIGN = "index [ ] := ";
 
@@ -150,8 +150,8 @@ public class FuzionConstants extends ANY
 
   /**
    * An operator that should match both, prefix and postfix operators. This is
-   * used for partial application where `-` applied used as a unary function may
-   * result in `prefix -` or `postfix -`.
+   * used for partial application where {@code -} applied used as a unary function may
+   * result in {@code prefix -} or {@code postfix -}.
    */
   public static final String UNARY_OPERATOR_PREFIX = "unary ";
   public static final String TERNARY_OPERATOR_PREFIX = "ternary ";
@@ -195,15 +195,19 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   x := if a then 0 else 1
+   * <pre>{@code
+   *    x := if a then 0 else 1
+   * }</pre>
    *
    * converted to
    *
-   *   if a then
+   * <pre>{@code
+   *    if a then
    *     #exprResult123 := 0
    *   else
    *     #exprResult123 := 1
    *   x := #exprResult123
+   * }</pre>
    */
   public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "exprResult";
 
@@ -211,12 +215,16 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   x := a < b < c
+   * <pre>{@code
+   *    x := a < b < c
+   * }</pre>
    *
    * converted to
    *
-   *   #chainedBoolTemp123 = b
+   * <pre>{@code
+   *    #chainedBoolTemp123 = b
    *   x := a < #chainedBoolTemp123 && #chainedBoolTemp123 < c
+   * }</pre>
    */
   public static final String CHAINED_BOOL_TMP_PREFIX = INTERNAL_NAME_PREFIX + "chainedBoolTemp";
 
@@ -224,7 +232,9 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   x := a,b -> a*b
+   * <pre>{@code
+   *    x := a,b -> a*b
+   * }</pre>
    */
   public static final String LAMBDA_PREFIX = INTERNAL_NAME_PREFIX + "fun";
 
@@ -232,15 +242,19 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   x := [a, b, c]
+   * <pre>{@code
+   *    x := [a, b, c]
+   * }</pre>
    */
   public static final String INLINE_SYS_ARRAY_PREFIX = INTERNAL_NAME_PREFIX + "inlineSysArray";
 
   /**
    * Field introduced in, e.g.,
    *
-   *   for x in set do
+   * <pre>{@code
+   *    for x in set do
    *     say x
+   * }</pre>
    */
   public static final String REC_LOOP_PREFIX = INTERNAL_NAME_PREFIX + "loop";
 
@@ -255,7 +269,9 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   _ = f a
+   * <pre>{@code
+   *    _ = f a
+   * }</pre>
    */
   public static final String UNDERSCORE_PREFIX = INTERNAL_NAME_PREFIX + "_";
 
@@ -263,7 +279,9 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   (a,b) = f c
+   * <pre>{@code
+   *    (a,b) = f c
+   * }</pre>
    */
   public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
 
@@ -271,11 +289,15 @@ public class FuzionConstants extends ANY
   /**
    * Argument field in a partial function such as
    *
-   *   m := s.map (f 42)
+   * <pre>{@code
+   *    m := s.map (f 42)
+   * }</pre>
    *
    * that will be converted into
    *
-   *   m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
+   * <pre>{@code
+   *    m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
+   * }</pre>
    */
   public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
 

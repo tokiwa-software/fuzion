@@ -75,11 +75,11 @@ public class Parser extends Lexer
 
 
   /**
-   * Whether to allow the usage of the `set` keyword.
+   * Whether to allow the usage of the {@code set} keyword.
    *
-   * Controlled by the `-XenableSetKeyword` option to `fz`, if false, the
-   * parser will throw an `illegalUseOfSetKeyword` error when encountering
-   * the `set` keyword.
+   * Controlled by the {@code -XenableSetKeyword} option to {@code fz}, if false, the
+   * parser will throw an {@code illegalUseOfSetKeyword} error when encountering
+   * the {@code set} keyword.
    */
   public static boolean ENABLE_SET_KEYWORD = false;
 
@@ -342,7 +342,7 @@ field       : returnType
    *
    * @param inh the inheritance call list.
    *
-   * @param v the visibility to be used for the features defined in of <block>
+   * @param v the visibility to be used for the features defined in of {@code <block>}
    *
    */
   Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh, Visi v)
@@ -388,7 +388,7 @@ field       : returnType
    *
    * @param p Impl that contains the position of 'of' for error messages.
    *
-   * @param v the visibility to be used for the features defined in of <block>
+   * @param v the visibility to be used for the features defined in of {@code <block>}
    *
    */
   private void addFeaturesFromBlock(boolean first, List<Feature> list, Expr e, List<AbstractType> g, Impl p, Visi v)
@@ -1414,7 +1414,7 @@ inheritanceCall    : call0
 
 
   /**
-   * Parse call, including `.env` and `.type` calls
+   * Parse call, including {@code .env} and {@code .type} calls
    *
    * @param target the target of the call or null if none.
    */
@@ -1425,9 +1425,9 @@ inheritanceCall    : call0
 
 
   /**
-   * Parse pure or non-pure call depending on `pure` argument.
+   * Parse pure or non-pure call depending on {@code pure} argument.
    *
-   * @param pure true iff `pureCall` is to be parsed, otherwise `call` is parsed.
+   * @param pure true iff {@code pureCall} is to be parsed, otherwise {@code call} is parsed.
    *
    * @param target the target of the call or null if none.
    *
@@ -2045,7 +2045,7 @@ klammerLambd: tuple lambda
 
 
   /**
-   * Parse the right hand side of a lambda expression including the `->`.
+   * Parse the right hand side of a lambda expression including the {@code ->}.
    *
 lambda      : "->" block
             ;
@@ -3211,8 +3211,8 @@ call0             : universeCall
   /**
    * Parse universe
    *
-   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
-   * is not possible to get the value of the `universe`.
+   * Note that we do not allow {@code universe} which is not followed by {@code .}, i.e., it
+   * is not possible to get the value of the {@code universe}.
    *
 universe          : "universe"
                   ;
@@ -3228,8 +3228,8 @@ universe          : "universe"
   /**
    * Parse universeCall
    *
-   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
-   * is not possible to get the value of the `universe`.
+   * Note that we do not allow {@code universe} which is not followed by {@code .}, i.e., it
+   * is not possible to get the value of the {@code universe}.
    *
 universeCall      : universe dot call
                   ;
@@ -3245,8 +3245,8 @@ universeCall      : universe dot call
   /**
    * Parse universePureCall
    *
-   * Note that we do not allow `universe` which is not followed by `.`, i.e., it
-   * is not possible to get the value of the `universe`.
+   * Note that we do not allow {@code universe} which is not followed by {@code .}, i.e., it
+   * is not possible to get the value of the {@code universe}.
    *
 universePureCall  : universe dot pureCall
                   ;
@@ -3299,8 +3299,8 @@ anonymous   : "ref"
    * Parse contract
    *
    * @param forkAtFormArgs in case the feature this contract belongs to has a
-   * non-empty `formArgsOpt`, this must give a fork of the parser position
-   * before the `formArgsOpt`. Otherwise, this can be null.
+   * non-empty {@code formArgsOpt}, this must give a fork of the parser position
+   * before the {@code formArgsOpt}. Otherwise, this can be null.
    *
 contract    : require ensure
             ;
@@ -3611,8 +3611,8 @@ boundType   : onetype ( PIPE onetype ) *
    * Check if the current position can be parsed as a type and skip it if this is the case.
    *
    * @param isFunctionReturnType true if this is a function return type. In this
-   * case, a function type `(a,b)->c` may not be split into a new line after
-   * `->`.
+   * case, a function type {@code (a,b)->c} may not be split into a new line after
+   * {@code ->}.
    *
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
@@ -3692,8 +3692,8 @@ typeOpt     : type
    * Check if the current position starts a onetype and skip it.
    *
    * @param isFunctionReturnType true if this is a function return type. In this
-   * case, a function type `(a,b)->c` may not be split into a new line after
-   * `->`.
+   * case, a function type {@code (a,b)->c} may not be split into a new line after
+   * {@code ->}.
    *
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.

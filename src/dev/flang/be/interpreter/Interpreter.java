@@ -120,7 +120,7 @@ public class Interpreter extends FUIRContext
   /**
    * Create runtime value of given String constant.
    *
-   * @bytes the string in UTF-16
+   * @param bytes the string in UTF-16
    */
   public static Value value(byte[] bytes)
   {

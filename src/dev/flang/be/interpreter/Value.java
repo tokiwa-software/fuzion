@@ -29,7 +29,7 @@ package dev.flang.be.interpreter;
 import dev.flang.util.Errors;
 
 /**
- * Value <description>
+ * Value
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

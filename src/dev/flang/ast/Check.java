@@ -31,7 +31,7 @@ import dev.flang.util.List;
 
 
 /**
- * Check is the result of parsing a Fuzion `check` statement. A Check is very
+ * Check is the result of parsing a Fuzion {@code check} statement. A Check is very
  * short lived since it is only syntax sugar, fuzion code of the form
  *
  *   check

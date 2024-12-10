@@ -395,11 +395,11 @@ public class Html extends ANY
 
   /**
    * helper for redefines. returns the list of features that are redefined by feature
-   * af. unlike redefine, which wraps the result of this in a <div></div> container, this
-   * just wraps the redefined features in <li><a></a></li> tags.
+   * af. unlike redefine, which wraps the result of this in a {@code <div></div>} container, this
+   * just wraps the redefined features in {@code <li><a></a></li>} tags.
    *
    * @param af
-   * @return list of redefined features, wrapped in <li> and <a> HTML tags
+   * @return list of redefined features, wrapped in {@code <li>} and {@code <a>} HTML tags
    */
   private String redefines0(AbstractFeature af)
   {

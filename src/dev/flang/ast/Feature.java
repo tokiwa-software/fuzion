@@ -123,7 +123,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * This is used for feature defined using `choice of`
+   * This is used for feature defined using {@code choice of}
    * to set same visibility for choice elements as for choice in Parser.
    *
    * @param v
@@ -333,7 +333,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this a loop's variable that is being iterated over using the `in` keyword?
+   * Is this a loop's variable that is being iterated over using the {@code in} keyword?
    * If so, also store the internal list name.
    */
   boolean _isLoopIterator = false;
@@ -1569,7 +1569,7 @@ public class Feature extends AbstractFeature
 
   /**
    * Syntactic sugar resolution of a feature f after type resolution. Currently
-   * used for lazy boolean operations like &&, || and for compile-time constants
+   * used for lazy boolean operations like {@code &&}, {@code ||} and for compile-time constants
    * safety, debug_level, debug.
    *
    * @param res the resolution instance.
@@ -1860,17 +1860,16 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-        if (CHECKS) check
-          (_resultType == null
-           || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-           );
-
-        if (outer() instanceof Feature o)
+       if (outer() instanceof Feature o)
           {
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresentUrgent(res, true);
+        if (_resultType == null)
+          {
+            _resultType = resultTypeIfPresentUrgent(res, true);
+          }
+
         if (_resultType == null)
           {
             AstErrors.failedToInferResultType(this);
@@ -1909,7 +1908,7 @@ A ((Choice)) declaration must not contain a result type.
 
         /*
          * extra pass to automatically wrap values into 'Lazy'
-         * or unwrap values inheriting `unwrap`
+         * or unwrap values inheriting {@code unwrap}
          */
         visit(new ContextVisitor(context()) {
             // we must do this from the outside of calls towards the inside to
@@ -2064,7 +2063,7 @@ A ((Choice)) declaration must not contain a result type.
    * Syntactic sugar resolution of a feature f: For all expressions and
    * expressions in f's inheritance clause, contract, and implementation, resolve
    * syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -2171,7 +2170,7 @@ A ((Choice)) declaration must not contain a result type.
 
   /**
    * During type resolution, add a type parameter created for a free type like
-   * `T` in `f(x T) is ...`.
+   * {@code T} in {@code f(x T) is ...}.
    *
    * @param res the resolution instance.
    *
@@ -2279,6 +2278,13 @@ A ((Choice)) declaration must not contain a result type.
     if (res != null && result != null && outer() != null)
       {
         result = result.resolve(res, outer().context());
+      }
+
+    // NYI: CLEANUP: result != Types.resolved.t_void is currently necessary
+    // to enable cyclic type inference e.g. in reg_issue2182
+    if (result != null && result != Types.resolved.t_void)
+      {
+        _resultType = result;
       }
 
     return result;
@@ -2475,7 +2481,7 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Is this the `call` implementation of a lambda?
+   * Is this the {@code call} implementation of a lambda?
    */
   public boolean isLambdaCall()
   {

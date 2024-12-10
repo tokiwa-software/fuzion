@@ -479,7 +479,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
 
   /**
-   * Return result evaluated by `exec`.
+   * Return result evaluated by {@code exec}.
    *
    * @param jvm the jvm instance
    * @param rc  outcome ...
@@ -1226,7 +1226,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   /**
    * get the the method descriptor for a method in class c.
    * e.g. for args: Runtime.class, "fuzion_sys_net_listen"
-   *      and `int fuzion_sys_net_listen(){}`
+   *      and {@code int fuzion_sys_net_listen(){}}
    *      it returns: ()I
    */
   private static String methodDescriptor(Class c, String m)

@@ -51,8 +51,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * Pre-allocated empty type list. NOTE: There is a specific empty type List
-   * Call.NO_GENERICS which is used to distinguish "a.b<>()" (using UnresolvedType.NONE)
-   * from "a.b()" (using Call.NO_GENERICS).
+   * {@code Call.NO_GENERICS} which is used to distinguish {@code a.b<>()} (using {@code UnresolvedType.NONE})
+   * from {@code a.b()} (using {@code Call.NO_GENERICS}).
    */
   public static final List<AbstractType> NONE = new List<AbstractType>();
   static { NONE.freeze(); }
@@ -98,9 +98,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * the name of this type.  For a type 'map<string,i32>.entry', this is just
-   * the base name 'entry'. For a type parameter 'A', this is 'A'. For an
-   * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
+   * the name of this type.  For a type {@code map<string,i32>.entry}, this is just
+   * the base name {@code entry}. For a type parameter {@code A}, this is {@code A}. For an
+   * artificial type, this is one of {@code Types.INTERNAL_NAMES} (e.g., {@code --ADDRESS--}).
    */
   protected String _name;
   protected String name()
@@ -149,7 +149,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *     c Cons => ...
    *     nil    => ...
    *
-   *  where `Cons` stands for `Cons i32 (list i32)`.
+   *  where {@code Cons} stands for {@code Cons i32 (list i32)}.
    */
   boolean _ignoreActualTypePars = false;
 
@@ -324,7 +324,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * Return this type as a simple qualifier.  This is null by default except for
-   * types without generics and without `ref` modifier.
+   * types without generics and without {@code ref} modifier.
    */
   public List<ParsedName> asQualifier()
   {
@@ -926,11 +926,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Is this the type of a type feature, e.g., the type of `(list
-   * i32).type`. Will return false for an instance of Type for which this is
+   * Is this the type of a type feature, e.g., the type of {@code (list i32).type}. Will return false for an instance of Type for which this is
    * still unknown since Type.resolve() was not called yet.
    *
-   * This is redefined here since `feature` might still be null while this type
+   * This is redefined here since {@code feature} might still be null while this type
    * was not resolved yet.
    */
   boolean isTypeType()
@@ -967,9 +966,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * May this unresolved type be a free type. This is the case for explicit free
-   * types such as `X : Any`, and for all normal types like `XYZ` that are not
-   * qualified by an outer type `outer.XYZ` and that do not have actual type
-   * parameters `XYZ T1 T2` and that are not boxed.
+   * types such as {@code X : Any}, and for all normal types like {@code XYZ} that are not
+   * qualified by an outer type {@code outer.XYZ} and that do not have actual type
+   * parameters {@code XYZ T1 T2} and that are not boxed.
    */
   public boolean mayBeFreeType()
   {
@@ -988,8 +987,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * For a type `XYZ` with mayBeFreeType() returning true, this gives the name
-   * of the free type, which would be `"XYZ"` in this example.
+   * For a type {@code XYZ} with mayBeFreeType() returning true, this gives the name
+   * of the free type, which would be {@code "XYZ"} in this example.
    *
    * @return the name of the free type, which becomes the name of the type
    * parameter created for it.

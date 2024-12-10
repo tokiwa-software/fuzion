@@ -75,9 +75,9 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Constructor for a partially applied operator expression like `+` or
-   * `**`. This can expand to a lambda of the form `x -> +x`, `x -> x+`, or `x,y
-   * -> x+y`.
+   * Constructor for a partially applied operator expression like {@code +} or
+   * {@code **}. This can expand to a lambda of the form {@code x -> +x}, {@code x -> x+}, or
+   * {@code x,y -> x+y}.
    *
    * @param pos the source code position of the operator
    *
@@ -110,12 +110,19 @@ public class Partial extends AbstractLambda
    */
   static ParsedCall argName(SourcePosition pos)
   {
-    return new ParsedCall(new ParsedName(pos, argName()));
+    return new ParsedCall(new ParsedName(pos, argName()))
+      {
+        @Override
+        public AbstractType asType()
+        {
+          return null;
+        }
+      };
   }
 
 
   /**
-   * Create a partial call of the form `.f` that will be turned into a lambda `x -> x.f`.
+   * Create a partial call of the form {@code .f} that will be turned into a lambda {@code x -> x.f}.
    *
    * @param pos the source position of the call
    *
@@ -191,7 +198,7 @@ public class Partial extends AbstractLambda
   public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
-    if (_function == null && t.isFunctionTypeExcludingLazy() && (t.arity() == 1 || t.arity() == 2))
+    if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
       {
         var a = argName(pos());
         List<Expr> args = new List<>(a);
@@ -268,7 +275,7 @@ public class Partial extends AbstractLambda
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res the resolution instance.

@@ -291,7 +291,7 @@ public class C extends ANY
     /**
      * create a value constant via means of compound literals.
      *
-     * @param constCl, e.g. `codepoint 65`
+     * @param constCl, e.g. {@code codepoint 65}
      *
      * @param d the serialized data for initializing the code
      */
@@ -325,7 +325,7 @@ public class C extends ANY
     /**
      * create a constant fuzion array
      *
-     * @param constCl, e.g. `array (codepoint u32)`
+     * @param constCl, e.g. {@code array (codepoint u32)}
      *
      * @param d the serialized data
      */
@@ -1530,7 +1530,7 @@ public class C extends ANY
    * @param bytes the serialized bytes of the UTF-8 string.
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * {@code (fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}}
    */
   CExpr constString(byte[] bytes)
   {
@@ -1557,7 +1557,7 @@ public class C extends ANY
    * @param len CExpr that returns the size_t of the string
    *
    * Example code:
-   * `(fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}`
+   * {@code (fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}}
    */
   CExpr constString(CExpr str, CExpr len)
   {
@@ -2059,11 +2059,11 @@ public class C extends ANY
 
 
   /**
-   * Create and return a `Java_Object` from result of `expr`.
+   * Create and return a {@code Java_Object} from result of {@code expr}.
    *
    * @param cl the type we are returning
    * @param expr the expr producing the result (fzE_jvm_result or jvalue)
-   * @param complexResult is the result of `expr` `fzE_jvm_result` or `jvalue`
+   * @param complexResult is the result of {@code expr} {@code fzE_jvm_result} or {@code jvalue}
    * @return
    */
   public CStmnt returnJavaObject(int cl, CExpr expr, boolean complexResult)
@@ -2282,7 +2282,7 @@ public class C extends ANY
   /**
    * For debugging output
    *
-   * @return "`<clazz c>`".
+   * @return "{@code <clazz c>}".
    */
   private String clazzInQuotes(int c)
   {

@@ -339,7 +339,7 @@ Dynamically bounds calls are performed on a reference target, which means the
 target instance has a unique corresponding Java class. This means we could
 leverage the Java class to perform this call, either by
 
-* adding an `id()` method to `FuzionInstance` that is redefined for each ref
+* adding an {@code id()} method to {@code FuzionInstance} that is redefined for each ref
   type to return the corresponding clazz id. A `lookupswitch` could then be used
   to perform the call (in O(log n)!)
 
@@ -842,7 +842,7 @@ should be avoided as much as possible.
 
 
   /**
-   * For `-jar` backend: Name of the JAR file to be created.
+   * For {@code -jar} backend: Name of the JAR file to be created.
    *
    * @return jar file path created from main feature's base name
    */
@@ -853,7 +853,7 @@ should be avoided as much as possible.
 
 
   /**
-   * For `-classes` backend: Name of the classes directory to be created.
+   * For {@code -classes} backend: Name of the classes directory to be created.
    *
    * @return classes directory name created from main feature's base name
    */
@@ -864,7 +864,7 @@ should be avoided as much as possible.
 
 
   /**
-   * For `-jar` and `-classes` backend: Path of the executable script to run the
+   * For {@code -jar} and {@code -classes} backend: Path of the executable script to run the
    * application.
    *
    * @return executable script path created from main feature's base name
@@ -876,10 +876,10 @@ should be avoided as much as possible.
 
 
   /**
-   * Create shell script to execute `java` with given arguments.  This is used
+   * Create shell script to execute {@code java} with given arguments.  This is used
    * by -jar and -classes backends to create an executable file.
    *
-   * @param args the space-separated arguments for `java`.
+   * @param args the space-separated arguments for {@code java}.
    */
   void createJavaExecutable(String args)
   {
@@ -1448,7 +1448,7 @@ should be avoided as much as possible.
    *
    * @param i the local variable index whose slot we are looking for.
    *
-   * @return the slot that contains arg #i on a call to the Java code for `cl`.
+   * @return the slot that contains arg #i on a call to the Java code for {@code cl}.
    */
   public int argSlot(int cl, int i)
   {
@@ -1567,7 +1567,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array i8` and `array u8`.
+   * Create code to create a constant {@code array i8} and {@code array u8}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1585,7 +1585,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array i16`.
+   * Create code to create a constant {@code array i16}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1602,7 +1602,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array u16`.
+   * Create code to create a constant {@code array u16}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1619,7 +1619,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constants `array i32` and `array u32`.
+   * Create code to create a constants {@code array i32} and {@code array u32}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1636,7 +1636,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array i64` and `array u64`.
+   * Create code to create a constant {@code array i64} and {@code array u64}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1653,7 +1653,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constants `array f32`.
+   * Create code to create a constants {@code array f32}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1670,7 +1670,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array f64`.
+   * Create code to create a constant {@code array f64}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1897,9 +1897,9 @@ should be avoided as much as possible.
    * this creates a new instance and copies all the fields from value into the
    * new instance.
    *
-   * NYI: OPTIMIZATION: Once value features like `point(x,y i32)` are
-   * represented as tuples of primitive values (`int, int`) instead of instances
-   * of Java classes (`class Point { int x, y; }`, this cloning will no longer
+   * NYI: OPTIMIZATION: Once value features like {@code point(x,y i32)} are
+   * represented as tuples of primitive values ({@code int, int}) instead of instances
+   * of Java classes ({@code class Point { int x, y; }}, this cloning will no longer
    * be needed.
    *
    * @param s site of code that requires this cloning
@@ -2008,7 +2008,7 @@ should be avoided as much as possible.
    * In a product type, the value of a field may be null if that value was not
    * yet initialized. This may currently be the case of local variables on
    * branches that were executed yet, or that may never be executed at all as for
-   * `str` in
+   * {@code str} in
    *
    *    point (x, y i32) is
    *      if x > y

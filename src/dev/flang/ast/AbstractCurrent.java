@@ -107,7 +107,7 @@ public abstract class AbstractCurrent extends Expr
    * @param context the source code context where this Call is used
    *
    * @return this in case outer is what it was when this was created, or a new
-   * Expr `Current.outer_ref. .. .outer_ref` to access the same current instance
+   * Expr {@code Current.outer_ref. .. .outer_ref} to access the same current instance
    * from within a new, nested outer feature.
    */
   public Expr resolveTypes(Resolution res, Context context)

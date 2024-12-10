@@ -524,7 +524,7 @@ class ForClass extends ANY
 
   /**
    * If executable throws any checked exception
-   * the result type `fr` is wrapped in an outcome.
+   * the result type {@code fr} is wrapped in an outcome.
    */
   private String outcomeResultType(Executable exc, String fr)
   {
@@ -919,7 +919,7 @@ class ForClass extends ANY
    *
    * @param me the Java Method
    *
-   * @return the corresponding Fuzion type, e.g., "i32", "outcome<string>",
+   * @return the corresponding Fuzion type, e.g., {@code i32}, {@code outcome<string>},
    * "Java.java.util.Vector".
    */
   String resultType(Method me)

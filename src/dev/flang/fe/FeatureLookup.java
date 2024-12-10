@@ -39,7 +39,7 @@ public interface FeatureLookup {
 
 
   /**
-   * Get all inner and inherited features of `f`.
+   * Get all inner and inherited features of {@code f}.
    */
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
 

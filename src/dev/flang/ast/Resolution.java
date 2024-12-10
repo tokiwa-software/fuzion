@@ -123,7 +123,7 @@ import dev.flang.util.FuzionOptions;
  *     needed as a stack frame, value type, and a heap allocated object. For
  *     this, analyze the code for locations were fields accessible after the
  *     feature call is done, e.g., since they are visible outside of f or they
- *     escape as part of the closure of an inner feature of f.<p>
+ *     escape as part of the closure of an inner feature of f.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -556,7 +556,7 @@ public class Resolution extends ANY
 
 
   /**
-   * Returns the state the feature `af` is in
+   * Returns the state the feature {@code af} is in
    * w.r.t. this resolution.
    */
   public State state(AbstractFeature af)

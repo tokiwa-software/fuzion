@@ -38,7 +38,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 
 /**
- * OpExpr <description>
+ * OpExpr
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

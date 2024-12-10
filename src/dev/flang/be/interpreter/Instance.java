@@ -29,7 +29,7 @@ package dev.flang.be.interpreter;
 import dev.flang.fuir.SpecialClazzes;
 
 /**
- * Instance <description>
+ * Instance
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -327,7 +327,7 @@ public class Instance extends ValueWithClazz
     if (fuir().clazzIsRef(expected))
       {
         // NYI:
-        // if (!expected.isDirectlyAssignableFrom(clazz()))
+        // if (!expected.isAssignableFromWithoutTagging(clazz()))
         //   {
         //     throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);
         //   }

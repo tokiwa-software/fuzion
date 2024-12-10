@@ -1446,8 +1446,8 @@ public class Intrinsics extends ANY
    *
    * @param rt the Fuzion type of the value
    *
-   * @param tmp local variable to type `bool` to be set to `true` iff `value1`
-   * equals `value2`, and to `false` otherwise.
+   * @param tmp local variable to type {@code bool} to be set to {@code true} iff {@code value1}
+   * equals {@code value2}, and to {@code false} otherwise.
    *
    * @return code to perform the comparison
    */
