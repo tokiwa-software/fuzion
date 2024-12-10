@@ -1379,7 +1379,7 @@ public class C extends ANY
               }
             else
               {
-                acc = assignField(tv, tc, cco, cc, args.get(0), rti);
+                acc = assignField(tv, tc, _fuir.accessTargetClazz(s), cc, args.get(0), rti);
               }
             cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                   CStmnt.seq(acc, CStmnt.BREAK)));
@@ -1657,7 +1657,7 @@ public class C extends ANY
    */
   Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int cc)
   {
-    var tc = _fuir.clazzOuterClazz(cc);
+    var tc = _fuir.accessTargetClazz(s);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
