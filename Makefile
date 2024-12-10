@@ -411,8 +411,9 @@ REF_MANUAL_HTML    = $(BUILD_DIR)/doc/reference_manual/html/index.html
 DOCUMENTATION = \
 	$(DOC_FILES_FUMFILE) \
 	$(DOC_DESIGN_JVM)    \
-        $(REF_MANUAL_PDF)    \
-        $(REF_MANUAL_HTML)
+	$(REF_MANUAL_PDF)    \
+	$(REF_MANUAL_HTML)   \
+	$(DOC_JAVA)
 
 SHELL_SCRIPTS = \
 	bin/fz \
@@ -1114,7 +1115,7 @@ REF_MANUAL_ATTRIBUTES = \
 
 $(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
-	cd $(FZ_SRC) && git log lib/encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
@@ -1421,7 +1422,7 @@ endif
 
 
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
-	javadoc -d $(dir $(DOC_JAVA)) $(shell find ./src -name "*.java" | cut -c3- | grep -v lsp | grep -v FuzionLogo) $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(shell find ./src -name "*.java" | cut -c3- | grep -v lsp | grep -v FuzionLogo) $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 
 
 ########
