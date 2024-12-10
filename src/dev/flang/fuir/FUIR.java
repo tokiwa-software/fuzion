@@ -534,94 +534,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Any.
-   *
-   * @return clazz id of clazz Any
-   */
-  public abstract int clazzAny();
-
-
-  /**
-   * Get the id of clazz universe.
-   *
-   * @return clazz id of clazz universe
-   */
-  public abstract int clazzUniverse();
-
-
-  /**
-   * Get the id of clazz Const_String
-   *
-   * @return the id of Const_String or -1 if that clazz was not created.
-   */
-  public abstract int clazz_Const_String();
-
-
-  /**
-   * Get the id of clazz Const_String.utf8_data
-   *
-   * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
-   */
-  public abstract int clazz_Const_String_utf8_data();
-
-
-  /**
-   * Get the id of clazz {@code array u8}
-   *
-   * @return the id of Const_String.array or -1 if that clazz was not created.
-   */
-  public abstract int clazz_array_u8();
-
-
-  /**
-   * Get the id of clazz {@code fuzion.sys.array<u8>}
-   *
-   * @return the id of {@code fuzion.sys.array<u8>} or -1 if that clazz was not created.
-   */
-  public abstract int clazz_fuzionSysArray_u8();
-
-
-  /**
-   * Get the id of clazz {@code fuzion.sys.array<u8>.data}
-   *
-   * @return the id of {@code fuzion.sys.array<u8>.data} or -1 if that clazz was not created.
-   */
-  public abstract int clazz_fuzionSysArray_u8_data();
-
-
-  /**
-   * Get the id of clazz {@code fuzion.sys.array<u8>.length}
-   *
-   * @return the id of {@code fuzion.sys.array<u8>.length} or -1 if that clazz was not created.
-   */
-  public abstract int clazz_fuzionSysArray_u8_length();
-
-
-  /**
-   * Get the id of clazz {@code fuzion.java.Java_Object}
-   *
-   * @return the id of {@code fuzion.java.Java_Object} or -1 if that clazz was not created.
-   */
-  public abstract int clazz_fuzionJavaObject();
-
-
-  /**
-   * Get the id of clazz {@code fuzion.java.Java_Object.Java_Ref}
-   *
-   * @return the id of {@code fuzion.java.Java_Object.Java_Ref} or -1 if that clazz was not created.
-   */
-  public abstract int clazz_fuzionJavaObject_Ref();
-
-
-  /**
-   * Get the id of clazz error
-   *
-   * @return the id of error or -1 if that clazz was not created.
-   */
-  public abstract int clazz_error();
-
-
-  /**
    * On {@code cl} lookup field {@code Java_Ref}
    *
    * @param cl Java_Object or inheriting from Java_Object
@@ -731,6 +643,111 @@ public abstract class FUIR extends IR
   public abstract int lookup_error_msg(int cl);
 
 
+  /**
+   * Get the id of clazz Any.
+   *
+   * @return clazz id of clazz Any
+   */
+  public int clazzAny()
+  {
+    return clazz(SpecialClazzes.c_Any);
+  }
+
+
+  /**
+   * Get the id of clazz universe.
+   *
+   * @return clazz id of clazz universe
+   */
+  public int clazzUniverse()
+  {
+    return clazz(SpecialClazzes.c_universe);
+  }
+
+
+  /**
+   * Get the id of clazz Const_String
+   *
+   * @return the id of Const_String or -1 if that clazz was not created.
+   */
+  public int clazz_Const_String()
+  {
+    return clazz(SpecialClazzes.c_Const_String);
+  }
+
+
+  /**
+   * Get the id of clazz Const_String.utf8_data
+   *
+   * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
+   */
+  public int clazz_Const_String_utf8_data()
+  {
+    return clazz(SpecialClazzes.c_CS_utf8_data);
+  }
+
+
+  /**
+   * Get the id of clazz `array u8`
+   *
+   * @return the id of Const_String.array or -1 if that clazz was not created.
+   */
+  public int clazz_array_u8()
+  {
+    var utf8_data = clazz_Const_String_utf8_data();
+    return clazzResultClazz(utf8_data);
+  }
+
+
+  /**
+   * Get the id of clazz fuzion.sys.array<u8>
+   *
+   * @return the id of fuzion.sys.array<u8> or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionSysArray_u8()
+  {
+    var a8 = clazz_array_u8();
+    var ia = lookup_array_internal_array(a8);
+    var res = clazzResultClazz(ia);
+    return res;
+  }
+
+
+  /**
+   * Get the id of clazz fuzion.sys.array<u8>.data
+   *
+   * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionSysArray_u8_data()
+  {
+    var sa8 = clazz_fuzionSysArray_u8();
+    return lookup_fuzion_sys_internal_array_data(sa8);
+  }
+
+
+  /**
+   * Get the id of clazz fuzion.sys.array<u8>.length
+   *
+   * @return the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
+   */
+  public int clazz_fuzionSysArray_u8_length()
+  {
+    var sa8 = clazz_fuzionSysArray_u8();
+    return lookup_fuzion_sys_internal_array_length(sa8);
+  }
+
+
+  /**
+   * Get the id of clazz error
+   *
+   * @return the id of error or -1 if that clazz was not created.
+   */
+  public int clazz_error()
+  {
+    return clazz(SpecialClazzes.c_error);
+  }
+
+
   /*---------------------------  types  --------------------------*/
 
 
@@ -746,7 +763,10 @@ public abstract class FUIR extends IR
   /**
    * Is this a void type, i.e., values of this clazz do not exist.
    */
-  public abstract boolean clazzIsVoidType(int cl);
+  public boolean clazzIsVoidType(int cl)
+  {
+    return cl != NO_CLAZZ && clazz(SpecialClazzes.c_void) == cl;
+  }
 
 
   /**
@@ -756,7 +776,17 @@ public abstract class FUIR extends IR
    *
    * @return true if cl != -1 and not unit or void type.
    */
-  public abstract boolean hasData(int cl);
+  public boolean hasData(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= firstClazz(),
+       cl <= lastClazz());
+
+    return
+      !clazzIsUnitType(cl) &&
+      !clazzIsVoidType(cl) &&
+      cl != clazzUniverse();
+  }
 
 
   /*----------------------  type parameters  ---------------------*/
