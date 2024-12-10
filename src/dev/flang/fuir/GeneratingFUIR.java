@@ -1621,42 +1621,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Check if the given clazz is a --possibly inherited--
-   * {@code fuzion.java.Java_Object.Java_Ref} field.
-   *
-   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
-   *
-   * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
-   */
-  @Override
-  public boolean isJavaRef(int cl)
-  {
-    var f = id2clazz(cl).feature();
-    return isJavaRef(f);
-  }
-
-
-  /**
-   * Helper for isJavaRef to check is this is or redefineds
-   * {@code fuzion.java.Java_Object.Java_Ref} field.
-   *
-   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
-   */
-  boolean isJavaRef(AbstractFeature f)
-  {
-    var result = f == Types.resolved.f_fuzion_Java_Object_Ref;
-    if (!result)
-      {
-        for (var rf : f.redefines())
-          {
-            result = result || isJavaRef(rf);
-          }
-      }
-    return result;
-  }
-
-
-  /**
    * For a clazz that is an heir of 'Function', find the corresponding inner
    * clazz for 'call'.  This is used for code generation of intrinsic
    * 'abortable' that has to create code to call 'call'.

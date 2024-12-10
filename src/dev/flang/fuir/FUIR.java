@@ -543,17 +543,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Check if the given clazz is a --possibly inherited--
-   * {@code fuzion.java.Java_Object.Java_Ref} field.
-   *
-   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
-   *
-   * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
-   */
-  public abstract boolean isJavaRef(int cl);
-
-
-  /**
    * For a clazz that is an heir of 'Function', find the corresponding inner
    * clazz for 'call'.  This is used for code generation of intrinsic
    * 'abortable' that has to create code to call 'call'.

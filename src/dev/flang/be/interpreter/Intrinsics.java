@@ -695,8 +695,7 @@ public class Intrinsics extends ANY
         });
     put("fuzion.java.Java_Object.is_null0", (executor, innerClazz) -> args ->
         {
-          Instance thizI = (Instance) args.get(0);
-          Object thiz = JavaInterface.instanceToJavaObject(thizI);
+          Object thiz = ((JavaRef)args.get(1))._javaRef;
           return new boolValue(thiz == null);
         });
     putUnsafe("fuzion.java.get_static_field0",
