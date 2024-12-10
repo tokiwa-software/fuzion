@@ -59,10 +59,10 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
 
   # append an entire list to this linked list
   #
-  public concat(other Mutable_Linked_List LM T) =>
+  public concat_mutable_linked_list(other Mutable_Linked_List LM T) =>
     match n.get
       nil => n <- other
-      ll Mutable_Linked_List => ll.concat other
+      ll Mutable_Linked_List => ll.concat_mutable_linked_list other
 
 
   # freeze this list, i.e., turn all references into immutable values
