@@ -1,0 +1,16 @@
+
+--CURDIR--/reg_issue4426.fz:24:16: error 1: Inconsistent indentation
+  while (b = 1 do
+---------------^
+Indentation reference point is --CURDIR--/reg_issue4426.fz:24:10:
+  while (b = 1 do
+---------^
+While parsing: klammer, parse stack: klammer, bracketTerm, term, opTail, opExpr, operatorExpr (twice), exprInLine, loop, term, opTail, opExpr, operatorExpr (twice), expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue4426.fz:24:12: error 2: Wrong syntax in '.type' expression.
+  while (b = 1 do
+-----------^
+To solve this, make sure the expression to the left of '.type' denotes a type.
+
+2 errors.
