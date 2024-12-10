@@ -94,3 +94,10 @@ is
         data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init
 
     LM.env.array2 length0 length1 data unit
+
+
+# convenience feature for creating a new array2,
+# in some cases even with type inference
+#
+public new_array2 (T type, length0, length1 i64, init T) =>
+  (mutate.array2 T).new mutate.this length0 length1 init
