@@ -110,7 +110,14 @@ public class Partial extends AbstractLambda
    */
   static ParsedCall argName(SourcePosition pos)
   {
-    return new ParsedCall(new ParsedName(pos, argName()));
+    return new ParsedCall(new ParsedName(pos, argName()))
+      {
+        @Override
+        public AbstractType asType()
+        {
+          return null;
+        }
+      };
   }
 
 
