@@ -3048,7 +3048,7 @@ public class GeneratingFUIR extends FUIR
         for (int tix = 0; tix < nt; tix++)
           {
             var t = f != null ? f.resultType() : ts.get(tix);
-            if (t.isDirectlyAssignableFrom(cg, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+            if (t.isAssignableFromWithoutTagging(cg, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
               {
                 resultL.add(tag);
               }
