@@ -394,7 +394,7 @@ public class ValueSet extends Value
   {
     for (var v : _componentsArray)
       {
-        c.accept(v);
+        v.forAll(c);
       }
   }
 

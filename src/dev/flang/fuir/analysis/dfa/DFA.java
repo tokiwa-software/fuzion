@@ -248,8 +248,10 @@ public class DFA extends ANY
      */
     Val access(int s, Val tvalue, List<Val> args)
     {
-      Val res = null;
+      var resa = new Val[1];
       var tv = tvalue.value();
+      tv.forAll(t -> resa[0] = accessSingleTarget(s, t, args, resa[0], tvalue));
+      /*
       if (tv instanceof ValueSet tvalues)
         {
           for (var t : tvalues._componentsArray)
@@ -270,6 +272,8 @@ public class DFA extends ANY
         {
           res = accessSingleTarget(s, tvalue.value(), args, res, tvalue);
         }
+      */
+      var res = resa[0];
       if (res != null &&
           tvalue instanceof EmbeddedValue &&
           !_fuir.clazzIsRef(_fuir.accessTargetClazz(s)) &&

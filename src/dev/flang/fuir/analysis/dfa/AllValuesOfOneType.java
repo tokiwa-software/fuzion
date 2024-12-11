@@ -283,7 +283,7 @@ public class AllValuesOfOneType extends Value
     _iterating++;
     for (var v : _componentsList)
       {
-        c.accept(v);
+        v.forAll(c);
       }
     _iterating--;
   }
