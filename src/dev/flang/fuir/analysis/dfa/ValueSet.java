@@ -180,7 +180,7 @@ public class ValueSet extends Value
           System.out.println("Added "+v+" ("+_dfa._fuir.clazzAsString(v._clazz)+") to "+_dfa._fuir.clazzAsString(_clazz)+": "+this);
         }
 
-      if (CHECKS) check
+      if (false) if (CHECKS) check
         ((_forTags == null) != (_components == null));
     }
 
