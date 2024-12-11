@@ -227,8 +227,8 @@ public class AllValuesOfOneType extends Value
    *
    * @param other the other AllValuesOfOneType
    *
-   * @return -1, 0, or +1 depending on whether @code{this < other}, @code{this == other} or
-   * @code{this > other} by some order.
+   * @return -1, 0, or +1 depending on whether {@code this < other}, {@code this == other} or
+   * {@code this > other} by some order.
    */
   public int compareTo(AllValuesOfOneType other)
   {
@@ -252,8 +252,8 @@ public class AllValuesOfOneType extends Value
    *
    * @param other the other AllValuesOfOneType
    *
-   * @return -1, 0, or +1 depending on whether @code{this < other}, @code{this == other} or
-   * @code{this > other} by some order.
+   * @return -1, 0, or +1 depending on whether {@code this < other}, {@code this == other} or
+   * {@code this > other} by some order.
    */
   public int envCompareTo(AllValuesOfOneType other)
   {
