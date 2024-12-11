@@ -207,10 +207,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Object assignStatic(int s, int tc, int f, int rt, Value tvalue, Value val)
   {
-    if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
-      {
-        Interpreter.setField(f, tc, tvalue, val);
-      }
+    Interpreter.setField(f, tc, tvalue, val);
     return null;
   }
 

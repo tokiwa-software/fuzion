@@ -447,23 +447,26 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     if (or != FUIR.NO_CLAZZ)
       {
         var rt = _fuir.clazzResultClazz(or);
-        var cur = _processor.current(s);
-        l.add(cur.v1());
-        var out = _processor.outer(s);
-        l.add(out.v1());
-        l.add(_processor.assignStatic(s, cl, or, rt, cur.v0(), out.v0()));
+        if (_fuir.hasData(rt))
+          {
+            var cur = _processor.current(s);
+            l.add(cur.v1());
+            var out = _processor.outer(s);
+            l.add(out.v1());
+            l.add(_processor.assignStatic(s, cl, or, rt, cur.v0(), out.v0()));
+          }
       }
 
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
       {
         var cur = _processor.current(s);
-        l.add(cur.v1());
-        var af = _fuir.clazzArg(cl, i);
         var at = _fuir.clazzArgClazz(cl, i);
-        var ai = _processor.arg(s, i);
-        if (ai != null)
+        if (_fuir.hasData(at))
           {
+            l.add(cur.v1());
+            var af = _fuir.clazzArg(cl, i);
+            var ai = _processor.arg(s, i);
             l.add(_processor.assignStatic(s, cl, af, at, cur.v0(), ai));
           }
       }
