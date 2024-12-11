@@ -171,12 +171,8 @@ public class C extends ANY
     @Override
     public Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args)
     {
-      var ol = new List<CStmnt>();
-      var res = CExpr.UNIT;
       var r = access(s, tvalue, args);
-      ol.add(r.v1());
-      res = r.v0();
-      return new Pair<>(res, CStmnt.seq(ol));
+      return new Pair<>(r.v0(), CStmnt.seq(new List<>(r.v1())));
     }
 
 
