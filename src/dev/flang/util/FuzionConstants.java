@@ -103,9 +103,75 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of Type feature.
+   */
+  public static final String TYPE_FEAT            = "Type";
+
+
+  /**
    * Name of String feature.
    */
   public static final String STRING_NAME          = "String";
+
+
+  /**
+   * Name of i8 feature.
+   */
+  public static final String I8_NAME          = "i8";
+
+
+  /**
+   * Name of i16 feature.
+   */
+  public static final String I16_NAME          = "i16";
+
+
+  /**
+   * Name of i32 feature.
+   */
+  public static final String I32_NAME          = "i32";
+
+
+  /**
+   * Name of i64 feature.
+   */
+  public static final String I64_NAME          = "i64";
+
+
+  /**
+   * Name of u8 feature.
+   */
+  public static final String U8_NAME          = "u8";
+
+
+  /**
+   * Name of u16 feature.
+   */
+  public static final String U16_NAME          = "u16";
+
+
+  /**
+   * Name of u32 feature.
+   */
+  public static final String U32_NAME          = "u32";
+
+
+  /**
+   * Name of u64 feature.
+   */
+  public static final String U64_NAME          = "u64";
+
+
+  /**
+   * Name of f32 feature.
+   */
+  public static final String F32_NAME          = "f32";
+
+
+  /**
+   * Name of f64 feature.
+   */
+  public static final String F64_NAME          = "f64";
 
 
   /**
