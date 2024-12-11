@@ -1353,10 +1353,7 @@ public class C extends ANY
             var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
             var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
-            if (_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco))
-              { // in case we access the value in a boxed target, unbox it first:
-                tv = fields(tv, tt);
-              }
+            tv = unbox(tt, cc, tv);
             if (isCall)
               {
                 var calpair = call(s, tv, args, cc);
@@ -1402,6 +1399,23 @@ public class C extends ANY
       }
 
     return new Pair<>(res, CStmnt.seq(ol));
+  }
+
+
+  /**
+   * Unbox tv if needed.
+   *
+   * @param tt the target type
+   * @param cc the called clazz
+   * @param tv the target value which may be boxed
+   * @return
+   */
+  private CExpr unbox(int tt, int cc, CExpr tv)
+  {
+    var cco = _fuir.clazzOuterClazz(cc); // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
+    return _fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco)
+      ? fields(tv, tt)
+      : tv;
   }
 
 
