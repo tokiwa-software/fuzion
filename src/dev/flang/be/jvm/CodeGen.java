@@ -760,17 +760,16 @@ class CodeGen
   @Override
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
-    var res = val;
-    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
-      {
-        var n = _names.javaClass(rc);
-        res = Expr.comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
-          .andThen(val)
-          .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
-                                     _types.boxSignature(rc),
-                                     _types.javaType(rc))
-                   );
-      }
+    if (PRECONDITIONS) require
+      (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc));
+
+    var n = _names.javaClass(rc);
+    var res = Expr
+      .comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
+      .andThen(val)
+      .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
+                                  _types.boxSignature(rc),
+                                  _types.javaType(rc)));
     return new Pair<>(res, Expr.UNIT);
   }
 
