@@ -45,7 +45,7 @@
 #   say "$i: $l"
 #
 # NYI: UNDER DEVELOPMENT: It would be good to move features reader, read_fully,
-# etc.to a parent feature and have other features, e.g., for reading files, inherit
+# etc. to a parent feature and have other features, e.g., for reading files, inherit
 # from that feature as well.
 #
 public stdin is
