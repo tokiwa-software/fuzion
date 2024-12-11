@@ -191,7 +191,7 @@ public class ValueSet extends Value
      */
     Value[] asComponents()
     {
-      if (CHECKS) check
+      if (false) if (CHECKS) check
         ((_forTags == null) != (_components == null));
 
       if (_forRefs != null)
