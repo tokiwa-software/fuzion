@@ -893,9 +893,11 @@ should be avoided as much as possible.
                                   """
                                   #!/bin/sh
 
-                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:." \
-                                  PATH="$PATH:." \
-                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:." \
+                                  SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
+
+                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
+                                  PATH="$PATH:$SCRIPT_PATH" \
+                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
                                   java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                   """,
                                   FUZION_COMMAND_PROPERTY,
@@ -904,11 +906,11 @@ should be avoided as much as possible.
         f.setExecutable(true);
         for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
           {
-            var file = Path.of(System.getProperty("user.dir")).resolve("build/lib/" + str);
+            var file = Path.of(System.getProperty("fuzion.home")).resolve("lib/" + str);
             if (file.toFile().exists())
               {
                 Files.copy(file,
-                           Path.of(str),
+                           executableName.toAbsolutePath().getParent().resolve(str),
                            StandardCopyOption.REPLACE_EXISTING);
               }
           }
