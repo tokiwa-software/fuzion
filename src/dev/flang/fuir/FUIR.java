@@ -320,7 +320,20 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is a choice with at least one ref element
    */
-  public abstract boolean clazzIsChoiceWithRefs(int cl);
+  public boolean clazzIsChoiceWithRefs(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzIsChoice(cl));
+
+    for (int i = 0; i < clazzNumChoices(cl); i++)
+      {
+        if (clazzIsRef(clazzChoice(cl, i)))
+          {
+            return true;
+          }
+      }
+    return false;
+  }
 
 
   /**
@@ -330,7 +343,23 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is a choice with only ref or unit/void elements
    */
-  public abstract boolean clazzIsChoiceOfOnlyRefs(int cl);
+  public boolean clazzIsChoiceOfOnlyRefs(int cl)
+  {
+    var result = false;
+    if (clazzIsChoice(cl))
+      {
+        boolean hasNonRefsWithState = false;
+
+        for (int i = 0; i < clazzNumChoices(cl); i++)
+          {
+            var c = clazzChoice(cl, i);
+            hasNonRefsWithState = hasNonRefsWithState || !clazzIsRef(c) && hasData(c);
+          }
+
+        result = clazzIsChoiceWithRefs(cl) && !hasNonRefsWithState;
+      }
+    return result;
+  }
 
 
 
@@ -372,7 +401,10 @@ public abstract class FUIR extends IR
    * @return clazz id of the argument or -1 if no such feature exists (the
    * argument is unused).
    */
-  public abstract int clazzArgClazz(int cl, int arg);
+  public int clazzArgClazz(int cl, int arg)
+  {
+    return clazzResultClazz(clazzArg(cl, arg));
+  };
 
 
   /**
@@ -442,7 +474,11 @@ public abstract class FUIR extends IR
    *
    * @return true if the clazz is a constructor, false otherwise
    */
-  public abstract boolean isConstructor(int clazz);
+  public boolean isConstructor(int clazz)
+  {
+    return clazzKind(clazz) == FeatureKind.Routine
+      && clazzResultClazz(clazz) == clazz;
+  }
 
 
   /**
@@ -522,7 +558,10 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is the specified special clazz c
    */
-  public abstract boolean clazzIs(int cl, SpecialClazzes c);
+  public boolean clazzIs(int cl, SpecialClazzes c)
+  {
+    return cl == clazz(c);
+  }
 
 
   /**

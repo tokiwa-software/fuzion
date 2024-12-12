@@ -1454,51 +1454,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-
-  /**
-   * Is this a choice-type whose actual generics include ref?  If so, a field for
-   * all the refs will be needed.
-   */
-  public boolean isChoiceWithRefs()
-  {
-    boolean hasRefs = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasRefs = hasRefs || c.isRef().yes();
-          }
-      }
-
-    return hasRefs;
-  }
-
-
-  /**
-   * Is this a choice-type whose actual generics are all refs or stateless
-   * values? If so, no tag will be added, but ChoiceIdAsRef can be used.
-   *
-   * In case this is a choice of stateless value without any references, the
-   * result will be false since in this case, it is better to use the an integer
-   * stored in the tag.
-   */
-  public boolean isChoiceOfOnlyRefs()
-  {
-    boolean hasNonRefsWithState = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasNonRefsWithState = hasNonRefsWithState || (c.isRef().noOrDontKnow() && !c.isUnitType() && !c.isVoidType());
-          }
-      }
-
-    return isChoiceWithRefs() && !hasNonRefsWithState;
-  }
-
-
   /**
    * Obtain the actual classes of a choice.
    *
@@ -1875,7 +1830,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *    b(U type) : a Sequence U  is
    *    c(V type) : b option V is
    * }</pre>
-   * 
+   *
    * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
    *
    * <pre>{@code
