@@ -689,7 +689,9 @@ public abstract class FUIR extends IR
   public int clazz_array_u8()
   {
     var utf8_data = clazz_Const_String_utf8_data();
-    return clazzResultClazz(utf8_data);
+    return utf8_data == NO_CLAZZ
+      ? NO_CLAZZ
+      : clazzResultClazz(utf8_data);
   }
 
 
@@ -701,9 +703,8 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8()
   {
     var a8 = clazz_array_u8();
-    var ia = lookup_array_internal_array(a8);
-    var res = clazzResultClazz(ia);
-    return res;
+    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : lookup_array_internal_array(a8);
+    return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
   }
 
 
@@ -715,7 +716,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_data()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_data(sa8);
+    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_data(sa8);
   }
 
 
@@ -727,7 +728,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_length()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_length(sa8);
+    return  sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_length(sa8);
   }
 
 
@@ -1091,18 +1092,6 @@ public abstract class FUIR extends IR
    * case does not have a field or the field is unused.
    */
   public abstract int matchCaseField(int s, int cix);
-
-
-  /**
-   * For a given tag return the index of the corresponding case.
-   *
-   * @param s site of the match
-   *
-   * @param tag e.g. 0,1,2,...
-   *
-   * @return the index of the case for tag {@code tag}
-   */
-  public abstract int matchCaseIndex(int s, int tag);
 
 
   /**
@@ -1607,6 +1596,7 @@ public abstract class FUIR extends IR
 
   /*----------------------  serializing FUIR  ----------------------*/
 
+
   public abstract int[] clazzActualGenerics(int cl);
 
   private int siteCount()
@@ -1704,7 +1694,9 @@ public abstract class FUIR extends IR
                 clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
                 safe(()->clazzTypeName(cl0), null),
                 clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
-                clazzAsStringHuman(cl)
+                clazzAsStringHuman(cl),
+                safe(()-> clazzKind(cl0) == FeatureKind.Field ? fieldIndex(cl0) : NO_CLAZZ, NO_CLAZZ),
+                clazzSrcFile(cl)
                 );
           }
         oos.writeObject(clazzes);
@@ -1724,8 +1716,8 @@ public abstract class FUIR extends IR
                 !withinCode(s) ? -7 : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? accessTargetClazz(s) : NO_CLAZZ,
                 !withinCode(s) ? -7 : codeAt(s) == ExprKind.Tag ? tagValueClazz(s) : NO_CLAZZ,
                 !withinCode(s) ? -7 : codeAt(s) == ExprKind.Assign ? assignedType(s) : NO_CLAZZ,
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? -7 : boxValueClazz(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? -7 : boxResultClazz(s),
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? -7 : safe(()->boxValueClazz(s0), NO_CLAZZ),
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? -7 : safe(()->boxResultClazz(s0), NO_CLAZZ),
                 !withinCode(s) ? -7 : codeAt(s) == ExprKind.Match ? safe(()->matchStaticSubject(s0), NO_CLAZZ) : NO_CLAZZ,
                 !withinCode(s) ? -7 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
@@ -1788,6 +1780,33 @@ public abstract class FUIR extends IR
   }
 
 
+  /*----------------------  Interpreter  ----------------------*/
+
+
+  /**
+   * For a given tag return the index of the corresponding case.
+   *
+   * @param s site of the match
+   *
+   * @param tag e.g. 0,1,2,...
+   *
+   * @return the index of the case for tag {@code tag}
+   */
+  public int matchCaseIndex(int s, int tag)
+  {
+    var result = -1;
+    for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
+      {
+        var mct = matchCaseTags(s, j);
+        if (Arrays.stream(mct).anyMatch(t -> t == tag))
+          {
+            result = j;
+          }
+      }
+    if (CHECKS) check
+      (result != -1);
+    return result;
+  }
 
 }
 

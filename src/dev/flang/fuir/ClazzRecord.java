@@ -59,7 +59,9 @@ public record ClazzRecord(
   LifeTime lifeTime,
   byte[] clazzTypeName,
   int inlineArrayElementClazz,
-  String clazzAsStringHuman
+  String clazzAsStringHuman,
+  int fieldIndex,
+  String clazzSrcFile
   ) implements Serializable
 {
   private static final long serialVersionUID = 1L;
