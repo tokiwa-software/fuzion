@@ -2901,7 +2901,11 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
         b = switch (_fuir.clazzAsString(clazz))
           {
           case
-            "codepoint"  -> true;
+          "list u8",
+          "codepoint",
+          "Sequence u8",
+          "array u8",
+          "fuzion.sys.internal_array u8" -> true;
           default -> false;
           };
         _onlyOneInstance.force(cnum, b);
