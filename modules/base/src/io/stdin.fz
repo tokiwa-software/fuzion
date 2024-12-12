@@ -27,27 +27,67 @@
 # short-hand to return an io.reader with a read provider
 # allowing to read from stdin.
 #
-# usage example:
+# usage example using a local mutate instance:
 #
-#     line_or_error := io.stdin.try ()->
-#       io.buffered.read_line
+#  LM : mutate is
+#  LM ! ()->
+#    io.stdin.reader LM ! ()->
+#      for l := io.buffered.read_line LM
+#          i in 1..
+#      while l??
+#        say "$i: $l"
 #
+# usage example using read_lines:
 #
-public stdin (LM type : mutate) io.buffered.reader LM =>
+# for l in io.stdin.read_lines
+#     i in 1..
+# do
+#   say "$i: $l"
+#
+# NYI: UNDER DEVELOPMENT: It would be good to move features reader, read_fully,
+# etc. to a parent feature and have other features, e.g., for reading files, inherit
+# from that feature as well.
+#
+public stdin is
 
+  # create a reader for stdin using the given local mutate instance
+  #
+  public reader (LM type : mutate) =>
+    buffered.reader LM stdin_read_provider 1024
 
-  read_provider : io.Read_Provider is
-    redef read(count i32) choice (array u8) io.end_of_file error =>
-      arr := fuzion.sys.internal_array_init u8 count
-      v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
-      if v < -1
-        error "an error occurred while reading stdin"
-      else if v <= 0
-        io.end_of_file
-      else if v < count
-        array u8 v i->arr[i]
-      else
-        arr.as_array
+  # read all of stdin in an array of u8 bytes using
+  # io.buffered.reader.read_fully.
+  #
+  public read_fully array u8 =>
+    M : mutate is
+    M ! ()->
+      reader M ! buffered.read_fully M
 
+  # read all of stdin in an array of String using
+  # io.buffered.reader.read_lines.
+  #
+  public read_lines array String =>
+    M : mutate is
+    M ! ()->
+      reader M ! buffered.read_lines M
 
-  io.buffered.reader LM read_provider 1024
+  # read all of stdin in a single String using
+  # String.from_bytes on the result of io.buffered.reader.read_fully.
+  #
+  public read_string =>
+    String.from_bytes read_fully
+
+# Read provider for stdin
+#
+stdin_read_provider : Read_Provider is
+  redef read(count i32) choice (array u8) io.end_of_file error =>
+    arr := fuzion.sys.internal_array_init u8 count
+    v := fuzion.sys.fileio.read fuzion.sys.stdin.stdin0 arr.data count
+    if v < -1
+      error "an error occurred while reading stdin"
+    else if v <= 0
+      io.end_of_file
+    else if v < count
+      array u8 v i->arr[i]
+    else
+      arr.as_array
