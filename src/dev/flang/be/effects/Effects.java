@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.effects;
 
-import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.dfa.DFA;
 
