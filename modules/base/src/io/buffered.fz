@@ -24,4 +24,18 @@
 
 # unit type to group buffered io
 #
-public buffered (module LM type : mutate)  is
+# since a buffer requires mutation you must provide a (local) mutate
+# effect that is instated to use any features working with buffers.
+#
+# Additionally, the mutate effect provides a means to distinguish
+# different instances. Say you want to use buffered readers to read
+# from two files simultaneously: You can create two different
+# local mutate types `lm1` and `lm2` to distinguish the two
+# readers.
+#
+public buffered (# the type of the (local) mutate instance
+                 # to be used for this buffered i/o
+                 #
+                 module LM type : mutate
+                )
+is
