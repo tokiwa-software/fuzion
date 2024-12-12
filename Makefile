@@ -1189,7 +1189,13 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_jar
+run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
+
+# phony target to run Fuzion tests using interpreter and report number of failures
+.PHONY .SILENT: run_tests_effect
+run_tests_effect: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+	printf "testing effects: "
+	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
@@ -1211,7 +1217,13 @@ run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DI
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests_parallel
-run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_jar
+run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_effect_parallel run_tests_jar
+
+# phony target to run Fuzion test effects and report number of failures
+.PHONY .SILENT: run_tests_effect_parallel
+run_tests_effect_parallel: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+	printf "testing effects: "
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel

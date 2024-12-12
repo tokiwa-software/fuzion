@@ -54,3 +54,5 @@ mod_int: a.fum
 
 clean:
 	rm a.fum m *~ */*~
+
+effect:
