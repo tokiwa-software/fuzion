@@ -256,10 +256,7 @@ public class Names extends ANY implements ClassFileConstants
     {
       String rawName(int field)
       {
-        var index = _fuir.isJavaRef(field)
-          ? ""
-          : _fuir.fieldIndex(field) + "_";
-        return _prefix + index + baseName(field);
+        return _prefix + _fuir.fieldIndex(field) + "_" + baseName(field);
       }
     };
 

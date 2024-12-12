@@ -418,14 +418,14 @@ public class AstErrors extends ANY
         else if (integerType(frmlT) && integerType(actlT))
           {
             var fs =
-              frmlT.compareTo(Types.resolved.t_i8 ) == 0  ? "i8"   :
-              frmlT.compareTo(Types.resolved.t_i16) == 0  ? "i16"  :
-              frmlT.compareTo(Types.resolved.t_i32) == 0  ? "i32 " :
-              frmlT.compareTo(Types.resolved.t_i64) == 0  ? "i64"  :
-              frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
-              frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
-              frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
-              frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
+              frmlT.compareTo(Types.resolved.t_i8 ) == 0  ? FuzionConstants.I8_NAME   :
+              frmlT.compareTo(Types.resolved.t_i16) == 0  ? FuzionConstants.I16_NAME  :
+              frmlT.compareTo(Types.resolved.t_i32) == 0  ? FuzionConstants.I32_NAME  :
+              frmlT.compareTo(Types.resolved.t_i64) == 0  ? FuzionConstants.I64_NAME  :
+              frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? FuzionConstants.U8_NAME   :
+              frmlT.compareTo(Types.resolved.t_u16) == 0  ? FuzionConstants.U16_NAME  :
+              frmlT.compareTo(Types.resolved.t_u32) == 0  ? FuzionConstants.U32_NAME  :
+              frmlT.compareTo(Types.resolved.t_u64) == 0  ? FuzionConstants.U64_NAME  : ERROR_STRING;
             remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
           }
         else if (frmlT.compareTo(Types.resolved.t_unit) == 0)

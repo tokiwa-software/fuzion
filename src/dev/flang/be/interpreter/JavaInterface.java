@@ -108,111 +108,6 @@ public class JavaInterface extends FUIRContext
 
 
   /**
-   * Extract Java object from an Instance of fuzion.java.Java_Object
-   *
-   * @param i an instance, must be of a clazz that inherits
-   * fuzion.java.Java_Object
-   */
-  static Object instanceToJavaObject(Instance i)
-  {
-    // NYI: CLEANUP: #3927: The following code is a very lazy way to find the
-    // offset of the field `Java_Ref`. This should disappear when #3927 is
-    // fixed.
-    int javaRef_offset = 0;
-    while (!(i.refs[javaRef_offset] instanceof JavaRef))
-      {
-        javaRef_offset++;
-      }
-
-    var res = ((JavaRef)i.refs[javaRef_offset])._javaRef;
-    if (res != null)
-      {
-        // convert Value[] containing Java instances into corresponding Java array
-        if (res instanceof ValueWithClazz[] va)
-          {
-            var oa = new Object[va.length];
-            for (var ix = 0; ix < va.length; ix++)
-              {
-                if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_i8))
-                  {
-                    oa[ix] = va[ix].i8Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_i16))
-                  {
-                    oa[ix] = va[ix].i16Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_i32))
-                  {
-                    oa[ix] = va[ix].i32Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_i64))
-                  {
-                    oa[ix] = va[ix].i64Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_u8))
-                  {
-                    oa[ix] = va[ix].u8Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_u16))
-                  {
-                    oa[ix] = va[ix].u16Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_u32))
-                  {
-                    oa[ix] = va[ix].u32Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_u64))
-                  {
-                    oa[ix] = va[ix].u64Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_f32))
-                  {
-                    oa[ix] = va[ix].f32Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_f64))
-                  {
-                    oa[ix] = va[ix].f64Value();
-                  }
-                else if (va[ix].clazz() == fuir().clazz(SpecialClazzes.c_bool))
-                  {
-                    oa[ix] = va[ix].boolValue();
-                  }
-                else
-                  {
-                    oa[ix] = instanceToJavaObject(va[ix].instance());
-                  }
-              }
-
-            // find most general array element clazz ec
-            Class ec = null;
-            for (var ix = 0; ix < va.length; ix++)
-              {
-                if (oa[ix] != null)
-                  {
-                    var nc = oa[ix].getClass();
-                    if (ec == null || nc.isAssignableFrom(ec))
-                      {
-                        ec = nc;
-                      }
-                  }
-              }
-
-            if (ec != null && ec != Object.class)
-              {
-                res = Array.newInstance(ec , va.length);
-                System.arraycopy(oa, 0, res, 0, oa.length);
-              }
-            else
-              {
-                res = oa;
-              }
-          }
-      }
-    return res;
-  }
-
-
-  /**
    * Wrap Java object into an instance of resultClazz
    *
    * @param o a Java object
@@ -374,27 +269,6 @@ public class JavaInterface extends FUIRContext
       (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
     result.refs[0] = Interpreter.value(e.getMessage().toString());
 
-    return result;
-  }
-
-
-  /**
-   * Convert an instance of {@code fuzion.sys.array<Object>} to a Java Object[] with
-   * the corresponding Java values.
-   *
-   * @param v a value of type ArrayData as it is stored in 'fuzion.sys.array.data'.
-   *
-   * @return corresponding Java array.
-   */
-  static Object[] instanceToJavaObjects(Value v)
-  {
-    var a = v.arrayData();
-    var sz = a.length();
-    var result = new Object[sz];
-    for (var ix = 0; ix < sz; ix++)
-      {
-        result[ix] = instanceToJavaObject((Instance)(((Object[])a._array)[ix]));
-      }
     return result;
   }
 

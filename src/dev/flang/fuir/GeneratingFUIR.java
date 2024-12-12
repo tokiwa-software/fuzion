@@ -377,29 +377,29 @@ public class GeneratingFUIR extends FUIR
             // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
             s = switch (cl.feature().qualifiedName())
               {
-              case "Any"               -> SpecialClazzes.c_Any         ;
-              case "i8"                -> SpecialClazzes.c_i8          ;
-              case "i16"               -> SpecialClazzes.c_i16         ;
-              case "i32"               -> SpecialClazzes.c_i32         ;
-              case "i64"               -> SpecialClazzes.c_i64         ;
-              case "u8"                -> SpecialClazzes.c_u8          ;
-              case "u16"               -> SpecialClazzes.c_u16         ;
-              case "u32"               -> SpecialClazzes.c_u32         ;
-              case "u64"               -> SpecialClazzes.c_u64         ;
-              case "f32"               -> SpecialClazzes.c_f32         ;
-              case "f64"               -> SpecialClazzes.c_f64         ;
-              case "unit"              -> SpecialClazzes.c_unit        ;
-              case "void"              -> SpecialClazzes.c_void        ;
-              case "bool"              -> SpecialClazzes.c_bool        ;
-              case "true_"             -> SpecialClazzes.c_true_       ;
-              case "false_"            -> SpecialClazzes.c_false_      ;
-              case "Const_String"      -> SpecialClazzes.c_Const_String;
-              case "String"            -> SpecialClazzes.c_String      ;
-              case "error"             -> SpecialClazzes.c_error       ;
-              case "fuzion"            -> SpecialClazzes.c_fuzion      ;
-              case "fuzion.sys"        -> SpecialClazzes.c_fuzion_sys  ;
-              case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ;
-              default                  -> SpecialClazzes.c_NOT_FOUND   ;
+              case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
+              case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
+              case FuzionConstants.I16_NAME    -> SpecialClazzes.c_i16         ;
+              case FuzionConstants.I32_NAME    -> SpecialClazzes.c_i32         ;
+              case FuzionConstants.I64_NAME    -> SpecialClazzes.c_i64         ;
+              case FuzionConstants.U8_NAME     -> SpecialClazzes.c_u8          ;
+              case FuzionConstants.U16_NAME    -> SpecialClazzes.c_u16         ;
+              case FuzionConstants.U32_NAME    -> SpecialClazzes.c_u32         ;
+              case FuzionConstants.U64_NAME    -> SpecialClazzes.c_u64         ;
+              case FuzionConstants.F32_NAME    -> SpecialClazzes.c_f32         ;
+              case FuzionConstants.F64_NAME    -> SpecialClazzes.c_f64         ;
+              case FuzionConstants.UNIT_NAME   -> SpecialClazzes.c_unit        ;
+              case "void"                      -> SpecialClazzes.c_void        ;
+              case "bool"                      -> SpecialClazzes.c_bool        ;
+              case "true_"                     -> SpecialClazzes.c_true_       ;
+              case "false_"                    -> SpecialClazzes.c_false_      ;
+              case "Const_String"              -> SpecialClazzes.c_Const_String;
+              case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
+              case "error"                     -> SpecialClazzes.c_error       ;
+              case "fuzion"                    -> SpecialClazzes.c_fuzion      ;
+              case "fuzion.sys"                -> SpecialClazzes.c_fuzion_sys  ;
+              case "fuzion.sys.Pointer"        -> SpecialClazzes.c_sys_ptr     ;
+              default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)
               {
@@ -1618,42 +1618,6 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
-  }
-
-
-  /**
-   * Check if the given clazz is a --possibly inherited--
-   * {@code fuzion.java.Java_Object.Java_Ref} field.
-   *
-   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
-   *
-   * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
-   */
-  @Override
-  public boolean isJavaRef(int cl)
-  {
-    var f = id2clazz(cl).feature();
-    return isJavaRef(f);
-  }
-
-
-  /**
-   * Helper for isJavaRef to check is this is or redefineds
-   * {@code fuzion.java.Java_Object.Java_Ref} field.
-   *
-   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
-   */
-  boolean isJavaRef(AbstractFeature f)
-  {
-    var result = f == Types.resolved.f_fuzion_Java_Object_Ref;
-    if (!result)
-      {
-        for (var rf : f.redefines())
-          {
-            result = result || isJavaRef(rf);
-          }
-      }
-    return result;
   }
 
 

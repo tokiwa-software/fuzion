@@ -674,7 +674,7 @@ public class Contract extends ANY
     var code = new Block(l);
     var result_type     = new ParsedType(pos,
                                          preBool ? "bool"
-                                                 : "unit",
+                                                 : FuzionConstants.UNIT_NAME,
                                          UnresolvedType.NONE,
                                          null);
     var pF = new Feature(pos,
