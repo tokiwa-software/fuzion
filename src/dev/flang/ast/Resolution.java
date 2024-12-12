@@ -27,8 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.LinkedList;
-import java.util.Set;
-import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;

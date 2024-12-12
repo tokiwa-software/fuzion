@@ -241,9 +241,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
-    // NYI: abstract interpreter should probably not give us boxed values
-    // in this case
-    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc /* NYI should this be cc0? */)))
+    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
       {
         tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;

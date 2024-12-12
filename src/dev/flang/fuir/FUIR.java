@@ -910,7 +910,7 @@ public abstract class FUIR extends IR
 
   /**
    * For an instruction of type ExprKind.Tag at site s, return the type of the
-   * original value that will be tagged.
+   * result value after it was tagged.
    *
    * @param s a code site for an Env instruction.
    *

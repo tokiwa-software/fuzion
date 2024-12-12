@@ -17,13 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature log
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Use say to print `s` to stdout and return `s`.
-#
-# In contrast to `say`, `log` returns its argument
-# which makes `log` compose better in same cases.
-#
-public log(s T) => {say s; s}
+override NAME = reg_issue3659
+include ../simple.mk
