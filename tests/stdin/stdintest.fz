@@ -29,8 +29,8 @@ stdintest =>
   lm ! ()->
     (io.stdin.reader lm) ! ()->
 
-      read(n i32) => (io.buffered.read_string lm n)
-      read_line => io.buffered.read_line lm ? str String => str | io.end_of_file => ""
+      read(n i32) => (io.buffered lm).read_string n
+      read_line => (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
       a := read 1
       # read 0 should not read anything
@@ -63,4 +63,3 @@ stdintest =>
       say "nothing: '$read_line'."
       # now at end_of_file.
       say "nothing: '{read 1}'."
-

@@ -26,8 +26,17 @@ write_provider : io.Write_Provider is
   redef write (b Sequence u8) outcome unit =>
     fuzion.sys.fileio.write fuzion.sys.out.stdout b.as_array
 
+# mutate instance to be used for buffered stdout output
+#
+# NYI: UNDER DEVELOPMENT: this should be provided to the buffered.writer
+# instance (instead of writer inheriting from mutate) and this
+# should have a default instance. We need DFA support for default instance
+# instation for this to be done, though.
+#
+stdout_buffer_mutate : mutate is
+
 
 # short-hand to return an io.writer with a write provider
 # allowing to write to stdout.
 #
-public stdout : io.buffered.writer write_provider 1024 is
+public stdout : (io.buffered stdout_buffer_mutate).writer write_provider 1024 is

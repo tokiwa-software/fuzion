@@ -24,4 +24,4 @@
 
 # unit type to group buffered io
 #
-public buffered is
+public buffered (module LM type : mutate)  is
