@@ -30,7 +30,7 @@ add_simple_test =>
   lm : mutate is
   lm ! ()->
 
-    _ := (io.stdin lm).instate_self unit ()->
+    _ := (io.stdin.reader lm).instate_self unit ()->
       match io.buffered.read_line lm
         test String =>
 
@@ -89,7 +89,3 @@ add_simple_test =>
                 (io.buffered.writer.env.write ((header "Makefile")+(makefile_body test)).utf8).error
 
         io.end_of_file => exit 1
-
-
-
-

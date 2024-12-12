@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**

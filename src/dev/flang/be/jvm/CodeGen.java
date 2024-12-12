@@ -519,22 +519,39 @@ class CodeGen
    */
   Pair<Expr, Expr> staticAccess(int si, int tt, int cc, Expr tv, List<Expr> args, boolean isCall)
   {
+    tv = unbox(tt, cc, tv);
+
+    return isCall ? staticCall(si, tv, args, cc)
+                  : new Pair<>(Expr.UNIT,
+                               _jvm.assignField(si, tv, cc, args.get(0),
+                               _fuir.clazzResultClazz(cc)));
+  }
+
+
+  /**
+   * Unbox tv if needed.
+   *
+   * @param tt the target type
+   * @param cc the called clazz
+   * @param tv the target value which may be boxed
+   */
+  private Expr unbox(int tt, int cc, Expr tv)
+  {
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
-        !_fuir.clazzIsRef(cco)  // NYI: CLEANUP: would be better if the AbstractInterpreter would
+        !_fuir.clazzIsRef(cco))  // NYI: CLEANUP: would be better if the AbstractInterpreter would
                                 // not confront us with boxed references here, such that
                                 // this special handling could be removed.
-        )
-      { // in case we access the value in a boxed target, unbox it first:
-        tv = Expr.comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
+
+      {
+        // in case we access the value in a boxed target, unbox it first:
+        tv = Expr
+          .comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
           .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getfield works vor unit type (resulting in tv.drop()).
                                      Names.BOXED_VALUE_FIELD_NAME,
                                      _types.javaType(cco)));
       }
-
-    return isCall ? staticCall(si, tv, args, cc)
-                  : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(si, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
+    return tv;
   }
 
 
@@ -760,17 +777,16 @@ class CodeGen
   @Override
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
-    var res = val;
-    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
-      {
-        var n = _names.javaClass(rc);
-        res = Expr.comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
-          .andThen(val)
-          .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
-                                     _types.boxSignature(rc),
-                                     _types.javaType(rc))
-                   );
-      }
+    if (PRECONDITIONS) require
+      (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc));
+
+    var n = _names.javaClass(rc);
+    var res = Expr
+      .comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
+      .andThen(val)
+      .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
+                                  _types.boxSignature(rc),
+                                  _types.javaType(rc)));
     return new Pair<>(res, Expr.UNIT);
   }
 

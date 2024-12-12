@@ -35,7 +35,6 @@ import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
-import dev.flang.util.YesNo;
 
 
 /**
