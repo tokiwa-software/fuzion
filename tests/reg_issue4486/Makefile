@@ -17,12 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature end_of_file
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# unit type to indicate an `end of file`
-# or the depletion of a source
-#
-public end_of_file is
+override NAME = reg_issue4486
+include ../simple.mk
