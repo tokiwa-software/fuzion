@@ -630,14 +630,14 @@ public Sequence(public T type) ref : property.equatable is
   #
   #   [1,2,3,4,5].tuples produces [(1,2),(3,4)]
   #
-  public tuples Sequence (T, T)
+  public as_tuples Sequence (T, T)
   =>
     h := take 2
     t := drop 2
     if h.count < 2
       (Sequence (T,T)).empty
     else
-      h.as_tuple : t.tuples.as_list
+      h.as_tuple : t.as_tuples.as_list
 
 
   # chop this Sequence into tuples of size 3.  In case
@@ -648,14 +648,14 @@ public Sequence(public T type) ref : property.equatable is
   #
   #   [1,2,3,4,5,6,7].tuples3 produces [(1,2,3),(4,5,6)]
   #
-  public tuples3 Sequence (T, T, T)
+  public as_3tuples Sequence (T, T, T)
   =>
     h := take 3
     t := drop 3
     if h.count < 3
       (Sequence (T,T,T)).empty
     else
-      h.as_3tuple : t.tuples3.as_list
+      h.as_3tuple : t.as_3tuples.as_list
 
 
   # chop this Sequence into tuples of size 4.  In case
@@ -666,14 +666,14 @@ public Sequence(public T type) ref : property.equatable is
   #
   #   [1,2,3,4,5].tuples4 produces [(1,2,3,4)]
   #
-  public tuples4 Sequence (T, T, T, T)
+  public as_4tuples Sequence (T, T, T, T)
   =>
     h := take 4
     t := drop 4
     if h.count < 4
       (Sequence (T,T,T,T)).empty
     else
-      h.as_4tuple : t.tuples4.as_list
+      h.as_4tuple : t.as_4tuples.as_list
 
 
   # chop this Sequence into tuples of size 5.  In case
@@ -684,14 +684,14 @@ public Sequence(public T type) ref : property.equatable is
   #
   #   [1,2,3,4,5,6].tuples5 produces [(1,2,3,4,5)]
   #
-  public tuples5 Sequence (T, T, T, T, T)
+  public as_5tuples Sequence (T, T, T, T, T)
   =>
     h := take 5
     t := drop 5
     if h.count < 5
       (Sequence (T,T,T,T,T)).empty
     else
-      h.as_5tuple : t.tuples5.as_list
+      h.as_5tuple : t.as_5tuples.as_list
 
 
   # chop this Sequence into tuples of size 6.  In case
@@ -702,14 +702,14 @@ public Sequence(public T type) ref : property.equatable is
   #
   #   [1,2,3,4,5,6,7].tuples6 produces [(1,2,3,4,5,6)]
   #
-  public tuples6 Sequence (T,T, T, T, T, T)
+  public as_6tuples Sequence (T,T, T, T, T, T)
   =>
     h := take 6
     t := drop 6
     if h.count < 6
       (Sequence (T,T,T,T,T,T)).empty
     else
-      h.as_6tuple : t.tuples6.as_list
+      h.as_6tuple : t.as_6tuples.as_list
 
 
   # convert a Sequence's head into a 2-tuple.
