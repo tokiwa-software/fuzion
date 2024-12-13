@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.ListIterator;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -377,7 +378,7 @@ public class Block extends AbstractBlock
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
-        _expressions.add(new Call(pos(), "unit").resolveTypes(res, context));
+        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
     return this;
   }

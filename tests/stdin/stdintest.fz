@@ -27,7 +27,7 @@ stdintest =>
 
   lm : mutate is
   lm ! ()->
-    (io.stdin lm) ! ()->
+    (io.stdin.reader lm) ! ()->
 
       read(n i32) => (io.buffered.read_string lm n)
       read_line => io.buffered.read_line lm ? str String => str | io.end_of_file => ""

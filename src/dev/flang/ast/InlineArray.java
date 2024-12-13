@@ -440,10 +440,10 @@ public class InlineArray extends ExprWithPos
                                        setArgs                                      ).resolveTypes(res, context);
         exprs.add(setElement);
       }
-    var readSysArrayVar = new Call(SourcePosition.builtIn, null, sysArrayName       ).resolveTypes(res, context);
-    var unit1           = new Call(SourcePosition.builtIn, null, "unit"             ).resolveTypes(res, context);
-    var unit2           = new Call(SourcePosition.builtIn, null, "unit"             ).resolveTypes(res, context);
-    var unit3           = new Call(SourcePosition.builtIn, null, "unit"             ).resolveTypes(res, context);
+    var readSysArrayVar = new Call(SourcePosition.builtIn, null, sysArrayName              ).resolveTypes(res, context);
+    var unit1           = new Call(SourcePosition.builtIn, null, FuzionConstants.UNIT_NAME ).resolveTypes(res, context);
+    var unit2           = new Call(SourcePosition.builtIn, null, FuzionConstants.UNIT_NAME ).resolveTypes(res, context);
+    var unit3           = new Call(SourcePosition.builtIn, null, FuzionConstants.UNIT_NAME ).resolveTypes(res, context);
     var sysArrArgsT     = new List<AbstractType>(et);
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
                                          unit1,

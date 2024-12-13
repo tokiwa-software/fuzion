@@ -61,7 +61,6 @@ import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**

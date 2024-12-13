@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -102,7 +103,7 @@ public class If extends ExprWithPos
      */
     if (elseBlock == null)
       {
-        var unit = new Call(pos(), "unit");
+        var unit = new Call(pos(), FuzionConstants.UNIT_NAME);
         elseBlock = new Block(new List<>(unit));
       }
   }

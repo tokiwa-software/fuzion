@@ -200,16 +200,16 @@ public class Types extends ANY
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
     {
       this.universe = universe;
-      t_i8                      = universe.get(mod, "i8", 1).selfType();
-      t_i16                     = universe.get(mod, "i16", 1).selfType();
-      t_i32                     = universe.get(mod, "i32", 1).selfType();
-      t_i64                     = universe.get(mod, "i64", 1).selfType();
-      t_u8                      = universe.get(mod, "u8", 1).selfType();
-      t_u16                     = universe.get(mod, "u16", 1).selfType();
-      t_u32                     = universe.get(mod, "u32", 1).selfType();
-      t_u64                     = universe.get(mod, "u64", 1).selfType();
-      t_f32                     = universe.get(mod, "f32", 1).selfType();
-      t_f64                     = universe.get(mod, "f64", 1).selfType();
+      t_i8                      = universe.get(mod, FuzionConstants.I8_NAME,  1).selfType();
+      t_i16                     = universe.get(mod, FuzionConstants.I16_NAME, 1).selfType();
+      t_i32                     = universe.get(mod, FuzionConstants.I32_NAME, 1).selfType();
+      t_i64                     = universe.get(mod, FuzionConstants.I64_NAME, 1).selfType();
+      t_u8                      = universe.get(mod, FuzionConstants.U8_NAME,  1).selfType();
+      t_u16                     = universe.get(mod, FuzionConstants.U16_NAME, 1).selfType();
+      t_u32                     = universe.get(mod, FuzionConstants.U32_NAME, 1).selfType();
+      t_u64                     = universe.get(mod, FuzionConstants.U64_NAME, 1).selfType();
+      t_f32                     = universe.get(mod, FuzionConstants.F32_NAME, 1).selfType();
+      t_f64                     = universe.get(mod, FuzionConstants.F64_NAME, 1).selfType();
       t_bool                    = universe.get(mod, "bool", 0).selfType();
       t_fuzion                  = universe.get(mod, "fuzion", 0).selfType();
       t_String                  = universe.get(mod, FuzionConstants.STRING_NAME, 0).selfType();
@@ -252,7 +252,7 @@ public class Types extends ANY
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
-      f_Type                    = universe.get(mod, "Type", 0);
+      f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);
       f_Type_infix_colon        = f_Type.get(mod, "infix :", 1);
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
       f_Type_infix_colon_false  = f_Type.get(mod, "infix_colon_false", 1);

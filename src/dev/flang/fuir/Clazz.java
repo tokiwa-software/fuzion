@@ -1875,7 +1875,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *    b(U type) : a Sequence U  is
    *    c(V type) : b option V is
    * }</pre>
-   * 
+   *
    * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
    *
    * <pre>{@code
@@ -2140,18 +2140,21 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (_fields == null)
       {
         var fields = new List<Clazz>();
-        for (var fieldc: _inner)
+        if (isRef().no())
           {
-            var field = fieldc.feature();
-            if (!isVoidType() && field.isField())
+            for (var fieldc: _inner)
               {
-                fields.add(fieldc);
+                var field = fieldc.feature();
+                if (!isVoidType() && field.isField())
+                  {
+                    fields.add(fieldc);
+                  }
               }
           }
-        _fields = fields.size() == 0 ? NO_CLAZZES
-                                     : fields.toArray(new Clazz[fields.size()]);
+        _fields = fields.isEmpty() ? NO_CLAZZES
+                                   : fields.toArray(new Clazz[fields.size()]);
       }
-    return isRef().yes() ? NO_CLAZZES : _fields;   // NYI: CLEANUP: Remove the difference between _fields and fields() wrt isRef()!
+    return _fields;
   }
 
 
@@ -2165,11 +2168,10 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (feature().isField());
 
-    var ignore = _outer.fields();
     int i = 0;
-    for (var f : _outer._fields)
+    for (var f : _outer.asValue().fields())
       {
-        if (f == this)
+        if (f.feature() == this.feature() && f._select == _select)
           {
             return i;
           }

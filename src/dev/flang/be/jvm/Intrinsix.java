@@ -41,6 +41,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -248,13 +249,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
     // arrays of fuzion-type, java reference type and java primitive type id
     String[][] primitive_to_java_object =  {
-      {"i8"  , "Byte"     , "B" },
-      {"i16" , "Short"    , "S" },
-      {"i32" , "Integer"  , "I" },
-      {"i64" , "Long"     , "J" },
-      {"u16" , "Character", "C" },
-      {"f32" , "Float"    , "F" },
-      {"f64" , "Double"   , "D" },
+      {FuzionConstants.I8_NAME  , "Byte"     , "B" },
+      {FuzionConstants.I16_NAME , "Short"    , "S" },
+      {FuzionConstants.I32_NAME , "Integer"  , "I" },
+      {FuzionConstants.I64_NAME , "Long"     , "J" },
+      {FuzionConstants.U16_NAME , "Character", "C" },
+      {FuzionConstants.F32_NAME , "Float"    , "F" },
+      {FuzionConstants.F64_NAME , "Double"   , "D" },
       {"bool", "Boolean"  , "Z" },
     };
 
