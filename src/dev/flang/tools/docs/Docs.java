@@ -92,7 +92,7 @@ public class Docs extends ANY
                             .filter(Files::isRegularFile)
                             .map(Path::getFileName)
                             .map(Path::toString)
-                            .filter(name -> name.endsWith(".fum"))
+                            .filter(name -> name.endsWith(FuzionConstants.MODULE_FILE_SUFFIX))
                             // exclude Java Modules from API docs
                             // (they also caused an endless recursion when using the docs generation on them)
                             .filter(name -> !name.startsWith("java."))

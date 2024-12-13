@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.Graph;
 import dev.flang.util.List;
 
@@ -452,8 +453,8 @@ public class CFG extends ANY
     put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
 
-    put("effect.type.default0"              , (cfg, cl) -> { } );
-    put("effect.type.instate0"              , (cfg, cl) ->
+    put("effect.type.default0"           , (cfg, cl) -> { } );
+    put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
           var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
           var call = cfg._fuir.lookupCall(oc);

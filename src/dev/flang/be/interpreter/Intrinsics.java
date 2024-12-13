@@ -57,6 +57,7 @@ import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -799,7 +800,7 @@ public class Intrinsics extends ANY
     put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
     put("effect.type.abort0"      ,
         "effect.type.default0"    ,
-        "effect.type.instate0"    ,
+        FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
         "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
 
@@ -1011,7 +1012,7 @@ public class Intrinsics extends ANY
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
           case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
-          case "effect.type.instate0"  :
+          case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:
               var prev = effects.get(ecl);

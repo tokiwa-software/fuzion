@@ -2968,7 +2968,7 @@ public class GeneratingFUIR extends FUIR
       {
       case "effect.type.abort0"  ,
            "effect.type.default0",
-           "effect.type.instate0",
+           FuzionConstants.EFFECT_INSTATE_NAME,
            "effect.type.is_instated0",
            "effect.type.replace0" -> true;
       default -> false;

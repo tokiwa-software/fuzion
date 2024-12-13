@@ -35,6 +35,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.Version;
 
@@ -690,7 +691,7 @@ public class Intrinsics extends ANY
 
     put("effect.type.abort0"     ,
         "effect.type.default0"   ,
-        "effect.type.instate0"   ,
+        FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
         "effect.type.replace0"   , (c,cl,outer,in) ->
         {
@@ -711,7 +712,7 @@ public class Intrinsics extends ANY
                            CExpr.exit(1));
               case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                                                                   evi.assign(CIdent.TRUE )));
-              case "effect.type.instate0"     ->
+              case FuzionConstants.EFFECT_INSTATE_NAME ->
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
                   var call_def = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 1));

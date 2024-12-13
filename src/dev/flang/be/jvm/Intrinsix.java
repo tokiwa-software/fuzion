@@ -755,7 +755,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, code);
         });
 
-    put("effect.type.instate0",
+    put(FuzionConstants.EFFECT_INSTATE_NAME,
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromInstrinsic(cc);

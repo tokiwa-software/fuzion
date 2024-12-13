@@ -306,7 +306,7 @@ public class AstErrors extends ANY
           "Declaration started at " + ofPos.show() + "\n" +
           (f.impl()._kind == Impl.Kind.RoutineDef
            ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
-              "ensure that the code results in a value of type " + st("unit") + " " +
+              "ensure that the code results in a value of type " + st(FuzionConstants.UNIT_NAME) + " " +
               "in the declaration of " + sqn(f._qname) + ".\n")
            : ("To solve this, you may remove the return type " + s(f._returnType) + " " +
               "from the declaration of " + sqn(f._qname) + ".\n")));
@@ -716,12 +716,12 @@ public class AstErrors extends ANY
   {
     var rt = res.type();
     var srt = rt == null ? "an unknown type" : s(rt);
-    error(res.posOfLast(), "Constructor code should result in type " + st("unit") + "",
+    error(res.posOfLast(), "Constructor code should result in type " + st(FuzionConstants.UNIT_NAME) + "",
           "Type returned by this constructor's implementation is " +srt + "\n" +
           "To solve this, you could turn this constructor into a routine by adding a matching result type " +
           "compatible to " + srt + " or by using " + code("=>") + " instead of " + code("is") + " to "+
           "infer the result type from the result expression.\n" +
-          "Alternatively, you could explicitly return " + st("unit") + " as the last expression or " +
+          "Alternatively, you could explicitly return " + st(FuzionConstants.UNIT_NAME) + " as the last expression or " +
           "explicitly ignore the result of the last expression by an assignment " + st("_ := <expression>") + ".");
   }
 
@@ -987,7 +987,7 @@ public class AstErrors extends ANY
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
               (aa.isCotype()
                ? ("or changing it into a routine by returning a " +
-                  sbn("unit") + " result, i.e., adding " + sbn("unit") + " before " + code("is") + " or using " + code("=>") +
+                  sbn(FuzionConstants.UNIT_NAME) + " result, i.e., adding " + sbn(FuzionConstants.UNIT_NAME) + " before " + code("is") + " or using " + code("=>") +
                   " instead of "+ code("is") + ".")
                : ("or adding an additional argument (e.g. " + code("_ unit") +
                   " for an ignored unit argument used only to disambiguate these two).")
