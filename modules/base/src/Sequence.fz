@@ -759,7 +759,6 @@ public Sequence(public T type) ref : property.equatable is
     r.val
 
 
-
   # convert a Sequence's head into a 4-tuple.
   #
   # ex.
