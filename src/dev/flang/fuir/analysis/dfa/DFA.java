@@ -2813,7 +2813,39 @@ public class DFA extends ANY
 
 
   static boolean ONLY_ONE_VALUE_SET = !false;
+
+
   static boolean ONLY_ONE_INSTANCE  = false;
+  /* performance for  make -f fridi.make jar
+
+     original: 76it, 183448 values 1:06.63elapsed o
+
+Value count 1109/183448 for ref list u8
+Value count 1473/183448 for i32
+Value count 1825/183448 for list u8
+Value count 2021/183448 for codepoint
+Value count 2199/183448 for Any
+Value count 2926/183448 for u32
+Value count 4576/183448 for String
+Value count 4692/183448 for ref codepoint
+Value count 7349/183448 for Sequence u8
+Value count 16840/183448 for array u8
+Value count 17563/183448 for fuzion.sys.internal_array u8
+
+     new: 76it, 172760 values 1:00.83elapsed
+
+Value count 1109/172760 for ref list u8
+Value count 1155/172760 for Any
+Value count 1473/172760 for i32
+Value count 1825/172760 for list u8
+Value count 2285/172760 for String
+Value count 2926/172760 for u32
+Value count 7056/172760 for Sequence u8
+Value count 16881/172760 for array u8
+Value count 17546/172760 for fuzion.sys.internal_array u8
+
+   */
+
   static boolean NO_SET_OF_REFS     = false;
 
 
@@ -2869,7 +2901,11 @@ public class DFA extends ANY
         b = switch (_fuir.clazzAsString(clazz))
           {
           case
-            "codepoint"  -> true;
+          "list u8",
+          "codepoint",
+          "Sequence u8",
+          "array u8",
+          "fuzion.sys.internal_array u8" -> true;
           default -> false;
           };
         _onlyOneInstance.force(cnum, b);

@@ -118,6 +118,16 @@ public class ParsedOperatorCall extends ParsedCall
     _inParentheses = true;
   }
 
+
+  @Override
+  void propagateForPartial(Resolution res, Context context)
+  {
+    if (!_inParentheses)
+      {
+        super.propagateForPartial(res, context);
+      }
+  }
+
 }
 
 /* end of file */
