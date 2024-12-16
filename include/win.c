@@ -830,12 +830,9 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
   if (fp!=NULL)
   {
-    fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
-  }
-  else
-  {
     open_results[0] = (int64_t)errno;
   }
+  // NYI: UNDER DEVELOPMENT: not available on windows: fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
   return fp;
 }
 
