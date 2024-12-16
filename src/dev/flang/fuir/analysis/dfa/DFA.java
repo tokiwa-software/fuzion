@@ -1250,6 +1250,16 @@ public class DFA extends ANY
           return res;
         }
 
+
+        @Override
+        public int accessedClazz(int s)
+        {
+          return codeAt(s) == ExprKind.Assign &&
+            (clazzIsUnitType(assignedType(s)) || clazzIsUnitType(accessTargetClazz(s)))
+            ? NO_CLAZZ
+            : super.accessedClazz(s);
+        }
+
       };
 
     return res;
