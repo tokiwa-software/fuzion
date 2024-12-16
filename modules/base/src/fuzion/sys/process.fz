@@ -29,12 +29,18 @@ module process is
   # create a new process
   # NYI pass stdin/out/err, pwd
   #
-  module create(args fuzion.sys.Pointer, arg_len i32, env_vars fuzion.sys.Pointer, env_vars_len i32, res fuzion.sys.Pointer, args_str fuzion.sys.Pointer, env_str fuzion.sys.Pointer) i32 => intrinsic
+  module fzE_process_create(args fuzion.sys.Pointer,
+                            arg_len i32,
+                            env_vars fuzion.sys.Pointer,
+                            env_vars_len i32,
+                            res fuzion.sys.Pointer,
+                            args_str fuzion.sys.Pointer,
+                            env_str fuzion.sys.Pointer) i32 => native
 
 
   # wait for process to exit
   #
-  module wait(p i64) i32 => intrinsic
+  module fzE_process_wait(p i64) i32 => native
 
   # NYI send_signal(p i64, signal i32) unit => intrinsic
   # NYI is_alive(p i64) unit => intrinsic

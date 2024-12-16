@@ -57,8 +57,8 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   # helper feature wait
   #
   wait0(p os.process) outcome u32 =>
-    _ := fuzion.sys.pipe.close p.std_in = 0
-    r := fuzion.sys.process.wait p.id
+    _ := fuzion.sys.pipe.fzE_pipe_close p.std_in = 0
+    r := fuzion.sys.process.fzE_process_wait p.id
     if r<0
       error "Waiting for process with id {p.id} was unsuccessful."
     else
@@ -106,15 +106,15 @@ install_default =>
       env_data := array fuzion.sys.Pointer env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
 
       # args as string for windows to avoid malloc in backend
-      args_str := sys.c_string (String.type.join (([n]++args).map (x -> "\"" + x + "\"")) " ")
+      args_str := sys.c_string (String.type.join (([n]++args).map (x -> "\"$x\"")) " ")
 
       # environment variables for windows to avoid malloc in backend
       # NULL terminates each environment variable
       # NULL is also used to terminate the environment variables data structure.
       env_str := sys.c_string ((String.type.join env_var_strings (codepoint 0)) + (codepoint 0))
 
-      res_data := array i64 4 i->0
-      if (sys.process.create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.internal_array.data args_str env_str) = -1
+      res_data := array i64 4 _->0
+      if (sys.process.fzE_process_create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.internal_array.data args_str env_str) = -1
         error "*** error creating process ***"
       else
         os.process res_data[0] res_data[1] res_data[2] res_data[3]

@@ -447,12 +447,6 @@ public class CFG extends ANY
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 
-    put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
-    put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
-    put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
-    put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
-    put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
-
     put("effect.type.default0"           , (cfg, cl) -> { } );
     put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
