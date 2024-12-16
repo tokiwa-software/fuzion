@@ -798,7 +798,7 @@ class CodeGen
   public Pair<Expr, Expr> current(int s)
   {
     var cl = _fuir.clazzAt(s);
-    if (_types.isScalar(cl))
+    if (_fuir.isScalar(cl))
       {
         return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
       }
@@ -918,13 +918,9 @@ class CodeGen
    */
   JVMOptions.ConstantCreation constantCreationStrategy(int constCl)
   {
-    return switch (_fuir.getSpecialClazz(constCl))
-      {
-      case c_bool, c_i8 , c_i16, c_i32,
-           c_i64 , c_u8 , c_u16, c_u32,
-           c_u64 , c_f32, c_f64         -> JVMOptions.ConstantCreation.onEveryUse;
-      default                           -> _jvm._options._constantCreationStrategy;
-      };
+    return _fuir.clazzIsBuiltInPrimitive(constCl)
+      ? JVMOptions.ConstantCreation.onEveryUse
+      : _jvm._options._constantCreationStrategy;
   }
 
 
