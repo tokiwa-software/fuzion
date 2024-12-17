@@ -847,11 +847,9 @@ public class Intrinsics extends ANY
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
           var data   = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
           var length = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
-          var elementType = c._fuir.clazzActualGeneric(c._fuir.clazzResultClazz(cl), 0);
+          var elementType = c._fuir.clazzActualGeneric(internalArray, 0);
           var elements = c._names.newTemp();
-          return CStmnt
-            .seq(
-              c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+          return CExpr
                 .call("fzE_array_to_java_object0",
                   new List<CExpr>(
                     A0.field(c._names.fieldName(length)),
@@ -861,7 +859,10 @@ public class Intrinsics extends ANY
                                                                  : A0.field(c._names
                                                                    .fieldName(data))
                                                                    .castTo("jvalue *"),
-                    CExpr.string(javaSignature(c._fuir, elementType)))), false));
+                    CExpr.string(javaSignature(c._fuir, elementType))))
+                .field(new CIdent("l"))
+                .castTo("void *")
+                .ret();
         }
     });
     put("fuzion.java.get_field0",
