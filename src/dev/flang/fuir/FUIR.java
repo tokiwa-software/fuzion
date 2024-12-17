@@ -278,7 +278,9 @@ public abstract class FUIR extends IR
     var rc = clazzResultClazz(field);
     return clazzIsOuterRef(field) &&
       !clazzIsRef(rc) &&
-      !clazzIsUnitType(rc) &&
+      // NYI: BUG: currently bugs in interpreter
+      // because interpreter uses two fuirs...
+      // !clazzIsUnitType(rc) &&
       !clazzIsBuiltInPrimitive(rc);
   }
 
