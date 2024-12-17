@@ -25,7 +25,7 @@
 #
 add_simple_test =>
 
-  say "Name of the new test: "
+  say "Name of the new test: (press Ctrl+D to end input)"
 
   lm : mutate is
   lm ! ()->
