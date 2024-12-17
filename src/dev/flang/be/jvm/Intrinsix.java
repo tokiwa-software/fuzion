@@ -118,7 +118,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var str = jvm._fuir.clazzTypeName(jvm._fuir.clazzOuterClazz(cc));
-          return new Pair<>(tvalue.drop().andThen(jvm.constString(str)), Expr.UNIT);
+          return new Pair<>(tvalue.drop().andThen(jvm.boxedConstString(str)), Expr.UNIT);
         });
 
     put("concur.atomic.racy_accesses_supported",
@@ -303,7 +303,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.java_string_to_string",
         (jvm, si, cc, tvalue, args) ->
         {
-          return jvm.constString(args.get(0)
+          return jvm.boxedConstString(args.get(0)
                                  .andThen(Expr.checkcast(JAVA_LANG_STRING))
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_bytes_array", "(Ljava/lang/String;)[B", PrimitiveType.type_byte.array())));
         });
@@ -565,7 +565,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
     var neg = jvm.new0(cl_err)                                                               // error
       .andThen(Expr.DUP)                                                                     // error, error
-      .andThen(jvm.constString(
+      .andThen(jvm.boxedConstString(
         Expr.invokeStatic(Names.RUNTIME_CLASS, "getException", "()Ljava/lang/String;", JAVA_LANG_STRING)
           .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
           .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array()))
@@ -662,7 +662,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.sys.args.get",
         (jvm, si, cc, tvalue, args) ->
         {
-          return jvm.constString(args.get(0)
+          return jvm.boxedConstString(args.get(0)
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                             Names.RUNTIME_ARGS_GET,
                                                             Names.RUNTIME_ARGS_GET_SIG,
@@ -889,7 +889,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put("fuzion.sys.env_vars.get0", (jvm, si, cc, tvalue, args) -> {
-      return jvm.constString(
+      return jvm.boxedConstString(
         tvalue.drop()
           .andThen(args.get(0))
           .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,

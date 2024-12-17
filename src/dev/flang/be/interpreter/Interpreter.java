@@ -111,10 +111,10 @@ public class Interpreter extends FUIRContext
    *
    * @str the string in UTF-16
    */
-  static Value value(String str)
+  static Value boxedConstString(String str)
   {
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    return value(bytes);
+    return boxedConstString(bytes);
   }
 
   /**
@@ -122,9 +122,9 @@ public class Interpreter extends FUIRContext
    *
    * @param bytes the string in UTF-16
    */
-  public static Value value(byte[] bytes)
+  public static Value boxedConstString(byte[] bytes)
   {
-    int cl = fuir().clazz_Const_String();
+    int cl = fuir().clazz_const_string();
     Instance result = new Instance(cl);
     var clArr = fuir().clazz_array_u8();
     Instance arr = new Instance(clArr);
@@ -134,9 +134,9 @@ public class Interpreter extends FUIRContext
     var arrayData = new ArrayData(bytes);
     setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
     setField(fuir().lookup_array_internal_array(clArr), cl, arr, sa);
-    setField(fuir().clazz_Const_String_utf8_data(), cl, result, arr);
+    setField(fuir().clazz_const_string_utf8_data(), cl, result, arr);
 
-    return result;
+    return new Boxed(fuir().clazzAsRef(cl), cl, result);
   }
 
 
