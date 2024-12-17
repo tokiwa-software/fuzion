@@ -604,20 +604,20 @@ public class Intrinsics extends ANY
     put("f32.tanh"             , (c,cl,outer,in) -> CExpr.call("tanhf", new List<>(outer)).ret());
     put("f64.tanh"             , (c,cl,outer,in) -> CExpr.call("tanh",  new List<>(outer)).ret());
 
-    put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
+    put("fuzion.sys.type.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call(c.malloc(),
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         });
-    put("fuzion.sys.internal_array.setel", (c,cl,outer,in) ->
+    put("fuzion.sys.type.setel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         });
-    put("fuzion.sys.internal_array.get", (c,cl,outer,in) ->
+    put("fuzion.sys.type.getel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)

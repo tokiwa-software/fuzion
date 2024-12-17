@@ -520,27 +520,24 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    put("fuzion.sys.internal_array_init.alloc", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           return ArrayData.alloc(/* size */ args.get(1).i32Value(),
                                  executor.fuir(),
                                  /* type */ et);
         });
-    put("fuzion.sys.internal_array.get", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.getel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
                                    executor.fuir(),
                                    /* type  */ et);
         });
-    put("fuzion.sys.internal_array.setel", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.setel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),
