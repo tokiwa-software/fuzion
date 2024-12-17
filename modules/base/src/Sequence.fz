@@ -271,10 +271,18 @@ public Sequence(public T type) ref : property.equatable is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public concat (s Sequence T) Sequence T => as_list.concat_list s.as_list
+  # NYI: PERFORMANCE: time complexity may be as bad as O(n²), see #4465
+  #
+  public concat (s Sequence T) Sequence T =>
+    if finite = trit.yes && s.finite = trit.yes
+      as_array.concat_array s.as_array
+    else
+      as_list.concat_list s.as_list
 
 
   # infix operand synonym for concat
+  #
+  # NYI: PERFORMANCE: time complexity may be as bad as O(n²), see #4465
   #
   public infix ++ (s Sequence T) => concat s
 

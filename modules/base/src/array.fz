@@ -298,6 +298,15 @@ module:public array(
     LM.env.array length.as_i64 data unit
 
 
+  # concat two arrays by copying all
+  # elements to new array
+  #
+  public concat_array(other array T) array T =>
+    # NYI: PERFORMANCE: copy complete array at once
+    (array T).new length+other.length i->
+      i<length ? array.this[i] : other[i-length]
+
+
   # array -- create initialized one-dimensional immutable array
   #
   public type.new(length i32, init i32 -> T) array T
