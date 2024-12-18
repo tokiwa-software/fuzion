@@ -25,6 +25,7 @@
 #
 add_simple_test =>
 
+  # NYI: BUG: #4531, can not end input via return currently
   say "Name of the new test: (press Ctrl+D to end input)"
 
   lm : mutate is
