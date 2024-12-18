@@ -217,7 +217,7 @@ module fileio is
   #
   fzE_file_close(
                 # file descriptor
-                fd fuzion.sys.Pointer) i8 => native
+                fd fuzion.sys.Pointer) i32 => native
 
 
   # seek offset in the stream represented by fd
