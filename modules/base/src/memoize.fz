@@ -37,10 +37,10 @@
 #       say "computing $x"
 #       x.as_string
 #
-#     say (mem 1)
-#     say (mem 2)
-#     say (mem 1)
-#     say (mem 3)
+#     say <| mem 1
+#     say <| mem 2
+#     say <| mem 1
+#     say <| mem 3
 #
 #
 public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>

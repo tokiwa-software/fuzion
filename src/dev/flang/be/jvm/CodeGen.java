@@ -223,14 +223,7 @@ class CodeGen
   @Override
   public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
   {
-    if (_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt))
-      {
-        return val.drop().andThen(tvalue.drop());
-      }
-    else
-      {
-        return _jvm.assignField(s, tvalue, f, val, rt);
-      }
+    return _jvm.assignField(s, tvalue, f, val, rt);
   }
 
 

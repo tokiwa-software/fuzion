@@ -42,6 +42,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
@@ -906,7 +907,7 @@ should be avoided as much as possible.
         f.setExecutable(true);
         for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
           {
-            var file = Path.of(System.getProperty("fuzion.home")).resolve("lib/" + str);
+            var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
             if (file.toFile().exists())
               {
                 Files.copy(file,

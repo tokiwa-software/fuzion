@@ -35,6 +35,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.Version;
 
@@ -603,20 +604,20 @@ public class Intrinsics extends ANY
     put("f32.tanh"             , (c,cl,outer,in) -> CExpr.call("tanhf", new List<>(outer)).ret());
     put("f64.tanh"             , (c,cl,outer,in) -> CExpr.call("tanh",  new List<>(outer)).ret());
 
-    put("fuzion.sys.internal_array_init.alloc", (c,cl,outer,in) ->
+    put("fuzion.sys.type.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call(c.malloc(),
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         });
-    put("fuzion.sys.internal_array.setel", (c,cl,outer,in) ->
+    put("fuzion.sys.type.setel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         });
-    put("fuzion.sys.internal_array.get", (c,cl,outer,in) ->
+    put("fuzion.sys.type.getel", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._fuir.hasData(gc)
@@ -690,7 +691,7 @@ public class Intrinsics extends ANY
 
     put("effect.type.abort0"     ,
         "effect.type.default0"   ,
-        "effect.type.instate0"   ,
+        FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
         "effect.type.replace0"   , (c,cl,outer,in) ->
         {
@@ -711,7 +712,7 @@ public class Intrinsics extends ANY
                            CExpr.exit(1));
               case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                                                                   evi.assign(CIdent.TRUE )));
-              case "effect.type.instate0"     ->
+              case FuzionConstants.EFFECT_INSTATE_NAME ->
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
                   var call_def = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 1));
@@ -846,11 +847,9 @@ public class Intrinsics extends ANY
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
           var data   = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
           var length = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
-          var elementType = c._fuir.clazzActualGeneric(c._fuir.clazzResultClazz(cl), 0);
+          var elementType = c._fuir.clazzActualGeneric(internalArray, 0);
           var elements = c._names.newTemp();
-          return CStmnt
-            .seq(
-              c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+          return CExpr
                 .call("fzE_array_to_java_object0",
                   new List<CExpr>(
                     A0.field(c._names.fieldName(length)),
@@ -860,7 +859,10 @@ public class Intrinsics extends ANY
                                                                  : A0.field(c._names
                                                                    .fieldName(data))
                                                                    .castTo("jvalue *"),
-                    CExpr.string(javaSignature(c._fuir, elementType)))), false));
+                    CExpr.string(javaSignature(c._fuir, elementType))))
+                .field(new CIdent("l"))
+                .castTo("void *")
+                .ret();
         }
     });
     put("fuzion.java.get_field0",

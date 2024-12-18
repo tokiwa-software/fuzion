@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.Graph;
 import dev.flang.util.List;
 
@@ -432,9 +433,9 @@ public class CFG extends ANY
     put("f64.type.max"                   , (cfg, cl) -> { } );
     put("f64.type.epsilon"               , (cfg, cl) -> { } );
 
-    put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
+    put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.freeze"
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.ensure_not_frozen"
@@ -452,8 +453,8 @@ public class CFG extends ANY
     put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
 
-    put("effect.type.default0"              , (cfg, cl) -> { } );
-    put("effect.type.instate0"              , (cfg, cl) ->
+    put("effect.type.default0"           , (cfg, cl) -> { } );
+    put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
           var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
           var call = cfg._fuir.lookupCall(oc);
