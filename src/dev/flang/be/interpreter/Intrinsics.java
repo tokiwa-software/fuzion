@@ -1002,7 +1002,7 @@ public class Intrinsics extends ANY
       {
         var fuir = executor.fuir();
         var in  = fuir.clazzOriginalName(innerClazz);
-        int ecl = fuir.effectTypeFromInstrinsic(innerClazz);
+        int ecl = fuir.effectTypeFromIntrinsic(innerClazz);
         var ev  = args.size() > 1 ? args.get(1) : null;
         var effects = FuzionThread.current()._effects;
         switch (in)
