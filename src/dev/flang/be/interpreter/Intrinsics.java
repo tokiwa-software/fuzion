@@ -212,7 +212,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  public static Callable call(Executor executor, int innerClazz)
+  public static Callable call(Executor executor, int site, int innerClazz)
   {
     Callable result;
     String in = executor.fuir().clazzOriginalName(innerClazz);
@@ -224,7 +224,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.fatal(executor.fuir().declarationPos(innerClazz),
+        Errors.fatal(executor.fuir().sitePos(site),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
         result = (args) -> Value.NO_VALUE;
