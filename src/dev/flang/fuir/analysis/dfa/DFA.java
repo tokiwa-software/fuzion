@@ -1250,6 +1250,16 @@ public class DFA extends ANY
           return res;
         }
 
+
+        @Override
+        public int accessedClazz(int s)
+        {
+          return codeAt(s) == ExprKind.Assign &&
+            (clazzIsUnitType(assignedType(s)) || clazzIsUnitType(accessTargetClazz(s)))
+            ? NO_CLAZZ
+            : super.accessedClazz(s);
+        }
+
       };
 
     return res;
@@ -1776,69 +1786,9 @@ public class DFA extends ANY
     put("fuzion.sys.args.count"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.std.exit"                , cl -> null );
-    put("fuzion.sys.fileio.read"         , cl ->
-        {
-          setArrayU8ElementsToAnything(cl, 1, "fuzion.sys.fileio.read");
-          return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
-        });
-    put("fuzion.sys.fileio.write"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.fileio.move"         , cl -> cl._dfa.bool() );
-    put("fuzion.sys.fileio.create_dir"   , cl -> cl._dfa.bool() );
-    put("fuzion.sys.fileio.open"         , cl ->
-        {
-          setArrayI64ElementsToAnything(cl, 1, "fuzion.sys.fileio.open");
-          return Value.UNIT;
-        });
-    put("fuzion.sys.fileio.close"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.fileio.stats"        , cl -> { setArrayI64ElementsToAnything(cl, 1, "fuzion.sys.fileio.stats"   ); return cl._dfa.bool(); });
-    put("fuzion.sys.fileio.lstats"       , cl -> { setArrayI64ElementsToAnything(cl, 1, "fuzion.sys.fileio.lstats"  ); return cl._dfa.bool(); });
-    put("fuzion.sys.fileio.seek"         , cl -> { setArrayI64ElementsToAnything(cl, 2, "fuzion.sys.fileio.seek"    ); return Value.UNIT; });
-    put("fuzion.sys.fileio.file_position", cl -> { setArrayI64ElementsToAnything(cl, 1, "fuzion.sys.fileio.position"); return Value.UNIT; });
-    put("fuzion.sys.fileio.mmap"         , cl ->
-        {
-          setArrayI32ElementsToAnything(cl, 3, "fuzion.sys.fileio.mmap");
-          var c_u8 = cl._dfa._fuir.clazz(SpecialClazzes.c_u8);
-          return cl._dfa.newSysArray(NumericValue.create(cl._dfa, c_u8), c_u8); // NYI: length wrong, get from arg
-        });
-    put("fuzion.sys.fileio.munmap"       , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.fileio.mapped_buffer_get", cl ->
-        {
-          var array = cl._args.get(0).value();
-          var index = cl._args.get(1).value();
-          if (array instanceof SysArray sa)
-            {
-              return sa.get(index);
-            }
-          else
-            {
-              throw new Error("intrinsic fuzion.sys.internal_array.gel: Expected class SysArray, found "+array.getClass()+" "+array);
-            }
-        });
-    put("fuzion.sys.fileio.mapped_buffer_set", cl ->
-        {
-          var array = cl._args.get(0).value();
-          var index = cl._args.get(1).value();
-          var value = cl._args.get(2).value();
-          if (array instanceof SysArray sa)
-            {
-              sa.setel(index, value);
-              return Value.UNIT;
-            }
-          else
-            {
-              throw new Error("intrinsic fuzion.sys.internal_array.setel: Expected class SysArray, found "+array.getClass()+" "+array);
-            }
-        });
 
     put("fuzion.sys.fatal_fault0"        , cl-> null                                                              );
-    put("fuzion.sys.stdin.stdin0"        , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.out.stdout"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.err.stderr"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("fuzion.sys.fileio.open_dir"     , cl -> { setArrayI64ElementsToAnything(cl, 1, "fuzion.sys.fileio.open_dir"); return Value.UNIT; } );
-    put("fuzion.sys.fileio.read_dir"     , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.sys.fileio.read_dir_has_next", cl -> cl._dfa.bool() );
-    put("fuzion.sys.fileio.close_dir"    , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("i8.prefix -°"                   , cl -> { return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i16.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i32.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
@@ -2040,7 +1990,7 @@ public class DFA extends ANY
     put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("effect.type.from_env"                , cl ->
+    put("effect.type.from_env"           , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
       var result = cl.getEffectCheck(ecl);
@@ -2053,20 +2003,19 @@ public class DFA extends ANY
         }
       return result;
     });
-    put("effect.type.unsafe_from_env"                , cl ->
+    put("effect.type.unsafe_from_env"    , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
       return cl.getEffectForce(cl._site, ecl);
     });
 
 
-    put("fuzion.sys.internal_array_init.alloc", cl ->
+    put("fuzion.sys.type.alloc"          , cl ->
         {
-          var oc = cl._dfa._fuir.clazzOuterClazz(cl._cc);
-          var ec = cl._dfa._fuir.clazzActualGeneric(oc, 0);
+          var ec = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
           return cl._dfa.newSysArray(null, ec); // NYI: get length from args
         });
-    put("fuzion.sys.internal_array.setel", cl ->
+    put("fuzion.sys.type.setel"          , cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();
@@ -2078,10 +2027,10 @@ public class DFA extends ANY
             }
           else
             {
-              throw new Error("intrinsic fuzion.sys.internal_array.setel: Expected class SysArray, found "+array.getClass()+" "+array);
+              throw new Error("intrinsic fuzion.sys.setel: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.internal_array.get"  , cl ->
+    put("fuzion.sys.type.getel"          , cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();
@@ -2208,15 +2157,11 @@ public class DFA extends ANY
     );
     put("fuzion.java.array_to_java_object0" , cl ->
         {
-          var rc   = cl._dfa._fuir.clazzResultClazz(cl._cc);
-          var jref = cl._dfa._fuir.lookupJavaRef(rc);
           var data = cl._dfa._fuir.lookup_fuzion_sys_internal_array_data  (cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           var len  = cl._dfa._fuir.lookup_fuzion_sys_internal_array_length(cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           cl._dfa.readField(data);
           cl._dfa.readField(len);
-          var result = wrappedJavaObject(cl);
-          result.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF); // NYI: record putfield of result.jref := args.get(0).data
-          return result;
+          return Value.UNKNOWN_JAVA_REF;
         });
     put("fuzion.java.bool_to_java_object"   , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.f32_to_java_object"    , cl -> wrappedJavaObject(cl) );

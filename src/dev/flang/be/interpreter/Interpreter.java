@@ -51,21 +51,7 @@ public class Interpreter extends FUIRContext
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
-    this._fuir = new GeneratingFUIR((GeneratingFUIR) fuir)
-      {
-        // NYI: BUG: fuir should be thread safe #2760
-        @Override
-        public synchronized int[] matchCaseTags(int s, int cix)
-        {
-          return super.matchCaseTags(s, cix);
-        };
-        // NYI: BUG: fuir should be thread safe #2760
-        @Override
-        public synchronized int[] accessedClazzes(int s)
-        {
-          return super.accessedClazzes(s);
-        }
-      };
+    this._fuir = fuir;
     FUIRContext.set_fuir(fuir);
     var processor = new Executor(_fuir, _options_);
     _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);

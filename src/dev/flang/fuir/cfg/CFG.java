@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.Graph;
 import dev.flang.util.List;
 
@@ -228,28 +229,7 @@ public class CFG extends ANY
     put("fuzion.sys.args.count"          , (cfg, cl) -> { } );
     put("fuzion.sys.args.get"            , (cfg, cl) -> { } );
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.read"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.write"        , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.move"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.create_dir"   , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.stats"        , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.lstats"       , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.open"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.close"        , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.seek"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mmap"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mapped_buffer_get", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mapped_buffer_set", (cfg, cl) -> { } );
     put("fuzion.sys.fatal_fault0"        , (cfg, cl) -> { } );
-    put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
-    put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
-    put("fuzion.sys.err.stderr"          , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.open_dir"     , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.read_dir"     , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.read_dir_has_next", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.close_dir"    , (cfg, cl) -> { } );
 
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );
@@ -453,9 +433,9 @@ public class CFG extends ANY
     put("f64.type.max"                   , (cfg, cl) -> { } );
     put("f64.type.epsilon"               , (cfg, cl) -> { } );
 
-    put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
+    put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.freeze"
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.ensure_not_frozen"
@@ -473,8 +453,8 @@ public class CFG extends ANY
     put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
     put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
 
-    put("effect.type.default0"              , (cfg, cl) -> { } );
-    put("effect.type.instate0"              , (cfg, cl) ->
+    put("effect.type.default0"           , (cfg, cl) -> { } );
+    put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
           var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
           var call = cfg._fuir.lookupCall(oc);

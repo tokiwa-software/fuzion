@@ -48,7 +48,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
 
   # definition of read provider for file
   #
-  read_provider(desc i64) : io.Read_Provider is
+  read_provider(desc fuzion.sys.Pointer) : io.Read_Provider is
     redef read(count i32) choice (array u8) io.end_of_file error =>
       match fuzion.sys.fileio.read desc count.as_u64
         a array u8 => if a.is_empty then io.end_of_file else a
@@ -56,7 +56,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
 
   # definition of write provider for file
   #
-  write_provider (desc i64) : io.Write_Provider is
+  write_provider (desc fuzion.sys.Pointer) : io.Write_Provider is
     redef write (bytes Sequence u8) outcome unit =>
       fuzion.sys.fileio.write desc bytes.as_array
 

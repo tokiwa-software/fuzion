@@ -24,7 +24,7 @@
 
 write_provider : io.Write_Provider is
   redef write (b Sequence u8) outcome unit =>
-    fuzion.sys.fileio.write fuzion.sys.out.stdout b.as_array
+    fuzion.sys.fileio.write fuzion.sys.out.fzE_file_stdout b.as_array
 
 # mutate instance to be used for buffered stdout output
 #

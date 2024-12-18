@@ -79,25 +79,26 @@ int fzE_unsetenv(const char *name){
 }
 
 
-void fzE_opendir(const char *pathname, int64_t * result) {
+void * fzE_opendir(const char *pathname, int64_t * result) {
   errno = 0;
-
-  result[0] = (uintptr_t) opendir(pathname);
-  result[1] = errno;
+  void * res = opendir(pathname);
+  result[0] = errno;
+  return res;
 }
 
-char * fzE_readdir(intptr_t * dir) {
+
+int fzE_read_dir(intptr_t * dir, void * result) {
   struct dirent * d = readdir((DIR *)dir);
   if ( d == NULL )
   {
-    return NULL;
+    return -1;
   }
   else
   {
     size_t len = strlen(d->d_name);
-    char *dup = (char *) fzE_malloc_safe(len + 1);
-    fzE_memcpy(dup, d->d_name, len + 1);
-    return dup;
+    assert(len<1024); // NYI:
+    fzE_memcpy(result, d->d_name, len + 1);
+    return len;
   }
 }
 
@@ -118,7 +119,7 @@ int fzE_read_dir_has_next(intptr_t * dir) {
 }
 
 
-int fzE_closedir(intptr_t * dir) {
+int fzE_close_dir(intptr_t * dir) {
   return closedir((DIR *)dir);
 }
 
@@ -356,17 +357,17 @@ int fzE_write(int sockfd, const void * buf, size_t count){
 
 
 // returns -1 on error, size of file in bytes otherwise
-long fzE_get_file_size(FILE* file) {
+long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = ftell(file);
-  if(cur_pos == -1 || fseek(file, 0, SEEK_END) == -1){
+  long cur_pos = ftell((FILE *)file);
+  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
     return -1;
   }
 
-  long size = ftell(file);
+  long size = ftell((FILE *)file);
 
   // reset seek position
-  fseek(file, cur_pos, SEEK_SET);
+  fseek((FILE *)file, cur_pos, SEEK_SET);
 
   return size;
 }
@@ -715,58 +716,27 @@ int fzE_pipe_close(int64_t desc){
 }
 
 
-// open_results[0] the filedescriptor, unchanged on error
-// open_results[1] the error number
-void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+// open_results[0] the error number
+void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
-  // NYI use lock to make fopen and fcntl and process spawning _atomic_.
+  assert( mode >= 0 && mode <= 2 );
+  // NYI use lock to make fopen and fcntl _atomic_.
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
   // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
   // to a race condition that may unintentionally leak the file descriptor to the
   // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
   // for details and a remedy to the problem."
-  FILE * fp;
   errno = 0;
-  switch (mode)
+  FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
+  if (fp!=NULL)
   {
-    case 0:
-    {
-      fp = fopen(file_name,"rb");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    case 1:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    case 2:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    default:
-    {
-      fprintf(stderr,"*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\012");
-      exit(1);
-    }
+    fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
   }
-  if ((FILE *)open_results[0] != NULL)
-    {
-      fcntl(fileno((FILE *)open_results[0]), F_SETFD, FD_CLOEXEC);
-    }
-  open_results[1] = (int64_t)errno;
+  else
+  {
+    open_results[0] = (int64_t)errno;
+  }
+  return fp;
 }
 
 

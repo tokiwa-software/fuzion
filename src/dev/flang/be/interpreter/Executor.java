@@ -207,10 +207,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Object assignStatic(int s, int tc, int f, int rt, Value tvalue, Value val)
   {
-    if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
-      {
-        Interpreter.setField(f, tc, tvalue, val);
-      }
+    Interpreter.setField(f, tc, tvalue, val);
     return null;
   }
 
@@ -283,7 +280,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case Intrinsic :
         yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
           ? pair(unitValue())
-          : pair(Intrinsics.call(this, cc).call(new List<>(tvalue, args)));
+          : pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Abstract:
         throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
       case Choice :

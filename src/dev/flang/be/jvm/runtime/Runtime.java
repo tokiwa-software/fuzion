@@ -36,7 +36,6 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
-import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -188,11 +187,6 @@ public class Runtime extends ANY
       }
     }
   };
-
-  static long _stdin  = _openStreams_.add(System.in );
-  static long _stdout = _openStreams_.add(System.out);
-  static long _stderr = _openStreams_.add(System.err);
-
 
   /**
    * This contains all open processes.
