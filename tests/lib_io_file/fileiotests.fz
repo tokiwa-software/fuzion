@@ -60,7 +60,7 @@ fileiotests =>
     say (f.open.seek 0)
 
 
-  _ := f.use (array u8) lm file f.mode.read (()->(io.buffered lm).read_fully lm)
+  _ := f.use (array u8) lm file f.mode.read ()->(io.buffered lm).read_fully
     .bind unit bytes->
       filecontent := String.from_bytes bytes
       say "file content bytes: $bytes"
