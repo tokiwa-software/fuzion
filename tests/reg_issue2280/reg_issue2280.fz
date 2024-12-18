@@ -34,7 +34,7 @@ reg_issue2280 is
       t := u32 0, s
       # NYI: would be nice if `u32` would be inferred and not needed explicitly here
 
-      l := io.buffered.read_line lm ? str String => str | io.end_of_file => ""
+      l := (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
       # NYI: read_line should return a choice of String | end_of_file or similar
 
       l2 := l.as_codepoints

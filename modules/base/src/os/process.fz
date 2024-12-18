@@ -101,17 +101,17 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_out_read_provider) pipe_buffer_size) ! f
+    (io.buffered LM).reader (std_out_read_provider) pipe_buffer_size ! f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_err_read_provider) pipe_buffer_size) ! f
+    (io.buffered LM).reader (std_err_read_provider) pipe_buffer_size ! f
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered.writer std_in_write_provider pipe_buffer_size) ! f
+    (io.buffered LM).writer std_in_write_provider pipe_buffer_size ! f
 
 
   # write string to stdin of child process
