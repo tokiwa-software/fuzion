@@ -60,4 +60,4 @@ mmap_test =>
     String.from_bytes ((io.buffered.read_fully lm).drop page_size)
   )
 
-  _ := io.file.delete testfile
+  say (io.file.delete testfile)
