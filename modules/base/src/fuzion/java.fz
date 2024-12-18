@@ -275,12 +275,12 @@ public fuzion.java is
     pre
       T : java_primitive
   =>
-    array_to_java_object0 T a.as_array.internal_array
+    Array T (array_to_java_object0 T a.as_array.internal_array)
 
 
   # intrinsic to convert an array to a Java Array object
   #
-  array_to_java_object0(T type, a fuzion.sys.internal_array T) Array T => intrinsic
+  array_to_java_object0(T type, a fuzion.sys.internal_array T) fuzion.sys.Pointer => intrinsic
 
 
   # convert a string to a Java String object

@@ -443,11 +443,11 @@ public class Intrinsics extends ANY
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
-          var arrA = argzData.arrayData();
-          var res = arrA._array;
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(res, resultClazz);
+          var res = Interpreter
+            .getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false)
+            .arrayData()
+            ._array;
+          return new JavaRef(res);
         });
     putUnsafe("fuzion.java.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
