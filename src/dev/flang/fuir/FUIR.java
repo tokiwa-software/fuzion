@@ -286,7 +286,10 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    */
-  public abstract boolean clazzIsChoice(int cl);
+  public boolean clazzIsChoice(int cl)
+  {
+    return clazzKind(cl) == FeatureKind.Choice;
+  }
 
 
   /**
@@ -1478,7 +1481,7 @@ public abstract class FUIR extends IR
    *
    * @return the type of the outer feature of cl
    */
-  public abstract int effectTypeFromInstrinsic(int cl);
+  public abstract int effectTypeFromIntrinsic(int cl);
 
 
   /*------------------------------  arrays  -----------------------------*/
