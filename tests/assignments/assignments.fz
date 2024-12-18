@@ -108,9 +108,9 @@ value_assignments =>
   k(p v) => {p.y <- 7.2973525693E-3; p}
   l(p v) => {p.z <- "привіт"; p}
   vv := v
-  say (j vv)
-  say (k vv)
-  say (l vv)
+  say <| j vv
+  say <| k vv
+  say <| l vv
   say vv
 
   # test argument passing and modifications via argument fields and outer references
@@ -118,9 +118,9 @@ value_assignments =>
   m(p v) => {p.set_x 299792458; p}
   n(p v) => {p.set_y 5.29177210903E-11; p}
   o(p v) => {p.set_z "హలో"; p}
-  say (m vv)
-  say (n vv)
-  say (o vv)
+  say <| m vv
+  say <| n vv
+  say <| o vv
   say vv
 
   # test passing as outer reference and modification from outside via a function argument
@@ -217,9 +217,9 @@ ref_assignments =>
   k(p v) => {p.y <- 7.2973525693E-3; p}
   l(p v) => {p.z <- "привіт"; p}
   vv := v
-  say (j vv)
-  say (k vv)
-  say (l vv)
+  say <| j vv
+  say <| k vv
+  say <| l vv
   say vv
 
   # test argument passing and modifications via argument fields and outer references
@@ -227,9 +227,9 @@ ref_assignments =>
   m(p v) => {p.set_x 299792458; p}
   n(p v) => {p.set_y 5.29177210903E-11; p}
   o(p v) => {p.set_z "హలో"; p}
-  say (m vv)
-  say (n vv)
-  say (o vv)
+  say <| m vv
+  say <| n vv
+  say <| o vv
   say vv
 
   # test passing as outer reference and modification from outside via a function argument
