@@ -1,28 +1,28 @@
 
 error 1: FATAL FAULT `*** panic ***`: *** invalid mutate for Type of 'm'
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:38:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic.type.install_default.λ.call#1: $MODULE/panic.fz:36:18:
+panic.type.install_default.λ.call#1: {base.fum}/panic.fz:36:18:
     (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
 -----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-panic.cause#1: $MODULE/eff/fallible.fz:35:6:
+panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic#1: $MODULE/panic.fz:56:29:
+panic#1: {base.fum}/panic.fz:56:29:
 public panic(msg String) => panic.cause msg
 ----------------------------^^^^^^^^^^^^^^^
-m.mpanic#1: $MODULE/mutate.fz:79:32:
+m.mpanic#1: {base.fum}/mutate.fz:79:32:
   module mpanic(msg String) => panic msg
 -------------------------------^^^^^^^^^
-(m.new i32).check_and_replace: $MODULE/mutate.fz:105:9:
+(m.new i32).check_and_replace: {base.fum}/mutate.fz:105:9:
         mpanic "*** invalid mutate for {mutate.this.type}"
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(m.new i32).get: $MODULE/mutate.fz:140:9:
+(m.new i32).get: {base.fum}/mutate.fz:140:9:
         check_and_replace
 --------^^^^^^^^^^^^^^^^^
 universe: --CURDIR--/reg_issue3352.fz:26:6:
