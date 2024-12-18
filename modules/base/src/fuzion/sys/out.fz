@@ -36,7 +36,8 @@ module out : encodings is
   module println =>
     write [ascii.lf]
 
-  module stdout i64 => intrinsic
+  module fzE_file_stdout fuzion.sys.Pointer => native
 
   write(arr array u8) =>
-    _ := fuzion.sys.fileio.write stdout arr
+    _ := fuzion.sys.fileio.write fzE_file_stdout arr
+    _ := fuzion.sys.fileio.fzE_file_flush fzE_file_stdout

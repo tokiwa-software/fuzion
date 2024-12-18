@@ -53,13 +53,22 @@ int fzE_setenv(const char *name, const char *value, int overwrite);
 // unset environment variable, return zero on success
 int fzE_unsetenv(const char *name);
 
-void fzE_opendir(const char *pathname, int64_t * result);
+// on error result[0]!=0
+// returns pointer to directory
+void * fzE_opendir(const char *pathname, int64_t * result);
 
-char * fzE_readdir(intptr_t * dir);
+// NYI: UNDER DEVELOPMENT
+// returns -1 on error or length of result on success
+// result contains the bytes of the string, NYI: UNDER DEVELOPMENT (max 1024)
+int fzE_read_dir(intptr_t * dir, void * result);
 
+// returns 0 if dir has next entry
+// returns 1 if dir does not have next entry
 int fzE_read_dir_has_next(intptr_t * dir);
 
-int fzE_closedir(intptr_t * dir);
+// close the dir
+// return 0 if successful, -1 if not
+int fzE_close_dir(intptr_t * dir);
 
 // 0 = blocking
 // 1 = none_blocking
@@ -255,12 +264,90 @@ int fzE_pipe_close(int64_t desc);
  *
  * @param file_name the files name
  *
- * @param open_results [file descriptor, error number]
+ * @param open_results [error number]
  *
  * @param mode 0 read, 1 write, 2 append
  *
  */
-void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+
+/**
+ * @param file the pointer to the file
+ * @param buf pointer to a byte array
+ * @param size the size of buf in bytes
+ * @return amounts of bytes read, or negative number on error
+ */
+int64_t fzE_file_read(void * file, void * buf, int32_t size);
+
+/**
+ * @param file the pointer to the file
+ * @param buf pointer to a byte array
+ * @param size the size of buf in bytes
+ * @return amounts of bytes writter, or negative number on error
+ */
+int64_t fzE_file_write(void * file, void * buf, int32_t size);
+
+/**
+ * @param oldpath
+ * @param newpath
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_move(const char *oldpath, const char *newpath);
+
+/**
+ * @param file pointer to the open file
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_close(void * file);
+
+/**
+ * @param file pointer to the open file
+ * @param offset amount of bytes to seek forward
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_seek(void * file, int64_t offset);
+
+/**
+ * @param file pointer to the open file
+ * @return -1 on error, the (byte-)position in the file
+ */
+int64_t fzE_file_position(void * file);
+
+/**
+ * @return the pointer to handle/FILE of stdin
+ */
+void *  fzE_file_stdin(void);
+
+/**
+ * @return the pointer to handle/FILE of stdout
+ */
+void *  fzE_file_stdout(void);
+
+/**
+ * @return the pointer to handle/FILE of stderr
+ */
+void *  fzE_file_stderr(void);
+
+/**
+ * flush user-space buffers for file
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_flush(void * file);
+
+
+/**
+ * @param addr pointer to an address in memory
+ * @param idx  the index at where to do the get
+ * @return the addr[idx]
+ */
+uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx);
+
+/**
+ * @param addr pointer to an address in memory
+ * @param idx  the index at where to do the set
+ * @param x    the byte to set
+ */
+void    fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x);
 
 
 #ifdef FUZION_LINK_JVM

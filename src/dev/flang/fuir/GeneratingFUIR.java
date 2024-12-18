@@ -81,9 +81,6 @@ public class GeneratingFUIR extends FUIR
   static final int[] NO_CLAZZ_IDS = new int[0];
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
    * property- or env-var-controlled flag to enable debug output whenever a
    * new clazz is created.
@@ -393,7 +390,7 @@ public class GeneratingFUIR extends FUIR
               case "bool"                      -> SpecialClazzes.c_bool        ;
               case "true_"                     -> SpecialClazzes.c_true_       ;
               case "false_"                    -> SpecialClazzes.c_false_      ;
-              case "Const_String"              -> SpecialClazzes.c_Const_String;
+              case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
               case "error"                     -> SpecialClazzes.c_error       ;
               case "fuzion"                    -> SpecialClazzes.c_fuzion      ;
@@ -692,7 +689,7 @@ public class GeneratingFUIR extends FUIR
    * @param cl a clazz
    *
    * @return its original name, e.g. 'Array.getel' instead of
-   * 'Const_String.getel'
+   * 'const_string.getel'
    */
   @Override
   public String clazzOriginalName(int cl)
@@ -833,6 +830,7 @@ public class GeneratingFUIR extends FUIR
    * an outer value, false for normal fields our outer ref fields that store the
    * outer ref or value directly.
    */
+  // NYI: CLEANUP: move to FUIR
   @Override
   public boolean clazzFieldIsAdrOfValue(int field)
   {
@@ -933,47 +931,6 @@ public class GeneratingFUIR extends FUIR
                                         : id2clazz(clazz(SpecialClazzes.c_void));
     return res._id;
   }
-
-
-  /**
-   * Is this a choice type with some elements of ref type?
-   *
-   * NYI: CLEANUP: Used by C and interpreter backends only. Remove?
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is a choice with at least one ref element
-   */
-  @Override
-  public boolean clazzIsChoiceWithRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.isChoiceWithRefs();
-  }
-
-
-  /**
-   * Is this a choice type with all elements of ref type?
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is a choice with only ref or unit/void elements
-   */
-  @Override
-  public boolean clazzIsChoiceOfOnlyRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.isChoiceOfOnlyRefs();
-  }
-
 
 
   /*------------------------  inheritance  -----------------------*/
@@ -1128,38 +1085,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the clazz id of the type of the given argument of clazz cl
-   *
-   * @param cl clazz id
-   *
-   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
-   *
-   * @return clazz id of the argument or -1 if no such feature exists (the
-   * argument is unused).
-   */
-  @Override
-  public int clazzArgClazz(int cl, int arg)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size(),
-       arg >= 0,
-       arg < clazzArgCount(cl));
-
-    if (CACHE_ARG_CLAZZES)
-      {
-        return clazzArgs(cl)[arg];
-      }
-    else
-      {
-        var c = id2clazz(cl);
-        var rc = c.argumentFields()[arg].resultClazz();
-        return rc._id;
-      }
-  }
-
-
-  /**
    * Get the clazz id of the given argument of clazz cl
    *
    * @param cl clazz id
@@ -1241,8 +1166,8 @@ public class GeneratingFUIR extends FUIR
        Errors.any() ||
        !_lookupDone ||
        clazzNeedsCode(cl) ||
-       cl == clazz_Const_String() ||
-       cl == clazz_Const_String_utf8_data() ||
+       cl == clazz_const_string() ||
+       cl == clazz_const_string_utf8_data() ||
        cl == clazz_array_u8() ||
        cl == clazz_fuzionSysArray_u8() ||
        cl == clazz_fuzionSysArray_u8_data() ||
@@ -1379,30 +1304,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Check if the given clazz is a constructor, i.e., a routine returning
-   * its instance as a result?
-   *
-   * @param cl a clazz id
-   *
-   * @return true if the clazz is a constructor, false otherwise
-   */
-  @Override
-  public boolean isConstructor(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var c = id2clazz(cl);
-    return switch (c.feature().kind())
-      {
-      case Routine -> c.feature().isConstructor();
-      default -> false;
-      };
-  }
-
-
-  /**
    * Is the given clazz a ref clazz?
    *
    * @param cl a constructor clazz id
@@ -1454,10 +1355,10 @@ public class GeneratingFUIR extends FUIR
 
     var cc = id2clazz(cl);
     var vcc = cc.asValue();
-    if (vcc.isRef().yes())
-      {
-        throw new Error("vcc.isRef in clazzAsValue for "+clazzAsString(cl)+" is "+vcc);
-      }
+
+    if (CHECKS) check
+      (!vcc.isRef().yes());
+
     var vc = vcc._id;
 
     if (POSTCONDITIONS) ensure
@@ -1536,26 +1437,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Check if a clazz is the special clazz c.
-   *
-   * @param cl a clazz id
-   *
-   * @param c one of the constants SpecialClazzes.c_i8,...
-   *
-   * @return true iff cl is the specified special clazz c
-   */
-  @Override
-  public boolean clazzIs(int cl, SpecialClazzes c)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return id2clazz(cl)._specialClazzId == c;
-  }
-
-
-  /**
    * Get the id of the given special clazz.
    *
    * @param s the special clazz we are looking for
@@ -1601,6 +1482,19 @@ public class GeneratingFUIR extends FUIR
 
     var sc = specialClazz(s);
     return sc == null ? NO_CLAZZ : sc._id;
+  }
+
+
+  /**
+   * Get the id of clazz ref const_string
+   *
+   * @return the id of ref const_string or -1 if that clazz was not created.
+   */
+  @Override
+  public int clazz_ref_const_string()
+  {
+    var cc = id2clazz(clazz_const_string());
+    return cc.asRef()._id;
   }
 
 
@@ -2492,7 +2386,9 @@ public class GeneratingFUIR extends FUIR
    * feature to be accessed for this target.
    */
   @Override
-  public int[] accessedClazzes(int s)
+  public
+  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
+  int[] accessedClazzes(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2675,7 +2571,7 @@ public class GeneratingFUIR extends FUIR
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
-   * f32, f64, or Const_String. This will be extended by value instances without
+   * f32, f64, or const_string. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
    *
    * @param s site of the constant
@@ -2956,7 +2852,7 @@ public class GeneratingFUIR extends FUIR
       {
       case "effect.type.abort0"  ,
            "effect.type.default0",
-           "effect.type.instate0",
+           FuzionConstants.EFFECT_INSTATE_NAME,
            "effect.type.is_instated0",
            "effect.type.replace0" -> true;
       default -> false;
@@ -3045,20 +2941,6 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     return c.feature().pos()._sourceFile._fileName.toString();
-  }
-
-
-  /**
-   * Get the position where the clazz is declared
-   * in the source code.
-   *
-   * NYI: CLEANUP: This is currently used only by the interpreter backend. Maybe we should remove this?
-   */
-  @Override
-  public SourcePosition declarationPos(int cl)
-  {
-    var c = id2clazz(cl);
-    return c._type.declarationPos();
   }
 
 

@@ -36,7 +36,8 @@ module err: encodings is
   module println =>
     write [ascii.lf]
 
-  stderr i64 => intrinsic
+  fzE_file_stderr fuzion.sys.Pointer => native
 
   write(arr array u8) =>
-    _ := fuzion.sys.fileio.write stderr arr
+    _ := fuzion.sys.fileio.write fzE_file_stderr arr
+    _ := fuzion.sys.fileio.fzE_file_flush fzE_file_stderr

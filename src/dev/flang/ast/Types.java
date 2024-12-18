@@ -233,7 +233,7 @@ public class Types extends ANY
       f_debug                   = universe.get(mod, "debug", 0);
       f_debug_level             = universe.get(mod, "debug_level", 0);
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
-      f_Function_call           = f_Function.get(mod, "call", 1);
+      f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
       f_safety                  = universe.get(mod, "safety", 0);
       f_array                   = universe.get(mod, "array", 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);

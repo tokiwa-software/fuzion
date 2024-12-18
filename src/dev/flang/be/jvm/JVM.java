@@ -42,6 +42,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
@@ -893,9 +894,11 @@ should be avoided as much as possible.
                                   """
                                   #!/bin/sh
 
-                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:." \
-                                  PATH="$PATH:." \
-                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:." \
+                                  SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
+
+                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
+                                  PATH="$PATH:$SCRIPT_PATH" \
+                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
                                   java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                   """,
                                   FUZION_COMMAND_PROPERTY,
@@ -904,11 +907,11 @@ should be avoided as much as possible.
         f.setExecutable(true);
         for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
           {
-            var file = Path.of(System.getProperty("user.dir")).resolve("build/lib/" + str);
+            var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
             if (file.toFile().exists())
               {
                 Files.copy(file,
-                           Path.of(str),
+                           executableName.toAbsolutePath().getParent().resolve(str),
                            StandardCopyOption.REPLACE_EXISTING);
               }
           }
@@ -1487,9 +1490,9 @@ should be avoided as much as possible.
    *
    * @param bytes the utf8 bytes of the string.
    */
-  Pair<Expr, Expr> constString(byte[] bytes)
+  Pair<Expr, Expr> boxedConstString(byte[] bytes)
   {
-    return constString(Expr.stringconst(bytes)
+    return boxedConstString(Expr.stringconst(bytes)
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING_SIG,
@@ -1503,10 +1506,11 @@ should be avoided as much as possible.
    *
    * @param bytes the utf8 bytes of the string as a Java string.
    */
-  Pair<Expr, Expr> constString(Expr bytes)
+  Pair<Expr, Expr> boxedConstString(Expr bytes)
   {
-    var cs = _fuir.clazz_Const_String();
-    var cs_utf8_data = _fuir.clazz_Const_String_utf8_data();
+    var cs = _fuir.clazz_const_string();
+    var ref_cs = _fuir.clazz_ref_const_string();
+    var cs_utf8_data = _fuir.clazz_const_string_utf8_data();
     var arr = _fuir.clazz_array_u8();
     var internalArray = _fuir.lookup_array_internal_array(arr);
     var data = _fuir.clazz_fuzionSysArray_u8_data();
@@ -1527,7 +1531,15 @@ should be avoided as much as possible.
       .andThen(putfield(length))                      //        cs, cs, arr, arr, fsa
       .andThen(putfield(internalArray))               //        cs, cs, arr
       .andThen(putfield(cs_utf8_data))                //        cs
-      .is(_types.resultType(cs));                     //        -
+      .andThen(Expr                                   //        cs (boxed)
+        .invokeStatic(
+          _names.javaClass(ref_cs),
+          Names.BOX_METHOD_NAME,
+          _types.boxSignature(ref_cs),
+          _types.javaType(ref_cs)
+        )
+      );
+
     return new Pair<>(res, Expr.UNIT);
   }
 
@@ -1539,7 +1551,7 @@ should be avoided as much as possible.
    */
   Pair<Expr, Expr> constString(String str)
   {
-    return constString(str.getBytes(StandardCharsets.UTF_8));
+    return boxedConstString(str.getBytes(StandardCharsets.UTF_8));
   }
 
 

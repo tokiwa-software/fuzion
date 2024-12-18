@@ -399,7 +399,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize an outer clazz for a given type. For a reference clazz that
    * inherits from f, this will return the corresponding clazz derived from
-   * f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * f. The idea is that, e.g., we do not need to distinguish const_string.length
    * from (array u8).length.
    *
    * @param t the type of the newly created clazz
@@ -423,7 +423,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize a reference clazz to the given feature.  For a reference clazz
    * that inherits from f, this will return the corresponding clazz derived
-   * from f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * from f. The idea is that, e.g., we do not need to distinguish const_string.length
    * from (array u8).length.
    *
    * @param f the feature we want to normalize to (array in the example above).
@@ -1454,51 +1454,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-
-  /**
-   * Is this a choice-type whose actual generics include ref?  If so, a field for
-   * all the refs will be needed.
-   */
-  public boolean isChoiceWithRefs()
-  {
-    boolean hasRefs = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasRefs = hasRefs || c.isRef().yes();
-          }
-      }
-
-    return hasRefs;
-  }
-
-
-  /**
-   * Is this a choice-type whose actual generics are all refs or stateless
-   * values? If so, no tag will be added, but ChoiceIdAsRef can be used.
-   *
-   * In case this is a choice of stateless value without any references, the
-   * result will be false since in this case, it is better to use the an integer
-   * stored in the tag.
-   */
-  public boolean isChoiceOfOnlyRefs()
-  {
-    boolean hasNonRefsWithState = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasNonRefsWithState = hasNonRefsWithState || (c.isRef().noOrDontKnow() && !c.isUnitType() && !c.isVoidType());
-          }
-      }
-
-    return isChoiceWithRefs() && !hasNonRefsWithState;
-  }
-
-
   /**
    * Obtain the actual classes of a choice.
    *
@@ -1875,7 +1830,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *    b(U type) : a Sequence U  is
    *    c(V type) : b option V is
    * }</pre>
-   * 
+   *
    * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
    *
    * <pre>{@code
@@ -2140,18 +2095,21 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (_fields == null)
       {
         var fields = new List<Clazz>();
-        for (var fieldc: _inner)
+        if (isRef().no())
           {
-            var field = fieldc.feature();
-            if (!isVoidType() && field.isField())
+            for (var fieldc: _inner)
               {
-                fields.add(fieldc);
+                var field = fieldc.feature();
+                if (!isVoidType() && field.isField())
+                  {
+                    fields.add(fieldc);
+                  }
               }
           }
-        _fields = fields.size() == 0 ? NO_CLAZZES
-                                     : fields.toArray(new Clazz[fields.size()]);
+        _fields = fields.isEmpty() ? NO_CLAZZES
+                                   : fields.toArray(new Clazz[fields.size()]);
       }
-    return isRef().yes() ? NO_CLAZZES : _fields;   // NYI: CLEANUP: Remove the difference between _fields and fields() wrt isRef()!
+    return _fields;
   }
 
 
@@ -2165,11 +2123,10 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (feature().isField());
 
-    var ignore = _outer.fields();
     int i = 0;
-    for (var f : _outer._fields)
+    for (var f : _outer.asValue().fields())
       {
-        if (f == this)
+        if (f.feature() == this.feature() && f._select == _select)
           {
             return i;
           }
