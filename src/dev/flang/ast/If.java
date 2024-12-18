@@ -306,6 +306,15 @@ public class If extends ExprWithPos
   @Override
   public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
+    // NYI: CLEANUP: there should be another mechanism, for
+    // adding missing result fields instead of misusing
+    // `propagateExpectedType`.
+    //
+
+    // This will trigger addFieldForResult in some cases, e.g.:
+    // `match (if true then true else true) * =>`
+    cond = cond.propagateExpectedType(res, context, cond.type());
+
     return addFieldForResult(res, context, t);
   }
 
