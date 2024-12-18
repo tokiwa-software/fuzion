@@ -2477,7 +2477,9 @@ public class GeneratingFUIR extends FUIR
    * feature to be accessed for this target.
    */
   @Override
-  public int[] accessedClazzes(int s)
+  public
+  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
+  int[] accessedClazzes(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
