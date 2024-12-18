@@ -1980,7 +1980,7 @@ public class DFA extends ANY
     put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("effect.type.from_env"                , cl ->
+    put("effect.type.from_env"           , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
       var result = cl.getEffectCheck(ecl);
@@ -1993,20 +1993,19 @@ public class DFA extends ANY
         }
       return result;
     });
-    put("effect.type.unsafe_from_env"                , cl ->
+    put("effect.type.unsafe_from_env"    , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
       return cl.getEffectForce(cl._site, ecl);
     });
 
 
-    put("fuzion.sys.internal_array_init.alloc", cl ->
+    put("fuzion.sys.type.alloc"          , cl ->
         {
-          var oc = cl._dfa._fuir.clazzOuterClazz(cl._cc);
-          var ec = cl._dfa._fuir.clazzActualGeneric(oc, 0);
+          var ec = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
           return cl._dfa.newSysArray(null, ec); // NYI: get length from args
         });
-    put("fuzion.sys.internal_array.setel", cl ->
+    put("fuzion.sys.type.setel"          , cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();
@@ -2018,10 +2017,10 @@ public class DFA extends ANY
             }
           else
             {
-              throw new Error("intrinsic fuzion.sys.internal_array.setel: Expected class SysArray, found "+array.getClass()+" "+array);
+              throw new Error("intrinsic fuzion.sys.setel: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.internal_array.get"  , cl ->
+    put("fuzion.sys.type.getel"          , cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();
