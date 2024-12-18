@@ -246,7 +246,7 @@ public class Intrinsics extends ANY
   static
   {
     put("Type.name"            , (executor, innerClazz) -> args ->
-      Interpreter.value(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
+      Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
     put("concur.atomic.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
@@ -338,11 +338,11 @@ public class Intrinsics extends ANY
           var fuir = executor.fuir();
           if (i == 0)
             {
-              return  Interpreter.value(fuir.clazzAsString(fuir.mainClazz()));
+              return  Interpreter.boxedConstString(fuir.clazzAsString(fuir.mainClazz()));
             }
           else
             {
-              return  Interpreter.value(executor.options().getBackendArgs().get(i - 1));
+              return  Interpreter.boxedConstString(executor.options().getBackendArgs().get(i - 1));
             }
         });
 
@@ -462,7 +462,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) ((JavaRef)args.get(1))._javaRef;
-          return Interpreter.value(javaString == null ? "--null--" : javaString);
+          return Interpreter.boxedConstString(javaString == null ? "--null--" : javaString);
         });
     putUnsafe("fuzion.java.i8_to_java_object", (executor, innerClazz) -> args ->
         {
@@ -554,7 +554,7 @@ public class Intrinsics extends ANY
           return Value.EMPTY_VALUE;
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
-    put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
     // setting env variable not supported in java
     put("fuzion.sys.env_vars.set0"  , (executor, innerClazz) -> args -> new boolValue(false));
     // unsetting env variable not supported in java

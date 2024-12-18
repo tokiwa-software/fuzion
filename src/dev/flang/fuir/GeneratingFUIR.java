@@ -81,9 +81,6 @@ public class GeneratingFUIR extends FUIR
   static final int[] NO_CLAZZ_IDS = new int[0];
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
    * property- or env-var-controlled flag to enable debug output whenever a
    * new clazz is created.
@@ -393,7 +390,7 @@ public class GeneratingFUIR extends FUIR
               case "bool"                      -> SpecialClazzes.c_bool        ;
               case "true_"                     -> SpecialClazzes.c_true_       ;
               case "false_"                    -> SpecialClazzes.c_false_      ;
-              case "Const_String"              -> SpecialClazzes.c_Const_String;
+              case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
               case "error"                     -> SpecialClazzes.c_error       ;
               case "fuzion"                    -> SpecialClazzes.c_fuzion      ;
@@ -692,7 +689,7 @@ public class GeneratingFUIR extends FUIR
    * @param cl a clazz
    *
    * @return its original name, e.g. 'Array.getel' instead of
-   * 'Const_String.getel'
+   * 'const_string.getel'
    */
   @Override
   public String clazzOriginalName(int cl)
@@ -1241,8 +1238,8 @@ public class GeneratingFUIR extends FUIR
        Errors.any() ||
        !_lookupDone ||
        clazzNeedsCode(cl) ||
-       cl == clazz_Const_String() ||
-       cl == clazz_Const_String_utf8_data() ||
+       cl == clazz_const_string() ||
+       cl == clazz_const_string_utf8_data() ||
        cl == clazz_array_u8() ||
        cl == clazz_fuzionSysArray_u8() ||
        cl == clazz_fuzionSysArray_u8_data() ||
@@ -1454,10 +1451,10 @@ public class GeneratingFUIR extends FUIR
 
     var cc = id2clazz(cl);
     var vcc = cc.asValue();
-    if (vcc.isRef().yes())
-      {
-        throw new Error("vcc.isRef in clazzAsValue for "+clazzAsString(cl)+" is "+vcc);
-      }
+
+    if (CHECKS) check
+      (!vcc.isRef().yes());
+
     var vc = vcc._id;
 
     if (POSTCONDITIONS) ensure
@@ -1600,6 +1597,19 @@ public class GeneratingFUIR extends FUIR
       (s != SpecialClazzes.c_NOT_FOUND);
 
     return specialClazz(s)._id;
+  }
+
+
+  /**
+   * Get the id of clazz ref const_string
+   *
+   * @return the id of ref const_string or -1 if that clazz was not created.
+   */
+  @Override
+  public int clazz_ref_const_string()
+  {
+    var cc = id2clazz(clazz_const_string());
+    return cc.asRef()._id;
   }
 
 
@@ -2662,7 +2672,7 @@ public class GeneratingFUIR extends FUIR
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
-   * f32, f64, or Const_String. This will be extended by value instances without
+   * f32, f64, or const_string. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
    *
    * @param s site of the constant
