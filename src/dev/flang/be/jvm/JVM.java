@@ -1509,7 +1509,7 @@ should be avoided as much as possible.
   Pair<Expr, Expr> boxedConstString(Expr bytes)
   {
     var cs = _fuir.clazz_const_string();
-    var ref_cs = _fuir.clazzAsRef(cs);
+    var ref_cs = _fuir.clazz_ref_const_string();
     var cs_utf8_data = _fuir.clazz_const_string_utf8_data();
     var arr = _fuir.clazz_array_u8();
     var internalArray = _fuir.lookup_array_internal_array(arr);

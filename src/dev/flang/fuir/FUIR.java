@@ -473,16 +473,6 @@ public abstract class FUIR extends IR
   public abstract int clazzAsValue(int cl);
 
 
-  /**
-   * For a value clazz, obtain the corresponding reference clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return clazz id of corresponding reference clazz.
-   */
-  public abstract int clazzAsRef(int cl);
-
-
   /*--------------------------  cotypes  -------------------------*/
 
 
@@ -673,6 +663,14 @@ public abstract class FUIR extends IR
   {
     return clazz(SpecialClazzes.c_const_string);
   }
+
+
+  /**
+   * Get the id of clazz ref const_string
+   *
+   * @return the id of ref const_string or -1 if that clazz was not created.
+   */
+  public abstract int clazz_ref_const_string();
 
 
   /**

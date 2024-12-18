@@ -1590,7 +1590,7 @@ public class C extends ANY
         _types.clazz(_fuir.clazz_const_string()),
         "." + utf8_data.code() + " = " + array.code());
 
-    var refConstStr = _fuir.clazzAsRef(_fuir.clazz_const_string());
+    var refConstStr = _fuir.clazz_ref_const_string();
     var res = CExpr
       .compoundLiteral(
         _names.struct(refConstStr),
@@ -2241,15 +2241,15 @@ public class C extends ANY
    * create code for instantiating a
    * fuzion error from a constString
    *
-   * @param String
+   * @param str
    * @return
    */
-  public CExpr error(CExpr String)
+  public CExpr error(CExpr str)
   {
     return CExpr.compoundLiteral(
       _names.struct(_fuir.clazz_error()),
       "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
-        String.code()
+        str.code()
       );
   }
 

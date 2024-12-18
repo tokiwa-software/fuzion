@@ -136,7 +136,7 @@ public class Interpreter extends FUIRContext
     setField(fuir().lookup_array_internal_array(clArr), cl, arr, sa);
     setField(fuir().clazz_const_string_utf8_data(), cl, result, arr);
 
-    return new Boxed(fuir().clazzAsRef(cl), cl, result);
+    return new Boxed(fuir().clazz_ref_const_string(), cl, result);
   }
 
 

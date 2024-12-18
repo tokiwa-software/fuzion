@@ -2815,7 +2815,7 @@ public class DFA extends ANY
     a.setField(this, data  , adata);
     arr.setField(this, internalArray, a);
     r.setField(this, utf_data, arr);
-    return r.box(this, cs, _fuir.clazzAsRef(cs), context);
+    return r.box(this, cs, _fuir.clazz_ref_const_string(), context);
   }
 
 

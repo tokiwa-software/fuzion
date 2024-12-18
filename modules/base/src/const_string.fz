@@ -28,7 +28,7 @@
 # const_string cannot be called directly, instances are created implicitly by the
 # backend.
 #
-private:public const_string : String is
+const_string : String is
 
   utf8_data := array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit
 

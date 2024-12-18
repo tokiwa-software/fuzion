@@ -81,9 +81,6 @@ public class GeneratingFUIR extends FUIR
   static final int[] NO_CLAZZ_IDS = new int[0];
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
    * property- or env-var-controlled flag to enable debug output whenever a
    * new clazz is created.
@@ -1467,25 +1464,6 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * For a value clazz, obtain the corresponding reference clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @return clazz id of corresponding reference clazz.
-   */
-  @Override
-  public int clazzAsRef(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.asRef()._id;
-  }
-
-
   /*--------------------------  cotypes  -------------------------*/
 
 
@@ -1619,6 +1597,19 @@ public class GeneratingFUIR extends FUIR
       (s != SpecialClazzes.c_NOT_FOUND);
 
     return specialClazz(s)._id;
+  }
+
+
+  /**
+   * Get the id of clazz ref const_string
+   *
+   * @return the id of ref const_string or -1 if that clazz was not created.
+   */
+  @Override
+  public int clazz_ref_const_string()
+  {
+    var cc = id2clazz(clazz_const_string());
+    return cc.asRef()._id;
   }
 
 
