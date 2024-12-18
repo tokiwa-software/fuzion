@@ -1004,3 +1004,15 @@ void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
   ((uint8_t *)addr)[idx] = x;
 }
 
+void * fzE_null(void)
+{
+  return NULL;
+}
+
+int fzE_is_null(void * p)
+{
+  return p == NULL
+    ? 0
+    : -1;
+}
+
