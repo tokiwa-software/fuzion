@@ -420,6 +420,34 @@ public Sequence(public T type) ref : property.equatable is
     as_list.foldf f e
 
 
+  # fold the elements of this list using the given monoid right-to-left.
+  #
+  # e.g., to concat the elements of a list of String, use l.foldr String.concat
+  #
+  public foldr (m Monoid T) => as_list.foldr m
+
+
+  # fold the elements of this list using the given monoid and initial value right-to-left.
+  #
+  # Used to fold a list tail-recursively
+  #
+  public foldr (s T, m Monoid T) => as_list.foldr m.e m
+
+
+  # fold the elements of this non-empty list using the given function right-to-left
+  #
+  # e.g., to concat the elements of a non-empty list of lists, use foldr1 (++)
+  #
+  public foldr1 (f (T,T)->T) => as_list.foldr1 f
+
+
+  # fold the elements of this list using the given function right-to-left.
+  #
+  # e.g., to concat the elements of a list of lists, use foldrf (++) []
+  #
+  public foldrf (B type, f (T,B)->B, e B) => as_list.foldrf f e
+
+
   # map this Sequence to a list that contains the result of folding
   # all prefixes using the given monoid.
   #
