@@ -258,7 +258,7 @@ public class FrontEnd extends ANY
    */
   private Path modulePath(String name)
   {
-    var n = name + ".fum";
+    var n = name + FuzionConstants.MODULE_FILE_SUFFIX;
     var p = baseModuleDir().resolve(n);
     var i = 0;
     var mds = _options._moduleDirs;
@@ -333,7 +333,7 @@ public class FrontEnd extends ANY
           }
         else
           {
-            Errors.error("Module file '"+(m + ".fum")+"' for module '"+m+"' not found, "+
+            Errors.error("Module file '"+(m + FuzionConstants.MODULE_FILE_SUFFIX)+"' for module '"+m+"' not found, "+
                          "module directories checked are '" + baseModuleDir() + "' and " +
                          _options._moduleDirs.toString("'","', '", "'") + ".");
           }
@@ -402,7 +402,7 @@ public class FrontEnd extends ANY
    */
   public LibraryModule baseModule()
   {
-    return _modules.get("base");
+    return _modules.get(FuzionConstants.BASE_MODULE_NAME);
   }
 
 
@@ -416,7 +416,7 @@ public class FrontEnd extends ANY
     if (Types.resolved == null)
       {
         _feUniverse.setState(State.RESOLVED);
-        new Types.Resolved(_modules.get("base"), _feUniverse, true);
+        new Types.Resolved(_modules.get(FuzionConstants.BASE_MODULE_NAME), _feUniverse, true);
       }
     return new Module(_dependsOn) {
       @Override

@@ -2361,7 +2361,9 @@ public class GeneratingFUIR extends FUIR
    * feature to be accessed for this target.
    */
   @Override
-  public int[] accessedClazzes(int s)
+  public
+  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
+  int[] accessedClazzes(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2852,7 +2854,7 @@ public class GeneratingFUIR extends FUIR
       {
       case "effect.type.abort0"  ,
            "effect.type.default0",
-           "effect.type.instate0",
+           FuzionConstants.EFFECT_INSTATE_NAME,
            "effect.type.is_instated0",
            "effect.type.replace0" -> true;
       default -> false;
@@ -2941,20 +2943,6 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     return c.feature().pos()._sourceFile._fileName.toString();
-  }
-
-
-  /**
-   * Get the position where the clazz is declared
-   * in the source code.
-   *
-   * NYI: CLEANUP: This is currently used only by the interpreter backend. Maybe we should remove this?
-   */
-  @Override
-  public SourcePosition declarationPos(int cl)
-  {
-    var c = id2clazz(cl);
-    return c._type.declarationPos();
   }
 
 

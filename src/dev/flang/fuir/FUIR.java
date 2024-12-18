@@ -1596,13 +1596,6 @@ public abstract class FUIR extends IR
   public abstract String clazzSrcFile(int cl);
 
 
-  /**
-   * Get the position where the clazz is declared
-   * in the source code.
-   */
-  public abstract SourcePosition declarationPos(int cl);
-
-
   /*---------------------------------------------------------------------
    *
    * handling of abstract missing errors.

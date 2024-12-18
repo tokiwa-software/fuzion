@@ -42,6 +42,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
@@ -893,9 +894,11 @@ should be avoided as much as possible.
                                   """
                                   #!/bin/sh
 
-                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:." \
-                                  PATH="$PATH:." \
-                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:." \
+                                  SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
+
+                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
+                                  PATH="$PATH:$SCRIPT_PATH" \
+                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
                                   java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                   """,
                                   FUZION_COMMAND_PROPERTY,
@@ -904,11 +907,11 @@ should be avoided as much as possible.
         f.setExecutable(true);
         for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
           {
-            var file = Path.of(System.getProperty("user.dir")).resolve("build/lib/" + str);
+            var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
             if (file.toFile().exists())
               {
                 Files.copy(file,
-                           Path.of(str),
+                           executableName.toAbsolutePath().getParent().resolve(str),
                            StandardCopyOption.REPLACE_EXISTING);
               }
           }

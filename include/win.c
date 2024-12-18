@@ -87,7 +87,7 @@ typedef struct {
     WIN32_FIND_DATA findData;
 } fzE_dir_struct;
 
-void fzE_opendir(const char *pathname, int64_t * result) {
+void * fzE_opendir(const char *pathname, int64_t * result) {
   fzE_dir_struct *dir = (fzE_dir_struct *)fzE_malloc_safe(sizeof(fzE_dir_struct));
 
   /* NYI: UNDER DEVELOPMENT:
@@ -105,20 +105,20 @@ void fzE_opendir(const char *pathname, int64_t * result) {
   dir->handle = FindFirstFile(searchPath, &dir->findData);
   if (dir->handle == INVALID_HANDLE_VALUE) {
     // NYI: BUG: free(dir);
-    result[0] = 0;
-    result[1] = GetLastError();
+    result[0] = GetLastError();
+    return dir;
   } else {
-    result[0] = (uintptr_t)dir;
-    result[1] = 0;
+    result[0] = 0;
+    return dir;
   }
 }
 
-char * fzE_readdir(intptr_t * dir) {
+int fzE_read_dir(intptr_t * dir, void * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   size_t len = strlen(d->findData.cFileName);
-  char *dup = (char *) fzE_malloc_safe(len + 1);
-  fzE_memcpy(dup, d->findData.cFileName, len + 1);
-  return dup;
+  assert(len<1024); // NYI:
+  fzE_memcpy(result, d->findData.cFileName, len + 1);
+  return len;
 }
 
 int fzE_read_dir_has_next(intptr_t * dir) {
@@ -131,7 +131,7 @@ int fzE_read_dir_has_next(intptr_t * dir) {
     ? 0 : 1;
 }
 
-int fzE_closedir(intptr_t * dir) {
+int fzE_close_dir(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FindClose(d->handle);
   // NYI: BUG: free(dir);
@@ -393,17 +393,17 @@ DWORD low_word(off_t value) {
 
 
 // returns -1 on error, size of file in bytes otherwise
-long fzE_get_file_size(FILE* file) {
+long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = ftell(file);
-  if(cur_pos == -1 || fseek(file, 0, SEEK_END) == -1){
+  long cur_pos = ftell((FILE *)file);
+  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
     return -1;
   }
 
-  long size = ftell(file);
+  long size = ftell((FILE *)file);
 
   // reset seek position
-  fseek(file, cur_pos, SEEK_SET);
+  fseek((FILE *)file, cur_pos, SEEK_SET);
 
   return size;
 }
@@ -816,54 +816,24 @@ int fzE_pipe_close(int64_t desc){
 }
 
 
-// open_results[0] the filedescriptor, unchanged on error
-// open_results[1] the error number
-void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+// open_results[0] the error number
+void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
+  assert( mode >= 0 && mode <= 2 );
   // NYI use lock to make fopen and fcntl _atomic_.
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
   // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
   // to a race condition that may unintentionally leak the file descriptor to the
   // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
   // for details and a remedy to the problem."
-  FILE * fp;
   errno = 0;
-  switch (mode)
+  FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
+  if (fp!=NULL)
   {
-    case 0:
-    {
-      fp = fopen(file_name,"rb");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    case 1:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    case 2:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    default:
-    {
-      fprintf(stderr,"*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\012");
-      exit(1);
-    }
+    open_results[0] = (int64_t)errno;
   }
-  open_results[1] = (int64_t)errno;
+  // NYI: UNDER DEVELOPMENT: not available on windows: fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
+  return fp;
 }
 
 

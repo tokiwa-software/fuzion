@@ -956,16 +956,16 @@ class ForClass extends ANY
             Errors.warning("Used type '" + t + "' is not public");
           }
       }
-    else if (t == Byte     .TYPE) { return FuzionConstants.I8_NAME;  }
-    else if (t == Character.TYPE) { return FuzionConstants.U16_NAME; }
-    else if (t == Short    .TYPE) { return FuzionConstants.I16_NAME; }
-    else if (t == Integer  .TYPE) { return FuzionConstants.I32_NAME; }
-    else if (t == Long     .TYPE) { return FuzionConstants.I64_NAME; }
-    else if (t == Float    .TYPE) { return FuzionConstants.F32_NAME; }
-    else if (t == Double   .TYPE) { return FuzionConstants.F64_NAME; }
-    else if (t == Boolean  .TYPE) { return "bool";                   }
-    else if (t == Void     .TYPE) { return "unit";                   }
-    else if (!t.isArray()       ) { return typeName(t);              }
+    else if (t == Byte     .TYPE) { return FuzionConstants.I8_NAME;   }
+    else if (t == Character.TYPE) { return FuzionConstants.U16_NAME;  }
+    else if (t == Short    .TYPE) { return FuzionConstants.I16_NAME;  }
+    else if (t == Integer  .TYPE) { return FuzionConstants.I32_NAME;  }
+    else if (t == Long     .TYPE) { return FuzionConstants.I64_NAME;  }
+    else if (t == Float    .TYPE) { return FuzionConstants.F32_NAME;  }
+    else if (t == Double   .TYPE) { return FuzionConstants.F64_NAME;  }
+    else if (t == Boolean  .TYPE) { return "bool";                    }
+    else if (t == Void     .TYPE) { return FuzionConstants.UNIT_NAME; }
+    else if (!t.isArray()       ) { return typeName(t);               }
     else { return "fuzion.java.Array " + (t.getComponentType().isArray() ? "Java.java.lang.Object" : plainResultType(t.getComponentType())); }
     return null;
   }

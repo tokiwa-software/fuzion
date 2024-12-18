@@ -574,7 +574,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var tvalue = pop(stack, tc);
           var avalue = pop(stack, ft);
           var f = _fuir.accessedClazz(s);
-          if (f != -1)  // field we are assigning to may be unused, i.e., -1
+          if (f != FUIR.NO_CLAZZ)  // field we are assigning to may be unused, i.e., -1
             {
               res = _processor.assign(s, tvalue, avalue);
             }
