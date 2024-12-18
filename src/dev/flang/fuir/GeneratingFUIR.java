@@ -830,6 +830,7 @@ public class GeneratingFUIR extends FUIR
    * an outer value, false for normal fields our outer ref fields that store the
    * outer ref or value directly.
    */
+  // NYI: CLEANUP: move to FUIR
   @Override
   public boolean clazzFieldIsAdrOfValue(int field)
   {
@@ -930,47 +931,6 @@ public class GeneratingFUIR extends FUIR
                                         : id2clazz(clazz(SpecialClazzes.c_void));
     return res._id;
   }
-
-
-  /**
-   * Is this a choice type with some elements of ref type?
-   *
-   * NYI: CLEANUP: Used by C and interpreter backends only. Remove?
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is a choice with at least one ref element
-   */
-  @Override
-  public boolean clazzIsChoiceWithRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.isChoiceWithRefs();
-  }
-
-
-  /**
-   * Is this a choice type with all elements of ref type?
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is a choice with only ref or unit/void elements
-   */
-  @Override
-  public boolean clazzIsChoiceOfOnlyRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.isChoiceOfOnlyRefs();
-  }
-
 
 
   /*------------------------  inheritance  -----------------------*/
@@ -1120,38 +1080,6 @@ public class GeneratingFUIR extends FUIR
             case Field,
                  Choice -> 0;
             };
-      }
-  }
-
-
-  /**
-   * Get the clazz id of the type of the given argument of clazz cl
-   *
-   * @param cl clazz id
-   *
-   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
-   *
-   * @return clazz id of the argument or -1 if no such feature exists (the
-   * argument is unused).
-   */
-  @Override
-  public int clazzArgClazz(int cl, int arg)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size(),
-       arg >= 0,
-       arg < clazzArgCount(cl));
-
-    if (CACHE_ARG_CLAZZES)
-      {
-        return clazzArgs(cl)[arg];
-      }
-    else
-      {
-        var c = id2clazz(cl);
-        var rc = c.argumentFields()[arg].resultClazz();
-        return rc._id;
       }
   }
 
@@ -1376,30 +1304,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Check if the given clazz is a constructor, i.e., a routine returning
-   * its instance as a result?
-   *
-   * @param cl a clazz id
-   *
-   * @return true if the clazz is a constructor, false otherwise
-   */
-  @Override
-  public boolean isConstructor(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var c = id2clazz(cl);
-    return switch (c.feature().kind())
-      {
-      case Routine -> c.feature().isConstructor();
-      default -> false;
-      };
-  }
-
-
-  /**
    * Is the given clazz a ref clazz?
    *
    * @param cl a constructor clazz id
@@ -1529,26 +1433,6 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     return c._specialClazzId;
-  }
-
-
-  /**
-   * Check if a clazz is the special clazz c.
-   *
-   * @param cl a clazz id
-   *
-   * @param c one of the constants SpecialClazzes.c_i8,...
-   *
-   * @return true iff cl is the specified special clazz c
-   */
-  @Override
-  public boolean clazzIs(int cl, SpecialClazzes c)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return id2clazz(cl)._specialClazzId == c;
   }
 
 
