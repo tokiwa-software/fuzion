@@ -329,6 +329,13 @@ void *  fzE_file_stdout(void);
 void *  fzE_file_stderr(void);
 
 /**
+ * flush user-space buffers for file
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_flush(void * file);
+
+
+/**
  * @param addr pointer to an address in memory
  * @param idx  the index at where to do the get
  * @return the addr[idx]
