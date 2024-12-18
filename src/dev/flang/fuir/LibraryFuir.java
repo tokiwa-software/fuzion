@@ -330,24 +330,39 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazz_Const_String()
+  public int clazz_const_string()
   {
     // NYI: move to FUIR
-    return clazz(SpecialClazzes.c_Const_String);
+    return clazz(SpecialClazzes.c_const_string);
   }
 
   @Override
-  public int clazz_Const_String_utf8_data()
+  public int clazz_const_string_utf8_data()
   {
     // NYI: move to FUIR
     return clazz(SpecialClazzes.c_CS_utf8_data);
   }
 
   @Override
+  public int clazz_ref_const_string()
+  {
+    var cs = clazz(SpecialClazzes.c_const_string);
+    for (int i = 0; i < _clazzes.length; i++)
+    {
+      if (_clazzes[i].clazzIsRef() && _clazzes[i].clazzAsValue() == cs)
+        {
+          return i + CLAZZ_BASE;
+        }
+    }
+    Errors.fatal("clazz_ref_const_string");
+    return -1;
+  }
+
+  @Override
   public int clazz_array_u8()
   {
     // NYI: move to FUIR
-    var utf8_data = clazz_Const_String_utf8_data();
+    var utf8_data = clazz_const_string_utf8_data();
     return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
   }
 
@@ -505,12 +520,6 @@ public class LibraryFuir extends FUIR {
   public boolean clazzIsVoidType(int cl)
   {
     return clazzIs(cl, SpecialClazzes.c_void);
-  }
-
-  @Override
-  public boolean hasData(int cl)
-  {
-    return _clazzes[clazzId2num(cl)].hasData();
   }
 
   @Override
@@ -737,12 +746,6 @@ public class LibraryFuir extends FUIR {
   public String clazzSrcFile(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzSrcFile();
-  }
-
-  @Override
-  public SourcePosition declarationPos(int cl)
-  {
-    return SourcePosition.notAvailable;
   }
 
   @Override

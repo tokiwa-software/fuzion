@@ -1698,8 +1698,8 @@ public abstract class FUIR extends IR
             var cl0 = cl;
             var needsCode = clazzKind(cl) == FeatureKind.Routine &&
                             (clazzNeedsCode(cl) ||
-                            cl == clazz_Const_String() ||
-                            cl == clazz_Const_String_utf8_data() ||
+                            cl == clazz_const_string() ||
+                            cl == clazz_const_string_utf8_data() ||
                             cl == clazz_array_u8() ||
                             cl == clazz_fuzionSysArray_u8() ||
                             cl == clazz_fuzionSysArray_u8_data() ||
@@ -1718,7 +1718,7 @@ public abstract class FUIR extends IR
                 clazzAsValue(cl),
                 clazzChoices(cl),
                 clazzInstantiatedHeirs(cl),
-                hasData(cl),
+                hasData(cl), //NYI remove
                 clazzNeedsCode(cl),
                 clazzFields(cl),
                 needsCode ? clazzCode(cl) : NO_SITE,
