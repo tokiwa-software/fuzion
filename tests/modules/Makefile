@@ -102,3 +102,5 @@ xy:
 
 clean:
 	rm -rf modules *~ */*~ */*/*~
+
+effect:

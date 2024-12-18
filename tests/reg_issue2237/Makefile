@@ -39,3 +39,5 @@ c: mod
 mod:
 	mkdir -p mod
 	$(FUZION) -sourceDirs=mod -saveLib=mod/mod.fum
+
+effect:
