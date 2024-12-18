@@ -37,7 +37,7 @@
 # ages := td.map (x -> x.age)
 # gt_ten := td.filter (x -> x > 10)
 # xf := ages ∘ gt_ten
-# say ([human 4, human 12, human 30].into xf) # [12,30]
+# say <| [human 4, human 12, human 30].into xf # [12,30]
 #
 #
 # TA   result     type
