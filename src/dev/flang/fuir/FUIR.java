@@ -1688,11 +1688,11 @@ public abstract class FUIR extends IR
     // make sure there is a value clazz for
     // every boxed clazz, backends jvm and c need this.
     // test inheritance fails without this.
-    for (int i = firstClazz(); i <= lastClazz(); i++)
+    for (int cl = firstClazz(); cl <= lastClazz(); cl++)
       {
-        if (clazzIsBoxed(i))
+        if (clazzIsBoxed(cl))
           {
-            clazzAsValue(i);
+            clazzAsValue(cl);
           }
       }
     var firstClazz = firstClazz();
