@@ -1684,6 +1684,17 @@ public abstract class FUIR extends IR
 
   public byte[] serialize()
   {
+    // NYI: CLEANUP: DFA should probably already create those?
+    // make sure there is a value clazz for
+    // every boxed clazz, backends jvm and c need this.
+    // test inheritance fails without this.
+    for (int i = firstClazz(); i <= lastClazz(); i++)
+      {
+        if (clazzIsBoxed(i))
+          {
+            clazzAsValue(i);
+          }
+      }
     var firstClazz = firstClazz();
     var lastClazz = lastClazz();
     var siteCount = siteCount();
@@ -1703,7 +1714,7 @@ public abstract class FUIR extends IR
                 clazzIsBoxed(cl),
                 clazzArgs(cl),
                 clazzKind(cl),
-                safe(()->clazzOuterRef(cl0), -7),
+                safe(()->clazzOuterRef(cl0), NO_CLAZZ),
                 clazzResultClazz(cl),
                 clazzIsRef(cl),
                 clazzIsUnitType(cl),
@@ -1719,8 +1730,8 @@ public abstract class FUIR extends IR
                 clazzTypeParameterActualType(cl),
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),
-                safe(()->lookupCall(cl0), -7),
-                safe(()->lookup_static_finally(cl0), -7),
+                safe(()->lookupCall(cl0), NO_CLAZZ),
+                safe(()->lookup_static_finally(cl0), NO_CLAZZ),
                 clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
                 safe(()->clazzTypeName(cl0), null),
                 clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
@@ -1735,25 +1746,36 @@ public abstract class FUIR extends IR
         for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
           {
             var s0 = s;
+            var accessedClazz =
+              !withinCode(s)
+                ? NO_CLAZZ
+                : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
+                ? safe(()->
+                    accessedClazz(s0) > lastClazz
+                      ? NO_CLAZZ
+                      : accessedClazz(s0),
+                    NO_CLAZZ)
+                : NO_CLAZZ;
+
             sites[s-SITE_BASE] = new SiteRecord(
                 clazzAt(s),
                 !withinCode(s) ? false : alwaysResultsInVoid(s),
                 !withinCode(s) ? null : codeAt(s),
-                !withinCode(s) ? -7 : codeAt(s) == ExprKind.Const ? constClazz(s) : NO_CLAZZ,
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Const ? constClazz(s) : NO_CLAZZ,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Const ? constData(s) : null,
-                !withinCode(s) ? -7 : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? safe(()->accessedClazz(s0), NO_CLAZZ) : NO_CLAZZ,
-                !withinCode(s) ? null : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) && safe(()->accessedClazz(s0), NO_CLAZZ) != NO_CLAZZ ? accessedClazzes(s) : null,
-                !withinCode(s) ? -7 : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? accessTargetClazz(s) : NO_CLAZZ,
-                !withinCode(s) ? -7 : codeAt(s) == ExprKind.Tag ? tagValueClazz(s) : NO_CLAZZ,
-                !withinCode(s) ? -7 : codeAt(s) == ExprKind.Assign ? assignedType(s) : NO_CLAZZ,
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? -7 : safe(()->boxValueClazz(s0), NO_CLAZZ),
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? -7 : safe(()->boxResultClazz(s0), NO_CLAZZ),
-                !withinCode(s) ? -7 : codeAt(s) == ExprKind.Match ? safe(()->matchStaticSubject(s0), NO_CLAZZ) : NO_CLAZZ,
-                !withinCode(s) ? -7 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
+                accessedClazz,
+                accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
+                !withinCode(s) ? NO_CLAZZ : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? accessTargetClazz(s) : NO_CLAZZ,
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Tag ? tagValueClazz(s) : NO_CLAZZ,
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Assign ? assignedType(s) : NO_CLAZZ,
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxValueClazz(s0), NO_CLAZZ),
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxResultClazz(s0), NO_CLAZZ),
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Match ? safe(()->matchStaticSubject(s0), NO_CLAZZ) : NO_CLAZZ,
+                !withinCode(s) ? -1 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
-                !withinCode(s) || codeAt(s) != ExprKind.Tag ? -7 : tagNewClazz(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Tag ? -7 : tagTagNum(s),
+                !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
+                !withinCode(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
                 !withinCode(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
                 !withinCode(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s)
               );
