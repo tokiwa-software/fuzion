@@ -157,6 +157,12 @@ public class FrontEnd extends ANY
 
   /*--------------------------  constructors  ---------------------------*/
 
+  public FrontEnd(FrontEndOptions options, boolean a)
+  {
+    _options = options;
+    _dependsOn = new LibraryModule[0];
+    _feUniverse = null;
+  }
 
   /**
    * Create front end for given options.

@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -53,7 +54,7 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.LibraryFuir;
 import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
@@ -490,10 +491,36 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
+      String serializedFuir = f._main + ".fuir";
       var o    = fe._options;
-      var mir  = fe.createMIR();                             f.timer("createMIR");
-      var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
-      process(o, new DFA(o, fuir).new_fuir());
+      if (Files.exists(Path.of(serializedFuir)))
+        {
+          try
+            {
+              var fuir = new LibraryFuir(Files.readAllBytes(Path.of(serializedFuir)));
+              process(o, fuir);
+            }
+          catch (IOException e)
+            {
+              Errors.fatal(e);
+            }
+        }
+      else
+        {
+          var mir  = fe.createMIR();                             f.timer("createMIR");
+          var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
+          var data = new DFA(o, fuir).new_fuir().serialize();
+
+          try (FileOutputStream stream = new FileOutputStream(f._main + ".fuir"))
+            {
+              stream.write(data);
+            }
+          catch (IOException e)
+            {
+              Errors.fatal(e);
+            }
+          process(o, new LibraryFuir(data));
+        }
     }
 
     void process(FuzionOptions options, FUIR fuir)
@@ -1056,7 +1083,7 @@ public class Fuzion extends Tool
                                           s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
-        var fe = new FrontEnd(options);
+        var fe = Files.exists(Path.of(_main + ".fuir")) ? new FrontEnd(options, false) : new FrontEnd(options);
         timer("fe");
         Errors.showAndExit();
         _backend.processFrontEnd(this, fe);
