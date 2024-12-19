@@ -212,7 +212,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  public static Callable call(Executor executor, int innerClazz)
+  public static Callable call(Executor executor, int site, int innerClazz)
   {
     Callable result;
     String in = executor.fuir().clazzOriginalName(innerClazz);
@@ -224,7 +224,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.fatal(executor.fuir().declarationPos(innerClazz),
+        Errors.fatal(executor.fuir().sitePos(site),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
         result = (args) -> Value.NO_VALUE;
@@ -246,7 +246,7 @@ public class Intrinsics extends ANY
   static
   {
     put("Type.name"            , (executor, innerClazz) -> args ->
-      Interpreter.value(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
+      Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
     put("concur.atomic.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
@@ -338,11 +338,11 @@ public class Intrinsics extends ANY
           var fuir = executor.fuir();
           if (i == 0)
             {
-              return  Interpreter.value(fuir.clazzAsString(fuir.mainClazz()));
+              return  Interpreter.boxedConstString(fuir.clazzAsString(fuir.mainClazz()));
             }
           else
             {
-              return  Interpreter.value(executor.options().getBackendArgs().get(i - 1));
+              return  Interpreter.boxedConstString(executor.options().getBackendArgs().get(i - 1));
             }
         });
 
@@ -443,11 +443,11 @@ public class Intrinsics extends ANY
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
-          var arrA = argzData.arrayData();
-          var res = arrA._array;
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(res, resultClazz);
+          var res = Interpreter
+            .getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false)
+            .arrayData()
+            ._array;
+          return new JavaRef(res);
         });
     putUnsafe("fuzion.java.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
@@ -462,7 +462,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) ((JavaRef)args.get(1))._javaRef;
-          return Interpreter.value(javaString == null ? "--null--" : javaString);
+          return Interpreter.boxedConstString(javaString == null ? "--null--" : javaString);
         });
     putUnsafe("fuzion.java.i8_to_java_object", (executor, innerClazz) -> args ->
         {
@@ -520,27 +520,24 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    put("fuzion.sys.internal_array_init.alloc", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           return ArrayData.alloc(/* size */ args.get(1).i32Value(),
                                  executor.fuir(),
                                  /* type */ et);
         });
-    put("fuzion.sys.internal_array.get", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.getel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
                                    executor.fuir(),
                                    /* type  */ et);
         });
-    put("fuzion.sys.internal_array.setel", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.setel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),
@@ -557,7 +554,7 @@ public class Intrinsics extends ANY
           return Value.EMPTY_VALUE;
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
-    put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
     // setting env variable not supported in java
     put("fuzion.sys.env_vars.set0"  , (executor, innerClazz) -> args -> new boolValue(false));
     // unsetting env variable not supported in java

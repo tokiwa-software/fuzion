@@ -223,14 +223,7 @@ class CodeGen
   @Override
   public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
   {
-    if (_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt))
-      {
-        return val.drop().andThen(tvalue.drop());
-      }
-    else
-      {
-        return _jvm.assignField(s, tvalue, f, val, rt);
-      }
+    return _jvm.assignField(s, tvalue, f, val, rt);
   }
 
 
@@ -949,7 +942,7 @@ class CodeGen
       case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
       case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ())                                   , Expr.UNIT);
       case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
-      case c_String       -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
+      case c_String       -> _jvm.boxedConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
       default             ->
         {
           if (_fuir.clazzIsArray(constCl))

@@ -433,9 +433,9 @@ public class CFG extends ANY
     put("f64.type.max"                   , (cfg, cl) -> { } );
     put("f64.type.epsilon"               , (cfg, cl) -> { } );
 
-    put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
+    put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.freeze"
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.ensure_not_frozen"

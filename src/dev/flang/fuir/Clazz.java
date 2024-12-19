@@ -399,7 +399,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize an outer clazz for a given type. For a reference clazz that
    * inherits from f, this will return the corresponding clazz derived from
-   * f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * f. The idea is that, e.g., we do not need to distinguish const_string.length
    * from (array u8).length.
    *
    * @param t the type of the newly created clazz
@@ -423,7 +423,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize a reference clazz to the given feature.  For a reference clazz
    * that inherits from f, this will return the corresponding clazz derived
-   * from f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * from f. The idea is that, e.g., we do not need to distinguish const_string.length
    * from (array u8).length.
    *
    * @param f the feature we want to normalize to (array in the example above).
@@ -1451,51 +1451,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   public boolean isChoice()
   {
     return feature().isChoice();
-  }
-
-
-
-  /**
-   * Is this a choice-type whose actual generics include ref?  If so, a field for
-   * all the refs will be needed.
-   */
-  public boolean isChoiceWithRefs()
-  {
-    boolean hasRefs = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasRefs = hasRefs || c.isRef().yes();
-          }
-      }
-
-    return hasRefs;
-  }
-
-
-  /**
-   * Is this a choice-type whose actual generics are all refs or stateless
-   * values? If so, no tag will be added, but ChoiceIdAsRef can be used.
-   *
-   * In case this is a choice of stateless value without any references, the
-   * result will be false since in this case, it is better to use the an integer
-   * stored in the tag.
-   */
-  public boolean isChoiceOfOnlyRefs()
-  {
-    boolean hasNonRefsWithState = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasNonRefsWithState = hasNonRefsWithState || (c.isRef().noOrDontKnow() && !c.isUnitType() && !c.isVoidType());
-          }
-      }
-
-    return isChoiceWithRefs() && !hasNonRefsWithState;
   }
 
 
