@@ -176,34 +176,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public boolean clazzIsChoiceWithRefs(int cl)
-  {
-    // NYI move to FUIR
-    for (var c : clazzChoices(cl))
-    {
-      if (clazzIsRef(c))
-        {
-          return true;
-        }
-    }
-  return false;
-  }
-
-  @Override
-  public boolean clazzIsChoiceOfOnlyRefs(int cl)
-  {
-    // NYI move to FUIR
-    for (var c : clazzChoices(cl))
-      {
-        if (!clazzIsRef(c))
-          {
-            return false;
-          }
-      }
-    return true;
-  }
-
-  @Override
   public int[] clazzInstantiatedHeirs(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzInstantiatedHeirs();
@@ -213,13 +185,6 @@ public class LibraryFuir extends FUIR {
   public int clazzArgCount(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzArgs().length;
-  }
-
-  @Override
-  public int clazzArgClazz(int cl, int arg)
-  {
-    // NYI move to fuir
-    return clazzResultClazz(clazzArg(cl, arg));
   }
 
   @Override
@@ -250,13 +215,6 @@ public class LibraryFuir extends FUIR {
   public boolean clazzNeedsCode(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzNeedsCode();
-  }
-
-  @Override
-  public boolean isConstructor(int clazz)
-  {
-    // move to fuir
-    return clazz == clazzResultClazz(clazz);
   }
 
   @Override
@@ -303,44 +261,9 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public boolean clazzIs(int cl, SpecialClazzes c)
-  {
-    // NYI: do this in FUIR
-    return getSpecialClazz(cl) == c;
-  }
-
-  @Override
   public int clazz(SpecialClazzes c)
   {
     return _specialClazzes[c.ordinal()];
-  }
-
-  @Override
-  public int clazzAny()
-  {
-    // NYI: move to FUIR
-    return clazz(SpecialClazzes.c_Any);
-  }
-
-  @Override
-  public int clazzUniverse()
-  {
-    // NYI: move to FUIR
-    return clazz(SpecialClazzes.c_universe);
-  }
-
-  @Override
-  public int clazz_const_string()
-  {
-    // NYI: move to FUIR
-    return clazz(SpecialClazzes.c_const_string);
-  }
-
-  @Override
-  public int clazz_const_string_utf8_data()
-  {
-    // NYI: move to FUIR
-    return clazz(SpecialClazzes.c_CS_utf8_data);
   }
 
   @Override
@@ -348,71 +271,14 @@ public class LibraryFuir extends FUIR {
   {
     var cs = clazz(SpecialClazzes.c_const_string);
     for (int i = 0; i < _clazzes.length; i++)
-    {
-      if (_clazzes[i].clazzIsRef() && _clazzes[i].clazzAsValue() == cs)
-        {
-          return i + CLAZZ_BASE;
-        }
-    }
+      {
+        if (_clazzes[i].clazzIsRef() && _clazzes[i].clazzAsValue() == cs)
+          {
+            return i + CLAZZ_BASE;
+          }
+      }
     Errors.fatal("clazz_ref_const_string");
     return -1;
-  }
-
-  @Override
-  public int clazz_array_u8()
-  {
-    // NYI: move to FUIR
-    var utf8_data = clazz_const_string_utf8_data();
-    return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
-  }
-
-
-  /**
-   * Get the id of clazz {@code fuzion.sys.array u8}
-   *
-   * @return the id of {@code fuzion.sys.array u8} or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionSysArray_u8()
-  {
-    // NYI: move to FUIR
-    var a8 = clazz_array_u8();
-    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : lookup_array_internal_array(a8);
-    return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
-  }
-
-
-  /**
-   * Get the id of clazz {@code (fuzion.sys.array u8).data}
-   *
-   * @return the id of {@code (fuzion.sys.array u8).data} or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionSysArray_u8_data()
-  {
-    // NYI: move to FUIR
-    var sa8 = clazz_fuzionSysArray_u8();
-    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_data(sa8);
-  }
-
-
-  /**
-   * Get the id of clazz {@code (fuzion.sys.array u8).length}
-   *
-   * @return the id of {@code (fuzion.sys.array u8).length} or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionSysArray_u8_length()
-  {
-    // NYI: move to FUIR
-    var sa8 = clazz_fuzionSysArray_u8();
-    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_length(sa8);
-  }
-
-  @Override
-  public int clazz_error()
-  {
-    return clazz(SpecialClazzes.c_error);
   }
 
   @Override
