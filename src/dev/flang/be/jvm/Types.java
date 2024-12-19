@@ -347,25 +347,6 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Does the given clazz specify a scalar type in the C code, i.e, standard
-   * numeric types i32, u64, etc.
-   */
-  boolean isScalar(int cl)
-  {
-    var id = _fuir.getSpecialClazz(cl);
-    return switch (id)
-      {
-      case
-        c_i8  , c_i16 , c_i32 ,
-        c_i64 , c_u8  , c_u16 ,
-        c_u32 , c_u64 , c_f32 ,
-        c_f64                   -> true;
-      default                   -> false;
-      };
-  }
-
-
-  /**
    * Get the Java name of the given clazz type: "I" for i32, "LfzC_featureName;"
    * for a non-scalar.
    *
