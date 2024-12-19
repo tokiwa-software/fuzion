@@ -2680,33 +2680,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a given tag return the index of the corresponding case.
-   *
-   * @param s site of the match
-   *
-   * @param tag e.g. 0,1,2,...
-   *
-   * @return the index of the case for tag {@code tag}
-   */
-  @Override
-  public int matchCaseIndex(int s, int tag)
-  {
-    var result = -1;
-    for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
-      {
-        var mct = matchCaseTags(s, j);
-        if (Arrays.stream(mct).anyMatch(t -> t == tag))
-          {
-            result = j;
-          }
-      }
-    if (CHECKS) check
-      (result != -1);
-    return result;
-  }
-
-
-  /**
    * For a match expression, get the tags matched by a given case
    *
    * @param s site of the match
