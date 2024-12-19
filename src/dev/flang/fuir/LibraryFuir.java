@@ -426,6 +426,7 @@ public class LibraryFuir extends FUIR {
             return clazzField(cl, index);
           }
       }
+    Errors.fatal("Java_Ref field not found!");
     return NO_CLAZZ;
   }
 
