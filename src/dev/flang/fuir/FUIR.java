@@ -26,8 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
+import java.util.function.Supplier;
 
 import dev.flang.ir.IR;
 import dev.flang.util.SourcePosition;
@@ -731,7 +736,7 @@ public abstract class FUIR extends IR
   public int clazz_array_u8()
   {
     var utf8_data = clazz_const_string_utf8_data();
-    return clazzResultClazz(utf8_data);
+    return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
   }
 
 
@@ -743,9 +748,8 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8()
   {
     var a8 = clazz_array_u8();
-    var ia = lookup_array_internal_array(a8);
-    var res = clazzResultClazz(ia);
-    return res;
+    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : lookup_array_internal_array(a8);
+    return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
   }
 
 
@@ -757,7 +761,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_data()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_data(sa8);
+    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_data(sa8);
   }
 
 
@@ -769,7 +773,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_length()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_length(sa8);
+    return  sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_length(sa8);
   }
 
 
@@ -1133,18 +1137,6 @@ public abstract class FUIR extends IR
    * case does not have a field or the field is unused.
    */
   public abstract int matchCaseField(int s, int cix);
-
-
-  /**
-   * For a given tag return the index of the corresponding case.
-   *
-   * @param s site of the match
-   *
-   * @param tag e.g. 0,1,2,...
-   *
-   * @return the index of the case for tag {@code tag}
-   */
-  public abstract int matchCaseIndex(int s, int tag);
 
 
   /**
@@ -1639,6 +1631,235 @@ public abstract class FUIR extends IR
    */
   public abstract void reportAbstractMissing();
 
+
+  /*----------------------  serializing FUIR  ----------------------*/
+
+
+  public abstract int[] clazzActualGenerics(int cl);
+
+  private int siteCount()
+  {
+    return _allCode.size();
+  }
+
+  private int[] specialClazzes()
+  {
+    return Arrays
+      .stream(SpecialClazzes.values())
+      .mapToInt(sc -> sc == SpecialClazzes.c_NOT_FOUND ? NO_CLAZZ : clazz(sc))
+      .toArray();
+  }
+
+  private int[] clazzArgs(int cl)
+  {
+    var result = new int[safe(()->clazzArgCount(cl), 0)];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i]= clazzArg(cl, i);
+      }
+    return result;
+  }
+
+  protected int[] clazzChoices(int cl)
+  {
+    var numChoices = clazzNumChoices(cl);
+    var result = new int[numChoices > 0 ? numChoices : 0];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i]= clazzChoice(cl, i);
+      }
+    return result;
+  }
+
+  private int[] clazzFields(int cl)
+  {
+    var numFields = clazzNumFields(cl);
+    var result = new int[numFields > 0 ? numFields : 0];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i]= clazzField(cl, i);
+      }
+    return result;
+  }
+
+  public byte[] serialize()
+  {
+    // NYI: CLEANUP: DFA should probably already create those?
+    // make sure there is a value clazz for
+    // every boxed clazz, backends jvm and c need this.
+    // test inheritance fails without this.
+    for (int cl = firstClazz(); cl <= lastClazz(); cl++)
+      {
+        if (clazzIsBoxed(cl))
+          {
+            clazzAsValue(cl);
+          }
+      }
+    var firstClazz = firstClazz();
+    var lastClazz = lastClazz();
+    var siteCount = siteCount();
+
+    var baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos))
+      {
+        oos.writeInt(mainClazz());
+        var clazzes = new ClazzRecord[lastClazz-firstClazz+1];
+        for (int cl = firstClazz; cl <= lastClazz; cl++)
+          {
+            var cl0 = cl;
+            var needsCode = clazzKind(cl) == FeatureKind.Routine && clazzNeedsCode(cl);
+            clazzes[clazzId2num(cl)] = new ClazzRecord(
+                clazzBaseName(cl),
+                clazzOuterClazz(cl),
+                clazzIsBoxed(cl),
+                clazzArgs(cl),
+                clazzKind(cl),
+                safe(()->clazzOuterRef(cl0), NO_CLAZZ),
+                clazzResultClazz(cl),
+                clazzIsRef(cl),
+                clazzIsUnitType(cl),
+                clazzIsChoice(cl),
+                clazzAsValue(cl),
+                clazzChoices(cl),
+                clazzInstantiatedHeirs(cl),
+                clazzNeedsCode(cl),
+                clazzFields(cl),
+                needsCode ? clazzCode(cl) : NO_SITE,
+                clazzResultField(cl),
+                clazzFieldIsAdrOfValue(cl),
+                clazzTypeParameterActualType(cl),
+                clazzOriginalName(cl),
+                clazzActualGenerics(cl),
+                safe(()->lookupCall(cl0), NO_CLAZZ),
+                safe(()->lookup_static_finally(cl0), NO_CLAZZ),
+                clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
+                safe(()->clazzTypeName(cl0), null),
+                clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
+                clazzAsStringHuman(cl),
+                safe(()->clazzKind(cl0) == FeatureKind.Field ? fieldIndex(cl0) : NO_CLAZZ, NO_CLAZZ),
+                clazzSrcFile(cl),
+                safe(()->lookupJavaRef(cl0), NO_CLAZZ)
+                );
+          }
+        oos.writeObject(clazzes);
+
+        var sites = new SiteRecord[siteCount];
+        for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
+          {
+            var s0 = s;
+            var accessedClazz =
+              !withinCode(s)
+                ? NO_CLAZZ
+                : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
+                ? safe(()->
+                    accessedClazz(s0) > lastClazz
+                      ? NO_CLAZZ
+                      : accessedClazz(s0),
+                    NO_CLAZZ)
+                : NO_CLAZZ;
+
+            sites[s-SITE_BASE] = new SiteRecord(
+                clazzAt(s),
+                !withinCode(s) ? false : alwaysResultsInVoid(s),
+                !withinCode(s) ? null : codeAt(s),
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Const ? constClazz(s) : NO_CLAZZ,
+                !withinCode(s) ? null : codeAt(s) == ExprKind.Const ? constData(s) : null,
+                accessedClazz,
+                accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
+                !withinCode(s) ? NO_CLAZZ : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? accessTargetClazz(s) : NO_CLAZZ,
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Tag ? tagValueClazz(s) : NO_CLAZZ,
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Assign ? assignedType(s) : NO_CLAZZ,
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxValueClazz(s0), NO_CLAZZ),
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxResultClazz(s0), NO_CLAZZ),
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Match ? safe(()->matchStaticSubject(s0), NO_CLAZZ) : NO_CLAZZ,
+                !withinCode(s) ? -1 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
+                !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
+                !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
+                !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
+                !withinCode(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
+                !withinCode(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
+                !withinCode(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s)
+              );
+          }
+        oos.writeObject(sites);
+
+        oos.writeObject(specialClazzes());
+      }
+    catch(IOException e)
+      {
+        e.printStackTrace();
+      }
+    return baos.toByteArray();
+  }
+
+  private int[][] matchCaseTags(int s)
+  {
+    var result = new int[matchCaseCount(s)][];
+    for (int cix = 0; cix < result.length; cix++)
+      {
+        result[cix] = matchCaseTags(s, cix);
+      }
+    return result;
+  }
+
+  private int[] matchCaseCode(int s)
+  {
+    var result = new int[matchCaseCount(s)];
+    for (int cix = 0; cix < result.length; cix++)
+      {
+        result[cix] = matchCaseCode(s, cix);
+      }
+    return result;
+  }
+
+  // NYI: cleanup
+  private <T> T safe(Supplier<T> fn, T dflt)
+  {
+    try {
+      return fn.get();
+    } catch (Throwable e) {
+      return dflt;
+    }
+  }
+
+  private int[] matchCaseFields(int s)
+  {
+    var result = new int[matchCaseCount(s)];
+    for (int cix = 0; cix < result.length; cix++)
+      {
+        result[cix] = matchCaseField(s, cix);
+      }
+    return result;
+  }
+
+
+  /*----------------------  Interpreter  ----------------------*/
+
+
+  /**
+   * For a given tag return the index of the corresponding case.
+   *
+   * @param s site of the match
+   *
+   * @param tag e.g. 0,1,2,...
+   *
+   * @return the index of the case for tag {@code tag}
+   */
+  public int matchCaseIndex(int s, int tag)
+  {
+    var result = -1;
+    for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
+      {
+        var mct = matchCaseTags(s, j);
+        if (Arrays.stream(mct).anyMatch(t -> t == tag))
+          {
+            result = j;
+          }
+      }
+    if (CHECKS) check
+      (result != -1);
+    return result;
+  }
 
 }
 

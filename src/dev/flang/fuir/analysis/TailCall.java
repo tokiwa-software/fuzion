@@ -207,7 +207,9 @@ public class TailCall extends ANY
       case Call ->
         {
           var cc = _fuir.accessedClazz(cls);
-          yield mustAssignTo == IR.NO_CLAZZ &&
+          // tricky, serialized FUIR may not contain accessedClazz
+          yield cc == IR.NO_CLAZZ ||
+            mustAssignTo == IR.NO_CLAZZ &&
             (// we found call c/ix and we do not need to assign any variable, so we have a success!
              cls == s ||
 
