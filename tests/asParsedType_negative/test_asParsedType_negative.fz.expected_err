@@ -24,7 +24,7 @@ Type 'true' was not found, no corresponding feature nor formal type parameter ex
 Type that was not found: 'true'
 in feature: 'test_asParsedType_negative'
 However, one feature has been found that matches the type name but that does not define a type:
-'true' defined at $MODULE/bool.fz:173:8:
+'true' defined at {base.fum}/bool.fz:176:8:
 public true bool => true_
 -------^^^^
 
