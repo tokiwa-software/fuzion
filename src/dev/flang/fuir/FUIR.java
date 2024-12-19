@@ -736,7 +736,7 @@ public abstract class FUIR extends IR
   public int clazz_array_u8()
   {
     var utf8_data = clazz_const_string_utf8_data();
-    return clazzResultClazz(utf8_data);
+    return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
   }
 
 
