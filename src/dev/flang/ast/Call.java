@@ -221,6 +221,11 @@ public class Call extends AbstractCall
   public Call _targetOf_forErrorSolutions = null;
 
 
+  /**
+   * Stored propagated type for use during resolve types.
+   */
+  private AbstractType _propagatedType;
+
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -1958,17 +1963,36 @@ public class Call extends AbstractCall
                         var actualType = typeFromActual(actual, context);
                         if (actualType != null)
                           {
-                            /**
-                             * infer via constraint of type parameter:
-                             *
-                             *     a(T type, S type : array T, s S) is
-                             *     _ := a [32]
-                             */
                             if (t.isGenericArgument())
                               {
-                                var tp = t.genericArgument().typeParameter();
-                                res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt);
+                                var constraint = t.genericArgument().constraint(res, context);
+
+                                /**
+                                 * infer via propagated result type:
+                                 *
+                                 *     f1(b bool) option a.this => b ? a.this : nil
+                                 */
+                                if (_propagatedType != null &&
+                                    !_propagatedType.isGenericArgument() &&
+                                    _calledFeature.resultTypeIfPresent(res) != null &&
+                                    t.compareTo(_calledFeature.resultTypeIfPresent(res)) == 0 &&
+                                    constraint.isAssignableFrom(_propagatedType.asRef(), context))
+                                  {
+                                    actual = actual.box(_propagatedType, context);
+                                    actualType = typeFromActual(actual, context);
+
+                                    if (CHECKS) check
+                                      (actual != null);
+                                  }
+
+                                /**
+                                 * infer via constraint of type parameter:
+                                 *
+                                 *     a(T type, S type : array T, s S) is
+                                 *     _ := a [32]
+                                 */
+                                inferGeneric(res, context, constraint, actualType, actual.pos(), conflict, foundAt);
+
                               }
                             inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt);
                             checked[vai] = true;
@@ -2524,6 +2548,25 @@ public class Call extends AbstractCall
         propagateForPartial(res, context);
         if (needsToInferTypeParametersFromArgs())
           {
+            // propagate type to actuals before infering from args
+            // this makes this work, see also #321:
+            //     a tuple i8 i8 := tuple 3 4
+            if (_propagatedType != null && !_propagatedType.isGenericArgument())
+              {
+                for (int i = 0; i < _propagatedType.generics().size(); i++)
+                  {
+                    var idx0 = Math.min(i, _propagatedType.feature().generics().asActuals().size()-1);
+                    for (int j = 0; j < _actuals.size(); j++)
+                      {
+                        var idx1 = Math.min(j, _calledFeature.valueArguments().size()-1);
+                        if (_calledFeature.valueArguments().get(idx1).resultType().compareTo(_propagatedType.feature().generics().asActuals().get(idx0)) == 0)
+                          {
+                            _actuals.get(j).propagateExpectedType(res, context, _propagatedType.generics().get(i));
+                          }
+                      }
+                  }
+              }
+
             inferGenericsFromArgs(res, context);
             for (var r : _whenInferredTypeParameters)
               {
@@ -2703,6 +2746,9 @@ public class Call extends AbstractCall
               (r == r2);
           }
       }
+
+    _propagatedType = t;
+
     return r;
   }
 
