@@ -418,16 +418,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public int lookupJavaRef(int cl)
   {
-    cl = clazzAsValue(cl);
-    for (int index = 0; index < clazzNumFields(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("Java_Ref") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("Java_Ref field not found!");
-    return NO_CLAZZ;
+    return _clazzes[clazzId2num(cl)].lookupJavaRef();
   }
 
   @Override

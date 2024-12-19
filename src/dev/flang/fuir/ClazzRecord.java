@@ -60,7 +60,8 @@ public record ClazzRecord(
   int inlineArrayElementClazz,
   String clazzAsStringHuman,
   int fieldIndex,
-  String clazzSrcFile
+  String clazzSrcFile,
+  int lookupJavaRef
   ) implements Serializable
 {
   private static final long serialVersionUID = 1L;
