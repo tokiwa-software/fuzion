@@ -2801,8 +2801,8 @@ public class DFA extends ANY
    */
   Value newConstString(byte[] utf8Bytes, Context context)
   {
-    var cs            = _fuir.clazz_Const_String();
-    var utf_data      = _fuir.clazz_Const_String_utf8_data();
+    var cs            = _fuir.clazz_const_string();
+    var utf_data      = _fuir.clazz_const_string_utf8_data();
     var ar            = _fuir.clazz_array_u8();
     var internalArray = _fuir.lookup_array_internal_array(ar);
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
@@ -2820,7 +2820,7 @@ public class DFA extends ANY
     a.setField(this, data  , adata);
     arr.setField(this, internalArray, a);
     r.setField(this, utf_data, arr);
-    return r;
+    return r.box(this, cs, _fuir.clazz_ref_const_string(), context);
   }
 
 

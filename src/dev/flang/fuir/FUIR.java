@@ -158,7 +158,7 @@ public abstract class FUIR extends IR
    * @param cl a clazz
    *
    * @return its original name, e.g. 'Array.getel' instead of
-   * 'Const_String.getel'
+   * 'const_string.getel'
    */
   public abstract String clazzOriginalName(int cl);
 
@@ -320,7 +320,20 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is a choice with at least one ref element
    */
-  public abstract boolean clazzIsChoiceWithRefs(int cl);
+  public boolean clazzIsChoiceWithRefs(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzIsChoice(cl));
+
+    for (int i = 0; i < clazzNumChoices(cl); i++)
+      {
+        if (clazzIsRef(clazzChoice(cl, i)))
+          {
+            return true;
+          }
+      }
+    return false;
+  }
 
 
   /**
@@ -330,7 +343,23 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is a choice with only ref or unit/void elements
    */
-  public abstract boolean clazzIsChoiceOfOnlyRefs(int cl);
+  public boolean clazzIsChoiceOfOnlyRefs(int cl)
+  {
+    var result = false;
+    if (clazzIsChoice(cl))
+      {
+        boolean hasNonRefsWithState = false;
+
+        for (int i = 0; i < clazzNumChoices(cl); i++)
+          {
+            var c = clazzChoice(cl, i);
+            hasNonRefsWithState = hasNonRefsWithState || !clazzIsRef(c) && hasData(c);
+          }
+
+        result = clazzIsChoiceWithRefs(cl) && !hasNonRefsWithState;
+      }
+    return result;
+  }
 
 
 
@@ -372,7 +401,10 @@ public abstract class FUIR extends IR
    * @return clazz id of the argument or -1 if no such feature exists (the
    * argument is unused).
    */
-  public abstract int clazzArgClazz(int cl, int arg);
+  public int clazzArgClazz(int cl, int arg)
+  {
+    return clazzResultClazz(clazzArg(cl, arg));
+  };
 
 
   /**
@@ -442,7 +474,11 @@ public abstract class FUIR extends IR
    *
    * @return true if the clazz is a constructor, false otherwise
    */
-  public abstract boolean isConstructor(int clazz);
+  public boolean isConstructor(int clazz)
+  {
+    return clazzKind(clazz) == FeatureKind.Routine
+      && clazzResultClazz(clazz) == clazz;
+  }
 
 
   /**
@@ -522,7 +558,10 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is the specified special clazz c
    */
-  public abstract boolean clazzIs(int cl, SpecialClazzes c);
+  public boolean clazzIs(int cl, SpecialClazzes c)
+  {
+    return cl == clazz(c);
+  }
 
 
   /**
@@ -655,22 +694,30 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Const_String
+   * Get the id of clazz const_string
    *
-   * @return the id of Const_String or -1 if that clazz was not created.
+   * @return the id of const_string or -1 if that clazz was not created.
    */
-  public int clazz_Const_String()
+  public int clazz_const_string()
   {
-    return clazz(SpecialClazzes.c_Const_String);
+    return clazz(SpecialClazzes.c_const_string);
   }
 
 
   /**
-   * Get the id of clazz Const_String.utf8_data
+   * Get the id of clazz ref const_string
    *
-   * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
+   * @return the id of ref const_string or -1 if that clazz was not created.
    */
-  public int clazz_Const_String_utf8_data()
+  public abstract int clazz_ref_const_string();
+
+
+  /**
+   * Get the id of clazz const_string.utf8_data
+   *
+   * @return the id of const_string.utf8_data or -1 if that clazz was not created.
+   */
+  public int clazz_const_string_utf8_data()
   {
     return clazz(SpecialClazzes.c_CS_utf8_data);
   }
@@ -679,11 +726,11 @@ public abstract class FUIR extends IR
   /**
    * Get the id of clazz {@code array u8}
    *
-   * @return the id of Const_String.array or -1 if that clazz was not created.
+   * @return the id of const_string.array or -1 if that clazz was not created.
    */
   public int clazz_array_u8()
   {
-    var utf8_data = clazz_Const_String_utf8_data();
+    var utf8_data = clazz_const_string_utf8_data();
     return clazzResultClazz(utf8_data);
   }
 
@@ -1050,7 +1097,7 @@ public abstract class FUIR extends IR
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
-   * f32, f64, or Const_String. This will be extended by value instances without
+   * f32, f64, or const_string. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
    *
    * @param s site of the constant

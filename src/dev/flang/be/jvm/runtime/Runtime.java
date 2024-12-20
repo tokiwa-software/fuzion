@@ -313,7 +313,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for a {@code Const_String} from data in the
+   * Create the internal (Java) array for a {@code const_string} from data in the
    * chars of a Java String.
    *
    * @param str the Java string as unicodes.

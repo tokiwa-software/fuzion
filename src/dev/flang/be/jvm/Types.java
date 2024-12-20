@@ -255,7 +255,7 @@ public class Types extends ANY implements ClassFileConstants
   boolean clazzNeedsCode(int cl)
   {
     return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_Const_String_utf8_data() ||
+      cl == _fuir.clazz_const_string_utf8_data() ||
       cl == _fuir.clazz_array_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8_data() ||

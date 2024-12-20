@@ -40,3 +40,4 @@ module out : encodings is
 
   write(arr array u8) =>
     _ := fuzion.sys.fileio.write fzE_file_stdout arr
+    _ := fuzion.sys.fileio.fzE_file_flush fzE_file_stdout

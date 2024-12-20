@@ -67,3 +67,5 @@ modules/mod.fum:
 
 clean:
 	rm -rf modules *~ */*~ */*/*~
+
+effect:
