@@ -218,7 +218,7 @@ is
     (handles T).ar[x]
 
 
-# unit type containing features related to handles but nor requiring an instance
+# unit type containing features related to handles but not requiring an instance
 #
 handles_type(T type) is
 
