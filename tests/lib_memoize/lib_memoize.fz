@@ -31,3 +31,42 @@ lib_memoize is
   say (mem 2)
   say (mem 1)
   say (mem 3)
+
+  calls_to_fib0 := mut 0
+  calls_to_fib1 := mut 0
+  calls_to_fib2 := mut 0
+
+  slow_set := (i64 18 .. 21) ++ [21, 21, 18]
+  fast_set := (i64 88 .. 91) ++ [91, 91, 88]    # `fib 92` will cause i64 to overflow
+
+  for it in 1..3 do
+
+    say "iteration $it:"
+
+    # fibonacci without memoization:
+    #
+    fib0(n) i64 =>
+      calls_to_fib0 <- 1 + calls_to_fib0
+      if n <= 1 then 1 else fib0 n-1 + fib0 n-2
+
+    # use only smaller input values since this is very slow
+    slow_set.for_each (n->say "$n {fib0 n} (no memoization, {calls_to_fib0} calls, should always increase)")
+
+    # fibonacci with global (but thread local) memoization
+    #
+    fib1(n) i64 : memoize => keep n _->
+      calls_to_fib1 <- 1 + calls_to_fib1
+      if n <= 1 then 1 else fib1 n-1 + fib1 n-2
+
+    fast_set.for_each (n->say "$n {fib1 n} (global memoization, {calls_to_fib1} calls, should become stable)")
+
+    # fibonacci with local memoization
+    #
+    local_fib_memo : memoize.memoized i64 i64 is
+    local_fib_memo ! ()->
+
+      fib2(n) => local_fib_memo.env.keep n _->
+        calls_to_fib2 <- 1 + calls_to_fib2
+        if n <= 1 then 1 else fib2 n-1 + fib2 n-2
+
+      fast_set.for_each (n->say "$n {fib2 n} (local memoization, {calls_to_fib2} calls, should become stable for each iteration)")
