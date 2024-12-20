@@ -108,8 +108,6 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 #
 #     > ./build//bin/fz -effects fib.fz
 #      ...
-#     fib#1.memoized i32 i32
-#      ...
 #
 # NOTE: Currently, memoizaion requires keys to be orderable. Would be great
 #       to support hashable as well
