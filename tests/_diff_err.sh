@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # This file is part of the Fuzion language implementation.
 #
@@ -31,7 +31,7 @@
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 STRIP_ERR="$SCRIPTPATH"/_strip_err.sh
 
-set -euo pipefail
+set -eu
 
 tmp1="$(mktemp)"
 tmp2="$(mktemp)"
