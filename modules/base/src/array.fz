@@ -298,6 +298,17 @@ module:public array(
     LM.env.array length.as_i64 data unit
 
 
+
+  public as_pointer =>
+    internal_array.data
+
+
+  # create an empty array
+  #
+  public fixed type.empty array T =>
+    array (fuzion.sys.internal_array_init T 0) unit unit unit
+
+
   # array -- create initialized one-dimensional immutable array
   #
   public type.new(length i32, init i32 -> T) array T

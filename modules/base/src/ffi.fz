@@ -1,0 +1,14 @@
+public ffi is
+
+
+  strlen(str fuzion.sys.Pointer) i32 => native
+
+
+  public from_c_string(x fuzion.sys.Pointer) String =>
+    ref : String
+      redef utf8 Sequence u8 =>
+        array (fuzion.sys.internal_array u8 x (strlen x)) unit unit unit
+
+
+  public from_array_of_pointers(T type, x fuzion.sys.Pointer, len i32) array T =>
+    array (fuzion.sys.internal_array T x len) unit unit unit

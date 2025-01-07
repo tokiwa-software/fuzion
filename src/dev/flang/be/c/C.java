@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -33,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -747,7 +750,7 @@ public class C extends ANY
           "-Werror",
           // some suggestions taken from: https://github.com/mcinglis/c-style
           "-Wextra",
-          "-Wpedantic",
+          // "-Wpedantic",
           "-Wformat=2",
           "-Wno-unused-parameter",
           "-Wno-unused-but-set-parameter", // needed for #1777
@@ -836,6 +839,8 @@ public class C extends ANY
       }
 
     command.addAll(cf.fileName());
+
+    command.add("-lsqlite3");
 
     if (linkJVM())
       {
@@ -1192,6 +1197,8 @@ public class C extends ANY
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
+
+    cf.println("#include <sqlite3.h>\n");
 
     var o = new CIdent("of");
     var s = new CIdent("sz");
@@ -1941,6 +1948,16 @@ public class C extends ANY
   }
 
 
+  // NYI: cleanup
+  private <T> T safe(Supplier<T> fn, T dflt)
+  {
+    try {
+      return fn.get();
+    } catch (Throwable e) {
+      return dflt;
+    }
+  }
+
   /**
    * Create code for a given native clazz cl.
    *
@@ -1955,9 +1972,13 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        args.add(_fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
+        var i0 = i;
+        args.add(!_fuir.clazzIs(_fuir.clazzArgClazz(cl, i0), SpecialClazzes.c_sys_ptr) && safe(()->_fuir.lookupCall(_fuir.clazzArgClazz(cl, i0)), NO_CLAZZ) != NO_CLAZZ
+                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)))).castTo("void *")
+                    : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
                     ? CIdent.arg(i).castTo("void *")
-                    : CIdent.arg(i));
+                    : CIdent.arg(i)
+                    );
       }
 
     var rc = _fuir.clazzResultClazz(cl);
