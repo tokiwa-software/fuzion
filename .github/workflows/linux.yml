@@ -34,6 +34,7 @@ on:
 env:
   PRECONDITIONS: true
   POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
 
 jobs:
   run_tests:
@@ -64,3 +65,6 @@ jobs:
 
       - name: run tests
         run: make run_tests_parallel
+
+      - name: syntax check
+        run: make syntaxcheck
