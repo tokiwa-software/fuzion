@@ -1100,12 +1100,12 @@ should be avoided as much as possible.
 
   int current_index(int cl)
   {
-    if (_types.isScalar(cl))
+    if (_fuir.isScalar(cl))
       {
         return 0;
       }
     var o = _fuir.clazzOuterClazz(cl);
-    var l = _types.hasOuterRef(cl) ? (_types.isScalar(o) ? _types.javaType(o).stackSlots()  // outer of scalars like i64 are just copies of the value
+    var l = _types.hasOuterRef(cl) ? (_fuir.isScalar(o) ? _types.javaType(o).stackSlots()  // outer of scalars like i64 are just copies of the value
                                                          : 1)
                                    : 0;
     for (var j = 0; j < _fuir.clazzArgCount(cl); j++)
@@ -1138,7 +1138,7 @@ should be avoided as much as possible.
   Expr prolog(int cl)
   {
     var result = Expr.UNIT;
-    if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
+    if (!_fuir.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
         var vti = _types.resultType(cl).vti();
         result = result.andThen(new0(cl))
@@ -1749,7 +1749,7 @@ should be avoided as much as possible.
     var rt = _fuir.clazzResultClazz(field);
 
     return _fuir.hasData(rt)       &&
-      !_types.isScalar(occ)        &&
+      !_fuir.isScalar(occ)        &&
       _types.clazzNeedsCode(field) &&
       _types.resultType(rt) != PrimitiveType.type_void;
   }
@@ -1838,7 +1838,7 @@ should be avoided as much as possible.
           .andThen(LOAD_UNIVERSE);
       }
     return
-      _types.isScalar(occ)      ? tvalue :   // reading, e.g., `val` field from `i32` is identity operation
+      _fuir.isScalar(occ)      ? tvalue :   // reading, e.g., `val` field from `i32` is identity operation
       _fuir.clazzIsVoidType(rt) ? null       // NYI: UNDER DEVELOPMENT: this should not be possible, a field of type void is guaranteed to be uninitialized!
                                 : tvalue.getFieldOrUnit(_names.javaClass(occ),
                                                         _names.field(f),
@@ -1892,7 +1892,7 @@ should be avoided as much as possible.
       {
         res = Expr.comment("Not setting field `" + _fuir.clazzAsString(f) + "`: "+
                            (!_fuir.hasData(rt)       ? "type `" + _fuir.clazzAsString(rt) + "` is a unit type" :
-                            _types.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
+                            _fuir.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
                                                  : "FUIR.clazzNeedsCode() is false for this field"))
           // make sure we evaluate tvalue and value:
           .andThen(tvalue.drop())
@@ -1931,7 +1931,7 @@ should be avoided as much as possible.
   {
     if (!_fuir.clazzIsRef(rt) &&
         (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
-        !_types.isScalar(rt) &&
+        !_fuir.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();

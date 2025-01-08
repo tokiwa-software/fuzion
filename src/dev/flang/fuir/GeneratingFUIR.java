@@ -822,32 +822,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Check if field does not store the value directly, but a pointer to the value.
-   *
-   * @param field a clazz id, not necessarily a field
-   *
-   * @return true iff the field is an outer ref field that holds an address of
-   * an outer value, false for normal fields our outer ref fields that store the
-   * outer ref or value directly.
-   */
-  // NYI: CLEANUP: move to FUIR
-  @Override
-  public boolean clazzFieldIsAdrOfValue(int field)
-  {
-    if (PRECONDITIONS) require
-      (field >= CLAZZ_BASE,
-       field < CLAZZ_BASE + _clazzes.size());
-
-    var fc = id2clazz(field);
-    var f = fc.feature();
-    return f.isOuterRef() &&
-      fc.resultClazz().isRef().no() &&
-      !fc.resultClazz().isUnitType() &&
-      !fc.resultClazz().feature().isBuiltInPrimitive();
-  }
-
-
-  /**
    * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
    */
   @Override
@@ -863,23 +837,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /*------------------------  accessing choices  -----------------------*/
-
-
-  /**
-   * is the given clazz a choice clazz
-   *
-   * @param cl a clazz id
-   */
-  @Override
-  public boolean clazzIsChoice(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var c = id2clazz(cl);
-    return c.isChoice();
-  }
 
 
   /**
@@ -2870,7 +2827,7 @@ public class GeneratingFUIR extends FUIR
    * @return the type of the outer feature of cl
    */
   @Override
-  public int effectTypeFromInstrinsic(int cl)
+  public int effectTypeFromIntrinsic(int cl)
   {
     if (PRECONDITIONS) require
       (isEffectIntrinsic(cl));

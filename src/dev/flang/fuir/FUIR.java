@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.function.Supplier;
+import java.util.Arrays;
 
 import dev.flang.ir.IR;
 import dev.flang.util.SourcePosition;
@@ -268,13 +269,24 @@ public abstract class FUIR extends IR
   /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
-   * @param fcl a clazz id, not necessarily a field
+   * @param field a clazz id, not necessarily a field
    *
    * @return true iff the field is an outer ref field that holds an address of
    * an outer value, false for normal fields our outer ref fields that store the
    * outer ref or value directly.
    */
-  public abstract boolean clazzFieldIsAdrOfValue(int fcl);
+  public boolean clazzFieldIsAdrOfValue(int field)
+  {
+    if (PRECONDITIONS) require
+      (field >= firstClazz(),
+       field <= lastClazz());
+
+    var rc = clazzResultClazz(field);
+    return clazzIsOuterRef(field) &&
+      !clazzIsRef(rc) &&
+      !clazzIsUnitType(rc) &&
+      !clazzIsBuiltInPrimitive(rc);
+  }
 
 
   /**
@@ -291,7 +303,10 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    */
-  public abstract boolean clazzIsChoice(int cl);
+  public boolean clazzIsChoice(int cl)
+  {
+    return clazzKind(cl) == FeatureKind.Choice;
+  }
 
 
   /**
@@ -827,6 +842,37 @@ public abstract class FUIR extends IR
       !clazzIsVoidType(cl) &&
       cl != clazzUniverse();
   }
+
+
+  /**
+   * Does the given clazz specify a scalar type in the C code, i.e, standard
+   * numeric types i32, u64, etc.
+   */
+  public boolean isScalar(int cl)
+  {
+    var id = getSpecialClazz(cl);
+    return switch (id)
+      {
+      case
+        c_i8  , c_i16 , c_i32 ,
+        c_i64 , c_u8  , c_u16 ,
+        c_u32 , c_u64 , c_f32 ,
+        c_f64                   -> true;
+      default                   -> false;
+      };
+  }
+
+
+  /**
+   * This must return an analogous result as AbstractFeature.isBuiltInPrimitive
+   *
+   * @return true iff clazz is scalar or bool
+   */
+  public boolean clazzIsBuiltInPrimitive(int cl)
+  {
+    return isScalar(cl) || clazzIs(cl, SpecialClazzes.c_bool);
+  }
+
 
 
   /*----------------------  type parameters  ---------------------*/
@@ -1470,7 +1516,7 @@ public abstract class FUIR extends IR
    *
    * @return the type of the outer feature of cl
    */
-  public abstract int effectTypeFromInstrinsic(int cl);
+  public abstract int effectTypeFromIntrinsic(int cl);
 
 
   /*------------------------------  arrays  -----------------------------*/
@@ -1847,6 +1893,7 @@ public abstract class FUIR extends IR
    */
   public int matchCaseIndex(int s, int tag)
   {
+    // NYI: PERFORMANCE: cache this?
     var result = -1;
     for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
       {

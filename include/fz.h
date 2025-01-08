@@ -58,13 +58,9 @@ int fzE_unsetenv(const char *name);
 void * fzE_opendir(const char *pathname, int64_t * result);
 
 // NYI: UNDER DEVELOPMENT
-// returns -1 on error or length of result on success
+// returns -1 on error, 0 on end reached, length of result on success
 // result contains the bytes of the string, NYI: UNDER DEVELOPMENT (max 1024)
 int fzE_read_dir(intptr_t * dir, void * result);
-
-// returns 0 if dir has next entry
-// returns 1 if dir does not have next entry
-int fzE_read_dir_has_next(intptr_t * dir);
 
 // close the dir
 // return 0 if successful, -1 if not
@@ -484,6 +480,13 @@ uint64_t fzE_unique_id(void);
  * result[5] = nanosec;
  */
 void fzE_date_time(void * result);
+
+
+// returns NULL pointer
+void * fzE_null(void);
+
+// returns 0 if p is NULL
+int fzE_is_null(void * p);
 
 
 #endif /* fz.h  */

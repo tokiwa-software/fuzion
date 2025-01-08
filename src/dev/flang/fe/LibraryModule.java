@@ -2382,7 +2382,7 @@ SourceFile
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of(sourceFileName(at)), ba);
+            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
             _sourceFiles.set(i, sf);
           }
         return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
@@ -2465,7 +2465,7 @@ SourceFile
   {
     // NYI: CLEANUP: library-module should/could know its source dirs.
     return Path.of(Version.REPO_PATH)
-      .resolve(name().equals("base") ? "lib" : "modules/" + name() + "/src")
+      .resolve("modules").resolve(name()).resolve("src")
       .toString();
   }
 

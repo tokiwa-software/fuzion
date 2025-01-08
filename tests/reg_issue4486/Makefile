@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-
 # This file is part of the Fuzion language implementation.
 #
 # The Fuzion language implementation is free software: you can redistribute it
@@ -19,27 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of _diff_err.sh
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# _diff_err expects two file names as arguments and calls `diff` on these files
-# after first replacing common internal strings that change frequently, e.g., due to
-# the compiler adding internal ids, by dummy strings that are all the same.
-#
-
-SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-STRIP_ERR="$SCRIPTPATH"/_strip_err.sh
-
-set -eu
-
-tmp1="$(mktemp)"
-tmp2="$(mktemp)"
-
-"$STRIP_ERR" <"$1" >"$tmp1"
-"$STRIP_ERR" <"$2" >"$tmp2"
-
-diff --strip-trailing-cr "$tmp1" "$tmp2"; rc=$?
-
-rm "$tmp1" "$tmp2"
-exit $rc
+override NAME = reg_issue4486
+include ../simple.mk
