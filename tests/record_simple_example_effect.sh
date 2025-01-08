@@ -36,10 +36,6 @@ set -euo pipefail
 # In case file $2.skip exists, do not run the example
 #
 
-SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
-
-
 if [ -f "$2".skip ]; then
     echo "SKIPPED $2"
 else

@@ -36,10 +36,6 @@ set -euo pipefail
 # In case file $2.skip exists, do not run the example
 #
 
-SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
-DIFFERR="$SCRIPTPATH"/_diff_err.sh
-
 if [ -f "$2".effect ]; then
     printf 'RUN %s ' "$2"
     unset OPT
