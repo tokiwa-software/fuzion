@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature lock_free.Sieve_Cache
+#  Source code of Fuzion feature lock_free.Sieve_Cache
 #
 # -----------------------------------------------------------------------
 
@@ -33,12 +33,12 @@ Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic 
 #
 # example usage:
 #     cache0 := lock_free.Sieve_Cache String i32 3
-#     say (cache0.access "A" ()->1)    # => 1
-#     say (cache0.access "B" ()->2)    # => 2
-#     say (cache0.access "C" ()->3)    # => 3
-#     say (cache0.access "A" ()->4)    # => 1
-#     say (cache0.access "D" ()->5)    # => 5
-#     say (cache0.access "C" ()->6)    # => 3
+#     say <| cache0.access "A" ()->1    # => 1
+#     say <| cache0.access "B" ()->2    # => 2
+#     say <| cache0.access "C" ()->3    # => 3
+#     say <| cache0.access "A" ()->4    # => 1
+#     say <| cache0.access "D" ()->5    # => 5
+#     say <| cache0.access "C" ()->6    # => 3
 #
 public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref is
 

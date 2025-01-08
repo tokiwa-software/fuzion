@@ -28,7 +28,7 @@
 # This allows summing the elements of a list, as in
 #
 #   l := [1,2,3]
-#   say (sum l)     # '6'
+#   say <| sum l     # '6'
 #
 #
 public sum(T type : numeric, l Sequence T) => l.fold T.sum

@@ -420,6 +420,34 @@ public Sequence(public T type) ref : property.equatable is
     as_list.foldf f e
 
 
+  # fold the elements of this list using the given monoid right-to-left.
+  #
+  # e.g., to concat the elements of a list of String, use l.foldr String.concat
+  #
+  public foldr (m Monoid T) => as_list.foldr m
+
+
+  # fold the elements of this list using the given monoid and initial value right-to-left.
+  #
+  # Used to fold a list tail-recursively
+  #
+  public foldr (s T, m Monoid T) => as_list.foldr m.e m
+
+
+  # fold the elements of this non-empty list using the given function right-to-left
+  #
+  # e.g., to concat the elements of a non-empty list of lists, use foldr1 (++)
+  #
+  public foldr1 (f (T,T)->T) => as_list.foldr1 f
+
+
+  # fold the elements of this list using the given function right-to-left.
+  #
+  # e.g., to concat the elements of a list of lists, use foldrf (++) []
+  #
+  public foldrf (B type, f (T,B)->B, e B) => as_list.foldrf f e
+
+
   # map this Sequence to a list that contains the result of folding
   # all prefixes using the given monoid.
   #
@@ -620,6 +648,242 @@ public Sequence(public T type) ref : property.equatable is
       (Sequence (Sequence T)).empty
     else
       (take chunk_size) : ((drop chunk_size).chunk chunk_size).as_list
+
+
+  # chop this Sequence into tuples of size 2.  In case
+  # the number of elements is not a multiple of 2,
+  # the last count % 2 elements will be dropped silently.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5].tuples produces [(1,2),(3,4)]
+  #
+  public as_tuples Sequence (T, T)
+  =>
+    h := take 2
+    t := drop 2
+    if h.count < 2
+      (Sequence (T,T)).empty
+    else
+      h.as_tuple : t.as_tuples.as_list
+
+
+  # chop this Sequence into tuples of size 3.  In case
+  # the number of elements is not a multiple of 3,
+  # the last count % 3 elements will be dropped silently.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5,6,7].tuples3 produces [(1,2,3),(4,5,6)]
+  #
+  public as_3tuples Sequence (T, T, T)
+  =>
+    h := take 3
+    t := drop 3
+    if h.count < 3
+      (Sequence (T,T,T)).empty
+    else
+      h.as_3tuple : t.as_3tuples.as_list
+
+
+  # chop this Sequence into tuples of size 4.  In case
+  # the number of elements is not a multiple of 4,
+  # the last count % 4 elements will be dropped silently.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5].tuples4 produces [(1,2,3,4)]
+  #
+  public as_4tuples Sequence (T, T, T, T)
+  =>
+    h := take 4
+    t := drop 4
+    if h.count < 4
+      (Sequence (T,T,T,T)).empty
+    else
+      h.as_4tuple : t.as_4tuples.as_list
+
+
+  # chop this Sequence into tuples of size 5.  In case
+  # the number of elements is not a multiple of 5,
+  # the last count % 5 elements will be dropped silently.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5,6].tuples5 produces [(1,2,3,4,5)]
+  #
+  public as_5tuples Sequence (T, T, T, T, T)
+  =>
+    h := take 5
+    t := drop 5
+    if h.count < 5
+      (Sequence (T,T,T,T,T)).empty
+    else
+      h.as_5tuple : t.as_5tuples.as_list
+
+
+  # chop this Sequence into tuples of size 6.  In case
+  # the number of elements is not a multiple of 6,
+  # the last count % 6 elements will be dropped silently.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5,6,7].tuples6 produces [(1,2,3,4,5,6)]
+  #
+  public as_6tuples Sequence (T,T, T, T, T, T)
+  =>
+    h := take 6
+    t := drop 6
+    if h.count < 6
+      (Sequence (T,T,T,T,T,T)).empty
+    else
+      h.as_6tuple : t.as_6tuples.as_list
+
+
+  # convert a Sequence's head into a 2-tuple.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5].as_tuple  produces (1,2)
+  #   [1,2].as_tuple        produces (1,2)
+  #   [1].as_tuple          breaks the pre condition
+  #   [].as_tuple           breaks the pre condition
+  #
+  public as_tuple() (T, T)
+    pre
+      debug: take 2 .count = 2
+  =>
+    match as_list
+      c1 Cons =>
+        match c1.tail
+          c2 Cons => (c1.head, c2.head)
+          nil => panic "as_tuple called on single element Sequence"
+      nil => panic "as_tuple called on empty Sequence"
+
+
+  # convert a Sequence's head into a 3-tuple.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5].as_3tuple  produces (1,2,3)
+  #   [1,2,3].as_3tuple      produces (1,2,3)
+  #   [1,2].as_3tuple        breaks the pre condition
+  #   [1].as_3tuple          breaks the pre condition
+  #   [].as_3tuple           breaks the pre condition
+  #
+  public as_3tuple() (T, T, T)
+    pre
+      debug: take 3 .count = 3
+  =>
+    r option (T, T, T) := match as_list
+                            c1 Cons =>
+                              match c1.tail
+                                c2 Cons =>
+                                  match c2.tail
+                                    c3 Cons => (c1.head, c2.head, c3.head)
+                                    nil => nil
+                                nil => nil
+                            nil => nil
+    r.val
+
+
+  # convert a Sequence's head into a 4-tuple.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5].as_4tuple  produces (1,2,3,4)
+  #   [1,2,3,4].as_4tuple    produces (1,2,3,4)
+  #   [1,2,3].as_4tuple      breaks the pre condition
+  #   [1,2].as_4tuple        breaks the pre condition
+  #   [1].as_4tuple          breaks the pre condition
+  #   [].as_4tuple           breaks the pre condition
+  #
+  public as_4tuple() (T, T, T, T)
+    pre
+      debug: take 4 .count = 4
+  =>
+    r option (T, T, T, T) := match as_list
+                               c1 Cons =>
+                                 match c1.tail
+                                   c2 Cons =>
+                                     match c2.tail
+                                       c3 Cons =>
+                                         match c3.tail
+                                           c4 Cons => (c1.head, c2.head, c3.head, c4.head)
+                                           nil => nil
+                                       nil => nil
+                                   nil => nil
+                               nil => nil
+    r.val
+
+
+  # convert a Sequence's head into a 5-tuple.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5,6].as_5tuple  produces (1,2,3,4,5)
+  #   [1,2,3,4,5].as_5tuple    produces (1,2,3,4,5)
+  #   [1,2,3,4].as_5tuple      breaks the pre condition
+  #   [1,2,3].as_5tuple        breaks the pre condition
+  #    ...
+  #   [].as_5tuple             breaks the pre condition
+  #
+  public as_5tuple() (T, T, T, T, T)
+    pre
+      debug: take 5 .count = 5
+  =>
+    r option (T, T, T, T, T) := match as_list
+                                  c1 Cons =>
+                                    match c1.tail
+                                      c2 Cons =>
+                                        match c2.tail
+                                          c3 Cons =>
+                                            match c3.tail
+                                              c4 Cons =>
+                                                match c4.tail
+                                                  c5 Cons => (c1.head, c2.head, c3.head, c4.head, c5.head)
+                                                  nil => nil
+                                              nil => nil
+                                          nil => nil
+                                      nil => nil
+                                  nil => nil
+    r.val
+
+
+  # convert a Sequence's head into a 6-tuple.
+  #
+  # ex.
+  #
+  #   [1,2,3,4,5,6,7].as_6tuple  produces (1,2,3,4,5,6)
+  #   [1,2,3,4,5,6].as_6tuple    produces (1,2,3,4,5,6)
+  #   [1,2,3,4,5].as_6tuple      breaks the pre condition
+  #   [1,2,3,4].as_6tuple        breaks the pre condition
+  #    ...
+  #   [].as_6tuple               breaks the pre condition
+  #
+  public as_6tuple() (T, T, T, T, T, T)
+    pre
+      debug: take 6 .count = 6
+  =>
+    r option (T, T, T, T, T, T) := match as_list
+                                     c1 Cons =>
+                                       match c1.tail
+                                         c2 Cons =>
+                                           match c2.tail
+                                             c3 Cons =>
+                                               match c3.tail
+                                                 c4 Cons =>
+                                                   match c4.tail
+                                                     c5 Cons =>
+                                                       match c5.tail
+                                                         c6 Cons => (c1.head, c2.head, c3.head, c4.head, c5.head, c6.head)
+                                                         nil => nil
+                                                     nil => nil
+                                                 nil => nil
+                                             nil => nil
+                                         nil => nil
+                                     nil => nil
+    r.val
 
 
   # does this sequence start with l?

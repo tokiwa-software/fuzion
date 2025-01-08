@@ -267,7 +267,7 @@ public class JavaInterface extends FUIRContext
     var result = new Instance(resultClazz);
     if (CHECKS) check
       (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
-    result.refs[0] = Interpreter.value(e.getMessage().toString());
+    result.refs[0] = Interpreter.boxedConstString(e.getMessage().toString());
 
     return result;
   }
