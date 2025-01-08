@@ -703,7 +703,7 @@ public class ParsedCall extends Call
     if (isImmediateFunctionCall() && !_pushedImplicitImmediateCall)
       {
         _pushedImplicitImmediateCall = true;
-        result = pushCall(res, context, "call").resolveTypes(res, context);
+        result = pushCall(res, context, FuzionConstants.OPERATION_CALL).resolveTypes(res, context);
       }
     return result;
   }

@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Const_String
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Const_String -- feature used for string constants in Fuzion source code
-#
-# Const_String cannot be called directly, instances are created implicitly by the
-# backend.
-#
-private:public Const_String ref : String is
-
-  utf8_data := array u8 (fuzion.sys.internal_array_init u8 -1) unit unit unit
-
-  public redef utf8 Sequence u8 => utf8_data
+override NAME = reg_issue4486
+include ../simple.mk

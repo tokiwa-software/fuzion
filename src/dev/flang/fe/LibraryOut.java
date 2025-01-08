@@ -996,8 +996,7 @@ class LibraryOut extends ANY
     var sfp = sf._fileName;
     if (sd != null && sfp.startsWith(sd))
       {
-        var sfr = sd.relativize(sfp);
-        sfp = FuzionConstants.SYMBOLIC_FUZION_MODULE.resolve(sfr);
+        sfp = sd.relativize(sfp);
       }
     return sfp.toString();
   }
