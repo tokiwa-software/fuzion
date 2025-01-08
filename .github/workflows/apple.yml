@@ -59,7 +59,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils
+          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils shellcheck
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: sed version
@@ -67,6 +67,9 @@ jobs:
 
       - name: make version
         run: make --version
+
+      - name: check shell scripts
+        run: make shellcheck
 
       - name: build java code
         run: make javac

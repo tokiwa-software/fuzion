@@ -244,11 +244,14 @@ public read_fully (LM type : mutate) array u8 ! (reader LM) =>
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
 public read_delimiter_full (LM type : mutate, delim String, strip_cr bool) array String ! (reader LM) =>
-  (String.from_bytes (read_fully LM))
-    .split delim
-    .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
-    .as_array
-
+  str := (String.from_bytes (read_fully LM))
+  if str.byte_length > 0
+    (str.ends_with "\n" ? str.substring 0 str.byte_length-1 : str)
+      .split delim
+      .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
+      .as_array
+  else
+    []
 
 # Read input fully and split it at linefeed (ASCII 10) characters. Delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.

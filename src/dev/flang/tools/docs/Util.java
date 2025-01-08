@@ -69,7 +69,7 @@ public class Util
   {
     if (af.isUniverse())
       {
-        return Html.processComment("universe", universeComment());
+        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
       }
     // arguments that are defined on same line as feature have no comments.
     if (af.isArgument() && af.pos().line() == af.outer().pos().line())

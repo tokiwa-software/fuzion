@@ -35,6 +35,13 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   public index [] (k K) option V => abstract
 
 
+  # convenience feature to add a key-value pair to this map
+  # does the same as `add k v`
+  #
+  public set [] (k K, v V) unit =>
+    add k v
+
+
   # get a sequence of all key/value pairs in this map
   #
   public items Sequence (tuple K V) => abstract
