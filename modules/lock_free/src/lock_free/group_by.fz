@@ -17,44 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion feature stack
+#  Source code of Fuzion feature Sequence.group_by
 #
 # -----------------------------------------------------------------------
 
-# lock-free stack using compare_and_set
-# invented by R. Kent Treiber
+
+# group the elements of this sequence by a key of type K
 #
-public stack(T type) : container.Stack T is
+# f determines the key of an element
+#
+public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.Map K (Sequence T) =>
 
-  Node(data T, next option Node) ref is
+  # NYI It should be possible to choose the map implementation that is used.
+  res := (lock_free.Map K (Sequence T)).empty
 
-  top := concur.atomic (option Node) nil
+  for_each x->
+    key := f x
+    match res[key]
+      nil => res.add key [x]
+      s Sequence T => res.add key s++[x]
 
-
-  # push an element to the stack
-  #
-  public redef push (e T) unit =>
-    _ :=
-      for o := top.read
-          n := Node e o
-      while !top.compare_and_set o n
-
-
-  # pop an element from the stack
-  #
-  public redef pop option T =>
-
-    next (x option Node) =>
-      x.bind Node n->n.next
-
-    for o := top.read
-        n := next o
-    while !o.is_nil && !top.compare_and_set o n
-    else
-      o.bind T node->node.data
-
-
-  # peek at the top element from the stack
-  #
-  public redef peek option T =>
-    top.read.bind T node->node.data
+  res
