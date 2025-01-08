@@ -28,6 +28,7 @@ package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import dev.flang.ir.IR;
 import dev.flang.util.SourcePosition;
@@ -1181,18 +1182,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a given tag return the index of the corresponding case.
-   *
-   * @param s site of the match
-   *
-   * @param tag e.g. 0,1,2,...
-   *
-   * @return the index of the case for tag {@code tag}
-   */
-  public abstract int matchCaseIndex(int s, int tag);
-
-
-  /**
    * For a match expression, get the tags matched by a given case
    *
    * @param s site of the match
@@ -1684,6 +1673,35 @@ public abstract class FUIR extends IR
    */
   public abstract void reportAbstractMissing();
 
+
+  /*----------------------  Interpreter  ----------------------*/
+
+
+  /**
+   * For a given tag return the index of the corresponding case.
+   *
+   * @param s site of the match
+   *
+   * @param tag e.g. 0,1,2,...
+   *
+   * @return the index of the case for tag {@code tag}
+   */
+  public int matchCaseIndex(int s, int tag)
+  {
+    // NYI: PERFORMANCE: cache this?
+    var result = -1;
+    for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
+      {
+        var mct = matchCaseTags(s, j);
+        if (Arrays.stream(mct).anyMatch(t -> t == tag))
+          {
+            result = j;
+          }
+      }
+    if (CHECKS) check
+      (result != -1);
+    return result;
+  }
 
 }
 
