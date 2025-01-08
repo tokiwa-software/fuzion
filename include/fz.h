@@ -486,4 +486,11 @@ uint64_t fzE_unique_id(void);
 void fzE_date_time(void * result);
 
 
+// returns NULL pointer
+void * fzE_null(void);
+
+// returns 0 if p is NULL
+int fzE_is_null(void * p);
+
+
 #endif /* fz.h  */
