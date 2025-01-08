@@ -25,7 +25,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #define _POSIX_C_SOURCE 200809L
-#define _GNU_SOURCE
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -88,34 +87,28 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
 
 
 int fzE_read_dir(intptr_t * dir, void * result) {
-  struct dirent * d = readdir((DIR *)dir);
-  if ( d == NULL )
-  {
-    return -1;
-  }
-  else
-  {
-    size_t len = strlen(d->d_name);
-    assert(len<1024); // NYI:
-    fzE_memcpy(result, d->d_name, len + 1);
-    return len;
-  }
-}
+  errno = 0;
 
-
-int fzE_read_dir_has_next(intptr_t * dir) {
   DIR * dir1 = (DIR *)dir;
   struct dirent * entry = NULL;
-  long pos = -1;
-  do {
-    pos = telldir(dir1);
-  }
+
   while ((entry = readdir(dir1)) != NULL &&
          // skip dot and dot-dot paths.
          (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
-  seekdir(dir1, pos);
 
-  return entry == NULL ? 1 : 0;
+  if ( entry == NULL ) {
+    return errno == 0
+      // end reached
+      ? 0
+      // some error occured
+      : -1;
+  }
+  else {
+    size_t len = strlen(entry->d_name);
+    assert(len<1024); // NYI:
+    fzE_memcpy(result, entry->d_name, len + 1);
+    return len;
+  }
 }
 
 

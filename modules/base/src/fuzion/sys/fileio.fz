@@ -339,21 +339,12 @@ module fileio is
       error "error number: {open_results[0]}"
 
 
-  # reads the next entry of the directory given by opaque integer reference
+  # reads the next entry of the directory given by fuzion.sys.Pointer
   # to an open directory
   #
-  # returns the name of the next entry, or an error string on failure.
+  # returns -1 on error, 0 on end reached, length of result on success
   #
   module fzE_read_dir(ptr fuzion.sys.Pointer, res fuzion.sys.Pointer) i32 => native
-
-
-  # checks whether there is a next entry in the directory given by opaque
-  # integer reference to an open directory
-  #
-  # true if the next call to read_dir should find a new entry, if false then
-  # the next call to read_dir will return an error string.
-  #
-  module fzE_read_dir_has_next(ptr fuzion.sys.Pointer) i32 => native
 
 
   # closes the directory given by opaque integer reference to an open
