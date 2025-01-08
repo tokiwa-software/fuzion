@@ -1084,7 +1084,7 @@ public class C extends ANY
              _effectClazzes = ordered
                .stream()
                .filter(_fuir::isEffectIntrinsic)
-               .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+               .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
                .sorted()
                .distinct()
                .toArray();
@@ -1244,7 +1244,7 @@ public class C extends ANY
           _types.inOrder()
             .stream()
             .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
-            .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+            .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
             .distinct()
             .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
             .iterator()))

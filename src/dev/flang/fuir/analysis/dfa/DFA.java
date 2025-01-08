@@ -2074,14 +2074,14 @@ public class DFA extends ANY
 
     put("effect.type.replace0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           cl.replaceEffect(ecl, new_e);
           return Value.UNIT;
         });
     put("effect.type.default0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           var old_e = cl._dfa._defaultEffects.get(ecl);
           if (old_e == null)
@@ -2095,7 +2095,7 @@ public class DFA extends ANY
     put(EFFECT_INSTATE_NAME                 , cl ->
         {
           var fuir = cl._dfa._fuir;
-          var ecl      = fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl      = fuir.effectTypeFromIntrinsic(cl._cc);
 
           var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 0));
           var finallie = fuir.lookup_static_finally(ecl);
@@ -2124,7 +2124,7 @@ public class DFA extends ANY
         });
     put("effect.type.abort0"                , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
           if (ev != null)
             {
@@ -2132,7 +2132,7 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc)) != null
+    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc)) != null
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes

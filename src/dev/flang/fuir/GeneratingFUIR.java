@@ -840,23 +840,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * is the given clazz a choice clazz
-   *
-   * @param cl a clazz id
-   */
-  @Override
-  public boolean clazzIsChoice(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var c = id2clazz(cl);
-    return c.isChoice();
-  }
-
-
-  /**
    * For a choice type, the number of entries to choose from.
    *
    * @param cl a clazz id
@@ -2856,7 +2839,7 @@ public class GeneratingFUIR extends FUIR
    * @return the type of the outer feature of cl
    */
   @Override
-  public int effectTypeFromInstrinsic(int cl)
+  public int effectTypeFromIntrinsic(int cl)
   {
     if (PRECONDITIONS) require
       (isEffectIntrinsic(cl));

@@ -678,7 +678,7 @@ public class Intrinsics extends ANY
         "effect.type.is_instated0",
         "effect.type.replace0"   , (c,cl,outer,in) ->
         {
-          var ecl = c._fuir.effectTypeFromInstrinsic(cl);
+          var ecl = c._fuir.effectTypeFromIntrinsic(cl);
           var eid = c._fuir.clazzId2num(ecl) + 1; // must be != 0 since setjmp uses 0 for the normal return case, so we add `1`:
           var ev  = CNames.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));           // installed effect value
           var evi = CNames.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));  // isInstalled flag
