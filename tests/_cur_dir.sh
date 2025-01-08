@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # This file is part of the Fuzion language implementation.
 #
@@ -27,7 +27,7 @@
 # -----------------------------------------------------------------------
 
 
-set -euo pipefail
+set -eu
 
 # @returns:
 #   - unix: /my/current/path

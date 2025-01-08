@@ -51,21 +51,7 @@ public class Interpreter extends FUIRContext
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
     this._options_ = options;
-    this._fuir = new GeneratingFUIR((GeneratingFUIR) fuir)
-      {
-        // NYI: BUG: fuir should be thread safe #2760
-        @Override
-        public synchronized int[] matchCaseTags(int s, int cix)
-        {
-          return super.matchCaseTags(s, cix);
-        };
-        // NYI: BUG: fuir should be thread safe #2760
-        @Override
-        public synchronized int[] accessedClazzes(int s)
-        {
-          return super.accessedClazzes(s);
-        }
-      };
+    this._fuir = fuir;
     FUIRContext.set_fuir(fuir);
     var processor = new Executor(_fuir, _options_);
     _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);
@@ -111,10 +97,10 @@ public class Interpreter extends FUIRContext
    *
    * @str the string in UTF-16
    */
-  static Value value(String str)
+  static Value boxedConstString(String str)
   {
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    return value(bytes);
+    return boxedConstString(bytes);
   }
 
   /**
@@ -122,9 +108,9 @@ public class Interpreter extends FUIRContext
    *
    * @param bytes the string in UTF-16
    */
-  public static Value value(byte[] bytes)
+  public static Value boxedConstString(byte[] bytes)
   {
-    int cl = fuir().clazz_Const_String();
+    int cl = fuir().clazz_const_string();
     Instance result = new Instance(cl);
     var clArr = fuir().clazz_array_u8();
     Instance arr = new Instance(clArr);
@@ -134,9 +120,9 @@ public class Interpreter extends FUIRContext
     var arrayData = new ArrayData(bytes);
     setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
     setField(fuir().lookup_array_internal_array(clArr), cl, arr, sa);
-    setField(fuir().clazz_Const_String_utf8_data(), cl, result, arr);
+    setField(fuir().clazz_const_string_utf8_data(), cl, result, arr);
 
-    return result;
+    return new Boxed(fuir().clazz_ref_const_string(), cl, result);
   }
 
 

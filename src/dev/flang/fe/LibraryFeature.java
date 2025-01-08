@@ -906,7 +906,7 @@ public class LibraryFeature extends AbstractFeature
   {
     // Problem: all features inherit from any, which is in base
     // therefore all features from other modules would be shown in base module because they always have an inner feature from base
-    if (module.name().equals("base"))
+    if (module.name().equals(FuzionConstants.BASE_MODULE_NAME))
       {
         return _libModule == module || isUniverse();
       }

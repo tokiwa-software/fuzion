@@ -235,6 +235,39 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => c.tail.foldf f (f e c.head)
 
 
+  # fold the elements of this list using the given monoid right-to-left.
+  #
+  # e.g., to concat the elements of a list of String, use l.foldr String.concat
+  #
+  public redef foldr (m Monoid A) => foldr m.e m
+
+
+  # fold the elements of this list using the given monoid and initial value right-to-left.
+  #
+  # Used to fold a list tail-recursively
+  #
+  public redef foldr (s A, m Monoid A) =>
+    list.this ? nil    => s
+              | c Cons => m.op c.head (c.tail.foldr s m)
+
+
+  # fold the elements of this non-empty list using the given function right-to-left
+  #
+  # e.g., to concat the elements of a non-empty list of lists, use foldr1 (++)
+  #
+  public redef foldr1 (f (A,A)->A) =>
+    list.this ? nil    => panic "list.fold1 called on empty list"
+              | c Cons => f c.head (c.tail.foldr1 f)
+
+
+  # fold the elements of this list using the given function right-to-left.
+  #
+  # e.g., to concat the elements of a list of lists, use foldrf (++) []
+  #
+  public redef foldrf (B type, f (A,B)->B, e B) =>
+    list.this ? nil    => e
+              | c Cons => f c.head (c.tail.foldrf f e)
+
 
   # map this Sequence to a list that contains the result of folding
   # all prefixes using the given monoid.
