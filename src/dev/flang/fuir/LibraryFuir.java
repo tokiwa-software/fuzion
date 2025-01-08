@@ -579,7 +579,7 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int effectTypeFromInstrinsic(int cl)
+  public int effectTypeFromIntrinsic(int cl)
   {
     if (PRECONDITIONS) require
       (isEffectIntrinsic(cl));
