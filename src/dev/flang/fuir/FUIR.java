@@ -746,7 +746,7 @@ public abstract class FUIR extends IR
   public int clazz_array_u8()
   {
     var utf8_data = clazz_const_string_utf8_data();
-    return clazzResultClazz(utf8_data);
+    return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
   }
 
 
@@ -758,9 +758,8 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8()
   {
     var a8 = clazz_array_u8();
-    var ia = lookup_array_internal_array(a8);
-    var res = clazzResultClazz(ia);
-    return res;
+    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : lookup_array_internal_array(a8);
+    return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
   }
 
 
@@ -772,7 +771,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_data()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_data(sa8);
+    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_data(sa8);
   }
 
 
@@ -784,7 +783,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_length()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_length(sa8);
+    return  sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_length(sa8);
   }
 
 
