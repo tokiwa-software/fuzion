@@ -54,7 +54,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   read_provider(desc i64) : io.Read_Provider is
     redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
-      res := fuzion.sys.pipe.read desc arr.internal_array.data arr.count
+      res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
         error "error reading from stdout."
       else if res = 0
@@ -69,7 +69,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   #
   write_provider (desc i64) : io.Write_Provider is
     redef write (bytes Sequence u8) outcome unit =>
-      if (fuzion.sys.pipe.write desc bytes.as_array.internal_array.data bytes.count) = -1
+      if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
         error "error while writing"
       else
         unit
@@ -91,7 +91,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
       .chunk pipe_buffer_size
       .reduce_or_error 0 (r, t)->
         arr := t.as_array
-        bw := fuzion.sys.pipe.write desc arr.internal_array.data arr.count
+        bw := fzE_pipe_write desc arr.internal_array.data arr.count
         if bw = -1
           abort (outcome i32) (error "error while writing. wrote $r bytes already.")
         else
@@ -142,9 +142,9 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
               * => false
 
         # NYI error handling
-        _ := fuzion.sys.pipe.close p.std_in
-        _ := fuzion.sys.pipe.close process.this.std_out
-        _ := fuzion.sys.pipe.close process.this.std_err
+        _ := fzE_pipe_close p.std_in
+        _ := fzE_pipe_close process.this.std_out
+        _ := fzE_pipe_close process.this.std_err
 
       p
 
