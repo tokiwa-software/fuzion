@@ -31,27 +31,27 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   pipe_buffer_size := 4096
 
 
-  # predefined read provider for reading from
+  # predefined read handler for reading from
   # standard out of the process
   #
-  std_out_read_provider => read_provider std_out
+  std_out_read_handler => read_handler std_out
 
 
-  # predefined read provider for reading from
+  # predefined read handler for reading from
   # standard err of the process
   #
-  std_err_read_provider => read_provider std_err
+  std_err_read_handler => read_handler std_err
 
 
-  # predefined write provider for writing to
+  # predefined write handler for writing to
   # standard in of the process
   #
-  std_in_write_provider => write_provider std_in
+  std_in_write_handler => write_handler std_in
 
 
   # read bytes from standard out
   #
-  read_provider(desc i64) : io.Read_Provider is
+  read_handler(desc i64) : io.Read_Handler is
     redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
@@ -67,7 +67,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
 
   # write bytes to standard in
   #
-  write_provider (desc i64) : io.Write_Provider is
+  write_handler (desc i64) : io.Write_Handler is
     redef write (bytes Sequence u8) outcome unit =>
       if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
         error "error while writing"
@@ -101,17 +101,17 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_out_read_provider) pipe_buffer_size) ! f
+    (io.buffered.reader LM (std_out_read_handler) pipe_buffer_size) ! f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_err_read_provider) pipe_buffer_size) ! f
+    (io.buffered.reader LM (std_err_read_handler) pipe_buffer_size) ! f
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered.writer std_in_write_provider pipe_buffer_size) ! f
+    (io.buffered.writer std_in_write_handler pipe_buffer_size) ! f
 
 
   # write string to stdin of child process
@@ -135,7 +135,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
       # thread to pipe from one process to other
       _ := concur.threads.spawn ()->
         _ :=
-          for p1rb := std_out_read_provider.read pipe_buffer_size
+          for p1rb := std_out_read_handler.read pipe_buffer_size
           while
             match p1rb
               s array u8 => (write_bytes p.std_in s).ok

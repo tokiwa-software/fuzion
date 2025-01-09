@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 
-# short-hand to return an io.reader with a read provider
+# short-hand to return an io.reader with a read handler
 # allowing to read from stdin.
 #
 # usage example using a local mutate instance:
@@ -53,7 +53,7 @@ public stdin is
   # create a reader for stdin using the given local mutate instance
   #
   public reader (LM type : mutate) =>
-    buffered.reader LM stdin_read_provider 1024
+    buffered.reader LM stdin_read_handler 1024
 
   # read all of stdin in an array of u8 bytes using
   # io.buffered.reader.read_fully.
@@ -77,12 +77,19 @@ public stdin is
   public read_string =>
     String.from_bytes read_fully
 
-# Read provider for stdin
+# Read handler for stdin
 #
-stdin_read_provider : Read_Provider is
+stdin_read_handler : Read_Handler is
+
+  # stdin of the process
+  #
+  module fzE_file_stdin fuzion.sys.Pointer => native
+
+  # implementation of read for reading from stdin
+  #
   redef read(count i32) choice (array u8) io.end_of_file error =>
     arr := fuzion.sys.internal_array_init u8 count
-    v := fuzion.sys.fileio.fzE_file_read fuzion.sys.fzE_file_stdin arr.data count
+    v := fuzion.sys.fileio.fzE_file_read fzE_file_stdin arr.data count
     if v < -1
       error "an error occurred while reading stdin"
     else if v <= 0

@@ -80,7 +80,7 @@ public threads =>
 
 
 
-# Thread_Provider -- abstract source of concurrency
+# Thread_Handler -- abstract source of concurrency
 #
 private:public Thread_Handler ref is
 

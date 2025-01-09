@@ -23,11 +23,11 @@
 
 
 # buffered.writer effect allows buffered writing
-# by using the given Write_Provider
+# by using the given Write_Handler
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(wp Write_Provider, buf_size i32) : mutate
+public writer(wp Write_Handler, buf_size i32) : mutate
 pre debug: buf_size > 0
 is
 
