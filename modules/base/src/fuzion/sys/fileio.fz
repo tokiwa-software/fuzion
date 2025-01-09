@@ -95,6 +95,9 @@ module fileio is
                 content_length i32) i32 => native
 
 
+  module fzE_file_flush(fd fuzion.sys.Pointer) i32 => native
+
+
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure
   # if the targeted dir has content, then the return value will be error and the deletion will not take place
@@ -217,7 +220,7 @@ module fileio is
   #
   fzE_file_close(
                 # file descriptor
-                fd fuzion.sys.Pointer) i8 => native
+                fd fuzion.sys.Pointer) i32 => native
 
 
   # seek offset in the stream represented by fd
@@ -270,7 +273,7 @@ module fileio is
   #
   # res[0]: 0 on success, -1 on error
   #
-  # return: allocated memory (same as fuzion.sys.internal_array_init.alloc)
+  # return: allocated memory (same as fuzion.sys.alloc)
   #
   # note: offset+size must not exceed file size.
   # note: returning allocated memory - instead of error code - simplifies handling in DFA.
@@ -336,21 +339,12 @@ module fileio is
       error "error number: {open_results[0]}"
 
 
-  # reads the next entry of the directory given by opaque integer reference
+  # reads the next entry of the directory given by fuzion.sys.Pointer
   # to an open directory
   #
-  # returns the name of the next entry, or an error string on failure.
+  # returns -1 on error, 0 on end reached, length of result on success
   #
   module fzE_read_dir(ptr fuzion.sys.Pointer, res fuzion.sys.Pointer) i32 => native
-
-
-  # checks whether there is a next entry in the directory given by opaque
-  # integer reference to an open directory
-  #
-  # true if the next call to read_dir should find a new entry, if false then
-  # the next call to read_dir will return an error string.
-  #
-  module fzE_read_dir_has_next(ptr fuzion.sys.Pointer) i32 => native
 
 
   # closes the directory given by opaque integer reference to an open

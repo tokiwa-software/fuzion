@@ -1250,6 +1250,16 @@ public class DFA extends ANY
           return res;
         }
 
+
+        @Override
+        public int accessedClazz(int s)
+        {
+          return codeAt(s) == ExprKind.Assign &&
+            (clazzIsUnitType(assignedType(s)) || clazzIsUnitType(accessTargetClazz(s)))
+            ? NO_CLAZZ
+            : super.accessedClazz(s);
+        }
+
       };
 
     return res;
@@ -1980,7 +1990,7 @@ public class DFA extends ANY
     put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("effect.type.from_env"                , cl ->
+    put("effect.type.from_env"           , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
       var result = cl.getEffectCheck(ecl);
@@ -1993,20 +2003,19 @@ public class DFA extends ANY
         }
       return result;
     });
-    put("effect.type.unsafe_from_env"                , cl ->
+    put("effect.type.unsafe_from_env"    , cl ->
     {
       var ecl = cl._dfa._fuir.clazzResultClazz(cl._cc);
       return cl.getEffectForce(cl._site, ecl);
     });
 
 
-    put("fuzion.sys.internal_array_init.alloc", cl ->
+    put("fuzion.sys.type.alloc"          , cl ->
         {
-          var oc = cl._dfa._fuir.clazzOuterClazz(cl._cc);
-          var ec = cl._dfa._fuir.clazzActualGeneric(oc, 0);
+          var ec = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
           return cl._dfa.newSysArray(null, ec); // NYI: get length from args
         });
-    put("fuzion.sys.internal_array.setel", cl ->
+    put("fuzion.sys.type.setel"          , cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();
@@ -2018,10 +2027,10 @@ public class DFA extends ANY
             }
           else
             {
-              throw new Error("intrinsic fuzion.sys.internal_array.setel: Expected class SysArray, found "+array.getClass()+" "+array);
+              throw new Error("intrinsic fuzion.sys.setel: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.internal_array.get"  , cl ->
+    put("fuzion.sys.type.getel"          , cl ->
         {
           var array = cl._args.get(0).value();
           var index = cl._args.get(1).value();
@@ -2057,22 +2066,16 @@ public class DFA extends ANY
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
-    put("fuzion.sys.process.create" , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.process.wait"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.read"      , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.write"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.close"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-
     put("effect.type.replace0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           cl.replaceEffect(ecl, new_e);
           return Value.UNIT;
         });
     put("effect.type.default0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           var old_e = cl._dfa._defaultEffects.get(ecl);
           if (old_e == null)
@@ -2086,7 +2089,7 @@ public class DFA extends ANY
     put(EFFECT_INSTATE_NAME                 , cl ->
         {
           var fuir = cl._dfa._fuir;
-          var ecl      = fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl      = fuir.effectTypeFromIntrinsic(cl._cc);
 
           var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 0));
           var finallie = fuir.lookup_static_finally(ecl);
@@ -2115,7 +2118,7 @@ public class DFA extends ANY
         });
     put("effect.type.abort0"                , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
           if (ev != null)
             {
@@ -2123,7 +2126,7 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc)) != null
+    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc)) != null
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes
@@ -2148,15 +2151,11 @@ public class DFA extends ANY
     );
     put("fuzion.java.array_to_java_object0" , cl ->
         {
-          var rc   = cl._dfa._fuir.clazzResultClazz(cl._cc);
-          var jref = cl._dfa._fuir.lookupJavaRef(rc);
           var data = cl._dfa._fuir.lookup_fuzion_sys_internal_array_data  (cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           var len  = cl._dfa._fuir.lookup_fuzion_sys_internal_array_length(cl._dfa._fuir.clazzArgClazz(cl._cc,0));
           cl._dfa.readField(data);
           cl._dfa.readField(len);
-          var result = wrappedJavaObject(cl);
-          result.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF); // NYI: record putfield of result.jref := args.get(0).data
-          return result;
+          return Value.UNKNOWN_JAVA_REF;
         });
     put("fuzion.java.bool_to_java_object"   , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.f32_to_java_object"    , cl -> wrappedJavaObject(cl) );
@@ -2796,8 +2795,8 @@ public class DFA extends ANY
    */
   Value newConstString(byte[] utf8Bytes, Context context)
   {
-    var cs            = _fuir.clazz_Const_String();
-    var utf_data      = _fuir.clazz_Const_String_utf8_data();
+    var cs            = _fuir.clazz_const_string();
+    var utf_data      = _fuir.clazz_const_string_utf8_data();
     var ar            = _fuir.clazz_array_u8();
     var internalArray = _fuir.lookup_array_internal_array(ar);
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
@@ -2815,7 +2814,7 @@ public class DFA extends ANY
     a.setField(this, data  , adata);
     arr.setField(this, internalArray, a);
     r.setField(this, utf_data, arr);
-    return r;
+    return r.box(this, cs, _fuir.clazz_ref_const_string(), context);
   }
 
 

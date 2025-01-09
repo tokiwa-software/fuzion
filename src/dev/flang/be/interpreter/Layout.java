@@ -152,7 +152,10 @@ class Layout extends FUIRContext
                 case c_f32  -> 1;
                 case c_f64  -> 2;
                 case c_void -> 0;
-                default     -> get(fc).size();
+                default     ->
+                  fuir().clazzIsUnitType(fc)
+                    ? 0
+                    : get(fc).size();
                 };
             _offsets.put(i, size - Integer.MIN_VALUE);
             size += fsz;

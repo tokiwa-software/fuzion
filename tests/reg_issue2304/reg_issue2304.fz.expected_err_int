@@ -1,19 +1,19 @@
 
 error 1: FATAL FAULT `*** panic ***`: bah
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1: $MODULE/fuzion/runtime/fault.fz:38:7:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:38:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.fault.cause#1: $MODULE/eff/fallible.fz:35:6:
+fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic.type.install_default.λ.call#1: $MODULE/panic.fz:36:18:
+panic.type.install_default.λ.call#1: {base.fum}/panic.fz:36:18:
     (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
 -----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-panic.cause#1: $MODULE/eff/fallible.fz:35:6:
+panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic#1: $MODULE/panic.fz:56:29:
+panic#1: {base.fum}/panic.fz:56:29:
 public panic(msg String) => panic.cause msg
 ----------------------------^^^^^^^^^^^^^^^
 p: --CURDIR--/reg_issue2304.fz:24:6:
@@ -22,19 +22,19 @@ p => panic "bah"
 λ.call#1: --CURDIR--/reg_issue2304.fz:25:20:
 _ := [1].filter x->p
 -------------------^
-(list i32).filter_list#1.λ.call#1: $MODULE/list.fz:454:35:
+(list i32).filter_list#1.λ.call#1: {base.fum}/list.fz:447:35:
     match drop_while_list (a -> !(p a))
 ----------------------------------^
-(list i32).drop_while_list#1: $MODULE/list.fz:433:12:
+(list i32).drop_while_list#1: {base.fum}/list.fz:426:12:
         if p c.head
 -----------^
-(list i32).filter_list#1: $MODULE/list.fz:454:11:
+(list i32).filter_list#1: {base.fum}/list.fz:447:11:
     match drop_while_list (a -> !(p a))
 ----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(list i32).filter#1: $MODULE/list.fz:445:5:
+(list i32).filter#1: {base.fum}/list.fz:438:5:
     filter_list p
 ----^^^^^^^^^^^^^
-(array i32).filter#1: $MODULE/Sequence.fz:181:47:
+(array i32).filter#1: {base.fum}/Sequence.fz:189:47:
   public filter   (f T -> bool) Sequence T => as_list.filter f
 ----------------------------------------------^^^^^^^^^^^^^^^^
 universe: --CURDIR--/reg_issue2304.fz:25:6:
