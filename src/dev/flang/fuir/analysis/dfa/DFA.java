@@ -557,7 +557,12 @@ public class DFA extends ANY
 
       // register calls for constant creation even though
       // not every backend actually performs these calls.
-      newCall(constCl, NO_SITE, _universe, args, null /* new environment */, context);
+      newCall(constCl,
+              NO_SITE,
+              Value.UNIT /* universe, but we do not use _universe as target */,
+              args,
+              null /* new environment */,
+              context);
 
       return result;
     }
