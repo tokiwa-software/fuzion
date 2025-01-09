@@ -284,11 +284,6 @@ public abstract class FUIR extends IR
   }
 
 
-  /**
-   * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
-   */
-  public abstract int fieldIndex(int field);
-
 
   /*------------------------  accessing choices  -----------------------*/
 

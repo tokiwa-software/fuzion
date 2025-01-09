@@ -821,21 +821,6 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
-   */
-  @Override
-  public int fieldIndex(int field)
-  {
-    if (PRECONDITIONS) require
-      (field >= CLAZZ_BASE,
-       field < CLAZZ_BASE + _clazzes.size(),
-       clazzKind(field) == FeatureKind.Field);
-
-    return id2clazz(field).fieldIndex();
-  }
-
-
   /*------------------------  accessing choices  -----------------------*/
 
 

@@ -2114,29 +2114,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * For a field, determine its index in _outer.fields().
-   *
-   * @return index of this in fields()
-   */
-  public int fieldIndex()
-  {
-    if (PRECONDITIONS) require
-      (feature().isField());
-
-    int i = 0;
-    for (var f : _outer.asValue().fields())
-      {
-        if (f.feature() == this.feature() && f._select == _select)
-          {
-            return i;
-          }
-        i++;
-      }
-    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + _outer);
-  }
-
-
-  /**
    * For a clazz with isRef()==true, return a value version of this clazz.
    * Returns this if it is already a value or ADDRESS.
    */
