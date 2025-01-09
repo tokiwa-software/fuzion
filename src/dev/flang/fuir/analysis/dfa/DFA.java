@@ -407,7 +407,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
+                var ca = newCall(_call, cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
                 if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
@@ -557,7 +557,8 @@ public class DFA extends ANY
 
       // register calls for constant creation even though
       // not every backend actually performs these calls.
-      newCall(constCl,
+      newCall(null,
+              constCl,
               NO_SITE,
               Value.UNIT /* universe, but we do not use _universe as target */,
               args,
@@ -958,6 +959,7 @@ public class DFA extends ANY
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
+  TreeMap<CallGroup, CallGroup> _callGroups = new TreeMap<>();
 
 
   /**
@@ -965,6 +967,7 @@ public class DFA extends ANY
    * way to lookup that key.
    */
   LongMap<Call> _callsQuick = new LongMap<>();
+  LongMap<CallGroup> _callGroupsQuick = new LongMap<>();
 
 
   /**
@@ -1305,7 +1308,8 @@ public class DFA extends ANY
   {
     var cl = _fuir.mainClazz();
 
-    newCall(cl,
+    newCall(null,
+            cl,
             NO_SITE,
             Value.UNIT,
             new List<>(),
@@ -2093,7 +2097,7 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ignore = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
+          var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
@@ -2131,21 +2135,38 @@ public class DFA extends ANY
           var a2 = cl._args.get(2).value();  // def'ault code
 
           var newEnv = cl._dfa.newEnv(cl._env, ecl, a0);
-          var result = cl._dfa.newCall(call, NO_SITE, a1, new List<>(), newEnv, cl).result();
+          var cll = cl._dfa.newCall(null, // do not set caller to cl here since we do not want effects to be propagated to cl
+                                    call,
+                                    NO_SITE,
+                                    a1,
+                                    new List<>(),
+                                    newEnv,
+                                    cl);
 
+          // manually propagate effects from result to cl, except for the one we
+          // have instated here:
+          for (var recl : cll._group._effects)
+            {
+              if (recl != ecl)
+                {
+                  cl._group.needsEffect(recl);
+                }
+            }
+
+          var result = cll.result();
           var ev = newEnv.getActualEffectValues(ecl);
           var aborted = newEnv.isAborted(ecl);
           var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1), aborted);
           if (aborted)
             { // default result, only if abort is ever called
-              var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
+              var res = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), cl._dfa._fuir.clazzResultClazz(cl._cc)) :
                 result != null                ? result
                                               : res;
             }
 
-          cl._dfa.newCall(finallie, NO_SITE, ev, new List<>(), cl._env, cl);
+          cl._dfa.newCall(cl, finallie, NO_SITE, ev, new List<>(), cl._env, cl);
           return result;
         });
     put("effect.type.abort0"                , cl ->
@@ -2793,7 +2814,9 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
   static boolean NO_SET_OF_REFS     = false;
 
 
-  static boolean JOIN_CALLS_WITH_WIDER_ENV = true;
+  static boolean JOIN_CALLS_WITH_WIDER_ENV = false;
+
+  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = !false;
 
 
   List<Boolean> _onlyOneValueSet = new List<>();
@@ -3106,8 +3129,26 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
    * @return cl a new or existing call to cl with the given target, args and
    * environment.
    */
-  Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
+  Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
+    CallGroup g;
+    var kg = CallGroup.quickHash(this, cl, site, tvalue);
+    if (kg != -1)
+      {
+        g = _callGroupsQuick.get(kg);
+        if (g == null)
+          {
+            g = new CallGroup(this, cl, site, tvalue);
+            _callGroupsQuick.put(kg, g);
+          }
+      }
+    else
+      {
+        var ng = new CallGroup(this, cl, site, tvalue);
+        g = _callGroups.putIfAbsent(ng, ng);
+        g = g != null ? g : ng;
+      }
+
     Call e, r;
     r = _unitCalls.get(cl);
     if (isUnitType(cl))
@@ -3115,7 +3156,7 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
         e = r;
         if (r == null)
           {
-            r = new Call(this, cl, site, tvalue, args, env, context);
+            r = new Call(g, args, env, context);
             _unitCalls.put(cl, r);
           }
       }
@@ -3126,7 +3167,7 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
             _unitCalls.put(cl, null);
             _calls.remove(r);
           }
-        var k = callQuickHash(cl, site, tvalue, env);
+        var k = COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED ? -1 : callQuickHash(cl, site, tvalue, env);
         if (k != -1)
           {
             r = _callsQuick.get(k);
@@ -3137,7 +3178,7 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
                 e = r;
                 if (r == null)
                   {
-                    r = new Call(this, cl, site, tvalue, args, env, context);
+                    r = new Call(g, args, env, context);
                   }
                 _callsQuick.put(k, r);
               }
@@ -3148,7 +3189,7 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
             //
             // NYI: OPTIMIZATION: We might find a more efficient way for this case,
             // maybe two nested LongMaps?
-            r = new Call(this, cl, site, tvalue, args, env, context);
+            r = new Call(g, args, env, context);
             e = _calls.get(r);
           }
       }
@@ -3171,6 +3212,10 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
     else
       {
         e.mergeWith(args);
+      }
+    if (from != null)
+      {
+        e._group.calledFrom(from._group);
       }
     return e;
   }

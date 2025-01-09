@@ -28,6 +28,8 @@ package dev.flang.fuir.analysis.dfa;
 
 import dev.flang.util.ANY;
 
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Env represents the set of effects installed in a given environment
@@ -184,6 +186,40 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  static int compare(Set<Integer> which, Env a, Env b)
+  {
+    var res = 0;
+    for (var e : which)
+      {
+        if (a != b)
+          {
+            var av = a != null ? a.get(e) : null;
+            var bv = b != null ? b.get(e) : null;
+            if (res == 0 && av != null && bv != null)
+              {
+                res = Value.envCompare(av, bv);
+              }
+            else if (av != bv && av == null)
+              {
+                res = -1;
+              }
+            else if (av != bv && bv == null)
+              {
+                res = +1;
+              }
+
+          }
+      }
+    return res;
+  }
+
+  Value get(int ecl)
+  {
+    var i = Arrays.binarySearch(_types, ecl);
+    return i >= 0 ? _initialEffectValues[i] : null;
+  }
 
 
   /**

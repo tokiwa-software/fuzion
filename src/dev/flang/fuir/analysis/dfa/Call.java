@@ -71,6 +71,8 @@ public class Call extends ANY implements Comparable<Call>, Context
   final DFA _dfa;
 
 
+  final CallGroup _group;
+
   /**
    * The clazz this is calling.
    */
@@ -159,29 +161,29 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, int site, Value target, List<Val> args, Env env, Context context)
+  public Call(CallGroup group,  List<Val> args, Env env, Context context)
   {
-    _dfa = dfa;
-    _cc = cc;
-    _site = site;
-    _target = target;
+    _group = group;
+    _dfa = group._dfa;
+    _cc = group._cc;
+    _site = group._site;
+    _target = group._target;
     _args = args;
     _env = env;
     _context = context;
 
-    if (dfa._fuir.isConstructor(cc))
+    if (_dfa._fuir.isConstructor(_cc))
       {
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
-        dfa.escapes(cc);
-        var or = dfa._fuir.clazzOuterRef(cc);
+        _dfa.escapes(_cc);
+        var or = _dfa._fuir.clazzOuterRef(_cc);
         while (or != -1)
           {
-            var orr = dfa._fuir.clazzResultClazz(or);
-            dfa.escapes(orr);
-            or = dfa._fuir.clazzOuterRef(orr);
+            var orr = _dfa._fuir.clazzResultClazz(or);
+            _dfa.escapes(orr);
+            or = _dfa._fuir.clazzOuterRef(orr);
           }
       }
-
   }
 
 
@@ -203,11 +205,19 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public int compareTo(Call other)
   {
-    return
-      _cc         != other._cc                        ? Integer.compare(_cc        , other._cc        ) :
-      _target._id != other._target._id                ? Integer.compare(_target._id, other._target._id) :
-      _dfa.siteSensitive(_cc) && _site != other._site ? Integer.compare(_site      , other._site      ) :
-      Env.compare(env(), other.env());
+    var res = _group.compareTo(other._group);
+    if (res == 0)
+      {
+        if (DFA.COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED)
+          {
+            res = Env.compare(_group._effects, env(), other.env());
+          }
+        else
+          {
+            res = Env.compare(env(), other.env());
+          }
+      }
+    return res;
   }
 
 
@@ -220,7 +230,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       _cc         != other._cc            ? "cc different" :
       _target._id != other._target._id    ? "target different" :
       _site       != other._site          ? "site different" :
-      Env.compare(env(), other.env())== 0 ? "env different" : "not different";
+      Env.compare(_group._effects, env(), other.env())!= 0 ? "env different" : "not different";
   }
 
 
@@ -496,6 +506,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value getEffectCheck(int ecl)
   {
+    _group.needsEffect(ecl);
     return
       _env != null ? _env.getActualEffectValues(ecl)
                    : _dfa._defaultEffects.get(ecl);
