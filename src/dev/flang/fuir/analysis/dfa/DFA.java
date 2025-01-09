@@ -2793,6 +2793,9 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
   static boolean NO_SET_OF_REFS     = false;
 
 
+  static boolean JOIN_CALLS_WITH_WIDER_ENV = true;
+
+
   List<Boolean> _onlyOneValueSet = new List<>();
 
 
@@ -3039,6 +3042,50 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
   }
 
 
+  long callQuickHash(int cl, int site, Value tvalue, Env env)
+  {
+    long k = -1;
+    var k1 = _fuir.clazzId2num(cl);
+    var k2 = tvalue._id;
+    var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
+    var k4 = env == null ? 0 : env._id + 1;
+    if (CHECKS) check
+      (k1 >= 0,
+       k2 >= 0,
+       k3 >= 0,
+       k4 >= 0);
+    // We use a LongMap in case we manage to fiddle k1..k4 into a long
+    //
+    // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
+    //
+    // Bit 6666555555555544444444443333333333222222222211111111110000000000
+    //     3210987654321098765432109876543210987654321098765432109876543210
+    //     <----clazz id----><---tvalue id----><---siteIndex----><-env-id->
+    //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
+    //
+    if (k1 <= 0x3FFFE &&
+        k2 <= 0x3FFFE &&
+        k3 <= 0x3FFFE &&
+        k4 <= 0x03FE)
+      {
+        k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
+        /*
+          if (!(((k >> (18*2+10)) & 0x3FFFF) == k1))
+          {
+          System.out.println("k1: "+Long.toHexString(k1));
+          System.out.println("k: "+Long.toHexString(k));
+          System.out.println("k >> (18*2+10): "+Long.toHexString(k >> (18*2+10)));
+          }
+        */
+        if (CHECKS) check
+          (((k >> (18*2+10)) & 0x3FFFF) == k1,
+           ((k >> (18  +10)) & 0x3FFFF) == k2,
+           ((k >> (     10)) & 0x3FFFF) == k3,
+           ((k               & 0x003FF) == k4));
+      }
+    return k;
+  }
+
   /**
    * Create call to given clazz with given target and args.
    *
@@ -3079,48 +3126,19 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
             _unitCalls.put(cl, null);
             _calls.remove(r);
           }
-        var k1 = _fuir.clazzId2num(cl);
-        var k2 = tvalue._id;
-        var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
-        var k4 = env == null ? 0 : env._id + 1;
-        if (CHECKS) check
-          (k1 >= 0,
-           k2 >= 0,
-           k3 >= 0,
-           k4 >= 0);
-        // We use a LongMap in case we manage to fiddle k1..k4 into a long
-        //
-        // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
-        //
-        // Bit 6666555555555544444444443333333333222222222211111111110000000000
-        //     3210987654321098765432109876543210987654321098765432109876543210
-        //     <----clazz id----><---tvalue id----><---siteIndex----><-env-id->
-        //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
-        //
-        if (k1 <= 0x3FFFF &&
-            k2 <= 0x3FFFF &&
-            k3 <= 0x3FFFF &&
-            k4 <= 0x03FF)
+        var k = callQuickHash(cl, site, tvalue, env);
+        if (k != -1)
           {
-            var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
-            /*
-            if (!(((k >> (18*2+10)) & 0x3FFFF) == k1))
-              {
-                System.out.println("k1: "+Long.toHexString(k1));
-                System.out.println("k: "+Long.toHexString(k));
-                System.out.println("k >> (18*2+10): "+Long.toHexString(k >> (18*2+10)));
-              }
-            */
-            if (CHECKS) check
-              (((k >> (18*2+10)) & 0x3FFFF) == k1,
-               ((k >> (18  +10)) & 0x3FFFF) == k2,
-               ((k >> (     10)) & 0x3FFFF) == k3,
-               ((k               & 0x003FF) == k4));
             r = _callsQuick.get(k);
             e = r;
             if (r == null)
               {
-                r = new Call(this, cl, site, tvalue, args, env, context);
+                r = findCallWithWiderEnv(cl, site, tvalue, args, env, context);
+                e = r;
+                if (r == null)
+                  {
+                    r = new Call(this, cl, site, tvalue, args, env, context);
+                  }
                 _callsQuick.put(k, r);
               }
           }
@@ -3155,6 +3173,21 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
         e.mergeWith(args);
       }
     return e;
+  }
+
+
+  Call findCallWithWiderEnv(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
+  {
+    Call result = null;
+    if (env != null && JOIN_CALLS_WITH_WIDER_ENV)
+      {
+        var k = callQuickHash(cl, site, tvalue, null /* env */);
+        if (k != -1)
+          {
+            result = _callsQuick.get(k);
+          }
+      }
+    return result;
   }
 
 
