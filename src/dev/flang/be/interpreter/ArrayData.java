@@ -246,6 +246,14 @@ public class ArrayData extends Value
         else if (_array instanceof float  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_FLOAT,  i, arr[i]);}
         else if (_array instanceof double [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_DOUBLE, i, arr[i]);}
         else if (_array instanceof boolean[] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BOOLEAN,i, arr[i]);}
+        else if (_array instanceof Value  [] arr)
+        {
+          for (int j = 0; j < arr.length; j++)
+            {
+              memSegment.set(ValueLayout.ADDRESS, j * 8, (MemorySegment)arr[j].toNative());
+            }
+        }
+        else throw new Error("NYI copyToMemSegment: " + _array.getClass());
       }
   }
 
@@ -259,6 +267,7 @@ public class ArrayData extends Value
     else if (_array instanceof float  []) { return 4; }
     else if (_array instanceof double []) { return 8; }
     else if (_array instanceof boolean[]) { return 4; }
+    else if (_array instanceof Value  []) { return 8; }
     throw new Error("NYI: ArrayData.elementByteSize");
   }
 
@@ -275,7 +284,8 @@ public class ArrayData extends Value
         else if (_array instanceof float  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_FLOAT, i); }
         else if (_array instanceof double [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_DOUBLE, i); }
         else if (_array instanceof boolean[] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BOOLEAN, i); }
-        else throw new Error("NYI");
+        else if (_array instanceof Value  [] arr) { /* NYI: UNDER DEVELOPMENT */ }
+        else throw new Error("NYI set: " + _array.getClass());
       }
   }
 }
