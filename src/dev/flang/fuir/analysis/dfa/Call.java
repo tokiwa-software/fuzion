@@ -147,14 +147,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create Call
    *
-   * @param dfa the DFA instance we are analyzing with
-   *
-   * @param cc called clazz
-   *
-   * @param site the call site, -1 if unknown (from intrinsic or program entry
-   * point)
-   *
-   * @param target is the target value of the call
+   * @param group the call group containing the clazz, site and target
    *
    * @param args are the actual arguments passed to the call
    *
