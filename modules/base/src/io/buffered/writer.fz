@@ -27,7 +27,7 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(wp Write_Handler, buf_size i32) : mutate
+public writer(wh Write_Handler, buf_size i32) : mutate
 pre debug: buf_size > 0
 is
 
@@ -44,7 +44,7 @@ is
       unit
     else
       n := buffer.buffered # we are expecting to write this number of bytes
-      wp.write (buffer.flush n)
+      wh.write (buffer.flush n)
 
 
   # buffered writing of the given byte
@@ -70,7 +70,7 @@ is
       f =>
         if buffer.buffered = 0 && (n - n_written) > buf_size
           # can write directly
-          y <- wp.write (p.slice n_written (n_written + buf_size)).as_array
+          y <- wh.write (p.slice n_written (n_written + buf_size)).as_array
           buf_size
         else if buffer.buffered = 0
           # start filling buffer, but incompletely
