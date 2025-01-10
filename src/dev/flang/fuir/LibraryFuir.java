@@ -29,10 +29,12 @@ package dev.flang.fuir;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.nio.file.Path;
 
 import dev.flang.util.SourcePosition;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.SourceFile;
 
 public class LibraryFuir extends FUIR {
 
@@ -561,8 +563,28 @@ public class LibraryFuir extends FUIR {
   @Override
   public SourcePosition sitePos(int s)
   {
-    // NYI: UNDER DEVELOPMENT:
-    return SourcePosition.notAvailable;
+    return s==NO_SITE
+      ? SourcePosition.notAvailable
+      : new SourcePosition(new SourceFile(Path.of(_sites[s-SITE_BASE].path()), new byte[0]), 0)
+      {
+        @Override
+        public int column()
+        {
+          return _sites[s-SITE_BASE].column();
+        }
+
+        @Override
+        public int line()
+        {
+          return _sites[s-SITE_BASE].line();
+        }
+
+        @Override
+        public String show()
+        {
+          return _sites[s-SITE_BASE].show();
+        }
+      };
   }
 
   @Override

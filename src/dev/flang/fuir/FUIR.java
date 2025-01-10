@@ -1832,7 +1832,11 @@ public abstract class FUIR extends IR
                 !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
                 !withinCode(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
                 !withinCode(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
-                !withinCode(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s)
+                !withinCode(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
+                !withinCode(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
+                !withinCode(s) || sitePos(s) == null ? -1 : sitePos(s).line(),
+                !withinCode(s) || sitePos(s) == null ? -1 : sitePos(s).column(),
+                !withinCode(s) || sitePos(s) == null ? null : sitePos(s).show()
               );
           }
         oos.writeObject(sites);

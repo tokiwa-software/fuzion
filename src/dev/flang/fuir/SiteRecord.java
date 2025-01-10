@@ -51,7 +51,11 @@ public record SiteRecord(
   int tagNewClazz,
   int tagTagNum,
   int[] matchCaseField,
-  boolean accessIsDynamic
+  boolean accessIsDynamic,
+  String path,
+  int line,
+  int column,
+  String show
 )implements Serializable
 {
   private static final long serialVersionUID = 1L;
