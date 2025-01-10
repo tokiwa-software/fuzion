@@ -31,9 +31,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Supplier;
-import java.util.Arrays;
 
 import dev.flang.ir.IR;
 import dev.flang.util.SourcePosition;
@@ -1717,15 +1717,22 @@ public abstract class FUIR extends IR
     return result;
   }
 
-  private int[] clazzFields(int cl)
+  private int[] clazzFields(int cl, int lastClazz)
   {
     var numFields = clazzNumFields(cl);
-    var result = new int[numFields > 0 ? numFields : 0];
-    for (int i = 0; i < result.length; i++)
+    var result = new ArrayList<Integer>();
+    for (int i = 0; i < numFields; i++)
       {
-        result[i]= clazzField(cl, i);
+        var clazzField = clazzField(cl, i);
+        if (clazzField <= lastClazz)
+          {
+            result.add(clazzField);
+          }
       }
-    return result;
+    return result
+      .stream()
+      .mapToInt(Integer::intValue)
+      .toArray();
   }
 
   public byte[] serialize()
@@ -1769,7 +1776,7 @@ public abstract class FUIR extends IR
                 clazzChoices(cl),
                 clazzInstantiatedHeirs(cl),
                 clazzNeedsCode(cl),
-                clazzFields(cl),
+                clazzFields(cl, lastClazz),
                 needsCode ? clazzCode(cl) : NO_SITE,
                 clazzResultField(cl),
                 clazzFieldIsAdrOfValue(cl),
@@ -1807,6 +1814,7 @@ public abstract class FUIR extends IR
             sites[s-SITE_BASE] = new SiteRecord(
                 clazzAt(s),
                 !withinCode(s) ? false : alwaysResultsInVoid(s),
+                !withinCode(s) ? false : doesResultEscape(s),
                 !withinCode(s) ? null : codeAt(s),
                 !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Const ? constClazz(s) : NO_CLAZZ,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Const ? constData(s) : null,

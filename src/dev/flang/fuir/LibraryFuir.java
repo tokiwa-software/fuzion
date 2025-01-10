@@ -553,6 +553,12 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
+  public boolean doesResultEscape(int s)
+  {
+    return s==NO_SITE || s<0 ? false : _sites[s-SITE_BASE].doesResultEscape();
+  }
+
+  @Override
   public SourcePosition sitePos(int s)
   {
     // NYI: UNDER DEVELOPMENT:

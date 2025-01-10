@@ -245,7 +245,7 @@ public class FrontEndOptions extends FuzionOptions
    */
   public boolean needsEscapeAnalysis()
   {
-    return _needsEscapeAnalysis;
+    return true;
   }
 
 }

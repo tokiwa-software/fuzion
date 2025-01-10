@@ -33,6 +33,7 @@ import dev.flang.ir.IR.ExprKind;
 public record SiteRecord(
   int clazzAt,
   boolean alwaysResultsInVoid,
+  boolean doesResultEscape,
   ExprKind codeAt,
   int constClazz,
   byte[] constData,

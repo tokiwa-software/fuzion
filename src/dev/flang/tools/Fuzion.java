@@ -466,7 +466,7 @@ public class Fuzion extends Tool
      */
     public boolean needsEscapeAnalysis()
     {
-      return false;
+      return true;
     }
 
     /**
