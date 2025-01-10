@@ -289,8 +289,6 @@ public class Executor extends ProcessExpression<Value, Object>
         var mh = Linker.nativeLinker()
           .downcallHandle(
             SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-              .or(SymbolLookup.loaderLookup())
-              .or(Linker.nativeLinker().defaultLookup())
               .find(_fuir.clazzBaseName(cc))
               .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
 
