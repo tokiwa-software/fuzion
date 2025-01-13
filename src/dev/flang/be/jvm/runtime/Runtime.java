@@ -1379,8 +1379,6 @@ public class Runtime extends ANY
     return Linker.nativeLinker()
       .downcallHandle(
         SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-          .or(SymbolLookup.loaderLookup())
-          .or(Linker.nativeLinker().defaultLookup())
           .find(str)
           .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
         desc);
