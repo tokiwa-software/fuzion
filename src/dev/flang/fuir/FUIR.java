@@ -1789,7 +1789,6 @@ public abstract class FUIR extends IR
                 safe(()->clazzTypeName(cl0), null),
                 clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
                 clazzAsStringHuman(cl),
-                safe(()->clazzKind(cl0) == FeatureKind.Field ? fieldIndex(cl0) : NO_CLAZZ, NO_CLAZZ),
                 clazzSrcFile(cl),
                 safe(()->lookupJavaRef(cl0), NO_CLAZZ)
                 );

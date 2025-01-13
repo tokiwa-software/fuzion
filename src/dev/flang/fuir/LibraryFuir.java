@@ -149,16 +149,6 @@ public class LibraryFuir extends FUIR {
     return _clazzes[clazzId2num(fcl)].clazzFieldIsAdrOfValue();
   }
 
-  // NYI: CLEANUP remove fieldIndex
-  @Override
-  public int fieldIndex(int field)
-  {
-    if (PRECONDITIONS) require
-      (clazzKind(field) == FeatureKind.Field);
-
-    return _clazzes[clazzId2num(field)].fieldIndex();
-  }
-
   @Override
   public boolean clazzIsChoice(int cl)
   {
