@@ -296,7 +296,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
        !type.containsThisType(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
-       type != Types.t_ERROR);
+       type != Types.t_ERROR,
+       // outer clazzes of fields must be values
+       outer == null || outer.isRef() == YesNo.no || !type.feature().isField());
 
     _fuir = fuir;
     outer = normalizeOuter(type, outer);
@@ -364,7 +366,8 @@ class Clazz extends ANY implements Comparable<Clazz>
   void addInner(Clazz i)
   {
     if (PRECONDITIONS) require
-      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ );
+      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ ,
+       i.clazzKind() != IR.FeatureKind.Field || isRef() == YesNo.no);
 
     if (_fuir._lookupDone)
       {
@@ -832,14 +835,17 @@ class Clazz extends ANY implements Comparable<Clazz>
                     }
                 }
             }
-          for (var fc : fields())
+          if (isRef() == YesNo.no)
             {
-              if (result == null && !fc.feature().isOuterRef())
+              for (var fc : fields())
                 {
-                  result = layoutFieldType(fc);
-                  if (result != null)
+                  if (result == null && !fc.feature().isOuterRef())
                     {
-                      result.add("Layout " + Errors.sqn(this.toString()) + ": " + fc.feature().pos().show());
+                      result = layoutFieldType(fc);
+                      if (result != null)
+                        {
+                          result.add("Layout " + Errors.sqn(this.toString()) + ": " + fc.feature().pos().show());
+                        }
                     }
                 }
             }
@@ -2092,18 +2098,18 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz[] fields()
   {
+    if (PRECONDITIONS) require
+      (isRef() == YesNo.no);
+
     if (_fields == null)
       {
         var fields = new List<Clazz>();
-        if (isRef().no())
+        for (var fieldc: _inner)
           {
-            for (var fieldc: _inner)
+            var field = fieldc.feature();
+            if (!isVoidType() && field.isField())
               {
-                var field = fieldc.feature();
-                if (!isVoidType() && field.isField())
-                  {
-                    fields.add(fieldc);
-                  }
+                fields.add(fieldc);
               }
           }
         _fields = fields.isEmpty() ? NO_CLAZZES
@@ -2124,7 +2130,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       (feature().isField());
 
     int i = 0;
-    for (var f : _outer.asValue().fields())
+    for (var f : _outer.fields())
       {
         if (f.feature() == this.feature() && f._select == _select)
           {
