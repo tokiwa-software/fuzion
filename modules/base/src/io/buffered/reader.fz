@@ -23,11 +23,11 @@
 
 
 # buffered.reader effect allows buffered reading
-# by using the given Read_Provider
+# by using the given Read_Handler
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect
+public reader(LM type : mutate, rh Read_Handler, buf_size i32) : effect
 pre debug: buf_size > 0
 is
 
@@ -78,7 +78,7 @@ is
     pre
       debug: buffer.buffered = 0
   =>
-    match rp.read buffer.available.as_i32
+    match rh.read buffer.available.as_i32
       a array u8 =>
         match buffer.enqueue a
           unit => unit
