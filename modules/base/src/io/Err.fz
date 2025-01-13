@@ -28,10 +28,12 @@
 public Err ref : print_effect is
 
   type.install_default =>
-    io.Err.default io.def_err
+    io.Err.default io.default_err
 
 
-module def_err =>
+# default implementation for io.Err
+#
+module default_err =>
   ref : io.Err
 
     module fzE_file_stderr fuzion.sys.Pointer => native

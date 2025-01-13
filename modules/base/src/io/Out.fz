@@ -28,10 +28,12 @@
 public Out ref : print_effect is
 
   type.install_default =>
-    io.Out.default io.def_out
+    io.Out.default io.default_out
 
 
-module def_out =>
+# default implementation for io.Out
+#
+module default_out =>
   ref : io.Out
 
     module fzE_file_stdout fuzion.sys.Pointer => native
