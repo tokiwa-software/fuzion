@@ -1095,7 +1095,7 @@ public class Fuzion extends Tool
                                           s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
-        var fe = Files.exists(Path.of(_main + ".fuir")) ? new FrontEnd(options, false) : new FrontEnd(options);
+        var fe = Files.exists(Path.of(_main + ".fuir")) && _backend != Backend.effects ? new FrontEnd(options, false) : new FrontEnd(options);
         timer("fe");
         Errors.showAndExit();
         _backend.processFrontEnd(this, fe);
