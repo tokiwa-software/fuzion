@@ -81,6 +81,18 @@ public class COptions extends FuzionOptions
   final boolean _keepGeneratedCode;
 
 
+  /**
+   * additional includes to include
+   */
+  final String _cInclude;
+
+
+  /**
+   * additional libraries to link
+   */
+  final String _cLink;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -88,7 +100,7 @@ public class COptions extends FuzionOptions
    * Constructor initializing fields as given.
    * @param keepGeneratedCode
    */
-  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, String cCompiler, String cFlags, String cTarget, boolean keepGeneratedCode)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC, String cCompiler, String cFlags, String cTarget, String cInclude, String cLink, boolean keepGeneratedCode)
   {
     super(fo);
 
@@ -97,6 +109,8 @@ public class COptions extends FuzionOptions
     _cCompiler = cCompiler;
     _cFlags = cFlags;
     _cTarget = cTarget;
+    _cInclude = cInclude;
+    _cLink = cLink;
     _keepGeneratedCode = keepGeneratedCode;
   }
 

@@ -17,14 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stdin
+#  Source code of Fuzion standard library feature Write_Handler
 #
 # -----------------------------------------------------------------------
 
-
-write_provider : io.Write_Provider is
-  redef write (b Sequence u8) outcome unit =>
-    fuzion.sys.fileio.write fuzion.sys.out.fzE_file_stdout b.as_array
+public Write_Handler ref is
 
 # mutate instance to be used for buffered stdout output
 #
@@ -36,7 +33,8 @@ write_provider : io.Write_Provider is
 stdout_buffer_mutate : mutate is
 
 
-# short-hand to return an io.writer with a write provider
-# allowing to write to stdout.
-#
-public stdout : (io.buffered stdout_buffer_mutate).writer write_provider 1024 is
+  # write bytes b
+  #
+  public write(b Sequence u8) outcome unit
+  pre b.finite = trit.yes
+  => abstract

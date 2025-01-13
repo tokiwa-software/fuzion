@@ -56,3 +56,9 @@ record_c:
 
 record_jvm:
 	cat $(STDIN) | ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
+
+effect:
+	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
+record_effect: $(FUZION_DEPENDENCIES)
+	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)

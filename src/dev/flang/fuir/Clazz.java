@@ -296,7 +296,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
        !type.containsThisType(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
-       type != Types.t_ERROR);
+       type != Types.t_ERROR,
+       // outer clazzes of fields must be values
+       outer == null || outer.isRef() == YesNo.no || !type.feature().isField());
 
     _fuir = fuir;
     outer = normalizeOuter(type, outer);
@@ -364,7 +366,8 @@ class Clazz extends ANY implements Comparable<Clazz>
   void addInner(Clazz i)
   {
     if (PRECONDITIONS) require
-      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ );
+      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ ,
+       i.clazzKind() != IR.FeatureKind.Field || isRef() == YesNo.no);
 
     if (_fuir._lookupDone)
       {
@@ -399,7 +402,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize an outer clazz for a given type. For a reference clazz that
    * inherits from f, this will return the corresponding clazz derived from
-   * f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * f. The idea is that, e.g., we do not need to distinguish const_string.length
    * from (array u8).length.
    *
    * @param t the type of the newly created clazz
@@ -423,7 +426,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Normalize a reference clazz to the given feature.  For a reference clazz
    * that inherits from f, this will return the corresponding clazz derived
-   * from f. The idea is that, e.g., we do not need to distinguish Const_String.length
+   * from f. The idea is that, e.g., we do not need to distinguish const_string.length
    * from (array u8).length.
    *
    * @param f the feature we want to normalize to (array in the example above).
@@ -832,14 +835,17 @@ class Clazz extends ANY implements Comparable<Clazz>
                     }
                 }
             }
-          for (var fc : fields())
+          if (isRef() == YesNo.no)
             {
-              if (result == null && !fc.feature().isOuterRef())
+              for (var fc : fields())
                 {
-                  result = layoutFieldType(fc);
-                  if (result != null)
+                  if (result == null && !fc.feature().isOuterRef())
                     {
-                      result.add("Layout " + Errors.sqn(this.toString()) + ": " + fc.feature().pos().show());
+                      result = layoutFieldType(fc);
+                      if (result != null)
+                        {
+                          result.add("Layout " + Errors.sqn(this.toString()) + ": " + fc.feature().pos().show());
+                        }
                     }
                 }
             }
@@ -1451,51 +1457,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   public boolean isChoice()
   {
     return feature().isChoice();
-  }
-
-
-
-  /**
-   * Is this a choice-type whose actual generics include ref?  If so, a field for
-   * all the refs will be needed.
-   */
-  public boolean isChoiceWithRefs()
-  {
-    boolean hasRefs = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasRefs = hasRefs || c.isRef().yes();
-          }
-      }
-
-    return hasRefs;
-  }
-
-
-  /**
-   * Is this a choice-type whose actual generics are all refs or stateless
-   * values? If so, no tag will be added, but ChoiceIdAsRef can be used.
-   *
-   * In case this is a choice of stateless value without any references, the
-   * result will be false since in this case, it is better to use the an integer
-   * stored in the tag.
-   */
-  public boolean isChoiceOfOnlyRefs()
-  {
-    boolean hasNonRefsWithState = false;
-
-    if (_choiceGenerics != null)
-      {
-        for (Clazz c : _choiceGenerics)
-          {
-            hasNonRefsWithState = hasNonRefsWithState || (c.isRef().noOrDontKnow() && !c.isUnitType() && !c.isVoidType());
-          }
-      }
-
-    return isChoiceWithRefs() && !hasNonRefsWithState;
   }
 
 
@@ -2137,18 +2098,18 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz[] fields()
   {
+    if (PRECONDITIONS) require
+      (isRef() == YesNo.no);
+
     if (_fields == null)
       {
         var fields = new List<Clazz>();
-        if (isRef().no())
+        for (var fieldc: _inner)
           {
-            for (var fieldc: _inner)
+            var field = fieldc.feature();
+            if (!isVoidType() && field.isField())
               {
-                var field = fieldc.feature();
-                if (!isVoidType() && field.isField())
-                  {
-                    fields.add(fieldc);
-                  }
+                fields.add(fieldc);
               }
           }
         _fields = fields.isEmpty() ? NO_CLAZZES
@@ -2169,7 +2130,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       (feature().isField());
 
     int i = 0;
-    for (var f : _outer.asValue().fields())
+    for (var f : _outer.fields())
       {
         if (f.feature() == this.feature() && f._select == _select)
           {

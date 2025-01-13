@@ -17,25 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.process
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.process -- unit type grouping routines related to process
-#
-module process is
-
-
-  # create a new process
-  # NYI pass stdin/out/err, pwd
-  #
-  module create(args fuzion.sys.Pointer, arg_len i32, env_vars fuzion.sys.Pointer, env_vars_len i32, res fuzion.sys.Pointer, args_str fuzion.sys.Pointer, env_str fuzion.sys.Pointer) i32 => intrinsic
-
-
-  # wait for process to exit
-  #
-  module wait(p i64) i32 => intrinsic
-
-  # NYI send_signal(p i64, signal i32) unit => intrinsic
-  # NYI is_alive(p i64) unit => intrinsic
-  # NYI exit_code(p i64) unit => intrinsic
+override NAME = reg_issue4516
+include ../simple.mk

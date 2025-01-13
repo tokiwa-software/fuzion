@@ -94,6 +94,20 @@ module fileio is
                 # the length of the internal array representing the content
                 content_length i32) i32 => native
 
+  # flush any buffers held for fd
+  #
+  # returns 0 in case of success, -1 in case of failure
+  #
+  module fzE_file_flush(fd fuzion.sys.Pointer) i32 => native
+
+  # wrapper for fzE_file_flush
+  #
+  module flush(fd fuzion.sys.Pointer) outcome unit =>
+    if fzE_file_flush fd = 0
+      unit
+    else
+      error "error when flushing"
+
 
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure
@@ -336,21 +350,12 @@ module fileio is
       error "error number: {open_results[0]}"
 
 
-  # reads the next entry of the directory given by opaque integer reference
+  # reads the next entry of the directory given by fuzion.sys.Pointer
   # to an open directory
   #
-  # returns the name of the next entry, or an error string on failure.
+  # returns -1 on error, 0 on end reached, length of result on success
   #
   module fzE_read_dir(ptr fuzion.sys.Pointer, res fuzion.sys.Pointer) i32 => native
-
-
-  # checks whether there is a next entry in the directory given by opaque
-  # integer reference to an open directory
-  #
-  # true if the next call to read_dir should find a new entry, if false then
-  # the next call to read_dir will return an error string.
-  #
-  module fzE_read_dir_has_next(ptr fuzion.sys.Pointer) i32 => native
 
 
   # closes the directory given by opaque integer reference to an open

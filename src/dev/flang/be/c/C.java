@@ -262,7 +262,7 @@ public class C extends ANY
           case c_u64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_u64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_f64  -> new Pair<>(primitiveExpression(SpecialClazzes.c_f64,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
-          case c_String -> new Pair<>(heapClone(constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)), constCl)               ,CStmnt.EMPTY);
+          case c_String -> new Pair<>(boxedConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)),CStmnt.EMPTY);
           default     -> {
             if (CHECKS)
               check(!_fuir.clazzIsRef(constCl)); // NYI currently no refs
@@ -876,6 +876,16 @@ public class C extends ANY
         command.addAll("-lgc");
       }
 
+
+    if (_options._cLink != null)
+      {
+        var libraries = Arrays
+          .stream(_options._cLink.split(" "))
+          .map(x -> "-l" + x)
+          .iterator();
+        command.addAll(libraries);
+      }
+
     return command;
   }
 
@@ -1084,7 +1094,7 @@ public class C extends ANY
              _effectClazzes = ordered
                .stream()
                .filter(_fuir::isEffectIntrinsic)
-               .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+               .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
                .sorted()
                .distinct()
                .toArray();
@@ -1193,6 +1203,13 @@ public class C extends ANY
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
+    if (_options._cLink != null)
+      {
+        Arrays
+          .stream(_options._cInclude.split(" "))
+          .forEach(x -> cf.println("#include <" + x + ">"));
+      }
+
     var o = new CIdent("of");
     var s = new CIdent("sz");
     var r = new CIdent("r");
@@ -1244,7 +1261,7 @@ public class C extends ANY
           _types.inOrder()
             .stream()
             .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
-            .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+            .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
             .distinct()
             .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
             .iterator()))
@@ -1348,11 +1365,12 @@ public class C extends ANY
             var cc = ccs[cci+1];                   // called clazz in case of match
             var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
-            var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
-            tv = unbox(tt, cc, tv);
             if (isCall)
               {
-                var calpair = call(s, tv, args, cc);
+                var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
+                var ut = _fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco) ? cco : tt;
+                tv = unbox(tt, cc, tv);
+                var calpair = call(s, tv, args, ut, cc);
                 var rv  = calpair.v0();
                 acc = calpair.v1();
                 if (ccs.length == 2)
@@ -1372,7 +1390,7 @@ public class C extends ANY
               }
             else
               {
-                acc = assignField(tv, tc, cco, cc, args.get(0), rti);
+                acc = assignField(tvalue, tc, tt, cc, args.get(0), rti);
               }
             cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                   CStmnt.seq(acc, CStmnt.BREAK)));
@@ -1535,46 +1553,46 @@ public class C extends ANY
 
 
   /**
-   * Create CExpr to create a constant string.
+   * Create CExpr to create a (boxed) constant string.
    *
    * @param bytes the serialized bytes of the UTF-8 string.
    *
    * Example code:
    * {@code (fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}}
    */
-  CExpr constString(byte[] bytes)
+  CExpr boxedConstString(byte[] bytes)
   {
-    return constString(CExpr.string(bytes), CExpr.int32const(bytes.length));
+    return boxedConstString(CExpr.string(bytes), CExpr.int32const(bytes.length));
   }
 
 
   /**
-   * returns a CExpr that creates a Const_String from a java string.
+   * returns a CExpr that creates a (boxed) const_string from a java string.
    *
    * @param str the string.
    */
-  CExpr constString(String str)
+  CExpr boxedConstString(String str)
   {
-    return constString(str.getBytes(StandardCharsets.UTF_8));
+    return boxedConstString(str.getBytes(StandardCharsets.UTF_8));
   }
 
 
   /**
-   * Create CExpr to create a constant string.
+   * Create CExpr to create a (boxed) constant string.
    *
    * @param str CExpr the creates a c string.
    *
    * @param len CExpr that returns the size_t of the string
    *
    * Example code:
-   * {@code (fzT__RConst_u_String){.clazzId = 282, .fields = (fzT_Const_u_String){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}}
+   * {@code (fzT__Rconst_u_string){.clazzId = 282, .fields = (fzT_const_u_string){.fzF_0_internal_u_array = (fzT__L3393fuzion__sy__array_w_u8){.fzF_0_data = (void *)"failed to encode code point ",.fzF_1_length = 28}}}}
    */
-  CExpr constString(CExpr str, CExpr len)
+  CExpr boxedConstString(CExpr str, CExpr len)
   {
     var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
     var internal_array = _names.fieldName(_fuir.lookup_array_internal_array(_fuir.clazz_array_u8()));
-    var utf8_data      = _names.fieldName(_fuir.clazz_Const_String_utf8_data());
+    var utf8_data      = _names.fieldName(_fuir.clazz_const_string_utf8_data());
 
     var sysArray = CExpr.compoundLiteral(
         _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_fuzionSysArray_u8())),
@@ -1587,14 +1605,17 @@ public class C extends ANY
 
     var constStr = CExpr
       .compoundLiteral(
-        _types.clazz(_fuir.clazzAsValue(_fuir.clazz_Const_String())),
+        _types.clazz(_fuir.clazz_const_string()),
         "." + utf8_data.code() + " = " + array.code());
 
-    return CExpr
+    var refConstStr = _fuir.clazz_ref_const_string();
+    var res = CExpr
       .compoundLiteral(
-        _names.struct(_fuir.clazz_Const_String()),
-        "." + CNames.CLAZZ_ID.code() + " = " + _names.clazzId(_fuir.clazz_Const_String()).code() + ", " +
+        _names.struct(refConstStr),
+        "." + CNames.CLAZZ_ID.code() + " = " + _names.clazzId(refConstStr).code() + ", " +
           "." + CNames.FIELDS_IN_REF_CLAZZ.code() + " = " + constStr.code());
+
+    return heapClone(res, _fuir.clazz(SpecialClazzes.c_String));
   }
 
 
@@ -1617,7 +1638,7 @@ public class C extends ANY
       {
         tvalue = tvalue.castTo(_types.clazz(tt));
       }
-    var af = accessField(tvalue, tt, f);
+    var af = accessField(tvalue, tc, f);
     if (_fuir.clazzIsRef(rt))
       {
         value = value.castTo(_types.clazz(rt));
@@ -1665,9 +1686,8 @@ public class C extends ANY
    *
    * @return the code to perform the call
    */
-  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int cc)
+  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int tt, int cc)
   {
-    var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
@@ -1690,6 +1710,7 @@ public class C extends ANY
                   _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!
+                  var tc = _fuir.clazzOuterClazz(cc);
                   result = tailRecursion(cl, s, tc, a);
                   resultValue = null;
                 }
@@ -1721,7 +1742,7 @@ public class C extends ANY
         }
       case Field:
         {
-          resultValue = accessField(tvalue, tc, cc);
+          resultValue = accessField(tvalue, tt, cc);
           break;
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
@@ -1972,7 +1993,7 @@ public class C extends ANY
             var str = new CIdent("str");
             yield CStmnt.seq(
               CExpr.decl("char*", str, call),
-              heapClone(constString(str, CExpr.call("strlen", new List<>(str))), _fuir.clazz_Const_String())
+              boxedConstString(str, CExpr.call("strlen", new List<>(str)))
                 .ret());
           }
         case c_bool -> call.cond(_names.FZ_TRUE, _names.FZ_FALSE).ret();
@@ -1986,13 +2007,13 @@ public class C extends ANY
   }
 
 
-  CExpr heapClone(CExpr expr, int rc)
+  CExpr heapClone(CExpr valueExpr, int rc)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzIsRef(rc));
 
     return CExpr
-      .call(CNames.HEAP_CLONE._name, new List<>(expr.adrOf(), expr.sizeOfExpr()))
+      .call(CNames.HEAP_CLONE._name, new List<>(valueExpr.adrOf(), valueExpr.sizeOfExpr()))
       .castTo(_types.clazz(rc));
   }
 
@@ -2225,8 +2246,12 @@ public class C extends ANY
    */
   private CExpr jStringToError(CExpr field)
   {
-    var constString = constString(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)), CExpr.call("strlen", new List<>(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)))));
-    return error(constString);
+    return error(boxedConstString(
+        CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)),
+        CExpr.call("strlen", new List<>(
+            CExpr.call("fzE_java_string_to_utf8_bytes",
+            new List<>(field))))
+      ));
   }
 
 
@@ -2234,17 +2259,15 @@ public class C extends ANY
    * create code for instantiating a
    * fuzion error from a constString
    *
-   * @param constString
+   * @param str
    * @return
    */
-  public CExpr error(CExpr constString)
+  public CExpr error(CExpr str)
   {
     return CExpr.compoundLiteral(
       _names.struct(_fuir.clazz_error()),
       "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
-        CExpr
-          .call(CNames.HEAP_CLONE._name, new List<>(constString.adrOf(), constString.sizeOfExpr()))
-          .code()
+        str.code()
       );
   }
 

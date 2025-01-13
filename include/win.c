@@ -115,20 +115,21 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
 
 int fzE_read_dir(intptr_t * dir, void * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
-  size_t len = strlen(d->findData.cFileName);
-  assert(len<1024); // NYI:
-  fzE_memcpy(result, d->findData.cFileName, len + 1);
-  return len;
-}
-
-int fzE_read_dir_has_next(intptr_t * dir) {
-  fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
   while ((res = FindNextFile(d->handle, &d->findData)) &&
         // skip dot and dot-dot paths.
         (strcmp(d->findData.cFileName, ".") == 0 || strcmp(d->findData.cFileName, "..") == 0));
-  return res
-    ? 0 : 1;
+
+  int len  = 0;
+  if (!res) {
+    return GetLastError() == ERROR_NO_MORE_FILES ? 0 : -1;
+  }
+  else {
+    int len = (int)strlen(d->findData.cFileName);
+    assert(len >= 0 && len<1024); // NYI:
+    fzE_memcpy(result, d->findData.cFileName, len + 1);
+    return len;
+  }
 }
 
 int fzE_close_dir(intptr_t * dir) {

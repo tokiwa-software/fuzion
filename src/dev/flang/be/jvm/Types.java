@@ -121,7 +121,14 @@ public class Types extends ANY implements ClassFileConstants
     if (hasClassFile(cl))
       {
         var cn = _names.javaClass(cl);
-        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS, _fuir.clazzSrcFile(cl));
+        var cf = new ClassFile(
+            _opt,
+            cn,
+            // in case cl is a ref we inherit from the corresponding value class
+            // otherwise we inherit from dev.flang.be.jvm.runtime.Any
+            _fuir.clazzIsRef(cl) && !_fuir.clazzIsBoxed(cl) ? _names.javaClass(_fuir.clazzAsValue(cl)) : Names.ANY_CLASS,
+            _fuir.clazzSrcFile(cl)
+          );
         _classFiles.put(cl, cf);
 
         if (cl == _fuir.clazzUniverse())
@@ -255,7 +262,7 @@ public class Types extends ANY implements ClassFileConstants
   boolean clazzNeedsCode(int cl)
   {
     return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_Const_String_utf8_data() ||
+      cl == _fuir.clazz_const_string_utf8_data() ||
       cl == _fuir.clazz_array_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8_data() ||
@@ -343,25 +350,6 @@ public class Types extends ANY implements ClassFileConstants
     if (POSTCONDITIONS) ensure
       (result != null);
     return result;
-  }
-
-
-  /**
-   * Does the given clazz specify a scalar type in the C code, i.e, standard
-   * numeric types i32, u64, etc.
-   */
-  boolean isScalar(int cl)
-  {
-    var id = _fuir.getSpecialClazz(cl);
-    return switch (id)
-      {
-      case
-        c_i8  , c_i16 , c_i32 ,
-        c_i64 , c_u8  , c_u16 ,
-        c_u32 , c_u64 , c_f32 ,
-        c_f64                   -> true;
-      default                   -> false;
-      };
   }
 
 

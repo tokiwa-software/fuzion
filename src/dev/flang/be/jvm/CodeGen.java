@@ -223,7 +223,7 @@ class CodeGen
   @Override
   public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
   {
-    return _jvm.assignField(s, tvalue, f, val, rt);
+    return _jvm.assignField(s, f, rt, tvalue, val);
   }
 
 
@@ -399,7 +399,7 @@ class CodeGen
   {
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
-    var dn = _names.dynamicFunction(cc0);
+    var dn = _names.dynamicFunction(cc0) + (isCall ? "_c" : "");
     var ds = isCall ? _types.dynDescriptor(cc0) : "(" + _types.javaType(rc).argDescriptor() + ")V";
     var dr = isCall ? _types.resultType(rc)     : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
@@ -516,8 +516,9 @@ class CodeGen
 
     return isCall ? staticCall(si, tv, args, cc)
                   : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(si, tv, cc, args.get(0),
-                               _fuir.clazzResultClazz(cc)));
+                               _jvm.assignField(
+                                si, cc, _fuir.clazzResultClazz(cc), tv, args.get(0)
+                              ));
   }
 
 
@@ -791,7 +792,7 @@ class CodeGen
   public Pair<Expr, Expr> current(int s)
   {
     var cl = _fuir.clazzAt(s);
-    if (_types.isScalar(cl))
+    if (_fuir.isScalar(cl))
       {
         return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
       }
@@ -911,13 +912,9 @@ class CodeGen
    */
   JVMOptions.ConstantCreation constantCreationStrategy(int constCl)
   {
-    return switch (_fuir.getSpecialClazz(constCl))
-      {
-      case c_bool, c_i8 , c_i16, c_i32,
-           c_i64 , c_u8 , c_u16, c_u32,
-           c_u64 , c_f32, c_f64         -> JVMOptions.ConstantCreation.onEveryUse;
-      default                           -> _jvm._options._constantCreationStrategy;
-      };
+    return _fuir.clazzIsBuiltInPrimitive(constCl)
+      ? JVMOptions.ConstantCreation.onEveryUse
+      : _jvm._options._constantCreationStrategy;
   }
 
 
@@ -946,7 +943,7 @@ class CodeGen
       case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
       case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ())                                   , Expr.UNIT);
       case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
-      case c_String       -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
+      case c_String       -> _jvm.boxedConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
       default             ->
         {
           if (_fuir.clazzIsArray(constCl))

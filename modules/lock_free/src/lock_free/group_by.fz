@@ -17,26 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.err
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion feature Sequence.group_by
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.err -- unit type grouping routines to print to stderr
+
+# group the elements of this sequence by a key of type K
 #
-module err: encodings is
+# f determines the key of an element
+#
+public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.Map K (Sequence T) =>
 
-  module print(s Any) =>
-    write s.as_string.utf8.as_array
+  # NYI It should be possible to choose the map implementation that is used.
+  res := (lock_free.Map K (Sequence T)).empty
 
-  module println(s Any) =>
-    write (s.as_string.utf8 ++ [ascii.lf]).as_array
+  for_each x->
+    key := f x
+    match res[key]
+      nil => res.add key [x]
+      s Sequence T => res.add key s++[x]
 
-  module println =>
-    write [ascii.lf]
-
-  fzE_file_stderr fuzion.sys.Pointer => native
-
-  write(arr array u8) =>
-    _ := fuzion.sys.fileio.write fzE_file_stderr arr
+  res

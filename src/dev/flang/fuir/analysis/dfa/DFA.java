@@ -2066,22 +2066,16 @@ public class DFA extends ANY
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
-    put("fuzion.sys.process.create" , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.process.wait"   , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.read"      , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.write"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("fuzion.sys.pipe.close"     , cl -> NumericValue.create(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-
     put("effect.type.replace0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           cl.replaceEffect(ecl, new_e);
           return Value.UNIT;
         });
     put("effect.type.default0"              , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
           var old_e = cl._dfa._defaultEffects.get(ecl);
           if (old_e == null)
@@ -2095,7 +2089,7 @@ public class DFA extends ANY
     put(EFFECT_INSTATE_NAME                 , cl ->
         {
           var fuir = cl._dfa._fuir;
-          var ecl      = fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl      = fuir.effectTypeFromIntrinsic(cl._cc);
 
           var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 0));
           var finallie = fuir.lookup_static_finally(ecl);
@@ -2124,7 +2118,7 @@ public class DFA extends ANY
         });
     put("effect.type.abort0"                , cl ->
         {
-          var ecl = cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc);
+          var ecl = cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc);
           var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
           if (ev != null)
             {
@@ -2132,7 +2126,7 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromInstrinsic(cl._cc)) != null
+    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl._dfa._fuir.effectTypeFromIntrinsic(cl._cc)) != null
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes
@@ -2801,8 +2795,8 @@ public class DFA extends ANY
    */
   Value newConstString(byte[] utf8Bytes, Context context)
   {
-    var cs            = _fuir.clazz_Const_String();
-    var utf_data      = _fuir.clazz_Const_String_utf8_data();
+    var cs            = _fuir.clazz_const_string();
+    var utf_data      = _fuir.clazz_const_string_utf8_data();
     var ar            = _fuir.clazz_array_u8();
     var internalArray = _fuir.lookup_array_internal_array(ar);
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
@@ -2820,7 +2814,7 @@ public class DFA extends ANY
     a.setField(this, data  , adata);
     arr.setField(this, internalArray, a);
     r.setField(this, utf_data, arr);
-    return r;
+    return r.box(this, cs, _fuir.clazz_ref_const_string(), context);
   }
 
 

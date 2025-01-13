@@ -243,7 +243,12 @@ public class CTypes extends ANY
     if (!visited.contains(cl))
       {
         visited.add(cl);
-        if (!isScalar(cl)) // special handling of stdlib clazzes known to the compiler
+        // value must be declared before the ref
+        if (_fuir.clazzIsRef(cl))
+          {
+            findDeclarationOrder(_fuir.clazzAsValue(cl), result, visited);
+          }
+        else
           {
             // first, make sure structs used for inner fields are declared:
             for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
@@ -259,10 +264,6 @@ public class CTypes extends ANY
               {
                 var cc = _fuir.clazzChoice(cl, i);
                 findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzAny() : cc, result, visited);
-              }
-            if (_fuir.clazzIsRef(cl))
-              {
-                findDeclarationOrder(_fuir.clazzAsValue(cl), result, visited);
               }
           }
         result.add(cl);
@@ -370,7 +371,8 @@ public class CTypes extends ANY
   boolean clazzNeedsCode(int cl)
   {
     return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_Const_String_utf8_data() ||
+      cl == _fuir.clazz_const_string() ||
+      cl == _fuir.clazz_const_string_utf8_data() ||
       cl == _fuir.clazz_array_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8_data() ||

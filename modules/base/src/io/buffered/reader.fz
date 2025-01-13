@@ -23,11 +23,11 @@
 
 
 # buffered.reader effect allows buffered reading
-# by using the given Read_Provider
+# by using the given Read_Handler
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(rp Read_Provider, buf_size i32) : effect
+public reader(rh Read_Handler, buf_size i32) : effect
 pre debug: buf_size > 0
 is
 
@@ -78,7 +78,7 @@ is
     pre
       debug: buffer.buffered = 0
   =>
-    match rp.read buffer.available.as_i32
+    match rh.read buffer.available.as_i32
       a array u8 =>
         match buffer.enqueue a
           unit => unit
@@ -245,12 +245,15 @@ public read_fully array u8 ! reader =>
 # Read input fully and split it at the given delimiter. If specified, delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
-public read_delimiter_full (delim String, strip_cr bool) array String ! reader =>
-  String.from_bytes read_fully
-    .split delim
-    .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
-    .as_array
-
+public read_delimiter_full(delim String, strip_cr bool) array String ! (reader LM) =>
+  str := (String.from_bytes (read_fully LM))
+  if str.byte_length > 0
+    (str.ends_with "\n" ? str.substring 0 str.byte_length-1 : str)
+      .split delim
+      .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
+      .as_array
+  else
+    []
 
 # Read input fully and split it at linefeed (ASCII 10) characters. Delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.

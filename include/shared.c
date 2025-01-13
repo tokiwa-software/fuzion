@@ -993,6 +993,11 @@ void * fzE_file_stdin(void) { return stdin; }
 void * fzE_file_stdout(void) { return stdout; }
 void * fzE_file_stderr(void) { return stderr; }
 
+int32_t fzE_file_flush(void * file)
+{
+  return fflush(file) == 0 ? 0 : -1;
+}
+
 
 uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
 {
@@ -1002,5 +1007,17 @@ uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
 void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
 {
   ((uint8_t *)addr)[idx] = x;
+}
+
+void * fzE_null(void)
+{
+  return NULL;
+}
+
+int fzE_is_null(void * p)
+{
+  return p == NULL
+    ? 0
+    : -1;
 }
 
