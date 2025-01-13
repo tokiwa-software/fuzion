@@ -894,7 +894,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (res != null,
        Errors.any() || !isUniverse(),
-       res.state(this).atLeast(State.FINDING_DECLARATIONS),
+       Errors.any() || res.state(this).atLeast(State.FINDING_DECLARATIONS),
        !isCotype());
 
     if (_cotype == null)
