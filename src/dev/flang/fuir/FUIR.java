@@ -1719,7 +1719,7 @@ public abstract class FUIR extends IR
 
   private int[] clazzFields(int cl, int lastClazz)
   {
-    var numFields = clazzNumFields(cl);
+    var numFields = clazzIsRef(cl) ? 0 : clazzNumFields(cl);
     var result = new ArrayList<Integer>();
     for (int i = 0; i < numFields; i++)
       {
