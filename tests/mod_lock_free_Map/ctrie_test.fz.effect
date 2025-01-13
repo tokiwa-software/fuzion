@@ -3,5 +3,6 @@ concur.atomic_access
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
 panic
-io.out
+io.Out
 fuzion.runtime.post_fault
+io.Err

@@ -3,7 +3,8 @@ concur.atomic_access
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
 mutate
-io.out
+io.Out
 fuzion.runtime.post_fault
+io.Err
 panic
 lib_memoize.#loop0.fib1#1.memoized i64 i64

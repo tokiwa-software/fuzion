@@ -1,10 +1,11 @@
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
 fileiotests.f.stat
-io.out
+io.Out
 io.dir.make
 panic
 fileiotests.f.delete
 fileiotests.f.move
+io.Err
 fuzion.runtime.post_fault
 fileiotests.f.seek
