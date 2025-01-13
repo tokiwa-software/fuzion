@@ -17,34 +17,36 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature err
+#  Source code of Fuzion standard library feature Err
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# err -- effect providing an output stream
+# Err -- effect providing an output stream
 #
-public err (p Print_Handler) : print_effect p is
+public Err ref : print_effect is
 
   type.install_default =>
-    (io.err default_print_handler).default
+    io.Err.default io.def_err
 
 
-  module type.default_print_handler =>
-    ref : io.Print_Handler
+module def_err =>
+  ref : io.Err
 
-      module fzE_file_stderr fuzion.sys.Pointer => native
+    module fzE_file_stderr fuzion.sys.Pointer => native
 
-      public redef write(b Sequence u8) outcome unit =>
-        fuzion.sys.fileio.write fzE_file_stderr b.as_array
+    public redef write(b Sequence u8) outcome unit =>
+      replace
+      fuzion.sys.fileio.write fzE_file_stderr b.as_array
 
-      public redef flush outcome unit =>
-        fuzion.sys.fileio.flush fzE_file_stderr
+    public redef flush outcome unit =>
+      replace
+      fuzion.sys.fileio.flush fzE_file_stderr
 
 
-# short-hand for accessing err effect in current environment
+# short-hand for accessing out effect in current environment
 #
 public err =>
-  err.install_default
-  io.err.env
+  Err.install_default
+  io.Err.env
