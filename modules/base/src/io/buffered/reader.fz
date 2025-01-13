@@ -245,8 +245,8 @@ public read_fully array u8 ! reader =>
 # Read input fully and split it at the given delimiter. If specified, delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
-public read_delimiter_full(delim String, strip_cr bool) array String ! (reader LM) =>
-  str := (String.from_bytes (read_fully LM))
+public read_delimiter_full(delim String, strip_cr bool) array String ! reader =>
+  str := String.from_bytes read_fully
   if str.byte_length > 0
     (str.ends_with "\n" ? str.substring 0 str.byte_length-1 : str)
       .split delim

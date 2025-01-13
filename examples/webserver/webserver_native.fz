@@ -71,7 +71,7 @@ webserver_native is
 
               {data}
             """.utf8.as_array
-          io.buffered.writer.env.flush
+          (io.buffered mutate).writer.env.flush
 
         _ := send200 "<html>Hello Fuzion $n!</html>"
 
