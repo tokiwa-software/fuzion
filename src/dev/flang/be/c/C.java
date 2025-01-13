@@ -876,6 +876,16 @@ public class C extends ANY
         command.addAll("-lgc");
       }
 
+
+    if (_options._cLink != null)
+      {
+        var libraries = Arrays
+          .stream(_options._cLink.split(" "))
+          .map(x -> "-l" + x)
+          .iterator();
+        command.addAll(libraries);
+      }
+
     return command;
   }
 
@@ -1192,6 +1202,13 @@ public class C extends ANY
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
+
+    if (_options._cLink != null)
+      {
+        Arrays
+          .stream(_options._cInclude.split(" "))
+          .forEach(x -> cf.println("#include <" + x + ">"));
+      }
 
     var o = new CIdent("of");
     var s = new CIdent("sz");
