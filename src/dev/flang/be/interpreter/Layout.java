@@ -135,7 +135,7 @@ class Layout extends FUIRContext
           {
             var f = fuir().clazzField(cl, i);
             int fc = fuir().clazzResultClazz(f);
-            var fsz = fuir().clazzFieldIsAdrOfValue(f)
+            var fsz = fuir().clazzFieldIsAdrOfValue(f) || fuir().clazzIsRef(fc)
               ? 1
               : switch (fuir().getSpecialClazz(fc))
                 {
