@@ -39,7 +39,6 @@ is
   # print the given string
   #
   public print (s Any) =>
-    replace
     # NYI: UNDER DEVELOPMENT error handling?
     _ := write s.as_string.utf8.as_array
     _ := flush
