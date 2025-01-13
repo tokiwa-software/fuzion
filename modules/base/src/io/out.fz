@@ -27,14 +27,20 @@
 #
 public out (p Print_Handler) : print_effect p is
 
-
   type.install_default =>
     (io.out default_print_handler).default
 
 
-  type.default_print_handler =>
-    ref: io.Print_Handler
-      redef print(s Any) => fuzion.sys.out.print s
+  module type.default_print_handler =>
+    ref : io.Print_Handler
+
+      module fzE_file_stdout fuzion.sys.Pointer => native
+
+      public redef write(b Sequence u8) outcome unit =>
+        fuzion.sys.fileio.write fzE_file_stdout b.as_array
+
+      public redef flush outcome unit =>
+        fuzion.sys.fileio.flush fzE_file_stdout
 
 
 # short-hand for accessing out effect in current environment

@@ -1851,16 +1851,16 @@ should be avoided as much as possible.
    *
    * @param s site of the assignment or NO_SITE if this is a call in an interface method stub.
    *
-   * @param tvalue the target value that contains the field
-   *
    * @param f the field
-   *
-   * @param value the new value for the field
    *
    * @param rt the type of the field.
    *
+   * @param tvalue the target value that contains the field
+   *
+   * @param value the new value for the field
+   *
    */
-  Expr assignField(int s, Expr tvalue, int f, Expr value, int rt)
+  Expr assignField(int s, int f, int rt, Expr tvalue, Expr value)
   {
     if (CHECKS) check
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse(),

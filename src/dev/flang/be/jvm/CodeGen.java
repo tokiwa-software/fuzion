@@ -223,7 +223,7 @@ class CodeGen
   @Override
   public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
   {
-    return _jvm.assignField(s, tvalue, f, val, rt);
+    return _jvm.assignField(s, f, rt, tvalue, val);
   }
 
 
@@ -516,8 +516,9 @@ class CodeGen
 
     return isCall ? staticCall(si, tv, args, cc)
                   : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(si, tv, cc, args.get(0),
-                               _fuir.clazzResultClazz(cc)));
+                               _jvm.assignField(
+                                si, cc, _fuir.clazzResultClazz(cc), tv, args.get(0)
+                              ));
   }
 
 

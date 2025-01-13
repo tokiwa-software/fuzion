@@ -94,8 +94,19 @@ module fileio is
                 # the length of the internal array representing the content
                 content_length i32) i32 => native
 
-
+  # flush any buffers held for fd
+  #
+  # returns 0 in case of success, -1 in case of failure
+  #
   module fzE_file_flush(fd fuzion.sys.Pointer) i32 => native
+
+  # wrapper for fzE_file_flush
+  #
+  module flush(fd fuzion.sys.Pointer) outcome unit =>
+    if fzE_file_flush fd = 0
+      unit
+    else
+      error "error when flushing"
 
 
   # deletes the file/dir found in the path
