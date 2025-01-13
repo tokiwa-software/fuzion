@@ -17,15 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Write_Provider
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-public Write_Provider ref is
-
-
-  # write bytes b
-  #
-  public write(b Sequence u8) outcome unit
-  pre b.finite = trit.yes
-  => abstract
+override NAME = reg_issue4516_1
+include ../simple.mk

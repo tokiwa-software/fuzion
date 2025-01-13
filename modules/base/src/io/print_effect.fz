@@ -36,11 +36,13 @@ is
     p.println s
     replace
 
+
   # print the given string
   #
   public print (s Any) =>
     p.print s
     replace
+
 
   # print new line
   #
@@ -49,7 +51,23 @@ is
     replace
 
 
-public Print_Handler ref is
+  # write bytes (without explicit flushing)
+  #
+  public write(b array u8) outcome unit =>
+    replace
+    p.write b
+
+
+  # explicitly flush everything that has been written
+  #
+  public flush outcome unit =>
+    replace
+    p.flush
+
+
+public Print_Handler ref : io.Write_Handler is
+
+  public flush outcome unit => abstract
 
   public println(s Any) =>
     print (s.as_string + (codepoint 10))
@@ -57,4 +75,7 @@ public Print_Handler ref is
   public println =>
     print (codepoint 10)
 
-  public print(s Any) unit => abstract
+  public print(s Any) unit =>
+    # NYI: UNDER DEVELOPMENT error handling?
+    _ := write s.as_string.utf8.as_array
+    _ := flush

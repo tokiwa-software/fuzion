@@ -46,17 +46,17 @@ public mode is
 #
 public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
-  # definition of read provider for file
+  # definition of read handler for file
   #
-  read_provider(desc fuzion.sys.Pointer) : io.Read_Provider is
+  read_handler(desc fuzion.sys.Pointer) : io.Read_Handler is
     redef read(count i32) choice (array u8) io.end_of_file error =>
       match fuzion.sys.fileio.read desc count.as_u64
         a array u8 => if a.is_empty then io.end_of_file else a
         e error => e
 
-  # definition of write provider for file
+  # definition of write handler for file
   #
-  write_provider (desc fuzion.sys.Pointer) : io.Write_Provider is
+  write_handler (desc fuzion.sys.Pointer) : io.Write_Handler is
     redef write (bytes Sequence u8) outcome unit =>
       fuzion.sys.fileio.write desc bytes.as_array
 
@@ -69,8 +69,8 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
   (fuzion.sys.fileio.open file_name mode_num).bind R fd->
     # install effect `open T` and run `code`
     r := (open fd file_name) ! ()->
-          (io.buffered.reader LM (read_provider fd) 1024) ! ()->
-            (io.buffered.writer (write_provider fd) 1024) ! ()->
+          (io.buffered.reader LM (read_handler fd) 1024) ! ()->
+            (io.buffered.writer (write_handler fd) 1024) ! ()->
               tmp := code.call
               # NYI: handle error once signature of with is changed
               _ := io.buffered.writer.env.flush

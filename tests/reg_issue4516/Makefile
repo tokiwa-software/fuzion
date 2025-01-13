@@ -17,27 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.err
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.err -- unit type grouping routines to print to stderr
-#
-module err: encodings is
-
-  module print(s Any) =>
-    write s.as_string.utf8.as_array
-
-  module println(s Any) =>
-    write (s.as_string.utf8 ++ [ascii.lf]).as_array
-
-  module println =>
-    write [ascii.lf]
-
-  fzE_file_stderr fuzion.sys.Pointer => native
-
-  write(arr array u8) =>
-    _ := fuzion.sys.fileio.write fzE_file_stderr arr
-    _ := fuzion.sys.fileio.fzE_file_flush fzE_file_stderr
+override NAME = reg_issue4516
+include ../simple.mk

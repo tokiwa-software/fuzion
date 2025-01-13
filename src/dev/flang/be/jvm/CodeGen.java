@@ -223,7 +223,7 @@ class CodeGen
   @Override
   public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
   {
-    return _jvm.assignField(s, tvalue, f, val, rt);
+    return _jvm.assignField(s, f, rt, tvalue, val);
   }
 
 
@@ -399,7 +399,7 @@ class CodeGen
   {
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
-    var dn = _names.dynamicFunction(cc0);
+    var dn = _names.dynamicFunction(cc0) + (isCall ? "_c" : "");
     var ds = isCall ? _types.dynDescriptor(cc0) : "(" + _types.javaType(rc).argDescriptor() + ")V";
     var dr = isCall ? _types.resultType(rc)     : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
@@ -516,8 +516,9 @@ class CodeGen
 
     return isCall ? staticCall(si, tv, args, cc)
                   : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(si, tv, cc, args.get(0),
-                               _fuir.clazzResultClazz(cc)));
+                               _jvm.assignField(
+                                si, cc, _fuir.clazzResultClazz(cc), tv, args.get(0)
+                              ));
   }
 
 
