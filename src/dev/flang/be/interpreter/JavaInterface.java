@@ -234,7 +234,7 @@ public class JavaInterface extends FUIRContext
         var result = new Instance(resultClazz);
         for (var e : Layout.get(resultClazz)._offsets.entrySet())
           {
-            var f = fuir().clazzField(fuir().clazzAsValue(resultClazz), e.getKey());
+            var f = e.getKey();
             var off = (Integer) e.getValue();
             var v = switch (fuir().clazzBaseName(f))
               {

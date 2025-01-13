@@ -256,7 +256,7 @@ public class Names extends ANY implements ClassFileConstants
     {
       String rawName(int field)
       {
-        return _prefix + _fuir.fieldIndex(field) + "_" + baseName(field);
+        return _prefix + _fuir.clazzId2num(field) + "_" + baseName(field);
       }
     };
 

@@ -155,7 +155,7 @@ class Layout extends FUIRContext
                     ? 0
                     : get(fc).size();
                 };
-            _offsets.put(i, size - Integer.MIN_VALUE);
+            _offsets.put(f, size - Integer.MIN_VALUE);
             size += fsz;
           }
         size -= Integer.MIN_VALUE;
@@ -184,10 +184,10 @@ class Layout extends FUIRContext
     if (PRECONDITIONS) require
       (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine ||
        fuir().clazzIsChoice(_clazz),
-       _offsets.containsKey(fuir().fieldIndex(f))
+       _offsets.containsKey(f)
        );
 
-    return _offsets.get(fuir().fieldIndex(f));
+    return _offsets.get(f);
   }
 
 
