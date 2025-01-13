@@ -120,7 +120,6 @@ int fzE_read_dir(intptr_t * dir, void * result) {
         // skip dot and dot-dot paths.
         (strcmp(d->findData.cFileName, ".") == 0 || strcmp(d->findData.cFileName, "..") == 0));
 
-  int len  = 0;
   if (!res) {
     return GetLastError() == ERROR_NO_MORE_FILES ? 0 : -1;
   }
