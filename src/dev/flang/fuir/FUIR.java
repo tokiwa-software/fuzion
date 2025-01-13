@@ -1748,6 +1748,12 @@ public abstract class FUIR extends IR
             clazzAsValue(cl);
           }
       }
+    // NYI: CLEANUP: currently needed by interpreter
+    var thiz = (GeneratingFUIR)this;
+    thiz._lookupDone = false;
+    clazz(SpecialClazzes.c_sys_ptr);
+    thiz._lookupDone = true;
+
     var firstClazz = firstClazz();
     var lastClazz = lastClazz();
     var siteCount = siteCount();

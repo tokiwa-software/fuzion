@@ -153,7 +153,8 @@ public class Interpreter extends FUIRContext
 
   /**
    * Get the result clazz of thiz
-   * or if thiz is an outer ref c_address.
+   * or if thiz is an address to a value
+   * c_address.
    */
   private static int clazzForField(int thiz)
   {
