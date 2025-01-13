@@ -28,7 +28,7 @@ call 'issue118.a.precall as_string' at {base.fum}/integer.fz:103:36:
 call 'issue118.a.as_string' at {base.fum}/io/print_effect.fz:36:12:
     print (s.as_string + (codepoint 10))
 -----------^^^^^^^^^^^
-call 'io.default_out.anonymous.println#1' at {base.fum}/say.fz:31:22:
+call 'io.default_out.println#1' at {base.fum}/say.fz:31:22:
 public say(s Any) => io.out.println s
 ---------------------^^^^^^^^^^^^^^^^
 call 'say#1' at --CURDIR--/issue118.fz:56:3:
