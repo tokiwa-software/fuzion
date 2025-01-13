@@ -50,8 +50,8 @@ module:public connection(desc i32) is
   #
   with0(T type, LM type : mutate, fn ()->T)
   =>
-    (io.buffered.reader LM (read_handler desc) 1024) ! ()->
-      (io.buffered.writer (write_handler desc) 1024) ! ()->
+    (io.buffered LM).reader (read_handler desc) 1024 ! ()->
+      (io.buffered LM).writer (write_handler desc) 1024 ! ()->
         (net.channel desc) ! ()->
           fn.call
 
