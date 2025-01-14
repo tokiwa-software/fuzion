@@ -2805,28 +2805,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * the clazz of the elements of the array
-   *
-   * @param constCl, e.g. {@code array (tuple i32 codepoint)}
-   *
-   * @return e.g. {@code tuple i32 codepoint}
-   */
-  @Override
-  public int inlineArrayElementClazz(int constCl)
-  {
-    if (PRECONDITIONS) require
-      (clazzIsArray(constCl));
-
-    var result = type2clazz(id2clazz(constCl)._type.generics().get(0))._id;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0);
-
-    return result;
-  }
-
-
-  /**
    * Is {@code cl} an array?
    */
   @Override
