@@ -493,7 +493,7 @@ public class Impl extends ANY
    */
   private Expr initialValueFromCall(int i, Resolution res)
   {
-    Expr result = null;
+    Expr result = Call.ERROR;
     var ic = _initialCalls.get(i);
     var aargs = ic._actuals.listIterator();
     for (var frml : ic.calledFeature().valueArguments())
@@ -511,7 +511,7 @@ public class Impl extends ANY
                     _infiniteRecursionInResolveTypes = false;
                   }
                 if (CHECKS) check
-                  (result == null);
+                  (result == Call.ERROR);
                 result = actl;
               }
           }
