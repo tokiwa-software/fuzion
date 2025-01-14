@@ -627,6 +627,7 @@ $(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS)
 	chmod +x $@
 
 $(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
+	rm -rf $(@D)/base
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/base $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseLib=off -saveLib=$@ -XenableSetKeyword
@@ -636,16 +637,19 @@ $(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
 .PRECIOUS: $(MOD_BASE)
 
 $(MOD_TERMINAL): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/terminal/src -name "*.fz")
+	rm -rf $(@D)/terminal
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/terminal $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/terminal/src -saveLib=$@
 
 $(MOD_LOCK_FREE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/lock_free/src -name "*.fz")
+	rm -rf $(@D)/lock_free
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/lock_free $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/lock_free/src -saveLib=$@
 
 $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz")
+	rm -rf $(@D)/nom
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveLib=$@

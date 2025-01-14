@@ -330,6 +330,9 @@ public class GeneratingFUIR extends FUIR
 
     var t = actualType;
 
+    // normalize outer to be value in case t describes a field
+    outerR = t.feature().isField() ? outerR.asValue() : outerR;
+
     var cl = new Clazz(this, outerR, t, select, CLAZZ_BASE + _clazzes.size());
     var existing = _clazzesTM.get(cl);
     if (existing != null)
@@ -406,14 +409,6 @@ public class GeneratingFUIR extends FUIR
         cl._specialClazzId = s;
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init();
-
-        if (cl.feature().isField() && outerR.isRef().yes() && !outerR.isBoxed())
-          { // NYI: CLEANUP: Duplicate clazzes for fields in corresponding value
-            // instance.  This is currently needed for the C backend only since
-            // that backend creates ref clazzes by embedding the underlying
-            // value instance in the ref clazz' struct:
-            var ignore = newClazz(outerR.asValue(), actualType, select);
-          }
 
         result.registerAsHeir();
 
@@ -818,21 +813,6 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     return id2clazz(cl).feature().isOuterRef();
-  }
-
-
-  /**
-   * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
-   */
-  @Override
-  public int fieldIndex(int field)
-  {
-    if (PRECONDITIONS) require
-      (field >= CLAZZ_BASE,
-       field < CLAZZ_BASE + _clazzes.size(),
-       clazzKind(field) == FeatureKind.Field);
-
-    return id2clazz(field).fieldIndex();
   }
 
 
@@ -1437,7 +1417,8 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (s != SpecialClazzes.c_NOT_FOUND);
 
-    return specialClazz(s)._id;
+    var sc = specialClazz(s);
+    return sc == null ? NO_CLAZZ : sc._id;
   }
 
 
@@ -2370,7 +2351,6 @@ public class GeneratingFUIR extends FUIR
    * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
    * i.e., an abstract feature is missing.
    */
-  @Override
   public int lookup(int s, int tclazz)
   {
     if (PRECONDITIONS) require
@@ -2396,7 +2376,7 @@ public class GeneratingFUIR extends FUIR
       {
         innerClazz = accessedClazz(s);
         if (CHECKS) check
-          (Errors.any() || tclazz == clazzOuterClazz(innerClazz));
+          (Errors.any() || tclazz == clazzOuterClazz(innerClazz) || clazzAsValue(tclazz) == clazzOuterClazz(innerClazz));
       }
     if (innerClazz != NO_CLAZZ)
       {
@@ -2925,7 +2905,6 @@ public class GeneratingFUIR extends FUIR
    * @param instantiationSite if known, the site where {@code cl} was instantiated,
    * {@code NO_SITE} if unknown.
    */
-  @Override
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     // we might have an assignment to a field that was removed:
@@ -2952,7 +2931,6 @@ public class GeneratingFUIR extends FUIR
    * cumulative, i.e., if a clazz is missing several implementations of abstract
    * features, there will be only one error for that clazz.
    */
-  @Override
   public void reportAbstractMissing()
   {
     _abstractMissing.values()

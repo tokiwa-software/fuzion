@@ -121,7 +121,14 @@ public class Types extends ANY implements ClassFileConstants
     if (hasClassFile(cl))
       {
         var cn = _names.javaClass(cl);
-        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS, _fuir.clazzSrcFile(cl));
+        var cf = new ClassFile(
+            _opt,
+            cn,
+            // in case cl is a ref we inherit from the corresponding value class
+            // otherwise we inherit from dev.flang.be.jvm.runtime.Any
+            _fuir.clazzIsRef(cl) && !_fuir.clazzIsBoxed(cl) ? _names.javaClass(_fuir.clazzAsValue(cl)) : Names.ANY_CLASS,
+            _fuir.clazzSrcFile(cl)
+          );
         _classFiles.put(cl, cf);
 
         if (cl == _fuir.clazzUniverse())

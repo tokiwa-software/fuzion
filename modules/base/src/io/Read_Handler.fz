@@ -17,27 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.out
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature Read_Handler
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.out -- unit type grouping routines to print to stdout
-#
-module out : encodings is
-
-  module print(s Any) =>
-    write s.as_string.utf8.as_array
-
-  module println(s Any) =>
-    write (s.as_string.utf8 ++ [ascii.lf]).as_array
-
-  module println =>
-    write [ascii.lf]
-
-  module fzE_file_stdout fuzion.sys.Pointer => native
-
-  write(arr array u8) =>
-    _ := fuzion.sys.fileio.write fzE_file_stdout arr
-    _ := fuzion.sys.fileio.fzE_file_flush fzE_file_stdout
+public Read_Handler ref is
+  public read(count i32) choice (array u8) io.end_of_file error
+  # NYI
+  # post debug: match result
+  #               a array => !a.is_empty
+  #               io.end_of_file => true
+  #               error => true
+  => abstract

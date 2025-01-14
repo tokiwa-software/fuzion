@@ -876,6 +876,16 @@ public class C extends ANY
         command.addAll("-lgc");
       }
 
+
+    if (_options._cLink != null)
+      {
+        var libraries = Arrays
+          .stream(_options._cLink.split(" "))
+          .map(x -> "-l" + x)
+          .iterator();
+        command.addAll(libraries);
+      }
+
     return command;
   }
 
@@ -1193,6 +1203,13 @@ public class C extends ANY
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
+    if (_options._cLink != null)
+      {
+        Arrays
+          .stream(_options._cInclude.split(" "))
+          .forEach(x -> cf.println("#include <" + x + ">"));
+      }
+
     var o = new CIdent("of");
     var s = new CIdent("sz");
     var r = new CIdent("r");
@@ -1348,11 +1365,12 @@ public class C extends ANY
             var cc = ccs[cci+1];                   // called clazz in case of match
             var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
-            var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
-            tv = unbox(tt, cc, tv);
             if (isCall)
               {
-                var calpair = call(s, tv, args, cc);
+                var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
+                var ut = _fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco) ? cco : tt;
+                tv = unbox(tt, cc, tv);
+                var calpair = call(s, tv, args, ut, cc);
                 var rv  = calpair.v0();
                 acc = calpair.v1();
                 if (ccs.length == 2)
@@ -1372,7 +1390,7 @@ public class C extends ANY
               }
             else
               {
-                acc = assignField(tv, tc, cco, cc, args.get(0), rti);
+                acc = assignField(tvalue, tc, tt, cc, args.get(0), rti);
               }
             cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                   CStmnt.seq(acc, CStmnt.BREAK)));
@@ -1620,7 +1638,7 @@ public class C extends ANY
       {
         tvalue = tvalue.castTo(_types.clazz(tt));
       }
-    var af = accessField(tvalue, tt, f);
+    var af = accessField(tvalue, tc, f);
     if (_fuir.clazzIsRef(rt))
       {
         value = value.castTo(_types.clazz(rt));
@@ -1668,9 +1686,8 @@ public class C extends ANY
    *
    * @return the code to perform the call
    */
-  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int cc)
+  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int tt, int cc)
   {
-    var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
@@ -1693,6 +1710,7 @@ public class C extends ANY
                   _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!
+                  var tc = _fuir.clazzOuterClazz(cc);
                   result = tailRecursion(cl, s, tc, a);
                   resultValue = null;
                 }
@@ -1724,7 +1742,7 @@ public class C extends ANY
         }
       case Field:
         {
-          resultValue = accessField(tvalue, tc, cc);
+          resultValue = accessField(tvalue, tt, cc);
           break;
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));

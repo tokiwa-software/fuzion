@@ -1,10 +1,10 @@
 ex_buffered_writer =>
-  _ := io.stdout ! ()->
+  _ := io.out ! ()->
     x := array u8 1023 i->0x61
     y := array u8 2049 i->0x62
     z := array u8 128 i->0x63
 
-    _ := io.stdout.env.write x
-    _ := io.stdout.env.write y
-    _ := io.stdout.env.write z
-    _ := io.stdout.env.flush
+    _ := io.out.env.write x
+    _ := io.out.env.write y
+    _ := io.out.env.write z
+    _ := io.out.env.flush
