@@ -3,6 +3,7 @@ concur.threads
 fuzion.runtime.check_fault
 fuzion.runtime.fault
 fuzion.runtime.pre_fault
-io.out
+io.Err
+io.Out
 fuzion.runtime.post_fault
 time.nano

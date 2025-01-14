@@ -1,7 +1,8 @@
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
+io.Err
 fuzion.runtime.post_fault
-io.out
+io.Out
 unique_id
 concur.atomic_access
 concur.threads

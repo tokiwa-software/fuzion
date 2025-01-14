@@ -1,4 +1,5 @@
-io.out
+io.Out
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
+io.Err
 fuzion.runtime.post_fault

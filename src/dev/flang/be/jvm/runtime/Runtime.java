@@ -535,7 +535,7 @@ public class Runtime extends ANY
    *
    * @param instance a new instance to replace the old one
    */
-  public static void effect_replace(int id, Any instance)
+  public static void effect_replace(int id, AnyI instance)
   {
     var t = currentThread();
 
