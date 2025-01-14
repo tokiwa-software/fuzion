@@ -471,13 +471,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int lookup(int s, int tclazz)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'lookup'");
-  }
-
-  @Override
   public boolean accessIsDynamic(int s)
   {
     return _sites[s-SITE_BASE].accessIsDynamic();
@@ -616,20 +609,6 @@ public class LibraryFuir extends FUIR {
   public String clazzSrcFile(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzSrcFile();
-  }
-
-  @Override
-  public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'recordAbstractMissing'");
-  }
-
-  @Override
-  public void reportAbstractMissing()
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'reportAbstractMissing'");
   }
 
   @Override
