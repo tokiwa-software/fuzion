@@ -151,7 +151,7 @@ public class Match extends AbstractMatch
       {
         res.resolveTypes(st.feature());
       }
-    if (st.isChoice())
+    if (st.isChoice() && Types.resolved.t_void != st)
       {
         var cgs = st.choiceGenerics(context);
         for (var i = 0; i < cgs.size(); i++)
