@@ -503,7 +503,7 @@ public class CNames extends ANY
   CIdent fieldName(int field)
   {
     var m = mangle(_fuir.clazzBaseName(field));
-    var n = FIELD_PREFIX + _fuir.fieldIndex(field) + "_" + m;
+    var n = FIELD_PREFIX + _fuir.clazzId2num(field) + "_" + m;
     return new CIdent(n);
   }
 

@@ -2510,7 +2510,7 @@ public class Call extends AbstractCall
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
     if (CHECKS) check
-      (res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
+      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
 
     if (_calledFeature == Types.f_ERROR)
       {

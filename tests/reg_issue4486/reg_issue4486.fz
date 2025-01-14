@@ -51,8 +51,9 @@ reg_issue4486 =>
     say "input: '{input.replace "\n" "\\n"}'"
 
     LM ! ()->
-      (io.buffered.reader LM (read_handler input) 1024) ! ()->
-        for l := io.buffered.read_line LM
+      b := io.buffered LM
+      b.reader (read_handler input) 1024 ! ()->
+        for l := b.read_line
             i in 1..
         while l??
           say "  using read_line:  $i: '$l'"
@@ -60,8 +61,9 @@ reg_issue4486 =>
     say ""
 
     LM ! ()->
-      (io.buffered.reader LM (read_handler input) 1024) ! ()->
-        for l in io.buffered.read_lines LM
+      b := io.buffered LM
+      b.reader (read_handler input) 1024 ! ()->
+        for l in b.read_lines
             i in 1..
         do
           say "  using read_lines: $i: '$l'"
