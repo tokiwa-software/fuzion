@@ -1254,7 +1254,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
             if (usage.isEmpty() || definition.isEmpty())
               {
                 stacks.get(0).push(lambda._expr);
+                var old = visitingInnerFeature[0];
+                visitingInnerFeature[0] = true;
                 lambda._expr.visit(this, outer);
+                visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
             return lambda;
