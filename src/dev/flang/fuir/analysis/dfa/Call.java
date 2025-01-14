@@ -541,6 +541,11 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void replaceEffect(int ecl, Value e)
   {
+    if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
+      {
+        Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
+               + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+      }
     if (_env != null)
       {
         _env.replaceEffect(ecl, e);
