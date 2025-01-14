@@ -449,7 +449,7 @@ public class InlineArray extends ExprWithPos
                                          unit1,
                                          unit2,
                                          unit3);
-    var arrayCall       = new Call(SourcePosition.builtIn, null, "array"     , -1,
+    var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, -1,
                                    sysArrArgsT,
                                    sysArrArgsE, null, null                          ).resolveTypes(res, context);
     exprs.add(arrayCall);

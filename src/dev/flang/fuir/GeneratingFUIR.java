@@ -2803,26 +2803,7 @@ public class GeneratingFUIR extends FUIR
 
   /*------------------------------  arrays  -----------------------------*/
 
-
-  /**
-   * Is {@code cl} an array?
-   */
-  @Override
-  public boolean clazzIsArray(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return clazz(cl).feature() == Types.resolved.f_array;
-  }
-
-
   /*----------------------------  constants  ----------------------------*/
-
-
-
-
 
   /*----------------------  accessing source code  ----------------------*/
 
