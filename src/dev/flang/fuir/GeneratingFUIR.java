@@ -766,7 +766,7 @@ public class GeneratingFUIR extends FUIR
    * @return number of value fields in {@code cl}
    */
   @Override
-  public int clazzNumFields(int cl)
+  public int clazzFieldCount(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -792,7 +792,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size(),
        0 <= i,
-       i < clazzNumFields(cl));
+       i < clazzFieldCount(cl));
 
     return id2clazz(cl).fields()[i]._id;
   }
@@ -828,7 +828,7 @@ public class GeneratingFUIR extends FUIR
    * otherwise.  May be 0 for the void choice.
    */
   @Override
-  public int clazzNumChoices(int cl)
+  public int clazzChoiceCount(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -859,7 +859,7 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size(),
-       i >= 0 && i < clazzNumChoices(cl));
+       i >= 0 && i < clazzChoiceCount(cl));
 
     var cc = id2clazz(cl);
     var cg = cc.choiceGenerics().get(i);

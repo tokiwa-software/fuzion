@@ -116,7 +116,7 @@ class Layout extends FUIRContext
         // reserved for tagging
         size += (fuir().clazzIsChoiceOfOnlyRefs(_clazz) ? 0 : 1);
         int maxSz = 0;
-        for (int i = 0; i < fuir().clazzNumChoices(cl); i++)
+        for (int i = 0; i < fuir().clazzChoiceCount(cl); i++)
           {
             var cg = fuir().clazzChoice(cl, i);
             var sz = fuir().clazzIsRef(cg) ? 1 : get(cg).size();
@@ -131,7 +131,7 @@ class Layout extends FUIRContext
       }
     else if (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine)
       {
-        for (int i = 0; i < fuir().clazzNumFields(cl); i++)
+        for (int i = 0; i < fuir().clazzFieldCount(cl); i++)
           {
             var f = fuir().clazzField(cl, i);
             int fc = fuir().clazzResultClazz(f);
@@ -230,7 +230,7 @@ class Layout extends FUIRContext
     if (PRECONDITIONS) require
       (fuir().clazzIsChoice(_clazz),
        id >= 0,
-       id < fuir().clazzNumChoices(_clazz));
+       id < fuir().clazzChoiceCount(_clazz));
 
     // id is ignored, all vals are currently stored at the same offset:
     return choiceValsOffset();
