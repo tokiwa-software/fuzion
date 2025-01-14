@@ -1505,7 +1505,10 @@ public abstract class FUIR extends IR
    *
    * @return e.g. {@code tuple i32 codepoint}
    */
-  public abstract int inlineArrayElementClazz(int constCl);
+  public int inlineArrayElementClazz(int constCl)
+  {
+    return this.clazzActualGeneric(constCl, 0);
+  }
 
 
   /**
