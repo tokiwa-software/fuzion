@@ -1483,7 +1483,6 @@ public class GeneratingFUIR extends FUIR
    *
    * @return the index of the requested {@code Function.call} feature's clazz.
    */
-  @Override
   public int lookupCall(int cl, boolean markAsCalled)
   {
     if (PRECONDITIONS) require

@@ -603,20 +603,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz that is an heir of 'Function', find the corresponding inner
-   * clazz for 'call'.  This is used for code generation of intrinsic
-   * 'abortable' that has to create code to call 'call'.
-   *
-   * @param cl index of a clazz that is an heir of 'Function'.
-   *
-   * @param markAsCalled true to mark the result as called
-   *
-   * @return the index of the requested {@code Function.call} feature's clazz.
-   */
-  public abstract int lookupCall(int cl, boolean markAsCalled);
-
-
-  /**
    * For a clazz that is an heir of 'effect', find the corresponding inner
    * clazz for 'finally'.  This is used for code generation of intrinsic
    * 'instate0' that has to create code to call 'effect.finally'.
