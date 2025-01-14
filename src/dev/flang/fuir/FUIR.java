@@ -1084,24 +1084,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the possible inner clazz for a call or assignment to a field with given
-   * target clazz.
-   *
-   * This is used to feed information back from static analysis tools like DFA
-   * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accessedClazzes.
-   *
-   * @param s site of the access
-   *
-   * @param tclazz the target clazz of the access.
-   *
-   * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
-   * i.e., an abstract feature is missing.
-   */
-  public abstract int lookup(int s, int tclazz);
-
-
-  /**
    * Inform the FUIR instance that lookup for new clazzes is finished.  This
    * means that clazzIsUnitType will be able to produce correct results since no
    * more features will be added.
@@ -1629,42 +1611,6 @@ public abstract class FUIR extends IR
    * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
    */
   public abstract String clazzSrcFile(int cl);
-
-
-  /*---------------------------------------------------------------------
-   *
-   * handling of abstract missing errors.
-   *
-   * NYI: This still uses AirErrors.abstractFeatureNotImplemented, which should
-   * eventually be moved to DFA or somewhere else when DFA is joined with AIR
-   * phase.
-   */
-
-
-  /**
-   * If a called to an abstract feature was found, the DFA will use this to
-   * record the missing implementation of an abstract features.
-   *
-   * Later, this will be reported as an error via {@code reportAbstractMissing()}.
-   *
-   * @param cl clazz is of the clazz that is missing an implementation of an
-   * abstract features.
-   *
-   * @param f the inner clazz that is called and that is missing an implementation
-   *
-   * @param instantiationSite if known, the site where {@code cl} was instantiated,
-   * {@code NO_SITE} if unknown.
-   */
-  public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite);
-
-
-  /**
-   * In case any errors were recorded via {@code recordAbstractMissing} this will
-   * create the corresponding error messages.  The errors reported will be
-   * cumulative, i.e., if a clazz is missing several implementations of abstract
-   * features, there will be only one error for that clazz.
-   */
-  public abstract void reportAbstractMissing();
 
 
   /*----------------------  Interpreter  ----------------------*/

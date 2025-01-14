@@ -73,7 +73,7 @@ public class Optimizer extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public FUIR fuir()
+  public GeneratingFUIR fuir()
   {
     return new GeneratingFUIR(_fe, _mir);
   }
