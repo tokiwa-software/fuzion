@@ -31,6 +31,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import dev.flang.ir.IR;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -1495,7 +1496,10 @@ public abstract class FUIR extends IR
   /**
    * Is {@code constCl} an array?
    */
-  public abstract boolean clazzIsArray(int constCl);
+  public boolean clazzIsArray(int constCl)
+  {
+    return clazzOriginalName(constCl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(constCl);
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
