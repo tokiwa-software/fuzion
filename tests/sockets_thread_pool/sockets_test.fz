@@ -104,19 +104,19 @@ sockets_test is
               _ := (io.buffered lm).writer.env.write req.utf8.as_array
               _ := (io.buffered lm).writer.env.flush
 
-            res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
+            str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
 
             match protocol
               net.protocol.tcp =>
 
                 rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-                res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+                str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
 
               # for UDP reading would block indefinitely
               net.protocol.udp =>
                 # rest of udp datagram was discarded
-                res
+                str
 
               * =>  panic "NI"
 
