@@ -32,7 +32,7 @@
 #  LM : mutate is
 #  LM ! ()->
 #    io.stdin.reader LM ! ()->
-#      for l := io.buffered.read_line LM
+#      for l := (io.buffered LM).read_line
 #          i in 1..
 #      while l??
 #        say "$i: $l"
@@ -53,26 +53,26 @@ public stdin is
   # create a reader for stdin using the given local mutate instance
   #
   public reader (LM type : mutate) =>
-    buffered.reader LM stdin_read_handler 1024
+    (buffered LM).reader stdin_read_handler 1024
 
   # read all of stdin in an array of u8 bytes using
-  # io.buffered.reader.read_fully.
+  # io.buffered.read_fully.
   #
   public read_fully array u8 =>
     M : mutate is
     M ! ()->
-      reader M ! buffered.read_fully M
+      reader M ! (buffered M).read_fully
 
   # read all of stdin in an array of String using
-  # io.buffered.reader.read_lines.
+  # io.buffered.read_lines.
   #
   public read_lines array String =>
     M : mutate is
     M ! ()->
-      reader M ! buffered.read_lines M
+      reader M ! (buffered M).read_lines
 
   # read all of stdin in a single String using
-  # String.from_bytes on the result of io.buffered.reader.read_fully.
+  # String.from_bytes on the result of read_fully.
   #
   public read_string =>
     String.from_bytes read_fully

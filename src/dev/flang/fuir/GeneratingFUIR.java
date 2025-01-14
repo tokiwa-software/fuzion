@@ -2365,7 +2365,6 @@ public class GeneratingFUIR extends FUIR
    * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
    * i.e., an abstract feature is missing.
    */
-  @Override
   public int lookup(int s, int tclazz)
   {
     if (PRECONDITIONS) require
@@ -2920,7 +2919,6 @@ public class GeneratingFUIR extends FUIR
    * @param instantiationSite if known, the site where {@code cl} was instantiated,
    * {@code NO_SITE} if unknown.
    */
-  @Override
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     // we might have an assignment to a field that was removed:
@@ -2947,7 +2945,6 @@ public class GeneratingFUIR extends FUIR
    * cumulative, i.e., if a clazz is missing several implementations of abstract
    * features, there will be only one error for that clazz.
    */
-  @Override
   public void reportAbstractMissing()
   {
     _abstractMissing.values()

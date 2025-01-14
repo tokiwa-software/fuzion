@@ -857,7 +857,7 @@ public class DFA extends ANY
   /**
    * The intermediate code we are analyzing.
    */
-  public final FUIR _fuir;
+  public final GeneratingFUIR _fuir;
 
 
   /**
@@ -1086,7 +1086,7 @@ public class DFA extends ANY
    *
    * @param fuir the intermediate code.
    */
-  public DFA(FuzionOptions options, FUIR fuir)
+  public DFA(FuzionOptions options, GeneratingFUIR fuir)
   {
     _options = options;
     _fuir = fuir;
