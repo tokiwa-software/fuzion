@@ -1779,7 +1779,6 @@ public abstract class FUIR extends IR
                 clazzFields(cl, lastClazz),
                 needsCode ? clazzCode(cl) : NO_SITE,
                 clazzResultField(cl),
-                clazzFieldIsAdrOfValue(cl),
                 clazzTypeParameterActualType(cl),
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),

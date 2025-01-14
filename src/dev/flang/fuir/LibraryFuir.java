@@ -144,12 +144,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public boolean clazzFieldIsAdrOfValue(int fcl)
-  {
-    return _clazzes[clazzId2num(fcl)].clazzFieldIsAdrOfValue();
-  }
-
-  @Override
   public boolean clazzIsChoice(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzIsChoice();

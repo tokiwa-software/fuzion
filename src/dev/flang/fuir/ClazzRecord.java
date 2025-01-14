@@ -49,7 +49,6 @@ public record ClazzRecord(
   int[] clazzFields,
   int clazzCode,
   int clazzResultField,
-  boolean clazzFieldIsAdrOfValue,
   int clazzTypeParameterActualType,
   String clazzOriginalName,
   int[] clazzActualGenerics,
