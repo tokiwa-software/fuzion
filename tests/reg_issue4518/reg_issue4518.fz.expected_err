@@ -1,0 +1,20 @@
+
+--CURDIR--/reg_issue4518.fz:24:15: error 1: Destructuring mismatch between number of visible fields and number of target variables.
+a(p) => (_,x) := p; $x
+--------------^
+Found no visible argument fields ''
+while there are 2 destructuring variables: '_', 'x'.
+
+
+--CURDIR--/reg_issue4518.fz:24:22: error 2: Failed to infer type of expression.
+a(p) => (_,x) := p; $x
+---------------------^
+Expression with unknown type: 'x'
+
+
+--CURDIR--/reg_issue4518.fz:24:3: error 3: Type inference from actual arguments failed since no actual call was found
+a(p) => (_,x) := p; $x
+--^
+For the formal argument 'a.p' the type can only be derived if there is a call to 'a'.
+
+3 errors.

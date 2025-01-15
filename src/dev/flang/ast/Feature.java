@@ -2194,16 +2194,8 @@ A ((Choice)) declaration must not contain a result type.
     _arguments.add(tas.size(), ta);
     tas.add(ta);
 
-    // NYI: For now, we keep the original FeatureName since changing it would
-    // require updating res._module.declaredFeatures /
-    // declaredOrInheritedFeatures. This means free types do not increase the
-    // arg count in feature name. This does not seem to cause problems when
-    // looking up features, but we may miss to report errors for duplicate
-    // features.  Note that when saved to a module file, this feature's name
-    // will have the actual argument count, so this inconsistency is restricted
-    // to the current source module.
-    //
-    //    _featureName = FeatureName.get(_featureName.baseName(), _arguments.size());
+    checkDuplicateFeature(res);
+
     res._module.findDeclarations(ta, this);
 
     var g = ta.asGeneric();
@@ -2212,6 +2204,23 @@ A ((Choice)) declaration must not contain a result type.
     this.whenResolvedTypes(()->res.resolveTypes(ta));
 
     return g;
+  }
+
+
+  /**
+   * check if outer already contains a feature with
+   * the feature name of this feature
+   *
+   * @param res the current Resolution instance
+   */
+  private void checkDuplicateFeature(Resolution res)
+  {
+    var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
+    var existing = res._module.lookupFeature(_outer, newFeatureName, null);
+    if (existing != null)
+      {
+        AstErrors.duplicateFeatureDeclaration(existing, this);
+      }
   }
 
 
