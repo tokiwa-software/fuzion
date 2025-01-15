@@ -494,7 +494,7 @@ public class ParsedCall extends Call
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr applyPartially(Resolution res, Context context, AbstractType t)
+  Expr applyPartially(Resolution res, Context context, AbstractType t)
   {
     Expr result;
     var n = t.arity();
