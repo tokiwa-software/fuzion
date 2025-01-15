@@ -125,7 +125,7 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazzNumFields(int cl)
+  public int clazzFieldCount(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzFields().length;
   }
@@ -150,7 +150,7 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazzNumChoices(int cl)
+  public int clazzChoiceCount(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzChoices().length;
   }
@@ -280,12 +280,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int lookupCall(int cl, boolean markAsCalled)
-  {
-    return _clazzes[clazzId2num(cl)].lookupCall();
-  }
-
-  @Override
   public int lookup_static_finally(int cl)
   {
     return _clazzes[clazzId2num(cl)].lookup_static_finally();
@@ -294,7 +288,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public int lookupAtomicValue(int cl)
   {
-    for (int index = 0; index < clazzNumFields(cl); index++)
+    for (int index = 0; index < clazzFieldCount(cl); index++)
       {
         if (clazzBaseName(clazzField(cl, index)).compareTo("v") == 0)
           {
@@ -308,7 +302,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public int lookup_array_internal_array(int cl)
   {
-    for (int index = 0; index < clazzNumFields(cl); index++)
+    for (int index = 0; index < clazzFieldCount(cl); index++)
       {
         if (clazzBaseName(clazzField(cl, index)).compareTo("internal_array") == 0)
           {
@@ -322,7 +316,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public int lookup_fuzion_sys_internal_array_data(int cl)
   {
-    for (int index = 0; index < clazzNumFields(cl); index++)
+    for (int index = 0; index < clazzFieldCount(cl); index++)
       {
         if (clazzBaseName(clazzField(cl, index)).compareTo("data") == 0)
           {
@@ -336,7 +330,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public int lookup_fuzion_sys_internal_array_length(int cl)
   {
-    for (int index = 0; index < clazzNumFields(cl); index++)
+    for (int index = 0; index < clazzFieldCount(cl); index++)
       {
         if (clazzBaseName(clazzField(cl, index)).compareTo("length") == 0)
           {

@@ -1641,7 +1641,7 @@ public abstract class FUIR extends IR
 
   protected int[] clazzChoices(int cl)
   {
-    var numChoices = clazzNumChoices(cl);
+    var numChoices = clazzChoiceCount(cl);
     var result = new int[numChoices > 0 ? numChoices : 0];
     for (int i = 0; i < result.length; i++)
       {
@@ -1652,7 +1652,7 @@ public abstract class FUIR extends IR
 
   private int[] clazzFields(int cl, int lastClazz)
   {
-    var numFields = clazzIsRef(cl) ? 0 : clazzNumFields(cl);
+    var numFields = clazzIsRef(cl) ? 0 : clazzFieldCount(cl);
     var result = new ArrayList<Integer>();
     for (int i = 0; i < numFields; i++)
       {
