@@ -430,20 +430,17 @@ public class ParsedCall extends Call
       (expectedType.isFunctionTypeExcludingLazy());
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-    Expr l = _pendingError == null && paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
-                                                  : this;
-    if (l == this)
+    Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+                         : this;
+    if (l == this)  // resolution did not replace this call by sthg different
       {
-        var cf = _calledFeature;
-        if (_pendingError != null  /* nothing found */                                                                  ||
-            paa != null && cf.resultTypeIfPresent(res) instanceof AbstractType rt /* != null */ && !rt.isFunctionType()
-            )
+        checkPartialAmbiguity(res, context, expectedType);
+        if (_pendingError != null /* nothing found, in case of pre/postfix, maybe partial application will find infix */ ||
+            paa != null                                                                      &&
+            _calledFeature.resultTypeIfPresent(res) instanceof AbstractType rt /* != null */ &&
+            !rt.isFunctionType())
           {
             l = applyPartially(res, context, expectedType);
-          }
-        else
-          {
-            checkPartialAmbiguity(res, context, expectedType);
           }
       }
     return l;
@@ -499,7 +496,6 @@ public class ParsedCall extends Call
    */
   public Expr applyPartially(Resolution res, Context context, AbstractType t)
   {
-    checkPartialAmbiguity(res, context, t);
     Expr result;
     var n = t.arity();
     if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
