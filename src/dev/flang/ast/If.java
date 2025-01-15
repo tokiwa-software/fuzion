@@ -213,7 +213,7 @@ public class If extends ExprWithPos
       {
         elseBlock = elseBlock.visit(v, outer);
       }
-    var res = v.action(this, outer);
+    var res = v.action(this);
     v.actionAfterIf(this);
     return res;
   }

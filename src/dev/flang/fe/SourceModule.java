@@ -593,31 +593,27 @@ part of the (((inner features))) declarations of the corresponding
     inner.visit(new FeatureVisitor()
       {
         private Stack<Expr> _scope = new Stack<>();
-        @Override
-        public void actionBefore(AbstractCase c)
+        @Override public void actionBefore(AbstractCase c)
         {
           _scope.push(c.code());
           super.actionBefore(c);
         }
-        @Override
-        public void actionAfter(AbstractCase c)
+        @Override public void actionAfter(AbstractCase c)
         {
           _scope.pop();
           super.actionAfter(c);
         }
-        @Override
-        public void actionBefore(Block b, AbstractFeature outer)
+        @Override public void actionBefore(Block b)
         {
           if (b._newScope) { _scope.push(b); }
-          super.actionBefore(b, outer);
+          super.actionBefore(b);
         }
-        @Override
-        public void actionAfter(Block b, AbstractFeature outer)
+        @Override public void actionAfter(Block b)
         {
           if (b._newScope) { _scope.pop(); }
-          super.actionAfter(b, outer);
+          super.actionAfter(b);
         }
-        public Call      action(Call      c, AbstractFeature outer) {
+        @Override public Call      action(Call      c) {
           if (c.name() == null)
             { /* this is an anonymous feature declaration */
               if (CHECKS) check
@@ -632,7 +628,7 @@ part of the (((inner features))) declarations of the corresponding
             }
           return c;
         }
-        public Feature   action(Feature   f, AbstractFeature outer)
+        @Override public Feature   action(Feature   f, AbstractFeature outer)
         {
           f._scoped = !_scope.isEmpty();
           findDeclarations(f, outer); return f;
@@ -1234,14 +1230,14 @@ A post-condition of a feature that does not redefine an inherited feature must s
         var stacks = new ArrayList<Stack<Expr>>();
         stacks.add(new Stack<>());
         var visitor = new FeatureVisitor() {
-          public void action(AbstractAssign a, AbstractFeature outer)
+          @Override public void action(AbstractAssign a)
           {
             if (use == a)
               {
                 useIsBeforeDefinition[0] = definition.isEmpty() && !visitingInnerFeature[0];
                 usage.add((Stack)stacks.get(0).clone());
               }
-            super.action(a, outer);
+            super.action(a);
           }
           public void action(AbstractCall c) {
             if (use == c)
@@ -1250,19 +1246,19 @@ A post-condition of a feature that does not redefine an inherited feature must s
                 usage.add((Stack)stacks.get(0).clone());
               }
           };
-          public Expr action(Function lambda, AbstractFeature outer) {
+          @Override public Expr action(Function lambda){
             if (usage.isEmpty() || definition.isEmpty())
               {
                 stacks.get(0).push(lambda._expr);
                 var old = visitingInnerFeature[0];
                 visitingInnerFeature[0] = true;
-                lambda._expr.visit(this, outer);
+                lambda._expr.visit(this, null);
                 visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
             return lambda;
           };
-          public Expr action(Feature f2, AbstractFeature outer) {
+          @Override public Expr action(Feature f2, AbstractFeature outer){
             if (f == f2)
               {
                 definition.add((Stack)stacks.get(0).clone());
@@ -1273,20 +1269,20 @@ A post-condition of a feature that does not redefine an inherited feature must s
                 stacks.get(0).push(f2);
                 var old = visitingInnerFeature[0];
                 visitingInnerFeature[0] = true;
-                f2.impl().visit(this, outer);
+                f2.impl().visit(this, null);
                 visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
             return f2;
           };
-          public void actionBefore(Block b, AbstractFeature outer)
+          @Override public void actionBefore(Block b)
           {
             if (b._newScope)
               {
                 stacks.get(0).push(b);
               }
           }
-          public void  actionAfter(Block b, AbstractFeature outer)
+          @Override public void  actionAfter(Block b)
           {
             if (b._newScope)
               {
@@ -1770,11 +1766,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         f.code().visit(new FeatureVisitor()
         {
           private Stack<Object> stack = new Stack<Object>();
-          public void actionBefore(Block b, AbstractFeature outer) { if (b._newScope) { stack.push(b); } }
-          public void actionBefore(AbstractCase c) { stack.push(c); }
-          public void actionAfter(Block b, AbstractFeature outer)  { if (b._newScope) { stack.pop(); } }
-          public void actionAfter (AbstractCase c) { stack.pop(); }
-          public Expr action(Feature fd, AbstractFeature outer) {
+          @Override public void actionBefore(Block b) { if (b._newScope) { stack.push(b); } }
+          @Override public void actionBefore(AbstractCase c) { stack.push(c); }
+          @Override public void actionAfter(Block b)  { if (b._newScope) { stack.pop(); } }
+          @Override public void actionAfter (AbstractCase c) { stack.pop(); }
+          @Override public Expr action(Feature fd, AbstractFeature outer) {
             if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
               {
                 AstErrors.illegalVisibilityModifier(fd);

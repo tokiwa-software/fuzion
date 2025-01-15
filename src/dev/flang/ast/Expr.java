@@ -368,7 +368,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     var declarations = new List<Feature>();
     visit(new FeatureVisitor()
       {
-        public Expr action (Feature f, AbstractFeature outer)
+        @Override public Expr action (Feature f, AbstractFeature outer)
         {
           declarations.add(f);
           return f;

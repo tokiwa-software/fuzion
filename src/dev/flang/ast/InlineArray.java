@@ -245,7 +245,7 @@ public class InlineArray extends ExprWithPos
         var e = li.next();
         li.set(e.visit(v, outer));
       }
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
