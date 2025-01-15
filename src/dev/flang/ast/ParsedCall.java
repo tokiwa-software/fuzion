@@ -437,6 +437,7 @@ public class ParsedCall extends Call
         checkPartialAmbiguity(res, context, expectedType);
         if (_pendingError != null /* nothing found, in case of pre/postfix, maybe partial application will find infix */ ||
             paa != null                                                                      &&
+            _calledFeature != Types.f_ERROR                                                  &&
             _calledFeature.resultTypeIfPresent(res) instanceof AbstractType rt /* != null */ &&
             !rt.isFunctionType())
           {
