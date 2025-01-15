@@ -429,35 +429,22 @@ public class ParsedCall extends Call
     if (PRECONDITIONS) require
       (expectedType.isFunctionTypeExcludingLazy());
 
-    // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
-    Expr l = this;
-    if (partiallyApplicableAlternative(res, context, expectedType) != null)
+    var paa = partiallyApplicableAlternative(res, context, expectedType);
+    Expr l = _pendingError == null && paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+                                                  : this;
+    if (l == this)
       {
-        if (_calledFeature != null)
+        var cf = _calledFeature;
+        if (_pendingError != null  /* nothing found */                                                                  ||
+            paa != null && cf.resultTypeIfPresent(res) instanceof AbstractType rt /* != null */ && !rt.isFunctionType()
+            )
           {
-            res.resolveTypes(_calledFeature);
-            var rt = _calledFeature.resultTypeIfPresent(res);
-            if (rt != null && (!rt.isFunctionType() || rt.arity() != expectedType.arity()))
-              {
-                l = applyPartially(res, context, expectedType);
-              }
+            l = applyPartially(res, context, expectedType);
           }
         else
           {
-            if (_pendingError == null)
-              {
-                l = resolveTypes(res, context);  // this ensures _calledFeature is set such that possible ambiguity is reported
-              }
-            if (l == this)
-              {
-                l = applyPartially(res, context, expectedType);
-              }
+            checkPartialAmbiguity(res, context, expectedType);
           }
-      }
-    else if (_pendingError != null                   || /* nothing found */
-             newNameForPartial(expectedType) != null    /* search for a different name */)
-      {
-        l = applyPartially(res, context, expectedType);
       }
     return l;
   }
