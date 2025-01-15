@@ -27,7 +27,7 @@
 reg_issue4609 =>
 
   say "this will fail with a stack trace."
-  say "It is important that the stack trace contains now generated lambdas:"
+  say "It is important that the stack trace contains no generated lambdas:"
 
   s : Function unit is
     redef call => check false
