@@ -309,7 +309,7 @@ public class Impl extends ANY
         //
         // this.visitCode(v, outer.outer());
       }
-    v.action(this, outer);
+    v.action(this);
   }
 
 
