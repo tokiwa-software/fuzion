@@ -177,11 +177,10 @@ public class InlineArray extends ExprWithPos
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
           {
-            for (var e : _elements)
+            var li = _elements.listIterator();
+            while (li.hasNext())
               {
-                var e2 = e.propagateExpectedType(res, context, elementType);
-                if (CHECKS) check
-                  (e == e2);
+                li.set(li.next().propagateExpectedType(res, context, elementType));
               }
             var arr = Types.resolved.f_array;
             _type = arr.resultType()
@@ -449,7 +448,7 @@ public class InlineArray extends ExprWithPos
                                          unit1,
                                          unit2,
                                          unit3);
-    var arrayCall       = new Call(SourcePosition.builtIn, null, "array"     , -1,
+    var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, -1,
                                    sysArrArgsT,
                                    sysArrArgsE, null, null                          ).resolveTypes(res, context);
     exprs.add(arrayCall);

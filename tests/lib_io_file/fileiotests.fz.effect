@@ -1,7 +1,8 @@
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
 fileiotests.f.stat
-io.out
+io.Err
+io.Out
 io.dir.make
 panic
 fileiotests.f.delete

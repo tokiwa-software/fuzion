@@ -2364,6 +2364,10 @@ public class DFA extends ANY
   void replaceDefaultEffect(int ecl, Value e)
   {
     var old_e = _defaultEffects.get(ecl);
+
+    if (CHECKS) check
+      (old_e != null);
+
     var new_e = old_e == null ? e : old_e.join(this, e, ecl);
     if (old_e == null || Value.compare(old_e, new_e) != 0)
       {

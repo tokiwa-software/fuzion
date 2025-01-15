@@ -2297,7 +2297,7 @@ public class C extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzIsChoice(choiceCl),
         !_fuir.clazzIsChoiceOfOnlyRefs(choiceCl),
-        _fuir.clazzNumChoices(choiceCl) == 2);
+        _fuir.clazzChoiceCount(choiceCl) == 2);
 
     return _fuir.clazzIsUnitType(valuecl)
       ? CExpr.compoundLiteral(

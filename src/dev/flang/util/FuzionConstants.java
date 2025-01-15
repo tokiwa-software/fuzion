@@ -175,6 +175,12 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of the array feature
+   */
+  public static final String ARRAY_NAME        = "array";
+
+
+  /**
    * Name of intrinsic {@code effect.type.instate0}.
    */
   public static final String EFFECT_INSTATE_NAME = "effect.type.instate0";

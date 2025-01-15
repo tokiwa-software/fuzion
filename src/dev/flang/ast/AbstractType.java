@@ -2085,22 +2085,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   callPos != null                ? callPos
                                                  : called.pos();
 
-        a.checkLegalQualThisType(pos, context);
-        a.checkChoice(pos, context);
-        if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
-                                      // will be checked in SourceModule.checkTypes(Feature)
-            !c.constraintAssignableFrom(context, a))
+        if (a == Types.t_UNDEFINED)
           {
-            if (!f.typeParameter().isCoTypesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
+            AstErrors.failedToInferActualGeneric(pos, called, new List<>(f));
+          }
+        else
+          {
+            a.checkLegalQualThisType(pos, context);
+            a.checkChoice(pos, context);
+            if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
+                                          // will be checked in SourceModule.checkTypes(Feature)
+                !c.constraintAssignableFrom(context, a))
               {
-                // In case of choice, error will be shown
-                // by SourceModule.checkTypes(): AstErrors.constraintMustNotBeChoice
-                if (!c.isChoice())
+                if (!f.typeParameter().isCoTypesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
                   {
-                    AstErrors.incompatibleActualGeneric(pos, f, c, a);
-                  }
+                    // In case of choice, error will be shown
+                    // by SourceModule.checkTypes(): AstErrors.constraintMustNotBeChoice
+                    if (!c.isChoice())
+                      {
+                        AstErrors.incompatibleActualGeneric(pos, f, c, a);
+                      }
 
-                result = false;
+                    result = false;
+                  }
               }
           }
       }

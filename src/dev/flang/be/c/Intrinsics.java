@@ -1310,7 +1310,7 @@ public class Intrinsics extends ANY
         var union1 = value1.field(CNames.CHOICE_UNION_NAME);
         var union2 = value2.field(CNames.CHOICE_UNION_NAME);
         var cazes = new List<CStmnt>();
-        for (int i = 0; i < c._fuir.clazzNumChoices(rt); i++)
+        for (int i = 0; i < c._fuir.clazzChoiceCount(rt); i++)
           {
             var tc = c._fuir.clazzChoice(rt, i);
             var fld = c._fuir.clazzIsRef(tc) ? CNames.CHOICE_REF_ENTRY_NAME
@@ -1331,7 +1331,7 @@ public class Intrinsics extends ANY
     else // not a choice, so a 'normal' product type
       {
         result = tmp.assign(new CIdent("true"));
-        for (var i = 0; i < c._fuir.clazzNumFields(rt); i++)
+        for (var i = 0; i < c._fuir.clazzFieldCount(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);
             if (c._types.fieldExists(fi))

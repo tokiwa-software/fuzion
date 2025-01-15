@@ -2,7 +2,8 @@ concur.atomic_access
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault
-io.out
+io.Err
+io.Out
 concur.racy_access
 concur.threads
 time.nano

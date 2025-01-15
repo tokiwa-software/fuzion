@@ -87,8 +87,8 @@ GOT: y Type of 'codepoint'
 EXP: y Type of 'codepoint'
 GOT: y Type of 'codepoint'
 
-EXP: y Type of 'io.out'
-GOT: y Type of 'io.out'
+EXP: y Type of 'io.Out'
+GOT: y Type of 'io.Out'
 
 EXP: y Type of 'Type'
 GOT: y Type of 'Type'

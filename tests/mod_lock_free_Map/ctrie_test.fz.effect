@@ -2,6 +2,7 @@ unique_id
 concur.atomic_access
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
+io.Err
 panic
-io.out
+io.Out
 fuzion.runtime.post_fault
