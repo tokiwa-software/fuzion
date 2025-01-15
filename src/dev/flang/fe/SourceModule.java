@@ -1322,6 +1322,22 @@ A post-condition of a feature that does not redefine an inherited feature must s
               }
           }
 
+        /* example where the following might be true.
+         *
+         * we are looking for q but
+         * (c q) was meanwhile replaced by Call.ERROR
+         * hence call to q can not be found anymore.
+         *
+         * c(p) => true
+         * if c unit
+         *   q => unit
+         *   (c q).x.y
+         */
+        if (usage.isEmpty() && Errors.any())
+          {
+            return false;
+          }
+
         var u = new ArrayList<>(usage.get(0));
         var d = new ArrayList<>(definition.get(0));
 
