@@ -187,7 +187,7 @@ public class This extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 

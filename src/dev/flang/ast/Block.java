@@ -204,14 +204,14 @@ public class Block extends AbstractBlock
    */
   public Block visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.actionBefore(this, outer);
+    v.actionBefore(this);
     ListIterator<Expr> i = _expressions.listIterator();
     while (i.hasNext())
       {
         Expr e = i.next();
         i.set(e.visit(v, outer));
       }
-    v.actionAfter(this, outer);
+    v.actionAfter(this);
     return this;
   }
 

@@ -553,7 +553,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    return v.action(this, outerfeat);
+    return v.action(this);
   }
 
 
