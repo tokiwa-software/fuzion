@@ -2032,7 +2032,7 @@ klammerLambd: tuple lambda
       {
         var e = tupleElements.get(0);
         if (e instanceof ParsedOperatorCall oc)
-          { // disable chained boolean optimization or partial application:
+          { // disable chained boolean optimization:
             oc.putInParentheses();
           }
         return e;
