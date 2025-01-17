@@ -1,0 +1,16 @@
+
+error 1: FATAL FAULT `check`: false
+Call stack:
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+fuzion.type.runtime.type.check_fault.type.install_default.λ.call#1
+fuzion.runtime.check_fault.cause#1
+fuzion.runtime.checkcondition_fault#1
+reg_issue4609.s.call
+reg_issue4609.r#1
+reg_issue4609.q#1
+reg_issue4609
+
+*** fatal errors encountered, stopping.
+one error.

@@ -91,7 +91,7 @@ public class DotType extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _lhs = _lhs.visit(v, outer);
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 

@@ -508,8 +508,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = containsError()                   ||
       actual.containsError()                       ||
       this  .compareTo(actual               ) == 0 ||
-      this  .compareTo(Types.resolved.t_Any ) == 0 ||
-      actual.isVoid();
+      this  .compareTo(Types.resolved.t_Any ) == 0;
+
     if (!result && !isGenericArgument())
       {
         if (actual.isGenericArgument())

@@ -92,7 +92,7 @@ public abstract class AbstractCurrent extends Expr
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _type = _type.visit(v, outer);
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 

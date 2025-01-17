@@ -211,10 +211,8 @@ public class Function extends AbstractLambda
     var e = _expr.visit(new FeatureVisitor()
       {
         @Override
-        public Expr action(Call c, AbstractFeature outer)
+        public Expr action(Call c)
         {
-          if (CHECKS)
-            check(outer == _feature);
           return c.updateTarget(res, _feature.context());
         }
       },
@@ -365,7 +363,7 @@ public class Function extends AbstractLambda
           (e == this._call); // NYI: This will fail e.g. if _call is a call to bool.infix &&, need to handle explicitly
         this._call = (Call) e;
       }
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 

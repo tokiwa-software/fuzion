@@ -37,18 +37,6 @@ reg_issue2231.ef.something: --CURDIR--/reg_issue2231.fz:30:7:
 reg_issue2231.λ.call: --CURDIR--/reg_issue2231.fz:33:5:
     reg_issue2231.ef.env.something
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(reg_issue2231.ef.infix !#2 void).λ.call: {base.fum}/effect.fz:227:18:
-    instate_self code
------------------^^^^
-(reg_issue2231.ef.instate_self#2 void).λ.call: {base.fum}/effect.fz:210:39:
-    effect.this.instate R effect.this code
---------------------------------------^^^^
-(reg_issue2231.type.ef.type.instate#3 void).λ.call: {base.fum}/effect.fz:189:17:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----------------^^^^
-(reg_issue2231.type.ef.type.instate#4 void).λ.call: {base.fum}/effect.fz:167:41:
-    x := instate_helper R effect.this e code def
-----------------------------------------^^^^
 (instate_helper void reg_issue2231.ef).call_code.call: {base.fum}/effect.fz:406:18:
       set res := code()
 -----------------^^^^

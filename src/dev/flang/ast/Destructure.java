@@ -190,7 +190,7 @@ public class Destructure extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 

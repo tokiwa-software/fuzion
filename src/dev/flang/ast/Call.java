@@ -1217,7 +1217,7 @@ public class Call extends AbstractCall
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.actionBefore(this, outer);
+    v.actionBefore(this);
     _generics = _generics.map(g -> g.visit(v, outer));
     if (v.doVisitActuals())
       {
@@ -1228,7 +1228,7 @@ public class Call extends AbstractCall
         _target = _target.visit(v, outer);
       }
     v.action((AbstractCall) this);
-    var result = v.action(this, outer);
+    var result = v.action(this);
     if (v.visitActualsLate())
       {
         visitActuals(v, outer);

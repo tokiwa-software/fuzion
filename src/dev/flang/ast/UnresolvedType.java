@@ -526,7 +526,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    return v.action(this, outerfeat);
+    return v.action(this);
   }
 
   /**
