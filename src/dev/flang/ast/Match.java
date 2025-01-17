@@ -126,7 +126,7 @@ public class Match extends AbstractMatch
   {
     _subject = _subject.visit(v, outer);
     v.action(this);
-    v.action(this, outer);
+    v.action(this);
     for (var c: cases())
       {
         c.visit(v, this, outer);

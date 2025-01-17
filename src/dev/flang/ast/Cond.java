@@ -91,7 +91,7 @@ public class Cond
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     cond = cond.visit(v, outer);
-    v.action(this, outer);
+    v.action(this);
   }
 
 

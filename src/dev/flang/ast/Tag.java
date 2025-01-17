@@ -143,7 +143,7 @@ public class Tag extends ExprWithPos
     _value = _value.visit(v, outer);
     if (CHECKS) check
       (o.type().compareTo(_value.type()) == 0);
-    v.action(this, outer);
+    v.action(this);
     return this;
   }
 

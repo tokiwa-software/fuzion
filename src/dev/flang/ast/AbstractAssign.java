@@ -123,7 +123,7 @@ public abstract class AbstractAssign extends Expr
       {
         _target = _target.visit(v, outer);
       }
-    v.action(this, outer);
+    v.action(this);
     return this;
   }
 
