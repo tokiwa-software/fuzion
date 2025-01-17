@@ -659,8 +659,8 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    int res;
-    if (CACHE_RESULT_CLAZZ)
+    int res = NO_CLAZZ;
+    if (CACHE_RESULT_CLAZZ && _resultClazzes.length > clazzId2num(cl))
       {
         res = _resultClazzes[clazzId2num(cl)];
         if (res == NO_CLAZZ)
@@ -1325,7 +1325,10 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.typeName().getBytes(StandardCharsets.UTF_8);
+    return (c.feature().isCotype()
+      ? c.typeName()
+      : "-- clazzTypeName called on none cotype --")
+        .getBytes(StandardCharsets.UTF_8);
   }
 
 
