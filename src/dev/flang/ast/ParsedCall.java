@@ -438,8 +438,7 @@ public class ParsedCall extends Call
         if (_pendingError != null /* nothing found, in case of pre/postfix, maybe partial application will find infix */ ||
             paa != null                                                                      &&
             _calledFeature != Types.f_ERROR                                                  &&
-            _calledFeature.resultTypeIfPresent(res) instanceof AbstractType rt /* != null */ &&
-            !rt.isFunctionType())
+            (typeForInferencing() == null || !typeForInferencing().isFunctionType()))
           {
             l = applyPartially(res, context, expectedType);
           }
