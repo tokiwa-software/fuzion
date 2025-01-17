@@ -593,13 +593,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public boolean clazzIsArray(int constCl)
-  {
-    // NYI: cleanup
-    return clazzOriginalName(constCl).compareTo("array") == 0;
-  }
-
-  @Override
   public String clazzSrcFile(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzSrcFile();
