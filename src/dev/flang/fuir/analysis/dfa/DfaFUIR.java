@@ -179,7 +179,7 @@ public class DfaFUIR extends GeneratingFUIR {
                 !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Assign ? assignedType(s) : NO_CLAZZ,
                 !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxValueClazz(s0), NO_CLAZZ),
                 !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxResultClazz(s0), NO_CLAZZ),
-                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Match ? safe(()->matchStaticSubject(s0), NO_CLAZZ) : NO_CLAZZ,
+                !withinCode(s) ? NO_CLAZZ : codeAt(s) == ExprKind.Match ? matchStaticSubject(s0) : NO_CLAZZ,
                 !withinCode(s) ? -1 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,

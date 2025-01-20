@@ -2570,9 +2570,7 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int matchStaticSubject(int s)
+  public int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2581,10 +2579,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Match);
 
     var rc = (Clazz) _siteClazzCache.get(s);
-    if (rc == null)
+    if (rc == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone);
         var cl = clazzAt(s);
         var cc = id2clazz(cl);
         var outerClazz = cc;
@@ -2592,7 +2588,7 @@ public class GeneratingFUIR extends FUIR
         rc = clazz(m.subject(), outerClazz, _inh.get(s - SITE_BASE));
         _siteClazzCache.put(s, rc);
       }
-    return rc._id;
+    return rc == null ? NO_CLAZZ : rc._id;
   }
 
 
