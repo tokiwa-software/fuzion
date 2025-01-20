@@ -1077,6 +1077,50 @@ public Sequence(public T type) ref : property.equatable is
                     res : nil
 
 
+  # filter out consecutive duplicate elements.
+  #
+  # Keep the order of elements unchanged.
+  #
+  # ex.
+  #   [1,2,2,3,2,2,2,4].dedup = [1,2,3,2,4]
+  #
+  public dedup Sequence T
+    pre
+      T : property.equatable
+    =>
+      as_list.dedup_list
+
+
+  # filter out consecutive duplicate elements using the
+  # given relation.
+  #
+  # Keep the order of elements unchanged.
+  #
+  # ex.
+  #   [4,2,2,6,2,1,2,4].dedup (a,b -> a%2=b%2) = [4,1,2]
+  #   [4,2,2,6,2,1,2,4].dedup (<=) = [4,2,1]
+  #
+  public dedup(by (T,T) -> bool) Sequence T
+    pre
+      T : property.equatable
+    =>
+      as_list.dedup_list by
+
+
+  # filter out duplicate elements.
+  #
+  # Keep the order of elements unchanged.
+  #
+  # ex.
+  #   [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]
+  #
+  public unique Sequence T
+    pre
+      T : property.orderable
+    =>
+      as_list.unique_list
+
+
   # the arithmetic mean of the sequence
   # https://en.wikipedia.org/wiki/Arithmetic_mean
   public average option T
@@ -1157,7 +1201,6 @@ public Sequence(public T type) ref : property.equatable is
       T : float
   =>
     ((map x->x**T.two).fold T.sum).sqrt
-
 
 
   # create an empty Sequence
