@@ -49,7 +49,7 @@ public class DfaFUIR extends GeneratingFUIR {
 
   private int[] clazzArgs(int cl)
   {
-    var result = new int[safe(()->clazzArgCount(cl), 0)];
+    var result = new int[clazzArgCount(cl)];
     for (int i = 0; i < result.length; i++)
       {
         result[i]= clazzArg(cl, i);
