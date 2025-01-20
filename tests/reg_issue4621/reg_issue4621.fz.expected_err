@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue4621.fz:24:43: error 1: Failed to infer type of expression.
+say ([1,2,3,4,5,6].as_tuples.map u32 (||> (+)))
+------------------------------------------^^^
+Expression with unknown type: '(+)'
+
+one error.

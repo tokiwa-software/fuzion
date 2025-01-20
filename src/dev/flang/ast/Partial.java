@@ -244,19 +244,6 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   */
-  public AbstractType type()
-  {
-    return _function == null ? Types.t_UNDEFINED
-                             : _function.type();
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -270,21 +257,6 @@ public class Partial extends AbstractLambda
     // everything might eventually turn out fine in this case.
     return _function == null ? null
                              : _function.typeForInferencing();
-  }
-
-
-  /**
-   * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
-   * features to be searched for runtime types to be layouted.
-   *
-   * @param res the resolution instance.
-   *
-   */
-  public Expr resolveSyntacticSugar2X(Resolution res)
-  {
-    return _function == null ? this
-                             : _function.resolveSyntacticSugar2(res);
   }
 
 
