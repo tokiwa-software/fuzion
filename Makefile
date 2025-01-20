@@ -69,6 +69,25 @@ JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  
 JAVA_FILES_TOOLS_DOCS        = $(wildcard $(SRC)/dev/flang/tools/docs/*.java    )
 JAVA_FILES_MISC_LOGO         = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
 
+JAVA_FILES_FOR_JAVA_DOC = $(JAVA_FILES_UTIL) \
+                          $(JAVA_FILES_AST) \
+                          $(JAVA_FILES_PARSER) \
+                          $(JAVA_FILES_IR) \
+                          $(JAVA_FILES_MIR) \
+                          $(JAVA_FILES_FE) \
+                          $(JAVA_FILES_FUIR) \
+                          $(JAVA_FILES_FUIR_ANALYSIS) \
+                          $(JAVA_FILES_FUIR_ANALYSIS_DFA) \
+                          $(JAVA_FILES_OPT) \
+                          $(JAVA_FILES_BE_INTERPRETER) \
+                          $(JAVA_FILES_BE_C) \
+                          $(JAVA_FILES_BE_EFFECTS) \
+                          $(JAVA_FILES_BE_JVM) \
+                          $(JAVA_FILES_BE_JVM_CLASSFILE) \
+                          $(JAVA_FILES_BE_JVM_RUNTIME) \
+                          $(JAVA_FILE_UTIL_VERSION) \
+                          $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+
 CLASS_FILES_UTIL              = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE      = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
 CLASS_FILES_AST               = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
@@ -1443,7 +1462,7 @@ endif
 
 
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
-	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(shell find $(SRC) -name "*.java" | grep -v lsp | grep -v FuzionLogo) $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
 
 
 ########
