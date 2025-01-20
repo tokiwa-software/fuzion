@@ -357,12 +357,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public int clazzActualGeneric(int cl, int gix)
   {
-    return clazzActualGenerics(cl)[gix];
-  }
-
-  public int[] clazzActualGenerics(int cl)
-  {
-    return _clazzes[clazzId2num(cl)].clazzActualGenerics();
+    return _clazzes[clazzId2num(cl)].clazzActualGenerics()[gix];
   }
 
   @Override
