@@ -360,7 +360,7 @@ public class FuzionOptions extends ANY
    */
   public boolean needsEscapeAnalysis()
   {
-    return false;
+    return true;
   }
 
 

@@ -1135,7 +1135,7 @@ public class DFA extends ANY
    * DFA analysis. In particular, Let 'clazzNeedsCode' return false for
    * routines that were found never to be called.
    */
-  public FUIR new_fuir()
+  public DfaFUIR new_fuir()
   {
     dfa();
     var called = new TreeSet<Integer>();
@@ -1144,7 +1144,7 @@ public class DFA extends ANY
         called.add(c._cc);
       }
     _options.timer("dfa");
-    var res = new GeneratingFUIR((GeneratingFUIR) _fuir)
+    var res = new DfaFUIR((GeneratingFUIR) _fuir)
       {
         /**
          * Determine the lifetime of the instance of a call to clazz cl.

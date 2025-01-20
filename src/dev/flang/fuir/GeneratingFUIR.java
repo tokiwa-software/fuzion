@@ -183,7 +183,7 @@ public class GeneratingFUIR extends FUIR
 
   private final Map<AbstractType, Clazz> _clazzesForTypes;
 
-  boolean _lookupDone;
+  protected boolean _lookupDone;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -229,14 +229,13 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-
   /**
    * Clone this FUIR such that modifications can be made by optimizers.  An heir
    * of FUIR can use this to redefine methods.
    *
    * @param original the original FUIR instance that we are cloning.
    */
-  public GeneratingFUIR(GeneratingFUIR original)
+  protected GeneratingFUIR(GeneratingFUIR original)
   {
     super(original);
     _fe = original._fe;
@@ -420,7 +419,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private Clazz id2clazz(int cl)
+  protected Clazz id2clazz(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -659,8 +658,8 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    int res;
-    if (CACHE_RESULT_CLAZZ)
+    int res = NO_CLAZZ;
+    if (CACHE_RESULT_CLAZZ && _resultClazzes.length > clazzId2num(cl))
       {
         res = _resultClazzes[clazzId2num(cl)];
         if (res == NO_CLAZZ)
@@ -1325,7 +1324,10 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.typeName().getBytes(StandardCharsets.UTF_8);
+    return (c.feature().isCotype()
+      ? c.typeName()
+      : "-- clazzTypeName called on none cotype --")
+        .getBytes(StandardCharsets.UTF_8);
   }
 
 
@@ -1384,7 +1386,7 @@ public class GeneratingFUIR extends FUIR
       (s != SpecialClazzes.c_NOT_FOUND);
 
     var result = _specialClazzes[s.ordinal()];
-    if (result == null)
+    if (result == null && !_lookupDone)
       {
         if (s == SpecialClazzes.c_universe)
           {
@@ -1758,6 +1760,21 @@ public class GeneratingFUIR extends FUIR
   }
 
 
+
+  protected int[] clazzActualGenerics(int cl)
+  {
+    var cc = id2clazz(cl);
+    var generics = cc.actualTypeParameters();
+    var result = new int[generics.length];
+    for (int gix = 0; gix < result.length; gix++)
+      {
+        result[gix] = generics[gix]._id;
+      }
+    return result;
+  }
+
+
+
   /*---------------------  analysis results  ---------------------*/
 
 
@@ -1877,7 +1894,7 @@ public class GeneratingFUIR extends FUIR
     if (res == null)
       {
         if (CHECKS) check
-          (!_lookupDone);
+          (!_lookupDone || true);
         var cl = clazzAt(s);
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
