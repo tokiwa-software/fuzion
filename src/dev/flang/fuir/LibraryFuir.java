@@ -146,7 +146,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public boolean clazzIsChoice(int cl)
   {
-    return _clazzes[clazzId2num(cl)].clazzIsChoice();
+    return _clazzes[clazzId2num(cl)].clazzKind() == FeatureKind.Choice;
   }
 
   @Override

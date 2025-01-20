@@ -41,7 +41,6 @@ public record ClazzRecord(
   int clazzResultClazz,
   boolean clazzIsRef,
   boolean clazzIsUnitType,
-  boolean clazzIsChoice,
   int clazzAsValue,
   int[] clazzChoices,
   int[] clazzInstantiatedHeirs,

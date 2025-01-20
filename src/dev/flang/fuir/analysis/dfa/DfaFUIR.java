@@ -128,7 +128,6 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzResultClazz(cl),
                 clazzIsRef(cl),
                 clazzIsUnitType(cl),
-                clazzIsChoice(cl),
                 clazzAsValue(cl),
                 clazzChoices(cl),
                 clazzInstantiatedHeirs(cl),
