@@ -153,7 +153,7 @@ class LibraryOut extends ANY
         sm._options.verbosePrintln(2, "" +
                                    _data.featureCount() + " features " +
                                    _data.typeCount() + " types and " +
-                                   _sourceFiles.size() + " source files includes in fum file.");
+                                   _sourceFiles.size() + " source files included in fum file.");
       }
   }
 
