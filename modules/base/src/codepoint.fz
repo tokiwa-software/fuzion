@@ -69,22 +69,6 @@ is
   #
   public is_lowercase_ascii_letter => codepoint.a_to_z.contains val
 
-  # is this codepoint encoded in one byte
-  #
-  public is_one_byte => codepoint.utf8_encoded_in_one_byte.contains val
-
-  # is this codepoint encoded in two bytes
-  #
-  public is_two_byte => codepoint.type.utf8_encoded_in_two_bytes.contains val
-
-  # is this codepoint encoded in three bytes
-  #
-  public is_three_byte => codepoint.utf8_encoded_in_three_bytes.contains val
-
-  # is this codepoint encoded in four bytes
-  #
-  public is_four_byte => codepoint.utf8_encoded_in_four_bytes.contains val
-
   # is this a codepoint reserved for utf16 surrogate pairs
   #
   public is_utf16_surrogate => codepoint.utf16_surrogate.contains val
