@@ -41,7 +41,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
@@ -2157,7 +2156,7 @@ public class GeneratingFUIR extends FUIR
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
-            cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
+            cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
             innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall());
@@ -2640,12 +2639,12 @@ public class GeneratingFUIR extends FUIR
     int nt = f != null ? 1 : ts.size();
     var resultL = new List<Integer>();
     int tag = 0;
-    for (var cg : m.subject().type().choiceGenerics(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+    for (var cg : m.subject().type().choiceGenerics())
       {
         for (int tix = 0; tix < nt; tix++)
           {
             var t = f != null ? f.resultType() : ts.get(tix);
-            if (t.isAssignableFromWithoutTagging(cg, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+            if (t.isAssignableFromWithoutTagging(cg))
               {
                 resultL.add(tag);
               }
@@ -2701,7 +2700,7 @@ public class GeneratingFUIR extends FUIR
             var T = innerClazz.actualTypeParameters()[0];
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||
               cf == Types.resolved.f_Type_infix_colon  &&
-              T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, tclazz._type.generics().get(0));
+              T._type.constraintAssignableFrom(tclazz._type.generics().get(0));
             var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
             if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
               {

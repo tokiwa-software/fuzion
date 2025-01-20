@@ -45,7 +45,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -722,7 +721,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType, Context.NONE);
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:

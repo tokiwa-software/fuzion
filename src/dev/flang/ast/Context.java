@@ -43,7 +43,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Context extends ANY
+abstract class Context extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -52,7 +52,7 @@ public abstract class Context extends ANY
   /**
    * Pre-allocated instance for no context.
    */
-  public static final Context NONE = new Context()
+  static final Context NONE = new Context()
     {
       @Override AbstractFeature outerFeature()
       {
@@ -113,7 +113,7 @@ public abstract class Context extends ANY
         }
 
         @Override
-        public AbstractType constraintFor(AbstractFeature typeParameter)
+        AbstractType constraintFor(AbstractFeature typeParameter)
         {
           if (f instanceof Feature ff)
             {
@@ -165,7 +165,7 @@ public abstract class Context extends ANY
    *
    * @param typeParameter a type parameter feature.
    */
-  public AbstractType constraintFor(AbstractFeature typeParameter)
+  AbstractType constraintFor(AbstractFeature typeParameter)
   {
     var e = exterior();
     return e != null ? e.constraintFor(typeParameter)
@@ -177,7 +177,7 @@ public abstract class Context extends ANY
    * Create a new context that adds the constraint imposed by a call {@code T : x} to
    * this context.
    */
-  public Context addTypeConstraint(AbstractCall infix_colon_call)
+  Context addTypeConstraint(AbstractCall infix_colon_call)
   {
     if (PRECONDITIONS) require
       (infix_colon_call.calledFeature() == Types.resolved.f_Type_infix_colon);

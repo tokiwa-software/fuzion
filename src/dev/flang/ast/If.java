@@ -277,7 +277,7 @@ public class If extends ExprWithPos
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (cond != null)
       {
@@ -304,7 +304,7 @@ public class If extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     // NYI: CLEANUP: there should be another mechanism, for
     // adding missing result fields instead of misusing

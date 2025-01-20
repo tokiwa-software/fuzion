@@ -187,7 +187,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @return the union of exprs result type, defaulting to Types.resolved.t_void if
    * no expression can be inferred yet.
    */
-  public static AbstractType union(List<Expr> exprs, Context context)
+  static AbstractType union(List<Expr> exprs, Context context)
   {
     AbstractType t = Types.resolved.t_void;
 
@@ -421,7 +421,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     var result = this;
 
@@ -465,7 +465,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     return this;
   }
@@ -764,7 +764,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @return the unwrapped expression
    */
-  public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
+  Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
     return this != Call.ERROR && t != Types.t_ERROR
