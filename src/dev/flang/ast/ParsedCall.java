@@ -536,7 +536,7 @@ public class ParsedCall extends Call
                               this)
           {
             @Override
-            public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+            AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
             {
               var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType);
               updateTarget(res);
@@ -639,7 +639,7 @@ public class ParsedCall extends Call
           return wasLazy ? ParsedCall.this : super.originalLazyValue();
         }
         @Override
-        public Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
+        Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
         {
           if (expectedType.isFunctionTypeExcludingLazy())
             { // produce an error if the original call is ambiguous with partial application

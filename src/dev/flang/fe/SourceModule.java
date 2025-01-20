@@ -50,7 +50,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
-import dev.flang.ast.Context;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -1491,8 +1490,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * when an error is reported, to suggest adding {@code fixed} if that would solve
    * the error.
    *
-   * @param context the source code context
-   *
    * @return true if {@code to} may be replaced with {@code tr} or if {@code to} or {@code tr} contain
    * an error.
    */
@@ -1500,8 +1497,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                                    Feature redefinition,
                                    AbstractType to,
                                    AbstractType tr,
-                                   boolean fixed,
-                                   Context context)
+                                   boolean fixed)
   {
     return
       /* to contains original    .this.type and
@@ -1534,7 +1530,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
        * redefinition {@code h.maybe}.
        */
       fixed &&
-      redefinition.outer().thisType(true).actualType(to, Context.NONE).compareTo(tr) == 0       ||
+      redefinition.outer().thisType(true).actualType(to).compareTo(tr) == 0       ||
 
       /* original and redefinition are inner features of type features, {@code to} is
        * {@code this.type} and {@code tr} is the underlying non-type feature's selfType.
@@ -1568,10 +1564,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
    *
    * NYI: Better perform the check the other way around: check that f matches
    * the types of all features that f redefines.
-   *
-   * @param context the source code context
    */
-  public void checkTypes(Feature f, Context context)
+  public void checkTypes(Feature f)
   {
     if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
       {
@@ -1595,7 +1589,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 var t1 = ta[i].applyTypePars(o, f.generics().asActuals());  /* replace o's type pars by f's */
                 var t2 = ra[i];
-                if (!isLegalCovariantThisType(o, f, t1, t2, fixed, context))
+                if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
                   {
                     // original arg list may be shorter if last arg is open generic:
                     if (CHECKS) check
@@ -1608,7 +1602,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                     var actualArg   =   args       .get(ai);
                     AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
                                                                  f, actualArg,
-                                                                 isLegalCovariantThisType(o, f, t1, t2, true, context));
+                                                                 isLegalCovariantThisType(o, f, t1, t2, true));
                   }
               }
           }
@@ -1647,11 +1641,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (!t1.isAssignableFromWithoutBoxing(t2, context) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
+        else if (!t1.isAssignableFromWithoutBoxing(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
-                 !isLegalCovariantThisType(o, f, t1, t2, fixed, context))
+                 !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
-            AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true, context));
+            AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
           }
       }
 
@@ -1659,7 +1653,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         var cod = f.code();
         var rt = cod.type();
-        if (!Types.resolved.t_unit.isAssignableFrom(rt, context))
+        if (!Types.resolved.t_unit.isAssignableFrom(rt))
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }

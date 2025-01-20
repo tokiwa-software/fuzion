@@ -139,7 +139,7 @@ public class This extends ExprWithPos
    *
    * @return the type resolved expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
+  static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (context != null,
@@ -202,7 +202,7 @@ public class This extends ExprWithPos
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (res != null || Errors.any(),

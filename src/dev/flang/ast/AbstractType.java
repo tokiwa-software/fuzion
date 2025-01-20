@@ -260,7 +260,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public List<AbstractType> choiceGenerics(Context context)
+  List<AbstractType> choiceGenerics(Context context)
   {
     if (PRECONDITIONS) require
       (this instanceof ResolvedType,
@@ -269,6 +269,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var g = feature().choiceGenerics();
     return replaceGenerics(g)
       .map(t -> t.replace_this_type_by_actual_outer(this, context));
+  }
+
+
+  /**
+   * For a resolved type, check if it is a choice type and if so, return the
+   * list of choices.
+   */
+  public List<AbstractType> choiceGenerics()
+  {
+    return choiceGenerics(Context.NONE);
   }
 
 
@@ -337,9 +347,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public boolean isAssignableFrom(AbstractType actual, Context context)
+  boolean isAssignableFrom(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, null, context);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this.  This performs static type checking, i.e., the types may still
+   * be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isAssignableFrom(AbstractType actual)
+  {
+    return isAssignableFrom(actual, Context.NONE);
   }
 
 
@@ -352,11 +375,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public boolean isAssignableFromWithoutTagging(AbstractType actual, Context context)
+  boolean isAssignableFromWithoutTagging(AbstractType actual, Context context)
   {
     return actual.isVoid()
          || (!isChoice() && isAssignableFrom(actual, context))
          || (isChoice() && compareTo(actual) == 0);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this without tagging. This performs static type checking, i.e.,
+   * the types may still be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isAssignableFromWithoutTagging(AbstractType actual)
+  {
+    return isAssignableFromWithoutTagging(actual, Context.NONE);
   }
 
 
@@ -369,11 +405,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public boolean isAssignableFromWithoutBoxing(AbstractType actual, Context context)
+  boolean isAssignableFromWithoutBoxing(AbstractType actual, Context context)
   {
     return actual.isVoid()
          || (!isChoice() && isAssignableFrom(actual, context) && !(isRef().yes() && actual.isRef().no()))
          || (isChoice() && compareTo(actual) == 0);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this without boxing. This performs static type checking, i.e.,
+   * the types may still be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isAssignableFromWithoutBoxing(AbstractType actual)
+  {
+    return isAssignableFromWithoutBoxing(actual, Context.NONE);
   }
 
 
@@ -390,7 +439,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public boolean isAssignableFromOrContainsError(AbstractType actual, Context context)
+  boolean isAssignableFromOrContainsError(AbstractType actual, Context context)
   {
     return
       containsError() || actual.containsError() || isAssignableFrom(actual, context);
@@ -409,7 +458,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo, Context context)
+  boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo, Context context)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -498,7 +547,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  public boolean constraintAssignableFrom(Context context, AbstractType actual)
+  boolean constraintAssignableFrom(Context context, AbstractType actual)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -533,6 +582,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  /**
+   * Check if a type parameter actual can be assigned to a type parameter with
+   * constraint this.
+   *
+   * @param actual the actual type.
+   */
+  public boolean constraintAssignableFrom(AbstractType actual)
+  {
+    return constraintAssignableFrom(Context.NONE, actual);
   }
 
 
@@ -1066,7 +1127,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * parameters in {@code this} and {@code this.type}s replaced by the corresponding actual
    * type in {@code this}.
    */
-  public AbstractType actualType(AbstractType t, Context context)
+  AbstractType actualType(AbstractType t, Context context)
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
@@ -1074,6 +1135,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     return t.applyTypePars(this)
       .replace_this_type_by_actual_outer(this, context);
+  }
+
+
+  /**
+   * Use this type as a target type for a call using type {@code t} and determine the
+   * actual type corresponding to {@code t}. For this, type parameters used in {@code t} are
+   * replaced by the actual type parameters in {@code this} and {@code this.type} within {@code t}
+   * will be replaced by the actual type in {@code this}.
+   *
+   * @param t a type, must not be an open generic.
+   *
+   * @return t with type parameters replaced by the corresponding actual type
+   * parameters in {@code this} and {@code this.type}s replaced by the corresponding actual
+   * type in {@code this}.
+   */
+  public AbstractType actualType(AbstractType t)
+  {
+    return actualType(t, Context.NONE);
   }
 
 
@@ -1472,7 +1551,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public AbstractType replace_this_type_by_actual_outer(AbstractType tt, Context context)
+  AbstractType replace_this_type_by_actual_outer(AbstractType tt, Context context)
   {
     return replace_this_type_by_actual_outer(tt, null, context);
   }
@@ -1489,7 +1568,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
+  AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
     var att = tt.selfOrConstraint(context);
@@ -1509,6 +1588,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
       }
     return result;
+  }
+
+
+  /**
+   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
+   * exactly tt, ignoring tt.outer().
+   *
+   * @param tt the type feature we are calling
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.
+   */
+  public AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
+  {
+    return replace_this_type_by_actual_outer2(tt, foundRef, Context.NONE);
   }
 
 
@@ -2032,7 +2126,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  public AbstractType checkConstraints(Context context)
+  AbstractType checkConstraints(Context context)
   {
     var result = this;
     if (result != Types.t_ERROR && !isGenericArgument())
@@ -2195,7 +2289,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * else this returns a Stream of itself.
    */
-  public Stream<AbstractType> choices(Context context)
+  Stream<AbstractType> choices(Context context)
   {
     return isChoice()
       ? choiceGenerics(context)

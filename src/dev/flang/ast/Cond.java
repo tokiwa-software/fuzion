@@ -129,7 +129,7 @@ public class Cond
    *
    * @param context the source code context where this Cond is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
   }

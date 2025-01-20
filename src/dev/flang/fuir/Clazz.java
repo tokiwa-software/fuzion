@@ -39,7 +39,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Context;
 import dev.flang.ast.Expr;
 import dev.flang.ast.ResolvedNormalType;
 import dev.flang.ast.Types;
@@ -450,7 +449,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = this._type.actualType(f.selfType(), Context.NONE).asRef();
+        var t = this._type.actualType(f.selfType()).asRef();
         return normalize2(t);
       }
   }
@@ -525,7 +524,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         var pt = p.type();
         var t1 = isRef().yes() && !pt.isVoid() ? pt.asRef() : pt.asValue();
-        var t2 = _type.actualType(t1, Context.NONE);
+        var t2 = _type.actualType(t1);
         var pc = _fuir.newClazz(t2);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
@@ -633,7 +632,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (feature().isCotype())
       {
-        t = _type.generics().get(0).actualType(t, Context.NONE);
+        t = _type.generics().get(0).actualType(t);
         var g = t.cotypeActualGenerics();
         var o = t.outer();
         if (o != null)
@@ -1085,7 +1084,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.actualType(t, Context.NONE);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
+            t = _type.actualType(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
 
 /*
   We have the following possibilities when calling a feature {@code f} declared in do {@code on}
@@ -1935,8 +1934,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 // {@code t.replace_this_type(parentf, childf, foundRef)} a few lines
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,
-                                                         foundRef,
-                                                         Context.NONE);
+                                                         foundRef);
               }
             // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
             child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()

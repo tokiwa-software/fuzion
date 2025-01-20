@@ -357,7 +357,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return

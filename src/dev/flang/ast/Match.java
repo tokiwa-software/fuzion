@@ -142,7 +142,7 @@ public class Match extends AbstractMatch
    *
    * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
     var st = _subject.type();
     if (CHECKS) check
@@ -234,7 +234,7 @@ public class Match extends AbstractMatch
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     // NYI: CLEANUP: there should be another mechanism, for
     // adding missing result fields instead of misusing
