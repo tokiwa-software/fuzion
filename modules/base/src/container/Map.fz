@@ -70,6 +70,13 @@ public Map(public K type : property.equatable, public V type) ref is
       r
 
 
+  # create a mutable map from this
+  #
+  # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
+  #
+  public as_mutable_map(LM type : mutate) container.Mutable_Map K V => abstract
+
+
   # initializer for this map
   #
   # every map implementation needs to implement this

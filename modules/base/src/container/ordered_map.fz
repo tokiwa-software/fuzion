@@ -115,6 +115,12 @@ is
       r
 
 
+  # create a mutable map from this
+  #
+  public redef as_mutable_map(LM type : mutate) container.Mutable_Map OK V =>
+    (container.mutable_tree_map LM OK V).from_array items.as_array
+
+
   # create an empty instance of ordered_map
   #
   public fixed redef type.empty =>

@@ -128,6 +128,12 @@ is
       .as_string
 
 
+  # NYI: implement this when #4642 is done
+  # create a mutable map from this
+  #
+  # public redef as_mutable_map container.Mutable_Map PK V =>
+
+
   # empty -- convenience routine to create an empty instance of hash_map
   #
   public fixed redef type.empty => container.hash_map HK V [] []
