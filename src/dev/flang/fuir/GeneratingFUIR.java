@@ -2172,7 +2172,7 @@ public class GeneratingFUIR extends FUIR
     // can happen e.g. in compile_time_type_casts
     // since toStack currently puts illegal code in _allCode
     // because it does not consider the context, yet
-    if (!tclazz.isVoidType() && !tclazz.feature().inheritsFrom(cf.outer()))
+    if (tclazz.isVoidType() || !tclazz.feature().inheritsFrom(cf.outer()))
       {
         return null;
       }
