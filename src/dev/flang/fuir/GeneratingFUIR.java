@@ -1644,13 +1644,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
-    if ((e instanceof AbstractCall ||
-         e instanceof InlineArray    ) && isConst(e))
+    if (isConst(e) && !dumpResult)
       {
-        if (!dumpResult)
-          {
-            l.add(e.asCompileTimeConstant());
-          }
+        l.add(e.asCompileTimeConstant());
       }
     else
       {
@@ -1668,9 +1664,6 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(Object o)
   {
-    if (PRECONDITIONS) require
-      (o instanceof Expr || o instanceof ExprKind);
-
     return o instanceof InlineArray iai && isConst(iai)
         || o instanceof Constant
         || o instanceof AbstractCall ac && isConst(ac)
