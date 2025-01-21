@@ -165,7 +165,7 @@ public class Util
         (af.outer().compareTo(Types.resolved.f_Type) == 0)                    ? Kind.Cotype
         : !af.definesType()                                                   ? Kind.Other
         : af.isChoice() || af.visibility().eraseTypeVisibility() != Visi.PUB  ? Kind.Type
-        : af.isRef()                                                      ? Kind.RefConstructor
+        : af.isRef()                                                          ? Kind.RefConstructor
                                                                               : Kind.ValConstructor);
     }
   }

@@ -273,9 +273,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Constructor for a Clazz
    *
-   * @fuiri FUIR instance used to lookup reference clazzes
+   * @fuir FUIR instance used to lookup reference clazzes
    *
-   * @param outer the outer clazz, will be normlized before it is used.
+   * @param outer the outer clazz, will be normalized before it is used.
    *
    * @param type the actual type this clazz is built on. The actual type must
    * not be a generic argument.
@@ -1210,7 +1210,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Create String from this clazz.
    *
    * @param humanReadable true to create a string optimized to be readable by
-   * humans but possibly not unique. false for a unique String representating
+   * humans but possibly not unique. false for a unique String representing
    * this clazz to be used by compilers.
    */
   String asString(boolean humanReadable)
@@ -1930,7 +1930,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               {
                 // NYI: UNDER DEVELOPMENT: This currently cannot be done during
                 // the first pass of the loop, need to check why (most likely it
-                // performs something thst i in conflict with the call to
+                // performs something that is in conflict with the call to
                 // {@code t.replace_this_type(parentf, childf, foundRef)} a few lines
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,

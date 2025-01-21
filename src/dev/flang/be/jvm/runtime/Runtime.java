@@ -1403,7 +1403,7 @@ public class Runtime extends ANY
 
 
   /**
-   * creates a new MemorySegment and copys
+   * creates a new MemorySegment and copies
    * content of object to the memory segment
    */
   public static MemorySegment obj2MemorySegment(Object obj)
