@@ -48,7 +48,7 @@ ctrie_threads is
           snap := ctrie.snapshot true, if k=500 then ctrie.snapshot true else snap
           snap_size := snap.size, (if k!=500 && snap_size != snap.size then panic "snapshot changed, was $snap_size is {snap.size}" else snap.size)
       do
-        ctrie.add k t
+        ctrie.put k t
         if k % 3 = 0
           _ := ctrie.remove k
 
@@ -74,7 +74,7 @@ ctrie_threads is
     in_threads t->
       for k in keys do
 
-        ctrie.add k t
+        ctrie.put k t
 
         if take_snapshots && k%100 = 0
           snap := ctrie.snapshot true
@@ -113,7 +113,7 @@ ctrie_threads is
       for k in keys do
         kt := (1000*t)+k
 
-        ctrie.add kt kt
+        ctrie.put kt kt
         if ctrie[kt].is_nil
           panic "added key $kt not present"
 
@@ -130,7 +130,7 @@ ctrie_threads is
         if k%100 = 0
           _ := ctrie.snapshot true
 
-        ctrie.add kt kt
+        ctrie.put kt kt
 
 
   test4 =>
@@ -143,7 +143,7 @@ ctrie_threads is
         kt := (1000*t)+k
 
         s := if k%5=0 then ctrie.snapshot true else ctrie
-        ctrie.add kt kt
+        ctrie.put kt kt
         if ctrie[kt].is_nil
           panic "added key $kt not present"
         if k%5=0 && s[kt].exists
