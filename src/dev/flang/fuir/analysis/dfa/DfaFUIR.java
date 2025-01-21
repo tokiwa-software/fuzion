@@ -155,15 +155,11 @@ public class DfaFUIR extends GeneratingFUIR {
           {
             var s0 = s;
             var accessedClazz =
-              !withinCode(s)
+              !withinCode(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
                 ? NO_CLAZZ
-                : (codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
-                ? safe(()->
-                    accessedClazz(s0) > lastClazz
-                      ? NO_CLAZZ
-                      : accessedClazz(s0),
-                    NO_CLAZZ)
-                : NO_CLAZZ;
+                : accessedClazz(s0) > lastClazz
+                ? NO_CLAZZ
+                : accessedClazz(s0);
 
             sites[s-SITE_BASE] = new SiteRecord(
                 clazzAt(s),
@@ -177,8 +173,8 @@ public class DfaFUIR extends GeneratingFUIR {
                 !withinCode(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? NO_CLAZZ : accessTargetClazz(s),
                 !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
                 !withinCode(s) || codeAt(s) != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxValueClazz(s0), NO_CLAZZ),
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : safe(()->boxResultClazz(s0), NO_CLAZZ),
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s0),
+                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s0),
                 !withinCode(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s0),
                 !withinCode(s) ? -1 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
                 !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
