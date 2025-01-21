@@ -457,6 +457,15 @@ public Sequence(public T type) ref : property.equatable is
   public scan (m Monoid T) => as_list.scan m.e m
 
 
+  # map this Sequence to a list that contains the result of folding
+  # all prefixes using the given function and initial value.
+  #
+  # e.g., for a Sequence s of i32, s.scan (+) 0 creates a list of
+  # partial sums (0..).map x->(s.take x).fold i32.sum
+  #
+  public scan (R type, f Binary R R T, a R) Sequence R => as_list.scan R f a
+
+
   # reduce this Sequence to R with an initial value init
   # and a reducing function f.
   # the reduction is finished once f yields abort or
