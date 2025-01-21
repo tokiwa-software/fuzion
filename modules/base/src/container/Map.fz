@@ -63,11 +63,11 @@ public Map(public K type : property.equatable, public V type) ref is
   #
   public redef as_string =>
     for
-      r := "", r + c + "($k => {index[] k})"
+      r := $"\{", r + c + "($k => {index[] k})"
       k in keys
       c := "", ", "
     else
-      r
+      r + "}"
 
 
   # create a mutable map from this
