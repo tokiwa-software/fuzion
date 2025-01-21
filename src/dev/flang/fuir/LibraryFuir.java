@@ -590,7 +590,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public boolean withinCode(int s)
   {
-    return s != NO_SITE && _sites[s - SITE_BASE].codeAt() != null;
+    return s != NO_SITE && _sites[s - SITE_BASE] != null && _sites[s - SITE_BASE].codeAt() != null;
   }
 
    /**
@@ -606,7 +606,7 @@ public class LibraryFuir extends FUIR {
   {
     var c = site - SITE_BASE;
     var result = c;
-    while (result > 0 && _sites[result-1].codeAt() != null)
+    while (result > 0 && (_sites[result-1] == null || _sites[result-1].codeAt() != null))
       {
         result--;
       }

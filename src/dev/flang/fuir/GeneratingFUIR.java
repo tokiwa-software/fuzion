@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -255,6 +256,8 @@ public class GeneratingFUIR extends FUIR
     _specialClazzes = original._specialClazzes;
     _inh = original._inh;
     _clazzesForTypes = original._clazzesForTypes;
+    _accessedCode = original._accessedCode;
+    _accessedSites = original._accessedSites;
   }
 
 
@@ -1087,6 +1090,20 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * For recording which site and clazzes are used.
+   * Used when serializing the FUIR.
+   */
+  protected TreeSet<Integer> _accessedSites = new TreeSet<>();
+  protected TreeSet<Integer> _accessedCode = new TreeSet<>();
+  @Override
+  protected Object getExpr(int s)
+  {
+    _accessedSites.add(s);
+    return super.getExpr(s);
+  }
+
+
+  /**
    * Get access to the code of a clazz of kind Routine
    *
    * @param cl a clazz id
@@ -1109,6 +1126,8 @@ public class GeneratingFUIR extends FUIR
        cl == clazz_fuzionSysArray_u8_data() ||
        cl == clazz_fuzionSysArray_u8_length()
        );
+
+    _accessedCode.add(cl);
 
     var c = id2clazz(cl);
     var result = c._code;
@@ -1811,6 +1830,8 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size());
+
+    _accessedSites.add(s);
 
     return _siteClazzes.get(s - SITE_BASE);
   }

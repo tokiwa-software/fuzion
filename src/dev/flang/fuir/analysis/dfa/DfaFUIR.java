@@ -117,7 +117,7 @@ public class DfaFUIR extends GeneratingFUIR {
         for (int cl = firstClazz; cl <= lastClazz; cl++)
           {
             var cl0 = cl;
-            var needsCode = clazzKind(cl) == FeatureKind.Routine && clazzNeedsCode(cl);
+            var needsCode = clazzKind(cl) == FeatureKind.Routine && clazzNeedsCode(cl) && _accessedCode.contains(cl);
             clazzes[clazzId2num(cl)] = new ClazzRecord(
                 clazzBaseName(cl),
                 clazzOuterClazz(cl),
@@ -153,41 +153,44 @@ public class DfaFUIR extends GeneratingFUIR {
         var sites = new SiteRecord[siteCount];
         for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
           {
-            var s0 = s;
-            var accessedClazz =
-              !withinCode(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
-                ? NO_CLAZZ
-                : accessedClazz(s0) > lastClazz
-                ? NO_CLAZZ
-                : accessedClazz(s0);
+            if (_accessedSites.contains(s))
+              {
+                var s0 = s;
+                var accessedClazz =
+                  !withinCode(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
+                    ? NO_CLAZZ
+                    : accessedClazz(s0) > lastClazz
+                    ? NO_CLAZZ
+                    : accessedClazz(s0);
 
-            sites[s-SITE_BASE] = new SiteRecord(
-                clazzAt(s),
-                !withinCode(s) ? false : alwaysResultsInVoid(s),
-                !withinCode(s) ? false : doesResultEscape(s),
-                !withinCode(s) ? null : codeAt(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Const ? NO_CLAZZ : constClazz(s) ,
-                !withinCode(s) ? null : codeAt(s) == ExprKind.Const ? constData(s) : null,
-                accessedClazz,
-                accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
-                !withinCode(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? NO_CLAZZ : accessTargetClazz(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s0),
-                !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s0),
-                !withinCode(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s0),
-                !withinCode(s) ? -1 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
-                !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
-                !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
-                !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
-                !withinCode(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
-                !withinCode(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
-                !withinCode(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
-                !withinCode(s) || sitePos(s) == null ? -1 : sitePos(s).line(),
-                !withinCode(s) || sitePos(s) == null ? -1 : sitePos(s).column(),
-                !withinCode(s) || sitePos(s) == null ? null : sitePos(s).show()
-              );
+                sites[s-SITE_BASE] = new SiteRecord(
+                    clazzAt(s),
+                    !withinCode(s) ? false : alwaysResultsInVoid(s),
+                    !withinCode(s) ? false : doesResultEscape(s),
+                    !withinCode(s) ? null : codeAt(s),
+                    !withinCode(s) || codeAt(s) != ExprKind.Const ? NO_CLAZZ : constClazz(s) ,
+                    !withinCode(s) ? null : codeAt(s) == ExprKind.Const ? constData(s) : null,
+                    accessedClazz,
+                    accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
+                    !withinCode(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? NO_CLAZZ : accessTargetClazz(s),
+                    !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
+                    !withinCode(s) || codeAt(s) != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
+                    !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s0),
+                    !withinCode(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s0),
+                    !withinCode(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s0),
+                    !withinCode(s) ? -1 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
+                    !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
+                    !withinCode(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
+                    !withinCode(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
+                    !withinCode(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
+                    !withinCode(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
+                    !withinCode(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
+                    !withinCode(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
+                    !withinCode(s) || sitePos(s) == null ? -1 : sitePos(s).line(),
+                    !withinCode(s) || sitePos(s) == null ? -1 : sitePos(s).column(),
+                    !withinCode(s) || sitePos(s) == null ? null : sitePos(s).show()
+                  );
+              }
           }
         oos.writeObject(sites);
 
