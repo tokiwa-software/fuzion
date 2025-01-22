@@ -117,7 +117,10 @@ public Sequence(public T type) ref : property.equatable is
   # collect the contents of this Sequence into an array
   #
   public as_array array T =>
-    as_list.as_array
+    if is_array_backed
+      array count (i -> Sequence.this[i])
+    else
+      as_list.as_array
 
 
   # create an array backed version of this sequence in case this is not array
@@ -317,7 +320,7 @@ public Sequence(public T type) ref : property.equatable is
   # and ']'.
   #
   # NOTE: In case this Sequence is not finite, this will attempt to create an
-  # infinitely long string resulting in failure due to resource exchaustion.
+  # infinitely long string resulting in failure due to resource exhaustion.
   #
   public as_string_all => "[{as_string ", "}]"
 
@@ -326,7 +329,7 @@ public Sequence(public T type) ref : property.equatable is
   # representations of its contents, separated by 'sep'.
   #
   # NOTE: In case this Sequence is not finite, this will attempt to create an
-  # infinitely long string resulting in failure due to resource exchaustion.
+  # infinitely long string resulting in failure due to resource exhaustion.
   #
   public as_string (sep String) => as_list.as_string sep
 
@@ -455,6 +458,15 @@ public Sequence(public T type) ref : property.equatable is
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
   public scan (m Monoid T) => as_list.scan m.e m
+
+
+  # map this Sequence to a list that contains the result of folding
+  # all prefixes using the given function and initial value.
+  #
+  # e.g., for a Sequence s of i32, s.scan (+) 0 creates a list of
+  # partial sums (0..).map x->(s.take x).fold i32.sum
+  #
+  public scan (R type, f Binary R R T, a R) Sequence R => as_list.scan R f a
 
 
   # reduce this Sequence to R with an initial value init
@@ -1110,6 +1122,8 @@ public Sequence(public T type) ref : property.equatable is
   # filter out duplicate elements.
   #
   # Keep the order of elements unchanged.
+  #
+  # Other languages call this 'distinct', e.g. Java, C# or Kotlin
   #
   # ex.
   #   [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]

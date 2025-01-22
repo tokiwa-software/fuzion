@@ -840,7 +840,7 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     var result = propagateExpectedTypeForPartial(res, context, t);
     if (result != this)
@@ -875,7 +875,7 @@ public class NumLiteral extends Constant
    * @param t the type this expression is assigned to.
    */
   @Override
-  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     if (t.isLazyType())
       {

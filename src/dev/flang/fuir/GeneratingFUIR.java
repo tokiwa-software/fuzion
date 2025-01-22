@@ -42,7 +42,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
@@ -96,7 +95,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzResultClazz.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_RESULT_CLAZZ = true;
@@ -105,7 +104,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzArgClazz and clazzArgCount.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_ARG_CLAZZES = true;
@@ -334,8 +333,7 @@ public class GeneratingFUIR extends FUIR
 
     // normalize outer to be value in case t describes a field
     outerR = t.feature().isField() ? outerR.asValue() : outerR;
-
-    var cl = new Clazz(this, outerR, t, select, CLAZZ_BASE + _clazzes.size());
+    var cl = new Clazz(this, outerR, t, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -343,16 +341,16 @@ public class GeneratingFUIR extends FUIR
       }
     else
       {
+        if (CHECKS) check
+          (!_lookupDone);
+
         result = cl;
+        var fuirId = CLAZZ_BASE + _clazzes.size();
         _clazzes.add(cl);
-        if (_lookupDone)
-          {
-            if (false) // NYI: BUG: #4273: This still happens for some tests and
-                       // some backends, need to check why and avoid this!
-              {
-                throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
-              }
-          }
+
+        if (CHECKS) check
+          (_clazzes.get(clazzId2num(fuirId)) == cl);
+
         if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
           {
             var rc = _resultClazzes;
@@ -410,11 +408,11 @@ public class GeneratingFUIR extends FUIR
           }
         cl._specialClazzId = s;
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
-        cl.init();
+        cl.init(fuirId);
 
         result.registerAsHeir();
 
-        // C backend requires the value variant for all ref clazzes, so we make
+        // backends require the value variant for all ref clazzes, so we make
         // sure we have the value clazz as well:
         var ignore = clazzAsValue(result._id);
       }
@@ -1666,13 +1664,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
-    if ((e instanceof AbstractCall ||
-         e instanceof InlineArray    ) && isConst(e))
+    if (isConst(e) && !dumpResult)
       {
-        if (!dumpResult)
-          {
-            l.add(e.asCompileTimeConstant());
-          }
+        l.add(e.asCompileTimeConstant());
       }
     else
       {
@@ -1690,9 +1684,6 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(Object o)
   {
-    if (PRECONDITIONS) require
-      (o instanceof Expr || o instanceof ExprKind);
-
     return o instanceof InlineArray iai && isConst(iai)
         || o instanceof Constant
         || o instanceof AbstractCall ac && isConst(ac)
@@ -1901,9 +1892,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
+  private Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -1912,10 +1901,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Tag);
 
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone || true);
         var cl = clazzAt(s);
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
@@ -2004,9 +1991,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
+  private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2015,10 +2000,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Box);
 
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
         var cl = clazzAt(s);
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
@@ -2104,9 +2087,7 @@ public class GeneratingFUIR extends FUIR
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int accessedClazz(int s)
+  public int accessedClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2116,10 +2097,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Assign    );
 
     var res = _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
         res = accessedClazz(s, null);
         if (res == null)
           {
@@ -2203,7 +2182,7 @@ public class GeneratingFUIR extends FUIR
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
-            cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
+            cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
             innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall());
@@ -2354,9 +2333,7 @@ public class GeneratingFUIR extends FUIR
    * feature to be accessed for this target.
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int[] accessedClazzes(int s)
+  public int[] accessedClazzes(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2387,11 +2364,11 @@ public class GeneratingFUIR extends FUIR
    *
    * This is used to feed information back from static analysis tools like DFA
    * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accesedClazzes.
+   * targets / inner clazzes tuples returned by accessedClazzes.
    *
    * @param s site of the access
    *
-   * @param tclazz the target clazz of the acces.
+   * @param tclazz the target clazz of the access.
    *
    * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
    * i.e., an abstract feature is missing.
@@ -2451,7 +2428,8 @@ public class GeneratingFUIR extends FUIR
     if (CHECKS) check
       (!_lookupDone);
 
-    _lookupDone = true;
+    // NYI: lookupDone before layout
+    // _lookupDone = true;
 
     // NYI: UNDER DEVELOPMENT: layout phase creates new clazzes, which is why we cannot iterate like this. Need to check why and remove this!
     //
@@ -2461,6 +2439,8 @@ public class GeneratingFUIR extends FUIR
         var c = _clazzes.get(i);
         c.layoutAndHandleCycle();
       }
+
+    _lookupDone = true;
   }
 
 
@@ -2553,7 +2533,7 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Const);
 
     var res = (Clazz) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
         var cl = clazzAt(s);
         var cc = id2clazz(cl);
@@ -2682,12 +2662,12 @@ public class GeneratingFUIR extends FUIR
     int nt = f != null ? 1 : ts.size();
     var resultL = new List<Integer>();
     int tag = 0;
-    for (var cg : m.subject().type().choiceGenerics(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+    for (var cg : m.subject().type().choiceGenerics())
       {
         for (int tix = 0; tix < nt; tix++)
           {
             var t = f != null ? f.resultType() : ts.get(tix);
-            if (t.isAssignableFromWithoutTagging(cg, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+            if (t.isAssignableFromWithoutTagging(cg))
               {
                 resultL.add(tag);
               }
@@ -2743,7 +2723,7 @@ public class GeneratingFUIR extends FUIR
             var T = innerClazz.actualTypeParameters()[0];
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||
               cf == Types.resolved.f_Type_infix_colon  &&
-              T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, tclazz._type.generics().get(0));
+              T._type.constraintAssignableFrom(tclazz._type.generics().get(0));
             var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
             if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
               {

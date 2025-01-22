@@ -759,7 +759,7 @@ public class Call extends AbstractCall
         _actuals = new List<>();
       }
 
-    // example where this is relevenant:
+    // example where this is relevant:
     // (fails when trying to resolve `zip` but does not know fibs result type yet)
     // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
     if (_calledFeature == null && _target instanceof Call c && c.calledFeatureKnown() && targetFeature(res, context) == null)
@@ -2425,7 +2425,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  public void tryResolveTypeCall(Resolution res, Context context)
+  void tryResolveTypeCall(Resolution res, Context context)
   {
     var outer = context.outerFeature();
     if (_calledFeature == null && _target != null && outer.state().atLeast(State.RESOLVED_INHERITANCE))
@@ -2485,7 +2485,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  public Call resolveTypes(Resolution res, Context context)
+  Call resolveTypes(Resolution res, Context context)
   {
     Call result = this;
     if (_resolvedFor == context)
@@ -2578,7 +2578,7 @@ public class Call extends AbstractCall
                      AbstractType rt;
                      if (raw == Types.t_UNDEFINED || raw == null)
                        {
-                         // Handling of cyclic type inference. It migh tbe
+                         // Handling of cyclic type inference. It might be
                          // better if this was done in `Feature.resultType`, but
                          // there we do not have access to Call.this.pos(), so
                          // we do it here.
@@ -2645,7 +2645,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(res, context, formalType));
 
@@ -2687,7 +2687,7 @@ public class Call extends AbstractCall
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     Expr r = this;
     if (t.isFunctionTypeExcludingLazy()         &&
@@ -2716,7 +2716,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  public void wrapActualsInLazy(Resolution res, Context context)
+  void wrapActualsInLazy(Resolution res, Context context)
   {
     applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, context, formalType));
   }
@@ -2730,7 +2730,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  public void unwrapActuals(Resolution res, Context context)
+  void unwrapActuals(Resolution res, Context context)
   {
     applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, context, formalType));
   }
@@ -2773,7 +2773,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  public void boxArgs(Context context)
+  void boxArgs(Context context)
   {
     if (_type != Types.t_ERROR && _resolvedFormalArgumentTypes != null)
       {
@@ -2808,7 +2808,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  public void checkTypes(Resolution res, Context context)
+  void checkTypes(Resolution res, Context context)
   {
     reportPendingError();
 
@@ -2979,7 +2979,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    */
-  public Call updateTarget(Resolution res, Context context)
+  Call updateTarget(Resolution res, Context context)
   {
     if (_targetFrom != null)
       {

@@ -17,17 +17,33 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Persistent_Map
+#  Source code of Fuzion test reg_issue4628
 #
 # -----------------------------------------------------------------------
 
-# Persistent_Map -- an abstract persistent map from keys K to values V
-#
-public Persistent_Map(public K type : property.hashable, public V type) ref : Map K V is
+reg_issue4628 =>
 
-  # returns a new Persistent_Map
-  # which contains all entries of the
-  # current Map and k,v.
-  # An already existing k will be replaced.
-  #
-  public put(k K, v V) container.Persistent_Map K V => abstract
+  x(T type : numeric) is
+
+  a(U type) =>
+    if U : numeric then
+      _ := x U             # works!
+
+  b(V type)
+    pre
+      V : numeric
+  =>
+      _ := x V             # unjustified error!
+
+  c(W type)
+    pre
+      W : numeric
+  =>
+    q(a x W) => say "q"   # unjustified error!
+    q (x W)               # unjustified error!
+
+  d(X type)
+  =>
+    if X : numeric
+      q(a x X) => say "q" # unjustified error!
+      q (x X)             # works!

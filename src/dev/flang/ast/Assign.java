@@ -113,7 +113,7 @@ public class Assign extends AbstractAssign
    *
    * @param context the source code context where this assignment is used
    */
-  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
+  Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {
     super(f, This.thiz(res, pos, context, f.outer()), v);
 
@@ -159,7 +159,7 @@ public class Assign extends AbstractAssign
    * replace a Destructure, this refers to the Destructure expression.
    */
   @Override
-  public void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Resolution res, Context context, Destructure destructure)
   {
     var f = _assignedField;
     if (f == null)

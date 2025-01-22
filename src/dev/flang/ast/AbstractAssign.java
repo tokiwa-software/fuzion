@@ -149,7 +149,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
     resolveTypes(res, context, null);
   }
@@ -165,7 +165,7 @@ public abstract class AbstractAssign extends Expr
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
-  public void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Resolution res, Context context, Destructure destructure)
   {
   }
 
@@ -181,7 +181,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -202,7 +202,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void wrapValueInLazy(Resolution res, Context context)
+  void wrapValueInLazy(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -222,7 +222,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void unwrapValue(Resolution res, Context context)
+  void unwrapValue(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -250,7 +250,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void boxVal(Context context)
+  void boxVal(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -269,7 +269,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void checkTypes(Resolution res, Context context)
+  void checkTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());

@@ -1982,26 +1982,6 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Perform type checking, in particular, verify that all redefinitions of this
-   * have the argument types.  Create compile time errors if this is not the
-   * case.
-   */
-  private void checkTypes(Resolution res, Context context)
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.CHECKING_TYPES));
-
-      res._module.checkTypes(this, context);
-
-      // warn about unused, non public, non ignored fields
-      if (isUsageCheckRequired() && !isUsed())
-        {
-          AstErrors.unusedField(this);
-        }
-  }
-
-
-  /**
    * Perform static type checking, i.e., make sure, that for all assignments from
    * actual to formal arguments or from values to fields, the types match.
    *
@@ -2019,6 +1999,7 @@ A ((Choice)) declaration must not contain a result type.
 
     _selfType   = selfType() .checkChoice(_pos,             context());
     _resultType = _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
+
     visit(new ContextVisitor(context()) {
         /* if an error is reported in a call it might no longer make sense to check the actuals: */
         @Override public boolean visitActualsLate() { return true; }
@@ -2031,7 +2012,15 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void         action(Cond           c) {        c.checkTypes();                         }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
       });
-    checkTypes(res, context());
+
+    res._module.checkTypes(this);
+
+    // warn about unused, non public, non ignored fields
+    if (isUsageCheckRequired() && !isUsed())
+      {
+        AstErrors.unusedField(this);
+      }
+
     visit(new ContextVisitor(context()) {
       @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
     });
@@ -2130,7 +2119,7 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
    */
-  public Expr resolveSyntacticSugar1(Resolution res, Context context, ContextVisitor rss1)
+  Expr resolveSyntacticSugar1(Resolution res, Context context, ContextVisitor rss1)
   {
     var outer = context.outerFeature();
 

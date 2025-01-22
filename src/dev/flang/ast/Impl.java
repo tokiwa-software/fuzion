@@ -371,7 +371,7 @@ public class Impl extends ANY
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
@@ -390,7 +390,7 @@ public class Impl extends ANY
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Context context, AbstractType t)
+  void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     _expr = _expr.propagateExpectedType(res, context, t);
   }
@@ -416,7 +416,7 @@ public class Impl extends ANY
    *
    * @param context the source code context where this assignment is used
    */
-  public void resolveSyntacticSugar2(Resolution res, Context context)
+  void resolveSyntacticSugar2(Resolution res, Context context)
   {
     var outer = context.outerFeature();
     if (outer.isConstructor() && outer.preFeature() != null)

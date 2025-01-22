@@ -244,7 +244,7 @@ public class Destructure extends ExprWithPos
    *
    * @param context the source code context where this Call is used
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
     List<Expr> exprs = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
