@@ -396,7 +396,9 @@ public class LibraryFuir extends FUIR {
   @Override
   public ExprKind codeAt(int s)
   {
-    return _sites[s-SITE_BASE].codeAt();
+    return _sites[s-SITE_BASE] == null
+      ? null
+      : _sites[s-SITE_BASE].codeAt();
   }
 
   @Override

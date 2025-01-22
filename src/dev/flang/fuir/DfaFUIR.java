@@ -1,4 +1,4 @@
-package dev.flang.fuir.analysis.dfa;
+package dev.flang.fuir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -6,11 +6,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Supplier;
-
-import dev.flang.fuir.ClazzRecord;
-import dev.flang.fuir.GeneratingFUIR;
-import dev.flang.fuir.SiteRecord;
-import dev.flang.fuir.SpecialClazzes;
 
 
 public class DfaFUIR extends GeneratingFUIR {
@@ -64,6 +59,19 @@ public class DfaFUIR extends GeneratingFUIR {
     for (int i = 0; i < result.length; i++)
       {
         result[i]= clazzChoice(cl, i);
+      }
+    return result;
+  }
+
+
+  private int[] clazzActualGenerics(int cl)
+  {
+    var cc = id2clazz(cl);
+    var generics = cc.actualTypeParameters();
+    var result = new int[generics.length];
+    for (int gix = 0; gix < result.length; gix++)
+      {
+        result[gix] = generics[gix]._id;
       }
     return result;
   }
