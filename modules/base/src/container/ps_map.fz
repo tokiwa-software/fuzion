@@ -60,9 +60,7 @@ private:public ps_map
    public redef size i32,
 
    # the first index in data that is unused
-   fill i32,
-
-   datalen i32)
+   fill i32)
 
    : Map PK V
 
@@ -152,19 +150,19 @@ O(n log n).
     m ! ()->
 
       nsize := size + 1
-      ndatalen := m.env.new datalen
-      ndata := m.env.new data
-      nfill := m.env.new fill
+      (ndata, nfill) := if (nsize & size) = 0
+                        then ((container.expanding_array (PK,V)).empty (data.capacity * 2 + (nsize+1) / 2), 0)
+                        else (data, fill)
       narr := mutate.array (PK,V) .new m
 
       # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
       #
       join (ole i32, dest i32, sz i32) ps_map PK V =>
         if (size & sz) = 0
-          for d := ndata.get, d.add e
+          for d := ndata, d.add e
               e in narr
           else
-            ps_map d nsize dest+sz ndatalen.get
+            ps_map d nsize dest+sz
         else
           tmp := array sz (i -> narr[i.as_i64])
           _ :=
@@ -178,16 +176,9 @@ O(n log n).
                 narr[(i1+i2).as_i64] := e
               else
                 narr.add e
-              // ndata.get[dest + i1 + i2] := e
-              // ndata <- ndata.get.add e
             until i1 + i2 = 2*sz-1
           join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
-      if (nsize & size) = 0
-      #        ndata <- data.ensure_capacity (data.length * 2 + (nsize+1) / 2)
-        ndatalen <- (datalen * 2 + (nsize+1) / 2)
-        ndata <- (container.expanding_array (PK,V)).empty
-        nfill <- 0
       narr.add kv
       join fill-1 nfill 1
 
@@ -226,7 +217,7 @@ O(n log n).
           get at0 sz0 nt
 
     sub_sz := size.highest_one_bit
-    get 0 sub_sz (datalen - sub_sz)
+    get 0 sub_sz (data.capacity - sub_sz)
 
 
   # create sorted array of all keys in this map
@@ -291,7 +282,7 @@ O(n log n).
       nil
     else
       sub_sz := size.highest_one_bit
-      min data[0].values.0 0 sub_sz (datalen - sub_sz)
+      min data[0].values.0 0 sub_sz (data.capacity - sub_sz)
 
 
   # get the highest key in this map
@@ -321,7 +312,7 @@ O(n log n).
       nil
     else
       sub_sz := size.highest_one_bit
-      max data[0].values.0 0 sub_sz (datalen - sub_sz)
+      max data[0].values.0 0 sub_sz (data.capacity - sub_sz)
 
 
   # union of two ps_maps
@@ -366,7 +357,7 @@ O(n log n).
       other ∪ ps_map.this
     else
       sub_sz := size.highest_one_bit
-      add_all other 0 sub_sz (datalen - sub_sz)
+      add_all other 0 sub_sz (data.capacity - sub_sz)
 
 
   # infix operator synonym for union of two ps_maps
@@ -379,7 +370,7 @@ O(n log n).
   #
   # This feature creates an empty instance of ps_map.
   #
-  public fixed redef type.empty => container.ps_map ((container.expanding_array (PK,V)).empty 0) 0 0 0
+  public fixed redef type.empty => container.ps_map ((container.expanding_array (PK,V)).empty 0) 0 0
 
 
   # ps_map -- routine to initialize a partially sorted map from two Sequences
