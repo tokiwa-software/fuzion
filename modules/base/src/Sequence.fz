@@ -1214,13 +1214,49 @@ public Sequence(public T type) ref : property.equatable is
     ((map x->x**T.two).fold T.sum).sqrt
 
 
+  # sliding window with step size one
+  # blocks of size elements, each is offset by one element to the previous one
+  #
+  public sliding (size i32) =>
+    sliding size 1
+
+
+  # sliding window
+  # blocks of size elements, each is offset by step elements to the previous one
+  #
+  public sliding (size i32, step i32) Sequence (Sequence T) =>
+    as_list.sliding size step
+
+
+  # group elements using key_f and reduce elements within a group using reduce_f
+  #
+  public group_map_reduce (K type : property.orderable, key_f Unary K T, reduce_f Binary T T T) container.Map K T =>
+    group_map_reduce K T key_f id reduce_f
+
+  # group elements using key_f and
+  # reduce elements within a group by first applying f and then using reduce_f to reduce
+  #
+  public group_map_reduce (K type : property.orderable, B type, key_f Unary K T, f Unary B T, reduce_f Binary B B B) container.Map K B =>
+    M : mutate is
+    M ! ()->
+      res := (container.mutable_tree_map M K B).empty
+
+      for_each x->
+        key := key_f x
+        match res[key]
+          nil => res.put key (f x)
+          y B => res.put key (reduce_f y (f x))
+
+      res.as_map
+
+
   # create an empty Sequence
   #
   public fixed type.empty Sequence T =>
     (list T).type.empty
 
 
-  # monoid of Sequences with infix concatentation operation.
+  # monoid of Sequences with infix concatenation operation.
   #
   public type.concat_monoid =>
 
