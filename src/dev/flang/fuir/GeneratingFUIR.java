@@ -332,7 +332,7 @@ public class GeneratingFUIR extends FUIR
     // normalize outer to be value in case t describes a field
     outerR = t.feature().isField() ? outerR.asValue() : outerR;
 
-    var cl = new Clazz(this, outerR, t, select, CLAZZ_BASE + _clazzes.size());
+    var cl = new Clazz(this, outerR, t, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -341,7 +341,12 @@ public class GeneratingFUIR extends FUIR
     else
       {
         result = cl;
+        var fuirId = CLAZZ_BASE + _clazzes.size();
         _clazzes.add(cl);
+
+        if (CHECKS) check
+          (_clazzes.get(clazzId2num(fuirId)) == cl);
+
         if (_lookupDone)
           {
             if (false) // NYI: BUG: #4273: This still happens for some tests and
@@ -407,11 +412,11 @@ public class GeneratingFUIR extends FUIR
           }
         cl._specialClazzId = s;
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
-        cl.init();
+        cl.init(fuirId);
 
         result.registerAsHeir();
 
-        // C backend requires the value variant for all ref clazzes, so we make
+        // backends require the value variant for all ref clazzes, so we make
         // sure we have the value clazz as well:
         var ignore = clazzAsValue(result._id);
       }
