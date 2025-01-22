@@ -608,6 +608,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # Keep the order of elements unchanged.
   #
+  # Other languages call this 'distinct', e.g. Java, C# or Kotlin
+  #
   # ex.
   #   [4,1,2,2,3,2,2,2,4].unique_list = [4, 1, 2, 3]
   #
