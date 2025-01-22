@@ -331,8 +331,7 @@ public class GeneratingFUIR extends FUIR
 
     // normalize outer to be value in case t describes a field
     outerR = t.feature().isField() ? outerR.asValue() : outerR;
-
-    var cl = new Clazz(this, outerR, t, select, CLAZZ_BASE + _clazzes.size());
+    var cl = new Clazz(this, outerR, t, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -340,16 +339,16 @@ public class GeneratingFUIR extends FUIR
       }
     else
       {
+        if (CHECKS) check
+          (!_lookupDone);
+
         result = cl;
+        var fuirId = CLAZZ_BASE + _clazzes.size();
         _clazzes.add(cl);
-        if (_lookupDone)
-          {
-            if (false) // NYI: BUG: #4273: This still happens for some tests and
-                       // some backends, need to check why and avoid this!
-              {
-                throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
-              }
-          }
+
+        if (CHECKS) check
+          (_clazzes.get(clazzId2num(fuirId)) == cl);
+
         if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
           {
             var rc = _resultClazzes;
@@ -407,11 +406,11 @@ public class GeneratingFUIR extends FUIR
           }
         cl._specialClazzId = s;
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
-        cl.init();
+        cl.init(fuirId);
 
         result.registerAsHeir();
 
-        // C backend requires the value variant for all ref clazzes, so we make
+        // backends require the value variant for all ref clazzes, so we make
         // sure we have the value clazz as well:
         var ignore = clazzAsValue(result._id);
       }
@@ -1383,7 +1382,7 @@ public class GeneratingFUIR extends FUIR
       (s != SpecialClazzes.c_NOT_FOUND);
 
     var result = _specialClazzes[s.ordinal()];
-    if (result == null)
+    if (result == null && !_lookupDone)
       {
         if (s == SpecialClazzes.c_universe)
           {
@@ -1855,9 +1854,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
+  private Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -1866,10 +1863,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Tag);
 
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone);
         var cl = clazzAt(s);
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
@@ -1958,9 +1953,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
+  private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -1969,10 +1962,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Box);
 
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
         var cl = clazzAt(s);
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
@@ -2058,9 +2049,7 @@ public class GeneratingFUIR extends FUIR
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int accessedClazz(int s)
+  public int accessedClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2070,10 +2059,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Assign    );
 
     var res = _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
         res = accessedClazz(s, null);
         if (res == null)
           {
@@ -2300,9 +2287,7 @@ public class GeneratingFUIR extends FUIR
    * feature to be accessed for this target.
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int[] accessedClazzes(int s)
+  public int[] accessedClazzes(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2397,7 +2382,8 @@ public class GeneratingFUIR extends FUIR
     if (CHECKS) check
       (!_lookupDone);
 
-    _lookupDone = true;
+    // NYI: lookupDone before layout
+    // _lookupDone = true;
 
     // NYI: UNDER DEVELOPMENT: layout phase creates new clazzes, which is why we cannot iterate like this. Need to check why and remove this!
     //
@@ -2407,6 +2393,8 @@ public class GeneratingFUIR extends FUIR
         var c = _clazzes.get(i);
         c.layoutAndHandleCycle();
       }
+
+    _lookupDone = true;
   }
 
 
@@ -2499,7 +2487,7 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Const);
 
     var res = (Clazz) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
         var cl = clazzAt(s);
         var cc = id2clazz(cl);
@@ -2545,9 +2533,7 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int matchStaticSubject(int s)
+  public int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2556,10 +2542,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Match);
 
     var rc = (Clazz) _siteClazzCache.get(s);
-    if (rc == null)
+    if (rc == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone);
         var cl = clazzAt(s);
         var cc = id2clazz(cl);
         var outerClazz = cc;

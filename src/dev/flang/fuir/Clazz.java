@@ -228,7 +228,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Integer id of this Clazz used in FUIR instance.
    */
-  final int _id;
+  int _id = -1;
 
 
   /**
@@ -282,14 +282,11 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param select in case actualType refers to a field whose result type is an
    * open generic parameter, select specifies the actual generic to be used.
-   *
-   * @param id the inter id used by FUIR to identify this Clazz.
    */
   Clazz(GeneratingFUIR fuir,
         Clazz outer,
         AbstractType type,
-        int select,
-        int id)
+        int select)
   {
     if (PRECONDITIONS) require
       (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
@@ -307,7 +304,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     _outer = outer;
     _select = select;
-    _id = id;
     _needsCode = false;
     _code = IR.NO_SITE;
   }
@@ -318,8 +314,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Additional initialization code that has to be run after this Clazz was
    * added to FUIRI._clazzes for recursive clazz lookup.
    */
-  void init()
+  void init(int id)
   {
+    _id = id;
     _choiceGenerics = determineChoiceGenerics();
     var vas = feature().valueArguments();
     if (vas.size() == 0 || isBoxed())
@@ -365,16 +362,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   void addInner(Clazz i)
   {
     if (PRECONDITIONS) require
-      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ ,
+      (!_fuir._lookupDone,
        i.clazzKind() != IR.FeatureKind.Field || isRef() == YesNo.no);
 
-    if (_fuir._lookupDone)
-      {
-        if (false)
-          { // NYI: CLEANUP: this should no longer happen, but it happens during layout phase, need to check why.
-            throw new Error("ADDING "+i+" to "+this);
-          }
-      }
     _inner.add(i);
   }
 
