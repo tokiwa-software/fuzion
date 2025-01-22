@@ -25,18 +25,19 @@
 
 # expanding_array -- an array with a length and a (possible larger) capacity
 #
-# An expanding array is a persitent data structure that has cumulitive O(1)
-# performance of adding single elements towards the end.
+# An expanding array is a persistent data structure that has cumulitive O(1)
+# performance of adding single elements at its end.
 #
 # WARNING: Due to the high worst-case time for addition, this structure should
 # not be used in situations when adding a single element repeatedly to the same
 # instance of `expanding_array` is performance critical.  If the resulting
-# `expanding_array`'s length `l` is a power of 2, this will trigger the worst-case
-# addition time resulting in O(m*l) for adding an element m times.
+# `expanding_array`'s length is `l`, this will trigger the worst-case
+# addition time, resulting in cumulative time O(m*l) for adding an element m
+# times.
 #
 # This constructor is for internal use only, to create instance of
-# expanding_array, use `(expanding_array T).type.empty` to create a new expanding
-# array instance.
+# `expanding_array`, use `(expanding_array T).type.empty` to create an empty
+# expanding array instance.
 #
 private:public expanding_array
   (
@@ -64,7 +65,9 @@ is
   #
   public redef index [](i i32) T
   =>
-    data[i].val
+    match data[i]
+      v T => v
+      * => panic "slot.val called on reserved/unused"
 
 
   # make sure this `expanding_array` has capacity of at least
@@ -95,7 +98,8 @@ is
   # Complexity: O(1) if no allocation is required, O(new_capacity)
   # otherwise.
   #
-  private realloc(new_capacity i32) =>
+  private realloc(new_capacity i32)
+  =>
     if capacity >= new_capacity && (length=capacity || !data[length])
       data
     else
@@ -110,7 +114,16 @@ is
   # create a new `expanding_array` with element i set to v. Grow the array
   # in case i == length.
   #
-  # Complexity: O(array.this.length)
+  # expand is not thread-safe.
+  #
+  # Complexity: O(1) if no allocation is required, O(length+1) otherwise.
+  #
+  # Cumulative complexity of adding an element to an empty `expanding_array`
+  # and repeatedly growing the result `add` by a total of `n` elements is
+  # `O(n)`.
+  #
+  # `add` called repeatedly on the same `expanding_array` creates copies
+  # of the underlying array data and hence has performance in `O(length)`.
   #
   public add(v T)
     pre
@@ -123,6 +136,10 @@ is
 
 
   # expand this array by `n` elements and call `filler` to set these elements.
+  #
+  # This is useful if the new elements will not be added in order or if the new
+  # elements need to be moved around, e.g., for sorting.
+  #
   # `filler` will be run with an instanted instance of `container.expanding T`
   # that will permit to set the new elements.  During the execution of `filler`
   # elements that have been set already (i.e., indices <length or those for
@@ -130,6 +147,8 @@ is
   #
   # `filler` may set elements repeatedly, but it must set all elements for the
   # new indices `lenght`..`length+n-1` before it returns.
+  #
+  # expand is not thread-safe.
   #
   public expand(n i32, filler ()->unit)
     pre
@@ -157,8 +176,9 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty =>
-    empty 8
+  public type.empty
+  =>
+    empty default_capacity
 
 
   # create an empty `expanding_array` of the type this is applied to, e.g.
@@ -175,6 +195,11 @@ is
     for x in 0..(internal.length-1) do
       internal[x] := container.unused
     container.expanding_array T internal 0
+
+
+  # default capacity of an expanding array created by `type.empty`
+  #
+  type.default_capacity => 8
 
 
 # unit type value for an unused slot
@@ -199,16 +224,6 @@ private slot(T type) : choice reserved unused T is
     match slot.this
       unused => false
       * => true
-
-  # get value of this slot, panic if not set
-  #
-  val T
-    pre
-      debug: !(!slot.this)
-  =>
-    match slot.this
-      v T => v
-      * => panic "slot.val called on reserved/unused"
 
 
 # effect that will be installed by `expanding_array.expand` will running `filler`
