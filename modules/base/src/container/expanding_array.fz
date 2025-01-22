@@ -35,7 +35,8 @@
 # addition time resulting in O(m*l) for adding an element m times.
 #
 # This constructor is for internal use only, to create instance of
-# expanding_array, use NYI
+# expanding_array, use `(expanding_array T).type.empty` to create a new expanding
+# array instance.
 #
 private:public expanding_array
   (
@@ -121,6 +122,15 @@ is
     expanding_array data0 length+1
 
 
+  # expand this array by `n` elements and call `filler` to set these elements.
+  # `filler` will be run with an instanted instance of `container.expanding T`
+  # that will permit to set the new elements.  During the execution of `filler`
+  # elements that have been set already (i.e., indices <length or those for
+  # which `set []` or `put` was called) maybe be read using `get` or `index []`.
+  #
+  # `filler` may set elements repeatedly, but it must set all elements for the
+  # new indices `lenght`..`length+n-1` before it returns.
+  #
   public expand(n i32, filler ()->unit)
     pre
       debug: n >= 0
@@ -139,7 +149,6 @@ is
         container.reserved => panic "container.expanding_array.expand $n filler did not init element at {length+i} (=$length+$i)"
         * =>
     expanding_array data0 new_length
-
 
 
   # create an empty `expanding_array` of the type this is applied to, e.g.
@@ -168,30 +177,66 @@ is
     container.expanding_array T internal 0
 
 
-private reserved is
+# unit type value for an unused slot
+#
 private unused is
 
+
+# unit type value for a reserved slot, i.e., during `expand` a slot that was not
+# set by the `filler` yet.
+#
+private reserved is
+
+
+# internal arrays used by `expanding_array` will use values of type `slot` such that
+# we can destingish slots that are used from those that are unused or reserved.
+#
 private slot(T type) : choice reserved unused T is
 
+  # is this slot unused?
+  #
   prefix ! =>
     match slot.this
       unused => false
       * => true
 
-  val T =>
+  # get value of this slot, panic if not set
+  #
+  val T
+    pre
+      debug: !(!slot.this)
+  =>
     match slot.this
       v T => v
       * => panic "slot.val called on reserved/unused"
 
 
-private:public expanding(T type, data fuzion.sys.internal_array (container.slot T), public length i32, public n i32) : effect is
+# effect that will be installed by `expanding_array.expand` will running `filler`
+#
+private:public expanding(T type,
+                         data fuzion.sys.internal_array (container.slot T),
+                         public length i32,
+                         public n i32
+                        ) : effect
+is
 
+  # set element at index `i` to `v`.
+  #
+  # `i` must be in the range of indices of the newly added entries.
+  #
+  # `put` must be called for all indicies of newly added entries.
+  #
   public put(i i32, v T)
     pre
       safety: length <= i < length+n
   =>
     data[i] := v
 
+
+  # has element at index `i` been set already?  This is true after an explicit
+  # call to `put i v` for some value `v` or for indices in the range `0..length-1`
+  # for all indices that existed before `expand` was called.
+  #
   public has(i i32)
     pre
       safety: 0 <= i < length+n
@@ -204,12 +249,36 @@ private:public expanding(T type, data fuzion.sys.internal_array (container.slot 
         container.reserved => false
         container.unused => panic "unexpected unused slot"
 
+
+  # get element at index `i`.  This can be used to get elements that existed
+  # before the call to `expand` as well as for indices that where initialized
+  # via a call to `put` afterwards.
+  #
   public get(i i32)
     pre
-      safety: length <= i < length+n
+      safety: 0 <= i < length+n
       debug: has i
   =>
     match data[i]
-      T => true
+      v T => v
       container.unused   => panic "unexpected unused slot"
       container.reserved => panic "unexpected reerved slot"
+
+
+  # short-hand index operator alias for `get`
+  #
+  public index [](i i32)
+    pre
+      safety: 0 <= i < length+n
+      debug: has i
+  =>
+    get i
+
+
+  # short-hand set-index operator alias for `put`
+  #
+  public set [](i i32, v T)
+    pre
+      safety: length <= i < length+n
+  =>
+    put i v
