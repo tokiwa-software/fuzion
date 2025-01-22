@@ -35,8 +35,6 @@ public Err ref : print_effect is
 #
 module default_err : io.Err is
 
-  module fzE_file_stderr fuzion.sys.Pointer => native
-
   public redef write(b Sequence u8) outcome unit =>
     io.Err.replace default_err.this
     fuzion.sys.fileio.write fzE_file_stderr b.as_array

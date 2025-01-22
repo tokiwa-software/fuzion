@@ -46,7 +46,7 @@ is
 
   # get the peer's port (tcp)
   public get_peer_port outcome u16 =>
-    fuzion.sys.net.fzE_get_peer_port desc
+    fzE_get_peer_port desc
 
 
 

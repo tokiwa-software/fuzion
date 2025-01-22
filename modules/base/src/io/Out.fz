@@ -35,8 +35,6 @@ public Out ref : print_effect is
 #
 module default_out : io.Out is
 
-  module fzE_file_stdout fuzion.sys.Pointer => native
-
   public redef write(b Sequence u8) outcome unit =>
     io.Out.replace default_out.this
     fuzion.sys.fileio.write fzE_file_stdout b.as_array
