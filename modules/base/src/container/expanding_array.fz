@@ -78,7 +78,10 @@ is
   # In the latter cases, a new internal array of required capacity
   # will be allocated and the existing elements will be copied over.
   #
-  public fixed ensure_capacity(new_capacity i32) =>
+  public fixed ensure_capacity(new_capacity i32)
+    post
+      debug: ((capacity < new_capacity) : result.capacity = new_capacity)
+  =>
     expanding_array (realloc new_capacity) length
 
 
