@@ -128,7 +128,20 @@ is
   # Complexity: O(1)
   #
   public type.empty =>
-    internal := fuzion.sys.internal_array_init (option T) 8
+    empty 8
+
+
+  # create an empty `expanding_array` of the type this is applied to, e.g.
+  #
+  #   floats := (container.expanding_array f64).empty
+  #
+  # Complexity: O(1)
+  #
+  public type.empty(initial_capacity i32)
+    pre
+      debug: initial_capacity >= 0
+  =>
+    internal := fuzion.sys.internal_array_init (option T) initial_capacity
     for x in 0..(internal.length-1) do
       internal[x] := nil
     container.expanding_array T internal 0
