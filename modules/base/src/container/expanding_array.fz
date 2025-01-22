@@ -1,0 +1,131 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature expanding_array
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# expanding_array -- an array with a length and a (possible larger) capacity
+#
+# An expanding array is a persitent data structure that has cumulitive O(1)
+# performance of adding single elements towards the end.
+#
+# WARNING: Due to the high worst-case time for addition, this structure should
+# not be used in situations when adding a single element repeatedly to the same
+# instance of `expanding_array` is performance critical.  If the resulting
+# `expanding_array`'s length `l` is a power of 2, this will trigger the worst-case
+# addition time resulting in O(m*l) for adding an element m times.
+#
+# This constructor is for internal use only, to create instance of
+# expanding_array, use NYI
+#
+private:public expanding_array
+  (
+   # element type
+   public T type,
+
+   # the array containing the actual data
+   data fuzion.sys.internal_array (option T),
+
+   # the length of the array
+   public redef length i32
+  )
+  : abstract_array T
+
+is
+
+
+  # Get the capacity of this `expanding_array`, i.e., the number of
+  # elements that can be added without re-allocating the array data.
+  #
+  public capacity => data.length
+
+
+  # get the contents of this array at the given index
+  #
+  public redef index [](i i32) T
+  =>
+    data[i].val
+
+
+  # make sure this `expanding_array` has capacity of at least
+  # `new_capacity` and we are able to add elements without
+  # allocating a new internal array.
+  #
+  # This will create an `expanding_array` whose internal array
+  # is the same of `expanding_array.this` unless the existing
+  # capacity is less than `new_capacity` or the existing array
+  # was already expanded using by a call to `add`.
+  #
+  # In the latter cases, a new internal array of required capacity
+  # will be allocated and the existing elements will be copied over.
+  #
+  public fixed ensure_capacity(new_capacity i32) =>
+    expanding_array (realloc new_capacity) length
+
+
+  # return the internal array if the capacity is at least `new_capacity`
+  # and, if available, the slot at position `length` is still unused.
+  # Otherwise, allocate a new internal array of length `new_capacity` and
+  # copy `data`'s elements into the new internal array and filling the
+  # remainder with `nil`.
+  #
+  # Complexity: O(1) if no allocation is required, O(new_capacity)
+  # otherwise.
+  #
+  private realloc(new_capacity i32) =>
+    if capacity >= new_capacity && (length=capacity || !data[length])
+      data
+    else
+      internal := fuzion.sys.internal_array_init (option T) new_capacity
+      for x in 0..(new_capacity-1) do
+        internal[x] := if x < length then expanding_array.this[x]
+                       else               nil
+
+      internal
+
+
+  # create a new `expanding_array` with element i set to v. Grow the array
+  # in case i == length.
+  #
+  # Complexity: O(array.this.length)
+  #
+  public add(v T)
+    pre
+      # prevent i32-overflow in capacity
+      safety: (length+1).highest_one_bit < i32.max.highest_one_bit
+  =>
+    data0 := realloc (length+1).highest_one_bit*2
+    data0[length] := v
+    expanding_array data0 length+1
+
+
+  # create an empty `expanding_array` of the type this is applied to, e.g.
+  #
+  #   floats := (container.expanding_array f64).empty
+  #
+  # Complexity: O(1)
+  #
+  public type.empty =>
+    internal := fuzion.sys.internal_array_init (option T) 8
+    for x in 0..(internal.length-1) do
+      internal[x] := nil
+    container.expanding_array T internal 0
