@@ -117,7 +117,10 @@ public Sequence(public T type) ref : property.equatable is
   # collect the contents of this Sequence into an array
   #
   public as_array array T =>
-    as_list.as_array
+    if is_array_backed
+      array count (i -> Sequence.this[i])
+    else
+      as_list.as_array
 
 
   # create an array backed version of this sequence in case this is not array
