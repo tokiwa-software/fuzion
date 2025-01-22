@@ -153,6 +153,12 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Cached looked up result field of this clazz
+   */
+  Clazz _resultField;
+
+
+  /**
    * Fields in instances of this clazz. Set during layout phase.
    */
   Clazz[] _fields;
@@ -574,7 +580,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
-        var r = resultField();
+        var r = resultField(false);
         if (r != null)
           { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
             r.doesNeedCode();
@@ -1280,11 +1286,13 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * If this clazz contains a direct outer ref field, this is the direct outer
    * ref. null otherwise.
+   *
+   * @param _lookupDone
    */
-  Clazz outerRef()
+  Clazz outerRef(boolean lookupDone)
   {
     var res = _outerRef;
-    if (res == null)
+    if (res == null && !lookupDone)
       {
         var or = feature().outerRef();
         if (!isBoxed() && or != null)
@@ -1304,17 +1312,21 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Get the result field of this routine if it exists.
    *
+   * @param _lookupDone
+   *
    * @return the result field or null.
    */
-  Clazz resultField()
+  Clazz resultField(boolean lookupDone)
   {
-    Clazz result = null;
-    var rf = feature().resultField();
-    if (rf != null)
+    if (_resultField == null && !lookupDone)
       {
-        result = lookupNeeded(rf);
+        var rf = feature().resultField();
+        if (rf != null)
+          {
+            _resultField = lookupNeeded(rf);
+          }
       }
-    return result;
+    return _resultField;
   }
 
 

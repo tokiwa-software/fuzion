@@ -89,17 +89,6 @@ public class DfaFUIR extends GeneratingFUIR {
 
   public byte[] serialize()
   {
-    // NYI: CLEANUP: DFA should probably already create those?
-    // make sure there is a value clazz for
-    // every boxed clazz, backends jvm and c need this.
-    // test inheritance fails without this.
-    for (int cl = firstClazz(); cl <= lastClazz(); cl++)
-      {
-        if (clazzIsBoxed(cl))
-          {
-            clazzAsValue(cl);
-          }
-      }
     // NYI: CLEANUP: currently needed by interpreter
     _lookupDone = false;
     clazz(SpecialClazzes.c_sys_ptr);

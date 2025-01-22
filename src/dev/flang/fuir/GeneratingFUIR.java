@@ -1062,7 +1062,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    var r = c.resultField();
+    var r = c.resultField(_lookupDone);
     return r == null ? NO_CLAZZ : r._id;
   }
 
@@ -1082,7 +1082,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    var or = c.outerRef();
+    var or = c.outerRef(_lookupDone);
     return or == null || c._outer.isUnitType() ? NO_CLAZZ : or._id;
   }
 
@@ -2549,7 +2549,9 @@ public class GeneratingFUIR extends FUIR
         _siteClazzCache.put(s, res);
       }
 
-    return res._id;
+    return res == null
+      ? NO_CLAZZ
+      : res._id;
   }
 
 

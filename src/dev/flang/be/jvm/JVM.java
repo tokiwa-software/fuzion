@@ -31,6 +31,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.ClassFile;
@@ -1745,13 +1746,18 @@ should be avoided as much as possible.
    */
   boolean fieldExists(int field)
   {
-    var occ   = _fuir.clazzOuterClazz(field);
-    var rt = _fuir.clazzResultClazz(field);
+    var result = false;
+    if (field != NO_CLAZZ)
+      {
+        var occ   = _fuir.clazzOuterClazz(field);
+        var rt = _fuir.clazzResultClazz(field);
 
-    return _fuir.hasData(rt)       &&
-      !_fuir.isScalar(occ)        &&
-      _types.clazzNeedsCode(field) &&
-      _types.resultType(rt) != PrimitiveType.type_void;
+        result = _fuir.hasData(rt)       &&
+          !_fuir.isScalar(occ)        &&
+          _types.clazzNeedsCode(field) &&
+          _types.resultType(rt) != PrimitiveType.type_void;
+      }
+    return result;
   }
 
 
