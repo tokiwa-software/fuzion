@@ -94,7 +94,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzResultClazz.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_RESULT_CLAZZ = true;
@@ -103,7 +103,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzArgClazz and clazzArgCount.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_ARG_CLAZZES = true;
@@ -332,7 +332,7 @@ public class GeneratingFUIR extends FUIR
     // normalize outer to be value in case t describes a field
     outerR = t.feature().isField() ? outerR.asValue() : outerR;
 
-    var cl = new Clazz(this, outerR, t, select, CLAZZ_BASE + _clazzes.size());
+    var cl = new Clazz(this, outerR, t, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -341,7 +341,12 @@ public class GeneratingFUIR extends FUIR
     else
       {
         result = cl;
+        var fuirId = CLAZZ_BASE + _clazzes.size();
         _clazzes.add(cl);
+
+        if (CHECKS) check
+          (_clazzes.get(clazzId2num(fuirId)) == cl);
+
         if (_lookupDone)
           {
             if (false) // NYI: BUG: #4273: This still happens for some tests and
@@ -407,11 +412,11 @@ public class GeneratingFUIR extends FUIR
           }
         cl._specialClazzId = s;
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
-        cl.init();
+        cl.init(fuirId);
 
         result.registerAsHeir();
 
-        // C backend requires the value variant for all ref clazzes, so we make
+        // backends require the value variant for all ref clazzes, so we make
         // sure we have the value clazz as well:
         var ignore = clazzAsValue(result._id);
       }
@@ -2333,11 +2338,11 @@ public class GeneratingFUIR extends FUIR
    *
    * This is used to feed information back from static analysis tools like DFA
    * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accesedClazzes.
+   * targets / inner clazzes tuples returned by accessedClazzes.
    *
    * @param s site of the access
    *
-   * @param tclazz the target clazz of the acces.
+   * @param tclazz the target clazz of the access.
    *
    * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
    * i.e., an abstract feature is missing.

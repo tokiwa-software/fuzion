@@ -228,7 +228,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Integer id of this Clazz used in FUIR instance.
    */
-  final int _id;
+  int _id = -1;
 
 
   /**
@@ -273,23 +273,20 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Constructor for a Clazz
    *
-   * @fuiri FUIR instance used to lookup reference clazzes
+   * @fuir FUIR instance used to lookup reference clazzes
    *
-   * @param outer the outer clazz, will be normlized before it is used.
+   * @param outer the outer clazz, will be normalized before it is used.
    *
    * @param type the actual type this clazz is built on. The actual type must
    * not be a generic argument.
    *
    * @param select in case actualType refers to a field whose result type is an
    * open generic parameter, select specifies the actual generic to be used.
-   *
-   * @param id the inter id used by FUIR to identify this Clazz.
    */
   Clazz(GeneratingFUIR fuir,
         Clazz outer,
         AbstractType type,
-        int select,
-        int id)
+        int select)
   {
     if (PRECONDITIONS) require
       (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
@@ -307,7 +304,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     _outer = outer;
     _select = select;
-    _id = id;
     _needsCode = false;
     _code = IR.NO_SITE;
   }
@@ -318,8 +314,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Additional initialization code that has to be run after this Clazz was
    * added to FUIRI._clazzes for recursive clazz lookup.
    */
-  void init()
+  void init(int id)
   {
+    _id = id;
     _choiceGenerics = determineChoiceGenerics();
     var vas = feature().valueArguments();
     if (vas.size() == 0 || isBoxed())
@@ -1210,7 +1207,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Create String from this clazz.
    *
    * @param humanReadable true to create a string optimized to be readable by
-   * humans but possibly not unique. false for a unique String representating
+   * humans but possibly not unique. false for a unique String representing
    * this clazz to be used by compilers.
    */
   String asString(boolean humanReadable)
@@ -1930,7 +1927,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               {
                 // NYI: UNDER DEVELOPMENT: This currently cannot be done during
                 // the first pass of the loop, need to check why (most likely it
-                // performs something thst i in conflict with the call to
+                // performs something that is in conflict with the call to
                 // {@code t.replace_this_type(parentf, childf, foundRef)} a few lines
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,

@@ -759,7 +759,7 @@ public class Call extends AbstractCall
         _actuals = new List<>();
       }
 
-    // example where this is relevenant:
+    // example where this is relevant:
     // (fails when trying to resolve `zip` but does not know fibs result type yet)
     // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
     if (_calledFeature == null && _target instanceof Call c && c.calledFeatureKnown() && targetFeature(res, context) == null)
@@ -2578,7 +2578,7 @@ public class Call extends AbstractCall
                      AbstractType rt;
                      if (raw == Types.t_UNDEFINED || raw == null)
                        {
-                         // Handling of cyclic type inference. It migh tbe
+                         // Handling of cyclic type inference. It might be
                          // better if this was done in `Feature.resultType`, but
                          // there we do not have access to Call.this.pos(), so
                          // we do it here.

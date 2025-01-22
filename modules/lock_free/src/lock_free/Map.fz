@@ -97,7 +97,7 @@ is
     container_node bmp (array.put pos.as_i32 node) g
 
   # add a child node and return a new container_node
-  add(sn singleton_node CTK CTV, pos, flag u32, g u64) =>
+  put(sn singleton_node CTK CTV, pos, flag u32, g u64) =>
     container_node (bmp | flag) (array.insert pos.as_i32 sn).as_array g
 
   # remove a child node and return a new container_node
@@ -563,33 +563,33 @@ is
 
   # add key value
   # if key is already present value is updated
-  public redef add(k CTK, v CTV) unit =>
+  public redef put(k CTK, v CTV) unit =>
     r := read_root
-    match add r k v 0 nil r.gen
+    match put r k v 0 nil r.gen
       restart =>
-        add k v
+        put k v
       ctrie_ok =>
 
 
   # try adding an element to the ctrie
   # may fail and result in a restart
-  add(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart ctrie_ok
+  put(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart ctrie_ok
   =>
     m := gcas_read i
     match m.data
       cn container_node =>
         (flag, pos) := flagpos (hash0 (hash k)) lev cn.bmp
         if (cn.bmp & flag) = 0
-          ncn := (if cn.gen = i.gen then cn else renew cn i.gen).add (singleton_node k v) pos flag i.gen
+          ncn := (if cn.gen = i.gen then cn else renew cn i.gen).put (singleton_node k v) pos flag i.gen
           gcas i m ncn
         else
           match cn[pos.as_i32]
             ci Indirection_Node =>
               if ci.gen = gen
-                add ci k v lev+width i gen
+                put ci k v lev+width i gen
               else
                 match gcas i m (renew cn gen)
-                  ctrie_ok => add i k v lev parent gen
+                  ctrie_ok => put i k v lev parent gen
                   restart => restart
             sn singleton_node =>
               if sn.k != k
@@ -695,7 +695,7 @@ is
       public redef items => s.items
       public redef put(k CTK, v CTV) =>
         sp := s.snapshot false
-        sp.add k v
+        sp.put k v
         sp.as_persistent_map
 
 
@@ -718,7 +718,5 @@ is
   #
   public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.Map CTK CTV =>
     m := (lock_free.Map CTK CTV).empty
-    kvs.for_each (kv -> m.add kv.0 kv.1)
+    kvs.for_each (kv -> m.put kv.0 kv.1)
     m
-
-
