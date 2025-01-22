@@ -116,7 +116,7 @@ is
       # prevent i32-overflow in capacity
       safety: (length+1).highest_one_bit < i32.max.highest_one_bit
   =>
-    data0 := realloc (length+1).highest_one_bit*2
+    data0 := realloc (capacity>length ? capacity : (length+1).highest_one_bit*2)
     data0[length] := v
     expanding_array data0 length+1
 
