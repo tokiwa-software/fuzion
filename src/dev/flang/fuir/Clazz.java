@@ -362,16 +362,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   void addInner(Clazz i)
   {
     if (PRECONDITIONS) require
-      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ ,
+      (!_fuir._lookupDone,
        i.clazzKind() != IR.FeatureKind.Field || isRef() == YesNo.no);
 
-    if (_fuir._lookupDone)
-      {
-        if (false)
-          { // NYI: CLEANUP: this should no longer happen, but it happens during layout phase, need to check why.
-            throw new Error("ADDING "+i+" to "+this);
-          }
-      }
     _inner.add(i);
   }
 
