@@ -154,17 +154,26 @@ O(n log n).
                         then ((container.expanding_array (PK,V)).empty (data.capacity * 2 + (nsize+1) / 2), 0)
                         else (data, fill)
       narr := mutate.array (PK,V) .new m
+      nsz := (1 << (size+1).trailing_zeros)
+      for i in 0..(ndata.capacity-1) do
+        narr.add kv
 
       # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
       #
-      join (ole i32, dest i32, sz i32) ps_map PK V =>
+      join (ole i32, dest i32, sz i32)# ps_map PK V
+      =>
         if (size & sz) = 0
-          for d := ndata, d.add e
-              e in narr
+          check sz=nsz
+          for # d := ndata, d.add e
+              i in 0..(sz-1)
+              e := narr[(dest+i).as_i64]
+          do
+            (container.expanding (tuple PK V)).env.put dest+i e
           else
-            ps_map d nsize dest+sz
+#            say "{ps_map.this} -> {d.length}"
+#            ps_map d nsize dest+sz
         else
-          tmp := array sz (i -> narr[i.as_i64])
+          tmp := array sz (i -> narr[(dest+i).as_i64])
           _ :=
             for
               i1 := 0, if (use1) i1+1 else i1
@@ -172,16 +181,14 @@ O(n log n).
               use1 := i1 < sz && ((i2 ≥ sz) || data[ole + i1].values.0 < tmp[i2].values.0)
               e := if use1 then data[ole + i1] else tmp[i2]
             do
-              if narr.length > (i1+i2).as_i64 then
-                narr[(i1+i2).as_i64] := e
-              else
-                narr.add e
+              narr[(dest+i1+i2).as_i64] := e
             until i1 + i2 = 2*sz-1
           join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
-      narr.add kv
-      join fill-1 nfill 1
+      d := ndata.expand nsz ()->
+        join fill-1 nfill 1
 
+      ps_map d nsize nfill+nsz
 
   # find the value k is mapped to or nil if k is not part of this map
   #

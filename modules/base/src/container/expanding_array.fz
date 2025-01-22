@@ -43,7 +43,7 @@ private:public expanding_array
    public T type,
 
    # the array containing the actual data
-   data fuzion.sys.internal_array (option T),
+   data fuzion.sys.internal_array (container.slot T),
 
    # the length of the array
    public redef length i32
@@ -98,10 +98,10 @@ is
     if capacity >= new_capacity && (length=capacity || !data[length])
       data
     else
-      internal := fuzion.sys.internal_array_init (option T) new_capacity
+      internal := fuzion.sys.internal_array_init (container.slot T) new_capacity
       for x in 0..(new_capacity-1) do
         internal[x] := if x < length then expanding_array.this[x]
-                       else               nil
+                       else               container.unused
 
       internal
 
@@ -119,6 +119,27 @@ is
     data0 := realloc (capacity>length ? capacity : (length+1).highest_one_bit*2)
     data0[length] := v
     expanding_array data0 length+1
+
+
+  public expand(n i32, filler ()->unit)
+    pre
+      debug: n >= 0
+  =>
+    new_length := length + n
+    data0 := realloc (capacity >= new_length ? capacity : new_length.highest_one_bit*2)
+    for
+      i in 0..(n-1)
+    do
+      data0[length+i] := container.reserved
+    (expanding T data0 length n).instate_self filler
+    for
+      i in 0..(n-1)
+    do
+      match data0[length+i]
+        container.reserved => panic "container.expanding_array.expand $n filler did not init element at {length+i} (=$length+$i)"
+        * =>
+    expanding_array data0 new_length
+
 
 
   # create an empty `expanding_array` of the type this is applied to, e.g.
@@ -141,7 +162,54 @@ is
     pre
       debug: initial_capacity >= 0
   =>
-    internal := fuzion.sys.internal_array_init (option T) initial_capacity
+    internal := fuzion.sys.internal_array_init (container.slot T) initial_capacity
     for x in 0..(internal.length-1) do
-      internal[x] := nil
+      internal[x] := container.unused
     container.expanding_array T internal 0
+
+
+private reserved is
+private unused is
+
+private slot(T type) : choice reserved unused T is
+
+  prefix ! =>
+    match slot.this
+      unused => false
+      * => true
+
+  val T =>
+    match slot.this
+      v T => v
+      * => panic "slot.val called on reserved/unused"
+
+
+private:public expanding(T type, data fuzion.sys.internal_array (container.slot T), public length i32, public n i32) : effect is
+
+  public put(i i32, v T)
+    pre
+      safety: length <= i < length+n
+  =>
+    data[i] := v
+
+  public has(i i32)
+    pre
+      safety: 0 <= i < length+n
+  =>
+    if i < length
+      true
+    else
+      match data[i]
+        T      => true
+        container.reserved => false
+        container.unused => panic "unexpected unused slot"
+
+  public get(i i32)
+    pre
+      safety: length <= i < length+n
+      debug: has i
+  =>
+    match data[i]
+      T => true
+      container.unused   => panic "unexpected unused slot"
+      container.reserved => panic "unexpected reerved slot"
