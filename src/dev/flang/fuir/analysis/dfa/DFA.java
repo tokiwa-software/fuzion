@@ -2096,7 +2096,7 @@ public class DFA extends ANY
 
           var a0 = cl._args.get(0).value();  // new effect value e
           var a1 = cl._args.get(1).value();  // code
-          var a2 = cl._args.get(2).value();  // def'ault code
+          var a2 = cl._args.get(2).value();  // default code
 
           var newEnv = cl._dfa.newEnv(cl._env, ecl, a0);
           var result = cl._dfa.newCall(call, NO_SITE, a1, new List<>(), newEnv, cl).result();
@@ -2823,7 +2823,7 @@ public class DFA extends ANY
 
 
   /**
-   * For a call to cc, should we be site sensivity, i.e., distinguish calls
+   * For a call to cc, should we be site sensitive, i.e., distinguish calls
    * depending on their call site?
    *
    * Currently, we are site sensitive for all constructors or if SITE_SENSITIVE
@@ -2831,7 +2831,7 @@ public class DFA extends ANY
    *
    * @param cc a clazz that is called
    *
-   * @return true iff the call site should be taken into account when compating
+   * @return true iff the call site should be taken into account when comparing
    * calls to {@code cc}.
    */
   boolean siteSensitive(int cc)

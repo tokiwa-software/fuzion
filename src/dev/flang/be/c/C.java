@@ -757,11 +757,11 @@ public class C extends ANY
           "-Wredundant-decls",
           "-Wnested-externs",
           "-Wmissing-include-dirs",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-strict-prototypes",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-gnu-empty-initializer",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-zero-length-array",
           "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",

@@ -242,7 +242,7 @@ public class Value extends Val
 
 
   /**
-   * Uniquew id for this value when used as an effect instance in an environment.
+   * Unique id for this value when used as an effect instance in an environment.
    */
   int _envId = -1;
 

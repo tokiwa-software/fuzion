@@ -1694,7 +1694,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * together with the ref type they are replaced with.  May be null.  This will
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
    *
-   * @return the inheritd type.
+   * @return the inherited type.
    */
   public AbstractType replace_inherited_this_type(AbstractFeature declF, AbstractFeature heir, BiConsumer<AbstractType, AbstractType> foundRef)
   {
