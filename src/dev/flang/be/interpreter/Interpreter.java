@@ -146,8 +146,14 @@ public class Interpreter extends FUIRContext
        );
 
     int  fclazz = clazzForField(thiz);
-    LValue slot = fieldSlot(thiz, staticClazz, fclazz, curValue);
-    setFieldSlot(thiz, fclazz, slot, v);
+    // if fclazz == FUIR.NO_CLAZZ
+    // this likely means field was never read
+    // during DFA phase.
+    if (fclazz != FUIR.NO_CLAZZ)
+      {
+        LValue slot = fieldSlot(thiz, staticClazz, fclazz, curValue);
+        setFieldSlot(thiz, fclazz, slot, v);
+      }
   }
 
 
