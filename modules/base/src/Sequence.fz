@@ -1250,17 +1250,11 @@ public Sequence(public T type) ref : property.equatable is
   # group elements using key_f and reduce elements within a group using reduce_f
   # in contrast to the more general version, values in the resulting map must have the same type as in the input
   #
-  # NYI: check this example once #4512 is fixed
-  # example: sort characters into categories letters, numbers, other
-  #          and for each category generate a string with all characters
+  # example: sum even and odd numbers individually
   #
-  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #    (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
   #
-  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
-  #
-  #    say (values.group_map_reduce String i32 classify (+))
-  #
-  # => {("letter" => "AbX"), ("digit" => "14"), ("other" => "?")}
+  # => {(even => 30), (odd => 25)}
   #
   public group_reduce (
     # type of the keys
@@ -1278,16 +1272,15 @@ public Sequence(public T type) ref : property.equatable is
   # group elements using key_f and
   # reduce elements within a group by first applying f and then using reduce_f to reduce
   #
-  # NYI: check this example once #4512 is fixed
   # example: count occurrences of letters, numbers and other characters
   #
   #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
   #
   #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #    say (values.group_map_reduce String i32 classify (_->1) (+))
+  #    values.group_map_reduce String i32 classify (_->1) (+)
   #
-  # => {("letter" => 3), ("digit" => 2), ("other" => 1)}
+  # => {(digit => 2), (letter => 3), (other => 1)}
   #
   public group_map_reduce (
     # type of the keys
@@ -1319,6 +1312,16 @@ public Sequence(public T type) ref : property.equatable is
 
 
   # group the elements of this sequence by a key of type and applies function f to all elements
+  #
+  # example: group characters by category and add underscores around each character
+  #
+  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #
+  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #
+  #    values.group_map String String classify (x->"_{x}_")
+  #
+  # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #
   public group_map (
     # type of the keys
