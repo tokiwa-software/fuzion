@@ -372,7 +372,8 @@ class CodeGen
         s = s.andThen(calpair.v1());
         res = calpair.v0();
       }
-    if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc0)))
+    // if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc0)))
+    if (_fuir.alwaysResultsInVoid(si))
       {
         if (res != null)
           {
