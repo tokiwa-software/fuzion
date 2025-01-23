@@ -1281,7 +1281,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz outerRef()
   {
     var res = _outerRef;
-    if (res == null)
+    if (res == null && !_fuir._lookupDone)
       {
         var or = feature().outerRef();
         if (!isBoxed() && or != null)
