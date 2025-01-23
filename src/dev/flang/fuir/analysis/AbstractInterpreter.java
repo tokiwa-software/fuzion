@@ -537,6 +537,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         switch (_fuir.codeAt(last_s))
           {
           case Call:
+            if (true) throw new Error("stack not empty after call with _fuir.alwaysResultsInVoid at " + _fuir.siteAsString(last_s));
             var cc0 = _fuir.accessedClazz(last_s);
             var rt = _fuir.clazzResultClazz(cc0);
             if (!clazzHasUnitValue(rt))
