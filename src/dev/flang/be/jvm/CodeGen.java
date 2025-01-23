@@ -377,7 +377,7 @@ class CodeGen
       {
         if (res != null)
           {
-            s = s.andThen(res);
+            s = s.andThen(res.drop());
           }
         res = null;
       }
