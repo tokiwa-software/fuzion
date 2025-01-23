@@ -60,7 +60,13 @@ jobs:
       - name: install dependencies
         run: |
           brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils shellcheck
-          echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
+          echo "/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
+
+      - name: Start Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        with:
+          task: start-measurement
+          continue-on-error: true
 
       - name: sed version
         run: sed --version
@@ -71,17 +77,59 @@ jobs:
       - name: check shell scripts
         run: make shellcheck
 
+      - name: Setup Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        with:
+          task: get-measurement
+          label: 'setup'
+          continue-on-error: true
+
       - name: build java code
         run: make javac
+
+      - name: Build Java Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        with:
+          task: get-measurement
+          label: 'build java'
+          continue-on-error: true
 
       - name: build (no java modules)
         run: make no-java
 
+
+      - name: Build Fuzion Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        with:
+          task: get-measurement
+          label: 'build fuzion'
+          continue-on-error: true
+
       - name: build docs
         run: make doc
+
+      - name: Build Docs Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        with:
+          task: get-measurement
+          label: 'build docs'
+          continue-on-error: true
 
       - name: run tests
         run: make run_tests_parallel
 
       - name: syntax check
         run: make syntaxcheck
+
+      - name: Tests Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        with:
+          task: get-measurement
+          label: 'tests'
+          continue-on-error: true
+
+      - name: Show Energy Results
+        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        with:
+          task: display-results
+          continue-on-error: true
