@@ -267,6 +267,7 @@ is
     pre
       safety: length <= i < length+n
   =>
+    replace
     data[i] := v
 
 
@@ -296,6 +297,7 @@ is
       safety: 0 <= i < length+n
       debug: has i
   =>
+    replace
     data[i].val
 
 
