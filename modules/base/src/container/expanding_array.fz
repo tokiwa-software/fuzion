@@ -25,7 +25,7 @@
 
 # expanding_array -- an array with a length and a (possible larger) capacity
 #
-# An expanding array is a persistent data structure that has cumulitive O(1)
+# An expanding array is a persistent data structure that has cumulative O(1)
 # performance of adding single elements at its end.
 #
 # WARNING: Due to the high worst-case time for addition, this structure should
