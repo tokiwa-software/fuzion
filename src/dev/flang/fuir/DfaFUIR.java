@@ -97,11 +97,6 @@ public class DfaFUIR extends GeneratingFUIR {
 
   public byte[] serialize()
   {
-    // NYI: CLEANUP: currently needed by interpreter
-    _lookupDone = false;
-    clazz(SpecialClazzes.c_sys_ptr);
-    _lookupDone = true;
-
     var firstClazz = firstClazz();
     var lastClazz = lastClazz();
     var siteCount = siteCount();
