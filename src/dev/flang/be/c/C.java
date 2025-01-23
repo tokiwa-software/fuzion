@@ -414,7 +414,7 @@ public class C extends ANY
      * Perform a match on value subv.
      */
     @Override
-    public Pair<CExpr, CStmnt> match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
+    public CStmnt match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(s);
       var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
@@ -479,7 +479,7 @@ public class C extends ANY
           var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
-      return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
+      return CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault));
     }
 
 
