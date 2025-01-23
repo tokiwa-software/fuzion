@@ -1096,7 +1096,12 @@ public class GeneratingFUIR extends FUIR
   @Override
   protected Object getExpr(int s)
   {
-    _accessedSites.add(s);
+
+    if (!_lookupDone)
+      {
+        _accessedSites.add(s);
+      }
+
     return super.getExpr(s);
   }
 
@@ -1125,12 +1130,12 @@ public class GeneratingFUIR extends FUIR
        cl == clazz_fuzionSysArray_u8_length()
        );
 
-    _accessedCode.add(cl);
 
     var c = id2clazz(cl);
     var result = c._code;
     if (result == NO_SITE && !_lookupDone)
       {
+        _accessedCode.add(cl);
         c.doesNeedCode();
         result = addCode(cl, c);
         c._code = result;
@@ -1807,7 +1812,10 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size());
 
-    _accessedSites.add(s);
+    if (!_lookupDone)
+      {
+        _accessedSites.add(s);
+      }
 
     return _siteClazzes.get(s - SITE_BASE);
   }
