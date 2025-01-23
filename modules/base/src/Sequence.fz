@@ -1229,7 +1229,7 @@ public Sequence(public T type) ref : property.equatable is
   # blocks of size elements, each is offset by step elements to the previous one
   #
   # examples:
-  # `(0..5).sliding 3`
+  # `(0..5).sliding 3 1`
   # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
   # `(0..9).sliding 3 2`
