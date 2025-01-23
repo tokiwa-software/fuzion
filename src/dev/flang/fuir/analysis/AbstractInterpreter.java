@@ -534,13 +534,21 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     if (!containsVoid(stack) && !stack.isEmpty() && _fuir.alwaysResultsInVoid(last_s))
       {
-        if (CHECKS) check
-          (_fuir.codeAt(last_s) == ExprKind.Call);
-        var cc0 = _fuir.accessedClazz(last_s);
-        var rt = _fuir.clazzResultClazz(cc0);
-        if (!clazzHasUnitValue(rt))
+        switch (_fuir.codeAt(last_s))
           {
-            l.add(_processor.drop(stack.pop(), rt));
+          case Call:
+            var cc0 = _fuir.accessedClazz(last_s);
+            var rt = _fuir.clazzResultClazz(cc0);
+            if (!clazzHasUnitValue(rt))
+              {
+                l.add(_processor.drop(stack.pop(), rt));
+              }
+            break;
+          case Match:
+            // NYI: BUG #4662: This happens during `fz ./bin/ebnf.fz`, need to check why
+            break;
+          default:
+            throw new Error("stack not empty after basic block ending in "+_fuir.codeAtAsString(last_s));
           }
       }
 

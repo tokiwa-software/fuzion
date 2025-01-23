@@ -178,63 +178,63 @@
 ---
 >         _processor.reportErrorInCode("Severe compiler bug! This code should be unreachable:\n" +
 >                                      _fuir.siteAsString(last_s));
-543c534
-<             l.add(_processor.drop(stack.pop(), rt));
+544c535
+<                 l.add(_processor.drop(stack.pop(), rt));
 ---
->             _processor.drop(stack.pop(), rt);
-547c538
+>                 _processor.drop(stack.pop(), rt);
+555c546
 <     return new Pair<>(v, _processor.sequence(l));
 ---
 >     return v;
-557,559d547
+565,567d555
 <    *
 <    * @return the result of the abstract interpretation, e.g., the generated
 <    * code.
-561c549
+569c557
 <   public RESULT process(int s, Stack<VALUE> stack)
 ---
 >   public void process(int s, Stack<VALUE> stack)
-569d556
+577d564
 <     RESULT res;
-582c569
+590c577
 <               res = _processor.assign(s, tvalue, avalue);
 ---
 >               _processor.assign(s, tvalue, avalue);
-586,587c573,574
+594,595c581,582
 <               res = _processor.sequence(new List<>(_processor.drop(tvalue, tc),
 <                                                     _processor.drop(avalue, ft)));
 ---
 >               _processor.drop(tvalue, tc);
 >               _processor.drop(avalue, ft);
-598c585
+606c593
 <               res = _processor.comment("Box is a NOP, clazz is already a ref");
 ---
 >               _processor.comment("Box is a NOP, clazz is already a ref");
-604,605c591
+612,613c599
 <               push(stack, rc, r.v0());
 <               res = r.v1();
 ---
 >               push(stack, rc, r);
-616c602
+624c610
 <           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
 ---
 >           if (r == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
-623c609
+631c617
 <               push(stack, rt, r.v0());
 ---
 >               push(stack, rt, r);
-625d610
+633d618
 <           res = r.v1();
-630c615
+638c623
 <           res = _processor.comment(_fuir.comment(s));
 ---
 >           _processor.comment(_fuir.comment(s));
-637,638c622
+645,646c630
 <           push(stack, cl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, cl, r);
-647,652c631
+655,660c639
 <           if (CHECKS) check
 <             // check that constant creation has no side effects.
 <             (r.v1() == _processor.nop());
@@ -243,29 +243,29 @@
 <           res = r.v1();
 ---
 >           push(stack, constCl, r);
-660c639
+668c647
 <           if (r.v0() == null)
 ---
 >           if (r == null)
-665,666c644
+673,674c652
 <             (r.v0() == null || r.v0() == _processor.unitValue());
 <           res = r.v1();
 ---
 >             (r == null || r == _processor.unitValue());
-678,679c656
+686,687c664
 <           push(stack, newcl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, newcl, r);
-693c670
+701c678
 <           res = _processor.drop(v, rt);
 ---
 >           _processor.drop(v, rt);
-699d675
+707d683
 <           res = null;
-708c684
+716c692
 <         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
 ---
 >         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
-710d685
+718d693
 <     return res;
