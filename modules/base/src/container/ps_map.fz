@@ -213,30 +213,29 @@ O(n log n).
   # create sorted array of all keys in this map
   #
   public as_key_array array PK =>
-    r := fuzion.sys.internal_array_init PK size
+    re := (container.expanding_array PK).empty.expand size ()->
+      a := (container.expanding PK).env
 
-    # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
-    #
-    join (ole i32, sz i32, rsz i32, skip i32) unit =>
-      if sz ≤ size
-        if (size & sz) != 0
-          tmp := array rsz (i -> r[i])
-          _ :=
-            for
-              i1 := 0, if (use1) i1+1 else i1
-              i2 := 0, if (use1) i2   else i2+1
-              use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < tmp[i2]))
-              e := if (use1) data[ole + i1].values.0 else tmp[i2]
-            do
-              r[i1 + i2] := e
-            until i1 + i2 = sz+rsz-1
-          join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
-        else
-          join ole-sz 2*sz rsz (skip + sz + skip)
+      # join arrays data[ole..ole+sz-1] and a[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
+      #
+      join (ole i32, sz i32, rsz i32, skip i32) unit =>
+        if sz ≤ size
+          if (size & sz) != 0
+            _ :=
+              for
+                i in 0..
+                i1 := 0, if (use1) i1+1 else i1
+                i2 := 0, if (use1) i2   else i2+1
+                use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < a[size-rsz+i2]))
+              while i < sz+rsz
+                a[size-rsz-sz + i1 + i2] := if (use1) data[ole + i1].values.0 else a[size-rsz+i2]
+            join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
+          else
+            join ole-sz 2*sz rsz (skip + sz + skip)
 
-    if size != 0
       join fill-1 1 0 0
-    array r unit unit unit
+
+    array PK size i->re[i]
 
 
   # get an array of all key/value pairs in this map
