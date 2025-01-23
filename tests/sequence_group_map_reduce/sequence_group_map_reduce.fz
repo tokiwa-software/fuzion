@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test sequence_group_map_reduce
+#
+# -----------------------------------------------------------------------
+
+sequence_group_map_reduce =>
+
+  # # sort characters into categories letters, numbers, other
+  # # and for each category generate a string with all characters
+  # say <| values.group_reduce String classify (+)
+
+
+  # sum even and odd numbers individually
+  say <| (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
+
+
+
+  # NYI: uncomment and check the following tests once #4512 is fixed
+
+  # values array codepoint := ["A", "1", "b", "?", "X", "4"]
+
+  # classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+
+  # # count occurrences of letters, numbers and other characters
+  # say <| values.group_map_reduce String i32 classify (_->1) (+)
+
+  # # group characters by category and add underscores around each character
+  # say <| values.group_map String String classify (x->"_{x}_")
