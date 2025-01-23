@@ -1729,25 +1729,34 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkLegalQualThisType(Feature f)
   {
-    if (f.resultType().isThisType())
+    // NYI: UNDER DEVELOPMENT: do we need to check type parameters?
+    if (!f.isTypeParameter() && f.resultType().containsThisType())
       {
-        var subject = f.resultType().feature();
-        var found = false;
-        AbstractFeature o = f;
-        while(o != null)
+        var t = f.resultType();
+        while (t != null && !t.isGenericArgument())
           {
-            if (subject == o)
+            if (t.isThisType())
               {
-                found = true;
-                break;
+                var subject = t.feature();
+                var found = false;
+                AbstractFeature o = f;
+                while(o != null)
+                  {
+                    if (subject == o)
+                      {
+                        found = true;
+                        break;
+                      }
+                    o = o.outer();
+                  }
+                if (!found &&
+                  // okay for post condition features result field
+                  !(f.isResultField() && f.outer().featureName().baseName().startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX)))
+                  {
+                    AstErrors.illegalResultTypeThisType(f);
+                  }
               }
-            o = o.outer();
-          }
-        if (!found &&
-          // okay for post condition features result field
-          !(f.isResultField() && f.outer().featureName().baseName().startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX)))
-          {
-            AstErrors.illegalResultTypeThisType(f);
+            t = t.outer();
           }
       }
   }

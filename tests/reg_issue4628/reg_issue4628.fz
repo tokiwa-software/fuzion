@@ -17,35 +17,33 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Err
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test reg_issue4628
 #
 # -----------------------------------------------------------------------
 
-# Err -- effect providing an output stream
-#
-public Err ref : print_effect is
+reg_issue4628 =>
 
-  type.install_default =>
-    io.Err.default io.default_err
+  x(T type : numeric) is
 
+  a(U type) =>
+    if U : numeric then
+      _ := x U             # works!
 
-# default implementation for io.Err
-#
-module default_err : io.Err is
+  b(V type)
+    pre
+      V : numeric
+  =>
+      _ := x V             # unjustified error!
 
-  public redef write(b Sequence u8) outcome unit =>
-    io.Err.replace default_err.this
-    fuzion.sys.fileio.write fzE_file_stderr b.as_array
+  c(W type)
+    pre
+      W : numeric
+  =>
+    q(a x W) => say "q"   # unjustified error!
+    q (x W)               # unjustified error!
 
-  public redef flush outcome unit =>
-    io.Err.replace default_err.this
-    fuzion.sys.fileio.flush fzE_file_stderr
-
-
-# short-hand for accessing out effect in current environment
-#
-public err =>
-  Err.install_default
-  io.Err.env
+  d(X type)
+  =>
+    if X : numeric
+      q(a x X) => say "q" # unjustified error!
+      q (x X)             # works!

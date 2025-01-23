@@ -103,8 +103,11 @@ abstract class Context extends ANY
 
         @Override Context exterior()
         {
-          return f instanceof Feature ff ? ff._sourceCodeContext
-                                         : NONE;
+          return f instanceof Feature ff && ff._sourceCodeContext != NONE
+            ? ff._sourceCodeContext
+            : f.outer() != null
+            ? forFeature(f.outer())
+            : NONE;
         }
 
         @Override String localToString()
@@ -123,13 +126,27 @@ abstract class Context extends ANY
                       cc.calledFeatureKnown() &&
                       cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
                       cc.target() instanceof Call tc &&
-                      tc.calledFeature() == typeParameter)
+                      (tc.calledFeature() == typeParameter ||
+                          isClone(typeParameter, tc.calledFeature())))
                     {
                       return cc.actualTypeParameters().get(0);
                     }
                 }
             }
           return super.constraintFor(typeParameter);
+        }
+
+        /**
+         * Test if f1 and f2 are clones of each other,
+         * that where create via Contract.argsSupplier
+         */
+        private boolean isClone(AbstractFeature f1, AbstractFeature f2)
+        {
+          return f2.featureName().baseName().compareTo(f1.featureName().baseName()) == 0 &&
+          (f2.outer().preFeature() == f1.outer() ||
+           f2.outer().preBoolFeature() == f1.outer() ||
+           f2.outer() == f1.outer().preFeature() ||
+           f2.outer() == f1.outer().preBoolFeature());
         }
       };
   }

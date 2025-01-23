@@ -17,24 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.misc
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.misc -- miscellaneous system intrinsics
-#
-module misc is
-
-
-  # intrinsic to get a unique id > 0
-  #
-  # this can be used to add a unique identifier to compare instances.
-  #
-  # sine there are 2^64-1 possible values, you can safely assume that these are
-  # in fact unique.  Assuming one unique id is consumed every nanosecond, it
-  # would take more than 500 years before we run out of values
-  # (2^64/10^9/3600/24/365.25).
-  #
-  module fzE_unique_id u64 => native
+override NAME = reg_issue4628
+include ../simple.mk
