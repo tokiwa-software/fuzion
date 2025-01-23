@@ -545,7 +545,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
               }
             break;
           case Match:
-            throw new Error("stack not empty after match with  _fuir.alwaysResultsInVoid at " + _fuir.siteAsString(last_s));
+            throw new Error("stack not empty after match with _fuir.alwaysResultsInVoid at " + _fuir.siteAsString(last_s));
           default:
             throw new Error("stack not empty after basic block ending in "+_fuir.codeAtAsString(last_s));
           }
