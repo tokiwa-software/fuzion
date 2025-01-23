@@ -1472,7 +1472,9 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
+    return _lookupDone && !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_fuzion_Java_Object_Ref.outer())
+      ? NO_CLAZZ
+      : id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
   }
 
 
@@ -1492,7 +1494,9 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return lookupCall(cl, !_lookupDone);
+    return _lookupDone && !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_Function_call.outer())
+      ? NO_CLAZZ
+      : lookupCall(cl, !_lookupDone);
   }
 
 
@@ -1536,7 +1540,9 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_effect_static_finally)._id;
+    return _lookupDone && !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_effect_static_finally.outer())
+      ? NO_CLAZZ
+      : id2clazz(cl).lookupNeeded(Types.resolved.f_effect_static_finally)._id;
   }
 
 

@@ -130,14 +130,14 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzTypeParameterActualType(cl),
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),
-                safe(()->lookupCall(cl0), NO_CLAZZ),
-                safe(()->lookup_static_finally(cl0), NO_CLAZZ),
+                needsCode ? lookupCall(cl0) : NO_CLAZZ,
+                needsCode ? lookup_static_finally(cl0) : NO_CLAZZ,
                 clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
                 clazzTypeName(cl0),
                 clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
-                safe(()->lookupJavaRef(cl0), NO_CLAZZ)
+                needsCode ? lookupJavaRef(cl0) : NO_CLAZZ
                 );
           }
         oos.writeObject(clazzes);
@@ -215,16 +215,6 @@ public class DfaFUIR extends GeneratingFUIR {
         result[cix] = matchCaseCode(s, cix);
       }
     return result;
-  }
-
-  // NYI: cleanup
-  private <T> T safe(Supplier<T> fn, T dflt)
-  {
-    try {
-      return fn.get();
-    } catch (Throwable e) {
-      return dflt;
-    }
   }
 
   private int[] matchCaseFields(int s)

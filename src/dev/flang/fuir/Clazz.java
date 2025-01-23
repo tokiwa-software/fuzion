@@ -234,7 +234,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Integer id of this Clazz used in FUIR instance.
    */
-  int _id = -1;
+  int _id = IR.NO_CLAZZ;
 
 
   /**
@@ -271,6 +271,15 @@ class Clazz extends ANY implements Comparable<Clazz>
    * See #4273 and rests/reg_issue4273 for example code that needs this.
    */
   Consumer<AbstractCall> _showErrorIfCallResult_ = null;
+
+  /**
+   * Used when lookupDone=true but looking up
+   * not yet existing clazz.
+   */
+  private static final Clazz NO_CLAZZ = new Clazz()
+    {
+      @Override void doesNeedCode() { }
+    };
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -314,6 +323,17 @@ class Clazz extends ANY implements Comparable<Clazz>
     _code = IR.NO_SITE;
   }
 
+
+  /*
+   * constructor for NO_CLAZZ
+   */
+  private Clazz()
+  {
+    _fuir = null;
+    _outer = null;
+    _select = -5555555;
+    _type = null;
+  }
 
 
   /**
@@ -1055,6 +1075,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         if (CHECKS) check
           (Errors.any() || select < innerClazzes.length);
         innerClazz = select < innerClazzes.length ? innerClazzes[select] : _fuir.error();
+      }
+    if (innerClazz == null && _fuir._lookupDone)
+      {
+        return NO_CLAZZ;
       }
     if (innerClazz == null)
       {
