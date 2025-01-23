@@ -1254,7 +1254,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   # => {("letter" => "AbX"), ("digit" => "14"), ("other" => "?")}
   #
-  public group_map_reduce (
+  public group_reduce (
     # type of the keys
     K type : property.orderable,
 
@@ -1306,6 +1306,34 @@ public Sequence(public T type) ref : property.equatable is
         match res[key]
           nil => res.put key (f x)
           y B => res.put key (reduce_f y (f x))
+
+      res.as_map
+
+
+  # group the elements of this sequence by a key of type and applies function f to all elements
+  #
+  public group_map (
+    # type of the keys
+    K type : property.orderable,
+
+    # type of the values in the result
+    B type,
+
+    # function to generate the keys
+    key_f Unary K T,
+
+    # function applied to each element
+    f Unary B T) container.Map K (Sequence B)
+  =>
+    M : mutate is
+    M ! ()->
+      res := (container.mutable_tree_map M K (Sequence B)).empty
+
+      for_each x->
+        key := key_f x
+        match res[key]
+          nil => res.put key [(f x)]
+          y Sequence B => res.put key (y ++  [(f x)])
 
       res.as_map
 
