@@ -1123,7 +1123,8 @@ public Sequence(public T type) ref : property.equatable is
   #
   # Keep the order of elements unchanged.
   #
-  # Other languages call this 'distinct', e.g. Java, C# or Kotlin
+  # Other languages call this 'distinct', (eg., Java, C# or Kotlin)
+  # or `nub` (Haskell).
   #
   # ex.
   #   [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]
