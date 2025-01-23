@@ -1235,7 +1235,11 @@ public Sequence(public T type) ref : property.equatable is
   # `(0..9).sliding 3 2`
   # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
   #
-  public sliding (size i32, step i32) Sequence (Sequence T) =>
+  public sliding (size i32, step i32) Sequence (Sequence T)
+    pre
+      debug: size > 0
+      debug: step > 0
+  =>
     as_list.sliding size step
 
 
