@@ -580,7 +580,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
-        var r = resultField(false);
+        var r = resultField();
         if (r != null)
           { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
             r.doesNeedCode();
@@ -1289,10 +1289,10 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param _lookupDone
    */
-  Clazz outerRef(boolean lookupDone)
+  Clazz outerRef()
   {
     var res = _outerRef;
-    if (res == null && !lookupDone)
+    if (res == null && !_fuir._lookupDone)
       {
         var or = feature().outerRef();
         if (!isBoxed() && or != null)
@@ -1316,9 +1316,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the result field or null.
    */
-  Clazz resultField(boolean lookupDone)
+  Clazz resultField()
   {
-    if (_resultField == null && !lookupDone)
+    if (_resultField == null && !_fuir._lookupDone)
       {
         var rf = feature().resultField();
         if (rf != null)
