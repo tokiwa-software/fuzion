@@ -1217,6 +1217,10 @@ public Sequence(public T type) ref : property.equatable is
   # sliding window with step size one
   # blocks of size elements, each is offset by one element to the previous one
   #
+  # example:
+  # `(0..5).sliding 3`
+  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
+  #
   public sliding (size i32) =>
     sliding size 1
 
@@ -1224,19 +1228,75 @@ public Sequence(public T type) ref : property.equatable is
   # sliding window
   # blocks of size elements, each is offset by step elements to the previous one
   #
+  # examples:
+  # `(0..5).sliding 3`
+  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
+  #
+  # `(0..9).sliding 3 2`
+  # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
+  #
   public sliding (size i32, step i32) Sequence (Sequence T) =>
     as_list.sliding size step
 
 
   # group elements using key_f and reduce elements within a group using reduce_f
+  # in contrast to the more general version, values in the resulting map must have the same type as in the input
   #
-  public group_map_reduce (K type : property.orderable, key_f Unary K T, reduce_f Binary T T T) container.Map K T =>
+  # NYI: check this example once #4512 is fixed
+  # example: sort characters into categories letters, numbers, other
+  #          and for each category generate a string with all characters
+  #
+  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #
+  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #
+  #    say (values.group_map_reduce String i32 classify (+))
+  #
+  # => {("letter" => "AbX"), ("digit" => "14"), ("other" => "?")}
+  #
+  public group_map_reduce (
+    # type of the keys
+    K type : property.orderable,
+
+    # function to generate the key
+    key_f Unary K T,
+
+    # function to reduce the elements
+    reduce_f Binary T T T) container.Map K T
+  =>
     group_map_reduce K T key_f id reduce_f
+
 
   # group elements using key_f and
   # reduce elements within a group by first applying f and then using reduce_f to reduce
   #
-  public group_map_reduce (K type : property.orderable, B type, key_f Unary K T, f Unary B T, reduce_f Binary B B B) container.Map K B =>
+  # NYI: check this example once #4512 is fixed
+  # example: count occurrences of letters, numbers and other characters
+  #
+  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #
+  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #
+  #    say (values.group_map_reduce String i32 classify (_->1) (+))
+  #
+  # => {("letter" => 3), ("digit" => 2), ("other" => 1)}
+  #
+  public group_map_reduce (
+    # type of the keys
+    K type : property.orderable,
+
+    # type of the values in the result
+    B type,
+
+    # function to generate the keys
+    key_f Unary K T,
+
+    # function applied to elements before they are reduce
+    f Unary B T,
+
+    # function to reduce elements
+    reduce_f Binary B B B) container.Map K B
+  =>
     M : mutate is
     M ! ()->
       res := (container.mutable_tree_map M K B).empty

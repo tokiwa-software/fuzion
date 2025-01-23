@@ -640,6 +640,13 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # sliding window
   # blocks of size elements, each is offset by step elements to the previous one
   #
+  # examples:
+  # `(0..5).as_list.sliding 3`
+  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
+  #
+  # `(0..9).as_list.sliding 3 2`
+  # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
+  #
   public redef sliding (size i32, step i32) Sequence (Sequence A) =>
     window := take size
     if window.count = size
