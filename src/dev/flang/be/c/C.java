@@ -1406,7 +1406,6 @@ public class C extends ANY
           }
         ol.add(acc);
         res = _fuir.alwaysResultsInVoid(s)
-              // _fuir.clazzIsVoidType(rt)
           ? null
           : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate expression for this
             ? res.deref()
