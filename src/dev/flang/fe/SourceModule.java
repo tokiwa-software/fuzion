@@ -1729,10 +1729,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkLegalQualThisType(Feature f)
   {
-    if (f.resultType().containsThisType())
+    // NYI: UNDER DEVELOPMENT: do we need to check type parameters?
+    if (!f.isTypeParameter() && f.resultType().containsThisType())
       {
         var t = f.resultType();
-        while (t != null)
+        while (t != null && !t.isGenericArgument())
           {
             if (t.isThisType())
               {

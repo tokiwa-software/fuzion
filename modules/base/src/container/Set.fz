@@ -52,12 +52,12 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # create a new Set from a sequence of elements
   #
-  public type.new (s Sequence E) Set.this => abstract
+  public type.new (s Sequence E) container.Set E => abstract
 
 
   # create a union of these two Sets
   #
-  public union(other container.Set E) Set E =>
+  public union(other container.Set E) container.Set E =>
     Set.this.new (Set.this ++ other)
 
 
@@ -69,7 +69,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # create an intersection of these two Sets
   #
-  public intersection(other container.Set E) Set E =>
+  public intersection(other container.Set E) container.Set E =>
     Set.this.new (Set.this ++ other).filter(el -> Set.this.contains el && other.contains el)
 
 
@@ -81,7 +81,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # this Set without all elements in other
   #
-  public difference(other container.Set E) Set E =>
+  public difference(other container.Set E) container.Set E =>
     Set.this.new filter(el -> !other.contains el)
 
 
