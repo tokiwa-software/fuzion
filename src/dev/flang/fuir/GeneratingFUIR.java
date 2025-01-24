@@ -1094,32 +1094,21 @@ public class GeneratingFUIR extends FUIR
     return or == null || c._outer.isUnitType() ? NO_CLAZZ : or._id;
   }
 
-  @Override
-  protected Object getExpr(int s)
-  {
-    if (!_lookupDone)
-      {
-        _accessedSites.add(s);
-      }
-    return super.getExpr(s);
-  }
-
 
   /**
-   * For recording which site and clazzes are used.
-   * Used when serializing the FUIR.
+   * Get the expression at the given site
+   *
+   * @param s a site
+   *
+   * @return the expression found at site s.
    */
-  protected TreeSet<Integer> _accessedSites = new TreeSet<>();
-  protected TreeSet<Integer> _accessedCode = new TreeSet<>();
   @Override
   protected Object getExpr(int s)
   {
-
     if (!_lookupDone)
       {
         _accessedSites.add(s);
       }
-
     return super.getExpr(s);
   }
 
