@@ -33,7 +33,7 @@ is
 
   # circular buffer backing this writer
   #
-  buffer := instate_self (() -> (mutate.circular_buffer u8).new LM buf_size.as_i64 0)
+  buffer := (mutate.circular_buffer u8).new LM buf_size.as_i64 0
 
 
   # flush the buffer, that is, write out everything that is still
