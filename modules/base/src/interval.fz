@@ -119,7 +119,7 @@ is
   # "(Errors.any() || !thiz.dependsOnGenerics(),
   #   outerClazz != null || thiz.feature().outer() == null, Errors.any()
   #     || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));"
-  public fixed redef type.new (s Sequence T) interval.this => panic "not applicable"
+  public fixed redef type.new (s Sequence T) container.Set T => panic "not applicable"
 
 
   # is this sequence known to be finite?  For infinite sequences, features like

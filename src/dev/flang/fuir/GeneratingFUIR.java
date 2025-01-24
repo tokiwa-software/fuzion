@@ -185,6 +185,14 @@ public class GeneratingFUIR extends FUIR
 
   protected boolean _lookupDone;
 
+
+  /**
+   * For recording which sites and code where used by DFA.
+   * Used when serializing the FUIR.
+   */
+  protected TreeSet<Integer> _accessedSites = new TreeSet<>();
+  protected TreeSet<Integer> _accessedCode = new TreeSet<>();
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -1084,6 +1092,16 @@ public class GeneratingFUIR extends FUIR
     var c = id2clazz(cl);
     var or = c.outerRef();
     return or == null || c._outer.isUnitType() ? NO_CLAZZ : or._id;
+  }
+
+  @Override
+  protected Object getExpr(int s)
+  {
+    if (!_lookupDone)
+      {
+        _accessedSites.add(s);
+      }
+    return super.getExpr(s);
   }
 
 

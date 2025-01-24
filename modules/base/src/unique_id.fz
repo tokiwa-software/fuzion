@@ -36,7 +36,7 @@ is
   #
   type.default_handler =>
     ref : Unique_Id_Handler
-      redef get => fuzion.sys.misc.fzE_unique_id
+      redef get => fzE_unique_id
 
 
 public Unique_Id_Handler ref is
