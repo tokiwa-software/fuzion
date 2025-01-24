@@ -104,7 +104,7 @@
 ---
 >     public abstract VALUE constData(int s, int constCl, byte[] d);
 225c224
-<     public abstract Pair<VALUE, RESULT> match(int s, AbstractInterpreter<VALUE, RESULT> ai, VALUE subv);
+<     public abstract RESULT match(int s, AbstractInterpreter<VALUE, RESULT> ai, VALUE subv);
 ---
 >     public abstract VALUE match(int s, AbstractInterpreter2<VALUE> ai, VALUE subv);
 239c238
@@ -178,63 +178,61 @@
 ---
 >         _processor.reportErrorInCode("Severe compiler bug! This code should be unreachable:\n" +
 >                                      _fuir.siteAsString(last_s));
-544c535
-<                 l.add(_processor.drop(stack.pop(), rt));
----
->                 _processor.drop(stack.pop(), rt);
-555c546
+529a521
+> 
+534c526
 <     return new Pair<>(v, _processor.sequence(l));
 ---
 >     return v;
-565,567d555
+544,546d535
 <    *
 <    * @return the result of the abstract interpretation, e.g., the generated
 <    * code.
-569c557
+548c537
 <   public RESULT process(int s, Stack<VALUE> stack)
 ---
 >   public void process(int s, Stack<VALUE> stack)
-577d564
+560d548
 <     RESULT res;
-590c577
+573c561
 <               res = _processor.assign(s, tvalue, avalue);
 ---
 >               _processor.assign(s, tvalue, avalue);
-594,595c581,582
+577,578c565,566
 <               res = _processor.sequence(new List<>(_processor.drop(tvalue, tc),
 <                                                     _processor.drop(avalue, ft)));
 ---
 >               _processor.drop(tvalue, tc);
 >               _processor.drop(avalue, ft);
-606c593
+589c577
 <               res = _processor.comment("Box is a NOP, clazz is already a ref");
 ---
 >               _processor.comment("Box is a NOP, clazz is already a ref");
-612,613c599
+595,596c583
 <               push(stack, rc, r.v0());
 <               res = r.v1();
 ---
 >               push(stack, rc, r);
-624c610
+607c594
 <           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
 ---
 >           if (r == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
-631c617
+614c601
 <               push(stack, rt, r.v0());
 ---
 >               push(stack, rt, r);
-633d618
+616d602
 <           res = r.v1();
-638c623
+621c607
 <           res = _processor.comment(_fuir.comment(s));
 ---
 >           _processor.comment(_fuir.comment(s));
-645,646c630
+628,629c614
 <           push(stack, cl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, cl, r);
-655,660c639
+638,643c623
 <           if (CHECKS) check
 <             // check that constant creation has no side effects.
 <             (r.v1() == _processor.nop());
@@ -243,29 +241,29 @@
 <           res = r.v1();
 ---
 >           push(stack, constCl, r);
-668c647
-<           if (r.v0() == null)
+650,651c630,631
+<           res = _processor.match(s, this, subv);
+<           if (_fuir.alwaysResultsInVoid(s))
 ---
+>           var r = _processor.match(s, this, subv);
 >           if (r == null)
-673,674c652
-<             (r.v0() == null || r.v0() == _processor.unitValue());
-<           res = r.v1();
----
+654a635,636
+>           if (CHECKS) check
 >             (r == null || r == _processor.unitValue());
-686,687c664
+666,667c648
 <           push(stack, newcl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, newcl, r);
-701c678
+681c662
 <           res = _processor.drop(v, rt);
 ---
 >           _processor.drop(v, rt);
-707d683
+687d667
 <           res = null;
-716c692
+696c676
 <         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
 ---
 >         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
-718d693
+698d677
 <     return res;

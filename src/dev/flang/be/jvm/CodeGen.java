@@ -372,11 +372,11 @@ class CodeGen
         s = s.andThen(calpair.v1());
         res = calpair.v0();
       }
-    if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc0)))
+    if (_fuir.alwaysResultsInVoid(si))
       {
         if (res != null)
           {
-            s = s.andThen(res);
+            s = s.andThen(res.drop());
           }
         res = null;
       }
@@ -1014,10 +1014,9 @@ class CodeGen
    * @return the code for the match, produces unit type result.
    */
   @Override
-  public Pair<Expr, Expr> match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
+  public Expr match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
   {
-    var code = _choices.match(_jvm, ai, s, sub);
-    return new Pair<>(Expr.UNIT, code);
+    return _choices.match(_jvm, ai, s, sub);
   }
 
 
