@@ -449,7 +449,7 @@ public linear_effect : effect is
   depleted := Depleted_Wrapper
 
   module redef check_depletion =>
-    if !depleted.depleted.compare_and_set false true
+    if !depleted.depleted.compare_and_set0 false true
       panic "effect already depleted. effect may only be instated once."
 
 
