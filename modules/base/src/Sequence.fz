@@ -1159,7 +1159,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # Keep the order of elements unchanged.
   #
-  # Other languages call this 'distinct', (eg., Java, C# or Kotlin)
+  # Other languages call this 'distinct' (eg., Java, C# or Kotlin)
   # or `nub` (Haskell).
   #
   # ex.

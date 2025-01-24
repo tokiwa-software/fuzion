@@ -1553,7 +1553,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   {
     if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
       {
-        f.setVisbility(f.redefines().stream().map(r -> r.visibility()).sorted().findAny().get());
+        f.setVisibility(f.redefines().stream().map(r -> r.visibility()).sorted().findAny().get());
       }
 
     f.impl().checkTypes(f);
@@ -1890,7 +1890,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             var s = arg.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
             if (!s.isEmpty())
               {
-                AstErrors.argTypeMoreRestrictiveVisbility(f, arg, s);
+                AstErrors.argTypeMoreRestrictiveVisibility(f, arg, s);
               }
           }
       }

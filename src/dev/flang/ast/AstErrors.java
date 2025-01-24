@@ -2150,7 +2150,7 @@ public class AstErrors extends ANY
     );
   }
 
-  public static void argTypeMoreRestrictiveVisbility(Feature f, AbstractFeature arg, Set<AbstractFeature> s)
+  public static void argTypeMoreRestrictiveVisibility(Feature f, AbstractFeature arg, Set<AbstractFeature> s)
   {
     error(f.pos(), "Argument types or any of its generics have more restrictive visibility than feature.",
       "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
