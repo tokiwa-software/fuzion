@@ -40,3 +40,36 @@ public orderable : partially_orderable
 */
 
 is
+
+
+  # equality implements the default equality relation for values of this type.
+  #
+  # This relation must be
+  #
+  #  - reflexive (equality a b),
+  #  - symmetric (equality a b = equality b a), and
+  #  - transitive ((equality a b && equality b c) : equality a c).
+  #
+  # result is true iff 'a' is considered to represent the same abstract value
+  # as 'b'.
+  #
+  public redef type.equality(a,b property.orderable.this)
+
+  # NYI: BUG:
+  #
+  # String.fz:73:27: error 1: Incompatible types when passing argument in a call
+  #   public fixed redef type.equality(a, b String) =>
+  #
+  # Actual type for argument #1 'a' does not match expected type.
+  # In call to          : 'property.orderable.type.post equality'
+  # expected formal type: 'String.this.type (in type feature)'
+  # actual type found   : 'String'
+  # assignable to       : 'String'
+  # for value assigned  : 'equality'
+  # To solve this, you could change the type of 'a' to a 'ref' type like 'String.this.type (in type feature) (boxed)'.
+  #
+
+  # post then
+  #   result = (b <= a <= b)
+  =>
+    a <= b <= a
