@@ -2109,7 +2109,11 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
-    if (formalType.isGenericArgument())
+    if (formalType.isLazyType() && !actualType.isLazyType())
+      {
+        inferGeneric(res, context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
+      }
+    else if (formalType.isGenericArgument())
       {
         var g = formalType.genericArgument();
         if (g.feature() == _calledFeature)
