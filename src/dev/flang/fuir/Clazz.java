@@ -153,6 +153,12 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Cached looked up result field of this clazz
+   */
+  Clazz _resultField;
+
+
+  /**
    * Fields in instances of this clazz. Set during layout phase.
    */
   Clazz[] _fields;
@@ -1305,13 +1311,15 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz resultField()
   {
-    Clazz result = null;
-    var rf = feature().resultField();
-    if (rf != null)
+    if (_resultField == null && !_fuir._lookupDone)
       {
-        result = lookupNeeded(rf);
+        var rf = feature().resultField();
+        if (rf != null)
+          {
+            _resultField = lookupNeeded(rf);
+          }
       }
-    return result;
+    return _resultField;
   }
 
 
