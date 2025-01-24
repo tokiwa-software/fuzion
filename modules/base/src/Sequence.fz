@@ -1218,13 +1218,144 @@ public Sequence(public T type) ref : property.equatable is
     ((map x->x**T.two).fold T.sum).sqrt
 
 
+  # sliding window with step size one
+  # blocks of size elements, each is offset by one element to the previous one
+  #
+  # example:
+  # `(0..5).sliding 3`
+  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
+  #
+  public sliding (size i32) =>
+    sliding size 1
+
+
+  # sliding window
+  # blocks of size elements, each is offset by step elements to the previous one
+  #
+  # examples:
+  # `(0..5).sliding 3 1`
+  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
+  #
+  # `(0..9).sliding 3 2`
+  # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
+  #
+  public sliding (size i32, step i32) Sequence (Sequence T)
+    pre
+      debug: size > 0
+      debug: step > 0
+  =>
+    as_list.sliding size step
+
+
+  # group elements using key_f and reduce elements within a group using reduce_f
+  # in contrast to the more general version, values in the resulting map must have the same type as in the input
+  #
+  # example: sum even and odd numbers individually
+  #
+  #    (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
+  #
+  # => {(even => 30), (odd => 25)}
+  #
+  public group_reduce (
+    # type of the keys
+    K type : property.orderable,
+
+    # function to generate the key
+    key_f Unary K T,
+
+    # function to reduce the elements
+    reduce_f Binary T T T) container.Map K T
+  =>
+    group_map_reduce K T key_f id reduce_f
+
+
+  # group elements using key_f and
+  # reduce elements within a group by first applying f and then using reduce_f to reduce
+  #
+  # example: count occurrences of letters, numbers and other characters
+  #
+  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #
+  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #
+  #    values.group_map_reduce String i32 classify (_->1) (+)
+  #
+  # => {(digit => 2), (letter => 3), (other => 1)}
+  #
+  public group_map_reduce (
+    # type of the keys
+    K type : property.orderable,
+
+    # type of the values in the result
+    B type,
+
+    # function to generate the keys
+    key_f Unary K T,
+
+    # function applied to elements before they are reduce
+    f Unary B T,
+
+    # function to reduce elements
+    reduce_f Binary B B B) container.Map K B
+  =>
+    M : mutate is
+    M ! ()->
+      res := (container.mutable_tree_map M K B).empty
+
+      for_each x->
+        key := key_f x
+        match res[key]
+          nil => res.put key (f x)
+          y B => res.put key (reduce_f y (f x))
+
+      res.as_map
+
+
+  # group the elements of this sequence by a key of type and applies function f to all elements
+  #
+  # example: group characters by category and add underscores around each character
+  #
+  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #
+  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #
+  #    values.group_map String String classify (x->"_{x}_")
+  #
+  # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
+  #
+  public group_map (
+    # type of the keys
+    K type : property.orderable,
+
+    # type of the values in the result
+    B type,
+
+    # function to generate the keys
+    key_f Unary K T,
+
+    # function applied to each element
+    f Unary B T) container.Map K (Sequence B)
+  =>
+    M : mutate is
+    M ! ()->
+      res := (container.mutable_tree_map M K (Sequence B)).empty
+
+      for_each x->
+        key := key_f x
+        match res[key]
+          nil => res.put key [(f x)]
+          y Sequence B => res.put key (y ++  [(f x)])
+
+      res.as_map
+
+
   # create an empty Sequence
   #
   public fixed type.empty Sequence T =>
     (list T).type.empty
 
 
-  # monoid of Sequences with infix concatentation operation.
+  # monoid of Sequences with infix concatenation operation.
   #
   public type.concat_monoid =>
 
