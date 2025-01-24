@@ -1,0 +1,18 @@
+
+error 1: FATAL FAULT `*** panic ***`: effect already depleted. effect may only be instated once.
+Call stack:
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+panic.type.install_default.λ.call#1
+panic.cause#1
+panic#1
+reg_issue4220.m.check_depletion
+reg_issue4220.type.m.type.instate#4 unit
+reg_issue4220.type.m.type.instate#3 unit
+reg_issue4220.m.instate_self#2 unit
+reg_issue4220.f
+reg_issue4220
+
+*** fatal errors encountered, stopping.
+one error.
