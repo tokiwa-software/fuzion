@@ -450,7 +450,7 @@ public linear_effect : effect is
 
   module redef check_depletion =>
     if !depleted.depleted.compare_and_set0 false true
-      panic "effect already depleted. effect may only be instated once."
+      fuzion.std.panic "effect already depleted. effect may only be instated once."
 
 
 Depleted_Wrapper ref is
