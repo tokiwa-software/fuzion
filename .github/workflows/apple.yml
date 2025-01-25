@@ -63,7 +63,7 @@ jobs:
           echo "/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: Start Measurement
-        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        uses: green-coding-solutions/eco-ci-energy-estimation@683e17958c4f643f3f2a373f48a71b986d9a00e2 # resolves to ?
         with:
           task: start-measurement
           continue-on-error: true
@@ -78,7 +78,7 @@ jobs:
         run: make shellcheck
 
       - name: Setup Measurement
-        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        uses: green-coding-solutions/eco-ci-energy-estimation@683e17958c4f643f3f2a373f48a71b986d9a00e2 # resolves to ?
         with:
           task: get-measurement
           label: 'setup'
@@ -88,7 +88,7 @@ jobs:
         run: make javac
 
       - name: Build Java Measurement
-        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        uses: green-coding-solutions/eco-ci-energy-estimation@683e17958c4f643f3f2a373f48a71b986d9a00e2 # resolves to ?
         with:
           task: get-measurement
           label: 'build java'
@@ -99,7 +99,7 @@ jobs:
 
 
       - name: Build Fuzion Measurement
-        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        uses: green-coding-solutions/eco-ci-energy-estimation@683e17958c4f643f3f2a373f48a71b986d9a00e2 # resolves to ?
         with:
           task: get-measurement
           label: 'build fuzion'
@@ -109,7 +109,7 @@ jobs:
         run: make doc
 
       - name: Build Docs Measurement
-        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        uses: green-coding-solutions/eco-ci-energy-estimation@683e17958c4f643f3f2a373f48a71b986d9a00e2 # resolves to ?
         with:
           task: get-measurement
           label: 'build docs'
@@ -122,14 +122,14 @@ jobs:
         run: make syntaxcheck
 
       - name: Tests Measurement
-        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        uses: green-coding-solutions/eco-ci-energy-estimation@683e17958c4f643f3f2a373f48a71b986d9a00e2 # resolves to ?
         with:
           task: get-measurement
           label: 'tests'
           continue-on-error: true
 
       - name: Show Energy Results
-        uses: green-coding-solutions/eco-ci-energy-estimation@2c74a687e9cc4cc4579ae752404a8d54cc46a06a # resolves to v4.3.0
+        uses: green-coding-solutions/eco-ci-energy-estimation@683e17958c4f643f3f2a373f48a71b986d9a00e2 # resolves to ?
         with:
           task: display-results
           continue-on-error: true
