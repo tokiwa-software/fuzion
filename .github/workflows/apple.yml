@@ -67,6 +67,7 @@ jobs:
         with:
           task: start-measurement
           continue-on-error: true
+          machine-power-data: "macos-14-mac-mini-m1.sh"
 
       - name: sed version
         run: sed --version
