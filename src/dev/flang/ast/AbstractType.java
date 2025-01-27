@@ -1479,7 +1479,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = isRef().yes() ? -1 : 1;
           }
-        if (result == 0 && isThisType() ^ other.isThisType())
+        if (result == 0 && isThisType() ^ other.isThisType() && !(isChoice() && other.isChoice()))
           {
             result = isThisType() ? -1 : 1;
           }

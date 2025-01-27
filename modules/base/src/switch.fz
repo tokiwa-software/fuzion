@@ -103,22 +103,24 @@ is
 
   # synonym for infix >>=
   #
-  # NYI: BUG: #4169 when replacing switch A B by switch.this
-  #
-  public and_then (f A -> switch A B) switch A B =>
+  public and_then (f A -> switch A B) switch.this =>
     match switch.this
-      a A => f a
+      a A =>
+        match f a
+          ai A => ai
+          b B => b
       b B => b
 
 
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
   #
-  # NYI: BUG: #4169 when replacing switch A B by switch.this
-  #
-  public and (O type, o switch A B) switch A B =>
+  public and (O type, o switch A B) switch.this =>
     match switch.this
-      A   => o
+      A   =>
+        match o
+          a A => a
+          b B => b
       b B => b
 
 
