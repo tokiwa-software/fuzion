@@ -149,10 +149,11 @@ public class OpExpr extends ANY
                   }
                 else if (isExpr(i-1))  // a postfix operator
                   {
-                    if (// 'a+ + b' => '(a+) + b' and
-                        // 'a + +b' => 'a + (+b)'
-                        // 'a+ +b'  => 'a + (+b)' due to white space
-                        isOp(i+1) && !op._whiteSpaceBefore && op._whiteSpaceAfter && op(i+1)._whiteSpaceAfter)
+                    if (// 'a+ + b'  => '(a+) + b' and
+                        // 'a + +b'  => 'a + (+b)' and
+                        // 'a+ +b'   => 'a + (+b)' and
+                        // 'a+ + b+' => '(a+) + (b+)' due to white space
+                        (isOp(i+1) && op(i+1)._whiteSpaceAfter || isOp(i-2) && op(i-2)._whiteSpaceAfter) && !op._whiteSpaceBefore && op._whiteSpaceAfter )
                       {
                         // in case white space suggests higher precedence for
                         // postfix op, then treat it as a postfix op.
