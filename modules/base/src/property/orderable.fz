@@ -46,7 +46,7 @@ is
   #
   # This relation must be
   #
-  #  - reflexive (equality a b),
+  #  - reflexive (equality a a),
   #  - symmetric (equality a b = equality b a), and
   #  - transitive ((equality a b && equality b c) : equality a c).
   #
@@ -55,7 +55,7 @@ is
   #
   public redef type.equality(a,b property.orderable.this)
 
-  # NYI: BUG:
+  # NYI: BUG: see #4676
   #
   # String.fz:73:27: error 1: Incompatible types when passing argument in a call
   #   public fixed redef type.equality(a, b String) =>
