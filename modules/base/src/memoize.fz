@@ -184,7 +184,7 @@ public memoize is
               ) V
   =>
 
-    # NYI: should be done via effect configation file, see `effect.type.default`.
+    # NYI: should be done via effect configuration file, see `effect.type.default`.
     #
     if !(memoized K V).is_instated
       (memoized K V).default
