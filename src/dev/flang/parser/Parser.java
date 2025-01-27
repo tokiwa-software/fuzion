@@ -2805,7 +2805,16 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         setMinIndent(old);
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
-            syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
+            if (current() == Token.t_while ||
+                current() == Token.t_do ||
+                current() == Token.t_until)
+              {
+                Errors.indentationProblemEncountered(tokenSourcePos(), pos, parserDetail("loop"));
+              }
+            else
+              {
+                syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
+              }
           }
         return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
       });
