@@ -93,8 +93,7 @@ module:public array(
       safety: length ≥ 0
   =>
 
-    // NYI: BUG: when removing `interval i32`: Illegal forward or cyclic type inference
-    indices interval i32 => 0..length-1
+    indices => 0..length-1
 
     internal := fuzion.sys.internal_array_init T length
     for x in indices do
