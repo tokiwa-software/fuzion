@@ -128,11 +128,7 @@ is
   # NYI: BUG: when replacing switch A B by switch.this
   #
   public or (f Lazy (switch A B)) switch A B =>
-    # NYI: BUG: #4169 require-condition2 failed: RefValue.java:74 "(!dfa._fuir.clazzIsRef(original._clazz), original._clazz == vc, dfa._fuir.clazzIsRef(rc));"
-    # if ok then switch.this else f()
-    match switch.this
-      a A => a
-      B   => f()
+    if ok then switch.this else f()
 
 
   # unwraps an switch if it exists, returns default value otherwise.
