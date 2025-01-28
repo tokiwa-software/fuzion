@@ -407,6 +407,25 @@ public class ParsedCall extends Call
 
 
   /**
+   * Check if partial application would change this pre-/postfix call into an
+   * infix operator, e.g., `[1,2,3].map (*2)` ->  `[1,2,3].map (x->x*2)`
+   *
+   * @param expectedType the expected function type
+   *
+   * @return true if expectedType.arity() is 1, this is an operator call of a
+   * pre- or postfix operator.
+   */
+  boolean isPartialInfix(AbstractType expectedType)
+  {
+    return
+      expectedType.arity() == 1 &&
+      isOperatorCall(true)      &&
+      (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
+       _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX)    );
+  }
+
+
+  /**
    * Perform partial application for a Call. In particular, this can make the
    * following changes:
    *
@@ -432,13 +451,14 @@ public class ParsedCall extends Call
     var paa = partiallyApplicableAlternative(res, context, expectedType);
     Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
                          : this;
-    if (l == this)  // resolution did not replace this call by sthg different
+    if (l == this  /* resolution did not replace this call by sthg different */ &&
+        _calledFeature != Types.f_ERROR /* resulution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
-        if (_pendingError != null /* nothing found, in case of pre/postfix, maybe partial application will find infix */ ||
-            paa != null                                                                      &&
-            _calledFeature != Types.f_ERROR                                                  &&
-            (typeForInferencing() == null || !typeForInferencing().isFunctionType()))
+        if (isPartialInfix(expectedType) /* `1-` -> `x->1-x` */ ||
+            paa != null                              &&
+            (typeForInferencing() == null ||
+             !typeForInferencing().isFunctionType())    )
           {
             l = applyPartially(res, context, expectedType);
           }
@@ -472,8 +492,7 @@ public class ParsedCall extends Call
         var fo = partiallyApplicableAlternative(res, context, expectedType);
         if (fo != null &&
             fo._feature != _calledFeature &&
-            fo._feature.preAndCallFeature() != _calledFeature &&
-            newNameForPartial(expectedType) == null)
+            fo._feature.preAndCallFeature() != _calledFeature)
           {
             AstErrors.partialApplicationAmbiguity(pos(), _calledFeature, fo._feature);
             setToErrorState();
@@ -523,10 +542,12 @@ public class ParsedCall extends Call
                 _actuals.add(c);
               }
           }
-        var nn = newNameForPartial(t);
-        if (nn != null)
+        if (isPartialInfix(t))
           {
-            _name = nn;
+            _name =
+              _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX)
+              ? /* -v ==> x->x-v */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX .length())
+              : /* v- ==> x->v-x */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
         _resolvedFormalArgumentTypes  = null;
