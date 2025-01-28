@@ -873,8 +873,6 @@ public class Call extends AbstractCall
 
     FeatureAndOuter result = null;
     var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
-    var newName = newNameForPartial(expectedType);
-    var name = newName != null ? newName : _name;
 
     // if loadCalledFeatureUnlessTargetVoid has found a suitable called
     // feature in an outer feature, it will have replaced a null _target, so
@@ -883,8 +881,8 @@ public class Call extends AbstractCall
     var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
     if (targetFeature != null)
       {
-        var fos = res._module.lookup(targetFeature, name, this, traverseOuter, false);
-        var calledName = FeatureName.get(name, n);
+        var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+        var calledName = FeatureName.get(_name, n);
         result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
       }
     return result;
@@ -901,33 +899,6 @@ public class Call extends AbstractCall
   boolean isOperatorCall(boolean parenthesesAllowed)
   {
     return false;
-  }
-
-
-  /**
-   * Check if partial application would change the name of the called feature
-   * for this call.
-   *
-   * @param expectedType the expected function type
-   *
-   * @return the new name or null in case the name stays unchanged.
-   */
-  String newNameForPartial(AbstractType expectedType)
-  {
-    String result = null;
-    if (expectedType.arity() == 1 && isOperatorCall(true))
-      {
-        var name = _name;
-        if (name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
-          { // -v ==> x->x-v
-            result = FuzionConstants.INFIX_OPERATOR_PREFIX + name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX.length());
-          }
-        else if (name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX))
-          { // -v ==> x->x-v
-            result = FuzionConstants.INFIX_OPERATOR_PREFIX + name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
-          }
-      }
-    return result;
   }
 
 
