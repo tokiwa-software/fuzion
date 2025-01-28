@@ -225,8 +225,8 @@ private slot(T type) : choice reserved unused T is
   #
   prefix ! =>
     match slot.this
-      unused => false
-      * => true
+      unused => true
+      * => false
 
   # does this slot contain a value of type T?
   #
@@ -246,6 +246,14 @@ private slot(T type) : choice reserved unused T is
       v T => v
       unused   => panic "unexpected unused slot"
       reserved => panic "unexpected reerved slot"
+
+  # String representation of slot, for debugging
+  #
+  public redef as_string =>
+    match slot.this
+      v T => $v
+      unused   => "unused"
+      reserved => "reserved"
 
 
 # effect that will be installed by `expanding_array.expand` will running `filler`
