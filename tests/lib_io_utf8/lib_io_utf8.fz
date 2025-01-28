@@ -1,0 +1,104 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_io_utf8
+#
+# -----------------------------------------------------------------------
+
+lib_io_utf8 =>
+
+
+  lm : mutate is
+
+  say "Tests from lib_io_file/fileiotest.fz using unicode:\n"
+
+  _ := lm ! ()->file_io_utf8
+
+  say "\n\nTests from lib_io_dir/lib_io_dir.fz using unicode:\n"
+
+  _ := lm ! ()->dir_io_utf8
+
+  file_io_utf8 =>
+
+    dir := "🧪"
+    newdir := "✨✨✨"
+    file := dir + "/" + "📄"
+
+    content := "👋🏢🧑‍💻☯️"
+
+    f : io.file is
+
+    say "$dir exists: {f.exists dir}"
+    _ := (io.dir.make dir).bind unit _->
+      say "$dir was created"
+    say "$dir exists: {f.exists dir}"
+
+    say "$file exists: {f.exists file}"
+
+    _ := f
+      .use unit lm file f.mode.write ()->((io.buffered lm).writer.env.write content.utf8).error
+      .bind unit (_ -> say "$file was created")
+    say "$file exists: {f.exists file}"
+
+    say "stat resolve=true : $file size is {(f.stat file true).val.size}"
+    say "stat resolve=false: $file size is {(f.stat file false).val.size}"
+
+    _ := f.use unit lm file f.mode.read ()->
+      say  f.open.file_position
+      say (f.open.seek 1)
+      say  f.open.file_position
+      say (f.open.seek 0)
+
+
+    _ := f.use (array u8) lm file f.mode.read ()->(io.buffered lm).read_fully
+      .bind unit bytes->
+        filecontent := String.from_bytes bytes
+        say "file content bytes: $bytes"
+        say "file content is: $filecontent"
+
+    _ := f.delete file
+      .bind unit (_-> say "$file was deleted")
+    say "$file exists: {f.exists file}"
+
+    say "$dir exists: {f.exists dir}"
+    say "$newdir exists: {f.exists newdir}"
+    _ := f.move dir newdir
+      .bind unit (_ -> say "$dir is now: $newdir")
+    say "$newdir exists: {f.exists newdir}"
+    say "$dir exists: {f.exists dir}"
+
+    _ := f.delete newdir
+      .bind unit (_ -> say "$newdir was deleted")
+    say "$newdir exists: {f.exists newdir}"
+
+
+  dir_io_utf8 =>
+
+    _ := io.file.delete "⚗️🧫/1️⃣📜"
+    _ := io.file.delete "⚗️🧫/2️⃣🗒️"
+    _ := io.file.delete "⚗️🧫"
+    say (io.dir.make "⚗️🧫")
+    say (io.dir.make "⚗️🧫")
+    _ := io.file.use unit lm "⚗️🧫/1️⃣📜" io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
+    _ := io.file.use unit lm "⚗️🧫/2️⃣🗒️" io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
+
+    res := io.dir.use (Sequence String) "⚗️🧫" ()->
+      array 3 _->io.dir.open.read.as_string
+
+    res.val.sort.for_each say
