@@ -455,10 +455,16 @@ public class ParsedCall extends Call
         _calledFeature != Types.f_ERROR /* resulution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
-        if (isPartialInfix(expectedType) /* `1-` -> `x->1-x` */ ||
+        if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
+            _pendingError != null                       ||
+
+            // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
+            isPartialInfix(expectedType)                ||
+
+            // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null ||
-             !typeForInferencing().isFunctionType())    )
+             !typeForInferencing().isFunctionType())       )
           {
             l = applyPartially(res, context, expectedType);
           }
