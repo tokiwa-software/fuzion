@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
 
 import dev.flang.ast.*;
@@ -1441,33 +1442,13 @@ actuals     : actualArgs
    */
   Expr call(boolean pure, Expr target)
   {
-    SourcePosition pos = tokenSourcePos();
     var n = name();
-    Call result;
+    Expr result;
     var skippedDot = false;
     if (skipDot())
       {
-        if (current() == Token.t_numliteral)
-          {
-            var select = skipNumLiteral().plainInteger();
-            int s = -1;
-            try
-              {
-                s = Integer.parseInt(select);
-                if (CHECKS) check
-                  (s >= 0); // parser should not allow negative value
-              }
-            catch (NumberFormatException e)
-              {
-                AstErrors.illegalSelect(pos, select, e);
-              }
-            result = new ParsedCall(target, n, s);
-          }
-        else
-          {
-            result = new ParsedCall(target, n);
-            skippedDot = true;
-          }
+        skippedDot = current() != Token.t_numliteral;
+        result = select(new ParsedCall(target, n));
       }
     else
       {
@@ -1478,7 +1459,7 @@ actuals     : actualArgs
     // replace calls with erroneous name by ParsedCall.ERROR.
     result = n == ParsedName.ERROR_NAME ? ParsedCall.ERROR : result;
 
-    return pure ? pureCallTail(skippedDot, result)
+    return pure ? pureCallTail(skippedDot, (Call)result)
                 : callTail(    skippedDot, result);
   }
 
@@ -1609,12 +1590,39 @@ callTail    : indexCall  callTail
                 result = callTail(false, new This(q));
               }
           }
+        else if (current() == Token.t_numliteral)
+          {
+            result = select(result);
+          }
         else
           {
             result = call(result);
           }
       }
     return result;
+  }
+
+  private Expr select(Expr target)
+  {
+    var start = sourcePos();
+    var list = new List<Literal>();
+    while (current() == Token.t_numliteral)
+      {
+        list.add(skipNumLiteral());
+        var f = fork();
+        if (f.skipDot() && f.current() == Token.t_numliteral)
+          {
+            skipDot();
+          }
+      }
+    var end = start.rangeTo(bytePos());
+
+    ((Call)target).setSelect(
+      end,
+      list
+        .stream()
+        .flatMap(l -> Arrays.stream(l._originalString.split("\\."))));
+    return target;
   }
 
 

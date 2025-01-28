@@ -116,25 +116,6 @@ public class ParsedCall extends Call
   }
 
 
-  /**
-   * Constructor to call field 'n' on target 't' and select an open generic
-   * variant.
-   *
-   * @param target the target of the call, null if none.
-   *
-   * @param name the name of the called feature
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
-   */
-  public ParsedCall(Expr target, ParsedName name, int select)
-  {
-    super(name._pos, target, name._name, select, NO_PARENTHESES);
-
-    _parsedName = name;
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -668,9 +649,36 @@ public class ParsedCall extends Call
         if (f != null)
           {
             // replace Function call `c.123` by `c.f.123`:
-            result = pushCall(res, context, f.featureName().baseName());
-            setActualResultType(res, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            result = new Call(pos(),
+                              this /* this becomes target of "call" */,
+                              f.featureName().baseName(),
+                              _select,
+                              NO_GENERICS,
+                              NO_EXPRS,
+                              null,
+                              null);
+            _select = -1;
+            // setActualResultType will be done again by resolveTypes, but we need it now.
+            setActualResultType(res, context, t);
             result = result.resolveTypes(res, context);
+          }
+      }
+    while (!_unresolvedSelects.isEmpty())
+      {
+        var s = _unresolvedSelects.remove(0);
+        var typeParameter = _type.isGenericArgument() ? _type.genericArgument().constraint(context).feature() : _type.feature();
+        var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
+        if (f != null)
+          {
+            result = new Call(pos(), // NYI: better pos of this num literal
+                              result /* result becomes target of "call" */,
+                              f.featureName().baseName(),
+                              s,
+                              NO_GENERICS,
+                              NO_EXPRS,
+                              null,
+                              null)
+                     .resolveTypes(res, context);
           }
       }
     return result;

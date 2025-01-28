@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.ListIterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -96,7 +97,7 @@ public class Call extends AbstractCall
    */
   protected int _select;
   public int select() { return _select; }
-
+  protected List<Integer> _unresolvedSelects = new List<>();
 
   /**
    * actual generic arguments, set by parser
@@ -3017,6 +3018,31 @@ public class Call extends AbstractCall
         return this;
       }
     };
+  }
+
+
+  public void setSelect(SourcePosition end, Stream<String> list)
+  {
+    var selects = list
+      .map(s ->
+        {
+          try
+            {
+              return Integer.parseUnsignedInt(s);
+            }
+          catch (NumberFormatException nfe)
+            {
+              AstErrors.illegalSelect(end, s);
+              return 0;
+            }
+        })
+      .collect(List.collector());
+    if (selects.isEmpty())
+      {
+        return;
+      }
+    _select = selects.get(0);
+    _unresolvedSelects = selects.drop(1);
   }
 
 }
