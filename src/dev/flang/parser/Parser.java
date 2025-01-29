@@ -1539,6 +1539,7 @@ callTail    : indexCall  callTail
             | dot "env"  callTail
             | dot "type" callTail
             | dot "this" callTail
+            | dot select
             |
             ;
    */
