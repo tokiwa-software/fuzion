@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.parser;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Optional;
 
 import dev.flang.ast.*;
@@ -35,6 +34,7 @@ import dev.flang.ast.*;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
@@ -1448,7 +1448,8 @@ actuals     : actualArgs
     if (skipDot())
       {
         skippedDot = current() != Token.t_numliteral;
-        result = select(new ParsedCall(target, n));
+        result = new ParsedCall(target, n);
+        result = select(result);
       }
     else
       {
@@ -1602,26 +1603,49 @@ callTail    : indexCall  callTail
     return result;
   }
 
+
+  /**
+   * Parse select clause
+   *
+select    : NUM_LITERAL ( dot select
+                        |
+                        )
+          ;
+   */
   private Expr select(Expr target)
   {
-    var start = sourcePos();
-    var list = new List<Literal>();
+    var list = new List<Pair<Integer, SourcePosition>>();
     while (current() == Token.t_numliteral)
       {
-        list.add(skipNumLiteral());
+        var literalPos = sourcePos();
+        var lit = skipNumLiteral()._originalString;
+        literalPos = literalPos.rangeTo(bytePos());
+        // NYI: CLEANUP: ugly, change lexer?
+        try
+          {
+            var dotIdx = lit.indexOf(".");
+            if (dotIdx >= 0)
+              {
+                list.add(new Pair<>(Integer.parseUnsignedInt(lit.substring(0, dotIdx)), literalPos));
+                list.add(new Pair<>(Integer.parseUnsignedInt(lit.substring(dotIdx+1, lit.length())), literalPos));
+              }
+            else
+              {
+                list.add(new Pair<>(Integer.parseUnsignedInt(lit), literalPos));
+              }
+          }
+        catch (NumberFormatException nfe)
+          {
+            AstErrors.illegalSelect(literalPos, lit);
+          }
+
         var f = fork();
         if (f.skipDot() && f.current() == Token.t_numliteral)
           {
             skipDot();
           }
       }
-    var end = start.rangeTo(bytePos());
-
-    ((Call)target).setSelect(
-      end,
-      list
-        .stream()
-        .flatMap(l -> Arrays.stream(l._originalString.split("\\."))));
+    ((ParsedCall)target).setSelect(list);
     return target;
   }
 

@@ -31,6 +31,8 @@ import java.util.ListIterator;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -69,6 +71,12 @@ public class ParsedCall extends Call
    * Without this, this might happen repeatedly.
    */
   boolean _pushedImplicitImmediateCall = false;
+
+
+  /**
+   * implicit select clauses that have been parsed
+   */
+  private List<Pair<Integer, SourcePosition>> _unresolvedSelects = new List<>();
 
 
   /*---------------------------  constructors  --------------------------*/
@@ -670,15 +678,19 @@ public class ParsedCall extends Call
         var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
         if (f != null)
           {
-            result = new Call(pos(), // NYI: better pos of this num literal
+            result = new Call(s.v1(),
                               result /* result becomes target of "call" */,
                               f.featureName().baseName(),
-                              s,
+                              s.v0(),
                               NO_GENERICS,
                               NO_EXPRS,
                               null,
                               null)
                      .resolveTypes(res, context);
+          }
+        else
+          {
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(s.v1(), result.calledFeature(), result.name(), s.v0(), result._type);
           }
       }
     return result;
@@ -716,6 +728,19 @@ public class ParsedCall extends Call
       _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
       _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
       _actuals.isEmpty();                              // dto.
+  }
+
+
+  /*
+   * set the select numbers
+   */
+  public void setSelect(List<Pair<Integer, SourcePosition>> selects)
+  {
+    if (!selects.isEmpty())
+      {
+        _select = selects.get(0).v0();
+        _unresolvedSelects = selects.drop(1);
+      }
   }
 
 }
