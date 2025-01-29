@@ -37,12 +37,7 @@ import dev.flang.fe.LibraryFeature;
 public record DocsOptions(Path destination, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
 {
 
-  private static final String baseApiDir = "/api/modules";
-
-  public static String moduleApiDir(AbstractFeature f)
-  {
-    return baseApiDir + (f instanceof LibraryFeature lf ? "/" + lf._libModule.name() : "");
-  }
+  static final String baseApiDir = "/api/modules";
 
   public boolean ignoreVisibility()
   {

@@ -727,8 +727,7 @@ public class Html extends ANY
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), DocsOptions.baseApiDir)
-      .replaceFirst("\\{.*?\\}", DocsOptions.moduleApiDir(f))
+      .replaceFirst("\\{(.*?)\\.fum\\}", DocsOptions.baseApiDir + "/$1")
       + "#l" + f.pos().line();
   }
 
