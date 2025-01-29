@@ -58,7 +58,7 @@ base16_test is
   # ENCODING
 
   say """
-      Testing base16 encoding..."""
+      Testing base16 encoding:"""
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
     for results := (Sequence (outcome String)).empty, results.concat (out:nil)
@@ -95,7 +95,7 @@ base16_test is
 
   say """
       \n
-      Testing base16 decoding..."""
+      Testing base16 decoding:"""
   dec_test(test_vectors array (tuple my_c String), name String) =>
     for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
@@ -135,7 +135,7 @@ base16_test is
 
   say """
       \n
-      Test error messages when decoding broken base16...
+      Test error messages when decoding broken base16:
       """
 
   broken_enc := ["66\r6F6F",   # carriage return

@@ -63,7 +63,7 @@ base64url_test is
   # ENCODING
 
   say """
-      Testing base64url encoding..."""
+      Testing base64url encoding:"""
 
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
@@ -101,7 +101,7 @@ base64url_test is
 
   say """
       \n
-      Testing base64url decoding..."""
+      Testing base64url decoding:"""
   dec_test(test_vectors array (tuple my_c String), name String) =>
     for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
@@ -140,7 +140,7 @@ base64url_test is
 
   say """
       \n
-      Test error messages when decoding broken base32...
+      Test error messages when decoding broken base64url:
       """
 
   broken_enc := ["""
