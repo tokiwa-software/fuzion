@@ -1443,7 +1443,7 @@ actuals     : actualArgs
   Expr call(boolean pure, Expr target)
   {
     var n = name();
-    Expr result;
+    Call result;
     var skippedDot = false;
     if (skipDot())
       {
@@ -1460,7 +1460,7 @@ actuals     : actualArgs
     // replace calls with erroneous name by ParsedCall.ERROR.
     result = n == ParsedName.ERROR_NAME ? ParsedCall.ERROR : result;
 
-    return pure ? pureCallTail(skippedDot, (Call)result)
+    return pure ? pureCallTail(skippedDot, result)
                 : callTail(    skippedDot, result);
   }
 
@@ -1612,7 +1612,7 @@ select    : NUM_LITERAL ( dot select
                         )
           ;
    */
-  private Expr select(Expr target)
+  private ParsedCall select(Expr target)
   {
     var list = new List<Pair<Integer, SourcePosition>>();
     while (current() == Token.t_numliteral)
@@ -1645,8 +1645,9 @@ select    : NUM_LITERAL ( dot select
             skipDot();
           }
       }
-    ((ParsedCall)target).setSelect(list);
-    return target;
+    var pc = ((ParsedCall)target);
+    pc.setSelect(list);
+    return pc;
   }
 
 
