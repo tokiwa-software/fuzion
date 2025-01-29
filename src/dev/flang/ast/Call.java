@@ -54,24 +54,9 @@ public class Call extends AbstractCall
 
 
   /**
-   * Empty map for general use.
-   */
-  public static final SortedMap<FeatureName, Feature> EMPTY_MAP = new TreeMap<>();
-
-
-  /**
    * Dummy Call. Used to represent errors.
    */
   public static Call ERROR;
-
-
-  /*------------------------  static variables  -------------------------*/
-
-  /**
-   * quick-and-dirty way to get unique values for temp fields in
-   * findChainedBooleans.
-   */
-  static int _chainedBoolTempId_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -151,7 +136,7 @@ public class Call extends AbstractCall
    * The feature that is called by this call, resolved when
    * loadCalledFeature() is called.
    */
-  public AbstractFeature _calledFeature;
+  protected AbstractFeature _calledFeature;
 
 
   /**
