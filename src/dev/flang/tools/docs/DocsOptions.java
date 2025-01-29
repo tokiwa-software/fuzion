@@ -28,13 +28,21 @@ package dev.flang.tools.docs;
 
 import java.nio.file.Path;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.fe.LibraryFeature;
+
 /**
  * api doc specific options
  */
 public record DocsOptions(Path destination, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
 {
 
-  static final String baseApiDir = "/api/std";
+  private static final String baseApiDir = "/api/modules";
+
+  public static String moduleApiDir(AbstractFeature f)
+  {
+    return baseApiDir + (f instanceof LibraryFeature lf ? "/" + lf._libModule.name() : "");
+  }
 
   public boolean ignoreVisibility()
   {
