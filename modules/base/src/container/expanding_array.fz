@@ -167,6 +167,19 @@ is
     expanding_array data0 new_length
 
 
+  # create a Sequence that consists of all the elements of this Sequence followed
+  # by all the elements of s
+  #
+  public redef concat (s Sequence T) Sequence T =>
+    if s.finite != trit.yes || count < s.count then
+      as_list.concat_list s.as_list
+    else
+      expand s.count ()->
+        for e in s.indexed do
+          (i,v) := e
+          container.expanding T .env.put length+i v
+
+
   # collect the contents of this expanding_array as an array.
   #
   public redef as_array array T =>
