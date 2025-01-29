@@ -28,9 +28,6 @@ package dev.flang.tools.docs;
 
 import java.nio.file.Path;
 
-import dev.flang.ast.AbstractFeature;
-import dev.flang.fe.LibraryFeature;
-
 /**
  * api doc specific options
  */
