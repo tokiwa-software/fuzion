@@ -106,14 +106,19 @@ public class Select extends Call {
    */
   public Call resolveTypes(Resolution res, Context context)
   {
+    var result = Call.ERROR;
     loadCalledFeature(res, context);
-    _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
-      // explicit
-      ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
-      // implict
-      : resolveImplicit(res, context, _calledFeature.resultType());
+    if (_calledFeature != null)
+      {
+        _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
+          // explicit
+          ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
+          // implict
+          : resolveImplicit(res, context, _calledFeature.resultType());
 
-    return _currentlyResolving.resolveTypes(res, context);
+        result = _currentlyResolving.resolveTypes(res, context);
+      }
+    return result;
   }
 
 
