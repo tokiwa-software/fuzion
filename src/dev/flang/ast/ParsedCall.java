@@ -116,25 +116,6 @@ public class ParsedCall extends Call
   }
 
 
-  /**
-   * Constructor to call field 'n' on target 't' and select an open generic
-   * variant.
-   *
-   * @param target the target of the call, null if none.
-   *
-   * @param name the name of the called feature
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
-   */
-  public ParsedCall(Expr target, ParsedName name, int select)
-  {
-    super(name._pos, target, name._name, select, NO_PARENTHESES);
-
-    _parsedName = name;
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -236,7 +217,7 @@ public class ParsedCall extends Call
   @Override
   public ParsedName asParsedName()
   {
-    if (!_actuals.isEmpty() || _select != -1)
+    if (!_actuals.isEmpty())
       {
         return null;
       }
@@ -247,7 +228,7 @@ public class ParsedCall extends Call
   @Override
   public List<ParsedName> asQualifier()
   {
-    if (!_actuals.isEmpty() || _select != -1)
+    if (!_actuals.isEmpty())
       {
         return null;
       }
@@ -297,8 +278,8 @@ public class ParsedCall extends Call
                                   b.type(),
                                   tmpName,
                                   outer);
-            Expr t1 = new Call(pos(), new Current(pos(), outer), tmp, -1);
-            Expr t2 = new Call(pos(), new Current(pos(), outer), tmp, -1);
+            Expr t1 = new Call(pos(), new Current(pos(), outer), tmp);
+            Expr t2 = new Call(pos(), new Current(pos(), outer), tmp);
             var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _actuals)
               {
                 boolean isChainedBoolRHS() { return true; }
@@ -633,12 +614,10 @@ public class ParsedCall extends Call
   /**
    * Create a new call and push the current call to the target of that call.
    * This is used for implicit calls to Function and Lazy values where {@code f()} is
-   * converted to {@code f.call()}, and for implicit fields in a select call such as,
-   * e.g., a tuple access {@code t.3} that is converted to {@code t.values.3}.
+   * converted to {@code f.call()}.
    *
-   * The actual arguments and _select of this call are moved over to the new
-   * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
-   * _select is set to -1.
+   * The actual arguments of this call are moved over to the new
+   * call, this call's arguments are replaced by Expr.NO_EXPRS.
    *
    * @param res Resolution instance
    *
@@ -651,14 +630,14 @@ public class ParsedCall extends Call
   Call pushCall(Resolution res, Context context, String name)
   {
     var wasLazy = _type != null && _type.isLazyType();
+
+    if (CHECKS) check
+      (select() == -1);
+
     var result = new Call(pos(),   // NYI: ParsedCall?
                           this /* this becomes target of "call" */,
                           name,
-                          select(),
-                          NO_GENERICS,
-                          _actuals,
-                          null,
-                          null)
+                          _actuals)
       {
         @Override
         Expr originalLazyValue()
@@ -679,27 +658,6 @@ public class ParsedCall extends Call
     _wasImplicitImmediateCall = true;
     _originalArgCount = _actuals.size();
     _actuals = ParsedCall.NO_PARENTHESES;
-    _select = -1;
-    return result;
-  }
-
-
-  @Override
-  Call resolveImplicitSelect(Resolution res, Context context, AbstractType t)
-  {
-    Call result = this;
-    if (_select >= 0 && !calledFeature().resultType().isOpenGeneric())
-      {
-        var typeParameter = t.isGenericArgument() ? t.genericArgument().constraint(context).feature() : t.feature();
-        var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
-        if (f != null)
-          {
-            // replace Function call `c.123` by `c.f.123`:
-            result = pushCall(res, context, f.featureName().baseName());
-            setActualResultType(res, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
-            result = result.resolveTypes(res, context);
-          }
-      }
     return result;
   }
 

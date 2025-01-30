@@ -248,7 +248,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, String n)
   {
-    this(pos, t, n, -1, Expr.NO_EXPRS);
+    this(pos, t, n, Expr.NO_EXPRS);
   }
 
 
@@ -266,35 +266,10 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, String n, List<Expr> la)
   {
-    this(pos, t, n, -1, la);
+    this(pos, t, n, -1, NO_GENERICS, la, null, null);
 
     if (PRECONDITIONS) require
       (la != null);
-  }
-
-
-  /**
-   * Constructor to call feature with name 'n' on target 't' with actual
-   * arguments 'la' with the ability to select from an open generic field.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param t the target of the call, null if none.
-   *
-   * @param n the name of the called feature
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
-   *
-   * @param la list of actual arguments
-   */
-  Call(SourcePosition pos, Expr t, String n, int select, List<Expr> la)
-  {
-    this(pos, t, n, select, NO_GENERICS, la, null, null);
-
-    if (PRECONDITIONS) require
-      (la != null,
-       select >= -1);
   }
 
 
@@ -308,13 +283,10 @@ public class Call extends AbstractCall
    * @param t the target of the call, null if none.
    *
    * @param calledFeature the called feature, must not be null
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
    */
-  Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
+  Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
   {
-    this(pos, t, calledFeature.featureName().baseName(), select, Expr.NO_EXPRS);
+    this(pos, t, calledFeature.featureName().baseName(), Expr.NO_EXPRS);
     this._calledFeature = calledFeature;
   }
 
@@ -332,24 +304,6 @@ public class Call extends AbstractCall
     this(pos, new This(pos), anonymous);
   }
 
-
-  /**
-   * A call to an anonymous feature declared using "fun a.b.c".
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param target the target of the call, null if none.
-   *
-   * @param anonymous the anonymous feature, which is the wrapper created around
-   * the call to "c".
-   */
-  Call(SourcePosition  pos,
-       Expr            target,
-       AbstractFeature anonymous)
-  {
-    this(pos, target, anonymous.featureName().baseName(), Expr.NO_EXPRS);
-    this._calledFeature = anonymous;
-  }
 
 
   /**
@@ -403,13 +357,13 @@ public class Call extends AbstractCall
    * @param type
    */
   Call(SourcePosition pos,
-               Expr target,
-               String name,
-               int select,
-               List<AbstractType> generics,
-               List<Expr> actuals,
-               AbstractFeature calledFeature,
-               AbstractType type)
+       Expr target,
+       String name,
+       int select,
+       List<AbstractType> generics,
+       List<Expr> actuals,
+       AbstractFeature calledFeature,
+       AbstractType type)
   {
     if (PRECONDITIONS) require
       (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
@@ -1231,25 +1185,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper function called during resolveTypes to implicitly call a feature
-   * with an open type parameter result in case _select >= 0 and t is not a type
-   * parameter.
-   *
-   * This converts, e.g., {@code t.3} for a tuple {@code t} to {@code t.values.3}.
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   * @param t
-   */
-  Call resolveImplicitSelect(Resolution res, Context context, AbstractType t)
-  {
-    return this;
-  }
-
-
-  /**
    * Helper function called during resolveTypes to resolve syntactic sugar that
    * allows directly calling a function returned by a call.
    *
@@ -1469,7 +1404,7 @@ public class Call extends AbstractCall
    *
    * @param frmlT the result type of the called feature, might be open generic.
    */
-  protected void setActualResultType(Resolution res, Context context, AbstractType frmlT)
+  protected AbstractType getActualResultType(Resolution res, Context context, AbstractType frmlT)
   {
     var tt = targetIsTypeParameter() && frmlT.isThisTypeInCotype()
       ? // a call B.f for a type parameter target B. resultType() is the
@@ -1484,7 +1419,7 @@ public class Call extends AbstractCall
     var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
     var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
     var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
-    _type = t5;
+    return t5;
   }
 
 
@@ -2531,18 +2466,11 @@ public class Call extends AbstractCall
               }
             else if (t != null)
               {
-                setActualResultType(res, context, t);
-
-                result = resolveImplicitSelect(res, context, _type);
-                if (_select >= 0 && !t.isOpenGeneric() && !result.type().isOpenGeneric())
-                  {
-                    AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, _type);
-                    setToErrorState();
-                  }
+                _type = getActualResultType(res, context, t);
 
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
-                result = result.resolveImmediateFunctionCall(res, context); // NYI: Separate pass? This currently does not work if type was inferred
+                result = resolveImmediateFunctionCall(res, context); // NYI: Separate pass? This currently does not work if type was inferred
               }
             if (t == null || isTailRecursive(context.outerFeature()))
               {
@@ -2564,7 +2492,7 @@ public class Call extends AbstractCall
                        {
                          rt = raw.applyTypePars(cf, _generics);
                        }
-                     setActualResultType(res, context, rt);
+                     _type = getActualResultType(res, context, rt);
                    });
               }
           }

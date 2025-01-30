@@ -2359,6 +2359,13 @@ public class AstErrors extends ANY
           + "To solve this, remove " + skw("...") + " after the highlighted error.");
   }
 
+  public static void selectIsNoType(SourcePosition pos)
+  {
+    error(pos,
+          "Select clause is not a valid type",
+          "To solve, this specify a valid type.");
+  }
+
 }
 
 /* end of file */
