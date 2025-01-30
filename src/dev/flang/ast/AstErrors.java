@@ -1741,7 +1741,6 @@ public class AstErrors extends ANY
   static void selectorRange(SourcePosition pos, int sz, AbstractFeature f, String name, int select, List<AbstractType> types)
   {
     error(pos,
-          "" +
           (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual type parameters" :
            sz == 1 ? "Selector must be 0 for one actual type parameter"
            : "Selector not permitted since no actual type parameters are")+
