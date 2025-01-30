@@ -1436,7 +1436,7 @@ pureCall    : name actuals pureCallTail
 call        : name actuals callTail
             ;
 actuals     : actualArgs
-            | dot NUM_LITERAL
+            | dot select
             ;
    */
   Expr call(boolean pure, Expr target)
@@ -1448,20 +1448,7 @@ actuals     : actualArgs
       {
         if (current() == Token.t_numliteral)
           {
-            var pos = tokenSourceRange();
-            var select = skipNumLiteral().plainInteger();
-            int s = -1;
-            try
-              {
-                s = Integer.parseInt(select);
-                if (CHECKS) check
-                  (s >= 0); // parser should not allow negative value
-              }
-            catch (NumberFormatException e)
-              {
-                AstErrors.illegalSelect(pos, select, e);
-              }
-            result = new Select(pos, target, n._name, s);
+            result = select(target, n._name);
           }
         else
           {
@@ -1557,6 +1544,7 @@ callTail    : indexCall  callTail
             | dot "env"  callTail
             | dot "type" callTail
             | dot "this" callTail
+            | dot select
             |
             ;
    */
@@ -1609,10 +1597,48 @@ callTail    : indexCall  callTail
                 result = callTail(false, new This(q));
               }
           }
+        else if (current() == Token.t_numliteral)
+          {
+            result = select(result, null);
+          }
         else
           {
             result = call(result);
           }
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse select clause
+   *
+select    : NUM_LITERAL callTail
+          ;
+   */
+  private Call select(Expr target, String name)
+  {
+    var result = Call.ERROR;
+    var literalPos = tokenSourceRange();
+    var lit = skipNumLiteral()._originalString;
+    // NYI: CLEANUP: ugly, change lexer?
+    try
+      {
+        var dotIdx = lit.indexOf(".");
+        if (dotIdx >= 0)
+          {
+            var s0 = Integer.parseUnsignedInt(lit.substring(0, dotIdx));
+            var s1 = Integer.parseUnsignedInt(lit.substring(dotIdx+1, lit.length()));
+            new Select(literalPos, new Select(literalPos, target, name, s0), null, s1);
+          }
+        else
+          {
+            result = new Select(literalPos, target, name, Integer.parseUnsignedInt(lit));
+          }
+      }
+    catch (NumberFormatException nfe)
+      {
+        AstErrors.illegalSelect(literalPos, lit);
       }
     return result;
   }

@@ -1710,11 +1710,11 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
+  public static void illegalSelect(SourcePosition pos, String select)
   {
     error(pos,
           "Illegal select clause",
-          "Failed to parse integer " + ss(select) + ": " + e);
+          "Failed to parse integer " + ss(select) + ".");
   }
 
   static void cannotAccessValueOfOpenGeneric(SourcePosition pos, AbstractFeature f, AbstractType t)

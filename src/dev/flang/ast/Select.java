@@ -40,8 +40,7 @@ public class Select extends Call {
     super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null, null);
 
     if (PRECONDITIONS) require
-      (name != null,
-       select >= 0);
+      (select >= 0);
   }
 
 
@@ -77,6 +76,15 @@ public class Select extends Call {
 
 
   @Override
+  public AbstractFeature calledFeature()
+  {
+    return _calledFeature != null
+      ? _calledFeature
+      : Types.f_ERROR;
+  }
+
+
+  @Override
   public String toString()
   {
     return _target.toString() + "." + _name + "." + _select;
@@ -107,15 +115,24 @@ public class Select extends Call {
   public Call resolveTypes(Resolution res, Context context)
   {
     var result = Call.ERROR;
-    loadCalledFeature(res, context);
-    if (_calledFeature != null)
+    if (_name == null)
       {
-        _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
-          // explicit
-          ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
-          // implict
-          : resolveImplicit(res, context, _calledFeature.resultType());
-
+        _currentlyResolving = resolveImplicit(res, context, _target.type());
+      }
+    else
+      {
+        loadCalledFeature(res, context);
+        if (_calledFeature != null)
+          {
+            _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
+              // explicit
+              ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
+              // implict
+              : resolveImplicit(res, context, getActualResultType(res, context, _calledFeature.resultType()));
+          }
+      }
+    if (_currentlyResolving != null)
+      {
         result = _currentlyResolving.resolveTypes(res, context);
       }
     return result;
@@ -131,19 +148,24 @@ public class Select extends Call {
    * @param context the source code context where this assignment is used
    *
    */
-  private Call resolveImplicit(Resolution res, Context context, AbstractType t)
+  private Call resolveImplicit(Resolution res, Context context, AbstractType at)
   {
     var result = Call.ERROR;
-
-    var at = getActualResultType(res, context, t);
 
     var typeParameter = at.isGenericArgument() ? at.genericArgument().constraint(context).feature() : at.feature();
     var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
 
     if (f != null)
       {
-        var selectTarget = new Call(pos(), _target, _name, -1, Call.NO_GENERICS, NO_EXPRS, null, null);
-        result = new Call(pos(), selectTarget, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null, null);
+        if (_name == null)
+          {
+            result = new Call(pos(), _target, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null, null);
+          }
+        else
+          {
+            var selectTarget = new Call(pos(), _target, _name, -1, Call.NO_GENERICS, NO_EXPRS, null, null);
+            result = new Call(pos(), selectTarget, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null, null);
+          }
       }
     else
       {
