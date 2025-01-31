@@ -1454,7 +1454,7 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    *
-   * @param frmlT the result type of the called feature, might be open generic.
+   * @param urgent
    */
   protected AbstractType setActualResultType(Resolution res, Context context, boolean urgent)
   {
