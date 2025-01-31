@@ -703,7 +703,7 @@ public class ParsedCall extends Call
           {
             // replace Function call `c.123` by `c.f.123`:
             result = pushCall(res, context, f.featureName().baseName());
-            setActualResultType(res, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
+            setActualResultType1(res, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
             result = result.resolveTypes(res, context);
           }
       }
