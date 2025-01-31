@@ -1,0 +1,76 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue197
+#
+# -----------------------------------------------------------------------
+
+# This contains a few test cases that depend on the correct order
+# or application of type parameters
+#
+reg_issue197 =>
+
+  # the original example from the issue.
+  #
+  # The problem here was that the actual result type of the call
+  # to `my_map` uses `my_array.T` and type parameters where
+  # replaced in the wrong order:
+  #
+  #   1. for the call: B -> T
+  #   2. for outer feature: T -> Monoid T
+  #
+  # while the correct order is the other way around
+  #
+  #   1. for the outer feature: B -> B
+  #   2. for the call: B -> T
+  #
+  ex =>
+    my_array(T type) is
+      my_map(B type) my_array B =>
+        my_array B
+      f (ms my_array (Monoid T)) my_array T =>
+        ms.my_map T
+
+    r := my_array u64 .f (my_array (Monoid u64))
+    say "r's type is {type_of r} (expecting ex.my_array u64)"
+
+  ex
+
+  # smallest example that I found:
+  a(T type) is
+    b(U type) a U => do
+    v a T => (a u8).b T
+
+  say "a.v: {type_of_lazy (a f32 .v)} (expecting a f32)"
+
+  # smallest example that I found:
+  a0(T type) is
+    b(U type) U => do
+    v T => (a0 u8).b T
+
+  say "a0.v: {type_of_lazy (a0 i16 .v)} expecting (i16)"
+
+  a1(T type) is
+    b(U type) (T,U,option T,Sequence U) => do
+    _() (u8,T,option u8,Sequence T) := (a1 u8).b T
+
+  q : a1 unit is
+
+  x() (unit, i64, option unit, Sequence i64) => q.b i64
+  say "q.b: {type_of_lazy (q.b u128)} (expecting (unit, u128, option unit, Sequence u128)"
