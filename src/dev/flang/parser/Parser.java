@@ -1436,7 +1436,7 @@ pureCall    : name actuals pureCallTail
 call        : name actuals callTail
             ;
 actuals     : actualArgs
-            | dot select
+            | dot select callTail
             ;
    */
   Expr call(boolean pure, Expr target)
@@ -1544,7 +1544,7 @@ callTail    : indexCall  callTail
             | dot "env"  callTail
             | dot "type" callTail
             | dot "this" callTail
-            | dot select
+            | dot select callTail
             |
             ;
    */
@@ -1599,7 +1599,7 @@ callTail    : indexCall  callTail
           }
         else if (current() == Token.t_numliteral)
           {
-            result = select(result, null);
+            result = callTail(false, select(result, null));
           }
         else
           {
@@ -1613,7 +1613,7 @@ callTail    : indexCall  callTail
   /**
    * Parse select clause
    *
-select    : NUM_LITERAL callTail
+select    : NUM_LITERAL
           ;
    */
   private Call select(Expr target, String name)
