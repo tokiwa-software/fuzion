@@ -40,7 +40,8 @@ public class Select extends Call {
     super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null, null);
 
     if (PRECONDITIONS) require
-      (select >= 0);
+      (select >= 0,
+       target != Call.ERROR);
   }
 
 

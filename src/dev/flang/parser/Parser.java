@@ -1629,7 +1629,7 @@ select    : NUM_LITERAL callTail
           {
             var s0 = Integer.parseUnsignedInt(lit.substring(0, dotIdx));
             var s1 = Integer.parseUnsignedInt(lit.substring(dotIdx+1, lit.length()));
-            new Select(literalPos, new Select(literalPos, target, name, s0), null, s1);
+            result = new Select(literalPos, new Select(literalPos, target, name, s0), null, s1);
           }
         else
           {
