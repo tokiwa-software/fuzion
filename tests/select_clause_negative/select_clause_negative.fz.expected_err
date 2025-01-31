@@ -1,12 +1,12 @@
 
 --CURDIR--/select_clause_negative.fz:32:12: error 1: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found operator '-'
-  say (a . -1) # should flag an error:
+  say (a . -1)  # should flag an error:
 -----------^
 While parsing: name, parse stack: name (twice), call (twice), callTail, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr (twice), klammer, bracketTerm, term, opTail, opExpr, operatorExpr (twice), actualSpace, actualSpaces, actualArgs, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr (twice), expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/select_clause_negative.fz:34:9: error 2: Selector must be in the range of 0..1 for 2 actual type parameters given for the open type parameter type
-  say a.5      # should flag an error: Selector must be in the range ...
+  say a.5       # should flag an error: Selector must be in the range ...
 --------^
 In call to 'tuple.values'
 Selected variant 'values.5'
@@ -15,21 +15,21 @@ Actual type parameters: 'i32, i32'
 
 
 --CURDIR--/select_clause_negative.fz:36:9: error 3: Use of selector requires call to feature whose type is an open type parameter
-  say a.1.1    # should flag an error: Use of selector requires call to feature whose type is an open type parameter
+  say a.1.1     # should flag an error: Use of selector requires call to feature whose type is an open type parameter
 --------^^^
 Selected variant: '1'
 Type of called feature: 'i32'
 
 
 --CURDIR--/select_clause_negative.fz:38:9: error 4: Use of selector requires call to feature whose type is an open type parameter
-  say a.1.1.1    # should flag an error: Use of selector requires call to feature whose type is an open type parameter
+  say a.1.1.1   # should flag an error: Use of selector requires call to feature whose type is an open type parameter
 --------^^^
 Selected variant: '1'
 Type of called feature: 'i32'
 
 
 --CURDIR--/select_clause_negative.fz:28:8: error 5: Could not find called feature
-  say a.-1     # should flag an error:
+  say a.-1      # should flag an error:
 -------^^
 Feature not found: 'infix .-' (one argument)
 Target feature: 'tuple'
@@ -37,7 +37,7 @@ In call: '.-'
 
 
 --CURDIR--/select_clause_negative.fz:30:9: error 6: Could not find called feature
-  say (a. -1)  # should flag an error:
+  say (a. -1)   # should flag an error:
 --------^
 Feature not found: 'infix .' (one argument)
 Target feature: 'tuple'
