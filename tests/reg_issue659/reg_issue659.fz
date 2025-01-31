@@ -1,0 +1,33 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue659
+#
+# -----------------------------------------------------------------------
+
+reg_issue659 =>
+
+  parser(I type) ref is
+    parse(i i32) choice I u32 => abstract
+    o parser I := parser.this
+    map(I2 type, m I -> I2) : parser I2 is
+      redef parse(i2 i32) choice I2 u32 =>
+        match parser.this.o.parse i2
+          i3 I => i3
+          u u32 => u
