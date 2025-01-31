@@ -1732,8 +1732,10 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Use of selector requires call to feature whose type is an open type parameter",
-              "In call to " + s(f) + "\n" +
-              "Selected variant " + ss(name + "." + select) + "\n" +
+              ((f == null || name == null)
+                ? "Selected variant: " + ss(Integer.toString(select)) + "\n"
+                : "In call to " + s(f) + "\n" +
+                  "Selected variant " + ss(name + "." + select) + "\n") +
               "Type of called feature: " + s(t));
       }
   }
