@@ -1460,7 +1460,7 @@ public class Call extends AbstractCall
    * unknown and urgent is false, Types.t_ERROR in case of an error (e.g. urgent
    * is true and the formal result type is still unknown).
    */
-  protected AbstractType setActualResultType(Resolution res, Context context, boolean urgent)
+  private AbstractType setActualResultType(Resolution res, Context context, boolean urgent)
   {
     AbstractType frmlT;
     if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
