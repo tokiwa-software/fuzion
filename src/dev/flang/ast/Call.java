@@ -1455,12 +1455,8 @@ public class Call extends AbstractCall
    * @param urgent true if we should produce an error in case the formal result
    * type of the called feature is not available, false if this is still
    * acceptable and the result type can be set later.
-   *
-   * @return the formal type of the called feature, or null if this is still
-   * unknown and urgent is false, Types.t_ERROR in case of an error (e.g. urgent
-   * is true and the formal result type is still unknown).
    */
-  private AbstractType setActualResultType(Resolution res, Context context, boolean urgent)
+  private void setActualResultType(Resolution res, Context context, boolean urgent)
   {
     AbstractType frmlT;
     if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
@@ -1501,7 +1497,6 @@ public class Call extends AbstractCall
         var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
         _type = t5;
       }
-    return frmlT;
   }
 
 
@@ -2504,14 +2499,15 @@ public class Call extends AbstractCall
     if (CHECKS) check
       (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
 
-    if (_calledFeature == Types.f_ERROR)
+    var cf = _calledFeature;
+    if (cf == Types.f_ERROR)
       {
         _type = Types.t_ERROR;
       }
-    else if (_calledFeature != null)
+    else if (cf != null)
       {
         _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
-        _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer().context()));
+        _generics = _generics.map(g -> g.resolve(res, cf.outer().context()));
 
         propagateForPartial(res, context);
         if (needsToInferTypeParametersFromArgs())
@@ -2523,19 +2519,18 @@ public class Call extends AbstractCall
               }
           }
         inferFormalArgTypesFromActualArgs(context.outerFeature());
-        if (_calledFeature.generics().errorIfSizeDoesNotMatch(_generics,
+        if (cf.generics().errorIfSizeDoesNotMatch(_generics,
                                                               pos(),
                                                               FuzionConstants.OPERATION_CALL,
-                                                              "Called feature: "+_calledFeature.qualifiedName()+"\n"))
+                                                              "Called feature: "+cf.qualifiedName()+"\n"))
           {
-            var cf = _calledFeature;
-            var tttt = setActualResultType(res, context, false);
-            if (tttt != Types.t_ERROR && tttt != null)
+            setActualResultType(res, context, false);
+            if (_type != null && _type != Types.t_ERROR)
               {
                 result = resolveImplicitSelect(res, context, _type);
-                if (_select >= 0 && !tttt.isOpenGeneric() && !result.type().isOpenGeneric())
+                if (_select >= 0 && !cf.resultTypeIfPresent(res).isOpenGeneric() && !result.type().isOpenGeneric())
                   {
-                    AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, _type);
+                    AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), cf, _name, _select, _type);
                     setToErrorState();
                   }
 
@@ -2544,7 +2539,7 @@ public class Call extends AbstractCall
                 result = result.resolveImmediateFunctionCall(res, context); // NYI: Separate pass? This currently does not work if type was inferred
               }
 
-            if (tttt == null || isTailRecursive(context.outerFeature()))
+            if (_type == null || isTailRecursive(context.outerFeature()))
               {
                 cf.whenResolvedTypes
                   (() -> setActualResultType(res, context, true));
