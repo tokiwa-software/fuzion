@@ -74,3 +74,16 @@ reg_issue197 =>
 
   x() (unit, i64, option unit, Sequence i64) => q.b i64
   say "q.b: {type_of_lazy (q.b u128)} (expecting (unit, u128, option unit, Sequence u128)"
+
+
+  # same example as `a1`, but using the type `T` and `U` as an argument
+  # type.
+  #
+  a2(T type, v T) is
+    bb(U type, w (T,U,option T,Sequence U)) => say "type is {type_of w}"
+    if !(T : u8)
+      (a2 u8 123).bb codepoint (u8 255,"a",option (u8 128),["b"].cycle.take 3)
+
+  q2 : a2 bool true is
+  _ := q2.bb unit (false,unit,option true,id (Sequence unit) (unit : nil))
+  (a2 f32 3.14).bb i64 (f32 3.14,i64 1E12,option (f32 0.1),[i64 1E14].cycle.take 3)
