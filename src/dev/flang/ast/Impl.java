@@ -30,7 +30,6 @@ import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -592,7 +591,7 @@ public class Impl extends ANY
     return _kind == Kind.RoutineDef
         || _kind == Kind.FieldDef
         // field actual is inferable via initial call(s)
-        || _kind == Kind.FieldActual
+        || _kind == Kind.FieldActual && !_initialCalls.isEmpty()
       ;
   }
 
