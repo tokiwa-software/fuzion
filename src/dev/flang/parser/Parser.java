@@ -1441,7 +1441,6 @@ actuals     : actualArgs
    */
   Expr call(boolean pure, Expr target)
   {
-    SourcePosition pos = tokenSourcePos();
     var n = name();
     Call result;
     var skippedDot = false;
@@ -1449,6 +1448,7 @@ actuals     : actualArgs
       {
         if (current() == Token.t_numliteral)
           {
+            var pos = tokenSourceRange();
             var select = skipNumLiteral().plainInteger();
             int s = -1;
             try
@@ -1461,7 +1461,7 @@ actuals     : actualArgs
               {
                 AstErrors.illegalSelect(pos, select, e);
               }
-            result = new ParsedCall(target, n, s);
+            result = new Select(pos, target, n._name, s);
           }
         else
           {
