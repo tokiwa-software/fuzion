@@ -62,8 +62,7 @@ ctrie_threads is
       say "==="
       say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
       say "==="
-      # NYI: BUG: #2967
-      # say ((ctrie.items.map x->x.values.1).group_by id)
+      say ((ctrie.items.map x->x.values.1).group_by id)
 
 
   test2(take_snapshots bool) =>
