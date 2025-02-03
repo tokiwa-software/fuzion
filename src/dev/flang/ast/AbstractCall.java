@@ -55,17 +55,6 @@ public abstract class AbstractCall extends Expr
   public static final List<AbstractType> NO_GENERICS = new List<>();
 
 
-  /*-------------------------- constructors ---------------------------*/
-
-
-  /**
-   * Constructor
-   */
-  public AbstractCall()
-  {
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -232,6 +221,25 @@ public abstract class AbstractCall extends Expr
 
     return calledFeature().typeCall(p, typeParameters, res, that, target());
   }
+
+
+
+  /**
+   * This call as a human readable string
+   */
+  public String toString()
+  {
+    return (target() == null ||
+            (target() instanceof Universe) ||
+            (target() instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
+            ? ""
+            : target().toString() + ".")
+      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().featureName().baseNameHuman())
+      + actualTypeParameters().toString(" ", " ", "", t -> t.toStringWrapped())
+      + actuals().toString(" ", " ", "", e -> e.toStringWrapped())
+      + (select() < 0        ? "" : " ." + select());
+  }
+
 
 }
 
