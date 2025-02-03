@@ -54,24 +54,9 @@ public class Call extends AbstractCall
 
 
   /**
-   * Empty map for general use.
-   */
-  public static final SortedMap<FeatureName, Feature> EMPTY_MAP = new TreeMap<>();
-
-
-  /**
    * Dummy Call. Used to represent errors.
    */
   public static Call ERROR;
-
-
-  /*------------------------  static variables  -------------------------*/
-
-  /**
-   * quick-and-dirty way to get unique values for temp fields in
-   * findChainedBooleans.
-   */
-  static int _chainedBoolTempId_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -151,7 +136,7 @@ public class Call extends AbstractCall
    * The feature that is called by this call, resolved when
    * loadCalledFeature() is called.
    */
-  public AbstractFeature _calledFeature;
+  protected AbstractFeature _calledFeature;
 
 
   /**
@@ -1067,28 +1052,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * toString
-   *
-   * @return
-   */
-  // NYI move this to AbstractCall
-  public String toString()
-  {
-    return (_target == null ||
-            (_target instanceof Universe) ||
-            (_target instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
-            ? ""
-            : _target.toString() + ".")
-      + (_name          != null ? _name :
-         _calledFeature != null ? _calledFeature.featureName().baseNameHuman()
-                                : "--ANONYMOUS--" )
-      + _generics.toString(" ", " ", "", t -> t.toStringWrapped())
-      + _actuals .toString(" ", " ", "", e -> e.toStringWrapped())
-      + (_select < 0        ? "" : " ." + _select);
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -1402,24 +1365,54 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Call is used
    *
-   * @param frmlT the result type of the called feature, might be open generic.
+   * @param urgent true if we should produce an error in case the formal result
+   * type of the called feature is not available, false if this is still
+   * acceptable and the result type can be set later.
    */
-  protected AbstractType getActualResultType(Resolution res, Context context, AbstractType frmlT)
+  protected AbstractType getActualResultType(Resolution res, Context context, boolean urgent)
   {
-    var tt = targetIsTypeParameter() && frmlT.isThisTypeInCotype()
-      ? // a call B.f for a type parameter target B. resultType() is the
-        // constraint of B, so we create the corresponding type feature's
-        // selfType:
-        // NYI: CLEANUP: remove this special handling!
-        _target.type().feature().selfType()
-      : targetType(res, context);
+    AbstractType frmlT;
+    if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
+      {
+        frmlT = Types.resolved.t_void; // a recursive call will not return and execute further
+      }
+    else
+      {
+        _recursiveResolveType = true;
+        frmlT = _calledFeature.resultTypeIfPresentUrgent(res, urgent);
+        if (urgent && (frmlT == Types.t_UNDEFINED || frmlT == null))
+          {
+            // Handling of cyclic type inference. It might be
+            // better if this was done in `Feature.resultType`, but
+            // there we do not have access to Call.this.pos(), so
+            // we do it here.
+            AstErrors.forwardTypeInference(pos(), _calledFeature, _calledFeature.pos());
+            frmlT = Types.t_ERROR;
+          }
+        _recursiveResolveType = false;
+      }
 
-    var t1 = tt == Types.t_ERROR ? tt : resolveSelect(frmlT, tt);
-    var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
-    var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
-    var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
-    var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
-    return t5;
+    var result = frmlT;
+
+    if (frmlT != null)
+      {
+        var tt = targetIsTypeParameter() && frmlT.isThisTypeInCotype()
+          ? // a call B.f for a type parameter target B. resultType() is the
+          // constraint of B, so we create the corresponding type feature's
+          // selfType:
+          // NYI: CLEANUP: remove this special handling!
+          _target.type().feature().selfType()
+          : targetType(res, context);
+
+        var t0 = tt == Types.t_ERROR ? tt : resolveSelect(frmlT, tt);
+        var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
+        var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
+        var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
+        var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
+        result = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+      }
+
+    return result;
   }
 
 
@@ -2427,14 +2420,15 @@ public class Call extends AbstractCall
     if (CHECKS) check
       (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
 
-    if (_calledFeature == Types.f_ERROR)
+    var cf = _calledFeature;
+    if (cf == Types.f_ERROR)
       {
         _type = Types.t_ERROR;
       }
-    else if (_calledFeature != null)
+    else if (cf != null)
       {
         _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
-        _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer().context()));
+        _generics = _generics.map(g -> g.resolve(res, cf.outer().context()));
 
         propagateForPartial(res, context);
         if (needsToInferTypeParametersFromArgs())
@@ -2446,59 +2440,23 @@ public class Call extends AbstractCall
               }
           }
         inferFormalArgTypesFromActualArgs(context.outerFeature());
-        if (_calledFeature.generics().errorIfSizeDoesNotMatch(_generics,
+        if (cf.generics().errorIfSizeDoesNotMatch(_generics,
                                                               pos(),
                                                               FuzionConstants.OPERATION_CALL,
-                                                              "Called feature: "+_calledFeature.qualifiedName()+"\n"))
+                                                              "Called feature: "+cf.qualifiedName()+"\n"))
           {
-            var cf = _calledFeature;
-            AbstractType t;
-            if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
+            _type = getActualResultType(res, context, false);
+            if (_type != null && _type != Types.t_ERROR)
               {
-                t = Types.resolved.t_void; // a recursive call will not return and execute further
-              }
-            else
-              {
-                _recursiveResolveType = true;
-                t = cf.resultTypeIfPresent(res);
-                t = t == null ? null : t.applyTypePars(cf, _generics);
-                _recursiveResolveType = false;
-              }
-
-            if (t == Types.t_ERROR)
-              {
-                _type = Types.t_ERROR;
-              }
-            else if (t != null)
-              {
-                _type = getActualResultType(res, context, t);
-
                 // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
                 // arguments and returns a Function or Routine
                 result = resolveImmediateFunctionCall(res, context); // NYI: Separate pass? This currently does not work if type was inferred
               }
-            if (t == null || isTailRecursive(context.outerFeature()))
+
+            if (_type == null || isTailRecursive(context.outerFeature()))
               {
                 cf.whenResolvedTypes
-                  (() ->
-                   {
-                     var raw = cf.resultTypeIfPresentUrgent(res, true);
-                     AbstractType rt;
-                     if (raw == Types.t_UNDEFINED || raw == null)
-                       {
-                         // Handling of cyclic type inference. It might be
-                         // better if this was done in `Feature.resultType`, but
-                         // there we do not have access to Call.this.pos(), so
-                         // we do it here.
-                         AstErrors.forwardTypeInference(pos(), cf, cf.pos());
-                         rt = Types.t_ERROR;
-                       }
-                     else
-                       {
-                         rt = raw.applyTypePars(cf, _generics);
-                       }
-                     _type = getActualResultType(res, context, rt);
-                   });
+                  (() -> _type = getActualResultType(res, context, true));
               }
           }
         else

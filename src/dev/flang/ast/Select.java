@@ -129,7 +129,7 @@ public class Select extends Call {
               // explicit
               ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
               // implict
-              : resolveImplicit(res, context, getActualResultType(res, context, _calledFeature.resultType()));
+              : resolveImplicit(res, context, getActualResultType(res, context, true));
           }
       }
     if (_currentlyResolving != null)

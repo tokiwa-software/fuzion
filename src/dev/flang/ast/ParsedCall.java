@@ -68,7 +68,14 @@ public class ParsedCall extends Call
    *
    * Without this, this might happen repeatedly.
    */
-  boolean _pushedImplicitImmediateCall = false;
+  private boolean _pushedImplicitImmediateCall = false;
+
+
+  /**
+   * quick-and-dirty way to get unique values for temp fields in
+   * findChainedBooleans.
+   */
+  private static int _chainedBoolTempId_ = 0;
 
 
   /*---------------------------  constructors  --------------------------*/

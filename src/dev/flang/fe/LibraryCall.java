@@ -178,28 +178,6 @@ public abstract class LibraryCall extends AbstractCall
     return _libModule.globalIndex(_index);
   }
 
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  // NYI move this to AbstractCall
-  public String toString()
-  {
-    var t = target();
-    return (t == null //||
-             //t instanceof Universe
-            ? ""
-            : t.toString() + ".")
-      + calledFeature().featureName().baseNameHuman()
-      + actualTypeParameters().toString(" ", " ", "", at -> at.toStringWrapped())
-      + actuals().toString(" ", " ", "", e -> e.toStringWrapped())
-      //+ (select() < 0        ? "" : " ." + select())
-      ;
-  }
-
-
 }
 
 /* end of file */
