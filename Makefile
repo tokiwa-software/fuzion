@@ -1189,8 +1189,6 @@ $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.ad
 # NYI integrate into fz: fz -docs
 $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
 	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare $(@D)
-	printf "\n<!-- docs created on:  $(shell date) -->\n" >> $(BUILD_DIR)/apidocs/index.html
-	git show --quiet --format="<!-- generated from: %H %an %ad %s -->" >> $(BUILD_DIR)/apidocs/index.html
 
 # NYI integrate into fz: fz -docs
 .phony: debug_api_docs
