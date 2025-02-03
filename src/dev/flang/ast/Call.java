@@ -1414,26 +1414,27 @@ public class Call extends AbstractCall
         _recursiveResolveType = false;
       }
 
-    if (frmlT == null)
+    var result = frmlT;
+
+    if (frmlT != null)
       {
-        return frmlT;
+        var tt = targetIsTypeParameter() && frmlT.isThisTypeInCotype()
+          ? // a call B.f for a type parameter target B. resultType() is the
+          // constraint of B, so we create the corresponding type feature's
+          // selfType:
+          // NYI: CLEANUP: remove this special handling!
+          _target.type().feature().selfType()
+          : targetType(res, context);
+
+        var t0 = tt == Types.t_ERROR ? tt : resolveSelect(frmlT, tt);
+        var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
+        var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
+        var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
+        var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
+        result = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
       }
 
-    var tt = targetIsTypeParameter() && frmlT.isThisTypeInCotype()
-      ? // a call B.f for a type parameter target B. resultType() is the
-      // constraint of B, so we create the corresponding type feature's
-      // selfType:
-      // NYI: CLEANUP: remove this special handling!
-      _target.type().feature().selfType()
-      : targetType(res, context);
-
-    var t0 = tt == Types.t_ERROR ? tt : resolveSelect(frmlT, tt);
-    var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
-    var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
-    var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
-    var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
-    var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
-    return t5;
+    return result;
   }
 
 
