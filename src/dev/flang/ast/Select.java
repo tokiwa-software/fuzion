@@ -114,7 +114,7 @@ public class Select extends Call {
           // explicit
           ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
           // implict
-          : resolveImplicit(res, context, _calledFeature.resultType());
+          : resolveImplicit(res, context);
 
         result = _currentlyResolving.resolveTypes(res, context);
       }
@@ -131,11 +131,11 @@ public class Select extends Call {
    * @param context the source code context where this assignment is used
    *
    */
-  private Call resolveImplicit(Resolution res, Context context, AbstractType t)
+  private Call resolveImplicit(Resolution res, Context context)
   {
     var result = Call.ERROR;
 
-    var at = getActualResultType(res, context, t);
+    var at = getActualResultType(res, context, true);
 
     var typeParameter = at.isGenericArgument() ? at.genericArgument().constraint(context).feature() : at.feature();
     var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);

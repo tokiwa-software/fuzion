@@ -201,3 +201,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 .fz-code, .fd-feature, .fd-keyword, .fd-type {
   font-family: 'Fira Mono', monospace;
 }
+
+/* Version hash at the bottom of api docs */
+.version-hash{
+  text-align: center;
+  color:grey;
+  font-size:0.7em;
+}
