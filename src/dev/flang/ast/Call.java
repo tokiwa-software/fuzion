@@ -1098,28 +1098,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * toString
-   *
-   * @return
-   */
-  // NYI move this to AbstractCall
-  public String toString()
-  {
-    return (_target == null ||
-            (_target instanceof Universe) ||
-            (_target instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
-            ? ""
-            : _target.toString() + ".")
-      + (_name          != null ? _name :
-         _calledFeature != null ? _calledFeature.featureName().baseNameHuman()
-                                : "--ANONYMOUS--" )
-      + _generics.toString(" ", " ", "", t -> t.toStringWrapped())
-      + _actuals .toString(" ", " ", "", e -> e.toStringWrapped())
-      + (_select < 0        ? "" : " ." + _select);
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
