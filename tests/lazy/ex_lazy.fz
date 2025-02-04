@@ -53,6 +53,5 @@ ex_lazy is
   say "y"
 
   type_of2(W type, x Lazy W) Type => W
-  # NYI: should work but currently does not:
-  # say (type_of2 42)
+  say (type_of2 42)
   say (type_of2 ()->42)
