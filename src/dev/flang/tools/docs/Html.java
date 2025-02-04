@@ -45,6 +45,7 @@ import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+import dev.flang.tools.Tool;
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -303,7 +304,7 @@ public class Html extends ANY
    */
   private String annotatePrivateConstructor(AbstractFeature af)
   {
-    return af.visibility().eraseTypeVisibility() != Visi.PUB
+    return af.visibility().eraseTypeVisibility() != Visi.PUB && af.isConstructor()
              ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
                "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
              : "";
@@ -727,7 +728,7 @@ public class Html extends ANY
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), DocsOptions.baseApiDir)
+      .replaceFirst("\\{(.*?)\\.fum\\}", DocsOptions.baseApiDir + "/$1")
       + "#l" + f.pos().line();
   }
 
@@ -920,13 +921,15 @@ public class Html extends ANY
               $3
             </div>
           </div>
+          <div class=version-hash>$4</div>
         """
         .replace("$0", headingSection(af))
         .replace("$1", mainSection(mapOfDeclaredFeatures.get(af), af))
         .replace("$2", navigation)
         .replace("$3", config.ignoreVisibility() ? """
           <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
-        """ : "");
+        """ : "")
+        .replace("$4", Tool.fullVersion());
     return config.bare() ? bareHtml: fullHtml(af.qualifiedName(), bareHtml);
   }
 

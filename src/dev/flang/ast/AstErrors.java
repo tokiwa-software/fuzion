@@ -1741,7 +1741,6 @@ public class AstErrors extends ANY
   static void selectorRange(SourcePosition pos, int sz, AbstractFeature f, String name, int select, List<AbstractType> types)
   {
     error(pos,
-          "" +
           (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual type parameters" :
            sz == 1 ? "Selector must be 0 for one actual type parameter"
            : "Selector not permitted since no actual type parameters are")+
@@ -2357,6 +2356,13 @@ public class AstErrors extends ANY
     error(pos, "type is followed by " + skw("...") + " but is not an open type",
           skw("...") + " is only permitted after open type.\n"
           + "To solve this, remove " + skw("...") + " after the highlighted error.");
+  }
+
+  public static void selectIsNoType(SourcePosition pos)
+  {
+    error(pos,
+          "Select clause is not a valid type",
+          "To solve, this specify a valid type.");
   }
 
 }

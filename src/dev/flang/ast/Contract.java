@@ -363,8 +363,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
@@ -432,8 +431,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
@@ -473,8 +471,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, preAndCallOuter),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, preAndCallOuter.context());
         args.add(ca);
       }
@@ -515,8 +512,7 @@ public class Contract extends ANY
           {
             var ca = new Call(p,
                               new Current(p, outer),
-                              a,
-                              -1);
+                              a);
             ca = ca.resolveTypes(res, context);
             args.add(ca);
           }
@@ -525,8 +521,7 @@ public class Contract extends ANY
       {
         var c2 = new Call(p,
                           new Current(p, outer),
-                          outer.resultField(),
-                          -1);
+                          outer.resultField());
         c2 = c2.resolveTypes(res, context);
         args.add(c2);
       }
@@ -1113,8 +1108,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
                   {
                     var ca = new Call(pos,
                                       new Current(pos, pF),
-                                      a,
-                                      -1);
+                                      a);
                     ca = ca.resolveTypes(res, pF.context());
                     args2.add(ca);
                   }

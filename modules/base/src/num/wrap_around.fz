@@ -208,7 +208,6 @@ module:public wrap_around : integer is
 
   # how many bytes does this integer use?
   public type.byte_size =>
-    # NYI #1179
     all_bits_set.ones_count / 8
 
 
