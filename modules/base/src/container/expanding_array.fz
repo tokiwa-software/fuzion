@@ -1,0 +1,328 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature expanding_array
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# expanding_array -- an array with a length and a (possible larger) capacity
+#
+# An expanding array is a persistent data structure that has cumulative O(1)
+# performance of adding single elements at its end.
+#
+# WARNING: Due to the high worst-case time for addition, this structure should
+# not be used in situations when adding a single element repeatedly to the same
+# instance of `expanding_array` is performance critical.  If the resulting
+# `expanding_array`'s length is `l`, this will trigger the worst-case
+# addition time, resulting in cumulative time O(m*l) for adding an element m
+# times.
+#
+# This constructor is for internal use only, to create instance of
+# `expanding_array`, use `(expanding_array T).type.empty` to create an empty
+# expanding array instance.
+#
+private:public expanding_array
+  (
+   # element type
+   public T type,
+
+   # the array containing the actual data
+   data fuzion.sys.internal_array (container.slot T),
+
+   # the length of the array
+   public redef length i32
+  )
+  : abstract_array T
+
+is
+
+
+  # Get the capacity of this `expanding_array`, i.e., the number of
+  # elements that can be added without re-allocating the array data.
+  #
+  public capacity => data.length
+
+
+  # get the contents of this array at the given index
+  #
+  public redef index [](i i32) T
+  =>
+    data[i].val
+
+
+  # make sure this `expanding_array` has capacity of at least
+  # `new_capacity` and we are able to add elements without
+  # allocating a new internal array.
+  #
+  # This will create an `expanding_array` whose internal array
+  # is the same of `expanding_array.this` unless the existing
+  # capacity is less than `new_capacity` or the existing array
+  # was already expanded using by a call to `add`.
+  #
+  # In the latter cases, a new internal array of required capacity
+  # will be allocated and the existing elements will be copied over.
+  #
+  public fixed ensure_capacity(new_capacity i32)
+    post
+      debug: ((capacity < new_capacity) : result.capacity = new_capacity)
+  =>
+    expanding_array (realloc new_capacity) length
+
+
+  # return the internal array if the capacity is at least `new_capacity`
+  # and, if available, the slot at position `length` is still unused.
+  # Otherwise, allocate a new internal array of length `new_capacity` and
+  # copy `data`'s elements into the new internal array and filling the
+  # remainder with `nil`.
+  #
+  # Complexity: O(1) if no allocation is required, O(new_capacity)
+  # otherwise.
+  #
+  private realloc(new_capacity i32)
+  =>
+    if capacity >= new_capacity && (length=capacity || !data[length])
+      data
+    else
+      internal := fuzion.sys.internal_array_init (container.slot T) new_capacity
+      for x in 0..(new_capacity-1) do
+        internal[x] := if x < capacity then data[x]
+                       else                 container.unused
+      internal
+
+
+  # create a new `expanding_array` with element i set to v. Grow the array
+  # in case i == length.
+  #
+  # expand is not thread-safe.
+  #
+  # Complexity: O(1) if no allocation is required, O(length+1) otherwise.
+  #
+  # Cumulative complexity of adding an element to an empty `expanding_array`
+  # and repeatedly growing the result `add` by a total of `n` elements is
+  # `O(n)`.
+  #
+  # `add` called repeatedly on the same `expanding_array` creates copies
+  # of the underlying array data and hence has performance in `O(length)`.
+  #
+  public add(v T)
+    pre
+      # prevent i32-overflow in capacity
+      safety: (length+1).highest_one_bit < i32.max.highest_one_bit
+  =>
+    data0 := realloc (capacity>length ? capacity : (length+1).highest_one_bit*2)
+    data0[length] := v
+    expanding_array data0 length+1
+
+
+  # expand this array by `n` elements and call `filler` to set these elements.
+  #
+  # This is useful if the new elements will not be added in order or if the new
+  # elements need to be moved around, e.g., for sorting.
+  #
+  # `filler` will be run with an instanted instance of `container.expanding T`
+  # that will permit to set the new elements.  During the execution of `filler`
+  # elements that have been set already (i.e., indices <length or those for
+  # which `set []` or `put` was called) maybe be read using `get` or `index []`.
+  #
+  # `filler` may set elements repeatedly, but it must set all elements for the
+  # new indices `lenght`..`length+n-1` before it returns.
+  #
+  # expand is not thread-safe.
+  #
+  public expand(n i32, filler ()->unit)
+    pre
+      debug: n >= 0
+  =>
+    new_length := length + n
+    data0 := realloc (capacity >= new_length ? capacity : new_length.highest_one_bit*2)
+    for
+      i in 0..(n-1)
+    do
+      data0[length+i] := container.reserved
+    (expanding T data0 length n).instate_self filler
+    for
+      i in 0..(n-1)
+    do
+      match data0[length+i]
+        container.reserved => panic "container.expanding_array.expand $n filler did not init element at {length+i} (=$length+$i)"
+        * =>
+    expanding_array data0 new_length
+
+
+  # collect the contents of this expanding_array as an array.
+  #
+  public redef as_array array T =>
+    array length i->data[i].val
+
+
+  # create an empty `expanding_array` of the type this is applied to, e.g.
+  #
+  #   floats := (container.expanding_array f64).empty
+  #
+  # Complexity: O(1)
+  #
+  public type.empty
+  =>
+    empty default_capacity
+
+
+  # create an empty `expanding_array` of the type this is applied to, e.g.
+  #
+  #   floats := (container.expanding_array f64).empty
+  #
+  # Complexity: O(1)
+  #
+  public type.empty(initial_capacity i32)
+    pre
+      debug: initial_capacity >= 0
+  =>
+    internal := fuzion.sys.internal_array_init (container.slot T) initial_capacity
+    for x in 0..(internal.length-1) do
+      internal[x] := container.unused
+    container.expanding_array T internal 0
+
+
+  # default capacity of an expanding array created by `type.empty`
+  #
+  type.default_capacity => 8
+
+
+# unit type value for an unused slot
+#
+private unused is
+
+
+# unit type value for a reserved slot, i.e., during `expand` a slot that was not
+# set by the `filler` yet.
+#
+private reserved is
+
+
+# internal arrays used by `expanding_array` will use values of type `slot` such that
+# we can destingish slots that are used from those that are unused or reserved.
+#
+private slot(T type) : choice reserved unused T is
+
+  # is this slot unused?
+  #
+  prefix ! =>
+    match slot.this
+      unused => true
+      * => false
+
+  # does this slot contain a value of type T?
+  #
+  has_val =>
+    match slot.this
+      T        => true
+      unused   => false
+      reserved => false
+
+  # get the value stored in this slot
+  #
+  val
+    pre
+      debug: has_val
+  =>
+    match slot.this
+      v T => v
+      unused   => panic "unexpected unused slot"
+      reserved => panic "unexpected reerved slot"
+
+  # String representation of slot, for debugging
+  #
+  public redef as_string =>
+    match slot.this
+      v T => $v
+      unused   => "unused"
+      reserved => "reserved"
+
+
+# effect that will be installed by `expanding_array.expand` will running `filler`
+#
+private:public expanding(T type,
+                         data fuzion.sys.internal_array (container.slot T),
+                         public length i32,
+                         public n i32
+                        ) : effect
+is
+
+  # set element at index `i` to `v`.
+  #
+  # `i` must be in the range of indices of the newly added entries.
+  #
+  # `put` must be called for all indicies of newly added entries.
+  #
+  public put(i i32, v T)
+    pre
+      safety: length <= i < length+n
+  =>
+    replace
+    data[i] := v
+
+
+  # has element at index `i` been set already?  This is true after an explicit
+  # call to `put i v` for some value `v` or for indices in the range `0..length-1`
+  # for all indices that existed before `expand` was called.
+  #
+  public has(i i32)
+    pre
+      safety: 0 <= i < length+n
+  =>
+    if i < length
+      true
+    else
+      match data[i]
+        T      => true
+        container.reserved => false
+        container.unused => panic "unexpected unused slot"
+
+
+  # get element at index `i`.  This can be used to get elements that existed
+  # before the call to `expand` as well as for indices that where initialized
+  # via a call to `put` afterwards.
+  #
+  public get(i i32)
+    pre
+      safety: 0 <= i < length+n
+      debug: has i
+  =>
+    replace
+    data[i].val
+
+
+  # short-hand index operator alias for `get`
+  #
+  public index [](i i32)
+    pre
+      safety: 0 <= i < length+n
+      debug: has i
+  =>
+    get i
+
+
+  # short-hand set-index operator alias for `put`
+  #
+  public set [](i i32, v T)
+    pre
+      safety: length <= i < length+n
+  =>
+    put i v

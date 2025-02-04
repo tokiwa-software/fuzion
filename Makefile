@@ -69,6 +69,25 @@ JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  
 JAVA_FILES_TOOLS_DOCS        = $(wildcard $(SRC)/dev/flang/tools/docs/*.java    )
 JAVA_FILES_MISC_LOGO         = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
 
+JAVA_FILES_FOR_JAVA_DOC = $(JAVA_FILES_UTIL) \
+                          $(JAVA_FILES_AST) \
+                          $(JAVA_FILES_PARSER) \
+                          $(JAVA_FILES_IR) \
+                          $(JAVA_FILES_MIR) \
+                          $(JAVA_FILES_FE) \
+                          $(JAVA_FILES_FUIR) \
+                          $(JAVA_FILES_FUIR_ANALYSIS) \
+                          $(JAVA_FILES_FUIR_ANALYSIS_DFA) \
+                          $(JAVA_FILES_OPT) \
+                          $(JAVA_FILES_BE_INTERPRETER) \
+                          $(JAVA_FILES_BE_C) \
+                          $(JAVA_FILES_BE_EFFECTS) \
+                          $(JAVA_FILES_BE_JVM) \
+                          $(JAVA_FILES_BE_JVM_CLASSFILE) \
+                          $(JAVA_FILES_BE_JVM_RUNTIME) \
+                          $(JAVA_FILE_UTIL_VERSION) \
+                          $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+
 CLASS_FILES_UTIL              = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE      = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
 CLASS_FILES_AST               = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
@@ -427,6 +446,11 @@ FZ_MODULES = \
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
+# make sure that any rule failing will result in the created file being
+# deleted. This helps in case a failing rule creates a broken result file, which
+# would prevent a second run of `make` from re-applying the failing rule.
+.DELETE_ON_ERROR:
+
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
 
@@ -622,6 +646,7 @@ $(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS)
 	chmod +x $@
 
 $(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
+	rm -rf $(@D)/base
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/base $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseLib=off -saveLib=$@ -XenableSetKeyword
@@ -631,16 +656,19 @@ $(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
 .PRECIOUS: $(MOD_BASE)
 
 $(MOD_TERMINAL): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/terminal/src -name "*.fz")
+	rm -rf $(@D)/terminal
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/terminal $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/terminal/src -saveLib=$@
 
 $(MOD_LOCK_FREE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/lock_free/src -name "*.fz")
+	rm -rf $(@D)/lock_free
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/lock_free $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/lock_free/src -saveLib=$@
 
 $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz")
+	rm -rf $(@D)/nom
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveLib=$@
@@ -1190,7 +1218,13 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_jar
+run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
+
+# phony target to run Fuzion tests using interpreter and report number of failures
+.PHONY .SILENT: run_tests_effect
+run_tests_effect: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+	printf "testing effects: "
+	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
@@ -1212,7 +1246,13 @@ run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DI
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests_parallel
-run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_jar
+run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_effect_parallel run_tests_jar
+
+# phony target to run Fuzion test effects and report number of failures
+.PHONY .SILENT: run_tests_effect_parallel
+run_tests_effect_parallel: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+	printf "testing effects: "
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
@@ -1422,7 +1462,7 @@ endif
 
 
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
-	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(shell find ./src -name "*.java" | cut -c3- | grep -v lsp | grep -v FuzionLogo) $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
+	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
 
 
 ########
@@ -1475,7 +1515,7 @@ lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
 LSP_FUZION_HOME = fuzion/build
 LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
-LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 

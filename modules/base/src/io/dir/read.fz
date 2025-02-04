@@ -23,7 +23,7 @@
 
 # read -- effect providing reading operations in directories
 #
-public read(ro Read_Handler) : effect is
+public read(ro Dir_Read_Handler) : effect is
 
 
   # reads the next entry of this directory
@@ -31,7 +31,7 @@ public read(ro Read_Handler) : effect is
   # returns the name of the next entry, or an error if the operation fails
   # for some reason (including that there are no more entries).
   #
-  module read(fd i64) outcome String =>
+  module read(fd fuzion.sys.Pointer) outcome String =>
     r := ro.read fd
     replace
     r
@@ -40,12 +40,16 @@ public read(ro Read_Handler) : effect is
   # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
   #
   type.default_read_handler =>
-    ref : io.dir.Read_Handler
-      redef read(fd i64) outcome String =>
-        if fuzion.sys.fileio.read_dir_has_next fd
-          fuzion.sys.fileio.read_dir fd
-        else
+    ref : io.dir.Dir_Read_Handler
+      redef read(fd fuzion.sys.Pointer) outcome String =>
+        internal_array := fuzion.sys.internal_array_init u8 1024
+        len := fzE_read_dir fd internal_array.data
+        if len = 0
           error "no more directory entries"
+        else if len < 0
+          error "error reading dir"
+        else
+          String.from_bytes (internal_array.as_array.take len)
 
 
   # install default effect io.dir.read
@@ -62,5 +66,5 @@ public read =>
 
 # reference to the reading operations that could take place
 #
-private:public Read_Handler ref is
-  read(fd i64) outcome String => abstract
+private:public Dir_Read_Handler ref is
+  read(fd fuzion.sys.Pointer) outcome String => abstract

@@ -234,7 +234,7 @@ public class JavaInterface extends FUIRContext
         var result = new Instance(resultClazz);
         for (var e : Layout.get(resultClazz)._offsets.entrySet())
           {
-            var f = fuir().clazzField(fuir().clazzAsValue(resultClazz), e.getKey());
+            var f = e.getKey();
             var off = (Integer) e.getValue();
             var v = switch (fuir().clazzBaseName(f))
               {
@@ -267,7 +267,7 @@ public class JavaInterface extends FUIRContext
     var result = new Instance(resultClazz);
     if (CHECKS) check
       (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
-    result.refs[0] = Interpreter.value(e.getMessage().toString());
+    result.refs[0] = Interpreter.boxedConstString(e.getMessage().toString());
 
     return result;
   }

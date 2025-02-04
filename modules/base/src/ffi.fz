@@ -1,4 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature ffi
+#
+# -----------------------------------------------------------------------
+
+
+# unit feature grouping foreign function interface related features
+#
 public ffi is
+
+  # returns a NULL Pointer
+  #
+  public null =>
+    fzE_null
+
+  # test if p is the NULL pointer
+  #
+  public is_null(p fuzion.sys.Pointer) =>
+    fzE_is_null p = 0
 
 
   strlen(str fuzion.sys.Pointer) i32 => native
@@ -12,3 +48,6 @@ public ffi is
 
   public from_array_of_pointers(T type, x fuzion.sys.Pointer, len i32) array T =>
     array (fuzion.sys.internal_array T x len) unit unit unit
+
+
+  # NYI: what else do we need? strlen, from_c_string, from_c_struct, from_c_array

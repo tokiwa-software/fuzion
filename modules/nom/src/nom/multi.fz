@@ -49,12 +49,11 @@ module multi is
     parser I I (Sequence O) input->
       (rest, acc) := (1..n)
         .reduce (input, (Sequence O).type.empty) r,t->
-          (rest, acc) := r
-          match p.call rest
+          match p.call r.0
             s success =>
-              (s.rest, acc ++ [s.out])
+              (s.rest, r.1 ++ [s.out])
             error =>
-              abort (rest, acc)
+              abort (r.0, r.1)
 
       if acc.count < m
         error "matched only {acc.count} times"

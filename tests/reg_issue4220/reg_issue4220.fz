@@ -33,7 +33,7 @@ reg_issue4220 =>
     r
 
   # f uses no effects, but mutates `v`
-  f ! io.out =>
+  f ! io.Out =>
     _ := m1.instate_self ()->
       v <- 4711 + v
       say "updated v via m1: $v"

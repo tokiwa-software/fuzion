@@ -363,8 +363,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
@@ -432,8 +431,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
@@ -473,8 +471,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, preAndCallOuter),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, preAndCallOuter.context());
         args.add(ca);
       }
@@ -515,8 +512,7 @@ public class Contract extends ANY
           {
             var ca = new Call(p,
                               new Current(p, outer),
-                              a,
-                              -1);
+                              a);
             ca = ca.resolveTypes(res, context);
             args.add(ca);
           }
@@ -525,8 +521,7 @@ public class Contract extends ANY
       {
         var c2 = new Call(p,
                           new Current(p, outer),
-                          outer.resultField(),
-                          -1);
+                          outer.resultField());
         c2 = c2.resolveTypes(res, context);
         args.add(c2);
       }
@@ -809,7 +804,7 @@ all of their redefinition to `true`. +
 
            pre_<name>      is a feature that checks the precondition and causes a fault in case any condition fails.
 
-                           First, inherited preconditions are checked via cals to their pre_bool_<name> and
+                           First, inherited preconditions are checked via calls to their pre_bool_<name> and
                            precondition checking is stopped with success if those return true
 
                            If there are no own pre-conditions, the last inherited precondition is checked
@@ -817,7 +812,7 @@ all of their redefinition to `true`. +
 
            prebool_<name>  is a feature that check the precondition and results in true iff all preconditions hold.
 
-                           First, inherited preconditions are checked via cals to their pre_bool_<name> and
+                           First, inherited preconditions are checked via calls to their pre_bool_<name> and
                            precondition checking is stopped with success if those return true.
 
                            Finally, the own pre-condition is checked
@@ -1113,8 +1108,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
                   {
                     var ca = new Call(pos,
                                       new Current(pos, pF),
-                                      a,
-                                      -1);
+                                      a);
                     ca = ca.resolveTypes(res, pF.context());
                     args2.add(ca);
                   }

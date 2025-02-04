@@ -183,7 +183,7 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
     return this;
@@ -211,10 +211,8 @@ public class Function extends AbstractLambda
     var e = _expr.visit(new FeatureVisitor()
       {
         @Override
-        public Expr action(Call c, AbstractFeature outer)
+        public Expr action(Call c)
         {
-          if (CHECKS)
-            check(outer == _feature);
           return c.updateTarget(res, _feature.context());
         }
       },
@@ -245,7 +243,7 @@ public class Function extends AbstractLambda
    * case of error, return Types.t_ERROR.
    */
   @Override
-  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
@@ -297,7 +295,7 @@ public class Function extends AbstractLambda
           {
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(FuzionConstants.OPERATION_CALL), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -365,7 +363,7 @@ public class Function extends AbstractLambda
           (e == this._call); // NYI: This will fail e.g. if _call is a call to bool.infix &&, need to handle explicitly
         this._call = (Call) e;
       }
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -376,7 +374,7 @@ public class Function extends AbstractLambda
    *
    * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (this._call == null || this._feature != null);

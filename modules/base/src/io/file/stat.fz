@@ -50,7 +50,7 @@ public stat(ps Stat_Handler) : effect is
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 4
-    if ps.stats (fuzion.sys.c_string path) res.data
+    if ps.stats (fuzion.sys.c_string path) res.data = 0
       meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
       error "stat error {res[0]} for {path}"
@@ -66,7 +66,7 @@ public stat(ps Stat_Handler) : effect is
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 4
-    if ps.stats (fuzion.sys.c_string path) res.data
+    if ps.stats (fuzion.sys.c_string path) res.data = 0
       meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
       error "lstat error {res[0]} for {path}"
@@ -84,10 +84,10 @@ install_default =>
 #
 default_stat_handler : Stat_Handler is
   redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-    fuzion.sys.fileio.stats path meta_data_arr
+    fzE_stat path meta_data_arr
 
   redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-    fuzion.sys.fileio.lstats path meta_data_arr
+    fzE_lstat path meta_data_arr
 
 
 
@@ -119,5 +119,5 @@ public stat(
 # reference to the stats that could be provided
 #
 private:public Stat_Handler ref is
-  stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) bool => abstract
-  lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) bool => abstract
+  stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) i32 => abstract
+  lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) i32 => abstract

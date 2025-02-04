@@ -28,8 +28,10 @@ package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import dev.flang.ir.IR;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -158,7 +160,7 @@ public abstract class FUIR extends IR
    * @param cl a clazz
    *
    * @return its original name, e.g. 'Array.getel' instead of
-   * 'Const_String.getel'
+   * 'const_string.getel'
    */
   public abstract String clazzOriginalName(int cl);
 
@@ -235,7 +237,7 @@ public abstract class FUIR extends IR
    *
    * @return number of value fields in {@code cl}
    */
-  public abstract int clazzNumFields(int cl);
+  public abstract int clazzFieldCount(int cl);
 
 
   /**
@@ -263,19 +265,24 @@ public abstract class FUIR extends IR
   /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
-   * @param fcl a clazz id, not necessarily a field
+   * @param field a clazz id, not necessarily a field
    *
    * @return true iff the field is an outer ref field that holds an address of
    * an outer value, false for normal fields our outer ref fields that store the
    * outer ref or value directly.
    */
-  public abstract boolean clazzFieldIsAdrOfValue(int fcl);
+  public boolean clazzFieldIsAdrOfValue(int field)
+  {
+    if (PRECONDITIONS) require
+      (field >= firstClazz(),
+       field <= lastClazz());
 
-
-  /**
-   * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
-   */
-  public abstract int fieldIndex(int field);
+    var rc = clazzResultClazz(field);
+    return clazzIsOuterRef(field) &&
+      !clazzIsRef(rc) &&
+      !clazzIsUnitType(rc) &&
+      !clazzIsBuiltInPrimitive(rc);
+  }
 
 
   /*------------------------  accessing choices  -----------------------*/
@@ -286,7 +293,10 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    */
-  public abstract boolean clazzIsChoice(int cl);
+  public boolean clazzIsChoice(int cl)
+  {
+    return clazzKind(cl) == FeatureKind.Choice;
+  }
 
 
   /**
@@ -297,7 +307,7 @@ public abstract class FUIR extends IR
    * @return -1 if cl is not a choice clazz, the number of choice entries
    * otherwise.  May be 0 for the void choice.
    */
-  public abstract int clazzNumChoices(int cl);
+  public abstract int clazzChoiceCount(int cl);
 
 
   /**
@@ -320,7 +330,20 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is a choice with at least one ref element
    */
-  public abstract boolean clazzIsChoiceWithRefs(int cl);
+  public boolean clazzIsChoiceWithRefs(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzIsChoice(cl));
+
+    for (int i = 0; i < clazzChoiceCount(cl); i++)
+      {
+        if (clazzIsRef(clazzChoice(cl, i)))
+          {
+            return true;
+          }
+      }
+    return false;
+  }
 
 
   /**
@@ -330,7 +353,23 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is a choice with only ref or unit/void elements
    */
-  public abstract boolean clazzIsChoiceOfOnlyRefs(int cl);
+  public boolean clazzIsChoiceOfOnlyRefs(int cl)
+  {
+    var result = false;
+    if (clazzIsChoice(cl))
+      {
+        boolean hasNonRefsWithState = false;
+
+        for (int i = 0; i < clazzChoiceCount(cl); i++)
+          {
+            var c = clazzChoice(cl, i);
+            hasNonRefsWithState = hasNonRefsWithState || !clazzIsRef(c) && hasData(c);
+          }
+
+        result = clazzIsChoiceWithRefs(cl) && !hasNonRefsWithState;
+      }
+    return result;
+  }
 
 
 
@@ -372,7 +411,10 @@ public abstract class FUIR extends IR
    * @return clazz id of the argument or -1 if no such feature exists (the
    * argument is unused).
    */
-  public abstract int clazzArgClazz(int cl, int arg);
+  public int clazzArgClazz(int cl, int arg)
+  {
+    return clazzResultClazz(clazzArg(cl, arg));
+  };
 
 
   /**
@@ -442,7 +484,11 @@ public abstract class FUIR extends IR
    *
    * @return true if the clazz is a constructor, false otherwise
    */
-  public abstract boolean isConstructor(int clazz);
+  public boolean isConstructor(int clazz)
+  {
+    return clazzKind(clazz) == FeatureKind.Routine
+      && clazzResultClazz(clazz) == clazz;
+  }
 
 
   /**
@@ -522,7 +568,10 @@ public abstract class FUIR extends IR
    *
    * @return true iff cl is the specified special clazz c
    */
-  public abstract boolean clazzIs(int cl, SpecialClazzes c);
+  public boolean clazzIs(int cl, SpecialClazzes c)
+  {
+    return cl == clazz(c);
+  }
 
 
   /**
@@ -552,20 +601,6 @@ public abstract class FUIR extends IR
    * @return the index of the requested {@code Function.call} feature's clazz.
    */
   public abstract int lookupCall(int cl);
-
-
-  /**
-   * For a clazz that is an heir of 'Function', find the corresponding inner
-   * clazz for 'call'.  This is used for code generation of intrinsic
-   * 'abortable' that has to create code to call 'call'.
-   *
-   * @param cl index of a clazz that is an heir of 'Function'.
-   *
-   * @param markAsCalled true to mark the result as called
-   *
-   * @return the index of the requested {@code Function.call} feature's clazz.
-   */
-  public abstract int lookupCall(int cl, boolean markAsCalled);
 
 
   /**
@@ -655,22 +690,30 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the id of clazz Const_String
+   * Get the id of clazz const_string
    *
-   * @return the id of Const_String or -1 if that clazz was not created.
+   * @return the id of const_string or -1 if that clazz was not created.
    */
-  public int clazz_Const_String()
+  public int clazz_const_string()
   {
-    return clazz(SpecialClazzes.c_Const_String);
+    return clazz(SpecialClazzes.c_const_string);
   }
 
 
   /**
-   * Get the id of clazz Const_String.utf8_data
+   * Get the id of clazz ref const_string
    *
-   * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
+   * @return the id of ref const_string or -1 if that clazz was not created.
    */
-  public int clazz_Const_String_utf8_data()
+  public abstract int clazz_ref_const_string();
+
+
+  /**
+   * Get the id of clazz const_string.utf8_data
+   *
+   * @return the id of const_string.utf8_data or -1 if that clazz was not created.
+   */
+  public int clazz_const_string_utf8_data()
   {
     return clazz(SpecialClazzes.c_CS_utf8_data);
   }
@@ -679,12 +722,12 @@ public abstract class FUIR extends IR
   /**
    * Get the id of clazz {@code array u8}
    *
-   * @return the id of Const_String.array or -1 if that clazz was not created.
+   * @return the id of const_string.array or -1 if that clazz was not created.
    */
   public int clazz_array_u8()
   {
-    var utf8_data = clazz_Const_String_utf8_data();
-    return clazzResultClazz(utf8_data);
+    var utf8_data = clazz_const_string_utf8_data();
+    return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
   }
 
 
@@ -696,9 +739,8 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8()
   {
     var a8 = clazz_array_u8();
-    var ia = lookup_array_internal_array(a8);
-    var res = clazzResultClazz(ia);
-    return res;
+    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : lookup_array_internal_array(a8);
+    return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
   }
 
 
@@ -710,7 +752,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_data()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_data(sa8);
+    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_data(sa8);
   }
 
 
@@ -722,7 +764,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_length()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_length(sa8);
+    return  sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_length(sa8);
   }
 
 
@@ -776,6 +818,37 @@ public abstract class FUIR extends IR
       !clazzIsVoidType(cl) &&
       cl != clazzUniverse();
   }
+
+
+  /**
+   * Does the given clazz specify a scalar type in the C code, i.e, standard
+   * numeric types i32, u64, etc.
+   */
+  public boolean isScalar(int cl)
+  {
+    var id = getSpecialClazz(cl);
+    return switch (id)
+      {
+      case
+        c_i8  , c_i16 , c_i32 ,
+        c_i64 , c_u8  , c_u16 ,
+        c_u32 , c_u64 , c_f32 ,
+        c_f64                   -> true;
+      default                   -> false;
+      };
+  }
+
+
+  /**
+   * This must return an analogous result as AbstractFeature.isBuiltInPrimitive
+   *
+   * @return true iff clazz is scalar or bool
+   */
+  public boolean clazzIsBuiltInPrimitive(int cl)
+  {
+    return isScalar(cl) || clazzIs(cl, SpecialClazzes.c_bool);
+  }
+
 
 
   /*----------------------  type parameters  ---------------------*/
@@ -998,24 +1071,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * Get the possible inner clazz for a call or assignment to a field with given
-   * target clazz.
-   *
-   * This is used to feed information back from static analysis tools like DFA
-   * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accessedClazzes.
-   *
-   * @param s site of the access
-   *
-   * @param tclazz the target clazz of the access.
-   *
-   * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
-   * i.e., an abstract feature is missing.
-   */
-  public abstract int lookup(int s, int tclazz);
-
-
-  /**
    * Inform the FUIR instance that lookup for new clazzes is finished.  This
    * means that clazzIsUnitType will be able to produce correct results since no
    * more features will be added.
@@ -1050,7 +1105,7 @@ public abstract class FUIR extends IR
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
-   * f32, f64, or Const_String. This will be extended by value instances without
+   * f32, f64, or const_string. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
    *
    * @param s site of the constant
@@ -1086,18 +1141,6 @@ public abstract class FUIR extends IR
    * case does not have a field or the field is unused.
    */
   public abstract int matchCaseField(int s, int cix);
-
-
-  /**
-   * For a given tag return the index of the corresponding case.
-   *
-   * @param s site of the match
-   *
-   * @param tag e.g. 0,1,2,...
-   *
-   * @return the index of the case for tag {@code tag}
-   */
-  public abstract int matchCaseIndex(int s, int tag);
 
 
   /**
@@ -1431,7 +1474,7 @@ public abstract class FUIR extends IR
    *
    * @return the type of the outer feature of cl
    */
-  public abstract int effectTypeFromInstrinsic(int cl);
+  public abstract int effectTypeFromIntrinsic(int cl);
 
 
   /*------------------------------  arrays  -----------------------------*/
@@ -1444,13 +1487,19 @@ public abstract class FUIR extends IR
    *
    * @return e.g. {@code tuple i32 codepoint}
    */
-  public abstract int inlineArrayElementClazz(int constCl);
+  public int inlineArrayElementClazz(int constCl)
+  {
+    return this.clazzActualGeneric(constCl, 0);
+  }
 
 
   /**
    * Is {@code constCl} an array?
    */
-  public abstract boolean clazzIsArray(int constCl);
+  public boolean clazzIsArray(int constCl)
+  {
+    return clazzOriginalName(constCl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(constCl);
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -1557,48 +1606,34 @@ public abstract class FUIR extends IR
   public abstract String clazzSrcFile(int cl);
 
 
-  /**
-   * Get the position where the clazz is declared
-   * in the source code.
-   */
-  public abstract SourcePosition declarationPos(int cl);
-
-
-  /*---------------------------------------------------------------------
-   *
-   * handling of abstract missing errors.
-   *
-   * NYI: This still uses AirErrors.abstractFeatureNotImplemented, which should
-   * eventually be moved to DFA or somewhere else when DFA is joined with AIR
-   * phase.
-   */
+  /*----------------------  Interpreter  ----------------------*/
 
 
   /**
-   * If a called to an abstract feature was found, the DFA will use this to
-   * record the missing implementation of an abstract features.
+   * For a given tag return the index of the corresponding case.
    *
-   * Later, this will be reported as an error via {@code reportAbstractMissing()}.
+   * @param s site of the match
    *
-   * @param cl clazz is of the clazz that is missing an implementation of an
-   * abstract features.
+   * @param tag e.g. 0,1,2,...
    *
-   * @param f the inner clazz that is called and that is missing an implementation
-   *
-   * @param instantiationSite if known, the site where {@code cl} was instantiated,
-   * {@code NO_SITE} if unknown.
+   * @return the index of the case for tag {@code tag}
    */
-  public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite);
-
-
-  /**
-   * In case any errors were recorded via {@code recordAbstractMissing} this will
-   * create the corresponding error messages.  The errors reported will be
-   * cumulative, i.e., if a clazz is missing several implementations of abstract
-   * features, there will be only one error for that clazz.
-   */
-  public abstract void reportAbstractMissing();
-
+  public int matchCaseIndex(int s, int tag)
+  {
+    // NYI: PERFORMANCE: cache this?
+    var result = -1;
+    for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
+      {
+        var mct = matchCaseTags(s, j);
+        if (Arrays.stream(mct).anyMatch(t -> t == tag))
+          {
+            result = j;
+          }
+      }
+    if (CHECKS) check
+      (result != -1);
+    return result;
+  }
 
 }
 

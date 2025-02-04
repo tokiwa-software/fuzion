@@ -27,36 +27,23 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
-import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -108,42 +95,6 @@ public class Intrinsics extends ANY
 
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
-
-  /**
-   * This contains all open files/streams.
-   */
-  private static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
-  {
-    @Override
-    protected boolean close(AutoCloseable f) {
-      try
-      {
-        f.close();
-        return true;
-      }
-      catch(Throwable e)
-      {
-        return false;
-      }
-    }
-  };
-  private static Value _stdin  = new i64Value(_openStreams_.add(System.in ));
-  private static Value _stdout = new i64Value(_openStreams_.add(System.out));
-  private static Value _stderr = new i64Value(_openStreams_.add(System.err));
-
-
-  /**
-   * This contains all open processes.
-   */
-  private static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
-  {
-    @Override
-    protected boolean close(Process p) {
-      if(PRECONDITIONS) require
-        (p != null);
-      return true;
-    }
-  };
 
   /**
    * This contains all started threads.
@@ -211,7 +162,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  public static Callable call(Executor executor, int innerClazz)
+  public static Callable call(Executor executor, int site, int innerClazz)
   {
     Callable result;
     String in = executor.fuir().clazzOriginalName(innerClazz);
@@ -223,7 +174,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.fatal(executor.fuir().declarationPos(innerClazz),
+        Errors.fatal(executor.fuir().sitePos(site),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
         result = (args) -> Value.NO_VALUE;
@@ -245,7 +196,7 @@ public class Intrinsics extends ANY
   static
   {
     put("Type.name"            , (executor, innerClazz) -> args ->
-      Interpreter.value(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
+      Interpreter.boxedConstString(executor.fuir().clazzTypeName(executor.fuir().clazzOuterClazz(innerClazz))));
 
     put("concur.atomic.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
@@ -337,11 +288,11 @@ public class Intrinsics extends ANY
           var fuir = executor.fuir();
           if (i == 0)
             {
-              return  Interpreter.value(fuir.clazzAsString(fuir.mainClazz()));
+              return  Interpreter.boxedConstString(fuir.clazzAsString(fuir.mainClazz()));
             }
           else
             {
-              return  Interpreter.value(executor.options().getBackendArgs().get(i - 1));
+              return  Interpreter.boxedConstString(executor.options().getBackendArgs().get(i - 1));
             }
         });
 
@@ -350,335 +301,6 @@ public class Intrinsics extends ANY
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
                          executor.callStack(executor.fuir()));
-          return Value.EMPTY_VALUE;
-        });
-    put("fuzion.sys.stdin.stdin0"  , (executor, innerClazz) -> args ->
-        {
-          return _stdin;
-        });
-    put("fuzion.sys.out.stdout"    , (executor, innerClazz) -> args ->
-        {
-          return _stdout;
-        });
-    put("fuzion.sys.err.stderr"    , (executor, innerClazz) -> args ->
-        {
-          return _stderr;
-        });
-    put("fuzion.sys.fileio.read", (executor, innerClazz)-> args ->
-        {
-          var byteArr = (byte[])args.get(2).arrayData()._array;
-          try
-            {
-              var s = _openStreams_.get(args.get(1).i64Value());
-              int bytesRead = 0;
-              if (s instanceof RandomAccessFile raf)
-                {
-                  if (!ENABLE_UNSAFE_INTRINSICS)
-                    {
-                      Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-                    }
-                  bytesRead = raf.read(byteArr);
-                }
-              else
-                {
-                  bytesRead = ((InputStream) s).read(byteArr);
-                }
-
-              return new i32Value(bytesRead);
-            }
-          catch (Throwable e)
-            {
-              return new i32Value(-2);
-            }
-        });
-    put("fuzion.sys.fileio.write", (executor, innerClazz) -> args ->
-        {
-          byte[] fileContent = (byte[])args.get(2).arrayData()._array;
-          try
-            {
-              var s = _openStreams_.get(args.get(1).i64Value());
-              if (s instanceof RandomAccessFile raf)
-                {
-                  if (!ENABLE_UNSAFE_INTRINSICS)
-                    {
-                      Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-                    }
-                  raf.write(fileContent);
-                }
-              else
-                {
-                  ((OutputStream) s).write(fileContent);
-                }
-              return new i32Value(0);
-            }
-          catch (Throwable e)
-            {
-              return new i32Value(-1);
-            }
-        });
-    putUnsafe("fuzion.sys.fileio.move", (executor, innerClazz) -> args ->
-        {
-          Path oldPath = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          Path newPath = Path.of(utf8ByteArrayDataToString(args.get(2)));
-          try
-            {
-              Files.move(oldPath, newPath);
-              return new boolValue(true);
-            }
-          catch (Throwable e)
-            {
-              return new boolValue(false);
-            }
-        });
-    putUnsafe("fuzion.sys.fileio.create_dir", (executor, innerClazz) -> args ->
-        {
-          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          try
-            {
-              Files.createDirectory(path);
-              return new boolValue(true);
-            }
-          catch (Throwable e)
-            {
-              return new boolValue(false);
-            }
-        });
-    putUnsafe("fuzion.sys.fileio.open", (executor, innerClazz) -> args ->
-        {
-          var open_results = (long[])args.get(2).arrayData()._array;
-          open_results[1] = 0;
-          try
-            {
-              switch (args.get(3).i8Value()) {
-                case 0:
-                  RandomAccessFile fis = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "r");
-                  open_results[0] = _openStreams_.add(fis);
-                  break;
-                case 1:
-                  RandomAccessFile fos = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
-                  open_results[0] = _openStreams_.add(fos);
-                  break;
-                case 2:
-                  RandomAccessFile fas = new RandomAccessFile(utf8ByteArrayDataToString(args.get(1)), "rw");
-                  fas.seek(fas.length());
-                  open_results[0] = _openStreams_.add(fas);
-                  break;
-                default:
-                  open_results[1] = -1;
-                  Errors.fatal("*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***");
-              }
-            }
-          catch (Throwable e)
-            {
-              open_results[1] = -1;
-            }
-          return Value.EMPTY_VALUE;
-        });
-    putUnsafe("fuzion.sys.fileio.close", (executor, innerClazz) -> args ->
-        {
-          long fd = args.get(1).i64Value();
-          return _openStreams_.remove(fd)
-            ? new i8Value(0)
-            : new i8Value(-1);
-        });
-    putUnsafe("fuzion.sys.fileio.stats",
-        "fuzion.sys.fileio.lstats", // NYI : should be altered in the future to not resolve symbolic links
-        (executor, innerClazz) -> args ->
-        {
-          Path path = Path.of(utf8ByteArrayDataToString(args.get(1)));
-          long[] stats = (long[])args.get(2).arrayData()._array;
-          var err = SystemErrNo.UNSPECIFIED;
-          try
-            {
-              BasicFileAttributes metadata = Files.readAttributes(path, BasicFileAttributes.class);
-              stats[0] = metadata.size();
-              stats[1] = metadata.lastModifiedTime().to(TimeUnit.SECONDS);
-              stats[2] = metadata.isRegularFile()? 1:0;
-              stats[3] = metadata.isDirectory()? 1:0;
-              return new boolValue(true);
-            }
-          catch (UnsupportedOperationException e)
-            {
-              err = SystemErrNo.ENOTSUP;
-            }
-          catch (IOException e)
-            {
-              err = SystemErrNo.EIO;
-            }
-          catch (SecurityException e)
-            {
-              err = SystemErrNo.EACCES;
-            }
-          catch (Throwable e)
-            {
-              err = SystemErrNo.UNSPECIFIED;
-            }
-
-          stats[0] = err.errno;
-          stats[1] = 0;
-          stats[2] = 0;
-          stats[3] = 0;
-          return new boolValue(false);
-        });
-    putUnsafe("fuzion.sys.fileio.seek", (executor, innerClazz) -> args ->
-        {
-          long fd = args.get(1).i64Value();
-          var seekResults = (long[])args.get(3).arrayData()._array;
-          try
-            {
-              var raf = (RandomAccessFile)_openStreams_.get(fd);
-              raf.seek(args.get(2).i16Value());
-              seekResults[0] = raf.getFilePointer();
-              return Value.EMPTY_VALUE;
-            }
-          catch (Throwable e)
-            {
-              seekResults[1] = -1;
-              return Value.EMPTY_VALUE;
-            }
-        });
-    putUnsafe("fuzion.sys.fileio.file_position", (executor, innerClazz) -> args ->
-        {
-          long fd = args.get(1).i64Value();
-          long[] arr = (long[])args.get(2).arrayData()._array;
-          try
-            {
-              arr[0] = ((RandomAccessFile)_openStreams_.get(fd)).getFilePointer();
-              return Value.EMPTY_VALUE;
-            }
-          catch (Throwable e)
-            {
-              arr[1] = -1;
-              return Value.EMPTY_VALUE;
-            }
-        });
-    putUnsafe("fuzion.sys.fileio.mmap", (executor, innerClazz) -> args ->
-        {
-          try
-            {
-              var raf = (RandomAccessFile)_openStreams_.get(args.get(1).i64Value());
-              var offset = args.get(2).i64Value();
-              var size = args.get(3).i64Value();
-
-              // offset+size must not exceed file size, to match semantics of c-backend.
-              if(raf.length() < (offset + size))
-              {
-                ((int[])args.get(4).arrayData()._array)[0] = -1;
-                return new ArrayData(new byte[0]);
-              }
-
-              var mmap = raf.getChannel().map(MapMode.READ_WRITE, offset, size);
-
-              // success, return an special implementation of ArrayData.
-              ((int[])args.get(4).arrayData()._array)[0] = 0;
-              return new ArrayData(new byte[0]){
-                  @Override
-                  void set(
-                    int x,
-                    Value v,
-                    FUIR fuir,
-                    int elementType)
-                  {
-                    checkIndex(x);
-                    mmap.put(x, (byte)v.u8Value());
-                  }
-
-                  @Override
-                  Value get(
-                    int x,
-                    FUIR fuir,
-                    int elementType)
-                  {
-                    checkIndex(x);
-                    return new u8Value(mmap.get(x));
-                  }
-
-                  @Override
-                  int length()
-                  {
-                    return (int)size;
-                  }
-                };
-            }
-          catch (Throwable e)
-            {
-              ((int[])args.get(4).arrayData()._array)[0] = -1;
-              return new ArrayData(new byte[0]);
-            }
-        });
-    putUnsafe("fuzion.sys.fileio.munmap", (executor, innerClazz) -> args ->
-        {
-          return new i32Value(0);
-        });
-    putUnsafe("fuzion.sys.fileio.open_dir", (executor, innerClazz) -> args ->
-        {
-          var open_results = (long[])args.get(2).arrayData()._array;
-          try
-            {
-              var i = Files.walk(Paths.get(utf8ByteArrayDataToString(args.get(1))), 1).iterator();
-              // skip path itself
-              i.next();
-              interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {};
-              open_results[0] = _openStreams_.add(new CloseableIterator<Path>() {
-                public void close() throws IOException
-                {
-                  // do nothing :)
-                }
-
-                public boolean hasNext() {
-                  return i.hasNext();
-                }
-
-                public Path next() {
-                  return i.next();
-                }
-
-                public void remove() {
-                  i.remove();
-                }
-              });
-            }
-          catch (Throwable e)
-            {
-              open_results[1] = -1;
-            }
-
-          return Value.EMPTY_VALUE;
-        });
-    putUnsafe("fuzion.sys.fileio.read_dir", (executor, innerClazz) -> args ->
-        {
-          var i = getIterator(args.get(1).i64Value());
-          try
-            {
-              return Interpreter.value(i.next().getFileName().toString());
-            }
-          catch (NoSuchElementException e)
-            {
-              return Interpreter.value("NoSuchElementException encountered!");
-            }
-        });
-    putUnsafe("fuzion.sys.fileio.read_dir_has_next", (executor, innerClazz) -> args ->
-        {
-          var it = getIterator(args.get(1).i64Value());
-          return new boolValue(it.hasNext());
-        });
-    putUnsafe("fuzion.sys.fileio.close_dir", (executor, innerClazz) -> args ->
-        {
-          _openStreams_.remove(args.get(1).i64Value());
-          return new i64Value(0);
-        });
-    put("fuzion.sys.fileio.mapped_buffer_get", (executor, innerClazz) -> args ->
-        {
-          return ((ArrayData)args.get(1)).get(/* index */ (int) args.get(2).i64Value(),
-                                              executor.fuir(),
-                                              /* type  */ executor.fuir().clazz(SpecialClazzes.c_u8));
-        });
-    put("fuzion.sys.fileio.mapped_buffer_set", (executor, innerClazz) -> args ->
-        {
-          ((ArrayData)args.get(1)).set(/* index */ (int) args.get(2).i64Value(),
-                                       /* value */ args.get(3),
-                                       executor.fuir(),
-                                       /* type  */ executor.fuir().clazz(SpecialClazzes.c_u8));
           return Value.EMPTY_VALUE;
         });
 
@@ -740,7 +362,7 @@ public class Intrinsics extends ANY
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
-              var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
+              var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
 
               String clName =                          (String) clNameI._javaRef;
               String name   = nameI   == null ? null : (String) nameI._javaRef;
@@ -771,18 +393,18 @@ public class Intrinsics extends ANY
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
-          var arrA = argzData.arrayData();
-          var res = arrA._array;
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(res, resultClazz);
+          var res = Interpreter
+            .getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false)
+            .arrayData()
+            ._array;
+          return new JavaRef(res);
         });
     putUnsafe("fuzion.java.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
+          var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
           var str = utf8ByteArrayDataToString(argzData);
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(str, resultClazz);
@@ -790,7 +412,7 @@ public class Intrinsics extends ANY
     putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) ((JavaRef)args.get(1))._javaRef;
-          return Interpreter.value(javaString == null ? "--null--" : javaString);
+          return Interpreter.boxedConstString(javaString == null ? "--null--" : javaString);
         });
     putUnsafe("fuzion.java.i8_to_java_object", (executor, innerClazz) -> args ->
         {
@@ -848,27 +470,24 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(jb, resultClazz);
         });
-    put("fuzion.sys.internal_array_init.alloc", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           return ArrayData.alloc(/* size */ args.get(1).i32Value(),
                                  executor.fuir(),
                                  /* type */ et);
         });
-    put("fuzion.sys.internal_array.get", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.getel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
                                    executor.fuir(),
                                    /* type  */ et);
         });
-    put("fuzion.sys.internal_array.setel", (executor, innerClazz) -> args ->
+    put("fuzion.sys.type.setel", (executor, innerClazz) -> args ->
         {
-          var at = executor.fuir().clazzOuterClazz(innerClazz); // array type
-          var et = executor.fuir().clazzActualGeneric(at, 0); // element type
+          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),
@@ -885,7 +504,7 @@ public class Intrinsics extends ANY
           return Value.EMPTY_VALUE;
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
-    put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
     // setting env variable not supported in java
     put("fuzion.sys.env_vars.set0"  , (executor, innerClazz) -> args -> new boolValue(false));
     // unsetting env variable not supported in java
@@ -1128,7 +747,7 @@ public class Intrinsics extends ANY
     put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
     put("effect.type.abort0"      ,
         "effect.type.default0"    ,
-        "effect.type.instate0"    ,
+        FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
         "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
 
@@ -1148,96 +767,6 @@ public class Intrinsics extends ANY
 
           return result;
         });
-
-    putUnsafe("fuzion.sys.process.create"  , (executor, innerClazz) -> args -> {
-      var process_and_args = Arrays
-        .stream(((Value[])args.get(1).arrayData()._array))
-        .limit(args.get(2).i32Value()-1)
-        .map(x -> utf8ByteArrayDataToString(x))
-        .collect(Collectors.toList());
-
-      var env_vars = Arrays
-        .stream(((Value[])args.get(3).arrayData()._array))
-        .limit(args.get(4).i32Value()-1)
-        .map(x -> utf8ByteArrayDataToString(x))
-        .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
-
-      var result = (long[])args.get(5).arrayData()._array;
-      try
-        {
-          var pb = new ProcessBuilder()
-                              .command(process_and_args);
-
-          pb.environment().putAll(env_vars);
-
-          var process = pb.start();
-
-          result[0] = _openProcesses_.add(process);
-          result[1] = _openStreams_.add(process.getOutputStream());
-          result[2] = _openStreams_.add(process.getInputStream());
-          result[3] = _openStreams_.add(process.getErrorStream());
-          return new i32Value(0);
-        }
-      catch (Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.process.wait"    , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      var p = _openProcesses_.get(desc);
-      try
-        {
-          var result = p.waitFor();
-          _openProcesses_.remove(desc);
-          return new i32Value(result);
-        }
-      catch(Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.pipe.read"       , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      var buff = (byte[])args.get(2).arrayData()._array;
-      var is = (InputStream) _openStreams_.get(desc);
-      try
-        {
-          var readBytes = is.read(buff);
-
-          return readBytes == -1
-            ? new i32Value(0)
-            : new i32Value(readBytes);
-        }
-      catch (Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.pipe.write"      , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      var buff = (byte[])args.get(2).arrayData()._array;
-      var os = (OutputStream) _openStreams_.get(desc);
-      try
-        {
-          os.write(buff);
-          return new i32Value(buff.length);
-        }
-      catch (Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.pipe.close"      , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      return _openStreams_.remove(desc)
-        ? new i32Value(0)
-        : new i32Value(-1);
-    });
 
     /* NYI: UNDER DEVELOPMENT: abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
       replace by returnOutcome like in jvm backend.
@@ -1333,14 +862,14 @@ public class Intrinsics extends ANY
       {
         var fuir = executor.fuir();
         var in  = fuir.clazzOriginalName(innerClazz);
-        int ecl = fuir.effectTypeFromInstrinsic(innerClazz);
+        int ecl = fuir.effectTypeFromIntrinsic(innerClazz);
         var ev  = args.size() > 1 ? args.get(1) : null;
         var effects = FuzionThread.current()._effects;
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
           case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
-          case "effect.type.instate0"  :
+          case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:
               var prev = effects.get(ecl);
@@ -1383,14 +912,6 @@ public class Intrinsics extends ANY
         return Value.EMPTY_VALUE;
       };
   }
-
-
-  @SuppressWarnings("unchecked")
-  private static Iterator<Path> getIterator(long v)
-  {
-    return (Iterator<Path>)_openStreams_.get(v);
-  }
-
 
   /**
    * Get InetSocketAddress of TCP (SocketChannel) or UDP (DatagramChannel) channel.

@@ -25,4 +25,4 @@
 # unit type to indicate an `end of file`
 # or the depletion of a source
 #
-module:public end_of_file is
+public end_of_file is

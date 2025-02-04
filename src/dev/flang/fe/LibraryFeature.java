@@ -45,7 +45,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -722,7 +721,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType, Context.NONE);
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:
@@ -897,16 +896,17 @@ public class LibraryFeature extends AbstractFeature
   }
 
   /**
-   * Does this feature belong to or contain inner features of the given module?
-   * And should therefore be shown on the api page for that module
+   * Does this feature belong to or contain inner features of the given module
+   * and should therefore be shown on the API doc page for that module?
+   *
    * @param module the module for which the belonging is to be checked
-   * @return true iff this feature needs to be included in the api page for module
+   * @return true iff this feature needs to be included in the API doc page for module
    */
   public boolean showInMod(LibraryModule module)
   {
     // Problem: all features inherit from any, which is in base
     // therefore all features from other modules would be shown in base module because they always have an inner feature from base
-    if (module.name().equals("base"))
+    if (module.name().equals(FuzionConstants.BASE_MODULE_NAME))
       {
         return _libModule == module || isUniverse();
       }

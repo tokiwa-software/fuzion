@@ -153,7 +153,7 @@ class LibraryOut extends ANY
         sm._options.verbosePrintln(2, "" +
                                    _data.featureCount() + " features " +
                                    _data.typeCount() + " types and " +
-                                   _sourceFiles.size() + " source files includes in fum file.");
+                                   _sourceFiles.size() + " source files included in fum file.");
       }
   }
 
@@ -996,8 +996,7 @@ class LibraryOut extends ANY
     var sfp = sf._fileName;
     if (sd != null && sfp.startsWith(sd))
       {
-        var sfr = sd.relativize(sfp);
-        sfp = FuzionConstants.SYMBOLIC_FUZION_MODULE.resolve(sfr);
+        sfp = sd.relativize(sfp);
       }
     return sfp.toString();
   }

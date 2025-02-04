@@ -204,14 +204,14 @@ public class Block extends AbstractBlock
    */
   public Block visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.actionBefore(this, outer);
+    v.actionBefore(this);
     ListIterator<Expr> i = _expressions.listIterator();
     while (i.hasNext())
       {
         Expr e = i.next();
         i.set(e.visit(v, outer));
       }
-    v.actionAfter(this, outer);
+    v.actionAfter(this);
     return this;
   }
 
@@ -357,7 +357,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return

@@ -34,13 +34,14 @@ on:
 env:
   PRECONDITIONS: true
   POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
 
 jobs:
   run_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+      - uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -64,3 +65,6 @@ jobs:
 
       - name: run tests
         run: make run_tests_parallel
+
+      - name: syntax check
+        run: make syntaxcheck

@@ -190,7 +190,7 @@ public class Destructure extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -211,8 +211,11 @@ public class Destructure extends ExprWithPos
   {
     var outer = context.outerFeature();
     Expr thiz     = This.thiz(res, pos(), context, outer);
-    Call thiz_tmp = new Call(pos(), thiz    , tmp, -1    ).resolveTypes(res, context);
-    Call call_f   = new Call(pos(), thiz_tmp, f  , select).resolveTypes(res, context);
+    Call thiz_tmp = new Call(pos(), thiz, tmp).resolveTypes(res, context);
+    Call call_f   = (select == -1
+        ? new Call(pos(), thiz_tmp, f)
+        : new Select(pos(), thiz_tmp, f.featureName().baseName(), select))
+      .resolveTypes(res, context);
     Assign assign = null;
     if (fields != null && fields.hasNext())
       {
@@ -244,7 +247,7 @@ public class Destructure extends ExprWithPos
    *
    * @param context the source code context where this Call is used
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
     List<Expr> exprs = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe

@@ -23,17 +23,17 @@
 
 
 # buffered.writer effect allows buffered writing
-# by using the given Write_Provider
+# by using the given Write_Handler
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(wp Write_Provider, buf_size i32) : mutate
+public writer(wh Write_Handler, buf_size i32) : effect
 pre debug: buf_size > 0
 is
 
   # circular buffer backing this writer
   #
-  buffer := instate_self (() -> (mutate.circular_buffer u8).new writer.this buf_size.as_i64 0)
+  buffer := (mutate.circular_buffer u8).new LM buf_size.as_i64 0
 
 
   # flush the buffer, that is, write out everything that is still
@@ -44,7 +44,7 @@ is
       unit
     else
       n := buffer.buffered # we are expecting to write this number of bytes
-      wp.write (buffer.flush n)
+      wh.write (buffer.flush n)
 
 
   # buffered writing of the given byte
@@ -63,28 +63,32 @@ is
   public write (data Sequence u8) write_result =>
     p := data.as_array
     n := p.length
-    for n_written := 0, n_written + r
-        e outcome unit := unit, e0
-    while n_written < n
-      y := new (outcome unit unit)
-      f =>
-        if buffer.buffered = 0 && (n - n_written) > buf_size
-          # can write directly
-          y <- wp.write (p.slice n_written (n_written + buf_size)).as_array
-          buf_size
-        else if buffer.buffered = 0
-          # start filling buffer, but incompletely
-          y <- buffer.enqueue (p.slice n_written n).as_array
-          n - n_written
-        else
-          # fill up the rest of the buffer
-          a := min (buf_size - buffer.buffered.as_i32) n
-          y <- buffer.enqueue (p.slice n_written (n_written + a)).as_array
-          y <- flush
-          a
-      r := f
-      e0 := y.get
-    until !e
-      write_result n_written e
-    else
-      write_result n_written e
+    # NYI: BUG: #4494: store loop result in var `wr` due to this bug
+    wr := (
+      for n_written := 0, n_written + r
+          e outcome unit := unit, e0
+      while n_written < n
+        y := LM.env.new (outcome unit unit)
+        f =>
+          if buffer.buffered = 0 && (n - n_written) > buf_size
+            # can write directly
+            y <- wh.write (p.slice n_written (n_written + buf_size)).as_array
+            buf_size
+          else if buffer.buffered = 0
+            # start filling buffer, but incompletely
+            y <- buffer.enqueue (p.slice n_written n).as_array
+            n - n_written
+          else
+            # fill up the rest of the buffer
+            a := min (buf_size - buffer.buffered.as_i32) n
+            y <- buffer.enqueue (p.slice n_written (n_written + a)).as_array
+            y <- flush
+            a
+        r := f
+        e0 := y.get
+      until !e
+        (n_written, e)
+      else
+        (n_written, e)
+      )
+    write_result wr.values.0 wr.values.1

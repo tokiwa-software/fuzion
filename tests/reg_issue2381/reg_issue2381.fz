@@ -25,7 +25,7 @@ reg_issue2381 is
 
   mi : mutate is
   input := mi ! ()->
-    ((io.stdin.reader mi) ! ()->(io.buffered.read_lines mi)).filter !=""
+    ((io.stdin.reader mi) ! ()->(io.buffered mi).read_lines).filter !=""
                                                             .map (.as_codepoints)
   area := (array2 String).new input.count input[0].count i,j->input[i][j]
 

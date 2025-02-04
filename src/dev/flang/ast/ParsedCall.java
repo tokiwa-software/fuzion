@@ -68,7 +68,14 @@ public class ParsedCall extends Call
    *
    * Without this, this might happen repeatedly.
    */
-  boolean _pushedImplicitImmediateCall = false;
+  private boolean _pushedImplicitImmediateCall = false;
+
+
+  /**
+   * quick-and-dirty way to get unique values for temp fields in
+   * findChainedBooleans.
+   */
+  private static int _chainedBoolTempId_ = 0;
 
 
   /*---------------------------  constructors  --------------------------*/
@@ -111,25 +118,6 @@ public class ParsedCall extends Call
   public ParsedCall(Expr target, ParsedName name, List<Expr> arguments)
   {
     super(name._pos, target, name._name, arguments);
-
-    _parsedName = name;
-  }
-
-
-  /**
-   * Constructor to call field 'n' on target 't' and select an open generic
-   * variant.
-   *
-   * @param target the target of the call, null if none.
-   *
-   * @param name the name of the called feature
-   *
-   * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
-   */
-  public ParsedCall(Expr target, ParsedName name, int select)
-  {
-    super(name._pos, target, name._name, select, NO_PARENTHESES);
 
     _parsedName = name;
   }
@@ -236,7 +224,7 @@ public class ParsedCall extends Call
   @Override
   public ParsedName asParsedName()
   {
-    if (!_actuals.isEmpty() || _select != -1)
+    if (!_actuals.isEmpty())
       {
         return null;
       }
@@ -247,7 +235,7 @@ public class ParsedCall extends Call
   @Override
   public List<ParsedName> asQualifier()
   {
-    if (!_actuals.isEmpty() || _select != -1)
+    if (!_actuals.isEmpty())
       {
         return null;
       }
@@ -297,8 +285,8 @@ public class ParsedCall extends Call
                                   b.type(),
                                   tmpName,
                                   outer);
-            Expr t1 = new Call(pos(), new Current(pos(), outer), tmp, -1);
-            Expr t2 = new Call(pos(), new Current(pos(), outer), tmp, -1);
+            Expr t1 = new Call(pos(), new Current(pos(), outer), tmp);
+            Expr t2 = new Call(pos(), new Current(pos(), outer), tmp);
             var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _actuals)
               {
                 boolean isChainedBoolRHS() { return true; }
@@ -407,6 +395,25 @@ public class ParsedCall extends Call
 
 
   /**
+   * Check if partial application would change this pre-/postfix call into an
+   * infix operator, e.g., `[1,2,3].map (*2)` ->  `[1,2,3].map (x->x*2)`
+   *
+   * @param expectedType the expected function type
+   *
+   * @return true if expectedType.arity() is 1, this is an operator call of a
+   * pre- or postfix operator.
+   */
+  boolean isPartialInfix(AbstractType expectedType)
+  {
+    return
+      expectedType.arity() == 1 &&
+      isOperatorCall(true)      &&
+      (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
+       _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX)    );
+  }
+
+
+  /**
    * Perform partial application for a Call. In particular, this can make the
    * following changes:
    *
@@ -429,35 +436,26 @@ public class ParsedCall extends Call
     if (PRECONDITIONS) require
       (expectedType.isFunctionTypeExcludingLazy());
 
-    // NYI: CLEANUP: The logic in this method seems overly complex, there might be potential to simplify!
-    Expr l = this;
-    if (partiallyApplicableAlternative(res, context, expectedType) != null)
+    var paa = partiallyApplicableAlternative(res, context, expectedType);
+    Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+                         : this;
+    if (l == this  /* resolution did not replace this call by sthg different */ &&
+        _calledFeature != Types.f_ERROR /* resulution did not cause an error */    )
       {
-        if (_calledFeature != null)
+        checkPartialAmbiguity(res, context, expectedType);
+        if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
+            _pendingError != null                       ||
+
+            // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
+            isPartialInfix(expectedType)                ||
+
+            // otherwise, try to solve inconsistent type
+            paa != null                              &&
+            (typeForInferencing() == null ||
+             !typeForInferencing().isFunctionType())       )
           {
-            res.resolveTypes(_calledFeature);
-            var rt = _calledFeature.resultTypeIfPresent(res);
-            if (rt != null && (!rt.isFunctionType() || rt.arity() != expectedType.arity()))
-              {
-                l = applyPartially(res, context, expectedType);
-              }
+            l = applyPartially(res, context, expectedType);
           }
-        else
-          {
-            if (_pendingError == null)
-              {
-                l = resolveTypes(res, context);  // this ensures _calledFeature is set such that possible ambiguity is reported
-              }
-            if (l == this)
-              {
-                l = applyPartially(res, context, expectedType);
-              }
-          }
-      }
-    else if (_pendingError != null                   || /* nothing found */
-             newNameForPartial(expectedType) != null    /* search for a different name */)
-      {
-        l = applyPartially(res, context, expectedType);
       }
     return l;
   }
@@ -488,8 +486,7 @@ public class ParsedCall extends Call
         var fo = partiallyApplicableAlternative(res, context, expectedType);
         if (fo != null &&
             fo._feature != _calledFeature &&
-            fo._feature.preAndCallFeature() != _calledFeature &&
-            newNameForPartial(expectedType) == null)
+            fo._feature.preAndCallFeature() != _calledFeature)
           {
             AstErrors.partialApplicationAmbiguity(pos(), _calledFeature, fo._feature);
             setToErrorState();
@@ -510,9 +507,8 @@ public class ParsedCall extends Call
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr applyPartially(Resolution res, Context context, AbstractType t)
+  Expr applyPartially(Resolution res, Context context, AbstractType t)
   {
-    checkPartialAmbiguity(res, context, t);
     Expr result;
     var n = t.arity();
     if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
@@ -540,10 +536,12 @@ public class ParsedCall extends Call
                 _actuals.add(c);
               }
           }
-        var nn = newNameForPartial(t);
-        if (nn != null)
+        if (isPartialInfix(t))
           {
-            _name = nn;
+            _name =
+              _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX)
+              ? /* -v ==> x->x-v */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX .length())
+              : /* v- ==> x->v-x */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
         _resolvedFormalArgumentTypes  = null;
@@ -553,7 +551,7 @@ public class ParsedCall extends Call
                               this)
           {
             @Override
-            public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+            AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
             {
               var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType);
               updateTarget(res);
@@ -623,12 +621,10 @@ public class ParsedCall extends Call
   /**
    * Create a new call and push the current call to the target of that call.
    * This is used for implicit calls to Function and Lazy values where {@code f()} is
-   * converted to {@code f.call()}, and for implicit fields in a select call such as,
-   * e.g., a tuple access {@code t.3} that is converted to {@code t.values.3}.
+   * converted to {@code f.call()}.
    *
-   * The actual arguments and _select of this call are moved over to the new
-   * call, this call's arguments are replaced by Expr.NO_EXPRS and this calls
-   * _select is set to -1.
+   * The actual arguments of this call are moved over to the new
+   * call, this call's arguments are replaced by Expr.NO_EXPRS.
    *
    * @param res Resolution instance
    *
@@ -641,14 +637,14 @@ public class ParsedCall extends Call
   Call pushCall(Resolution res, Context context, String name)
   {
     var wasLazy = _type != null && _type.isLazyType();
+
+    if (CHECKS) check
+      (select() == -1);
+
     var result = new Call(pos(),   // NYI: ParsedCall?
                           this /* this becomes target of "call" */,
                           name,
-                          select(),
-                          NO_GENERICS,
-                          _actuals,
-                          null,
-                          null)
+                          _actuals)
       {
         @Override
         Expr originalLazyValue()
@@ -656,7 +652,7 @@ public class ParsedCall extends Call
           return wasLazy ? ParsedCall.this : super.originalLazyValue();
         }
         @Override
-        public Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
+        Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
         {
           if (expectedType.isFunctionTypeExcludingLazy())
             { // produce an error if the original call is ambiguous with partial application
@@ -669,27 +665,6 @@ public class ParsedCall extends Call
     _wasImplicitImmediateCall = true;
     _originalArgCount = _actuals.size();
     _actuals = ParsedCall.NO_PARENTHESES;
-    _select = -1;
-    return result;
-  }
-
-
-  @Override
-  Call resolveImplicitSelect(Resolution res, Context context, AbstractType t)
-  {
-    Call result = this;
-    if (_select >= 0 && !calledFeature().resultType().isOpenGeneric())
-      {
-        var typeParameter = t.isGenericArgument() ? t.genericArgument().constraint(context).feature() : t.feature();
-        var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
-        if (f != null)
-          {
-            // replace Function call `c.123` by `c.f.123`:
-            result = pushCall(res, context, f.featureName().baseName());
-            setActualResultType(res, context, t); // setActualResultType will be done again by resolveTypes, but we need it now.
-            result = result.resolveTypes(res, context);
-          }
-      }
     return result;
   }
 
@@ -703,7 +678,7 @@ public class ParsedCall extends Call
     if (isImmediateFunctionCall() && !_pushedImplicitImmediateCall)
       {
         _pushedImplicitImmediateCall = true;
-        result = pushCall(res, context, "call").resolveTypes(res, context);
+        result = pushCall(res, context, FuzionConstants.OPERATION_CALL).resolveTypes(res, context);
       }
     return result;
   }

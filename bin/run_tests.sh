@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # This file is part of the Fuzion language implementation.
 #
@@ -25,7 +25,7 @@
 #
 # -----------------------------------------------------------------------
 
-set -euo pipefail
+set -eu
 
 # usage: run_tests.sh <build-dir> <target>
 #

@@ -316,7 +316,7 @@ public class LValue extends ValueWithClazz
   public int tag()
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(_clazz) & !fuir().clazzIsChoiceOfOnlyRefs(_clazz));
+      (fuir().clazzIsChoice(_clazz) && !fuir().clazzIsChoiceOfOnlyRefs(_clazz));
 
     var tag = container.nonrefs[offset];
     if (POSTCONDITIONS) ensure
