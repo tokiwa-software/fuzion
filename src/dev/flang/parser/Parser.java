@@ -1431,12 +1431,9 @@ inheritanceCall    : call0
    *
    * @param target the target of the call or null if none.
    *
-pureCall    : name actuals pureCallTail
+pureCall    : name actualArgs pureCallTail
             ;
-call        : name actuals callTail
-            ;
-actuals     : actualArgs
-            | dot select callTail
+call        : name actualArgs callTail
             ;
    */
   Expr call(boolean pure, Expr target)
