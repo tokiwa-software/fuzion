@@ -60,6 +60,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include "fz.h"
 
 
+// returns the latest error number of
+// the current thread
+int fzE_errno(void){
+  return errno;
+}
+
+
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
   return mkdir(pathname, S_IRWXU);
@@ -599,6 +606,8 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   // how it is done in jdk:
   // https://github.com/openjdk/jdk/blob/c2d9fa26ce903be7c86a47db5ff289cdb9de3a62/src/java.base/unix/native/libjava/ProcessImpl_md.c#L53
 
+  errno = 0;
+
   int stdIn[2];
   int stdOut[2];
   int stdErr[2];
@@ -659,6 +668,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
   if(s != 0)
     {
+      errno = s;
       close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);

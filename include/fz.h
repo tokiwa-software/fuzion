@@ -44,6 +44,12 @@ void fzE_memset(void *dest, int ch, size_t sz);
 
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
 
+// returns the latest error number of
+// the current thread
+int fzE_errno(void);
+
+// NYI: UNDER DEVELOPMENT: fzE_errno_as_string, returning the error as a human readable string
+
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
 
