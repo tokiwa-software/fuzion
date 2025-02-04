@@ -201,3 +201,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   color:grey;
   font-size:0.7em;
 }
+
+.space-1{
+  display: inline-block;
+  width: 1ch;
+}
+
+.space-2{
+  display: inline-block;
+  width: 2ch;
+}
+
+.space-3{
+  display: inline-block;
+  width: 3ch;
+}

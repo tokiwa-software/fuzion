@@ -846,11 +846,13 @@ public class Html extends ANY
 
         // addition to the tree structure prefix for current feature: universe / normal element / last element
         var featPrfx = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "├─&nbsp;"      : "└─&nbsp;";
+                                      : iter.hasNext() ? "├─<span class=space-1></span>"
+                                                       : "└─<span class=space-1></span>";
 
         // addition to the tree structure prefix for inner features of current feature: universe / normal element / last element
         var subPrfx  = f.isUniverse() ? ""
-                                      : iter.hasNext() ? "│&nbsp;&nbsp;" : "&nbsp;&nbsp;&nbsp;";
+                                      : iter.hasNext() ? "│<span class=space-2></span>"
+                                                       : "<span class=space-3></span>";
 
         sb.append(
           """
