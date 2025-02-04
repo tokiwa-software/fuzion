@@ -29,7 +29,6 @@ package dev.flang.be.interpreter;
 
 import java.nio.charset.StandardCharsets;
 
-import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;

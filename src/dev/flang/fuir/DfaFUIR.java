@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 
 public class DfaFUIR extends GeneratingFUIR {
@@ -137,7 +136,7 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
-                needsCode ? lookupJavaRef(cl0) : NO_CLAZZ
+                lookupJavaRef(cl0)
                 );
           }
         oos.writeObject(clazzes);

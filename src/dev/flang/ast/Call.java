@@ -28,8 +28,6 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.ListIterator;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;

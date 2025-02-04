@@ -47,7 +47,6 @@ import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
 import dev.flang.tools.Tool;
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
