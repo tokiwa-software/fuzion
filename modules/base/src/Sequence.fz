@@ -33,7 +33,7 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref : property.equatable is
+public Sequence(public T type) ref : property.countable, property.equatable is
 
 
   # create a list from this Sequence.
@@ -52,7 +52,7 @@ public Sequence(public T type) ref : property.equatable is
   # FALSE = known infinite
   # nil   = unknown
   #
-  public finite trit => nil
+  public redef finite trit => nil
 
 
   # is this Sequence known to be array backed? If so, this means that operations
@@ -71,9 +71,7 @@ public Sequence(public T type) ref : property.equatable is
   #
   # For lists that are not array backed, this might require time in O(count).
   #
-  public count
-  pre
-    analysis: finite != trit.no  # in practice, we do not always have this information
+  public redef count
   => (map i32 (_ -> 1)).fold i32.sum
 
 
