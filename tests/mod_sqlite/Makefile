@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = mod_sqlite
+FUZION_OPTIONS = -CLink=sqlite3 -CInclude=sqlite3.h
 include ../simple.mk
