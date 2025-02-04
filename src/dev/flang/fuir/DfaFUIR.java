@@ -107,7 +107,6 @@ public class DfaFUIR extends GeneratingFUIR {
         var clazzes = new ClazzRecord[lastClazz-firstClazz+1];
         for (int cl = firstClazz; cl <= lastClazz; cl++)
           {
-            var cl0 = cl;
             var needsCode = clazzKind(cl) == FeatureKind.Routine && clazzNeedsCode(cl) && _accessedCode.contains(cl);
             clazzes[clazzId2num(cl)] = new ClazzRecord(
                 clazzBaseName(cl),
@@ -115,7 +114,7 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzIsBoxed(cl),
                 clazzArgs(cl),
                 clazzKind(cl),
-                clazzOuterRef(cl0),
+                clazzOuterRef(cl),
                 clazzResultClazz(cl),
                 clazzIsRef(cl),
                 clazzIsUnitType(cl),
@@ -129,14 +128,14 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzTypeParameterActualType(cl),
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),
-                lookupCall(cl0),
-                lookup_static_finally(cl0),
+                lookupCall(cl),
+                lookup_static_finally(cl),
                 clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
-                clazzTypeName(cl0),
+                clazzTypeName(cl),
                 clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
-                lookupJavaRef(cl0)
+                lookupJavaRef(cl)
                 );
           }
         oos.writeObject(clazzes);
