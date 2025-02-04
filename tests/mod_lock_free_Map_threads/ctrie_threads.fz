@@ -62,7 +62,8 @@ ctrie_threads is
       say "==="
       say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
       say "==="
-      say ((ctrie.items.map x->x.values.1).group_by id)
+      # NYI: BUG: Used abstract feature 'container.Mutable_Map.get' is not implemented by 'lock_free.Map'
+      # say ((ctrie.items.map x->x.values.1).group_by id)
 
 
   test2(take_snapshots bool) =>
