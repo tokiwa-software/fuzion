@@ -3106,11 +3106,8 @@ assign      : "set" name ":=" exprInLine
    * Parse destructure
    *
 destructure : destructr
-            | destructrDcl
             ;
 destructr   : "(" argNames ")"       ":=" exprInLine
-            ;
-destructrDcl: formArgs               ":=" exprInLine
             ;
    */
   Expr destructure()
@@ -3142,21 +3139,8 @@ destructrDcl: formArgs               ":=" exprInLine
    */
   boolean isDestructurePrefix()
   {
-    return (current() == Token.t_lparen) && (fork().skipDestructrDclPrefix() ||
-                                             fork().skipDestructrPrefix()        ) ||
+    return (current() == Token.t_lparen) && fork().skipDestructrPrefix() ||
       (current() == Token.t_set) && (fork().skipDestructrPrefix());
-  }
-
-
-  /**
-   * Check if the current position starts a destructure using formArgs and skip an
-   * unspecified part of it.
-   *
-   * @return true iff the next token(s) start a destructureDecl
-   */
-  boolean skipDestructrDclPrefix()
-  {
-    return skipFormArgs() && isOperator(":=");
   }
 
 

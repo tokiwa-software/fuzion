@@ -218,13 +218,6 @@ public class Destructure extends ExprWithPos
       {
         var newF = (Feature) fields.next();
 
-        var a = newF._returnType.functionReturnType().resolve(res, context);
-
-        if (a != Types.t_UNDEFINED && !(!newF._returnType.isConstructorType() && a.isAssignableFrom(t)) )
-          {
-            AstErrors.incompatibleType(newF._returnType.posOrNull(), "in tuple destructuring", "", "", newF._returnType.functionReturnType(), assign, t, context);
-          }
-
         newF._returnType = new FunctionReturnType(t);
         assign = new Assign(res, pos(), newF, call_f, context);
       }
