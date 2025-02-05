@@ -110,6 +110,11 @@ public class Fuzion extends Tool
       {
         new Interpreter(options, fuir).run();
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     c          ("-c")
@@ -172,6 +177,11 @@ public class Fuzion extends Tool
       {
         new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_), fuir).compile();
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     java       ("-java"),
@@ -201,6 +211,11 @@ public class Fuzion extends Tool
       {
         return true;
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     classes    ("-classes")
@@ -223,6 +238,11 @@ public class Fuzion extends Tool
       {
         new JVM(new JVMOptions(options, /* run */ false, /* save classes */ true, /* save JAR */ false, Optional.ofNullable(_jvmOutName_)), fuir).compile();
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     jar        ("-jar")
@@ -244,6 +264,11 @@ public class Fuzion extends Tool
       void process(FuzionOptions options, FUIR fuir)
       {
         new JVM(new JVMOptions(options, /* run */ false, /* save classes */ false, /* save JAR */ true, Optional.ofNullable(_jvmOutName_)), fuir).compile();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -509,10 +534,22 @@ public class Fuzion extends Tool
       process(o, new DFA(o, fuir).new_fuir());
     }
 
+    /**
+     * Process backend
+     */
     void process(FuzionOptions options, FUIR fuir)
     {
       Errors.fatal("backend '" + this + "' not supported yet");
     }
+
+    /**
+     * Should the FUIR be serialized?
+     */
+    boolean serializeFuir()
+    {
+      return false;
+    }
+
   }
 
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
@@ -1066,8 +1103,7 @@ public class Fuzion extends Tool
                                           moduleName(),
                                           _backend.needsSources(),
                                           _backend.needsEscapeAnalysis(),
-                                          // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
-                                          FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR"),
+                                          _backend.serializeFuir(),
                                           s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
