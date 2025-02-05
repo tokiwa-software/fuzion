@@ -309,11 +309,7 @@ public Sequence(public T type) ref : property.equatable is
       for ea := container.expanding_array T .empty, ea.add e1
           e1 in Sequence.this
       else
-        for ea2 := ea, ea2.add e2
-            e2 in s
-        else
-          ea2
-
+        ea.concat s
 
   # infix operand synonym for concat
   #
