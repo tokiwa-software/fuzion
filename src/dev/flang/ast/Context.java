@@ -126,8 +126,7 @@ abstract class Context extends ANY
                       cc.calledFeatureKnown() &&
                       cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
                       cc.target() instanceof Call tc &&
-                      (tc.calledFeature() == typeParameter ||
-                          isClone(typeParameter, tc.calledFeature())))
+                      isClone(typeParameter, tc.calledFeature()))
                     {
                       return cc.actualTypeParameters().get(0);
                     }
@@ -136,18 +135,6 @@ abstract class Context extends ANY
           return super.constraintFor(typeParameter);
         }
 
-        /**
-         * Test if f1 and f2 are clones of each other,
-         * that where create via Contract.argsSupplier
-         */
-        private boolean isClone(AbstractFeature f1, AbstractFeature f2)
-        {
-          return f2.featureName().baseName().compareTo(f1.featureName().baseName()) == 0 &&
-          (f2.outer().preFeature() == f1.outer() ||
-           f2.outer().preBoolFeature() == f1.outer() ||
-           f2.outer() == f1.outer().preFeature() ||
-           f2.outer() == f1.outer().preBoolFeature());
-        }
       };
   }
 
@@ -214,7 +201,7 @@ abstract class Context extends ANY
             @Override
             public AbstractType constraintFor(AbstractFeature typeParameter)
             {
-              if (t.calledFeature() == typeParameter)
+              if (isClone(t.calledFeature(), typeParameter))
                 {
                   return infix_colon_call.actualTypeParameters().get(0);
                 }
@@ -229,6 +216,21 @@ abstract class Context extends ANY
           };
       }
     return result;
+  }
+
+
+  /**
+   * Test if f1 and f2 are equal or clones of each other,
+   * that where create via Contract.argsSupplier
+   */
+  protected boolean isClone(AbstractFeature f1, AbstractFeature f2)
+  {
+    return f1 == f2 ||
+      f2.featureName().baseName().compareTo(f1.featureName().baseName()) == 0 &&
+      (f2.outer().preFeature() == f1.outer() ||
+        f2.outer().preBoolFeature() == f1.outer() ||
+        f2.outer() == f1.outer().preFeature() ||
+        f2.outer() == f1.outer().preBoolFeature());
   }
 
 

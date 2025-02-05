@@ -1448,7 +1448,11 @@ public class Feature extends AbstractFeature
     @Override public Expr         action      (Destructure     d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
-      if (f._sourceCodeContext == Context.NONE)  // for a lambda, this is already set.
+      if (f.isExtensionFeature())
+        {
+          _context = f.outer().context();
+        }
+      else if (f._sourceCodeContext == Context.NONE)  // for a lambda, this is already set.
         {
           f._sourceCodeContext = _context;
         }
@@ -1468,6 +1472,15 @@ public class Feature extends AbstractFeature
     @Override public Expr         action      (AbstractCurrent c) { return c.resolveTypes      (res,   _context); }
 
     @Override public boolean doVisitActuals() { return false; }
+  }
+
+
+  /**
+   * Is this a fully qualified feature?
+   */
+  private boolean isExtensionFeature()
+  {
+    return _qname.size() > 1;
   }
 
 
