@@ -94,9 +94,6 @@ module fzE_close_dir(ptr fuzion.sys.Pointer) i32 => native
 module fzE_set_blocking(sd i32, blocking i32) i32 => native
 
 
-# NYI: int fzE_net_error(void);
-
-
 # close socket
 #
 # returns zero on success, anything else is an error.

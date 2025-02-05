@@ -1207,43 +1207,6 @@ public class Intrinsics extends ANY
     return rs;
   }
 
-
-  /**
-   * if result of expr is -1 return false and assign
-   * the result fzE_net_error to res[0]
-   * else return true and assign the result of expr to res[0]
-   * @param c
-   * @param expr
-   * @param res
-   * @return
-   */
-  static CStmnt assignNetErrorOnError(C c,CExpr expr, CIdent res)
-  {
-    var expr_res = new CIdent("expr_res");
-    return CStmnt.seq(
-      CExpr.decl("int", expr_res),
-      expr_res.assign(expr),
-      // error
-      CExpr.iff(CExpr.eq(expr_res, CExpr.int32const(-1)),
-        CStmnt.seq(
-          res
-            .castTo("fzT_1i32 *")
-            .index(CExpr.int32const(0))
-            .assign(CExpr.call("fzE_net_error", new List<>())),
-          c._names.FZ_FALSE.ret()
-        )
-      ),
-      // success
-      CStmnt.seq(
-        res
-          .castTo("fzT_1i32 *")
-          .index(CExpr.int32const(0))
-          .assign(expr_res),
-        c._names.FZ_TRUE.ret()
-      ));
-  }
-
-
   /**
    * Create code for field-by-field comparison of two value or choice type values.
    *

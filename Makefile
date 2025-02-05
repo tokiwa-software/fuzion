@@ -1438,7 +1438,7 @@ ifeq ($(OS),Windows_NT)
 	-lMswsock -lAdvApi32 -lWs2_32
 	touch $(FUZION_RT)
 else
-	clang -Wall -Werror -O3 -shared \
+	clang -Wall -Werror -O3 -shared -fPIC \
 	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so

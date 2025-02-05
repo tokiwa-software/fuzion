@@ -76,10 +76,6 @@ int fzE_close_dir(intptr_t * dir);
 // 1 = none_blocking
 int fzE_set_blocking(int sockfd, int blocking);
 
-// helper function to retrieve
-// the last error that occurred.
-int fzE_net_error(void);
-
 // close a socket descriptor
 int fzE_close(int sockfd);
 
