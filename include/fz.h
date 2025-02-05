@@ -44,6 +44,12 @@ void fzE_memset(void *dest, int ch, size_t sz);
 
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
 
+// returns the latest error number of
+// the current thread
+int fzE_errno(void);
+
+// NYI: UNDER DEVELOPMENT: fzE_errno_as_string, returning the error as a human readable string
+
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
 
@@ -69,10 +75,6 @@ int fzE_close_dir(intptr_t * dir);
 // 0 = blocking
 // 1 = none_blocking
 int fzE_set_blocking(int sockfd, int blocking);
-
-// helper function to retrieve
-// the last error that occurred.
-int fzE_net_error(void);
 
 // close a socket descriptor
 int fzE_close(int sockfd);

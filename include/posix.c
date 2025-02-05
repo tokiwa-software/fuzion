@@ -59,6 +59,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "fz.h"
 
+// thread local to hold the last
+// error that occurred in fuzion runtime.
+_Thread_local int last_error = 0;
+
+
+// returns the latest error number of
+// the current thread
+int fzE_errno(void){
+  return last_error;
+}
+
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -97,6 +108,7 @@ int fzE_read_dir(intptr_t * dir, void * result) {
          (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
 
   if ( entry == NULL ) {
+    last_error = errno;
     return errno == 0
       // end reached
       ? 0
@@ -126,14 +138,6 @@ int fzE_set_blocking(int sockfd, int blocking)
     : fcntl(sockfd, F_GETFL, 0) & ~O_NONBLOCK;
 
   return fcntl(sockfd, F_SETFL, flag);
-}
-
-
-// helper function to retrieve
-// the last error that occurred.
-int fzE_net_error()
-{
-  return errno;
 }
 
 
@@ -182,7 +186,7 @@ int fzE_get_protocol(int protocol)
 int fzE_close(int sockfd)
 {
   return ( close(sockfd) == - 1 )
-    ? fzE_net_error()
+    ? errno
     : 0;
 }
 
@@ -218,7 +222,7 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
-    result[0] = fzE_net_error();
+    result[0] = errno;
     return -1;
   }
   struct addrinfo *addr_info = NULL;
@@ -234,7 +238,7 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
   if(bind_res == -1)
   {
     fzE_close(result[0]);
-    result[0] = fzE_net_error();
+    result[0] = errno;
     return -1;
   }
   freeaddrinfo(addr_info);
@@ -246,7 +250,7 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
 // backlog = queuelength of pending connections
 int fzE_listen(int sockfd, int backlog){
   return ( listen(sockfd, backlog) == -1 )
-    ? fzE_net_error()
+    ? errno
     : 0;
 }
 
@@ -266,7 +270,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
-    result[0] = fzE_net_error();
+    result[0] = errno;
     return -1;
   }
   struct addrinfo *addr_info = NULL;
@@ -282,7 +286,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   {
     // NYI do we want to try another address in addr_info->ai_next?
     fzE_close(result[0]);
-    result[0] = fzE_net_error();
+    result[0] = errno;
   }
   freeaddrinfo(addr_info);
   return con_res;
@@ -344,7 +348,7 @@ int fzE_read(int sockfd, void * buf, size_t count){
 // return error code or zero on success
 int fzE_write(int sockfd, const void * buf, size_t count){
   return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
-    ? fzE_net_error()
+    ? errno
     : 0;
 }
 
@@ -599,80 +603,94 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   // how it is done in jdk:
   // https://github.com/openjdk/jdk/blob/c2d9fa26ce903be7c86a47db5ff289cdb9de3a62/src/java.base/unix/native/libjava/ProcessImpl_md.c#L53
 
+  errno = 0;
+
   int stdIn[2];
   int stdOut[2];
   int stdErr[2];
+  int ret = 0;
   if (pipe(stdIn ) == -1)
   {
-    return -1;
+    ret = -1;
   }
-  if (pipe(stdOut) == -1)
+  if (ret == 0 && pipe(stdOut) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
-    return -1;
+    ret = -1;
   }
-  if (pipe(stdErr) == -1)
+  if (ret == 0 && pipe(stdErr) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
     close(stdOut[0]);
     close(stdOut[1]);
-    return -1;
+    ret = -1;
   }
+  if (ret == 0)
+  {
+    fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
+    fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
+    fcntl(stdErr[0], F_SETFD, FD_CLOEXEC);
 
-  fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
-  fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
-  fcntl(stdErr[0], F_SETFD, FD_CLOEXEC);
+    pid_t processId;
 
-  pid_t processId;
+    posix_spawn_file_actions_t file_actions;
 
-  posix_spawn_file_actions_t file_actions;
-
-  if (posix_spawn_file_actions_init(&file_actions) != 0)
-    exit(1);
-
-  posix_spawn_file_actions_adddup2(&file_actions, stdIn[0], 0);
-  posix_spawn_file_actions_adddup2(&file_actions, stdOut[1], 1);
-  posix_spawn_file_actions_adddup2(&file_actions, stdErr[1], 2);
-  posix_spawn_file_actions_addclose(&file_actions, stdIn[0]);
-  posix_spawn_file_actions_addclose(&file_actions, stdOut[1]);
-  posix_spawn_file_actions_addclose(&file_actions, stdErr[1]);
-
-  args[argsLen -1] = NULL;
-  env[envLen -1] = NULL;
-
-  int s = posix_spawnp(
-        &processId,
-        args[0],
-        &file_actions,
-        NULL,
-        args, // args
-        env  // environment
-        );
-
-  close(stdIn[0]);
-  close(stdOut[1]);
-  close(stdErr[1]);
-
-  posix_spawn_file_actions_destroy(&file_actions);
-
-  if(s != 0)
+    if (posix_spawn_file_actions_init(&file_actions) != 0)
     {
+      exit(1);
+    }
+
+    posix_spawn_file_actions_adddup2(&file_actions, stdIn[0], 0);
+    posix_spawn_file_actions_adddup2(&file_actions, stdOut[1], 1);
+    posix_spawn_file_actions_adddup2(&file_actions, stdErr[1], 2);
+    posix_spawn_file_actions_addclose(&file_actions, stdIn[0]);
+    posix_spawn_file_actions_addclose(&file_actions, stdOut[1]);
+    posix_spawn_file_actions_addclose(&file_actions, stdErr[1]);
+
+    args[argsLen -1] = NULL;
+    env[envLen -1] = NULL;
+
+    int s = posix_spawnp(
+          &processId,
+          args[0],
+          &file_actions,
+          NULL,
+          args, // args
+          env  // environment
+          );
+
+    close(stdIn[0]);
+    close(stdOut[1]);
+    close(stdErr[1]);
+
+    posix_spawn_file_actions_destroy(&file_actions);
+
+    if(s != 0)
+    {
+      last_error = s;
       close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);
       close(stdOut[1]);
       close(stdErr[0]);
       close(stdErr[1]);
-      return -1;
+      ret = -1;
     }
-
-  result[0] = processId;
-  result[1] = (int64_t) stdIn[1];
-  result[2] = (int64_t) stdOut[0];
-  result[3] = (int64_t) stdErr[0];
-  return 0;
+    else
+    {
+      result[0] = processId;
+      result[1] = (int64_t) stdIn[1];
+      result[2] = (int64_t) stdOut[0];
+      result[3] = (int64_t) stdErr[0];
+    }
+  }
+  else
+  {
+    last_error = errno;
+  }
+  return ret;
 }
 
 

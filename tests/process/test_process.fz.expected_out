@@ -13,3 +13,5 @@ content
 ===  Test: 1kb argument, piped to another process  ===
 1000
 0
+===  Test: start process that does not exist  ===
+error: *** error creating process ohQue1AheiPu4aaw, got error number: 2 ***
