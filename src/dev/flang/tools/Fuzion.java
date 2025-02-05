@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -53,7 +54,7 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.LibraryFuir;
 import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
@@ -1065,14 +1066,55 @@ public class Fuzion extends Tool
                                           moduleName(),
                                           _backend.needsSources(),
                                           _backend.needsEscapeAnalysis(),
+                                          // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+                                          FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR"),
                                           s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
-        var fe = new FrontEnd(options);
-        timer("fe");
-        Errors.showAndExit();
-        _backend.processFrontEnd(this, fe);
-        timer("be");
+        if (!options.serializeFuir())
+          {
+            var fe = new FrontEnd(options);
+            timer("fe");
+            Errors.showAndExit();
+            _backend.processFrontEnd(this, fe);
+            timer("be");
+          }
+        else
+          {
+            if(CHECKS) check
+              (options.needsEscapeAnalysis() == true, _backend != Backend.effects);
+
+            String serializedFuir = _main + ".fuir";
+            // NYI: UNDER DEVELOPMENT: check cache validity, if source fits to the serialized fuir
+            if (!Files.exists(Path.of(serializedFuir)))
+              {
+                var fe = new FrontEnd(options);                       timer("fe");
+                var mir  = fe.createMIR();                            timer("createMIR");
+                var fuir = new Optimizer(options, fe, mir).fuir();    timer("ir");
+                var dfuir = new DFA(options, fuir).new_fuir();        timer("dfa");
+                var data = dfuir.serialize();                         timer("serializeFUIR");
+
+                try (FileOutputStream stream = new FileOutputStream(serializedFuir))
+                  {
+                    stream.write(data);
+                  }
+                catch (IOException e)
+                  {
+                    Errors.fatal(e);
+                  }
+              }
+            try
+              {
+                var fuir = new LibraryFuir(Files.readAllBytes(Path.of(serializedFuir)));
+                timer("loadFUIR");
+                _backend.process(options, fuir);
+                timer("be");
+              }
+            catch (IOException e)
+              {
+                Errors.fatal(e);
+              }
+          }
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
   }
