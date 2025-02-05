@@ -1125,6 +1125,7 @@ public class Fuzion extends Tool
             if (!Files.exists(Path.of(serializedFuir)))
               {
                 var fe = new FrontEnd(options);                       timer("fe");
+                Errors.showAndExit();
                 var mir  = fe.createMIR();                            timer("createMIR");
                 var fuir = new Optimizer(options, fe, mir).fuir();    timer("ir");
                 var dfuir = new DFA(options, fuir).new_fuir();        timer("dfa");
