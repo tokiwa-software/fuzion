@@ -631,7 +631,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return this == Types.t_UNDEFINED ? this :
+    return (this == Types.t_UNDEFINED || this == Types.t_ERROR) ? this :
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
