@@ -36,7 +36,7 @@
 # returns the latest error number of
 # the current thread
 #
-module fzE_errno i32 => native
+module fzE_last_error i32 => native
 
 
 # intrinsic that returns true in case of success or false in case of failure during dir creation
