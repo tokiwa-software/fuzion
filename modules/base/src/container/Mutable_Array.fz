@@ -27,7 +27,7 @@
 public Mutable_Array(
   public T type,
   # effect used to modify this mutable array
-  E type : effect
+  E type : mutate
 ) ref : Buffer T E is
 
   # add an element at the end of the array
