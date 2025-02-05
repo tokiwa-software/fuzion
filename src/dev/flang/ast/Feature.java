@@ -1450,7 +1450,7 @@ public class Feature extends AbstractFeature
     {
       if (f.isExtensionFeature())
         {
-          _context = f.outer().context();
+          f._sourceCodeContext = f.outer().context();
         }
       else if (f._sourceCodeContext == Context.NONE)  // for a lambda, this is already set.
         {
