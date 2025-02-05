@@ -1710,11 +1710,11 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
+  public static void illegalSelect(SourcePosition pos, String select)
   {
     error(pos,
           "Illegal select clause",
-          "Failed to parse integer " + ss(select) + ": " + e);
+          "Failed to parse integer " + ss(select) + ".");
   }
 
   static void cannotAccessValueOfOpenGeneric(SourcePosition pos, AbstractFeature f, AbstractType t)
@@ -1732,8 +1732,10 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Use of selector requires call to feature whose type is an open type parameter",
-              "In call to " + s(f) + "\n" +
-              "Selected variant " + ss(name + "." + select) + "\n" +
+              ((f == null || name == null)
+                ? "Selected variant: " + ss(Integer.toString(select)) + "\n"
+                : "In call to " + s(f) + "\n" +
+                  "Selected variant " + ss(name + "." + select) + "\n") +
               "Type of called feature: " + s(t));
       }
   }
