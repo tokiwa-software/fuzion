@@ -1448,7 +1448,7 @@ public class Feature extends AbstractFeature
     @Override public Expr         action      (Destructure     d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
-      if (f.isExtensionFeature())
+      if (f.isExtensionFeature() && f.outer() != null)
         {
           f._sourceCodeContext = f.outer().context();
         }
