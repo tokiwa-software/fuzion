@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = select_clause_negative
-include ../simple.mk
+include ../simple_and_negative.mk
