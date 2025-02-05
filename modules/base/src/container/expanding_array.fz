@@ -170,14 +170,43 @@ is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public redef concat (s Sequence T) Sequence T =>
-    if s.finite != trit.yes || count < s.count then
+  public redef fixed concat (s Sequence T) Sequence T =>
+
+    if s.is_empty
+
+      # nothing to be added
+      #
+      expanding_array.this
+
+    else if s.finite != trit.yes || count < s.count
+
+      # use lazy version in case `s` might be infinite, since then code below would not
+      # terminate, if if `s` is larger than `this`, which would avoids quadratic performance
+      # in code like the following:
+      #
+      #  for i in 0..n
+      #      r := (expanding_array i32).empty, [i].concat r
+      #
       as_list.concat_list s.as_list
-    else
+
+    else if false  # NYI: OPTIMIZATION: This nicer (and faster?) version cannot be used due to DFA performance #4634?
+
+      # bulk expand by all elements of `s`
       expand s.count ()->
         for e in s.indexed do
           (i,v) := e
           container.expanding T .env.put length+i v
+
+    else
+
+      # indiviudally add each elements of `s`
+      for # `expanding_array.concat` is `fixed`, so type of expanding_array.this
+          # is `expanding_array`:
+          n := expanding_array.this,
+               n.add e
+          e in s
+      else
+        n
 
 
   # collect the contents of this expanding_array as an array.
