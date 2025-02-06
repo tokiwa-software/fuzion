@@ -272,8 +272,42 @@ public Sequence(public T type) ref : property.countable, property.equatable is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public concat (s Sequence T) Sequence T => as_list.concat_list s.as_list
-
+  # General case: This will perform `as_list.concat_list` in case one of
+  # `Sequence.this` or `s`is not known to be finite (`finite != trit.yet`) or
+  # `s.count` is larger than `count`.
+  #
+  # Otherwise, if `Sequence.this` or `s` is empty, the result will be `s` or
+  # `Sequence.this`, respectively.
+  #
+  # In all other cases, an instance of `container.expanding_array` will be
+  # created and the elements of `this` and `s` will be added.  Note that
+  # `concat` is redefined for `container.expanding_array` to achieve
+  # average `O(1)` performance for repeated concatenation with `s.count < c`
+  # for some constant `c`.
+  #
+  # Performance: O(count + s.count) worst case, O(s.count) average case
+  #
+  # NOTE: For repeated concatenation `a.concat b` that fall into the general
+  # case the resulting sequence will have iteration performance in `O(n²)`
+  # for `n` concatenation. Explicitly use `container.expanding_array` to
+  # avoid this. This implementation cannot do this automatically since
+  # repeated wrapping of `a` into an `expanding_array` would result
+  # in `O(n²)` performance for the concatenations.
+  #
+  public concat (s Sequence T) Sequence T =>
+    c1 :=   finite != trit.yes ? -1 :   count
+    c2 := s.finite != trit.yes ? -1 : s.count
+    if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
+      as_list.concat_list s.as_list
+    else if c1 = 0
+      s
+    else if c2 = 0
+      Sequence.this
+    else
+      for ea := container.expanding_array T .empty, ea.add e1
+          e1 in Sequence.this
+      else
+        ea.concat s
 
   # infix operand synonym for concat
   #
