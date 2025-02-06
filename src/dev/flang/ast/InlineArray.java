@@ -166,7 +166,7 @@ public class InlineArray extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     if (_type == null)
       {
@@ -177,11 +177,10 @@ public class InlineArray extends ExprWithPos
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
           {
-            for (var e : _elements)
+            var li = _elements.listIterator();
+            while (li.hasNext())
               {
-                var e2 = e.propagateExpectedType(res, context, elementType);
-                if (CHECKS) check
-                  (e == e2);
+                li.set(li.next().propagateExpectedType(res, context, elementType));
               }
             var arr = Types.resolved.f_array;
             _type = arr.resultType()
@@ -246,7 +245,7 @@ public class InlineArray extends ExprWithPos
         var e = li.next();
         li.set(e.visit(v, outer));
       }
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -276,7 +275,7 @@ public class InlineArray extends ExprWithPos
    *
    * @param context the source code context where this Expr is used
    */
-  public void boxElements(Context context)
+  void boxElements(Context context)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
@@ -294,7 +293,7 @@ public class InlineArray extends ExprWithPos
    *
    * @param context the source code context where this InlineArray is used
    */
-  public void checkTypes(Context context)
+  void checkTypes(Context context)
   {
     if (PRECONDITIONS) require
       (Errors.any() || _type != null || _elements.isEmpty() /* no inferred type for empty array, see #3552 */ );
@@ -398,7 +397,7 @@ public class InlineArray extends ExprWithPos
    *
    * @param context the source code context where this Expr is used
    */
-  public Expr resolveSyntacticSugar2(Resolution res, Context context)
+  Expr resolveSyntacticSugar2(Resolution res, Context context)
   {
     // elements may be boxed later
     // therefore wrap all elements in block
@@ -449,7 +448,7 @@ public class InlineArray extends ExprWithPos
                                          unit1,
                                          unit2,
                                          unit3);
-    var arrayCall       = new Call(SourcePosition.builtIn, null, "array"     , -1,
+    var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, -1,
                                    sysArrArgsT,
                                    sysArrArgsE, null, null                          ).resolveTypes(res, context);
     exprs.add(arrayCall);

@@ -42,7 +42,7 @@ module:public Buffer
    T type,
 
    # effect used to modify this buffer
-   E type : effect) ref
+   E type : mutate) ref
 
 is
 

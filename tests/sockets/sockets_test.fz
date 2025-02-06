@@ -48,7 +48,7 @@ sockets_test is
             say_silent chan.get_peer_address
             say_silent chan.get_peer_port
 
-            rr := io.buffered.read_line_while lm (s -> !s.is_empty)
+            rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
             say_silent "$protocol/$family-server, read lines: >{rr}<"
 
@@ -58,10 +58,10 @@ sockets_test is
                 res := "received: {rr.as_string}\n\n"
 
                 w =>
-                  x := (io.buffered.writer.env.write res.utf8.as_array).error
+                  x := ((io.buffered lm).writer.env.write res.utf8.as_array).error
 
                   match x
-                    unit => io.buffered.writer.env.flush
+                    unit => (io.buffered lm).writer.env.flush
                     error => x
 
                 match w
@@ -99,22 +99,22 @@ sockets_test is
               + "Client: {sockets_test.client.this.num}\n\n")
 
             w =>
-              _ := io.buffered.writer.env.write req.utf8.as_array
-              _ := io.buffered.writer.env.flush
+              _ := (io.buffered lm).writer.env.write req.utf8.as_array
+              _ := (io.buffered lm).writer.env.flush
 
-            res := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
+            str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
 
             match protocol
               net.protocol.tcp =>
 
-                rr := io.buffered.read_line_while lm (s -> !s.is_empty)
+                rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-                res + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+                str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
 
               # for UDP reading would block indefinitely
               net.protocol.udp =>
                 # rest of udp datagram was discarded
-                res
+                str
 
               * =>  panic "NI"
 

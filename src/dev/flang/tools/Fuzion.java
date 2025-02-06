@@ -88,6 +88,8 @@ public class Fuzion extends Tool
   static String _cCompiler_ = null;
   static String _cFlags_ = null;
   static String _cTarget_ = null;
+  static String _cInclude_ = null;
+  static String _cLink_ = null;
   static boolean _keepGeneratedCode_ = false;
   static String  _jvmOutName_ = null;
 
@@ -113,7 +115,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-Xgc=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] ";
+        return "[-o=<file>] [-Xgc=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -143,6 +145,16 @@ public class Fuzion extends Tool
             _cTarget_ = o.substring(9);
             result = true;
           }
+        else if (o.startsWith("-CInclude="))
+          {
+            _cInclude_ = o.substring(10);
+            result = true;
+          }
+        else if (o.startsWith("-CLink="))
+          {
+            _cLink_ = o.substring(7);
+            result = true;
+          }
         else if (o.startsWith("-XkeepGeneratedCode="))
           {
             _keepGeneratedCode_ = parseOnOffArg(o);
@@ -157,7 +169,7 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _keepGeneratedCode_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_), fuir).compile();
       }
     },
 
@@ -458,7 +470,7 @@ public class Fuzion extends Tool
     /**
      * Do we need to perform escape analysis during DFA phase since the backend needs that?
      *
-     * This currently has a signficant impact on the DFA performance, so we try to
+     * This currently has a significant impact on the DFA performance, so we try to
      * avoid this for backends that do not need it (JVM and interpreter).
      *
      * @return true if escape analysis has to be performed.

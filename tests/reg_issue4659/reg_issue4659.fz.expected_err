@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue4659.fz:25:5: error 1: Inconsistent indentation
+    do
+----^
+Indentation reference point is --CURDIR--/reg_issue4659.fz:24:6:
+_ := for
+-----^
+While parsing: loop, parse stack: loop, term, opTail, opExpr, operatorExpr (twice), implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+one error.

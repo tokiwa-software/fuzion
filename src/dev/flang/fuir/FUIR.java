@@ -31,6 +31,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import dev.flang.ir.IR;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -236,7 +237,7 @@ public abstract class FUIR extends IR
    *
    * @return number of value fields in {@code cl}
    */
-  public abstract int clazzNumFields(int cl);
+  public abstract int clazzFieldCount(int cl);
 
 
   /**
@@ -284,12 +285,6 @@ public abstract class FUIR extends IR
   }
 
 
-  /**
-   * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
-   */
-  public abstract int fieldIndex(int field);
-
-
   /*------------------------  accessing choices  -----------------------*/
 
 
@@ -312,7 +307,7 @@ public abstract class FUIR extends IR
    * @return -1 if cl is not a choice clazz, the number of choice entries
    * otherwise.  May be 0 for the void choice.
    */
-  public abstract int clazzNumChoices(int cl);
+  public abstract int clazzChoiceCount(int cl);
 
 
   /**
@@ -340,7 +335,7 @@ public abstract class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzIsChoice(cl));
 
-    for (int i = 0; i < clazzNumChoices(cl); i++)
+    for (int i = 0; i < clazzChoiceCount(cl); i++)
       {
         if (clazzIsRef(clazzChoice(cl, i)))
           {
@@ -365,7 +360,7 @@ public abstract class FUIR extends IR
       {
         boolean hasNonRefsWithState = false;
 
-        for (int i = 0; i < clazzNumChoices(cl); i++)
+        for (int i = 0; i < clazzChoiceCount(cl); i++)
           {
             var c = clazzChoice(cl, i);
             hasNonRefsWithState = hasNonRefsWithState || !clazzIsRef(c) && hasData(c);
@@ -609,20 +604,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz that is an heir of 'Function', find the corresponding inner
-   * clazz for 'call'.  This is used for code generation of intrinsic
-   * 'abortable' that has to create code to call 'call'.
-   *
-   * @param cl index of a clazz that is an heir of 'Function'.
-   *
-   * @param markAsCalled true to mark the result as called
-   *
-   * @return the index of the requested {@code Function.call} feature's clazz.
-   */
-  public abstract int lookupCall(int cl, boolean markAsCalled);
-
-
-  /**
    * For a clazz that is an heir of 'effect', find the corresponding inner
    * clazz for 'finally'.  This is used for code generation of intrinsic
    * 'instate0' that has to create code to call 'effect.finally'.
@@ -746,7 +727,7 @@ public abstract class FUIR extends IR
   public int clazz_array_u8()
   {
     var utf8_data = clazz_const_string_utf8_data();
-    return clazzResultClazz(utf8_data);
+    return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
   }
 
 
@@ -758,9 +739,8 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8()
   {
     var a8 = clazz_array_u8();
-    var ia = lookup_array_internal_array(a8);
-    var res = clazzResultClazz(ia);
-    return res;
+    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : lookup_array_internal_array(a8);
+    return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
   }
 
 
@@ -772,7 +752,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_data()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_data(sa8);
+    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_data(sa8);
   }
 
 
@@ -784,7 +764,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_length()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_length(sa8);
+    return  sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_length(sa8);
   }
 
 
@@ -1088,24 +1068,6 @@ public abstract class FUIR extends IR
    * feature to be accessed for this target.
    */
   public abstract int[] accessedClazzes(int s);
-
-
-  /**
-   * Get the possible inner clazz for a call or assignment to a field with given
-   * target clazz.
-   *
-   * This is used to feed information back from static analysis tools like DFA
-   * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accessedClazzes.
-   *
-   * @param s site of the access
-   *
-   * @param tclazz the target clazz of the access.
-   *
-   * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
-   * i.e., an abstract feature is missing.
-   */
-  public abstract int lookup(int s, int tclazz);
 
 
   /**
@@ -1525,13 +1487,19 @@ public abstract class FUIR extends IR
    *
    * @return e.g. {@code tuple i32 codepoint}
    */
-  public abstract int inlineArrayElementClazz(int constCl);
+  public int inlineArrayElementClazz(int constCl)
+  {
+    return this.clazzActualGeneric(constCl, 0);
+  }
 
 
   /**
    * Is {@code constCl} an array?
    */
-  public abstract boolean clazzIsArray(int constCl);
+  public boolean clazzIsArray(int constCl)
+  {
+    return clazzOriginalName(constCl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(constCl);
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -1636,42 +1604,6 @@ public abstract class FUIR extends IR
    * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
    */
   public abstract String clazzSrcFile(int cl);
-
-
-  /*---------------------------------------------------------------------
-   *
-   * handling of abstract missing errors.
-   *
-   * NYI: This still uses AirErrors.abstractFeatureNotImplemented, which should
-   * eventually be moved to DFA or somewhere else when DFA is joined with AIR
-   * phase.
-   */
-
-
-  /**
-   * If a called to an abstract feature was found, the DFA will use this to
-   * record the missing implementation of an abstract features.
-   *
-   * Later, this will be reported as an error via {@code reportAbstractMissing()}.
-   *
-   * @param cl clazz is of the clazz that is missing an implementation of an
-   * abstract features.
-   *
-   * @param f the inner clazz that is called and that is missing an implementation
-   *
-   * @param instantiationSite if known, the site where {@code cl} was instantiated,
-   * {@code NO_SITE} if unknown.
-   */
-  public abstract void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite);
-
-
-  /**
-   * In case any errors were recorded via {@code recordAbstractMissing} this will
-   * create the corresponding error messages.  The errors reported will be
-   * cumulative, i.e., if a clazz is missing several implementations of abstract
-   * features, there will be only one error for that clazz.
-   */
-  public abstract void reportAbstractMissing();
 
 
   /*----------------------  Interpreter  ----------------------*/

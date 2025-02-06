@@ -717,20 +717,18 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # the result list, rather this case is being treated as being one big separator.
   #
   public fields_func(p codepoint -> bool) Sequence String =>
-    state_wrapper(l Sequence String, in_run bool, start_pos, current_pos i32) is
-
-    i := state_wrapper (Sequence String).empty false 0 0
-    last_state := as_codepoints.reduce state_wrapper i (r,c)->
+    i := ff_state (Sequence String).empty false 0 0
+    last_state := as_codepoints.reduce ff_state i (r,c)->
       if p c
         if r.in_run
-          state_wrapper r.l true r.current_pos (r.current_pos + 1)
+          ff_state r.l true r.current_pos (r.current_pos + 1)
         else
-          state_wrapper (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))]) true r.current_pos (r.current_pos + 1)
+          ff_state (r.l ++ [(substring_codepoint r.start_pos (r.current_pos))]) true r.current_pos (r.current_pos + 1)
       else
         if r.in_run
-          state_wrapper r.l false r.current_pos (r.current_pos + 1)
+          ff_state r.l false r.current_pos (r.current_pos + 1)
         else
-          state_wrapper r.l false r.start_pos (r.current_pos + 1)
+          ff_state r.l false r.start_pos (r.current_pos + 1)
 
     if last_state.in_run
       last_state.l
@@ -832,7 +830,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  public type.from_mutable_array(E type : effect, a container.Mutable_Array Any E) =>  // NYI: Remove?
+  public type.from_mutable_array(E type : mutate, a container.Mutable_Array Any E) =>  // NYI: Remove?
 
     ref : String
 
@@ -872,3 +870,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public type.z_char      => "z".utf8.first.get
   public type.cap_a_char  => "A".utf8.first.get
   public type.cap_z_char  => "Z".utf8.first.get
+
+
+# state used by `String.fields_func`.
+#
+# Due to #4619, this currently cannot be declared local to `String.fields_func`
+# since it would then define a type whose outer type is `String.this` which is
+# a ref type that currently cannot be used a result type.
+#
+private ff_state(l Sequence String, in_run bool, start_pos, current_pos i32) is

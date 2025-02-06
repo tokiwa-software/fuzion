@@ -1851,16 +1851,16 @@ should be avoided as much as possible.
    *
    * @param s site of the assignment or NO_SITE if this is a call in an interface method stub.
    *
-   * @param tvalue the target value that contains the field
-   *
    * @param f the field
-   *
-   * @param value the new value for the field
    *
    * @param rt the type of the field.
    *
+   * @param tvalue the target value that contains the field
+   *
+   * @param value the new value for the field
+   *
    */
-  Expr assignField(int s, Expr tvalue, int f, Expr value, int rt)
+  Expr assignField(int s, int f, int rt, Expr tvalue, Expr value)
   {
     if (CHECKS) check
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse(),
@@ -1951,7 +1951,7 @@ should be avoided as much as possible.
               .andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int))
               .andThen(Expr.putfield(cc, Names.TAG_NAME, PrimitiveType.type_int));
             var hasref = false;
-            for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
+            for (int i = 0; i < _fuir.clazzChoiceCount(rt); i++)
               {
                 var tc = _fuir.clazzChoice(rt, i);
                 if (_fuir.clazzIsRef(tc))
@@ -1985,7 +1985,7 @@ should be avoided as much as possible.
           }
         else
           {
-            for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+            for (var i = 0; i < _fuir.clazzFieldCount(rt); i++)
               {
                 var fi = _fuir.clazzField(rt, i);
                 if (fieldExists(fi))
@@ -2156,7 +2156,7 @@ should be avoided as much as possible.
                                        Expr.iconst(1),
                                        Expr.iconst(0)));
                 var hasref = false;
-                for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
+                for (int i = 0; i < _fuir.clazzChoiceCount(rt); i++)
                   {
                     var tc = _fuir.clazzChoice(rt, i);
                     if (_fuir.clazzIsRef(tc))
@@ -2202,10 +2202,10 @@ should be avoided as much as possible.
             else // not a choice, so a 'normal' product type
               {
                 if (CHECKS) check
-                  (_fuir.clazzNumFields(rt) > 0);  // unit-types where handled above
+                  (_fuir.clazzFieldCount(rt) > 0);  // unit-types where handled above
 
                 var count = 0;
-                for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+                for (var i = 0; i < _fuir.clazzFieldCount(rt); i++)
                   {
                     var fi = _fuir.clazzField(rt, i);
                     if (fieldExists(fi))

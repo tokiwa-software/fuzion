@@ -31,4 +31,3 @@ public Persistent_Map(public K type : property.hashable, public V type) ref : Ma
   # An already existing k will be replaced.
   #
   public put(k K, v V) container.Persistent_Map K V => abstract
-
