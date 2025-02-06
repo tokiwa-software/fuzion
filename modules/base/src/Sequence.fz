@@ -1347,6 +1347,22 @@ public Sequence(public T type) ref : property.countable, property.equatable is
       res.as_map
 
 
+  # wrap this sequence into an orderable type.
+  #
+  # This requires the underlying element type to be orderable.
+  #
+  # An empty `Sequence` is always less or equal to any other `Sequence`. Two non
+  # empty `Sequence`s whose first elements are unequal are ordered by the
+  # order of those two elements. If those two elements are equal, the tail
+  # of both `Sequence`s will be used to find the order.
+  #
+  public as_orderable orderable_sequence T
+    pre
+      T : property.orderable
+  =>
+    orderable_sequence T Sequence.this
+
+
   # create an empty Sequence
   #
   public fixed type.empty Sequence T =>
@@ -1405,3 +1421,34 @@ public Sequence(public T type) ref : property.countable, property.equatable is
 #
 find_lm : mutate is
 Node(T type, top Sequence T, next once find_lm (option (Node T)), rest option (Node T)) ref is
+
+
+# Wrapper type to make a `Sequence` of an orderable element type itself orderable.
+#
+public orderable_sequence(# the element type of the Sequence we are wrapping
+                          #
+                          public T type : property.orderable,
+
+                          # the wrapped Sequence
+                          #
+                          public unwrap Sequence T)
+
+                          : property.orderable
+is
+
+  # does `a` come before `b` or is equal to `b`?
+  #
+  public redef type.lteq(a, b orderable_sequence.this) bool
+  =>
+    unwrapped_lteq a.unwrap b.unwrap
+
+
+  # does `a` come before `b` or is equal to `b`?
+  #
+  type.unwrapped_lteq(a, b Sequence T) bool
+  =>
+    match a.as_list
+      nil     => true
+      ac Cons => match b.as_list
+                   nil     => false
+                   bc Cons => ac.head <= bc.head && (!(ac.head >= bc.head) || unwrapped_lteq ac.tail bc.tail)
