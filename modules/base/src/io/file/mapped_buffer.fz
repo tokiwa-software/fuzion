@@ -32,7 +32,7 @@ module:public mapped_buffer
     # the length of this buffer
     public redef length i64
   )
-  : container.Buffer u8 mapped_buffer.this, effect is
+  : container.Buffer u8 mapped_buffer.this, mutate is
 
 
   # get byte at given index i
