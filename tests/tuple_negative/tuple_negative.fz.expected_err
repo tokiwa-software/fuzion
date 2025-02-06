@@ -1,246 +1,69 @@
 
---CURDIR--/tuple_negative.fz:164:4: error 1: Duplicate feature declaration
-  (t12b1,t12b1,t12b3 i32) := t11 4 // 19. should flag an error, repeated elements in destructuring
----^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t12b1'
-originally declared at --CURDIR--/tuple_negative.fz:164:10:
-  (t12b1,t12b1,t12b3 i32) := t11 4 // 19. should flag an error, repeated elements in destructuring
----------^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't12b1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:165:16: error 2: Duplicate feature declaration
-  (t12c1,t12c2,t12c2 i32) := t11 4 // 20. should flag an error, repeated elements in destructuring
----------------^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t12c2'
-originally declared at --CURDIR--/tuple_negative.fz:165:10:
-  (t12c1,t12c2,t12c2 i32) := t11 4 // 20. should flag an error, repeated elements in destructuring
----------^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't12c2ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:171:4: error 3: Duplicate feature declaration
+--CURDIR--/tuple_negative.fz:146:4: error 1: Duplicate feature declaration
   (t12e1,t12e2,t12e1) := t11 7 // 21. should flag an error, repeated elements in destructuring
 ---^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t12e1'
-originally declared at --CURDIR--/tuple_negative.fz:171:16:
+originally declared at --CURDIR--/tuple_negative.fz:146:16:
   (t12e1,t12e2,t12e1) := t11 7 // 21. should flag an error, repeated elements in destructuring
 ---------------^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't12e1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
---CURDIR--/tuple_negative.fz:172:4: error 4: Duplicate feature declaration
+--CURDIR--/tuple_negative.fz:147:4: error 2: Duplicate feature declaration
   (t12f1,t12f1,t12f3) := t11 7 // 22. should flag an error, repeated elements in destructuring
 ---^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t12f1'
-originally declared at --CURDIR--/tuple_negative.fz:172:10:
+originally declared at --CURDIR--/tuple_negative.fz:147:10:
   (t12f1,t12f1,t12f3) := t11 7 // 22. should flag an error, repeated elements in destructuring
 ---------^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't12f1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
---CURDIR--/tuple_negative.fz:217:4: error 5: Duplicate feature declaration
-  (t15a1,_,_ i32)            := (01, true, 23); // 31. should flag an error, duplicate declaration
+--CURDIR--/tuple_negative.fz:174:4: error 3: Duplicate feature declaration
+  (t15a1,_,_)                := (01, true, 23); // 37. should flag an error, duplicate declaration
 ---^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a1'
-originally declared at --CURDIR--/tuple_negative.fz:215:3:
+originally declared at --CURDIR--/tuple_negative.fz:172:3:
   t15a1, t15a3 i32 := 42;
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
---CURDIR--/tuple_negative.fz:218:6: error 6: Duplicate feature declaration
-  (_,t15a2,_ i32)            := (01, true, 23); // 32. should flag an error, duplicate declaration
+--CURDIR--/tuple_negative.fz:175:6: error 4: Duplicate feature declaration
+  (_,t15a2,_)                := (01, true, 23); // 38. should flag an error, duplicate declaration
 -----^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a2'
-originally declared at --CURDIR--/tuple_negative.fz:216:3:
+originally declared at --CURDIR--/tuple_negative.fz:173:3:
   t15a2 bool := false;
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a2ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
---CURDIR--/tuple_negative.fz:219:8: error 7: Duplicate feature declaration
-  (_,_,t15a3 i32)            := (01, true, 23); // 33. should flag an error, duplicate declaration
+--CURDIR--/tuple_negative.fz:176:8: error 5: Duplicate feature declaration
+  (_,_,t15a3)                := (01, true, 23); // 39. should flag an error, duplicate declaration
 -------^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a3'
-originally declared at --CURDIR--/tuple_negative.fz:215:10:
+originally declared at --CURDIR--/tuple_negative.fz:172:10:
   t15a1, t15a3 i32 := 42;
 ---------^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a3ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
---CURDIR--/tuple_negative.fz:220:4: error 8: Duplicate feature declaration
-  (t15a1 i32, _ bool, _ i32) := (01, true, 23); // 34. should flag an error, duplicate declaration
----^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t15a1'
-originally declared at --CURDIR--/tuple_negative.fz:217:4:
-  (t15a1,_,_ i32)            := (01, true, 23); // 31. should flag an error, duplicate declaration
----^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't15a1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:221:11: error 9: Duplicate feature declaration
-  (_ i32, t15a2 bool, _ i32) := (01, true, 23); // 35. should flag an error, duplicate declaration
-----------^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t15a2'
-originally declared at --CURDIR--/tuple_negative.fz:218:6:
-  (_,t15a2,_ i32)            := (01, true, 23); // 32. should flag an error, duplicate declaration
------^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't15a2ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:222:19: error 10: Duplicate feature declaration
-  (_ i32, _ bool, t15a3 i32) := (01, true, 23); // 36. should flag an error, duplicate declaration
-------------------^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t15a3'
-originally declared at --CURDIR--/tuple_negative.fz:219:8:
-  (_,_,t15a3 i32)            := (01, true, 23); // 33. should flag an error, duplicate declaration
--------^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't15a3ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:223:4: error 11: Duplicate feature declaration
-  (t15a1,_,_)                := (01, true, 23); // 37. should flag an error, duplicate declaration
----^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t15a1'
-originally declared at --CURDIR--/tuple_negative.fz:220:4:
-  (t15a1 i32, _ bool, _ i32) := (01, true, 23); // 34. should flag an error, duplicate declaration
----^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't15a1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:224:6: error 12: Duplicate feature declaration
-  (_,t15a2,_)                := (01, true, 23); // 38. should flag an error, duplicate declaration
------^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t15a2'
-originally declared at --CURDIR--/tuple_negative.fz:221:11:
-  (_ i32, t15a2 bool, _ i32) := (01, true, 23); // 35. should flag an error, duplicate declaration
-----------^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't15a2ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:225:8: error 13: Duplicate feature declaration
-  (_,_,t15a3)                := (01, true, 23); // 39. should flag an error, duplicate declaration
--------^^^^^
-Feature that was declared repeatedly: 'tuple_negative.t15a3'
-originally declared at --CURDIR--/tuple_negative.fz:222:19:
-  (_ i32, _ bool, t15a3 i32) := (01, true, 23); // 36. should flag an error, duplicate declaration
-------------------^^^^^
-To solve this, consider renaming one of these two features, e.g., as 't15a3ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
-
-
---CURDIR--/tuple_negative.fz:76:22: error 14: Failed to infer open type parameter type from actual argument.
-  one4 tuple      := tuple i32 42 ; //  5. should flag an error, type inference does not infer generics of result type
----------------------^^^^^
-Type of second actual argument could not be inferred at --CURDIR--/tuple_negative.fz:76:28:
-  one4 tuple      := tuple i32 42 ; //  5. should flag an error, type inference does not infer generics of result type
----------------------------^^^
-
-
---CURDIR--/tuple_negative.fz:81:19: error 15: Destructuring mismatch between number of visible fields and number of target variables.
-  (one12b)        :=         (nil); p "one12 is $one12" //  9. should flag an error, (expr) is not a tuple
-------------------^
+--CURDIR--/tuple_negative.fz:74:18: error 6: Destructuring mismatch between number of visible fields and number of target variables.
+  (one12b)       :=         (nil); p "one12 is $one12b" //  9. should flag an error, (expr) is not a tuple
+-----------------^
 Found no visible argument fields ''
 while there is one destructuring variable: 'one12b'.
 
 
---CURDIR--/tuple_negative.fz:90:27: error 16: Failed to infer open type parameter type from actual argument.
-  two4 tuple           := tuple i32 i32 4  2 ; // 12. should flag an error, type inference does not infer generics of result type
---------------------------^^^^^
-Type of second actual argument could not be inferred at --CURDIR--/tuple_negative.fz:90:33:
-  two4 tuple           := tuple i32 i32 4  2 ; // 12. should flag an error, type inference does not infer generics of result type
---------------------------------^^^
+--CURDIR--/tuple_negative.fz:72:60: error 7: Use of selector requires call to feature whose type is an open type parameter
+  one9           :=          (42); p "one9 is {one9.values.0}" //  8. should flag an error, (expr) is not a tuple, one9 is an i32
+-----------------------------------------------------------^
+Selected variant: '0'
+Type of called feature: 'i32'
 
 
---CURDIR--/tuple_negative.fz:189:8: error 17: Incompatible types in tuple destructuring
-  (_,_ i32) := (true, 23) // 23. should flag an error, illegal type
--------^^^
-expected formal type: 'i32'
-actual type found   : 'bool'
-To solve this, replace the type 'bool' by a value of type compatible to 'i32'.
-
-
---CURDIR--/tuple_negative.fz:197:17: error 18: Incompatible types in tuple destructuring
-  (t13c1 i32, _ bool, _ i32) := (01, 12, 23); // 25. should flag an error, illegal type
-----------------^^^^
-expected formal type: 'bool'
-actual type found   : 'i32'
-To solve this, replace the type 'i32' by a value of type compatible to 'bool'.
-
-
---CURDIR--/tuple_negative.fz:198:17: error 19: Incompatible types in tuple destructuring
-  (_ i32, t13c2 bool, _ i32) := (01, 12, 23); // 26. should flag an error, illegal type
-----------------^^^^
-expected formal type: 'bool'
-actual type found   : 'i32'
-To solve this, replace the type 'i32' by a value of type compatible to 'bool'.
-
-
---CURDIR--/tuple_negative.fz:199:13: error 20: Incompatible types in tuple destructuring
-  (_ i32, _ bool, t13c3 i32) := (01, 12, 23); // 27. should flag an error, illegal type
-------------^^^^
-expected formal type: 'bool'
-actual type found   : 'i32'
-To solve this, replace the type 'i32' by a value of type compatible to 'bool'.
-
-
---CURDIR--/tuple_negative.fz:205:14: error 21: Incompatible types in tuple destructuring
-  (t14b1,_,_ i32)            := (01, true, 23); // 28. should flag an error, illegal type
--------------^^^
-expected formal type: 'i32'
-actual type found   : 'bool'
-To solve this, replace the type 'bool' by a value of type compatible to 'i32'.
-
-
---CURDIR--/tuple_negative.fz:206:14: error 22: Incompatible types in tuple destructuring
-  (_,t14b2,_ i32)            := (01, true, 23); // 29. should flag an error, illegal type
--------------^^^
-expected formal type: 'i32'
-actual type found   : 'bool'
-To solve this, replace the type 'bool' by a value of type compatible to 'i32'.
-
-
---CURDIR--/tuple_negative.fz:207:14: error 23: Incompatible types in tuple destructuring
-  (_,_,t14b3 i32)            := (01, true, 23); // 30. should flag an error, illegal type
--------------^^^
-expected formal type: 'i32'
-actual type found   : 'bool'
-To solve this, replace the type 'bool' by a value of type compatible to 'i32'.
-
-
---CURDIR--/tuple_negative.fz:217:14: error 24: Incompatible types in tuple destructuring
-  (t15a1,_,_ i32)            := (01, true, 23); // 31. should flag an error, duplicate declaration
--------------^^^
-expected formal type: 'i32'
-actual type found   : 'bool'
-To solve this, replace the type 'bool' by a value of type compatible to 'i32'.
-
-
---CURDIR--/tuple_negative.fz:218:14: error 25: Incompatible types in tuple destructuring
-  (_,t15a2,_ i32)            := (01, true, 23); // 32. should flag an error, duplicate declaration
--------------^^^
-expected formal type: 'i32'
-actual type found   : 'bool'
-To solve this, replace the type 'bool' by a value of type compatible to 'i32'.
-
-
---CURDIR--/tuple_negative.fz:219:14: error 26: Incompatible types in tuple destructuring
-  (_,_,t15a3 i32)            := (01, true, 23); // 33. should flag an error, duplicate declaration
--------------^^^
-expected formal type: 'i32'
-actual type found   : 'bool'
-To solve this, replace the type 'bool' by a value of type compatible to 'i32'.
-
-
---CURDIR--/tuple_negative.fz:79:54: error 27: Could not find called feature
-  one9            :=          (42); p "one9 is {one9.values.0}" //  8. should flag an error, (expr) is not a tuple, one9 is an i32
------------------------------------------------------^^^^^^
-Feature not found: 'values' (no arguments)
-Target feature: 'i32'
-In call: 'one9.values.0'
-
-
---CURDIR--/tuple_negative.fz:75:3: error 28: Incompatible types in assignment
+--CURDIR--/tuple_negative.fz:69:3: error 8: Incompatible types in assignment
   one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" //  4. should flag an error, (expr) is not a tuple
 --^^^^
 assignment to field : 'tuple_negative.one3'
@@ -251,8 +74,8 @@ for value assigned  : '(42)'
 To solve this, you could change the type of the target 'tuple_negative.one3' to 'i32' or convert the type of the assigned value to 'tuple i32'.
 
 
---CURDIR--/tuple_negative.fz:77:3: error 29: Incompatible types in assignment
-  one5 tuple      := tuple     42 ; //  6. should flag an error, type inference does not infer generics of result type
+--CURDIR--/tuple_negative.fz:70:3: error 9: Incompatible types in assignment
+  one5 tuple     := tuple     42 ;      //  6. should flag an error, type inference does not infer generics of result type
 --^^^^
 assignment to field : 'tuple_negative.one5'
 expected formal type: 'tuple'
@@ -265,8 +88,8 @@ To solve this you could:
   • convert the type of the assigned value to 'tuple'.
 
 
---CURDIR--/tuple_negative.fz:78:3: error 30: Incompatible types in assignment
-  one6 tuple      :=          (42); //  7. should flag an error, type inference does not infer generics of result type
+--CURDIR--/tuple_negative.fz:71:3: error 10: Incompatible types in assignment
+  one6 tuple     :=          (42);      //  7. should flag an error, type inference does not infer generics of result type
 --^^^^
 assignment to field : 'tuple_negative.one6'
 expected formal type: 'tuple'
@@ -276,7 +99,7 @@ for value assigned  : '(42)'
 To solve this, you could change the type of the target 'tuple_negative.one6' to 'i32' or convert the type of the assigned value to 'tuple'.
 
 
---CURDIR--/tuple_negative.fz:91:3: error 31: Incompatible types in assignment
+--CURDIR--/tuple_negative.fz:82:3: error 11: Incompatible types in assignment
   two5 tuple           := tuple         4  2 ; // 13. should flag an error, type inference does not infer generics of result type
 --^^^^
 assignment to field : 'tuple_negative.two5'
@@ -290,7 +113,7 @@ To solve this you could:
   • convert the type of the assigned value to 'tuple'.
 
 
---CURDIR--/tuple_negative.fz:92:3: error 32: Incompatible types in assignment
+--CURDIR--/tuple_negative.fz:83:3: error 12: Incompatible types in assignment
   two6 tuple           :=              (4, 2); // 14. should flag an error, type inference does not infer generics of result type
 --^^^^
 assignment to field : 'tuple_negative.two6'
@@ -304,15 +127,15 @@ To solve this you could:
   • convert the type of the assigned value to 'tuple'.
 
 
---CURDIR--/tuple_negative.fz:110:13: error 33: Type inference from actual arguments failed since no actual call was found
+--CURDIR--/tuple_negative.fz:97:13: error 13: Type inference from actual arguments failed since no actual call was found
   t10 (i32, bool) => (3, false) // 15. should flag an error, no syntactic sugar for tuple types
 ------------^^^^
 For the formal argument 'tuple_negative.t10.bool' the type can only be derived if there is a call to 'tuple_negative.t10'.
 
 
---CURDIR--/tuple_negative.fz:110:8: error 34: Type inference from actual arguments failed since no actual call was found
+--CURDIR--/tuple_negative.fz:97:8: error 14: Type inference from actual arguments failed since no actual call was found
   t10 (i32, bool) => (3, false) // 15. should flag an error, no syntactic sugar for tuple types
 -------^^^
 For the formal argument 'tuple_negative.t10.i32' the type can only be derived if there is a call to 'tuple_negative.t10'.
 
-34 errors.
+14 errors.
