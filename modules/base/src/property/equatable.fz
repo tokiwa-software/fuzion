@@ -40,8 +40,10 @@ public equatable is
   # as 'b'.
   #
   public type.equality(a, b equatable.this) bool
-  pre
-    is_equatable
+  # NYI: BUG: see #4676
+  #
+  # pre
+  #   is_equatable
   => abstract
 
 

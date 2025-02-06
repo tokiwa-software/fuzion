@@ -231,7 +231,6 @@ public class FrontEnd extends ANY
     FeatureName.reset();
     Expr.reset();
     Call.reset();
-    Contract.reset();
     HasGlobalIndex.reset();
     _sourceModule = null;
     _modules.clear();
