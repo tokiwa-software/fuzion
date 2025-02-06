@@ -2192,10 +2192,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
         if (a == Types.t_UNDEFINED)
           {
-            if (!Errors.any())
-              {
-                AstErrors.failedToInferActualGeneric(pos, called, new List<>(f));
-              }
+            AstErrors.failedToInferActualGeneric(pos, called, new List<>(f));
           }
         else
           {
