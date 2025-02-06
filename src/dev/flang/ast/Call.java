@@ -1371,47 +1371,44 @@ public class Call extends AbstractCall
    */
   protected AbstractType getActualResultType(Resolution res, Context context, boolean urgent)
   {
-    AbstractType frmlT;
+    AbstractType result;
     if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
       {
-        frmlT = Types.resolved.t_void; // a recursive call will not return and execute further
+        result = Types.resolved.t_void; // a recursive call will not return and execute further
       }
     else
       {
         _recursiveResolveType = true;
-        frmlT = _calledFeature.resultTypeIfPresentUrgent(res, urgent);
-        if (urgent && (frmlT == Types.t_UNDEFINED || frmlT == null))
+        result = _calledFeature.resultTypeIfPresentUrgent(res, urgent);
+        _recursiveResolveType = false;
+
+        if (urgent && (result == Types.t_UNDEFINED || result == null))
           {
             // Handling of cyclic type inference. It might be
             // better if this was done in `Feature.resultType`, but
             // there we do not have access to Call.this.pos(), so
             // we do it here.
             AstErrors.forwardTypeInference(pos(), _calledFeature, _calledFeature.pos());
-            frmlT = Types.t_ERROR;
+            result = Types.t_ERROR;
           }
-        _recursiveResolveType = false;
+        else if (result != null)
+          {
+            var tt = targetIsTypeParameter() && result.isThisTypeInCotype()
+              ? // a call B.f for a type parameter target B. resultType() is the
+              // constraint of B, so we create the corresponding type feature's
+              // selfType:
+              // NYI: CLEANUP: remove this special handling!
+              _target.type().feature().selfType()
+              : targetType(res, context);
+
+            var t0 = tt == Types.t_ERROR ? tt : resolveSelect(result, tt);
+            var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
+            var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
+            var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
+            var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
+            result = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+          }
       }
-
-    var result = frmlT;
-
-    if (frmlT != null)
-      {
-        var tt = targetIsTypeParameter() && frmlT.isThisTypeInCotype()
-          ? // a call B.f for a type parameter target B. resultType() is the
-          // constraint of B, so we create the corresponding type feature's
-          // selfType:
-          // NYI: CLEANUP: remove this special handling!
-          _target.type().feature().selfType()
-          : targetType(res, context);
-
-        var t0 = tt == Types.t_ERROR ? tt : resolveSelect(frmlT, tt);
-        var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
-        var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
-        var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
-        var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
-        result = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
-      }
-
     return result;
   }
 
