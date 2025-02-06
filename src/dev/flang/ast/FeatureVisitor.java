@@ -53,35 +53,34 @@ public abstract class FeatureVisitor extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public void         action      (AbstractAssign   a, AbstractFeature outer) { }
-  public void         actionBefore(Block            b, AbstractFeature outer) { }
-  public void         actionAfter (Block            b, AbstractFeature outer) { }
+  public void         action      (AbstractAssign   a                       ) { }
+  public void         actionBefore(Block            b                       ) { }
+  public void         actionAfter (Block            b                       ) { }
   public void         action      (AbstractCall     c                       ) { }
   public void         action      (Constant c                               ) { }
   // this is used for resolving dot-type-calls that omit the .type
-  public void         actionBefore(Call             c, AbstractFeature outer) { }
-  public Expr         action      (Call             c, AbstractFeature outer) { return c; }
-  public Expr         action      (DotType          d, AbstractFeature outer) { return d; }
+  public void         actionBefore(Call             c                       ) { }
+  public Expr         action      (Call             c                       ) { return c; }
+  public Expr         action      (DotType          d                       ) { return d; }
   public void         actionBefore(AbstractCase     c, AbstractMatch m      ) { actionBefore(c); }
   public void         actionBefore(AbstractCase     c                       ) { }
   public void         actionAfter (AbstractCase     c, AbstractMatch m      ) { actionAfter(c); }
   public void         actionAfter (AbstractCase     c                       ) { }
-  public void         action      (Cond             c, AbstractFeature outer) { }
-  public Expr         action      (AbstractCurrent  c, AbstractFeature outer) { return c; }
-  public Expr         action      (Destructure      d, AbstractFeature outer) { return d; }
+  public void         action      (Cond             c                       ) { }
+  public Expr         action      (AbstractCurrent  c                       ) { return c; }
+  public Expr         action      (Destructure      d                       ) { return d; }
   public Expr         action      (Feature          f, AbstractFeature outer) { return f; }
-  public Expr         action      (Function         f, AbstractFeature outer) { return f; }
-  public Expr         action      (If               i, AbstractFeature outer) { return i; }
+  public Expr         action      (Function         f                       ) { return f; }
+  public Expr         action      (If               i                       ) { return i; }
   public void         actionBeforeIfThen(If         i                       ) { }
   public void         actionBeforeIfElse(If         i                       ) { }
   public void         actionAfterIf     (If         i                       ) { }
-  public void         action      (Impl             i, AbstractFeature outer) { }
-  public Expr         action      (InlineArray      i, AbstractFeature outer) { return i; }
+  public void         action      (Impl             i                       ) { }
+  public Expr         action      (InlineArray      i                       ) { return i; }
   public void         action      (AbstractMatch    m                       ) { }
-  public void         action      (Match            m, AbstractFeature outer) { }
-  public void         action      (Tag              b, AbstractFeature outer) { }
-  public Expr         action      (This             t, AbstractFeature outer) { return t; }
-  public AbstractType action      (AbstractType     t, AbstractFeature outer) { return t; }
+  public void         action      (Tag              b                       ) { }
+  public Expr         action      (This             t                       ) { return t; }
+  public AbstractType action      (AbstractType     t                       ) { return t; }
 
   /**
    * Visitors that want a different treatment for visiting actual arguments of a

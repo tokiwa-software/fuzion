@@ -54,7 +54,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
     redef call(a T) R =>
       # compute if not yet computed
       if store[a].is_nil
-        store.add a (f a)
+        store.put a (f a)
       store[a].get
 
 
@@ -184,7 +184,7 @@ public memoize is
               ) V
   =>
 
-    # NYI: should be done via effect configation file, see `effect.type.default`.
+    # NYI: should be done via effect configuration file, see `effect.type.default`.
     #
     if !(memoized K V).is_instated
       (memoized K V).default

@@ -37,8 +37,8 @@ ex_nested_lazy is
 
   # NYI: does not work:
   say (lazy0 ()->42)
-  x Function i32 := ()->42
-  say (lazy0 x)
+  fn Function i32 := ()->42
+  say (lazy0 fn)
 
   lazy1(f Function (Lazy i32)) i32 =>
     f().call

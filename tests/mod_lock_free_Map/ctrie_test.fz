@@ -36,7 +36,7 @@ ctrie_test is
   no_items := ctrie.snapshot true
 
   for k in all do
-    ctrie.add k "v$k"
+    ctrie.put k "v$k"
 
   all_items := ctrie.snapshot true
 
@@ -46,7 +46,7 @@ ctrie_test is
   half_of_items := ctrie.snapshot true
 
   for k in readded do
-    ctrie.add k "v$k"
+    ctrie.put k "v$k"
 
   no  := removed.difference readded
   yes := (all.difference removed) ∪ readded

@@ -35,11 +35,6 @@ module fuzion.std is
   # panic -- display a panic message and exit immediately with error code 1
   #
   module panic(msg String) void =>
-    fuzion.sys.err.println "*** panic: $msg"
+    io.err.println "*** panic: $msg"
     std.this.exit 1
 
-  # no guarantee can be given for precision nor resolution
-  module fzE_nanotime u64 => native
-
-  # no guarantee can be given for precision nor resolution
-  module fzE_nanosleep(arg1 u64) unit => native

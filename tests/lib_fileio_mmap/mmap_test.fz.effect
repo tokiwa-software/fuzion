@@ -1,6 +1,7 @@
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
-io.out
+io.Err
+io.Out
 io.file.delete
 fuzion.runtime.post_fault
 panic

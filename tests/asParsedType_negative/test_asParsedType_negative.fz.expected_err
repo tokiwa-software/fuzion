@@ -68,7 +68,7 @@ found none.
 
 
 --CURDIR--/test_asParsedType_negative.fz:146:3: error 8: Wrong number of type parameters
-  x (io.out.env)                // 8. should flag an error: env is not a type
+  x (io.Out.env)                // 8. should flag an error: env is not a type
 --^
 Wrong number of actual type parameters in call:
 Called feature: test_asParsedType_negative.x
@@ -77,7 +77,7 @@ found none.
 
 
 --CURDIR--/test_asParsedType_negative.fz:147:3: error 9: Wrong number of type parameters
-  x (io.out.type)               // 9. should flag an error: type instance is not a type
+  x (io.Out.type)               // 9. should flag an error: type instance is not a type
 --^
 Wrong number of actual type parameters in call:
 Called feature: test_asParsedType_negative.x
@@ -85,31 +85,15 @@ expected one generic argument for 'T'
 found none.
 
 
---CURDIR--/test_asParsedType_negative.fz:149:5: error 10: Type not found
+--CURDIR--/test_asParsedType_negative.fz:149:5: error 10: Select clause is not a valid type
   x t.values.0                  // 10. should flag an error: select is not a type
-----^
-Type 't' was not found, no corresponding feature nor formal type parameter exists
-Type that was not found: 't'
-in feature: 'test_asParsedType_negative'
-However, one feature has been found that matches the type name but that does not define a type:
-'test_asParsedType_negative.t' defined at --CURDIR--/test_asParsedType_negative.fz:148:3:
-  t := (3,4,5)
---^
-
-To solve this, check the spelling of the type you have used.
+----^^^^^^^^^^
+To solve, this specify a valid type.
 
 
---CURDIR--/test_asParsedType_negative.fz:150:5: error 11: Type not found
+--CURDIR--/test_asParsedType_negative.fz:150:5: error 11: Select clause is not a valid type
   x t.values.2                  // 11. should flag an error: select is not a type
-----^
-Type 't' was not found, no corresponding feature nor formal type parameter exists
-Type that was not found: 't'
-in feature: 'test_asParsedType_negative'
-However, one feature has been found that matches the type name but that does not define a type:
-'test_asParsedType_negative.t' defined at --CURDIR--/test_asParsedType_negative.fz:148:3:
-  t := (3,4,5)
---^
-
-To solve this, check the spelling of the type you have used.
+----^^^^^^^^^^
+To solve, this specify a valid type.
 
 11 errors.

@@ -71,8 +71,6 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
   -cp "$FUZION_JAVA_CLASSPATH" \
   -Dline.separator="$LINE_SEPARATOR" \
   -Dfile.encoding=UTF-8 \
-  -Dsun.stdout.encoding=UTF-8 \
-  -Dsun.stderr.encoding=UTF-8 \
   -Dfuzion.home="$FUZION_HOME" \
   -Dfuzion.command="$FUZION_CMD" \
   dev.flang.tools.Fuzion \

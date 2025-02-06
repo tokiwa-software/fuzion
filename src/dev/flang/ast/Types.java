@@ -235,7 +235,7 @@ public class Types extends ANY
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
       f_safety                  = universe.get(mod, "safety", 0);
-      f_array                   = universe.get(mod, "array", 5);
+      f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);

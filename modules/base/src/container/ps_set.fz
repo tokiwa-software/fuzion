@@ -116,4 +116,4 @@ is
   #
   # This feature creates a pre-initialized instance of ps_set.
   #
-  public fixed redef type.new(vs Sequence K) => (container.ps_set K).empty.add_all vs
+  public fixed redef type.new(vs Sequence K) container.Set K => (container.ps_set K).empty.add_all vs

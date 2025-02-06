@@ -855,9 +855,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_replace",
-                                       "(" + ("I" +
-                                              Names.ANY_DESCR) +
-                                       ")V",
+                                       "(I" + Names.ANYI_DESCR + ")V",
                                        ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });

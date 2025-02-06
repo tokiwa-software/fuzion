@@ -140,7 +140,7 @@ public class FormalGenerics extends ANY
     if (PRECONDITIONS) require
       (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
 
-    var result = sizeMatches(actualGenerics);
+    var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
     if (!result)
       {
         AstErrors.wrongNumberOfGenericArguments(this,

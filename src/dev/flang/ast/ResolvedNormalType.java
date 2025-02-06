@@ -553,7 +553,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    return v.action(this, outerfeat);
+    return v.action(this);
   }
 
 
@@ -631,7 +631,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return this == Types.t_UNDEFINED ? this :
+    return (this == Types.t_UNDEFINED || this == Types.t_ERROR) ? this :
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)

@@ -32,7 +32,7 @@
 #       .bind c->
 #         net.connections.with unit mutate c ()->
 #           say net.channel.env.get_peer_address
-#           say ((io.buffered.writer lm).write [0,1,2]).bytes_written
+#           say ((io.buffered lm).writer.write [0,1,2]).bytes_written
 #
 # Blocks until connection is establised.
 # NYI blocking / none blocking

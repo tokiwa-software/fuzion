@@ -23,11 +23,11 @@
 
 
 # buffered.reader effect allows buffered reading
-# by using the given Read_Provider
+# by using the given Read_Handler
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(LM type : mutate, rp Read_Provider, buf_size i32) : effect
+public reader(rh Read_Handler, buf_size i32) : effect
 pre debug: buf_size > 0
 is
 
@@ -78,7 +78,7 @@ is
     pre
       debug: buffer.buffered = 0
   =>
-    match rp.read buffer.available.as_i32
+    match rh.read buffer.available.as_i32
       a array u8 =>
         match buffer.enqueue a
           unit => unit
@@ -110,24 +110,26 @@ is
 
 # short hand for getting the currently installed `buffered.reader`
 #
-reader (LM type : mutate) =>
-  (io.buffered.reader LM).env
+# NYI: CLEANUP: remove?
+#
+reader =>
+  reader.env
 
 
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(LM type : mutate, n i32) Sequence u8 ! reader LM =>
+public read_bytes(n i32) Sequence u8 ! reader =>
 
   res := (mutate.array u8).new LM
 
   _ :=
     for n_read := 0, n_read + r
     while n_read < n
-      r := match (reader LM).read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
+      r := match reader.read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
           outcome => -1
           a (array u8) =>
-            (reader LM).discard a.length
+            reader.discard a.length
             for b in a do
               res.add b
             a.length
@@ -138,7 +140,7 @@ public read_bytes(LM type : mutate, n i32) Sequence u8 ! reader LM =>
 # read string, up to n codepoints or until end of file
 # requires `buffered.reader` effect to be installed.
 #
-public read_string(LM type : mutate, n i32) outcome String ! reader LM
+public read_string(n i32) outcome String ! reader
 pre debug: n >= 0
 =>
 
@@ -157,17 +159,17 @@ pre debug: n >= 0
       .as_array
 
     bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
-    (reader LM).discard bytes_used
+    reader.discard bytes_used
     v
 
   for
-    is_eof                 := (reader LM).read  ? outcome => true | array => false
-    next_bytes Sequence u8 := ((reader LM).read ? outcome => []   | a array => a), rest ++ ((reader LM).read ? outcome => [] | a array => a)
+    is_eof                 := reader.read  ? outcome => true | array => false
+    next_bytes Sequence u8 := (reader.read ? outcome => []   | a array => a), rest ++ (reader.read ? outcome => [] | a array => a)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
     # we trigger a `discard_all` and remember what we read so far via `rest`.
     # this is necesarry e.g. for stdin where we read one byte at a time.
-    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then (reader LM).discard_all; next_bytes else []
+    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.discard_all; next_bytes else []
     codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
     res Sequence String    := next_codepoints, res ++ next_codepoints
   while !is_eof && codepoint_count < n
@@ -185,15 +187,15 @@ pre debug: n >= 0
 # if specified, strips carriage return bytes before
 # the delimiter before returning the read data
 #
-public read_delimiter (LM type : mutate, delim u8, strip_cr bool) switch String io.end_of_file ! reader LM =>
+public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! reader =>
 
-  if (reader LM).read ? outcome => true | * => false
+  if reader.read ? outcome => true | * => false
     io.end_of_file
   else
     res := (mutate.array u8).new LM
 
     while
-      match (reader LM).read
+      match reader.read
         outcome =>
           false
         a array =>
@@ -211,11 +213,11 @@ public read_delimiter (LM type : mutate, delim u8, strip_cr bool) switch String 
           match a.index_of delim
             idx i32 =>
               add_to_res (a.slice 0 idx)
-              (reader LM).discard idx+1
+              reader.discard idx+1
               false
             nil =>
               add_to_res a
-              (reader LM).discard_all
+              reader.discard_all
               true
 
     ref : String
@@ -226,16 +228,16 @@ public read_delimiter (LM type : mutate, delim u8, strip_cr bool) switch String 
 # to read until a line feed occurs.
 # returns the line
 #
-public read_line (LM type : mutate) switch String io.end_of_file ! (reader LM) =>
-  read_delimiter LM encodings.ascii.lf true
+public read_line switch String io.end_of_file ! reader =>
+  read_delimiter encodings.ascii.lf true
 
 
 # Read input fully into an array of bytes until end_of_file is reached
 #
-public read_fully (LM type : mutate) array u8 ! (reader LM) =>
+public read_fully array u8 ! reader =>
   for
     r Sequence u8 := [], r++n
-    n := (io.buffered.read_bytes LM 8192)
+    n := read_bytes 8192
   while n.count > 0 else
     r.as_array
 
@@ -243,8 +245,8 @@ public read_fully (LM type : mutate) array u8 ! (reader LM) =>
 # Read input fully and split it at the given delimiter. If specified, delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
-public read_delimiter_full (LM type : mutate, delim String, strip_cr bool) array String ! (reader LM) =>
-  str := (String.from_bytes (read_fully LM))
+public read_delimiter_full(delim String, strip_cr bool) array String ! reader =>
+  str := String.from_bytes read_fully
   if str.byte_length > 0
     (str.ends_with "\n" ? str.substring 0 str.byte_length-1 : str)
       .split delim
@@ -256,18 +258,18 @@ public read_delimiter_full (LM type : mutate, delim String, strip_cr bool) array
 # Read input fully and split it at linefeed (ASCII 10) characters. Delete
 # any trailing carriage returns (ASCII 13) from the resulting strings.
 #
-public read_lines (LM type : mutate) array String ! (reader LM) =>
-  read_delimiter_full LM "\n" true
+public read_lines array String ! reader =>
+  read_delimiter_full "\n" true
 
 
 # Read input line by line calling `f` for each line until `f` returns false
 # or end_of_file is reached.
 #
-public read_line_while(LM type : mutate, f String -> bool) ! (reader LM) =>
+public read_line_while(f String -> bool) ! reader =>
   for s := "",  s + "\n" + match rl
                              s1 String => s1
                              io.end_of_file => panic "unreachable code path"
-      rl := io.buffered.read_line LM
+      rl := read_line
   while match rl
           str String => f str
           io.end_of_file => false

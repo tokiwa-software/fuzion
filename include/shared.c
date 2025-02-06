@@ -114,7 +114,7 @@ void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
 
 // global instance of the jvm
 JavaVM *fzE_jvm                = NULL;
-// global instance of the jvm environment
+// thread local instance of the jvm environment
 __thread JNIEnv *fzE_jni_env   = NULL;
 _Bool jvm_running              = false;
 

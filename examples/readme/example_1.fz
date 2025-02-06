@@ -15,7 +15,7 @@ hello_world is
     #
     get_name =>
       (io.stdin.reader lm) ! ()->
-        io.buffered.read_line lm ? str String => str | io.end_of_file => ""
+        (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
     # greet someone with the name given
     #

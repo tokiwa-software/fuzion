@@ -91,7 +91,7 @@ public class DotType extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _lhs = _lhs.visit(v, outer);
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -120,7 +120,7 @@ public class DotType extends ExprWithPos
    *
    * @param context the source code context where this Call is used
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
     return _lhs.isGenericArgument() && !_lhs.genericArgument().isThisTypeInCotype()
       ? _lhsExpr

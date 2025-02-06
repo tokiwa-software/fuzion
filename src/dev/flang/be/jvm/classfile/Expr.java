@@ -141,7 +141,7 @@ public abstract class Expr extends ByteCode
    * This inherits from Label that defines the start of this try-catch.
    *
    * The main thing that this does when it is part of the code is inform the
-   * {@code ByteCodeWriter} passed to {@code code()} about its existance by calling
+   * {@code ByteCodeWriter} passed to {@code code()} about its existence by calling
    * {@code by.addExceptionTable}.
    */
   static class TryCatch extends Label
