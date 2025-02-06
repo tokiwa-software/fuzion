@@ -175,7 +175,7 @@ public abstract class Tool extends ANY
    * Return the full version information of this tool, including build date, git
    * hash, built by.
    */
-  public String fullVersion()
+  public static String fullVersion()
   {
     var result = Version.VERSION + " (";
 

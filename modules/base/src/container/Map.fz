@@ -63,11 +63,18 @@ public Map(public K type : property.equatable, public V type) ref is
   #
   public redef as_string =>
     for
-      r := "", r + c + "($k => {index[] k})"
+      r := $"\{", r + c + "($k => {index[] k})"
       k in keys
       c := "", ", "
     else
-      r
+      r + "}"
+
+
+  # create a mutable map from this
+  #
+  # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
+  #
+  public as_mutable_map(LM type : mutate) container.Mutable_Map K V => abstract
 
 
   # initializer for this map

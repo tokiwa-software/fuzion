@@ -61,6 +61,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include "fz.h"
 
 
+// returns the latest error number of
+// the current thread
+int fzE_last_error(void){
+  return (int)GetLastError();
+}
+
+// NYI missing set_last_error, see posix.c
+
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
   return CreateDirectory(pathname, NULL)

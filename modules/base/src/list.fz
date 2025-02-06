@@ -289,6 +289,18 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
                           list acc (c.tail.scan acc m)
 
 
+  # map this list to a list that contains the result of folding
+  # all prefixes using the given function and initial value.
+  #
+  # e.g., for a list s of i32, s.scan (+) 0 creates a list of
+  # partial sums (0..).map x->(s.take x).fold i32.sum
+  #
+  public redef scan (T type, f Binary T T A, a T) Sequence T =>
+    match head
+      nil => a : nil
+      x A => (a : (tail.scan T f (f a x)).as_list)
+
+
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
@@ -558,6 +570,91 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     flat_map x->(b.map y->(f x y))
 
 
+  # filter out consecutive duplicate elements and return result as a list.
+  #
+  # Keep the order of elements unchanged.
+  #
+  # ex.
+  #   [1,2,2,3,2,2,2,4].dedup_list = [1,2,3,2,4]
+  #
+  public dedup_list list A
+    pre
+      A : property.equatable
+    =>
+      match list.this
+        nil    => nil
+        c Cons => c.head : c.tail.drop_while_list (=c.head) .dedup_list
+
+
+  # filter out consecutive duplicate elements using the
+  # given relation and return result as a list.
+  #
+  # Keep the order of elements unchanged.
+  #
+  # ex.
+  #   [4,2,2,6,2,1,2,4].dedup_list (a,b -> a%2=b%2) = [4,1,2]
+  #   [4,2,2,6,2,1,2,4].dedup_list (<=) = [4,2,1]
+  #
+  public dedup_list(by (A,A) -> bool) list A
+    pre
+      A : property.equatable
+    =>
+      match list.this
+        nil    => nil
+        c Cons => c.head : c.tail.drop_while_list (x -> by c.head x) .dedup_list by
+
+
+  # filter out duplicate elements and return result as a list.
+  #
+  # Keep the order of elements unchanged.
+  #
+  # Other languages call this 'distinct', e.g. Java, C# or Kotlin
+  #
+  # ex.
+  #   [4,1,2,2,3,2,2,2,4].unique_list = [4, 1, 2, 3]
+  #
+  public unique_list list A
+    pre
+      A : property.orderable
+    =>
+      /* NYI: CLEANUP: #4628 the following code can be used once #4628 is fixed
+
+        unique_list2(l list A, existing container.Set A) list A =>
+          match list.this
+            nil    => nil
+            c Cons => if existing.contains c.head then          unique_list2 l  existing
+                      else                             c.head : unique_list2 l (existing.add c.head)
+        unique_list2 list.this (container.ps_set A).empty
+      */
+
+      # workaround for #4628 using new type parameter `X`:
+      unique_list(X type : property.orderable, l list X, existing container.Set X) list X =>
+        match l
+          nil    => nil
+          c Cons => if existing.contains c.head then          unique_list X c.tail  existing
+                    else                             c.head : unique_list X c.tail (existing.add c.head)
+
+      unique_list A list.this (container.ps_set A).empty
+
+
+  # sliding window
+  # blocks of size elements, each is offset by step elements to the previous one
+  #
+  # examples:
+  # `(0..5).as_list.sliding 3`
+  # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
+  #
+  # `(0..9).as_list.sliding 3 2`
+  # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
+  #
+  public redef sliding (size i32, step i32) Sequence (Sequence A) =>
+    window := take size
+    if window.count = size
+      window : (drop step).sliding size step .as_list
+    else
+      Sequence (Sequence A) .empty
+
+
   # create an empty list
   #
   public fixed type.empty list A =>
@@ -570,7 +667,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     l -> l.map_to_list B f
 
 
-  # monoid of lists with infix concatentation operation.
+  # monoid of lists with infix concatenation operation.
   #
   # NYI: Name should be `concat_monoid`, we use `list_concat_monoid`
   # to avoid clash with inherited `Sequence.concat_monoid`. Maybe

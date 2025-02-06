@@ -38,6 +38,6 @@ public use(R type, path String, code ()-> outcome R) outcome R =>
     r := open fd path
        ! code
     # close file
-    _ := fuzion.sys.fileio.fzE_close_dir fd
+    _ := fzE_close_dir fd
     # return result
     r

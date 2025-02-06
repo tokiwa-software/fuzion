@@ -55,7 +55,7 @@ public class FuzionThread extends Thread
 
   /**
    * Stack of previously installed effect instances. On Runtime.effect_push, the
-   * original existing instance will be pused onto this stack, while
+   * original existing instance will be pushed onto this stack, while
    * Runtime.effect_pop will remove the last element in this list and install it
    * back as the effect instance.
    *

@@ -39,7 +39,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Context;
 import dev.flang.ast.Expr;
 import dev.flang.ast.ResolvedNormalType;
 import dev.flang.ast.Types;
@@ -154,6 +153,12 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Cached looked up result field of this clazz
+   */
+  Clazz _resultField;
+
+
+  /**
    * Fields in instances of this clazz. Set during layout phase.
    */
   Clazz[] _fields;
@@ -229,7 +234,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Integer id of this Clazz used in FUIR instance.
    */
-  final int _id;
+  int _id = -1;
 
 
   /**
@@ -274,23 +279,20 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Constructor for a Clazz
    *
-   * @fuiri FUIR instance used to lookup reference clazzes
+   * @fuir FUIR instance used to lookup reference clazzes
    *
-   * @param outer the outer clazz, will be normlized before it is used.
+   * @param outer the outer clazz, will be normalized before it is used.
    *
    * @param type the actual type this clazz is built on. The actual type must
    * not be a generic argument.
    *
    * @param select in case actualType refers to a field whose result type is an
    * open generic parameter, select specifies the actual generic to be used.
-   *
-   * @param id the inter id used by FUIR to identify this Clazz.
    */
   Clazz(GeneratingFUIR fuir,
         Clazz outer,
         AbstractType type,
-        int select,
-        int id)
+        int select)
   {
     if (PRECONDITIONS) require
       (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
@@ -308,7 +310,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     _outer = outer;
     _select = select;
-    _id = id;
     _needsCode = false;
     _code = IR.NO_SITE;
   }
@@ -319,8 +320,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Additional initialization code that has to be run after this Clazz was
    * added to FUIRI._clazzes for recursive clazz lookup.
    */
-  void init()
+  void init(int id)
   {
+    _id = id;
     _choiceGenerics = determineChoiceGenerics();
     var vas = feature().valueArguments();
     if (vas.size() == 0 || isBoxed())
@@ -366,16 +368,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   void addInner(Clazz i)
   {
     if (PRECONDITIONS) require
-      (true || !_fuir._lookupDone /* NYI: UNDER DEVELOPMENT: precondition does not hold yet */ ,
+      (!_fuir._lookupDone,
        i.clazzKind() != IR.FeatureKind.Field || isRef() == YesNo.no);
 
-    if (_fuir._lookupDone)
-      {
-        if (false)
-          { // NYI: CLEANUP: this should no longer happen, but it happens during layout phase, need to check why.
-            throw new Error("ADDING "+i+" to "+this);
-          }
-      }
     _inner.add(i);
   }
 
@@ -450,7 +445,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = this._type.actualType(f.selfType(), Context.NONE).asRef();
+        var t = this._type.actualType(f.selfType()).asRef();
         return normalize2(t);
       }
   }
@@ -525,7 +520,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         var pt = p.type();
         var t1 = isRef().yes() && !pt.isVoid() ? pt.asRef() : pt.asValue();
-        var t2 = _type.actualType(t1, Context.NONE);
+        var t2 = _type.actualType(t1);
         var pc = _fuir.newClazz(t2);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
@@ -633,7 +628,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (feature().isCotype())
       {
-        t = _type.generics().get(0).actualType(t, Context.NONE);
+        t = _type.generics().get(0).actualType(t);
         var g = t.cotypeActualGenerics();
         var o = t.outer();
         if (o != null)
@@ -1085,7 +1080,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.actualType(t, Context.NONE);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
+            t = _type.actualType(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
 
 /*
   We have the following possibilities when calling a feature {@code f} declared in do {@code on}
@@ -1211,7 +1206,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Create String from this clazz.
    *
    * @param humanReadable true to create a string optimized to be readable by
-   * humans but possibly not unique. false for a unique String representating
+   * humans but possibly not unique. false for a unique String representing
    * this clazz to be used by compilers.
    */
   String asString(boolean humanReadable)
@@ -1292,7 +1287,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz outerRef()
   {
     var res = _outerRef;
-    if (res == null)
+    if (res == null && !_fuir._lookupDone)
       {
         var or = feature().outerRef();
         if (!isBoxed() && or != null)
@@ -1316,13 +1311,15 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   Clazz resultField()
   {
-    Clazz result = null;
-    var rf = feature().resultField();
-    if (rf != null)
+    if (_resultField == null && !_fuir._lookupDone)
       {
-        result = lookupNeeded(rf);
+        var rf = feature().resultField();
+        if (rf != null)
+          {
+            _resultField = lookupNeeded(rf);
+          }
       }
-    return result;
+    return _resultField;
   }
 
 
@@ -1931,12 +1928,11 @@ class Clazz extends ANY implements Comparable<Clazz>
               {
                 // NYI: UNDER DEVELOPMENT: This currently cannot be done during
                 // the first pass of the loop, need to check why (most likely it
-                // performs something thst i in conflict with the call to
+                // performs something that is in conflict with the call to
                 // {@code t.replace_this_type(parentf, childf, foundRef)} a few lines
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,
-                                                         foundRef,
-                                                         Context.NONE);
+                                                         foundRef);
               }
             // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
             child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()

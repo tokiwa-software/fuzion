@@ -143,6 +143,7 @@ expected formal type: 'Sequence test_free_type_negative.x2.U'
 actual type found   : 'Sequence test_free_type_negative.x2.T'
 assignable to       : 'Any',
                       'Sequence test_free_type_negative.x2.T',
+                      'property.ref countable',
                       'property.ref equatable'
 for value assigned  : 's'
 To solve this, you could change the type of the target 's' to 'Sequence test_free_type_negative.x2.T' or convert the type of the assigned value to 'Sequence test_free_type_negative.x2.U'.

@@ -32,7 +32,7 @@
 # reasons for an operation to fail, e.g.
 #
 #   get_data (u User, t Type) outcome data IO_Error Permission_Error is
-#     if u.allowed_to_acces T
+#     if u.allowed_to_access T
 #       (read_file t.file_name)?
 #     else
 #       Permission_Error u, t

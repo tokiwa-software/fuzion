@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
@@ -45,8 +44,8 @@ import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+import dev.flang.tools.Tool;
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -67,7 +66,7 @@ public class Html extends ANY
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.lm = lm;
     this.libModules = libModules;
-    this.navigation = navigation(universe, 0);
+    this.navigation = navigation(universe);
   }
 
 
@@ -303,7 +302,7 @@ public class Html extends ANY
    */
   private String annotatePrivateConstructor(AbstractFeature af)
   {
-    return af.visibility().eraseTypeVisibility() != Visi.PUB
+    return af.visibility().eraseTypeVisibility() != Visi.PUB && af.isConstructor()
              ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
                "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
              : "";
@@ -727,7 +726,7 @@ public class Html extends ANY
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), DocsOptions.baseApiDir)
+      .replaceFirst("\\{(.*?)\\.fum\\}", DocsOptions.baseApiDir + "/$1")
       + "#l" + f.pos().line();
   }
 
@@ -811,47 +810,79 @@ public class Html extends ANY
 
   /**
    * render the navigation at the left side
+   * @param start feature from which to start the list of features
+   * @return html for the navigation, consisting of a list of modules and a list of features from the current module
    */
-  private String navigation(AbstractFeature start, int depth)
+  private String navigation(AbstractFeature start)
   {
-    var declaredFeatures = lm.declaredFeatures(start);
-    if (declaredFeatures == null || start.isArgument())
+    return navigationModules() + navigationFeatures(java.util.List.of(start), "");
+  }
+
+
+  /**
+   * render the tree style list of (constructor)features for the navigation on the left side
+   * @param features    features that should be contained in the same block
+   * @param outerPrefix prefix for the tree structure e.g. "│  │  "
+   * @return rendered tree style block with sub blocks for inner features
+   */
+  private String navigationFeatures(java.util.List<AbstractFeature> features, String outerPrefix)
+  {
+    if (features.isEmpty())
       {
-        return "";
+        return ""; // nothing to do if list is empty, e.g. a feature has no inner features
       }
-    var spacer = IntStream.range(0, depth)
-        .mapToObj(i -> "| ")
-        .collect(Collectors.joining())
-        .replaceAll("\s$", "―");
-    var startName = htmlEncodedBasename(start) + (start.isUniverse() ? " (module " + lm.name() + ")" : "");
-    var f =  spacer + "<a href='" + featureAbsoluteURL(start) + "'>" + startName + args(start) + "</a>";
 
-    var constructors = declaredFeatures.values().stream()
-                        .filter(ft -> ft.definesType()
-                                    && ft.visibility().typeVisibility() == Visi.PUB)
-                        .collect(Collectors.toList());
+    var sb = new StringBuilder();
+    var iter = features.iterator();
+    do
+      {
+        var f = iter.next();
 
-    // list modules at the top
-    String modules = start.isUniverse() ? navigationModules() : "";
+        var innerFeatures = lm.declaredFeatures(f).values().stream()
+                              .filter(ft -> ft.definesType()
+                                            && ft.visibility().typeVisibility() == Visi.PUB)
+                              .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
+                              .collect(Collectors.toList());
+
+        // addition to the tree structure prefix for current feature: universe / normal element / last element
+        var featPrfx = f.isUniverse() ? ""
+                                      : iter.hasNext() ? "├─<span class=space-1></span>"
+                                                       : "└─<span class=space-1></span>";
+
+        // addition to the tree structure prefix for inner features of current feature: universe / normal element / last element
+        var subPrfx  = f.isUniverse() ? ""
+                                      : iter.hasNext() ? "│<span class=space-2></span>"
+                                                       : "<span class=space-3></span>";
+
+        sb.append(
+          """
+
+          <li>$0$1</li>"""
+            .replace("$0", navFeatHtml(f, outerPrefix + featPrfx))
+            .replace("$1", navigationFeatures(innerFeatures, outerPrefix + subPrfx)));
+      }
+    while (iter.hasNext());
 
     return """
-      $2
-      <ul class="white-space-no-wrap">
-        <li>
-          <div>$0</div>
-          $1
-        </li>
+
+      <ul class="white-space-no-wrap">$0
       </ul>"""
-        .replace("$0", f)
-        .replace("$1",
-            (constructors.isEmpty()
-              ? ""
-              : constructors.stream()
-                .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
-                .map(af -> navigation(af, depth + 1))
-                .collect(Collectors.joining(System.lineSeparator()))))
-        .replace("$2", modules);
+        .replace("$0", sb.toString());
   }
+
+  /**
+   * generate html for a single feature in the tree style navigation on the left side
+   * @param f feature for which to generate the html for
+   * @param prefix prefix of the tree style structure for this feature
+   * @return rendered html for the feature f
+   */
+  private String navFeatHtml(AbstractFeature f, String prefix)
+  {
+    var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
+    var fHTML = "<a href='" + featureAbsoluteURL(f) + "'>" + fName + args(f) + "</a>";
+    return "<div>" + prefix + fHTML + "</div>";
+  }
+
 
   /**
    * render list with modules for the navigation at the left side
@@ -862,9 +893,12 @@ public class Html extends ANY
       <ul class="white-space-no-wrap">
         <li>
           <div><a href=$0>Modules</a></div>
-            <ul style="list-style: circle inside">
+            <ul style="list-style: disc inside">
               $1
-      </ul></li></ul>"""
+            </ul>
+        </li>
+      </ul>
+      """
       .replace("$1", libModules.stream()
                                .map(m->"<li><a href=$0" + m.name() + ">" + m.name() + "</a></li>")
                                .collect(Collectors.joining("\n")))
@@ -911,7 +945,7 @@ public class Html extends ANY
           <!-- GENERATED BY FZDOCS -->
           <div class='fd'>
             <div class="sidenav">
-              <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none');" class="toggle-nav cursor-pointer">☰</div>
+              <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
               <nav style="display: none">$2</nav>
             </div>
             <div class="container">
@@ -920,13 +954,15 @@ public class Html extends ANY
               $3
             </div>
           </div>
+          <div class=version-hash>$4</div>
         """
         .replace("$0", headingSection(af))
         .replace("$1", mainSection(mapOfDeclaredFeatures.get(af), af))
         .replace("$2", navigation)
         .replace("$3", config.ignoreVisibility() ? """
           <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
-        """ : "");
+        """ : "")
+        .replace("$4", Tool.fullVersion());
     return config.bare() ? bareHtml: fullHtml(af.qualifiedName(), bareHtml);
   }
 
@@ -942,7 +978,7 @@ public class Html extends ANY
 <!-- GENERATED BY FZDOCS -->
 <div class="fd">
 <div class="sidenav">
-  <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none');" class="toggle-nav cursor-pointer">☰</div>
+  <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
   <nav style="display: none">$0</nav>
 </div>
 <div class="container">

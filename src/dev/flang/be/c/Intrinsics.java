@@ -1207,43 +1207,6 @@ public class Intrinsics extends ANY
     return rs;
   }
 
-
-  /**
-   * if result of expr is -1 return false and assign
-   * the result fzE_net_error to res[0]
-   * else return true and assign the result of expr to res[0]
-   * @param c
-   * @param expr
-   * @param res
-   * @return
-   */
-  static CStmnt assignNetErrorOnError(C c,CExpr expr, CIdent res)
-  {
-    var expr_res = new CIdent("expr_res");
-    return CStmnt.seq(
-      CExpr.decl("int", expr_res),
-      expr_res.assign(expr),
-      // error
-      CExpr.iff(CExpr.eq(expr_res, CExpr.int32const(-1)),
-        CStmnt.seq(
-          res
-            .castTo("fzT_1i32 *")
-            .index(CExpr.int32const(0))
-            .assign(CExpr.call("fzE_net_error", new List<>())),
-          c._names.FZ_FALSE.ret()
-        )
-      ),
-      // success
-      CStmnt.seq(
-        res
-          .castTo("fzT_1i32 *")
-          .index(CExpr.int32const(0))
-          .assign(expr_res),
-        c._names.FZ_TRUE.ret()
-      ));
-  }
-
-
   /**
    * Create code for field-by-field comparison of two value or choice type values.
    *
@@ -1310,7 +1273,7 @@ public class Intrinsics extends ANY
         var union1 = value1.field(CNames.CHOICE_UNION_NAME);
         var union2 = value2.field(CNames.CHOICE_UNION_NAME);
         var cazes = new List<CStmnt>();
-        for (int i = 0; i < c._fuir.clazzNumChoices(rt); i++)
+        for (int i = 0; i < c._fuir.clazzChoiceCount(rt); i++)
           {
             var tc = c._fuir.clazzChoice(rt, i);
             var fld = c._fuir.clazzIsRef(tc) ? CNames.CHOICE_REF_ENTRY_NAME
@@ -1331,7 +1294,7 @@ public class Intrinsics extends ANY
     else // not a choice, so a 'normal' product type
       {
         result = tmp.assign(new CIdent("true"));
-        for (var i = 0; i < c._fuir.clazzNumFields(rt); i++)
+        for (var i = 0; i < c._fuir.clazzFieldCount(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);
             if (c._types.fieldExists(fi))

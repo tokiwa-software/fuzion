@@ -370,3 +370,11 @@ partial_application is
     test "fun arg 4 4" (fun_arg_with_4_args f_4_args 4 2 0 69) "4,2,0,69"
 
   with_tp
+
+  # example code from #4687, partial application of infix operator
+  #
+  test_4687 =>
+
+    [(u8 0, u8 1)].map (||> x,y->unit) |> say
+
+  test_4687

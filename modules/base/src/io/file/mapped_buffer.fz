@@ -32,7 +32,7 @@ module:public mapped_buffer
     # the length of this buffer
     public redef length i64
   )
-  : container.Buffer u8 mapped_buffer.this, effect is
+  : container.Buffer u8 mapped_buffer.this, mutate is
 
 
   # get byte at given index i
@@ -40,7 +40,7 @@ module:public mapped_buffer
   public redef index [ ] (i i64) u8
   =>
     replace
-    fuzion.sys.fileio.fzE_mapped_buffer_get memory i
+    fzE_mapped_buffer_get memory i
 
 
   # set byte at given index i to given value o
@@ -48,13 +48,11 @@ module:public mapped_buffer
   public redef set [ ] (i i64, o u8) unit
   =>
     replace
-    fuzion.sys.fileio.fzE_mapped_buffer_set memory i o
+    fzE_mapped_buffer_set memory i o
 
 
   # cleanup
   #
   redef finally =>
     # NYI: what to do on error?
-    _ := fuzion.sys.fileio.fzE_munmap memory length
-
-
+    _ := fzE_munmap memory length

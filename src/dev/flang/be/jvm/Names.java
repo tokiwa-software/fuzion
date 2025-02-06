@@ -650,7 +650,7 @@ public class Names extends ANY implements ClassFileConstants
     if (PRECONDITIONS) check
       (// NYI: CLEANUP: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
        tagNum >= 0,
-       tagNum < _fuir.clazzNumChoices(cc));
+       tagNum < _fuir.clazzChoiceCount(cc));
 
     var tc = _fuir.clazzChoice(cc, tagNum);
     return _fuir.clazzIsRef(tc) ? CHOICE_REF_ENTRY_NAME

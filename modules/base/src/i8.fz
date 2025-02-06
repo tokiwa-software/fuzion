@@ -51,18 +51,8 @@ public i8(public val i8) : num.wrap_around, has_interval, java_primitive is
   public fixed redef infix *° (other i8) i8 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other i8)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => div other
-  public fixed redef infix % (other i8)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => mod other
+  public fixed redef infix / (other i8) => div other
+  public fixed redef infix % (other i8) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i8) i8 => intrinsic

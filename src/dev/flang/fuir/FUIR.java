@@ -31,6 +31,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import dev.flang.ir.IR;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 
@@ -236,7 +237,7 @@ public abstract class FUIR extends IR
    *
    * @return number of value fields in {@code cl}
    */
-  public abstract int clazzNumFields(int cl);
+  public abstract int clazzFieldCount(int cl);
 
 
   /**
@@ -306,7 +307,7 @@ public abstract class FUIR extends IR
    * @return -1 if cl is not a choice clazz, the number of choice entries
    * otherwise.  May be 0 for the void choice.
    */
-  public abstract int clazzNumChoices(int cl);
+  public abstract int clazzChoiceCount(int cl);
 
 
   /**
@@ -334,7 +335,7 @@ public abstract class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzIsChoice(cl));
 
-    for (int i = 0; i < clazzNumChoices(cl); i++)
+    for (int i = 0; i < clazzChoiceCount(cl); i++)
       {
         if (clazzIsRef(clazzChoice(cl, i)))
           {
@@ -359,7 +360,7 @@ public abstract class FUIR extends IR
       {
         boolean hasNonRefsWithState = false;
 
-        for (int i = 0; i < clazzNumChoices(cl); i++)
+        for (int i = 0; i < clazzChoiceCount(cl); i++)
           {
             var c = clazzChoice(cl, i);
             hasNonRefsWithState = hasNonRefsWithState || !clazzIsRef(c) && hasData(c);
@@ -600,20 +601,6 @@ public abstract class FUIR extends IR
    * @return the index of the requested {@code Function.call} feature's clazz.
    */
   public abstract int lookupCall(int cl);
-
-
-  /**
-   * For a clazz that is an heir of 'Function', find the corresponding inner
-   * clazz for 'call'.  This is used for code generation of intrinsic
-   * 'abortable' that has to create code to call 'call'.
-   *
-   * @param cl index of a clazz that is an heir of 'Function'.
-   *
-   * @param markAsCalled true to mark the result as called
-   *
-   * @return the index of the requested {@code Function.call} feature's clazz.
-   */
-  public abstract int lookupCall(int cl, boolean markAsCalled);
 
 
   /**
@@ -1500,13 +1487,19 @@ public abstract class FUIR extends IR
    *
    * @return e.g. {@code tuple i32 codepoint}
    */
-  public abstract int inlineArrayElementClazz(int constCl);
+  public int inlineArrayElementClazz(int constCl)
+  {
+    return this.clazzActualGeneric(constCl, 0);
+  }
 
 
   /**
    * Is {@code constCl} an array?
    */
-  public abstract boolean clazzIsArray(int constCl);
+  public boolean clazzIsArray(int constCl)
+  {
+    return clazzOriginalName(constCl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(constCl);
+  }
 
 
   /*----------------------------  constants  ----------------------------*/

@@ -414,7 +414,7 @@ public class C extends ANY
      * Perform a match on value subv.
      */
     @Override
-    public Pair<CExpr, CStmnt> match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
+    public CStmnt match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(s);
       var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
@@ -479,7 +479,7 @@ public class C extends ANY
           var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
-      return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
+      return CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault));
     }
 
 
@@ -757,11 +757,11 @@ public class C extends ANY
           "-Wredundant-decls",
           "-Wnested-externs",
           "-Wmissing-include-dirs",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-strict-prototypes",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-gnu-empty-initializer",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-zero-length-array",
           "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",
@@ -1405,7 +1405,7 @@ public class C extends ANY
                                                    CExpr.string(_fuir.siteAsString(s))));
           }
         ol.add(acc);
-        res = _fuir.clazzIsVoidType(rt)
+        res = _fuir.alwaysResultsInVoid(s)
           ? null
           : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate expression for this
             ? res.deref()
@@ -2297,7 +2297,7 @@ public class C extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzIsChoice(choiceCl),
         !_fuir.clazzIsChoiceOfOnlyRefs(choiceCl),
-        _fuir.clazzNumChoices(choiceCl) == 2);
+        _fuir.clazzChoiceCount(choiceCl) == 2);
 
     return _fuir.clazzIsUnitType(valuecl)
       ? CExpr.compoundLiteral(
