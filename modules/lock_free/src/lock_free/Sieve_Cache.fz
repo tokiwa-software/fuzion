@@ -104,7 +104,7 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
           evict
         new_node := lock_free.Node (key, v) (concur.atomic false) (concur.atomic (option (lock_free.Node K V)) nil) (concur.atomic (option (lock_free.Node K V)) nil)
         add_to_head new_node
-        cache.add key new_node
+        cache.put key new_node
         new_node.visited.write false
         v
       # cache hit
@@ -115,8 +115,7 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
 
   public redef as_string =>
     for res := "", res + "{n.val} (Visited: {n.val.visited.read})" + (if n.val.next.read?? then " -> " else "")
-        # NYI: BUG: when removing type: ensure-condition failed
-        n option (lock_free.Node K V) := head.read, n.val.next
+        n := head.read, n.val.next
     while n??
     else
       res

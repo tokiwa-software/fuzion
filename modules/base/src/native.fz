@@ -1,0 +1,547 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion native standard library features
+#
+# -----------------------------------------------------------------------
+
+# all native features
+
+
+# NYI: void * fzE_malloc_safe(size_t size);
+
+
+# NYI: void fzE_memset(void *dest, int ch, size_t sz);
+
+
+# NYI: void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
+
+
+# returns the latest error number of
+# the current thread
+#
+module fzE_last_error i32 => native
+
+
+# intrinsic that returns true in case of success or false in case of failure during dir creation
+#
+module fzE_mkdir(
+          # the internal array data representing the dir path in bytes
+          path fuzion.sys.Pointer) i32 => native
+
+
+# NYI: int fzE_setenv(const char *name, const char *value, int overwrite);
+
+
+# NYI: int fzE_unsetenv(const char *name);
+
+
+# open the directory given by path
+#
+# accepts as arguments a path (processed by fuzion.sys.c_string) and a pointer to
+# an array of two i64.
+#
+# after calling, the array will contain an integer that is intended to be used as an
+# opaque reference to the opened directory in its first field, and an integer that is
+# not 0 in case of an error in its second field.
+#
+module fzE_opendir(path fuzion.sys.Pointer, open_results fuzion.sys.Pointer) fuzion.sys.Pointer => native
+
+
+# reads the next entry of the directory given by fuzion.sys.Pointer
+# to an open directory
+#
+# returns -1 on error, 0 on end reached, length of result on success
+#
+module fzE_read_dir(ptr fuzion.sys.Pointer, res fuzion.sys.Pointer) i32 => native
+
+
+# closes the directory given by opaque integer reference to an open
+# directory
+#
+# returns 0 on success, something else on failure.
+#
+module fzE_close_dir(ptr fuzion.sys.Pointer) i32 => native
+
+
+# 0 = blocking, 1 = none_blocking
+#
+# returns zero on success, anything else is an error.
+#
+# NYI non blocking needs some kind of polling mechanism like epoll / kqueue
+# probably not good enough:
+# - select "can monitor only file descriptors  numbers
+#           that  are less  than  FD_SETSIZE (1024)—an unreasonably
+#           low limit for many modern applications"
+# - poll is in O(n)
+# difficult to implement on windows, read here: https://notgull.github.io/device-afd/
+module fzE_set_blocking(sd i32, blocking i32) i32 => native
+
+
+# close socket
+#
+# returns zero on success, anything else is an error.
+#
+module fzE_close(sd i32) i32 => native
+
+
+# NYI: int fzE_socket(int family, int type, int protocol);
+
+
+# bind a name to a newly created socket
+#
+# 0  => arr_result[0] is the socket descriptor
+# -1 => arr_result[0] is an error number
+#
+module fzE_bind (family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 => native
+
+
+# activates a server socket, setting a backlog
+# of a maximum amount of connections which are kept
+# waiting for acceptance.
+#
+# returns zero on success, anything else is an error.
+#
+module fzE_listen(sd i32, backlog i32) i32 => native
+
+
+# accept a new connection for given socket descriptor.
+# may block until there is a connection to accept.
+# returns a new / different descriptor which
+# corresponds to the accepted connection only.
+#
+module fzE_accept(sd i32) i32 => native
+
+
+# open and connect a client socket
+#
+# 0  => arr_result[0] is the socket descriptor
+# -1 => arr_result[0] is an error number
+#
+module fzE_connect(family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 => native
+
+
+# get a socket's peer's ip address
+#
+# takes a socket descriptor number and an array of 16 bytes in
+# which the IP address will be stored
+#
+# returns the length of the IP address written to the array,
+# in bytes (4 for IPv4, 16 for IPv6)
+#
+module fzE_get_peer_address(sockfd i32, address fuzion.sys.Pointer) i32 => native
+
+
+# get a socket's peer's port
+#
+# takes a socket descriptor number
+# returns the port number
+#
+# not useful for UDP sockets (information not necessarily available)
+#
+module fzE_get_peer_port(sockfd i32) u16 => native
+
+
+# read bytes into arr_data buffer
+#
+# true  => arr_result[0] is the number of bytes read
+# false => arr_result[0] is an error number
+#
+module fzE_read(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
+
+
+# write buffer bytes on socket
+#
+# returns zero on success, anything else is an error.
+#
+module fzE_write(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
+
+
+# memory map a file
+#
+# res[0]: 0 on success, -1 on error
+#
+# return: allocated memory (same as fuzion.sys.alloc)
+#
+# note: offset+size must not exceed file size.
+# note: returning allocated memory - instead of error code - simplifies handling in DFA.
+#
+module fzE_mmap(fd fuzion.sys.Pointer, offset, size i64, res fuzion.sys.Pointer) fuzion.sys.Pointer => native
+
+
+# close a memory mapped file
+#
+# return: 0 on success, -1 on error
+#
+module fzE_munmap(address fuzion.sys.Pointer, size i64) i32 => native
+
+
+# NYI: bool fzE_bitwise_compare_float(float f1, float f2);
+
+
+# NYI: bool fzE_bitwise_compare_double(double d1, double d2);
+
+
+# no guarantee can be given for precision nor resolution
+module fzE_nanotime u64 => native
+
+
+# no guarantee can be given for precision nor resolution
+module fzE_nanosleep(arg1 u64) unit => native
+
+
+module fzE_rm(path fuzion.sys.Pointer) i32 => native
+
+
+# intrinsic that fills an array with some metadata of the file/dir provided by the path
+# returns true in case the operation was successful and false in case of failure
+# in case the path refers to a symbolic link it resolves it and returns info about the actual file
+#
+# in case an error is returned (the result of this feature is false), then the size field of
+# the meta_data array will contain the errno for the stat call.
+#
+module fzE_stat(
+      # the internal array data representing the file/dir path in bytes
+      path fuzion.sys.Pointer,
+      # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
+      meta_data fuzion.sys.Pointer) i32 => native
+
+
+# intrinsic that fills an array with some metadata of the file/dir provided by the path
+# returns true in case the operation was successful and false in case of failure
+# in case the path refers to a symbolic link it does not attempt to follow it and returns info about the link itself
+#
+# in case an error is returned (the result of this feature is false), then the size field of
+# the meta_data array will contain the errno for the lstat call.
+#
+module fzE_lstat(path fuzion.sys.Pointer, meta_data fuzion.sys.Pointer) i32 => native # NYI behaves the same as stats in the interpreter
+
+
+# NYI: void fzE_init(void);
+
+
+# NYI: int64_t fzE_thread_create(void *(*code)(void *),void *restrict);
+
+
+# NYI: void fzE_thread_join(int64_t thrd);
+
+
+# NYI: void fzE_lock(void);
+
+
+# NYI: void fzE_unlock(void);
+
+
+# create a new process
+# NYI option to pass stdin/out/err, pwd
+#
+module fzE_process_create(
+  args fuzion.sys.Pointer,
+  arg_len i32,
+  env_vars fuzion.sys.Pointer,
+  env_vars_len i32,
+  res fuzion.sys.Pointer,
+  args_str fuzion.sys.Pointer,
+  env_str fuzion.sys.Pointer) i32 => native
+
+
+# wait for process to exit
+#
+module fzE_process_wait(p i64) i32 => native
+
+
+# returns -1 on error, 0 on end_of_file, number of read bytes otherwise.
+#
+module fzE_pipe_read(
+  # the descriptor
+  desc i64,
+  # the internal array data representing the container for the bytes to be read
+  file_array fuzion.sys.Pointer,
+  # the length of the array that represents the file bytes
+  file_array_length i32) i32 => native
+
+
+# returns -1 on error, number of written bytes otherwise.
+#
+module fzE_pipe_write(
+  # the descriptor
+  desc i64,
+  # the internal array data representing the content bytes to write
+  content fuzion.sys.Pointer,
+  # the length of the internal array representing the content
+  content_length i32) i32 => native
+
+
+# returns -1 on error, 0 on success
+#
+module fzE_pipe_close(
+  # descriptor
+  desc i64) i32 => native
+
+
+# intrinsic that fills a Fuzion object with the file descriptor and the error number from C back-end/ -1 in the interpreter
+# after opening the source represented by the path parameter
+#
+module fzE_file_open(
+              # a Fuzion Pointer represention the path for the source to be opened
+              path fuzion.sys.Pointer,
+              # open_results[error number] as a Fuzion Pointer
+              open_results fuzion.sys.Pointer,
+              # opening flag (Read: 0, Write: 1, Append: 2)
+              flag i8) fuzion.sys.Pointer => native
+
+
+# intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
+#
+# returns:
+# 0 or greater on success
+# -1 at end of file
+# -2 for any other error
+#
+module fzE_file_read(
+              # the file descriptor
+              fd fuzion.sys.Pointer,
+              # the internal array data representing the container for the bytes to be read from the file
+              file_array fuzion.sys.Pointer,
+              # the length of the array that represents the file bytes
+              file_array_length i32) i32 => native
+
+
+# intrinsic to write bytes (internal array data) in a file using the file descriptor
+# returns 0 in case of success, -1 in case of failure
+#
+module fzE_file_write(
+              # the file descriptor
+              fd fuzion.sys.Pointer,
+              # the internal array data representing the content bytes to insert in file
+              content fuzion.sys.Pointer,
+              # the length of the internal array representing the content
+              content_length i32) i32 => native
+
+
+# intrinsic that returns true in case the move was successful and false in case not
+#
+module fzE_file_move(
+              # the internal array data representing the old file/dir path in bytes
+              old_path fuzion.sys.Pointer,
+              # the internal array data representing the new file/dir path in bytes
+              new_path fuzion.sys.Pointer) i32 => native
+
+
+# intrinsic that takes an i64 value that represents the file descriptor and closes the stream
+# returns an i8 to represent the result of the operation
+# 0 in case no errors occurred and the error number in case the operation failed in the C back-end/ -1 in the interpreter
+#
+module fzE_file_close(
+              # file descriptor
+              fd fuzion.sys.Pointer) i32 => native
+
+
+# intrinsic to set the file-pointer offset at which the next read or write occurs
+# the offset is measured from the beginning of the file indicated by the file descriptor
+# and fills a Fuzion object with the new offset
+# and the error number from the C back-end/ -1 in the interpreter
+#
+module fzE_file_seek(
+              # file descriptor
+              fd fuzion.sys.Pointer,
+              # the offset to seek from the beginning of this file
+              offset i64) i32 => native
+
+
+# intrinsic that fills a Fuzion object with the current file stream position
+# and the error number from C back-end/ -1 in the interpreter
+#
+module fzE_file_position(
+              # file descriptor
+              fd fuzion.sys.Pointer) i64 => native
+
+
+# stdin of the process
+#
+module fzE_file_stdin fuzion.sys.Pointer => native
+
+
+module fzE_file_stdout fuzion.sys.Pointer => native
+
+
+module fzE_file_stderr fuzion.sys.Pointer => native
+
+
+# flush any buffers held for fd
+#
+# returns 0 in case of success, -1 in case of failure
+#
+module fzE_file_flush(fd fuzion.sys.Pointer) i32 => native
+
+
+# get a byte from a given mapped buffer
+#
+module fzE_mapped_buffer_get
+  (# memory address obtained by `mmap`
+    m fuzion.sys.Pointer,
+
+    # index of the byte
+    i i64
+  ) u8 => native
+
+
+# set a byte of a given mapped buffer to a new value
+#
+module fzE_mapped_buffer_set
+  (# memory address obtained by `mmap`
+    m fuzion.sys.Pointer,
+
+    # index of the byte
+    i i64,
+
+    # new value to be written at m[i]
+    o u8
+  ) unit => native
+
+
+
+
+# NYI: typedef struct fzE_jvm_result fzE_jvm_result;
+
+
+# NYI: struct fzE_jvm_result
+
+
+# NYI: void fzE_create_jvm(char * option_string);
+
+
+# NYI: void fzE_destroy_jvm(void);
+
+
+# NYI: const char * fzE_java_string_to_utf8_bytes(jstring jstr);
+
+
+# NYI: jvalue fzE_f32_to_java_object(double arg);
+
+
+# NYI: jvalue fzE_f64_to_java_object(float arg);
+
+
+# NYI: jvalue fzE_i8_to_java_object(int8_t arg);
+
+
+# NYI: jvalue fzE_i16_to_java_object(int16_t arg);
+
+
+# NYI: jvalue fzE_u16_to_java_object(uint16_t arg);
+
+
+# NYI: jvalue fzE_i32_to_java_object(int32_t arg);
+
+
+# NYI: jvalue fzE_i64_to_java_object(int64_t arg);
+
+
+# NYI: jvalue fzE_bool_to_java_object(bool arg);
+
+
+# NYI: fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args);
+
+
+# NYI: fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, jvalue *args);
+
+
+# NYI: fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, jobject thiz, jvalue *args);
+
+
+# NYI: jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length);
+
+
+# NYI: bool fzE_java_object_is_null(jobject jobj);
+
+
+# NYI: int32_t fzE_array_length(jarray array);
+
+
+# NYI: jvalue fzE_array_to_java_object0(jsize length, jvalue *args, const char * element_class_name);
+
+
+# NYI: jvalue fzE_array_get(jarray array, jsize index, const char *sig);
+
+
+# NYI: jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
+
+
+# NYI: jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig);
+
+
+# NYI: jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
+
+
+# NYI: jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig);
+
+
+
+
+
+# NYI: void *  fzE_mtx_init     (void);
+
+
+# NYI: int32_t fzE_mtx_lock     (void * mtx);
+
+
+# NYI: int32_t fzE_mtx_trylock  (void * mtx);
+
+
+# NYI: int32_t fzE_mtx_unlock   (void * mtx);
+
+
+# NYI: void    fzE_mtx_destroy  (void * mtx);
+
+
+# NYI: void *  fzE_cnd_init     (void);
+
+
+# NYI: int32_t fzE_cnd_signal   (void * cnd);
+
+
+# NYI: int32_t fzE_cnd_broadcast(void * cnd);
+
+
+# NYI: int32_t fzE_cnd_wait     (void * cnd, void * mtx);
+
+
+# NYI: void    fzE_cnd_destroy  (void * cnd);
+
+
+# intrinsic to get a unique id > 0
+#
+# this can be used to add a unique identifier to compare instances.
+#
+# sine there are 2^64-1 possible values, you can safely assume that these are
+# in fact unique.  Assuming one unique id is consumed every nanosecond, it
+# would take more than 500 years before we run out of values
+# (2^64/10^9/3600/24/365.25).
+#
+module fzE_unique_id u64 => native
+
+
+# NYI: void fzE_date_time(void * result);
+
+
+module fzE_null fuzion.sys.Pointer => native
+
+
+module fzE_is_null(p fuzion.sys.Pointer) i32 => native

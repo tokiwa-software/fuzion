@@ -83,7 +83,7 @@ public class ValueSet extends Value
 
 
     /**
-     * Consrtructor
+     * Constructor
      */
     Collect(DFA dfa)
     {

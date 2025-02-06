@@ -63,23 +63,6 @@ public class Contract extends ANY
                                                              null);
 
 
-  /*--------------------------  static fields  --------------------------*/
-
-
-  /**
-   * Id used to generate unique names for pre- and postcondition features.
-   */
-  public static int _id_ = 0;
-
-
-  /**
-   * Reset static fields
-   */
-  public static void reset()
-  {
-    _id_ = 0;
-  }
-
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -189,7 +172,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionFeatureName == null)
       {
-        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preConditionFeatureName;
   }
@@ -206,7 +189,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preBoolConditionFeatureName == null)
       {
-        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + (_id_++) + "_"  + f.featureName().baseName();
+        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preBoolConditionFeatureName;
   }
@@ -223,7 +206,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionAndCallFeatureName == null)
       {
-        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preConditionAndCallFeatureName;
   }
@@ -240,7 +223,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._postConditionFeatureName == null)
       {
-        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._postConditionFeatureName;
   }
@@ -256,10 +239,8 @@ public class Contract extends ANY
    */
   static boolean requiresPreConditionsFeature(Feature f)
   {
-    var fc = f.contract();
-
-    return fc._hasPre != null &&
-      (!fc._declared_preconditions.isEmpty() || !f._inheritedPre.isEmpty());
+    return !f.contract()._declared_preconditions.isEmpty() ||
+      f._inheritedPre.stream().anyMatch(x -> hasPreConditionsFeature(x));
   }
 
 
@@ -273,10 +254,8 @@ public class Contract extends ANY
    */
   static boolean requiresPostConditionsFeature(Feature f)
   {
-    var fc = f.contract();
-
-    return !fc._declared_postconditions.isEmpty() || !f._inheritedPost.isEmpty();
-
+    return !f.contract()._declared_postconditions.isEmpty() ||
+      f._inheritedPost.stream().anyMatch(x -> hasPostConditionsFeature(x));
   }
 
 
@@ -363,8 +342,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
@@ -432,8 +410,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
@@ -473,8 +450,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, preAndCallOuter),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, preAndCallOuter.context());
         args.add(ca);
       }
@@ -515,8 +491,7 @@ public class Contract extends ANY
           {
             var ca = new Call(p,
                               new Current(p, outer),
-                              a,
-                              -1);
+                              a);
             ca = ca.resolveTypes(res, context);
             args.add(ca);
           }
@@ -525,8 +500,7 @@ public class Contract extends ANY
       {
         var c2 = new Call(p,
                           new Current(p, outer),
-                          outer.resultField(),
-                          -1);
+                          outer.resultField());
         c2 = c2.resolveTypes(res, context);
         args.add(c2);
       }
@@ -679,7 +653,9 @@ public class Contract extends ANY
                                          null);
     var pF = new Feature(pos,
                          f.visibility().eraseTypeVisibility(),
-                         f.modifiers() & FuzionConstants.MODIFIER_FIXED,
+                         // we need to copy fixed modifier because
+                         // of different meaning of this-types.
+                         f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0,
                          new FunctionReturnType(result_type),
                          new List<>(name),
                          args,
@@ -809,7 +785,7 @@ all of their redefinition to `true`. +
 
            pre_<name>      is a feature that checks the precondition and causes a fault in case any condition fails.
 
-                           First, inherited preconditions are checked via cals to their pre_bool_<name> and
+                           First, inherited preconditions are checked via calls to their pre_bool_<name> and
                            precondition checking is stopped with success if those return true
 
                            If there are no own pre-conditions, the last inherited precondition is checked
@@ -817,7 +793,7 @@ all of their redefinition to `true`. +
 
            prebool_<name>  is a feature that check the precondition and results in true iff all preconditions hold.
 
-                           First, inherited preconditions are checked via cals to their pre_bool_<name> and
+                           First, inherited preconditions are checked via calls to their pre_bool_<name> and
                            precondition checking is stopped with success if those return true.
 
                            Finally, the own pre-condition is checked
@@ -1023,8 +999,9 @@ all of their redefinition to `true`. +
             var code2 = new Block(l2);
             var pF2 = new Feature(pos,
                                   f.visibility().eraseTypeVisibility(),
-                                  // 0, // NYI: why not this:
-                                  f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                                  // we need to copy fixed modifier because
+                                  // of different meaning of this-types.
+                                  f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0, // modifiers
                                   NoType.INSTANCE,
                                   new List<>(name2),
                                   args2,
@@ -1076,7 +1053,9 @@ all of their redefinition to `true`. +
         var code = new Block(l);
         var pF = new Feature(pos,
                              f.visibility().eraseTypeVisibility(),
-                             f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                             // we need to copy fixed modifier because
+                             // of different meaning of this-types.
+                             f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0,
                              NoType.INSTANCE,
                              new List<>(name),
                              args,
@@ -1113,8 +1092,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
                   {
                     var ca = new Call(pos,
                                       new Current(pos, pF),
-                                      a,
-                                      -1);
+                                      a);
                     ca = ca.resolveTypes(res, pF.context());
                     args2.add(ca);
                   }

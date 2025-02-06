@@ -26,7 +26,7 @@
 #
 private:public mutable_tree_map(public LM  type : mutate,
                                 public KEY type : property.orderable,
-                                public VAL type                      ) : Map KEY VAL
+                                public VAL type                      ) : Mutable_Map KEY VAL
 is
 
 
@@ -46,26 +46,12 @@ is
     fold i32 0 ((i, _) -> i + 1)
 
 
-  # get the value k is mapped to, or nil if none.
-  #
-  public redef index [] (k KEY) =>
-    get k
-
-
   # get a sequence of all key/value pairs in this map
   #
   public redef items =>
     match root.get
       e Entry => e.items
       nil => (list (tuple KEY VAL)).empty
-
-
-  # returns a string representation of the map
-  #
-  public redef as_string =>
-    "\{" +
-      (String.join (fold (list String).empty ((i, x) -> list "{x.key}={x.val}" i)) ", ") +
-     "}"
 
 
   # freeze the map, such that it is no longer mutable afterwards
@@ -87,13 +73,13 @@ is
   # get the value stored in this map at key k, nil if k is not
   # contained in this map
   #
-  public get(k KEY) option VAL =>
+  public redef get(k KEY) option VAL =>
     root.get.bind VAL (e -> e.get k)
 
 
   # add the mapping k -> v as a new entry to this map
   #
-  public put(k KEY, v VAL) =>
+  public redef put(k KEY, v VAL) =>
     _ := replace k v
 
   # add the mapping k -> v as a new entry to this map
@@ -155,7 +141,7 @@ is
   # returns the value that k previously mapped to, or nil if
   # no mapping was actually removed
   #
-  public remove(key KEY) option VAL =>
+  public redef remove(key KEY) option VAL =>
     # helper feature to remove a mapping from this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns the reference to the node that was worked on.
@@ -220,6 +206,12 @@ is
     (new_root, old) := remove_recursively key root.get
     root <- new_root
     old
+
+
+  # create an immutable map from this
+  #
+  public redef as_map container.Map KEY VAL =>
+    (container.ps_map KEY VAL).new keys.as_array values.as_array
 
 
   # rebalances a tree whose AVL invariants might be violated

@@ -56,7 +56,7 @@ module:public open(fd fuzion.sys.Pointer,
   =>
 
     res := fuzion.sys.internal_array_init i32 1
-    mapped_memory := fuzion.sys.fileio.fzE_mmap fd offset size res.data
+    mapped_memory := fzE_mmap fd offset size res.data
 
     if res[0] = -1
       error "mmap failed"

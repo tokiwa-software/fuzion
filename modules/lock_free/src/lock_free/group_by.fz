@@ -34,7 +34,7 @@ public Sequence.group_by(K type : property.hashable, f T -> K) lock_free.Map K (
   for_each x->
     key := f x
     match res[key]
-      nil => res.add key [x]
-      s Sequence T => res.add key s++[x]
+      nil => res.put key [x]
+      s Sequence T => res.put key s++[x]
 
   res

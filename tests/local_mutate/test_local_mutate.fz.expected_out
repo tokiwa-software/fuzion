@@ -5,6 +5,8 @@ using m.instate_self and count: 81
 ok
 *** got '*** invalid mutate for Type of 'test_local_mutate.test_sum.sum#1.m'' ***
 ok
+*** got '*** invalid mutate for Type of 'test_local_mutate.test_sum.sum#1.m'' ***
+ok
 [0, 8, 11, 15, 47]
 []
 []

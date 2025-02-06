@@ -113,13 +113,10 @@ is
     "$from..$thru{if step = T.one then "" else ":$step"}"
 
 
-  # NYI: BUG: workaround without this
-  # test lib_container_set fails with
-  # require-condition1 failed: Clazzes.java:1068
-  # "(Errors.any() || !thiz.dependsOnGenerics(),
-  #   outerClazz != null || thiz.feature().outer() == null, Errors.any()
-  #     || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));"
-  public fixed redef type.new (s Sequence T) interval.this => panic "not applicable"
+  # create a new interval from a sequence of elements
+  #
+  public fixed redef type.new (s Sequence T) container.Set T =>
+    container.set_of_ordered s
 
 
   # is this sequence known to be finite?  For infinite sequences, features like

@@ -119,13 +119,10 @@ is
       .map (o -> o.get (panic "filter failed"))
 
 
-  # this hash map as a human readable string
-  # example: [(0,a),(1,b),(2,c),(3,d)]
+  # NYI: implement this when #4642 is done
+  # create a mutable map from this
   #
-  public redef as_string =>
-    items
-      .map t->"({t.values.0},{t.values.1})"
-      .as_string
+  # public redef as_mutable_map container.Mutable_Map PK V =>
 
 
   # empty -- convenience routine to create an empty instance of hash_map

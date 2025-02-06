@@ -21,8 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-fzE_null fuzion.sys.Pointer => native
-fzE_is_null(p fuzion.sys.Pointer) i32 => native
 
 # unit feature grouping foreign function interface related features
 #

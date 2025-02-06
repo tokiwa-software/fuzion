@@ -25,36 +25,39 @@
 
 # print_effect -- effect providing an output stream
 #
-# This is used as heir feature for effects such as io.out and io.err.
+# This is used as heir feature for effects such as io.Out and io.Err.
 #
-public print_effect (p Print_Handler) : effect
+public print_effect : effect
 is
 
   # print the given string followed be new line
   #
   public println (s Any) =>
-    p.println s
-    replace
+    print (s.as_string + (codepoint 10))
+
 
   # print the given string
   #
   public print (s Any) =>
-    p.print s
-    replace
+    # NYI: UNDER DEVELOPMENT error handling?
+    _ := write s.as_string.utf8.as_array
+    _ := flush
+
 
   # print new line
   #
   public println =>
-    p.println
-    replace
-
-
-public Print_Handler ref is
-
-  public println(s Any) =>
-    print (s.as_string + (codepoint 10))
-
-  public println =>
     print (codepoint 10)
 
-  public print(s Any) unit => abstract
+
+  # write bytes (without explicit flushing)
+  #
+  public write(b Sequence u8) outcome unit
+    pre b.finite = trit.yes
+  => abstract
+
+
+  # explicitly flush everything that has been written
+  #
+  public flush outcome unit => abstract
+

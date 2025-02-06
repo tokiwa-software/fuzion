@@ -76,7 +76,6 @@ module:public numeric : property.hashable, property.orderable is
   public infix ** (other numeric.this) numeric.this
     pre
       debug: (numeric.this **! other)
-      debug: (other ≥ numeric.this.zero)
   => abstract
 
 

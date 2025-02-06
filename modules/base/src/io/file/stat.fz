@@ -84,10 +84,10 @@ install_default =>
 #
 default_stat_handler : Stat_Handler is
   redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-    fuzion.sys.fileio.fzE_stat path meta_data_arr
+    fzE_stat path meta_data_arr
 
   redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
-    fuzion.sys.fileio.fzE_lstat path meta_data_arr
+    fzE_lstat path meta_data_arr
 
 
 

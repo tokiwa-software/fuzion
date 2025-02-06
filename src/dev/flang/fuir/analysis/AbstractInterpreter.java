@@ -222,7 +222,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @param subv value of subject of this match that is being tested.
      */
-    public abstract Pair<VALUE, RESULT> match(int s, AbstractInterpreter<VALUE, RESULT> ai, VALUE subv);
+    public abstract RESULT match(int s, AbstractInterpreter<VALUE, RESULT> ai, VALUE subv);
 
     /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
@@ -527,22 +527,9 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
                                            _fuir.siteAsString(last_s)));
       }
 
-    // FUIR has the (so far undocumented) invariant that the stack must be
-    // empty at the end of a basic block.
+    // FUIR has the invariant that the stack must be empty at the end of a basic block.
     if (CHECKS) check
-      (containsVoid(stack) || stack.isEmpty() || _fuir.alwaysResultsInVoid(last_s));
-
-    if (!containsVoid(stack) && !stack.isEmpty() && _fuir.alwaysResultsInVoid(last_s))
-      {
-        if (CHECKS) check
-          (_fuir.codeAt(last_s) == ExprKind.Call);
-        var cc0 = _fuir.accessedClazz(last_s);
-        var rt = _fuir.clazzResultClazz(cc0);
-        if (!clazzHasUnitValue(rt))
-          {
-            l.add(_processor.drop(stack.pop(), rt));
-          }
-      }
+      (containsVoid(stack) || stack.isEmpty());
 
     return new Pair<>(v, _processor.sequence(l));
   }
@@ -560,9 +547,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    */
   public RESULT process(int s, Stack<VALUE> stack)
   {
-    if (DEBUG != null && _fuir.clazzAsString(_fuir.clazzAt(s)).matches(DEBUG))
+    if (DEBUG != null)
       {
-        say("process "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
+        var n = _fuir.clazzAsString(_fuir.clazzAt(s));
+        if (n.matches(DEBUG) || n.equals(DEBUG))
+          {
+            say("process "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
+          }
       }
     var e = _fuir.codeAt(s);
 
@@ -656,14 +647,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         {
           var subjClazz = _fuir.matchStaticSubject(s);
           var subv      = pop(stack, subjClazz);
-          var r = _processor.match(s, this, subv);
-          if (r.v0() == null)
+          res = _processor.match(s, this, subv);
+          if (_fuir.alwaysResultsInVoid(s))
             {
               stack.push(null);
             }
-          if (CHECKS) check
-            (r.v0() == null || r.v0() == _processor.unitValue());
-          res = r.v1();
           break;
         }
       case Tag:
