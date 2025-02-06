@@ -115,7 +115,7 @@ main =>
   tmp := !!"mktemp -d"
   _ := !!"mkdir -p $tmp/fuzion_grammar"
   _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
-  antlr := if ((os.process.start "antlr4").bind u32 p->p.wait) = 0 then "antlr4" else "antlr"
+  antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
   # NYI add option -Werror
   _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
   !!"rm -rf $tmp"
