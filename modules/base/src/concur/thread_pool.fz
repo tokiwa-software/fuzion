@@ -105,7 +105,7 @@ is
     .map _->
       concur.threads.spawn ()->
         _ := for x := bq.dequeue
-             while !x.is_empty
+             while x.exists
                x.val.call
     .as_array
 
