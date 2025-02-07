@@ -127,7 +127,7 @@ public class Util
   private static String lineAt(LibraryFeature lf, SourcePosition pos)
   {
     var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), lf._libModule.srcPath())).toUri();
+      .replaceFirst("\\{(.*?)\\.fum\\}", lf._libModule.srcPath())).toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
