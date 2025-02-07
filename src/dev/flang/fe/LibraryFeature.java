@@ -408,13 +408,14 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object. This can be called even if !hasThisType() since thisClazz() is
    * used also for abstract or intrinsic feature to determine the resultClazz().
    *
    * @return this feature's frame object
    */
-  public AbstractType createThisType()
+  @Override
+  public AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
       (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());

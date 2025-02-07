@@ -704,22 +704,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
 
-    AbstractType result = _selfType;
-    if (result == null)
+    if (_selfType == null)
       {
-        result = this == Types.f_ERROR
-          ? Types.t_ERROR
-          : createThisType();
-        _selfType = result;
+        _selfType = createSelfType();
       }
 
     if (POSTCONDITIONS) ensure
-      (result != null,
-       Errors.any() || result.isRef().yes() == isRef(),
+      (_selfType != null,
+       Errors.any() || _selfType.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.feature() == this);
+       Errors.any() || _selfType.feature() == this);
 
-    return result;
+    return _selfType;
   }
 
 
@@ -1075,13 +1071,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object. This can be called even if !hasThisType() since thisClazz() is
    * used also for abstract or intrinsic features to determine the resultClazz().
    *
    * @return this feature's frame object
    */
-  protected AbstractType createThisType()
+  protected AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));

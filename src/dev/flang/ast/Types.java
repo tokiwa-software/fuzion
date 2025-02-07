@@ -121,7 +121,10 @@ public class Types extends ANY
   public static ResolvedType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
-  public static Feature f_ERROR = new Feature(true);
+  public static Feature f_ERROR = new Feature(true)
+  {
+    @Override public AbstractType selfType() { return t_ERROR; };
+  };
 
   public static class Resolved
   {
