@@ -28,7 +28,7 @@
 #
 public switch(A type, B type /* NYI: B should be open generic */) :
   choice A B,
-  # monad A (switch A B) NYI: does not work,
+  monad A switch.this,
   Sequence A
 is
 
@@ -103,9 +103,7 @@ is
 
   # synonym for infix >>=
   #
-  # NYI: BUG: #4169 when replacing switch A B by switch.this
-  #
-  public and_then (f A -> switch A B) switch A B =>
+  public and_then (f A -> switch.this) switch.this =>
     match switch.this
       a A => f a
       b B => b
@@ -114,9 +112,7 @@ is
   # returns o if outcome is ok, otherwise return the outcome's own
   # error.
   #
-  # NYI: BUG: #4169 when replacing switch A B by switch.this
-  #
-  public and (O type, o switch A B) switch A B =>
+  public and (O type, o switch.this) switch.this =>
     match switch.this
       A   => o
       b B => b
@@ -125,11 +121,7 @@ is
   # if this switch is nil return the result of f
   # otherwise just return this switch.
   #
-  # NYI: BUG: when replacing switch A B by switch.this
-  #
-  public or (f Lazy (switch A B)) switch A B =>
-    # NYI: BUG: #4169 require-condition2 failed: RefValue.java:74 "(!dfa._fuir.clazzIsRef(original._clazz), original._clazz == vc, dfa._fuir.clazzIsRef(rc));"
-    # if ok then switch.this else f()
+  public or (f Lazy switch.this) switch.this =>
     match switch.this
       a A => a
       B   => f()
@@ -174,6 +166,28 @@ is
   =>
     switch.this ? a A => a
                 | B => e
+
+
+  # monadic operator
+  #
+  public redef infix >>= (f A -> switch.this) =>
+    switch.this ? a A => f a
+                | b B => b
+
+
+  # return function
+  #
+  # NYI: BUG:
+  #
+  # ./build/modules/base/src/switch.fz:180:21: error 1: Wrong result type in redefined feature
+  #   public redef type.return (a A) => a
+  #
+  # In 'switch.type.return' that redefines 'monad.type.return'
+  # result type is       : 'switch.type.A'
+  # result type should be: 'switch.this switch.type.A switch.type.B' (from 'monad.type.MA')
+  #
+  #
+  # public redef type.return (a A) switch.this => a
 
 
   # converts switch to a string

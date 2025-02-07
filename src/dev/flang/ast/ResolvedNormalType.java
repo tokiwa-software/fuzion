@@ -436,14 +436,14 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asThis()
   {
     AbstractType result = this;
-    if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
+    if (!isThisType() && this != Types.t_ERROR && this != Types.t_ADDRESS)
       {
         result = ResolvedNormalType.create(this, RefOrVal.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result == Types.t_ADDRESS || result.isThisType() || result.isChoice(),
-       !(isThisType() || isChoice()) || result == this);
+      (result == Types.t_ERROR || result == Types.t_ADDRESS || result.isThisType(),
+       !isThisType() || result == this);
 
     return result;
   }

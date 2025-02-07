@@ -50,7 +50,6 @@
 # is fine.
 #
 public outcome(public T type) : switch T error,
-                                monad T (outcome T),
                                 property.equatable
 is
 
@@ -80,11 +79,6 @@ is
   public redef as_string =>
     outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
-
-
-  # monadic operator
-  #
-  public redef infix >>= (f T -> outcome T) => outcome.this.bind f
 
 
   # monadic operator
@@ -124,11 +118,6 @@ is
   public redef as_outcome outcome T
   =>
     outcome.this
-
-
-  # return function
-  #
-  public fixed redef type.return (a T) => outcome a
 
 
   # option is equatable only if T is

@@ -29,7 +29,6 @@
 #
 public option(public T type)
   : switch T nil,
-    monad T (option T),
     property.equatable
 is
 
@@ -38,20 +37,6 @@ is
   # Does this option contain no value of type T?
   #
   public is_nil => !exists
-
-
-  # monadic operator
-  #
-  # This is handy to implement functions on optional values. As an example,
-  # take an option string and you would like to add a filename suffix to
-  # this string if it is present. Then you can do this as follows:
-  #
-  #   add_txt(o option string) => o >>= s -> s + ".txt"
-  #
-  # NYI: Should maybe have generic parameter B and result in option B
-  #
-  public redef infix >>= (f T -> option T) => option.this.bind f
-
 
   # monadic operator
   #
@@ -223,11 +208,6 @@ is
     T : numeric
   =>
     option.this >>= v -> if v.sign ≥ 0 v else -?v
-
-
-  # return function
-  #
-  public fixed redef type.return (a T) => option a
 
 
   # option is equatable only if T is
