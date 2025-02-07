@@ -75,7 +75,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Empty array as a result for fields() if there are no fields.
    */
-  static final Clazz[] NO_CLAZZES = new Clazz[0];
+  private static final Clazz[] NO_CLAZZES = new Clazz[0];
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -113,14 +113,14 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * The outer clazz
    */
-  public final Clazz _outer;
+  final Clazz _outer;
 
 
   /**
    * Cached result of choiceGenerics(), only used if isChoice() and
    * !isChoiceOfOnlyRefs().
    */
-  public List<Clazz> _choiceGenerics;
+  private List<Clazz> _choiceGenerics;
 
 
   /**
@@ -189,7 +189,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Is this a normalized outer clazz? If so, there might be calls on this as an
    * outer clazz even if it is not instantiated.
    */
-  public boolean _isNormalized = false;
+  private boolean _isNormalized = false;
 
 
   /**
@@ -499,7 +499,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the heirs including this.
    */
-  public Set<Clazz> heirs()
+  Set<Clazz> heirs()
   {
     if (_heirs == null)
       {
@@ -535,7 +535,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the heirs including this.
    */
-  public Set<Clazz> parents()
+  private Set<Clazz> parents()
   {
     var result = _parents;
     if (result == null)
@@ -650,7 +650,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return The list of actual generics after replacing the generics of this
    * class or its outer classes.
    */
-  public List<AbstractType> actualGenerics(List<AbstractType> generics)
+  List<AbstractType> actualGenerics(List<AbstractType> generics)
   {
     var result = this._type.replaceGenerics(generics);
 
@@ -687,7 +687,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * The feature underlying this clazz.
    */
-  public LibraryFeature feature()
+  LibraryFeature feature()
   {
     return (LibraryFeature) _type.feature();
   }
@@ -696,7 +696,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * isRef
    */
-  public YesNo isRef()
+  YesNo isRef()
   {
     return _type.isRef();
   }
@@ -767,7 +767,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that has a field of type void is effectively a void type. This call will,
    * however, return false for user defined void types.
    */
-  public boolean isVoidType()
+  boolean isVoidType()
   {
     return this._specialClazzId == SpecialClazzes.c_void;
   }
@@ -1328,7 +1328,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the argument fields.
    */
-  public Clazz[] argumentFields()
+  Clazz[] argumentFields()
   {
     if (PRECONDITIONS) require
       (switch (clazzKind())
@@ -1389,6 +1389,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Compare this to other for creating unique clazzes.
    */
+  @Override
   public int compareTo(Clazz other)
   {
     if (PRECONDITIONS) require
@@ -1408,7 +1409,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Compare this to other ignoring outer.
    */
-  public int compareToIgnoreOuter(Clazz other)
+  private int compareToIgnoreOuter(Clazz other)
   {
     var result =
       this._select < other._select ? -1 :
@@ -1422,19 +1423,12 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return compareTo((Clazz)other)==0;
   }
+
+
   @Override
   public int hashCode()
   {
     return (_type.isRef().yes() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: outer and type parameters!
-  }
-
-
-  /**
-   * Is this the universe?
-   */
-  public boolean isUniverse()
-  {
-    return feature().isUniverse();
   }
 
 
@@ -1451,7 +1445,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Is this a choice-type, i.e., does it directly inherit from choice?
    */
-  public boolean isChoice()
+  private boolean isChoice()
   {
     return feature().isChoice();
   }
@@ -1490,7 +1484,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return the actual clazzes of this choice clazz, in the order they appear
    * as actual generics.
    */
-  public List<Clazz> choiceGenerics()
+  List<Clazz> choiceGenerics()
   {
     if (PRECONDITIONS) require
       (isChoice());
@@ -1572,7 +1566,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Is this clazz instantiated?  This tests this._isInstantiatedChoice and,
    * recursively, _outer.isInstantiated().
    */
-  public boolean isInstantiatedChoice()
+  boolean isInstantiatedChoice()
   {
     return _isInstantiatedChoice
       && (_checkingInstantiatedHeirs > 0
@@ -1585,7 +1579,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * In case this is a Clazz of value type, create the corresponding reference clazz.
    */
-  public Clazz asRef()
+  Clazz asRef()
   {
     return isRef().yes()
       ? this
@@ -1641,7 +1635,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the result clazz.
    */
-  public Clazz resultClazz()
+  Clazz resultClazz()
   {
     var result = _resultClazz;
     if (result == null)
@@ -1682,7 +1676,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * For a type clazz such as 'i32.type' return its name, such as 'i32'.
    */
-  public String typeName()
+  String typeName()
   {
     if (PRECONDITIONS) require
       (feature().isCotype());
@@ -1698,7 +1692,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * For {@code (Types.get (array f64)).T} this results in {@code array f64}.
    */
-  public Clazz typeParameterActualType()
+  Clazz typeParameterActualType()
   {
     if (PRECONDITIONS) require
       (feature().isTypeParameter());
@@ -1767,7 +1761,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the outer clazz of this corresponding feature {@code o}.
    */
-  Clazz findOuter(AbstractType o)
+  private Clazz findOuter(AbstractType o)
   {
     /* starting with feature(), follow outer references
      * until we find o.
@@ -1807,7 +1801,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * length might be different due to open type parameters being replaced by a
    * list of types.
    */
-  public List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
+  List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
   {
     for (AbstractCall c : inh)
       {
@@ -1852,7 +1846,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the type {@code t} as seen after inheritance
    */
-  AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
+  private AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -1879,7 +1873,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that is to be chosen.  -1 otherwise.
    *
    */
-  Clazz handDown(AbstractType t, int select)
+  private Clazz handDown(AbstractType t, int select)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -1960,7 +1954,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Convenience version of {@code handDown} with {@code select} set to {@code -1}.
    */
-  Clazz handDown(AbstractType t)
+  private Clazz handDown(AbstractType t)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -2039,7 +2033,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param a an inner feature of this of open generic type.
    */
-  public int replaceOpenCount(AbstractFeature a)
+  private int replaceOpenCount(AbstractFeature a)
   {
     if (PRECONDITIONS) require
       (Errors.any() || a != Types.f_ERROR || a.resultType().isOpenGeneric());
@@ -2061,7 +2055,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return NO_CLAZZES in case there are no fields remaining, an array of
    * fields otherwise.
    */
-  Clazz[] actualFields(Collection<AbstractFeature> feats)
+  private Clazz[] actualFields(Collection<AbstractFeature> feats)
   {
     var fields = new List<Clazz>();
     for (var field: feats)
