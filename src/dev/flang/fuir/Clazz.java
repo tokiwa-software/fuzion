@@ -295,7 +295,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         int select)
   {
     if (PRECONDITIONS) require
-      (!type.dependsOnGenerics() || true /* NYI: UNDER DEVELOPMENT: Why? */,
+      (!type.dependsOnGenerics(),
        !type.containsThisType(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
        type != Types.t_ERROR,
