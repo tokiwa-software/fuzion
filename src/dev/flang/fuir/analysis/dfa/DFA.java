@@ -2864,7 +2864,7 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
 
   static boolean JOIN_CALLS_WITH_WIDER_ENV = false;
 
-  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = !false;
+  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = false;
 
 
   List<Boolean> _onlyOneValueSet = new List<>();
