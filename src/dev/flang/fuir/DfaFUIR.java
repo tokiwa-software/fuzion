@@ -55,11 +55,18 @@ public class DfaFUIR extends GeneratingFUIR {
   /*----------------------  serializing FUIR  ----------------------*/
 
 
+  /**
+   * The count of sites that this FUIR contains
+   */
   private int siteCount()
   {
     return _allCode.size();
   }
 
+
+  /**
+   * for SpecialClazzes.values get the clazzes
+   */
   private int[] specialClazzes()
   {
     return Arrays
@@ -68,6 +75,10 @@ public class DfaFUIR extends GeneratingFUIR {
       .toArray();
   }
 
+
+  /**
+   * for clazz `cl` get all argument clazzes.
+   */
   private int[] clazzArgs(int cl)
   {
     var result = new int[clazzArgCount(cl)];
@@ -78,6 +89,10 @@ public class DfaFUIR extends GeneratingFUIR {
     return result;
   }
 
+
+  /**
+   * for choice `cl` get the choice element clazzes.
+   */
   protected int[] clazzChoices(int cl)
   {
     var numChoices = clazzChoiceCount(cl);
@@ -90,6 +105,9 @@ public class DfaFUIR extends GeneratingFUIR {
   }
 
 
+  /**
+   * the actual generics for clazz `cl`
+   */
   private int[] clazzActualGenerics(int cl)
   {
     var cc = id2clazz(cl);
@@ -103,10 +121,14 @@ public class DfaFUIR extends GeneratingFUIR {
   }
 
 
-  private int[] clazzFields(int cl, int lastClazz)
+  /**
+   * for clazz `cl` get all field clazzes.
+   */
+  private int[] clazzFields(int cl)
   {
     var numFields = clazzIsRef(cl) ? 0 : clazzFieldCount(cl);
     var result = new ArrayList<Integer>();
+    var lastClazz = lastClazz();
     for (int i = 0; i < numFields; i++)
       {
         var clazzField = clazzField(cl, i);
@@ -121,6 +143,11 @@ public class DfaFUIR extends GeneratingFUIR {
       .toArray();
   }
 
+
+  /**
+   * serialize the FUIR to a byte array
+   * which can be written to a file.
+   */
   public byte[] serialize()
   {
     var firstClazz = firstClazz();
@@ -128,6 +155,10 @@ public class DfaFUIR extends GeneratingFUIR {
     var siteCount = siteCount();
 
     var baos = new ByteArrayOutputStream();
+    /**
+     * NYI: UNDER DEVELOPMENT:
+     * replace by custom serialization of FUIR
+     */
     try (ObjectOutputStream oos = new ObjectOutputStream(baos))
       {
         oos.writeInt(mainClazz());
@@ -149,7 +180,7 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzChoices(cl),
                 clazzInstantiatedHeirs(cl),
                 clazzNeedsCode(cl),
-                clazzFields(cl, lastClazz),
+                clazzFields(cl),
                 needsCode ? clazzCode(cl) : NO_SITE,
                 clazzResultField(cl),
                 clazzTypeParameterActualType(cl),
@@ -217,11 +248,23 @@ public class DfaFUIR extends GeneratingFUIR {
     return baos.toByteArray();
   }
 
+
+  /**
+   * Does `s` represent an invalid site?
+   *
+   * This either means `s` does not point to any code
+   * or the code was never accessed during the DFA.
+   */
   private boolean invalidSite(int s)
   {
     return !withinCode(s) || !_accessedSites.contains(s);
   }
 
+
+  /**
+   * For the match at `s` for each case get the tags
+   * that it matches.
+   */
   private int[][] matchCaseTags(int s)
   {
     var result = new int[matchCaseCount(s)][];
@@ -232,6 +275,10 @@ public class DfaFUIR extends GeneratingFUIR {
     return result;
   }
 
+
+  /**
+   * For the match at `s` get the sites of the code of the cases
+   */
   private int[] matchCaseCode(int s)
   {
     var result = new int[matchCaseCount(s)];
@@ -242,6 +289,10 @@ public class DfaFUIR extends GeneratingFUIR {
     return result;
   }
 
+
+  /**
+   * For the match at `s` get the clazzes of the field cases
+   */
   private int[] matchCaseFields(int s)
   {
     var result = new int[matchCaseCount(s)];

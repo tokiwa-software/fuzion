@@ -31,6 +31,10 @@ import java.io.Serializable;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.ir.IR.FeatureKind;
 
+/**
+ * NYI: UNDER DEVELOPMENT:
+ * remove this once we have custom serialization of FUIR
+ */
 public record ClazzRecord(
   String clazzBaseName,
   int clazzOuterClazz,

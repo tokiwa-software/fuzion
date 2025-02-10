@@ -30,6 +30,10 @@ import java.io.Serializable;
 
 import dev.flang.ir.IR.ExprKind;
 
+/**
+ * NYI: UNDER DEVELOPMENT:
+ * remove this once we have custom serialization of FUIR
+ */
 public record SiteRecord(
   int clazzAt,
   boolean alwaysResultsInVoid,
@@ -57,7 +61,7 @@ public record SiteRecord(
   int column,
   // NYI: UNDER DEVELOPMENT: remove
   String show
-)implements Serializable
+) implements Serializable
 {
   private static final long serialVersionUID = 1L;
 }
