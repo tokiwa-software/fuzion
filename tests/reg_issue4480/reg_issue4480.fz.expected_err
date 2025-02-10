@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue4480.fz:28:23: error 1: Incompatible type parameter
+--CURDIR--/reg_issue4480.fz:30:23: error 1: Incompatible type parameter
 _ := [3].map count |> sum
 ----------------------^^^
 formal type parameter 'T' with constraint 'numeric'
