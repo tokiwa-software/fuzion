@@ -2221,7 +2221,7 @@ public class C extends ANY
     var obj = CExpr
       .compoundLiteral(
         _types.clazz(rc),
-        "." + _names.fieldName(_fuir.lookupJavaRef(rc)).code() + " = "
+        "." + _names.fieldName(_fuir.lookupJavaRef(cl)).code() + " = "
           + successResult
             .field(new CIdent("l"))
             .castTo("void *" /* J_Value */)
