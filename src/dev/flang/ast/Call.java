@@ -1388,7 +1388,10 @@ public class Call extends AbstractCall
             // better if this was done in `Feature.resultType`, but
             // there we do not have access to Call.this.pos(), so
             // we do it here.
-            AstErrors.forwardTypeInference(pos(), _calledFeature, _calledFeature.pos());
+            if (result != Types.t_UNDEFINED || !Errors.any())
+              {
+                AstErrors.forwardTypeInference(pos(), _calledFeature, _calledFeature.pos());
+              }
             result = Types.t_ERROR;
           }
         else if (result != null)
