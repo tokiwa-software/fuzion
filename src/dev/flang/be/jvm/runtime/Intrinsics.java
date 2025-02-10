@@ -188,11 +188,8 @@ public class Intrinsics extends ANY
   public static float   f32_infix_divide            (float  a, float  b) { return                 (a /   b); }
   public static float   f32_infix_PERCENT           (float  a, float  b) { return                 (a %   b); }
   public static float   f32_infix_timestimes        (float  a, float  b) { return (float) Math.pow(a,    b); }
-  public static boolean f32_infix_eq                (float  a, float  b) { return                 (a ==  b); }
-  public static boolean f32_infix_lteq              (float  a, float  b) { return                 (a <=  b); }
-  public static boolean f32_infix_gteq              (float  a, float  b) { return                 (a >=  b); }
-  public static boolean f32_infix_lt                (float  a, float  b) { return                 (a <   b); }
-  public static boolean f32_infix_gt                (float  a, float  b) { return                 (a >   b); }
+  public static boolean f32_type_equal              (float  a, float  b) { return                 (a ==  b); }
+  public static boolean f32_type_lower_than_or_equal(float  a, float  b) { return                 (a <=  b); }
   public static double  f32_as_f64                  (float  a          ) { return (double)        (      a); }
   public static int     f32_cast_to_u32             (float  a          ) { return Float.floatToIntBits(  a); }
   public static double  f64_prefix_minus            (double a          ) { return                 (  -   a); }
@@ -202,11 +199,8 @@ public class Intrinsics extends ANY
   public static double  f64_infix_divide            (double a, double b) { return                 (a /   b); }
   public static double  f64_infix_PERCENT           (double a, double b) { return                 (a %   b); }
   public static double  f64_infix_timestimes        (double a, double b) { return         Math.pow(a,    b); }
-  public static boolean f64_infix_eq                (double a, double b) { return                 (a ==  b); }
-  public static boolean f64_infix_lteq              (double a, double b) { return                 (a <=  b); }
-  public static boolean f64_infix_gteq              (double a, double b) { return                 (a >=  b); }
-  public static boolean f64_infix_lt                (double a, double b) { return                 (a <   b); }
-  public static boolean f64_infix_gt                (double a, double b) { return                 (a >   b); }
+  public static boolean f64_type_equal              (double a, double b) { return                 (a ==  b); }
+  public static boolean f64_type_lower_than_or_equal(double a, double b) { return                 (a <=  b); }
   public static long    f64_as_i64_lax              (double a          ) { return (long)          (      a); }
   public static float   f64_as_f32                  (double a          ) { return (float)         (      a); }
   public static long    f64_cast_to_u64             (double a          ) { return Double.doubleToLongBits(a); }
