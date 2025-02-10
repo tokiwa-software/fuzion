@@ -36,6 +36,10 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceFile;
 
+
+/**
+ * The FUIR loaded/deserialized from a byte array
+ */
 public class LibraryFuir extends FUIR {
 
   private int _mainClazz;
