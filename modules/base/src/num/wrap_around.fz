@@ -28,7 +28,7 @@
 # wrap_around is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
-module:public wrap_around : integer is
+public wrap_around : integer is
 
   # overflow checking
 
