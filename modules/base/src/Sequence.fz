@@ -1179,7 +1179,7 @@ public Sequence(public T type) ref : property.countable is
     else
       cnt := (map _->T.one).fold T.sum
       sum := fold T.sum
-      sum / cnt
+      Sequence.average.this.sum / cnt
 
 
   # the variance of the sequence
@@ -1191,7 +1191,7 @@ public Sequence(public T type) ref : property.countable is
     average.bind T avg->
       cnt := (map (_ -> T.one           )).fold T.sum
       sum := (map (x -> (x - avg)**T.two)).fold T.sum
-      sum / cnt
+      call.this.sum / cnt
 
 
   # minimum value in the sequence
@@ -1408,6 +1408,32 @@ public Sequence(public T type) ref : property.countable is
     equatable_sequence T Sequence.this
 
 
+  # generic sum of the elements of a Sequence of numeric.
+  #
+  # This allows summing the elements of a list, as in
+  #
+  #   l := [1,2,3]
+  #   say <| l.sum     # '6'
+  #
+  #
+  public sum
+    pre
+      T : numeric
+  => fold T.sum
+
+
+  # generic product of the elements of a Sequence of numeric.
+  #
+  # This allows multiplying the elements of a list, as in
+  #
+  #   l := [1,2,3]
+  #   say <| l.product     # '6'
+  #
+  #
+  public product
+    pre
+      T : numeric
+  => fold T.product
 
 
   # create an empty Sequence
