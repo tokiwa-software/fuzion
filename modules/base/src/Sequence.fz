@@ -33,7 +33,7 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref : property.countable, property.equatable is
+public Sequence(public T type) ref : property.countable is
 
 
   # create a list from this Sequence.
@@ -1056,7 +1056,7 @@ public Sequence(public T type) ref : property.countable, property.equatable is
     match to_be_replaced.find old
       nil   => already_replaced ++ to_be_replaced
       n i32 =>
-        if limit = 0
+        if limit.as_equatable = 0
           already_replaced ++ to_be_replaced
         else
           a := already_replaced ++ (to_be_replaced.take n) ++ new
@@ -1237,7 +1237,7 @@ public Sequence(public T type) ref : property.countable, property.equatable is
     pre
       T : float
   =>
-    variance.map x->x.sqrt
+    variance.and_then x->x.sqrt
 
 
   # the euclidean norm of this sequence
@@ -1397,6 +1397,19 @@ public Sequence(public T type) ref : property.countable, property.equatable is
     orderable_sequence T Sequence.this
 
 
+  # wrap this sequence into an equatable type.
+  #
+  # This requires the underlying element type to be equatable.
+  #
+  public as_equatable equatable_sequence T
+    pre
+      T : property.equatable
+  =>
+    equatable_sequence T Sequence.this
+
+
+
+
   # create an empty Sequence
   #
   public fixed type.empty Sequence T =>
@@ -1424,31 +1437,6 @@ public Sequence(public T type) ref : property.countable, property.equatable is
   #
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS => 10
 
-
-  # Sequence is equatable only if T is
-  #
-  public redef type.is_equatable => T : property.equatable
-
-
-  # equality
-  #
-  public fixed redef type.equality(a, b Sequence T) =>
-    equality0(a1, b1 Sequence (T2 : property.equatable)) =>
-      (a1.zip b1 x,y->x=y) ∀ id
-
-    if T : property.equatable
-      if a.finite=trit.yes && b.finite=trit.yes
-        a.count = b.count && equality0 a b
-      else if a.finite=trit.yes
-        a.count = (b.take (a.count+1)).count && equality0 a b
-      else if b.finite=trit.yes
-        b.count = (a.take (b.count+1)).count && equality0 a b
-      else
-        equality0 a b &&
-          {zip_count := (a.zip b x,y->unit).count
-           (a.drop zip_count).is_empty && (b.drop zip_count).is_empty}
-    else
-      panic "***"
 
 
 # helper features for knuth morris pratt algorithm
@@ -1486,3 +1474,38 @@ is
       ac Cons => match b.as_list
                    nil     => false
                    bc Cons => ac.head <= bc.head && (!(ac.head >= bc.head) || unwrapped_lteq ac.tail bc.tail)
+
+
+
+# Wrapper type to make a `Sequence` of an equatable element type itself equatable.
+#
+public equatable_sequence(# the element type of the Sequence we are wrapping
+                          #
+                          public T type : property.equatable,
+
+                          # the wrapped Sequence
+                          #
+                          public unwrap Sequence T)
+
+                          : property.equatable
+is
+
+  # equality
+  #
+  public fixed redef type.equality(a, b equatable_sequence T) =>
+    equality0(a1, b1 equatable_sequence (T2 : property.equatable)) =>
+      (a1.unwrap.zip b1.unwrap x,y->x=y) ∀ id
+
+    au := a.unwrap
+    bu := b.unwrap
+
+    if au.finite=trit.yes && bu.finite=trit.yes
+      au.count = bu.count && equality0 a b
+    else if au.finite=trit.yes
+      au.count = (bu.take (au.count+1)).count && equality0 a b
+    else if bu.finite=trit.yes
+      bu.count = (au.take (bu.count+1)).count && equality0 a b
+    else
+      equality0 a b &&
+        {zip_count := (au.zip bu x,y->unit).count
+         (au.drop zip_count).is_empty && (bu.drop zip_count).is_empty}

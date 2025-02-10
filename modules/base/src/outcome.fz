@@ -49,8 +49,7 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type) : switch T error,
-                                property.equatable
+public outcome(public T type) : switch T error
 is
 
   # Does this outcome contain an error
@@ -118,23 +117,6 @@ is
   public redef as_outcome outcome T
   =>
     outcome.this
-
-
-  # option is equatable only if T is
-  #
-  public redef type.is_equatable => T : property.equatable
-
-
-  # equality
-  #
-  # NYI: UNDER DEVELOPMENT: (how) move this to switch?
-  #
-  public fixed redef type.equality(x, y outcome T) =>
-    if T : property.equatable
-      x ? v T     => y.exists  && v = y.val
-        | e error => !y.exists && e = y.err
-    else
-      panic "***"
 
 
 

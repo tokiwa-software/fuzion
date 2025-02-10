@@ -28,8 +28,7 @@
 #
 public switch(A type, B type /* NYI: B should be open generic */) :
   choice A B,
-  monad A switch.this,
-  Sequence A
+  monad A switch.this
 is
 
   # NYI: CLEANUP: decide name: exists/ok, get/val?
@@ -138,7 +137,7 @@ is
   # converts switch into a list of either a single element in case
   # switch.this.exists or `nil`otherwise
   #
-  public redef as_list list A
+  public as_list list A
   =>
     switch.this ? a A => a : nil
                 | B => nil
@@ -190,9 +189,41 @@ is
   # public redef type.return (a A) switch.this => a
 
 
+  # this switch as an equatable_switch
+  #
+  public as_equatable equatable_switch A B
+  pre
+    A : property.equatable
+  =>
+    match switch.this
+      a A => a
+      b B => b
+
+
   # converts switch to a string
   #
   public redef as_string =>
     match switch.this
       a A => a.as_string
       b B => b.as_string
+
+
+# Wrapper type to make a `switch` of an equatable elements itself equatable.
+#
+public equatable_switch(A type : property.equatable,
+                        B type)
+  : switch A B,
+    property.equatable
+is
+
+  # equality implementation
+  #
+  # result is only true if both x and y or
+  # of choice type A and x.A = y.A
+  #
+  public fixed redef type.equality(x, y equatable_switch A B) =>
+    x ? xa A =>
+        y ? ya A => xa = ya
+          | _  B => false
+      | _  B => false
+

@@ -17,26 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_property_equatable
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-lib_property_equatable =>
-
-  say [0,1,2].as_equatable=[0,1,2].as_equatable
-  say [0,1,2].as_equatable=[0,1,3].as_equatable
-  say ["a","b","c"].as_equatable=["a","b","c"].as_equatable
-  say ["a","b","c"].as_equatable=["a","b","d"].as_equatable
-
-  say (option 0).as_equatable=0
-  say (option 0).as_equatable=1
-  say (option 0).as_equatable=nil
-
-  say (outcome 0).as_equatable=(error "hello")
-
-  say (option 0).as_equatable=0
-  say (option 0).as_equatable=1
-  say (option 0).as_equatable=nil
-
-  # NYI: UNDER DEVELOPMENT: ugly that we have to use (id (container.Set i32) ...)
-  say (id (container.Set i32) ((container.ps_set i32).empty))=((container.ps_set i32).empty)
+override NAME = lib_monad
+include ../simple.mk

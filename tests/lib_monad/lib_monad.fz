@@ -17,46 +17,56 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature monad
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test lib_monad
 #
 # -----------------------------------------------------------------------
 
-# monad -- generic monad
-#
-# A monad in X is just a monoid in the category of endofunctors of X, with
-# product × replaced by composition of endofunctors and unit set by the
-# identity endofunctor.
-#       -- Saunder Mac Lane, Categories for the Working Mathematician, 1971
-#
-# Don't be scared, in Java terms: A monad is a means to compose functions
-# applied to generic types.
-#
-#
-public monad (public A type,
-              public MA type : monad A MA) is
-
+wrap(T type : integer, val T) : monad T (wrap T) is
 
   # monadic operator within the same monad
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  public infix >>= (f A -> MA) MA => abstract
+  public redef infix >>= (f T -> wrap T) wrap T =>
+    f val
 
 
   # monadic operator to another monad
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public infix >>=~ (B type, MB type : monad B MB, f A -> MB) MB => abstract
+  public redef infix >>=~ (B type, MB type : monad B MB, f T -> MB) MB =>
+    f val
 
 
   # join operator
   #
-  public join(MMA type : monad MA MMA, a MMA) MA => abstract
+  public redef join(MMA type : monad (wrap T) MMA, a MMA) (wrap T) =>
+    a.infix >>=~ T (wrap T) x->
+      wrap x.val+val
 
 
   # return function
   #
-  public type.return (a A) MA => abstract
+  public redef type.return (a T) (wrap T) =>
+    wrap a
+
+
+  public redef as_string =>
+    "wrapped: " + val + " " + T.name
+
+
+say (wrap 42)
+say ((wrap i32).return 42)
+say ((wrap 42) >>= (x -> wrap x))
+say ((wrap 42).infix >>=~ i64 (wrap i64) (x -> wrap x.as_i64))
+
+# NYI: BUG:
+#
+# Incompatible type parameter
+# say ((wrap 42).join (wrap (wrap i32)) (wrap (wrap 42)))
+#
+# formal type parameter 'MMA' with constraint 'monad (wrap wrap.T) (wrap (wrap i32))'
+# actual type parameter 'wrap (wrap i32)'
+#
+# say ((wrap 42).join (wrap (wrap 42)))
