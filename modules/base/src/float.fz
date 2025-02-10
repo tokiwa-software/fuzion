@@ -37,21 +37,6 @@ public float : numeric is
   #
 
 
-  # comparison
-  #
-  # This provides comparison operators using IEEE semantics.
-  #
-  # type.equality and type.lteq should be used for equivalence relations
-  # and total ordering in the mathematical sense.
-  #
-  public infix = (other float.this) bool => abstract
-  public infix != (other float.this) bool => !(infix = other)
-  public infix <= (other float.this) bool => abstract
-  public infix >= (other float.this) bool => abstract
-  public infix > (other float.this) bool => abstract
-  public infix < (other float.this) bool => abstract
-
-
   # does this float value fit into an i64? This is redefined by children
   # of float that support `as_i64`.
   #
@@ -278,28 +263,4 @@ public float : numeric is
   public type.atan2 (y, x float.this) float.this => abstract
 
 
-  # equality
-  #
-  # This provides an equivalence relation in the mathematical
-  # sense and therefore breaks the IEEE semantics. infix = should
-  # be used for IEEE semantics.
-  #
-  # The equivalence relation is provided by the usual comparison
-  # of floating-point numbers, with the definition of NaN = NaN.
-  #
-  public redef type.equality(a, b float.this) bool =>
-    a.infix = b || (a.is_NaN && b.is_NaN)
 
-
-  # total order
-  #
-  # This provides a total order in the mathematical sense and
-  # therefore breaks the IEEE semantics. infix <= should be
-  # used for IEEE semantics.
-  #
-  # The total order is provided by the usual comparison of
-  # floating-point numbers, with the definition that NaN <= x,
-  # for any x (including x = NaN).
-  #
-  public redef type.lteq(a, b float.this) bool =>
-    a.infix <= b || a.is_NaN
