@@ -717,7 +717,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
       {
         return null;
       }
-    else if (frmlT.isGenericArgument() || frmlT.isThisType())
+    else if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
       { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
          * could be a ref) or frmlT is this type and the underlying feature is by
          * default a ref?

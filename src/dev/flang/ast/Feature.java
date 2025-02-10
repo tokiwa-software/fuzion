@@ -1793,7 +1793,7 @@ A ((Choice)) declaration must not contain a result type.
           (Errors.any() || t != null);
         if (t != null && t.isRef().noOrDontKnow())
           {
-            if (t.compareTo(thisType()) == 0)
+            if (t.compareToIgnoreOuter(selfType()) == 0)
               {
                 AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
                 _selfType = Types.t_ERROR;

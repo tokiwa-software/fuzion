@@ -378,8 +378,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   boolean isAssignableFromWithoutTagging(AbstractType actual, Context context)
   {
     return actual.isVoid()
-         || (!isChoice() && isAssignableFrom(actual, context))
-         || (isChoice() && compareTo(actual) == 0);
+         || !isChoice() && isAssignableFrom(actual, context)
+         || isChoiceAssignableFrom(actual);
   }
 
 
@@ -408,8 +408,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   boolean isAssignableFromWithoutBoxing(AbstractType actual, Context context)
   {
     return actual.isVoid()
-         || (!isChoice() && isAssignableFrom(actual, context) && !(isRef().yes() && actual.isRef().no()))
-         || (isChoice() && compareTo(actual) == 0);
+         || !isChoice() && isAssignableFrom(actual, context) && !(isRef().yes() && actual.isRef().no())
+         || isChoiceAssignableFrom(actual);
+  }
+
+
+  private boolean isChoiceAssignableFrom(AbstractType actual)
+  {
+    // NYI: UNDER DEVELOPMENT: probably unsound!
+    return isChoice() && actual.isChoice() && asThis().compareTo(actual.asThis()) == 0;
   }
 
 
