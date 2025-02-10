@@ -250,7 +250,11 @@ public class Function extends AbstractLambda
       {
         if (!t.isFunctionType())
           {
-            AstErrors.expectedFunctionTypeForLambda(pos(), t);
+            // suppress error for t_UNDEFINED, but only if other error was already reported
+            if (t != Types.t_UNDEFINED || !Errors.any())
+              {
+                AstErrors.expectedFunctionTypeForLambda(pos(), t);
+              }
             t = Types.t_ERROR;
             result = Types.t_ERROR;
           }
