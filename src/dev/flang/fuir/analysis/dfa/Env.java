@@ -215,6 +215,42 @@ public class Env extends ANY implements Comparable<Env>
     return res;
   }
 
+
+  /**
+   * Check the environment if it contains an effect of clazz `cl` instantiated at
+   * `site`.
+   *
+   * @param cl a clazz
+   *
+   * @param site a site that contains a constructor call to `cl`
+   *
+   * @return in case the context contains an environment with an instance of
+   * `cl` created at `site` instated, then return that existing instance.
+   * Return null otherwise.
+   */
+  Instance find(int cl, int site)
+  {
+    if (cl == _effectType)
+      {
+        if (_actualEffectValues instanceof Instance ai && ai._site == site)
+          {
+            return ai;
+          }
+        else if (_actualEffectValues instanceof ValueSet avs)
+          {
+            for (var av : avs._componentsArray)
+              {
+                if (av instanceof Instance ai && ai._site == site)
+                  {
+                    return ai;
+                  }
+              }
+          }
+      }
+    return null;
+  }
+
+
   Value get(int ecl)
   {
     var i = Arrays.binarySearch(_types, ecl);

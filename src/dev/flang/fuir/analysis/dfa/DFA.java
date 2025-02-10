@@ -2538,6 +2538,14 @@ public class DFA extends ANY
             var k2 = env == null ? 0 : env._id + 1;
             var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
             r = clazzm.get(k);
+            if (r == null && env != null)
+              { // check if instance is an effect that is already present in the
+                // current environment. If so, we do not create a new instance
+                // since this would end up creating an new environment with that
+                // new instance added, which will in turn end up here again to
+                // create another instance ... ad infinitum.
+                r = context.findEffect(cl, site);
+              }
             if (r == null)
               {
                 var ni = new Instance(this, cl, site, context);
@@ -2864,7 +2872,7 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
 
   static boolean JOIN_CALLS_WITH_WIDER_ENV = false;
 
-  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = false;
+  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = !false;
 
 
   List<Boolean> _onlyOneValueSet = new List<>();

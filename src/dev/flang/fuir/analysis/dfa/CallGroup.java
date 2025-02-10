@@ -202,6 +202,13 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
       }
   }
 
+
+  public String toString()
+  {
+    return "CALLGROUP to "+_dfa._fuir.clazzAsString(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+_effects.stream().map(i->_dfa._fuir.clazzAsString(i)).reduce("", (a,b)->a+","+b);
+  }
+
+
 }
 
 /* end of file */
