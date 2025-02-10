@@ -1294,6 +1294,21 @@ should be avoided as much as possible.
 
 
   /**
+   * Create code that is supposed to be unreachable.
+   *
+   * @param site a site index where this unreachable code occured
+   *
+   * @param msg some text explaining what kind of statement we are trying to execute.
+   *
+   * @return an Expr to reprot the error and exit(1).
+   */
+  Expr reportUnreachable(int site, String msg)
+  {
+    return reportErrorInCode("As per data flow analysis this code should be unreachable. " + msg + " " + _fuir.siteAsString(site));
+  }
+
+
+  /**
    * Get the number of local var slots for the given routine
    *
    * @param cl id of clazz to generate code for
