@@ -1527,12 +1527,6 @@ public class Feature extends AbstractFeature
         resolveArgumentTypes(res);
         visit(res.resolveTypesFully(this));
 
-        if (hasThisType())
-          {
-            var tt = selfType();
-            _selfType = tt.resolve(res, context());
-          }
-
         if (_effects != null)
         {
           for (var e : _effects)
@@ -1796,7 +1790,6 @@ A ((Choice)) declaration must not contain a result type.
             if (t.compareToIgnoreOuter(selfType()) == 0)
               {
                 AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
-                _selfType = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
             var o = outer();
@@ -2010,8 +2003,9 @@ A ((Choice)) declaration must not contain a result type.
 
     choiceTypeCheckAndInternalFields(res);
 
-    _selfType   = selfType() .checkChoice(_pos,             context());
-    _resultType = _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
+    selfType().checkChoice(_pos, context());
+
+    _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
 
     visit(new ContextVisitor(context()) {
         /* if an error is reported in a call it might no longer make sense to check the actuals: */
@@ -2334,22 +2328,6 @@ A ((Choice)) declaration must not contain a result type.
       (result != null);
 
     return result;
-  }
-
-
-  /**
-   * determine if this feature can either be called in a way that requires the
-   * creation of a frame object or any heir features of this might do so.
-   *
-   * @return true iff this has or any heir of this might have a frame object on
-   * a call.
-   */
-  private boolean hasThisType()
-  {
-    return
-      _impl._kind != Impl.Kind.Intrinsic &&
-      _impl._kind != Impl.Kind.Abstract  &&
-      !isField();
   }
 
 

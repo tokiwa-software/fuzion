@@ -76,6 +76,7 @@ public class FormalGenerics extends ANY
   public FormalGenerics(List<Generic> l)
   {
     list = l;
+    list.freeze();
   }
 
 
@@ -266,20 +267,7 @@ public class FormalGenerics extends ANY
    */
   FormalGenerics addTypeParameter(Generic g)
   {
-    var result = this;
-    if (this == FormalGenerics.NONE)
-      {
-        result = new FormalGenerics(new List<>(g));
-      }
-    else
-      {
-        list.add(g);
-        if (_asActuals != null)
-          {
-            _asActuals.add(g.type());
-          }
-      }
-    return result;
+    return new FormalGenerics(list.addAfterUnfreeze(g));
   }
 
 

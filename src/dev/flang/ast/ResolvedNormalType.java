@@ -279,11 +279,11 @@ public class ResolvedNormalType extends ResolvedType
          || refOrVal == RefOrVal.LikeUnderlyingFeature
       );
 
-    this._refOrVal          = refOrVal;
-    this._generics          = original._generics;
+    this._refOrVal           = refOrVal;
+    this._generics           = original._generics;
     this._unresolvedGenerics = original._unresolvedGenerics;
-    this._outer             = original._outer;
-    this._feature           = original._feature;
+    this._outer              = original._outer;
+    this._feature            = original._feature;
 
     if (POSTCONDITIONS) ensure
       (feature().generics().sizeMatches(generics()));

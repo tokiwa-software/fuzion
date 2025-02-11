@@ -53,6 +53,7 @@ public abstract class AbstractCall extends Expr
    * ({@code a.b<>(x,y)}).
    */
   public static final List<AbstractType> NO_GENERICS = new List<>();
+  { NO_GENERICS.freeze(); }
 
 
   /*-----------------------------  methods  -----------------------------*/
