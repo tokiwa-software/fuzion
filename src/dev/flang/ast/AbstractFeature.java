@@ -1882,6 +1882,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return result;
   }
 
+
+  /**
+   * Origin of this feature, usually this.
+   * For pre, prebool, preandcall and post features this
+   * returns the origin feature.
+   */
+  AbstractFeature origin()
+  {
+    return this;
+  }
+
+
   /**
    * this feature as a human readable string
    */

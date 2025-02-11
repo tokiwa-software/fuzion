@@ -2543,6 +2543,7 @@ A ((Choice)) declaration must not contain a result type.
     return definesType() && !featureName().isInternal();
   }
 
+
   /**
    * Record usage of this feature, i.e. mark it as used.
    */
@@ -2550,6 +2551,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     _isUsed = true;
   }
+
 
   /**
    * Has this feature been used?
