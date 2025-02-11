@@ -132,23 +132,24 @@ abstract class Context extends ANY
                       return cc
                         .actualTypeParameters()
                         .get(0)
-                        // replace type parameters that come from pre feature
-                        // with their original type parameter.
-                        // NYI: UNDER DEVELOPMENT: ugly that we have to do string comparison here...
+                        /**
+                         * replace type parameters that come from pre feature
+                         * with their original type parameter.
+                         * {@code Sequence.pre unzip2.A} by {@code Sequence.unzip2.A}
+                         */
                         .applyToGenericsAndOuter(x ->
-                          x instanceof ResolvedParametricType rpt && rpt.genericArgument()
-                                                                        .feature()
-                                                                        .featureName()
-                                                                        .baseName()
-                                                                        .startsWith(FuzionConstants.PRECONDITION_FEATURE_PREFIX)
+                          x instanceof ResolvedParametricType rpt
                             ? f
-                                .generics()
-                                .list
-                                .stream()
-                                .filter(y -> y.toString().equals(rpt.genericArgument().typeParameter().featureName().baseName()))
-                                .findFirst()
-                                .get()
-                                .type()
+                              .generics()
+                              .list
+                              .stream()
+                              .filter(y ->
+                                  y.feature().origin() == rpt.genericArgument().feature().origin() &&
+                                  y.toString().equals(rpt.genericArgument().typeParameter().featureName().baseName())
+                                )
+                              .findFirst()
+                              .get()
+                              .type()
                             : x);
                     }
                 }
