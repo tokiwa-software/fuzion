@@ -1776,7 +1776,6 @@ isUsedAsDynamicOuterRef
 isDynamic
 addCode
 saveActualClazzes
-HasGlobalIndex
 codeBlockIndex
 initialValueFromCall
 initialCalls

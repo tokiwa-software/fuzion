@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
 
 /**
  * Context represents the context of Expressions that affects how these Exprs

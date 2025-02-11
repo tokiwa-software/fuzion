@@ -29,6 +29,14 @@ package dev.flang.ast;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
+
+/**
+ * Select denotes an unresolved select clause.
+ *
+ * Select is only present in the AST
+ * until resolveTypes where it replaces itself
+ * by a call.
+ */
 public class Select extends Call {
 
 
