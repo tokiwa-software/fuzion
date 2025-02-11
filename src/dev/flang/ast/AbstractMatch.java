@@ -189,7 +189,8 @@ public abstract class AbstractMatch extends Expr
           .reduce(Types.resolved.t_void, (a,b) -> a.union(b, Context.NONE));
 
         if (CHECKS) check
-          (_type != null && _type != Types.t_ERROR);
+          (_type != null && (_type != Types.t_ERROR || Errors.any()));
+
       }
     return _type;
   }
