@@ -55,9 +55,9 @@ public class Check extends ANY
 
 
   /**
-   *
+   * the list of conditions of this check
    */
-  List<Cond> _conditions;
+  private final List<Cond> _conditions;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -65,8 +65,6 @@ public class Check extends ANY
 
   /**
    * Constructor
-   *
-   * @param c
    */
   public Check(List<Cond> c)
   {
@@ -100,8 +98,6 @@ public class Check extends ANY
 
   /**
    * toString
-   *
-   * @return
    */
   public String toString()
   {

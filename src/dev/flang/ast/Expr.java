@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.stream.Collectors;
 
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -42,7 +43,7 @@ import dev.flang.util.StringHelpers;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
+public abstract class Expr extends ANY implements HasSourcePosition
 {
 
   /*----------------------------  constants  ----------------------------*/
