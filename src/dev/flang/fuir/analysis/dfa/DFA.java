@@ -1327,7 +1327,22 @@ public class DFA extends ANY
             Context._MAIN_ENTRY_POINT_);
 
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
-    findFixPoint();
+    findFixPoint(false);
+
+    _callsQuick = new LongMap<>();
+    _calls = new TreeMap<>();
+    _instancesForSite = new List<>();
+
+    newCall(null,
+            cl,
+            NO_SITE,
+            Value.UNIT,
+            new List<>(),
+            null /* env */,
+            Context._MAIN_ENTRY_POINT_);
+
+    findFixPoint(true);
+
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
   }
@@ -1336,7 +1351,7 @@ public class DFA extends ANY
   /**
    * Iteratively perform data flow analysis until a fix point is reached.
    */
-  void findFixPoint()
+  void findFixPoint(boolean real)
   {
     var cnt = 0;
     do
@@ -1377,8 +1392,11 @@ public class DFA extends ANY
           }
       }
 
-    _reportResults = true;
-    iteration();
+    if (real)
+      {
+        _reportResults = true;
+        iteration();
+      }
 
     _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
 
