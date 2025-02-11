@@ -409,6 +409,11 @@ public class Fuzion extends Tool
       {
         Errors.showAndExit();
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     undefined
