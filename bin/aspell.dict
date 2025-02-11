@@ -582,7 +582,6 @@ hasResultField
 hasRT
 HasSourcePosition
 hasState
-hasThisType
 headingSection
 heapClone
 HexDump

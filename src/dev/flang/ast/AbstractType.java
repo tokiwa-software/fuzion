@@ -1185,9 +1185,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return this or Types.t_ERROR in case an error was reported.
    */
-  AbstractType checkChoice(SourcePosition pos, Context context)
+  void checkChoice(SourcePosition pos, Context context)
   {
-    var result = this;
     if (isChoice())
       {
         var g = choiceGenerics(context);
@@ -1207,7 +1206,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                          t2 != Types.t_ERROR)
                       {
                         AstErrors.genericsMustBeDisjoint(pos, t1, t2);
-                        result = Types.t_ERROR;
                       }
                   }
                 i2++;
@@ -1215,7 +1213,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             i1++;
           }
       }
-    return result;
   }
 
 
