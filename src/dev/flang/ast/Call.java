@@ -670,14 +670,19 @@ public class Call extends AbstractCall
                 else
                   {
                     var calledName = FeatureName.get(_name, _actuals.size());
-                    AstErrors.calledFeatureNotFound(this,
-                                                    calledName,
-                                                    tf,
-                                                    _target,
-                                                    FeatureAndOuter.findExactOrCandidate(fos,
-                                                                                        (FeatureName fn) -> false,
-                                                                                        (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
-                                                    hiddenCandidates(res, tf, calledName));
+
+                    // suppress error if type is t_ERROR and errors were already reported
+                    if (tf.type() != Types.t_ERROR || !Errors.any())
+                      {
+                        AstErrors.calledFeatureNotFound(this,
+                                                        calledName,
+                                                        tf,
+                                                        _target,
+                                                        FeatureAndOuter.findExactOrCandidate(fos,
+                                                                                            (FeatureName fn) -> false,
+                                                                                            (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                                        hiddenCandidates(res, tf, calledName));
+                      }
                   }
               };
           }
