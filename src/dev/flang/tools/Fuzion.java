@@ -1160,6 +1160,10 @@ public class Fuzion extends Tool
 
   /**
    * determine the path of the .fuir-file
+   *
+   * The filename that is automatically chosen is currently
+   * Arrays.hashCode() over the (first/main) code
+   * and the file extension fuir.
    */
   private Path fuirFile(FrontEndOptions options)
   {
