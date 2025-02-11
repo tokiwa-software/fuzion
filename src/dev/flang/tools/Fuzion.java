@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -37,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -1120,9 +1122,8 @@ public class Fuzion extends Tool
             if(CHECKS) check
               (options.needsEscapeAnalysis() == true, _backend != Backend.effects);
 
-            String serializedFuir = _main + ".fuir";
-            // NYI: UNDER DEVELOPMENT: check cache validity, if source fits to the serialized fuir
-            if (!Files.exists(Path.of(serializedFuir)))
+            Path fuirFile = fuirFile(options);
+            if (!Files.exists(fuirFile))
               {
                 var fe = new FrontEnd(options);                       timer("fe");
                 Errors.showAndExit();
@@ -1131,7 +1132,7 @@ public class Fuzion extends Tool
                 var dfuir = new DFA(options, fuir).new_fuir();        timer("dfa");
                 var data = dfuir.serialize();                         timer("serializeFUIR");
 
-                try (FileOutputStream stream = new FileOutputStream(serializedFuir))
+                try (FileOutputStream stream = new FileOutputStream(fuirFile.toFile()))
                   {
                     stream.write(data);
                   }
@@ -1142,7 +1143,7 @@ public class Fuzion extends Tool
               }
             try
               {
-                var fuir = new LibraryFuir(Files.readAllBytes(Path.of(serializedFuir)));
+                var fuir = new LibraryFuir(Files.readAllBytes(fuirFile));
                 timer("loadFUIR");
                 _backend.process(options, fuir);
                 timer("be");
@@ -1154,6 +1155,40 @@ public class Fuzion extends Tool
           }
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
+  }
+
+
+  /**
+   * determine the path of the .fuir-file
+   *
+   * The filename that is automatically chosen is currently
+   * Arrays.hashCode() over the (first/main) code
+   * and the file extension fuir.
+   */
+  private Path fuirFile(FrontEndOptions options)
+  {
+    long hashCode = -1;
+    try
+      {
+        var bytes = _readStdin
+          ? System.in.readAllBytes()
+          : options.inputFile() != null
+            ? Files.readAllBytes(options.inputFile())
+            : _executeCode;
+
+        hashCode = Arrays.hashCode(bytes) + Integer.MAX_VALUE;
+
+        if (_readStdin)
+          {
+            System.setIn(new ByteArrayInputStream(bytes));
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("I/O Error: " + e.getMessage());
+      }
+
+    return Path.of(hashCode + ".fuir");
   }
 
 

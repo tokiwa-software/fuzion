@@ -269,6 +269,19 @@ public class FrontEndOptions extends FuzionOptions
     return _serializeFuir;
   }
 
+
+  /**
+   * The input file to use.
+   *
+   * This is either a regular file,
+   * SourceFile.STDIN or
+   * SourceFile.COMMAND_LINE_DUMMY
+   */
+  public Path inputFile()
+  {
+    return _inputFile;
+  }
+
 }
 
 /* end of file */
