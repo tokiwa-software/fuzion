@@ -1168,7 +1168,7 @@ public class Fuzion extends Tool
       {
         var bytes = _readStdin
           ? System.in.readAllBytes()
-          : _main != null
+          : options.inputFile() != null
             ? Files.readAllBytes(options.inputFile())
             : _executeCode;
 
