@@ -1404,7 +1404,8 @@ public class Call extends AbstractCall
             var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
             var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
             var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
-            result = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+            var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+            result = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
           }
       }
     return result;
@@ -2436,9 +2437,9 @@ public class Call extends AbstractCall
           }
         inferFormalArgTypesFromActualArgs(context.outerFeature());
         if (cf.generics().errorIfSizeDoesNotMatch(_generics,
-                                                              pos(),
-                                                              FuzionConstants.OPERATION_CALL,
-                                                              "Called feature: "+cf.qualifiedName()+"\n"))
+                                                  pos(),
+                                                  FuzionConstants.OPERATION_CALL,
+                                                  "Called feature: "+cf.qualifiedName()+"\n"))
           {
             _type = getActualResultType(res, context, false);
             if (_type != null && _type != Types.t_ERROR)
@@ -2460,14 +2461,6 @@ public class Call extends AbstractCall
           }
         resolveFormalArgumentTypes(res, context);
       }
-    if (_type != null &&
-        // exclude call to create type instance, it requires origin's type parameters:
-        !calledFeature().isCotype()
-        )
-      {
-        _type = _type.replace_type_parameters_of_cotype_origin(context.outerFeature());
-      }
-
     resolveTypesOfActuals(res, context);
 
     if (!res._options.isLanguageServer() &&
