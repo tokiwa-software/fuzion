@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# simple mandelbrot tests.
+# simple mandelbrot test.
 #
 # This triggers a situation in the JVM backend where a nullable choice
 # results in an unreachable branch in a match. This caused a VerifyError
