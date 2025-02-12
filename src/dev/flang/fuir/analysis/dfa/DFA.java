@@ -1396,9 +1396,9 @@ public class DFA extends ANY
       {
         _reportResults = true;
         iteration();
-      }
 
-    _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
+        _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
+      }
 
     if (CHECKS) check
       (!_changed);
