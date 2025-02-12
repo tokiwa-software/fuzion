@@ -627,6 +627,7 @@ public class Call extends AbstractCall
         if (targetVoid || targetFeature == Types.f_ERROR)
           {
             _calledFeature = Types.f_ERROR;
+            _type = Types.t_ERROR;
           }
       }
     if (_calledFeature == null && targetFeature != null)
@@ -1404,7 +1405,8 @@ public class Call extends AbstractCall
             var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
             var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
             var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
-            result = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+            var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+            result = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
           }
       }
     return result;
@@ -2396,7 +2398,7 @@ public class Call extends AbstractCall
         return this;
       }
     _resolvedFor = context;
-    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, context))
+    if (!loadCalledFeatureUnlessTargetVoid(res, context))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void
@@ -2416,11 +2418,7 @@ public class Call extends AbstractCall
       (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
 
     var cf = _calledFeature;
-    if (cf == Types.f_ERROR)
-      {
-        _type = Types.t_ERROR;
-      }
-    else if (cf != null)
+    if (cf != null && cf != Types.f_ERROR)
       {
         _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
         _generics = _generics.map(g -> g.resolve(res, cf.outer().context()));
@@ -2436,18 +2434,11 @@ public class Call extends AbstractCall
           }
         inferFormalArgTypesFromActualArgs(context.outerFeature());
         if (cf.generics().errorIfSizeDoesNotMatch(_generics,
-                                                              pos(),
-                                                              FuzionConstants.OPERATION_CALL,
-                                                              "Called feature: "+cf.qualifiedName()+"\n"))
+                                                  pos(),
+                                                  FuzionConstants.OPERATION_CALL,
+                                                  "Called feature: "+cf.qualifiedName()+"\n"))
           {
             _type = getActualResultType(res, context, false);
-            if (_type != null && _type != Types.t_ERROR)
-              {
-                // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
-                // arguments and returns a Function or Routine
-                result = resolveImmediateFunctionCall(res, context); // NYI: Separate pass? This currently does not work if type was inferred
-              }
-
             if (_type == null || isTailRecursive(context.outerFeature()))
               {
                 cf.whenResolvedTypes
@@ -2460,14 +2451,6 @@ public class Call extends AbstractCall
           }
         resolveFormalArgumentTypes(res, context);
       }
-    if (_type != null &&
-        // exclude call to create type instance, it requires origin's type parameters:
-        !calledFeature().isCotype()
-        )
-      {
-        _type = _type.replace_type_parameters_of_cotype_origin(context.outerFeature());
-      }
-
     resolveTypesOfActuals(res, context);
 
     if (!res._options.isLanguageServer() &&
@@ -2490,6 +2473,15 @@ public class Call extends AbstractCall
 
     if (POSTCONDITIONS) ensure
       (targetTypeUndefined() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
+
+
+    // NYI: Separate pass? This currently does not work if type was inferred
+    if (_type != null && _type != Types.t_ERROR)
+      {
+        // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
+        // arguments and returns a Function or Routine
+        result = resolveImmediateFunctionCall(res, context);
+      }
 
     return  result;
   }
