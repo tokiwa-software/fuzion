@@ -554,8 +554,8 @@ public class Choices extends ANY implements ClassFileConstants
                     }
                 }
             }
-          pos = pos != null ? pos : jvm.reportUnreachable(s, "nullable pos");
-          neg = neg != null ? neg : jvm.reportUnreachable(s, "nullable neg");
+          pos = pos != null ? pos : Expr.POP.andThen(jvm.reportUnreachable(s, "nullable pos"));
+          neg = neg != null ? neg : Expr.POP.andThen(jvm.reportUnreachable(s, "nullable neg"));
           code = sub                                                            // stack is sub
             .andThen(Expr.DUP)                                                  //          sub, sub
             .andThen(Expr.branch(O_ifnull,                                      //          sub

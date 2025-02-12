@@ -1,0 +1,45 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test mandelbrot
+#
+# -----------------------------------------------------------------------
+
+# simple mandelbrot tests.
+#
+# This triggers a situation in the JVM backend where a nullable choice
+# results in an unreachable branch in a match. This caused a VerifyError
+# in case the reference was not popped from the stack.
+#
+mandelbrotexample is
+  is_in_mandelbrot_set(c num.complex f64, max_escape_iterations i32, z num.complex f64) =>
+    max_escape_iterations = 0 || z.abs² <= 4 && is_in_mandelbrot_set c max_escape_iterations-1 z*z+c
+
+  steps(start, step f64) => start : steps start+step step
+
+  mandelbrot_image(y_start, y_step, x_start, x_step f64, height, width i32) =>
+    for _ in 1..height; y in steps y_start y_step do
+      for _ in 1..width; x in steps x_start x_step do
+        if is_in_mandelbrot_set (num.complex x y) 50 (num.complex 0.0 0.0)
+          yak "#"
+        else
+          yak " "
+      say ""
+
+  mandelbrot_image 1 -0.05 -2 0.0315 40 80
