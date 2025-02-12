@@ -1374,6 +1374,10 @@ public class Call extends AbstractCall
       {
         result = Types.resolved.t_void; // a recursive call will not return and execute further
       }
+    else if (!genericSizesMatch())
+      {
+        result = Types.t_ERROR;
+      }
     else
       {
         _recursiveResolveType = true;
@@ -1408,6 +1412,22 @@ public class Call extends AbstractCall
           }
       }
     return result;
+  }
+
+
+  /**
+   * Check if the generics of the called feature
+   * and the calls generics may match in size.
+   * Raise an error if they don't.
+   */
+  private boolean genericSizesMatch()
+  {
+    return _calledFeature
+      .generics()
+      .errorIfSizeDoesNotMatch(_generics,
+                               pos(),
+                               FuzionConstants.OPERATION_CALL,
+                               "Called feature: "+_calledFeature.qualifiedName()+"\n");
   }
 
 
@@ -2435,22 +2455,7 @@ public class Call extends AbstractCall
               }
           }
         inferFormalArgTypesFromActualArgs(context.outerFeature());
-        if (cf.generics().errorIfSizeDoesNotMatch(_generics,
-                                                              pos(),
-                                                              FuzionConstants.OPERATION_CALL,
-                                                              "Called feature: "+cf.qualifiedName()+"\n"))
-          {
-            _type = getActualResultType(res, context, false);
-            if (_type == null || isTailRecursive(context.outerFeature()))
-              {
-                cf.whenResolvedTypes
-                  (() -> _type = getActualResultType(res, context, true));
-              }
-          }
-        else
-          {
-            _type = Types.t_ERROR;
-          }
+        setActualResultType(res, context);
         resolveFormalArgumentTypes(res, context);
       }
     if (_type != null &&
@@ -2493,6 +2498,26 @@ public class Call extends AbstractCall
       (targetTypeUndefined() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR);
 
     return  result;
+  }
+
+
+  /**
+   * set the actual result type of this call
+   */
+  private void setActualResultType(Resolution res, Context context)
+  {
+    var t = getActualResultType(res, context, false);
+
+    if (CHECKS) check
+      (_type == null || t.compareTo(_type) == 0);
+
+    _type = t;
+
+    if (_type == null || isTailRecursive(context.outerFeature()))
+      {
+        _calledFeature.whenResolvedTypes
+          (() -> _type = getActualResultType(res, context, true));
+      }
   }
 
 
