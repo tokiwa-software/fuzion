@@ -181,3 +181,4 @@ PASSED: fun arg 2 4: got '4,2,0,69'
 PASSED: fun arg 3 3: got '32,16,8'
 PASSED: fun arg 3 4: got '4,2,0,69'
 PASSED: fun arg 4 4: got '4,2,0,69'
+[unit]

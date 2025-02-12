@@ -378,8 +378,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   boolean isAssignableFromWithoutTagging(AbstractType actual, Context context)
   {
     return actual.isVoid()
-         || (!isChoice() && isAssignableFrom(actual, context))
-         || (isChoice() && compareTo(actual) == 0);
+         || !isChoice() && isAssignableFrom(actual, context)
+         || isChoiceAssignableFrom(actual);
   }
 
 
@@ -408,8 +408,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   boolean isAssignableFromWithoutBoxing(AbstractType actual, Context context)
   {
     return actual.isVoid()
-         || (!isChoice() && isAssignableFrom(actual, context) && !(isRef().yes() && actual.isRef().no()))
-         || (isChoice() && compareTo(actual) == 0);
+         || !isChoice() && isAssignableFrom(actual, context) && !(isRef().yes() && actual.isRef().no())
+         || isChoiceAssignableFrom(actual);
+  }
+
+
+  private boolean isChoiceAssignableFrom(AbstractType actual)
+  {
+    // NYI: UNDER DEVELOPMENT: probably unsound!
+    return isChoice() && actual.isChoice() && asThis().compareTo(actual.asThis()) == 0;
   }
 
 
@@ -941,10 +948,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
      * this a bit, but this is probably not sufficient!
      */
     var result = this;
+    /**
+     * example where result.isThisType() is relevant (test mix_inheritance_and_outer):
+     *
+     *     X (A type, v A) ref is
+     *       y : X i32 42 is
+     *         get => X.this.v
+     *     say (X "Hello").y.get
+     *
+     */
     for (var i : f.inherits())
       {
-        result = result.applyTypePars(i.calledFeature(),
-                                      i.actualTypeParameters());
+        result = result.isThisType()
+          ? result
+          : result.applyTypePars(i.calledFeature(),
+                                 i.actualTypeParameters());
       }
     if (result.isGenericArgument())
       {
@@ -960,7 +978,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        var g2 = applyTypePars(f, result.generics(), actualGenerics);
+        var g2 = !result.isThisType() || f == feature() ? applyTypePars(f, result.generics(), actualGenerics) : result.generics();
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
         g2 = cotypeActualGenerics(g2);
@@ -1167,9 +1185,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return this or Types.t_ERROR in case an error was reported.
    */
-  AbstractType checkChoice(SourcePosition pos, Context context)
+  void checkChoice(SourcePosition pos, Context context)
   {
-    var result = this;
     if (isChoice())
       {
         var g = choiceGenerics(context);
@@ -1189,7 +1206,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                          t2 != Types.t_ERROR)
                       {
                         AstErrors.genericsMustBeDisjoint(pos, t1, t2);
-                        result = Types.t_ERROR;
                       }
                   }
                 i2++;
@@ -1197,7 +1213,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             i1++;
           }
       }
-    return result;
   }
 
 

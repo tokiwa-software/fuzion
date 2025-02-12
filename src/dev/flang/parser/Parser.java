@@ -100,15 +100,6 @@ public class Parser extends Lexer
 
 
   /**
-   * Create a parser for the given file
-   */
-  public Parser(Path fname)
-  {
-    this(fname, null);
-  }
-
-
-  /**
    * Fork this parer, used by fork().
    */
   private Parser(Parser original)
@@ -1431,17 +1422,13 @@ inheritanceCall    : call0
    *
    * @param target the target of the call or null if none.
    *
-pureCall    : name actuals pureCallTail
+pureCall    : name actualArgs pureCallTail
             ;
-call        : name actuals callTail
-            ;
-actuals     : actualArgs
-            | dot NUM_LITERAL
+call        : name actualArgs callTail
             ;
    */
   Expr call(boolean pure, Expr target)
   {
-    SourcePosition pos = tokenSourcePos();
     var n = name();
     Call result;
     var skippedDot = false;
@@ -1449,19 +1436,7 @@ actuals     : actualArgs
       {
         if (current() == Token.t_numliteral)
           {
-            var select = skipNumLiteral().plainInteger();
-            int s = -1;
-            try
-              {
-                s = Integer.parseInt(select);
-                if (CHECKS) check
-                  (s >= 0); // parser should not allow negative value
-              }
-            catch (NumberFormatException e)
-              {
-                AstErrors.illegalSelect(pos, select, e);
-              }
-            result = new ParsedCall(target, n, s);
+            result = select(target, n._name);
           }
         else
           {
@@ -1557,6 +1532,7 @@ callTail    : indexCall  callTail
             | dot "env"  callTail
             | dot "type" callTail
             | dot "this" callTail
+            | dot select callTail
             |
             ;
    */
@@ -1609,10 +1585,48 @@ callTail    : indexCall  callTail
                 result = callTail(false, new This(q));
               }
           }
+        else if (current() == Token.t_numliteral)
+          {
+            result = callTail(false, select(result, null));
+          }
         else
           {
             result = call(result);
           }
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse select clause
+   *
+select    : NUM_LITERAL
+          ;
+   */
+  private Call select(Expr target, String name)
+  {
+    var result = Call.ERROR;
+    var literalPos = tokenSourceRange();
+    var lit = skipNumLiteral()._originalString;
+    // NYI: CLEANUP: ugly, change lexer?
+    try
+      {
+        var dotIdx = lit.indexOf(".");
+        if (dotIdx >= 0)
+          {
+            var s0 = Integer.parseUnsignedInt(lit.substring(0, dotIdx));
+            var s1 = Integer.parseUnsignedInt(lit.substring(dotIdx+1, lit.length()));
+            result = new Select(literalPos, new Select(literalPos, target, name, s0), null, s1);
+          }
+        else
+          {
+            result = new Select(literalPos, target, name, Integer.parseUnsignedInt(lit));
+          }
+      }
+    catch (NumberFormatException nfe)
+      {
+        AstErrors.illegalSelect(literalPos, lit);
       }
     return result;
   }
@@ -2805,7 +2819,16 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         setMinIndent(old);
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
-            syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
+            if (current() == Token.t_while ||
+                current() == Token.t_do ||
+                current() == Token.t_until)
+              {
+                Errors.indentationProblemEncountered(tokenSourcePos(), pos, parserDetail("loop"));
+              }
+            else
+              {
+                syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
+              }
           }
         return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
       });
@@ -3097,11 +3120,8 @@ assign      : "set" name ":=" exprInLine
    * Parse destructure
    *
 destructure : destructr
-            | destructrDcl
             ;
 destructr   : "(" argNames ")"       ":=" exprInLine
-            ;
-destructrDcl: formArgs               ":=" exprInLine
             ;
    */
   Expr destructure()
@@ -3133,21 +3153,8 @@ destructrDcl: formArgs               ":=" exprInLine
    */
   boolean isDestructurePrefix()
   {
-    return (current() == Token.t_lparen) && (fork().skipDestructrDclPrefix() ||
-                                             fork().skipDestructrPrefix()        ) ||
+    return (current() == Token.t_lparen) && fork().skipDestructrPrefix() ||
       (current() == Token.t_set) && (fork().skipDestructrPrefix());
-  }
-
-
-  /**
-   * Check if the current position starts a destructure using formArgs and skip an
-   * unspecified part of it.
-   *
-   * @return true iff the next token(s) start a destructureDecl
-   */
-  boolean skipDestructrDclPrefix()
-  {
-    return skipFormArgs() && isOperator(":=");
   }
 
 

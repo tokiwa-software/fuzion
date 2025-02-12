@@ -1,0 +1,15 @@
+
+error 1: FATAL FAULT `precondition`: T : tuple A
+Call stack:
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1
+fuzion.runtime.pre_fault.cause#1
+fuzion.runtime.precondition_fault#1
+(array (tuple i32)).pre unzip3 String
+(array (tuple i32)).precall unzip3 String
+universe
+
+*** fatal errors encountered, stopping.
+one error.

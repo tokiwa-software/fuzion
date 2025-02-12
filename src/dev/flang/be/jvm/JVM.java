@@ -31,6 +31,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.ClassFile;
@@ -1293,6 +1294,21 @@ should be avoided as much as possible.
 
 
   /**
+   * Create code that is supposed to be unreachable.
+   *
+   * @param site a site index where this unreachable code occured
+   *
+   * @param msg some text explaining what kind of statement we are trying to execute.
+   *
+   * @return an Expr to reprot the error and exit(1).
+   */
+  Expr reportUnreachable(int site, String msg)
+  {
+    return reportErrorInCode("As per data flow analysis this code should be unreachable. " + msg + " " + _fuir.siteAsString(site));
+  }
+
+
+  /**
    * Get the number of local var slots for the given routine
    *
    * @param cl id of clazz to generate code for
@@ -1745,13 +1761,18 @@ should be avoided as much as possible.
    */
   boolean fieldExists(int field)
   {
-    var occ   = _fuir.clazzOuterClazz(field);
-    var rt = _fuir.clazzResultClazz(field);
+    var result = false;
+    if (field != NO_CLAZZ)
+      {
+        var occ   = _fuir.clazzOuterClazz(field);
+        var rt = _fuir.clazzResultClazz(field);
 
-    return _fuir.hasData(rt)       &&
-      !_fuir.isScalar(occ)        &&
-      _types.clazzNeedsCode(field) &&
-      _types.resultType(rt) != PrimitiveType.type_void;
+        result = _fuir.hasData(rt)       &&
+          !_fuir.isScalar(occ)        &&
+          _types.clazzNeedsCode(field) &&
+          _types.resultType(rt) != PrimitiveType.type_void;
+      }
+    return result;
   }
 
 

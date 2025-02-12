@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -36,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -53,7 +56,7 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.LibraryFuir;
 import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
@@ -108,6 +111,11 @@ public class Fuzion extends Tool
       void process(FuzionOptions options, FUIR fuir)
       {
         new Interpreter(options, fuir).run();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -171,6 +179,11 @@ public class Fuzion extends Tool
       {
         new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_), fuir).compile();
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     java       ("-java"),
@@ -200,6 +213,11 @@ public class Fuzion extends Tool
       {
         return true;
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     classes    ("-classes")
@@ -222,6 +240,11 @@ public class Fuzion extends Tool
       {
         new JVM(new JVMOptions(options, /* run */ false, /* save classes */ true, /* save JAR */ false, Optional.ofNullable(_jvmOutName_)), fuir).compile();
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     jar        ("-jar")
@@ -243,6 +266,11 @@ public class Fuzion extends Tool
       void process(FuzionOptions options, FUIR fuir)
       {
         new JVM(new JVMOptions(options, /* run */ false, /* save classes */ false, /* save JAR */ true, Optional.ofNullable(_jvmOutName_)), fuir).compile();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -381,6 +409,11 @@ public class Fuzion extends Tool
       {
         Errors.showAndExit();
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     undefined
@@ -508,10 +541,22 @@ public class Fuzion extends Tool
       process(o, new DFA(o, fuir).new_fuir());
     }
 
+    /**
+     * Process backend
+     */
     void process(FuzionOptions options, FUIR fuir)
     {
       Errors.fatal("backend '" + this + "' not supported yet");
     }
+
+    /**
+     * Should the FUIR be serialized?
+     */
+    boolean serializeFuir()
+    {
+      return false;
+    }
+
   }
 
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
@@ -1065,16 +1110,90 @@ public class Fuzion extends Tool
                                           moduleName(),
                                           _backend.needsSources(),
                                           _backend.needsEscapeAnalysis(),
+                                          _backend.serializeFuir(),
                                           s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
-        var fe = new FrontEnd(options);
-        timer("fe");
-        Errors.showAndExit();
-        _backend.processFrontEnd(this, fe);
-        timer("be");
+        if (!options.serializeFuir())
+          {
+            var fe = new FrontEnd(options);
+            timer("fe");
+            Errors.showAndExit();
+            _backend.processFrontEnd(this, fe);
+            timer("be");
+          }
+        else
+          {
+            if(CHECKS) check
+              (options.needsEscapeAnalysis() == true, _backend != Backend.effects);
+
+            Path fuirFile = fuirFile(options);
+            if (!Files.exists(fuirFile))
+              {
+                var fe = new FrontEnd(options);                       timer("fe");
+                Errors.showAndExit();
+                var mir  = fe.createMIR();                            timer("createMIR");
+                var fuir = new Optimizer(options, fe, mir).fuir();    timer("ir");
+                var dfuir = new DFA(options, fuir).new_fuir();        timer("dfa");
+                var data = dfuir.serialize();                         timer("serializeFUIR");
+
+                try (FileOutputStream stream = new FileOutputStream(fuirFile.toFile()))
+                  {
+                    stream.write(data);
+                  }
+                catch (IOException e)
+                  {
+                    Errors.fatal(e);
+                  }
+              }
+            try
+              {
+                var fuir = new LibraryFuir(Files.readAllBytes(fuirFile));
+                timer("loadFUIR");
+                _backend.process(options, fuir);
+                timer("be");
+              }
+            catch (IOException e)
+              {
+                Errors.fatal(e);
+              }
+          }
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
+  }
+
+
+  /**
+   * determine the path of the .fuir-file
+   *
+   * The filename that is automatically chosen is currently
+   * Arrays.hashCode() over the (first/main) code
+   * and the file extension fuir.
+   */
+  private Path fuirFile(FrontEndOptions options)
+  {
+    long hashCode = -1;
+    try
+      {
+        var bytes = _readStdin
+          ? System.in.readAllBytes()
+          : options.inputFile() != null
+            ? Files.readAllBytes(options.inputFile())
+            : _executeCode;
+
+        hashCode = Arrays.hashCode(bytes) + Integer.MAX_VALUE;
+
+        if (_readStdin)
+          {
+            System.setIn(new ByteArrayInputStream(bytes));
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("I/O Error: " + e.getMessage());
+      }
+
+    return Path.of(hashCode + ".fuir");
   }
 
 

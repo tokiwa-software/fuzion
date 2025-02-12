@@ -38,10 +38,10 @@ is
 
   # basic operations
   public fixed redef prefix + => complex.this
-  public fixed redef infix + (b complex.this) => complex real+b.real imag+b.imag
-  public fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
-  public fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
-  public fixed redef infix / (b complex.this)
+  public fixed redef infix + (b complex C) => complex real+b.real imag+b.imag
+  public fixed redef infix - (b complex C) => complex real-b.real imag-b.imag
+  public fixed redef infix * (b complex C) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
+  public fixed redef infix / (b complex C)
   =>
     n := b.real*b.real+b.imag*b.imag
     complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n

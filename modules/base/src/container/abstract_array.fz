@@ -71,7 +71,7 @@ public abstract_array
   # For arrays, this has performance in O(1).
   #
   public redef drop (n i32) Sequence T =>
-    as_list (max 0 n)
+    n >= count ? (list T).empty : as_list (max 0 n)
 
 
   # a sequence of all valid indices to access this array. Useful e.g., for
@@ -107,6 +107,7 @@ public abstract_array
   public as_list(i i32) list T
     pre
       debug: i ≥ 0
+      debug: i=0 || i<length
   =>
     (slice i length).as_list
 

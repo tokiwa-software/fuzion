@@ -17,32 +17,32 @@ While parsing: implRout, parse stack: implRout, routOrField, feature, expr, expr
 While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/choice_negative.fz:61:26: error 4: Repeated inheritance of choice is not permitted
-    A : choice i32 bool, choice String f64 is // 9. should flag an error: choice type must inherit exactly once from choice
--------------------------^^^^^^
-A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9:
-
-
---CURDIR--/choice_negative.fz:66:12: error 5: Repeated inheritance of choice is not permitted
+--CURDIR--/choice_negative.fz:66:12: error 4: Repeated inheritance of choice is not permitted
     C : A, B is // 10. should flag an error: choice type must inherit exactly once from choice
 -----------^
 A choice feature must inherit directly from choice exactly once.
 Previous inheritance from choice at --CURDIR--/choice_negative.fz:66:9:
 
 
---CURDIR--/choice_negative.fz:70:12: error 6: Repeated inheritance of choice is not permitted
+--CURDIR--/choice_negative.fz:70:12: error 5: Repeated inheritance of choice is not permitted
     B : A, choice String f64 is // 11. should flag an error: choice type must inherit exactly once from choice
 -----------^^^^^^
 A choice feature must inherit directly from choice exactly once.
 Previous inheritance from choice at --CURDIR--/choice_negative.fz:70:9:
 
 
---CURDIR--/choice_negative.fz:74:28: error 7: Repeated inheritance of choice is not permitted
+--CURDIR--/choice_negative.fz:74:28: error 6: Repeated inheritance of choice is not permitted
     B : choice String f64, A is // 12. should flag an error: choice type must inherit exactly once from choice
 ---------------------------^
 A choice feature must inherit directly from choice exactly once.
 Previous inheritance from choice at --CURDIR--/choice_negative.fz:74:9:
+
+
+--CURDIR--/choice_negative.fz:61:26: error 7: Repeated inheritance of choice is not permitted
+    A : choice i32 bool, choice String f64 is // 9. should flag an error: choice type must inherit exactly once from choice
+-------------------------^^^^^^
+A choice feature must inherit directly from choice exactly once.
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9:
 
 
 --CURDIR--/choice_negative.fz:54:10: error 8: Could not find called feature

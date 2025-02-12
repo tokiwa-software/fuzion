@@ -480,16 +480,11 @@ public class Intrinsics extends ANY
         "f64.infix %"          , (c,cl,outer,in) -> CExpr.call("fmod", new List<>(outer, A0)).ret());
     put("f32.infix **"         ,
         "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
-    put("f32.infix ="          ,
-        "f64.infix ="          , (c,cl,outer,in) -> outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix <="         ,
-        "f64.infix <="         , (c,cl,outer,in) -> outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix >="         ,
-        "f64.infix >="         , (c,cl,outer,in) -> outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix <"          ,
-        "f64.infix <"          , (c,cl,outer,in) -> outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
-    put("f32.infix >"          ,
-        "f64.infix >"          , (c,cl,outer,in) -> outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.type.equal"       ,
+        "f64.type.equal"       , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
+    put("f32.type.lower_than_or_equal",
+        "f64.type.lower_than_or_equal"
+                               , (c,cl,outer,in) -> A0.le(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.as_f64"           , (c,cl,outer,in) -> outer.castTo("fzT_1f64").ret());
     put("f64.as_f32"           , (c,cl,outer,in) -> outer.castTo("fzT_1f32").ret());
     put("f64.as_i64_lax"       , (c,cl,outer,in) ->
@@ -1206,43 +1201,6 @@ public class Intrinsics extends ANY
 
     return rs;
   }
-
-
-  /**
-   * if result of expr is -1 return false and assign
-   * the result fzE_net_error to res[0]
-   * else return true and assign the result of expr to res[0]
-   * @param c
-   * @param expr
-   * @param res
-   * @return
-   */
-  static CStmnt assignNetErrorOnError(C c,CExpr expr, CIdent res)
-  {
-    var expr_res = new CIdent("expr_res");
-    return CStmnt.seq(
-      CExpr.decl("int", expr_res),
-      expr_res.assign(expr),
-      // error
-      CExpr.iff(CExpr.eq(expr_res, CExpr.int32const(-1)),
-        CStmnt.seq(
-          res
-            .castTo("fzT_1i32 *")
-            .index(CExpr.int32const(0))
-            .assign(CExpr.call("fzE_net_error", new List<>())),
-          c._names.FZ_FALSE.ret()
-        )
-      ),
-      // success
-      CStmnt.seq(
-        res
-          .castTo("fzT_1i32 *")
-          .index(CExpr.int32const(0))
-          .assign(expr_res),
-        c._names.FZ_TRUE.ret()
-      ));
-  }
-
 
   /**
    * Create code for field-by-field comparison of two value or choice type values.

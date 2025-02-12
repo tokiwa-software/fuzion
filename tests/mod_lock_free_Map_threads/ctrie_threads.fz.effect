@@ -5,6 +5,7 @@ concur.atomic_access
 fuzion.runtime.post_fault
 io.Out
 unique_id
+concur.atomic_access
+panic
 concur.threads
 envir.args
-panic

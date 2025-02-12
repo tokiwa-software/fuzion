@@ -6,4 +6,5 @@ fuzion.runtime.pre_fault
 io.Err
 io.Out
 fuzion.runtime.post_fault
+panic
 time.nano

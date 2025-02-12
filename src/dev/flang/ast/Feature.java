@@ -1448,7 +1448,11 @@ public class Feature extends AbstractFeature
     @Override public Expr         action      (Destructure     d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
-      if (f._sourceCodeContext == Context.NONE)  // for a lambda, this is already set.
+      if (f.isExtensionFeature() && f.outer() != null)
+        {
+          f._sourceCodeContext = f.outer().context();
+        }
+      else if (f._sourceCodeContext == Context.NONE)  // for a lambda, this is already set.
         {
           f._sourceCodeContext = _context;
         }
@@ -1468,6 +1472,15 @@ public class Feature extends AbstractFeature
     @Override public Expr         action      (AbstractCurrent c) { return c.resolveTypes      (res,   _context); }
 
     @Override public boolean doVisitActuals() { return false; }
+  }
+
+
+  /**
+   * Is this a fully qualified feature?
+   */
+  private boolean isExtensionFeature()
+  {
+    return _qname.size() > 1;
   }
 
 
@@ -1513,12 +1526,6 @@ public class Feature extends AbstractFeature
 
         resolveArgumentTypes(res);
         visit(res.resolveTypesFully(this));
-
-        if (hasThisType())
-          {
-            var tt = selfType();
-            _selfType = tt.resolve(res, context());
-          }
 
         if (_effects != null)
         {
@@ -1780,10 +1787,9 @@ A ((Choice)) declaration must not contain a result type.
           (Errors.any() || t != null);
         if (t != null && t.isRef().noOrDontKnow())
           {
-            if (t.compareTo(thisType()) == 0)
+            if (t.compareToIgnoreOuter(selfType()) == 0)
               {
                 AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
-                _selfType = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
             var o = outer();
@@ -1997,8 +2003,9 @@ A ((Choice)) declaration must not contain a result type.
 
     choiceTypeCheckAndInternalFields(res);
 
-    _selfType   = selfType() .checkChoice(_pos,             context());
-    _resultType = _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
+    selfType().checkChoice(_pos, context());
+
+    _resultType.checkChoice(_posOfReturnType == SourcePosition.builtIn ? _pos : _posOfReturnType, context());
 
     visit(new ContextVisitor(context()) {
         /* if an error is reported in a call it might no longer make sense to check the actuals: */
@@ -2324,22 +2331,6 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
-  /**
-   * determine if this feature can either be called in a way that requires the
-   * creation of a frame object or any heir features of this might do so.
-   *
-   * @return true iff this has or any heir of this might have a frame object on
-   * a call.
-   */
-  private boolean hasThisType()
-  {
-    return
-      _impl._kind != Impl.Kind.Intrinsic &&
-      _impl._kind != Impl.Kind.Abstract  &&
-      !isField();
-  }
-
-
   public FeatureName featureName()
   {
     if (CHECKS) check
@@ -2530,6 +2521,7 @@ A ((Choice)) declaration must not contain a result type.
     return definesType() && !featureName().isInternal();
   }
 
+
   /**
    * Record usage of this feature, i.e. mark it as used.
    */
@@ -2537,6 +2529,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     _isUsed = true;
   }
+
 
   /**
    * Has this feature been used?
