@@ -1,0 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue2305
+#
+# -----------------------------------------------------------------------
+
+reg_issue2305 =>
+
+  # Had the following error:
+
+  # Ambiguous targets found for call to 'b'
+  # Found several possible call targets within the current feature at different levels of outer features:
+  # in 'ex.c.d' found 'ex.A.b' defined at /tmp/fuzion-lsp-server9905874271075263416/170178251967517017825196759787965939217624038.fz:3:5:
+  #   A(b i32) ref is
+  # ----^
+  # and in 'ex.c' found 'ex.c.b' defined at /tmp/fuzion-lsp-server9905874271075263416/170178251967517017825196759787965939217624038.fz:4:5:
+  #   c(b i32) is
+  # ----^
+  # To solve this, you may qualify the feature using 'ex.c.d.this.b' or 'ex.c.this.b'.
+
+  A(b i32) ref is
+  c(b i32) is
+    d : A b is

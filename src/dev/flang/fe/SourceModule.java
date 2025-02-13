@@ -1174,7 +1174,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
                     !(use instanceof Call c && !c._isInheritanceCall && v.isChoice()) &&
-                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
+                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v, outer)))
                   {
                     result.add(new FeatureAndOuter(v, curOuter, inner));
                   }
@@ -1198,12 +1198,13 @@ A post-condition of a feature that does not redefine an inherited feature must s
    *
    * @param use
    * @param v
+   * @param outer the feature containing the `use`
    * @return
    */
   @SuppressWarnings({
     "rawtypes", "unchecked"
   })
-  private boolean inScope(Expr use, AbstractFeature v)
+  private boolean inScope(Expr use, AbstractFeature v, AbstractFeature outer)
   {
     // we only need to do this evaluation for:
     // - scoped routines
@@ -1356,7 +1357,16 @@ A post-condition of a feature that does not redefine an inherited feature must s
     // no need to do anything
     else
       {
-        return true;
+        /*
+          * example where this is releveant.
+          * for the call `b` we do not want to consider
+          * the argument b of inherited feature `A`.
+          *
+          *     A(b i32) ref is
+          *     c(b i32) is
+          *       d : A b is
+          */
+        return !(v instanceof Feature f && f.isArgument()) || outer==f.outer() || !outer.inheritsFrom(f.outer());
       }
   }
 
