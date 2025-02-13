@@ -101,7 +101,7 @@ Matched type: 'i32', which is not a choice type
 Matched type: 'i32', which is not a choice type
 
 
---CURDIR--/choice_negative.fz:32:5: error 16: Choice cannot refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:32:5: error 16: Choice must not refer to its own value type as one of the choice alternatives
     A : choice A i32 String is       // 1. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
@@ -114,7 +114,7 @@ Faulty type parameter: 'choice_negative.this.cyclic1.this.A'
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:38:5: error 18: Choice cannot refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:38:5: error 18: Choice must not refer to its own value type as one of the choice alternatives
     A : choice i32 A String is      // 2. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
@@ -127,7 +127,7 @@ Faulty type parameter: 'choice_negative.this.cyclic3.this.A'
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:44:5: error 20: Choice cannot refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:44:5: error 20: Choice must not refer to its own value type as one of the choice alternatives
     A : choice i32 String A is      // 3. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
@@ -248,7 +248,7 @@ The following types have overlapping values:
 'choice_negative.this.args6.this.S'
 
 
---CURDIR--/choice_negative.fz:126:5: error 35: Choice type must not access fields of surrounding scope.
+--CURDIR--/choice_negative.fz:126:5: error 35: Choice type must not access features of surrounding scope.
     A : choice i64 f32 is
 ----^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
@@ -256,10 +256,10 @@ A closure cannot be built for a choice type. Forbidden accesses occur at
         _ := x // 25. should flag an error: access to closure not permitted in choice
 -------------^
 
-To solve this, you might move the accessed fields outside of the common outer feature.
+To solve this, you might move the accessed features outside of the common outer feature.
 
 
---CURDIR--/choice_negative.fz:134:9: error 36: Choice type must not access fields of surrounding scope.
+--CURDIR--/choice_negative.fz:134:9: error 36: Choice type must not access features of surrounding scope.
     B : A, choice i64 f32 is
 --------^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
@@ -267,7 +267,7 @@ A closure cannot be built for a choice type. Forbidden accesses occur at
         _ := x // 26. should flag an error: access to closure not permitted in choice
 -------------^
 
-To solve this, you might move the accessed fields outside of the common outer feature.
+To solve this, you might move the accessed features outside of the common outer feature.
 
 
 --CURDIR--/choice_negative.fz:137:5: error 37: Choice feature must not be intrinsic

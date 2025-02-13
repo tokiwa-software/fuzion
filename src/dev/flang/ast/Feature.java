@@ -1891,7 +1891,7 @@ A ((Choice)) declaration must not contain a result type.
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this
-            AstErrors.routineCannotReturnItself(this);
+            AstErrors.routineMustNotReturnItself(this);
             _resultType = Types.t_ERROR;
           }
 

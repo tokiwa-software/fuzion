@@ -142,14 +142,11 @@ public numeric : property.hashable, property.orderable is
   #
   # Nesting, however, does not work, e.g, `| - |a| |`, this requires parentheses `|(- |a|)|`.
   #
-  # NYI: CLEANUP: Due to #3081, we need `postfix |` as the first operation, should be
-  # `prefix |` first
-  #
-  public postfix | is
+  public prefix | is
 
     # only useful operation is the corresponding `prefix |`
     #
-    public prefix | => numeric.this.abs
+    public postfix | => numeric.this.abs
 
     # redefine as_string to try to explain what is wrong if only one `|` is used
     #
