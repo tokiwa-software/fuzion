@@ -2442,13 +2442,6 @@ public class Call extends AbstractCall
                                                   "Called feature: "+cf.qualifiedName()+"\n"))
           {
             _type = getActualResultType(res, context, false);
-            if (_type != null && _type != Types.t_ERROR)
-              {
-                // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
-                // arguments and returns a Function or Routine
-                result = resolveImmediateFunctionCall(res, context); // NYI: Separate pass? This currently does not work if type was inferred
-              }
-
             if (_type == null || isTailRecursive(context.outerFeature()))
               {
                 cf.whenResolvedTypes
@@ -2479,6 +2472,14 @@ public class Call extends AbstractCall
           (Errors.any());
 
         result = Call.ERROR; // short circuit this call
+      }
+
+    // NYI: Separate pass? This currently does not work if type was inferred
+    if (_type != null && _type != Types.t_ERROR)
+      {
+        // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
+        // arguments and returns a Function or Routine
+        result = resolveImmediateFunctionCall(res, context);
       }
 
     if (POSTCONDITIONS) ensure
