@@ -228,7 +228,7 @@ public class Interpreter extends FUIRContext
   {
     var staticClazzSpecial = fuir().getSpecialClazz(staticClazz);
     if (PRECONDITIONS) require
-      (// NYI: thiz.feature().isField(),
+      (fuir().clazzKind(thiz) == FeatureKind.Field,
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
        curValue instanceof i8Value   && staticClazzSpecial == SpecialClazzes.c_i8   ||
        curValue instanceof i16Value  && staticClazzSpecial == SpecialClazzes.c_i16  ||
@@ -241,9 +241,7 @@ public class Interpreter extends FUIRContext
        curValue instanceof f32Value  && staticClazzSpecial == SpecialClazzes.c_f32  ||
        curValue instanceof f64Value  && staticClazzSpecial == SpecialClazzes.c_f64  ||
        curValue instanceof boolValue && staticClazzSpecial == SpecialClazzes.c_bool,
-       staticClazz > 0
-      //  NYI: thiz.feature().isOpenGenericField() == (thiz._select != -1)
-       );
+       staticClazz > 0);
 
     Value result = switch (staticClazzSpecial)
       {
