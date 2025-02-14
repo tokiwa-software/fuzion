@@ -1894,10 +1894,8 @@ public class Call extends AbstractCall
    * For a call to a feature whose formal arguments do not have an explicit
    * type, but one that is inferred from the actual argument, make sure that
    * this call's actual arg is taken into account.
-   *
-   * @param outer the root feature that contains this call.
    */
-  private void inferFormalArgTypesFromActualArgs(AbstractFeature outer)
+  private void inferFormalArgTypesFromActualArgs()
   {
     for (var frml : _calledFeature.valueArguments())
       {
@@ -2435,7 +2433,7 @@ public class Call extends AbstractCall
                 r.run();
               }
           }
-        inferFormalArgTypesFromActualArgs(context.outerFeature());
+        inferFormalArgTypesFromActualArgs();
         if (cf.generics().errorIfSizeDoesNotMatch(_generics,
                                                   pos(),
                                                   FuzionConstants.OPERATION_CALL,
