@@ -932,14 +932,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
             AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
           }
       }
-
-    // This is a fix for #978 but it might need to be removed when fixing #932.
-    if (f instanceof Feature ff &&
-        (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
-            ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
-      {
-        ff._addedLate = true;
-      }
     var doi = declaredOrInheritedFeatures(outer);
     doi.remove(fn);  // NYI: remove only those features that are redefined by f!
     add(doi, fn, f);
