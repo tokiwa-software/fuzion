@@ -1037,7 +1037,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       {
         for (var h : d._heirs)
           {
-            addDeclaredOrInherited(data(outer)._declaredOrInheritedFeatures, h, fn, f);
+            addDeclaredOrInherited(data(h)._declaredOrInheritedFeatures, h, fn, f);
             addToHeirs(h, fn, f);
           }
       }
