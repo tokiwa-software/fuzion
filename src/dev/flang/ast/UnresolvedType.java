@@ -856,7 +856,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @return null if no matching this type was found, the resolved type
    * otherwise.
    */
-  AbstractType resolveThisType(Resolution res, AbstractFeature outerfeat)
+  private AbstractType resolveThisType(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
