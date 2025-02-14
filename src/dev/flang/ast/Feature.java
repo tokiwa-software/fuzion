@@ -393,7 +393,12 @@ public class Feature extends AbstractFeature
    */
   public boolean _scoped = false;
 
+
+  /**
+   * List of effects explicitly needed by this feature.
+   */
   private List<AbstractType> _effects;
+
 
   /**
    * has this feature been used?
