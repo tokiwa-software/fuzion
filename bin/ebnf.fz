@@ -74,6 +74,9 @@ main =>
 
   new_line := "\n"
 
+  if envir.args.count < 2
+    panic "expecting at least one file name argument"
+
   # first, strip out asciidoc code that is enclosed as blocks of the form
   #
   #   // tag::bla_bla
@@ -81,8 +84,6 @@ main =>
   #   // end::bla_bla
   #
   asciidoc_matcher        := ["pcregrep", "-v", "-M", "// tag::(\\n|.)*?// end::"]
-  lexer_without_asciidoc  := !(asciidoc_matcher ++ ["./src/dev/flang/parser/Lexer.java"])
-  parser_without_asciidoc := !(asciidoc_matcher ++ ["./src/dev/flang/parser/Parser.java"])
 
   # then, extract EBNF rules of the form
   #
@@ -98,16 +99,20 @@ main =>
   #         ;
   #
   rule_matcher := ["pcregrep", "-M",  "^(fragment\\n)*[a-zA-Z0-9_]+[ ]*:(\\n|.)*?( ;)"]
-  ebnf_lexer   := lexer_without_asciidoc  | rule_matcher
-  ebnf_parser  := parser_without_asciidoc | rule_matcher
-
 
   # header
   ebnf_header := "grammar Fuzion;$new_line$new_line"
-  # combine parser and lexer
-  ebnf := "$ebnf_header$ebnf_parser$new_line$ebnf_lexer"
-  # replace " by '
-    .replace "\"" "'"
+
+  ebnf := envir.args.drop 1
+    .map src->
+      if !io.file.exists src
+        panic "file not found '$src'."
+
+      src_without_asciidoc  := !(asciidoc_matcher ++ [src])
+      (src_without_asciidoc | rule_matcher)
+        .replace "\"" "'"     # replace " by '
+
+    .reduce ebnf_header (+)
 
   say ebnf
 

@@ -479,7 +479,7 @@ $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 
 $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
-	$(FZ) $(FZ_SRC)/bin/ebnf.fz > $@
+	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
 
 $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
