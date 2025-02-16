@@ -1316,35 +1316,41 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var cl = _fuir.mainClazz();
-
-    newCall(null,
-            cl,
-            NO_SITE,
-            Value.UNIT,
-            new List<>(),
-            null /* env */,
-            Context._MAIN_ENTRY_POINT_);
-
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     findFixPoint(false);
 
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
     _instancesForSite = new List<>();
-
-    newCall(null,
-            cl,
-            NO_SITE,
-            Value.UNIT,
-            new List<>(),
-            null /* env */,
-            Context._MAIN_ENTRY_POINT_);
+    _unitCalls = new IntMap<>();
 
     findFixPoint(true);
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
+  }
+
+
+  /**
+   * If -verbose= is set to 2 or lager, print information about a new iteration
+   * that is starting.
+   *
+   * @param variant what kind of iteration is this?
+   *
+   * @param iteration count.
+   */
+  void verbosePrintIteration(String variant, int cnt)
+  {
+    if (_options.verbose(2))
+      {
+        _options.verbosePrintln(2,
+                                "DFA " + variant + " iteration #" + cnt + ": --------------------------------------------------" +
+                                (_options.verbose(3) ? "calls:"   + _calls.size()       +
+                                                       ",values:" + _numUniqueValues    +
+                                                       ",envs:"   + _envs.size()        +
+                                                       "; "       + _changedSetBy.get()
+                                                     : ""                                 ));
+      }
   }
 
 
@@ -1357,14 +1363,18 @@ public class DFA extends ANY
     do
       {
         cnt++;
-        if (_options.verbose(2))
-          {
-            _options.verbosePrintln(2,
-                                    "DFA iteration #" + cnt + ": --------------------------------------------------" +
-                                    (_options.verbose(3) ? "calls:"+_calls.size() + ",values:" + _numUniqueValues + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
-                                                         : ""                                                                  ));
-          }
+        verbosePrintIteration(real ? "real" : "pre", cnt);
         _changed = false;
+        if (cnt == 1)
+          {
+            newCall(null,
+                    _fuir.mainClazz(),
+                    NO_SITE,
+                    Value.UNIT,
+                    new List<>(),
+                    null /* env */,
+                    Context._MAIN_ENTRY_POINT_);
+          }
         _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
@@ -1394,6 +1404,7 @@ public class DFA extends ANY
 
     if (real)
       {
+        verbosePrintIteration("final", cnt);
         _reportResults = true;
         iteration();
 
