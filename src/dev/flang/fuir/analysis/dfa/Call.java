@@ -403,9 +403,8 @@ public class Call extends ANY implements Comparable<Call>, Context
               .append("=")
               .append(a);
           }
-        var r = result();
         sb.append(" => ")
-          .append(r == null ? "*** VOID ***" : r)
+          .append(_returns ? "returns" : "*** VOID ***")
           .append(" ENV: ")
           .append(Errors.effe(Env.envAsString(env())));
         _toStringRecursion_.remove(this);
