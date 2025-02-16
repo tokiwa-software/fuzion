@@ -1610,10 +1610,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
         var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer())
                   .applyTypePars(o, f.generics().asActuals());    /* replace o's type pars by f's */
         var t2 = f.resultType();
-        if (o.isCoTypesThisType() && f.isCoTypesThisType())
-          { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
-          }
-        else if (o.isConstructor() ||
+        if (o.isConstructor() ||
                  switch (o.kind())
                  {
                    case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
@@ -1666,8 +1663,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           {
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
-        if (  !f.isCoTypesThisType() // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
-            && f.resultType().isChoice())
+        if (f.resultType().isChoice())
           {
             AstErrors.constraintMustNotBeChoice(f);
           }

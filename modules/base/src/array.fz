@@ -102,12 +102,6 @@ module:public array(
     array internal unit unit unit
 
 
-  # equality
-  #
-  public fixed redef type.equality(a, b array T) => (Sequence T).type.equality a b
-
-
-
 # array -- create initialized one-dimensional immutable array
 #
 public array(T type, length i32, init i32 -> T) =>

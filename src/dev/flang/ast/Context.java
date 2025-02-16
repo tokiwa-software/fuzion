@@ -128,7 +128,28 @@ abstract class Context extends ANY
                       cc.target() instanceof Call tc &&
                       isClone(typeParameter, tc.calledFeature()))
                     {
-                      return cc.actualTypeParameters().get(0);
+                      return cc
+                        .actualTypeParameters()
+                        .get(0)
+                        /**
+                         * replace type parameters that come from pre feature
+                         * with their original type parameter.
+                         * {@code Sequence.pre unzip2.A} by {@code Sequence.unzip2.A}
+                         */
+                        .applyToGenericsAndOuter(x ->
+                          x instanceof ResolvedParametricType rpt
+                            ? f
+                              .generics()
+                              .list
+                              .stream()
+                              .filter(y ->
+                                  y.feature().origin() == rpt.genericArgument().feature().origin() &&
+                                  y.toString().equals(rpt.genericArgument().typeParameter().featureName().baseName())
+                                )
+                              .findFirst()
+                              .get()
+                              .type()
+                            : x);
                     }
                 }
             }

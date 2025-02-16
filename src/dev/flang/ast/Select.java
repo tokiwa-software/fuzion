@@ -29,6 +29,14 @@ package dev.flang.ast;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
+
+/**
+ * Select denotes an unresolved select clause.
+ *
+ * Select is only present in the AST
+ * until resolveTypes where it replaces itself
+ * by a call.
+ */
 public class Select extends Call {
 
 
@@ -130,6 +138,10 @@ public class Select extends Call {
               ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
               // implict
               : resolveImplicit(res, context, getActualResultType(res, context, true));
+          }
+        else
+          {
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, _select, _target.type());
           }
       }
     if (_currentlyResolving != null)

@@ -118,7 +118,7 @@ ex202 =>
 
   # using sum and map
   sum_map =>
-    sum := sum (a.map x->x*x)
+    sum := a.map x->x*x .sum
     say "sum is $sum"
 
   sum_map_fold =>

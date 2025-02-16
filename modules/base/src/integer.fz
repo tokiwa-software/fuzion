@@ -29,7 +29,7 @@
 # from numeric plus a division remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-module:public integer : numeric is
+public integer : numeric is
 
 
   # preconditions used in 'numeric' for basic operations: true if the
@@ -198,4 +198,5 @@ module:public integer : numeric is
 
 
   # the least significant byte of this integer
-  module low8bits u8 => abstract
+  #
+  public low8bits u8 => abstract
