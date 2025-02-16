@@ -29,7 +29,9 @@ package dev.flang.fuir.analysis.dfa;
 import dev.flang.util.ANY;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Env represents the set of effects installed in a given environment
@@ -396,6 +398,17 @@ public class Env extends ANY implements Comparable<Env>
       }
   }
 
+  TreeSet<Env> _propagateAbort = new TreeSet<>();
+
+
+  void propagateAbort(Env e)
+  {
+    if (e != this)
+      {
+        _propagateAbort.add(e);
+      }
+  }
+
 
   /**
    * Is the effect just installed here ever aborted?
@@ -409,6 +422,7 @@ public class Env extends ANY implements Comparable<Env>
     boolean result = false;
     if (_effectType == ecl)
       {
+        // ... check if any values are in DFA.abortedeffectvalues ....
         result = _isAborted;
       }
     else if (_outer != null)
@@ -428,21 +442,40 @@ public class Env extends ANY implements Comparable<Env>
    */
   void aborted(int ecl)
   {
-    if (_effectType == ecl)
+    aborted0(ecl, new BitSet());
+  }
+
+
+  void aborted0(int ecl, BitSet bs)
+  {
+    if (!bs.get(_id))
       {
-        if (!_isAborted)
+        bs.set(_id);
+        for (var e : _propagateAbort)
           {
-            _isAborted = true;
-            _dfa.wasChanged(() -> "effect.abort0 called: "+_dfa._fuir.clazzAsString(ecl));
+            e.aborted0(ecl, bs);
           }
-      }
-    else if (_outer != null)
-      {
-        _outer.aborted(ecl);
-      }
-    else
-      {
-        throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzAsString(ecl) + "` not found in current environment");
+        if (_effectType == ecl)
+          {
+            //        ... add all values to DFA.abortedeffectvalues ...
+
+            if (!_isAborted)
+              {
+                _isAborted = true;
+                _dfa.wasChanged(() -> "effect.abort0 called: "+_dfa._fuir.clazzAsString(ecl));
+              }
+          }
+        else if (_outer != null)
+          {
+            _outer.aborted0(ecl, bs);
+          }
+        else
+          {
+            if (_dfa._reportResults && false)
+              {
+                throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzAsString(ecl) + "` not found in current environment");
+              }
+          }
       }
   }
 

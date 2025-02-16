@@ -3265,6 +3265,10 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
             // maybe two nested LongMaps?
             r = new Call(g, args, env, context);
             e = _calls.get(r);
+            if (env != null && e != null && e._env != null)
+              {
+                e._env.propagateAbort(env);
+              }
           }
       }
     if (e == null)
@@ -3276,8 +3280,6 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
           }
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
-        //        if (_fuir.clazzAsString(cl).equals("array u8"))
-        //          dev.flang.util.Debug.uprintln("new call for "+_fuir.clazzAsString(cl)+" at "+_fuir.siteAsString(site));
         e = r;
         var rf = r;
         wasChanged(() -> "DFA.newCall to " + rf);
