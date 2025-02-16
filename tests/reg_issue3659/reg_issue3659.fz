@@ -21,5 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
+sum (T type : numeric, l Sequence T) => l.sum
 say ((id (Unary i32 (array i32)) sum) <| [1,2])
 say (id (Unary i32 (array i32)) sum <| [1,2])

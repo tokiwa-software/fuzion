@@ -668,6 +668,7 @@ public class Contract extends ANY
                             {
                               return f.contract();
                             }
+                            @Override AbstractFeature origin() { return f; }
                           };
     res._module.findDeclarations(pF, f.outer());
     res.resolveDeclarations(pF);
@@ -1007,7 +1008,10 @@ all of their redefinition to `true`. +
                                   args2,
                                   new List<>(), // inheritance
                                   Contract.EMPTY_CONTRACT,
-                                  new Impl(pos, code2, Impl.Kind.RoutineDef));
+                                  new Impl(pos, code2, Impl.Kind.RoutineDef))
+                        {
+                          @Override AbstractFeature origin() { return f; }
+                        };
             res._module.findDeclarations(pF2, f.outer());
             f._preAndCallFeature = pF2;
 
@@ -1068,6 +1072,7 @@ all of their redefinition to `true`. +
             {
               return f.contract();
             }
+            @Override AbstractFeature origin() { return f; }
           };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);

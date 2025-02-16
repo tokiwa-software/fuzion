@@ -76,7 +76,7 @@ reg_issue3308 is
       # fifth: access outer ref in partial application and call `as_string`
       redef as_string => "--b--"
       u(x Any) => say x
-      # say (g (u b.this))       -- NYI: BUG #3324: does not work yet!
+      say (g (u b.this))
 
   _ := t.a
   _ := t.b

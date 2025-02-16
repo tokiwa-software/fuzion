@@ -58,7 +58,3 @@ public Linked_List(public T type) ref : Sequence T is
       ll Linked_List T => (data : ()->ll.as_list)
       nil => (data : ()->nil)
 
-
-  # equality
-  #
-  public fixed redef type.equality(a, b container.Linked_List T) => (Sequence T).type.equality a b

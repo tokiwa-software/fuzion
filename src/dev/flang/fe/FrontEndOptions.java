@@ -131,6 +131,13 @@ public class FrontEndOptions extends FuzionOptions
   final boolean _needsEscapeAnalysis;
 
 
+  /**
+   * Should the FUIR be serialized or, in case already
+   * serialized, loaded from .fuir file?
+   */
+  final boolean _serializeFuir;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -157,6 +164,7 @@ public class FrontEndOptions extends FuzionOptions
                          String moduleName,
                          boolean loadSources,
                          boolean needsEscapeAnalysis,
+                         boolean serializeFuir,
                          Consumer<String> timer)
   {
     super(verbose,
@@ -220,6 +228,7 @@ public class FrontEndOptions extends FuzionOptions
         sourceDirs = inputFile != null || readStdin  || executeCode != null ? new List<>() : new List<>(".");
       }
     _sourceDirs = sourceDirs;
+    _serializeFuir = serializeFuir;
   }
 
 
@@ -238,6 +247,8 @@ public class FrontEndOptions extends FuzionOptions
   /**
    * Do we need to perform escape analysis during DFA phase since the backend needs that?
    *
+   * This is always the case if we serialize the FUIR.
+   *
    * This currently has a significant impact on the DFA performance, so we try to
    * avoid this for backends that do not need it (JVM and interpreter).
    *
@@ -245,7 +256,30 @@ public class FrontEndOptions extends FuzionOptions
    */
   public boolean needsEscapeAnalysis()
   {
-    return _needsEscapeAnalysis;
+    return _needsEscapeAnalysis || serializeFuir();
+  }
+
+
+  /**
+   * Should the FUIR be serialized or, in case already
+   * serialized, loaded from .fuir file?
+   */
+  public boolean serializeFuir()
+  {
+    return _serializeFuir;
+  }
+
+
+  /**
+   * The input file to use.
+   *
+   * This is either a regular file,
+   * SourceFile.STDIN or
+   * SourceFile.COMMAND_LINE_DUMMY
+   */
+  public Path inputFile()
+  {
+    return _inputFile;
   }
 
 }

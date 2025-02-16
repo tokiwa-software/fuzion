@@ -201,7 +201,7 @@ is
   =>
     if ns = num.plus
       n.as_i128
-    else if data.as_seq = [u32 0x8000_0000, 0, 0, 0]
+    else if data.as_equatable = [u32 0x8000_0000, 0, 0, 0].as_equatable
       i128.min
     else
       -n.as_i128

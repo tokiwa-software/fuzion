@@ -39,6 +39,7 @@ import java.util.function.Supplier;
 
 import java.util.stream.Stream;
 
+import dev.flang.fuir.DfaFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.GeneratingFUIR;
@@ -1180,7 +1181,7 @@ public class DFA extends ANY
    * DFA analysis. In particular, Let 'clazzNeedsCode' return false for
    * routines that were found never to be called.
    */
-  public FUIR new_fuir()
+  public DfaFUIR new_fuir()
   {
     dfa();
     var called = new TreeSet<Integer>();
@@ -1189,7 +1190,7 @@ public class DFA extends ANY
         called.add(c._cc);
       }
     _options.timer("dfa");
-    var res = new GeneratingFUIR((GeneratingFUIR) _fuir)
+    var res = new DfaFUIR((GeneratingFUIR) _fuir)
       {
         /**
          * Determine the lifetime of the instance of a call to clazz cl.
@@ -1316,40 +1317,65 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var cl = _fuir.mainClazz();
-
-    newCall(null,
-            cl,
-            NO_SITE,
-            Value.UNIT,
-            new List<>(),
-            null /* env */,
-            Context._MAIN_ENTRY_POINT_);
-
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
-    findFixPoint();
+    findFixPoint(false);
+
+    _callsQuick = new LongMap<>();
+    _calls = new TreeMap<>();
+    _instancesForSite = new List<>();
+    _unitCalls = new IntMap<>();
+
+    findFixPoint(true);
+
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
   }
 
 
   /**
+   * If -verbose= is set to 2 or lager, print information about a new iteration
+   * that is starting.
+   *
+   * @param variant what kind of iteration is this?
+   *
+   * @param iteration count.
+   */
+  void verbosePrintIteration(String variant, int cnt)
+  {
+    if (_options.verbose(2))
+      {
+        _options.verbosePrintln(2,
+                                "DFA " + variant + " iteration #" + cnt + ": --------------------------------------------------" +
+                                (_options.verbose(3) ? "calls:"   + _calls.size()       +
+                                                       ",values:" + _numUniqueValues    +
+                                                       ",envs:"   + _envs.size()        +
+                                                       "; "       + _changedSetBy.get()
+                                                     : ""                                 ));
+      }
+  }
+
+
+  /**
    * Iteratively perform data flow analysis until a fix point is reached.
    */
-  void findFixPoint()
+  void findFixPoint(boolean real)
   {
     var cnt = 0;
     do
       {
         cnt++;
-        if (_options.verbose(2))
-          {
-            _options.verbosePrintln(2,
-                                    "DFA iteration #" + cnt + ": --------------------------------------------------" +
-                                    (_options.verbose(3) ? "calls:"+_calls.size() + ",values:" + _numUniqueValues + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
-                                                         : ""                                                                  ));
-          }
+        verbosePrintIteration(real ? "real" : "pre", cnt);
         _changed = false;
+        if (cnt == 1)
+          {
+            newCall(null,
+                    _fuir.mainClazz(),
+                    NO_SITE,
+                    Value.UNIT,
+                    new List<>(),
+                    null /* env */,
+                    Context._MAIN_ENTRY_POINT_);
+          }
         _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
@@ -1377,10 +1403,14 @@ public class DFA extends ANY
           }
       }
 
-    _reportResults = true;
-    iteration();
+    if (real)
+      {
+        verbosePrintIteration("final", cnt);
+        _reportResults = true;
+        iteration();
 
-    _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
+        _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
+      }
 
     if (CHECKS) check
       (!_changed);
@@ -1988,16 +2018,10 @@ public class DFA extends ANY
     put("f64.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f32.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f64.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix ="                    , cl -> cl._dfa.bool() );
-    put("f64.infix ="                    , cl -> cl._dfa.bool() );
-    put("f32.infix <="                   , cl -> cl._dfa.bool() );
-    put("f64.infix <="                   , cl -> cl._dfa.bool() );
-    put("f32.infix >="                   , cl -> cl._dfa.bool() );
-    put("f64.infix >="                   , cl -> cl._dfa.bool() );
-    put("f32.infix <"                    , cl -> cl._dfa.bool() );
-    put("f64.infix <"                    , cl -> cl._dfa.bool() );
-    put("f32.infix >"                    , cl -> cl._dfa.bool() );
-    put("f64.infix >"                    , cl -> cl._dfa.bool() );
+    put("f32.type.equal"                 , cl -> cl._dfa.bool() );
+    put("f64.type.equal"                 , cl -> cl._dfa.bool() );
+    put("f32.type.lower_than_or_equal"   , cl -> cl._dfa.bool() );
+    put("f64.type.lower_than_or_equal"   , cl -> cl._dfa.bool() );
     put("f32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f64.as_f32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f64.as_i64_lax"                 , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
@@ -3247,6 +3271,10 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
             // maybe two nested LongMaps?
             r = new Call(g, args, env, context);
             e = _calls.get(r);
+            if (env != null && e != null && e._env != null)
+              {
+                e._env.propagateAbort(env);
+              }
           }
       }
     if (e == null)
@@ -3258,8 +3286,6 @@ Value count 17546/172760 for fuzion.sys.internal_array u8
           }
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
-        //        if (_fuir.clazzAsString(cl).equals("array u8"))
-        //          dev.flang.util.Debug.uprintln("new call for "+_fuir.clazzAsString(cl)+" at "+_fuir.siteAsString(site));
         e = r;
         var rf = r;
         wasChanged(() -> "DFA.newCall to " + rf);

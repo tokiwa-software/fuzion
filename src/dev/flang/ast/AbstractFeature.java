@@ -109,7 +109,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a Feature that can be called and hasThisType() is true, this will be
+   * For a Feature that can be called, this will be
    * set to the abstract type referring to the instance, i.e., the actual value
    * by be _selfType or the _selfType of any heir feature of this or the self
    * type of this after it was inherited by any different outer type.
@@ -120,7 +120,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a Feature that can be called and hasThisType() is true, this will be
+   * For a Feature that can be called, this will be
    * set to the abstract type referring to the instance.  Unlike _thisType, this
    * does not permit this to be replaced by an inherited feature, but any outer
    * feature might be.
@@ -152,16 +152,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Cached result of generic().
    */
   private Generic _generic;
-
-
-  /**
-   * For a Feature that can be called and hasThisType() is true, this will be
-   * set to concrete the frame type during resolution.  This type uses the formal
-   * generics as actual generics. For a generic feature, these must be replaced.
-   *
-   * For a feature a.b.c, _selfType is a.b.c.
-   */
-  protected AbstractType _selfType = null;
 
 
   /**
@@ -693,9 +683,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * selfType returns the type of this feature's frame object.  This can be
-   * called even if !hasThisType() since thisClazz() is used also for abstract
-   * or intrinsic feature to determine the resultClazz().
+   * selfType returns the type of this feature's frame object.
    *
    * @return this feature's frame object
    */
@@ -704,22 +692,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
 
-    AbstractType result = _selfType;
-    if (result == null)
-      {
-        result = this == Types.f_ERROR
-          ? Types.t_ERROR
-          : createThisType();
-        _selfType = result;
-      }
+    var selfType = createSelfType();
 
     if (POSTCONDITIONS) ensure
-      (result != null,
-       Errors.any() || result.isRef().yes() == isRef(),
+      (selfType != null,
+       Errors.any() || selfType.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.feature() == this);
+       Errors.any() || selfType.feature() == this);
 
-    return result;
+    return selfType;
   }
 
 
@@ -1075,13 +1056,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic features to determine the resultClazz().
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object.
    *
    * @return this feature's frame object
    */
-  protected AbstractType createThisType()
+  protected AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
@@ -1759,12 +1739,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           }
         else
           {
-            var l = new List<Generic>();
-            for (var a0 : typeArguments())
-              {
-                l.add(a0.asGeneric());
-              }
-            _generics = new FormalGenerics(l);
+            _generics = new FormalGenerics(typeArguments().map2(ta -> ta.asGeneric()));
           }
       }
     return _generics;
@@ -1885,6 +1860,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     return result;
   }
+
+
+  /**
+   * Origin of this feature, usually this.
+   * For pre, prebool, preandcall and post features this
+   * returns the origin feature.
+   */
+  AbstractFeature origin()
+  {
+    return this;
+  }
+
 
   /**
    * this feature as a human readable string
