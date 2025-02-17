@@ -149,7 +149,7 @@ public class Call extends AbstractCall
   /**
    * Static type of this call. Set during resolveTypes().
    */
-  AbstractType _type;
+  private AbstractType _type;
 
 
   /**
@@ -249,7 +249,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, String n, List<Expr> la)
   {
-    this(pos, t, n, -1, NO_GENERICS, la, null, null);
+    this(pos, t, n, -1, NO_GENERICS, la, null);
 
     if (PRECONDITIONS) require
       (la != null);
@@ -302,17 +302,14 @@ public class Call extends AbstractCall
    * @param actuals
    *
    * @param calledFeature
-   *
-   * @param type
    */
   Call(SourcePosition pos,
        Expr target,
        List<AbstractType> generics,
        List<Expr> actuals,
-       AbstractFeature calledFeature,
-       AbstractType type)
+       AbstractFeature calledFeature)
   {
-    this(pos, target, calledFeature.featureName().baseName(), -1, generics, actuals, calledFeature, type);
+    this(pos, target, calledFeature.featureName().baseName(), -1, generics, actuals, calledFeature);
     if (PRECONDITIONS) check
       (calledFeature.generics().sizeMatches(generics) || generics.contains(Types.t_ERROR));
   }
@@ -345,8 +342,7 @@ public class Call extends AbstractCall
        int select,
        List<AbstractType> generics,
        List<Expr> actuals,
-       AbstractFeature calledFeature,
-       AbstractType type)
+       AbstractFeature calledFeature)
   {
     if (PRECONDITIONS) require
       (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
@@ -365,7 +361,6 @@ public class Call extends AbstractCall
       }
     this._originalTarget = _target;
     this._calledFeature = calledFeature;
-    this._type = type;
   }
 
 
@@ -2426,8 +2421,7 @@ public class Call extends AbstractCall
                           new Universe(),
                           new List<>(Types.resolved.t_void),
                           new List<>(_target),
-                          Types.resolved.f_id,
-                          Types.resolved.t_void);
+                          Types.resolved.f_id);
         result.resolveTypes(res, context);
       }
 
@@ -2880,9 +2874,10 @@ public class Call extends AbstractCall
     ERROR = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
       {
-        _type = Types.t_ERROR;
         _calledFeature = Types.f_ERROR;
       }
+      @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+      @Override public AbstractType type() { return Types.t_ERROR; }
       @Override
       Expr box(AbstractType frmlT, Context context)
       {
