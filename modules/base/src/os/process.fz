@@ -176,10 +176,10 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
 
   # equality
   #
-  public redef fixed type.equality(a, b process.this) => a.id = b.id
+  public fixed redef type.equality(a, b process.this) => a.id = b.id
 
 
   # lteq
   #
-  public redef fixed type.lteq(a, b process.this) bool =>
+  public fixed redef type.lteq(a, b process.this) bool =>
     a.id <= b.id

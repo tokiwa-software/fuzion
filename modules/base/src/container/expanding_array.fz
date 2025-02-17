@@ -170,7 +170,7 @@ is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  public redef fixed concat (s Sequence T) Sequence T =>
+  public fixed redef concat (s Sequence T) Sequence T =>
 
     if s.is_empty
 
