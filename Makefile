@@ -300,7 +300,13 @@ MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
 MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
 MOD_FZ_CMD = $(MOD_FZ_CMD_DIR).fum
 
-FUZION_RT = $(BUILD_DIR)/lib/__marker_for_make__
+ifeq ($(OS),Windows_NT)
+	FUZION_RT = $(BUILD_DIR)/lib/fuzion.dll
+else ifeq ($(OS),Darwin)
+	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.dylib
+else
+	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.so
+endif
 
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
@@ -1427,7 +1433,7 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib regardless of which OS.
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
-	echo "building fuzion runtime"
+	echo " + "$@
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
@@ -1436,14 +1442,11 @@ ifeq ($(OS),Windows_NT)
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
 	-lMswsock -lAdvApi32 -lWs2_32
-	touch $(FUZION_RT)
 else
 	clang -Wall -Werror -O3 -shared -fPIC \
 	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
-	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so
-	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
-	touch $(FUZION_RT)
+	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
 endif
 # NYI: eventuall link libgc
 # ifeq ($(OS),Windows_NT)
