@@ -380,7 +380,7 @@ public effect is
 
 
   # trigger runtime check if effect is
-  # already depleted any may not be used
+  # already depleted and may not be used any more
   #
   module check_depletion =>
 
