@@ -356,18 +356,6 @@ public class Feature extends AbstractFeature
   }
 
 
-  /**
-   * Flag used by dev.flang.fe.SourceModule to mark Features that were added to
-   * their outer feature late.  Features that were added late will not be seen
-   * via heirs.
-   *
-   * This is used for adding internal features like wrappers for lambdas.
-   *
-   * This is a fix for #978 but it might need to be removed when fixing #932.
-   */
-  public boolean _addedLate = false;
-
-
   /*
    * true if this feature is found to be
    * declared in a block with
@@ -393,7 +381,12 @@ public class Feature extends AbstractFeature
    */
   public boolean _scoped = false;
 
+
+  /**
+   * List of effects explicitly needed by this feature.
+   */
   private List<AbstractType> _effects;
+
 
   /**
    * has this feature been used?
