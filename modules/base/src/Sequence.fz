@@ -501,6 +501,16 @@ public Sequence(public T type) ref : property.countable is
   public scan (R type, f Binary R R T, a R) Sequence R => as_list.scan R f a
 
 
+  # scan1 works like its counterpart with an initial value, except
+  # that the initial value is taken to be the first element of the given
+  # Sequence.
+  #
+  # for example, (1::id).scan (+) would create [1, 2, 3, 4, ...], while
+  # (1..).scan (+) would create [1, 3, 6, 10, ...].
+  #
+  public scan1 (f Binary T T T) Sequence T => as_list.scan1 f
+
+
   # reduce this Sequence to R with an initial value init
   # and a reducing function f.
   # the reduction is finished once f yields abort or
