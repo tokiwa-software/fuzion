@@ -302,7 +302,7 @@ MOD_FZ_CMD = $(MOD_FZ_CMD_DIR).fum
 
 ifeq ($(OS),Windows_NT)
 	FUZION_RT = $(BUILD_DIR)/lib/fuzion.dll
-else ifeq ($(OS),Darwin)
+else ifeq ($(shell uname),Darwin)
 	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.dylib
 else
 	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.so
