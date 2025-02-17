@@ -807,7 +807,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     typeParameters,
                     Expr.NO_EXPRS,
                     tf,
-                    tf.selfType());
+                    null);
   }
 
 
