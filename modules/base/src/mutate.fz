@@ -53,7 +53,7 @@
 #
 # is not supported yet.
 #
-public mutate : effect is
+public mutate : linear_effect is
 
 
   # does this effect support abort?
