@@ -96,7 +96,7 @@ public class Select extends Call {
   @Override
   public String toString()
   {
-    return _target.toStringWrapped() + "." + (_name == null ? "<not yet known>" : _name) + "." + _select;
+    return _target.toStringWrapped() + "." + (_name == null ? "<not yet known>" : _name) + "." + select();
   }
 
 
@@ -135,13 +135,13 @@ public class Select extends Call {
           {
             _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
               // explicit
-              ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null)
+              ? new Call(pos(), _target, _name, select(), Call.NO_GENERICS, NO_EXPRS, null)
               // implict
               : resolveImplicit(res, context, getActualResultType(res, context, true));
           }
         else
           {
-            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, _select, _target.type());
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target.type());
           }
       }
     if (_currentlyResolving != null)
@@ -172,17 +172,17 @@ public class Select extends Call {
       {
         if (_name == null)
           {
-            result = new Call(pos(), _target, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), _target, f.featureName().baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
           }
         else
           {
             var selectTarget = new Call(pos(), _target, _name, -1, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, f.featureName().baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
           }
       }
     else
       {
-        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, _select, at);
+        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, _name, select(), at);
       }
     return result;
   }

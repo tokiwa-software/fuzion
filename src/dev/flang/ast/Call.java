@@ -77,7 +77,7 @@ public class Call extends AbstractCall
    * For a call a.b.4 with a select clause ".4" to pick a variant from a field
    * of an open generic type, this is the chosen variant.
    */
-  protected int _select;
+  private final int _select;
   public int select() { return _select; }
 
 
