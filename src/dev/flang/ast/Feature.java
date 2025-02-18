@@ -1464,7 +1464,8 @@ public class Feature extends AbstractFeature
     @Override public AbstractType action      (AbstractType    t) { return t.resolve           (res,   _context); }
     @Override public Expr         action      (AbstractCurrent c) { return c.resolveTypes      (res,   _context); }
 
-    @Override public boolean doVisitActuals() { return false; }
+    @Override public boolean doVisitActuals()   { return false; }
+    @Override public boolean visitActualsLate() { return true; }
   }
 
 

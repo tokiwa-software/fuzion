@@ -2453,7 +2453,6 @@ public class Call extends AbstractCall
         setActualResultType(res, context);
         resolveFormalArgumentTypes(res, context);
       }
-    resolveTypesOfActuals(res, context);
 
     if (!res._options.isLanguageServer() &&
         (targetTypeUndefined() || _pendingError == null && result.typeForInferencing() == Types.t_ERROR))
