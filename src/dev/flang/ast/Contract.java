@@ -383,8 +383,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preFeature(),
-                    Types.resolved.t_unit)
+                    f.preFeature())
       .resolveTypes(res, context);
   }
 
@@ -425,8 +424,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preBoolFeature(),
-                    Types.resolved.t_bool)
+                    f.preBoolFeature())
       .resolveTypes(res, context);
   }
 
@@ -460,8 +458,7 @@ public class Contract extends ANY
                     t,
                     preAndCallOuter.generics().asActuals(),
                     args,
-                    f,
-                    null)
+                    f)
       {
         @Override
         boolean preChecked() { return true; }
@@ -542,8 +539,7 @@ public class Contract extends ANY
                                      t,
                                      origouter.isConstructor() ? new List<>() : in.generics().asActuals(),
                                      args,
-                                     origouter.postFeature(),
-                                     Types.resolved.t_unit);
+                                     origouter.postFeature());
     callPostCondition = callPostCondition.resolveTypes(res, in.context());
     return callPostCondition;
   }

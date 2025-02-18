@@ -45,7 +45,7 @@ public class Select extends Call {
 
   public Select(SourcePosition pos, Expr target, String name, int select)
   {
-    super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null, null);
+    super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null);
 
     if (PRECONDITIONS) require
       (select >= 0,
@@ -135,7 +135,7 @@ public class Select extends Call {
           {
             _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
               // explicit
-              ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null, null)
+              ? new Call(pos(), _target, _name, _select, Call.NO_GENERICS, NO_EXPRS, null)
               // implict
               : resolveImplicit(res, context, getActualResultType(res, context, true));
           }
@@ -172,12 +172,12 @@ public class Select extends Call {
       {
         if (_name == null)
           {
-            result = new Call(pos(), _target, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null, null);
+            result = new Call(pos(), _target, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null);
           }
         else
           {
-            var selectTarget = new Call(pos(), _target, _name, -1, Call.NO_GENERICS, NO_EXPRS, null, null);
-            result = new Call(pos(), selectTarget, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null, null);
+            var selectTarget = new Call(pos(), _target, _name, -1, Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, f.featureName().baseName(), _select, Call.NO_GENERICS, NO_EXPRS, null);
           }
       }
     else

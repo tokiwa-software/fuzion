@@ -806,8 +806,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     oc,
                     typeParameters,
                     Expr.NO_EXPRS,
-                    tf,
-                    null);
+                    tf);
   }
 
 

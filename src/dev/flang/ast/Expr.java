@@ -824,12 +824,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
   {
     NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
     {
-      { _type = Types.t_ERROR; }
-      @Override
-      Expr box(AbstractType frmlT, Context context)
-      {
-        return this;
-      }
+      @Override Expr box(AbstractType frmlT, Context context) { return this; }
+      @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+      @Override public AbstractType type() { return Types.t_ERROR; }
     };
   }
 
