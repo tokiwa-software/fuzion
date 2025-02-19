@@ -122,7 +122,7 @@ module fileio is
   module open(
               # a Fuzion Object represention the path for the source to be opened
               path String,
-              # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
+              # a flag to specify the open method (Read: 0, Write: 1, Append: 2)
               flag i8) outcome fuzion.sys.Pointer =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
     res := fzE_file_open (fuzion.sys.c_string path) open_results.data flag
