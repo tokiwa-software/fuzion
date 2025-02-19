@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-
+import dev.flang.fuir.FUIR;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
@@ -79,7 +79,7 @@ public class SysArray extends Value
    */
   public SysArray(DFA dfa, Value el, int ec)
   {
-    super(dfa._fuir.clazzAny());
+    super(FUIR.NO_CLAZZ);
 
     _dfa = dfa;
     _elements = el;
