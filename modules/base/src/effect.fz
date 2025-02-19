@@ -275,7 +275,7 @@ public effect is
   # effect of the same effect type.
   #
   # NYI: BUG: It is currently not enforced that replace is only called during the execution
-  # of an operation of a currenlty instated effect of the same effect type.
+  # of an operation of a currently instated effect of the same effect type.
   #
   public type.replace(e effect.this)
   =>
