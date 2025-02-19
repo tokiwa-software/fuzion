@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.stream.Collectors;
 
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -42,7 +43,7 @@ import dev.flang.util.StringHelpers;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
+public abstract class Expr extends ANY implements HasSourcePosition
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -713,7 +714,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   protected AbstractType needsBoxing(AbstractType frmlT, Context context)
   {
     var t = type();
-    if (frmlT.isGenericArgument() || frmlT.isThisType())
+    if (t == Types.t_ERROR)
+      {
+        return null;
+      }
+    else if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
       { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
          * could be a ref) or frmlT is this type and the underlying feature is by
          * default a ref?
@@ -819,12 +824,9 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   {
     NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
     {
-      { _type = Types.t_ERROR; }
-      @Override
-      Expr box(AbstractType frmlT, Context context)
-      {
-        return this;
-      }
+      @Override Expr box(AbstractType frmlT, Context context) { return this; }
+      @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+      @Override public AbstractType type() { return Types.t_ERROR; }
     };
   }
 

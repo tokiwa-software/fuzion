@@ -130,7 +130,6 @@ public class DotType extends ExprWithPos
                 -1,
                 new List<>(_lhs),
                 new List<>(),
-                null,
                 null).resolveTypes(res, context);
   }
 

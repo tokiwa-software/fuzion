@@ -1026,7 +1026,7 @@ public class AstErrors extends ANY
 
   static void cannotRedefineChoice(AbstractFeature f, AbstractFeature existing)
   {
-    cannotRedefine(f.pos(), f, existing, "Cannot redefine choice feature",
+    cannotRedefine(f.pos(), f, existing, "Must not redefine choice feature",
                    "To solve this, re-think what you want to do.  Choice types are fairly static and not extensible. " +
                    "If you need an extensible type, an abstract "+code("ref")+" feature with children for each case " +
                    "might fit better. ");
@@ -1045,14 +1045,14 @@ public class AstErrors extends ANY
     else if (f.isChoice())
       {
         cannotRedefine(f.pos(), f, existing,
-                       "Redefinition cannot be a choice",
+                       "Redefinition must not be a choice",
                        "To solve this, re-think what you want to do.  Maybe define a new choice type with a different name instead.");
       }
     else if (existing.isConstructor() || f.isConstructor())
       {
         cannotRedefine(f.pos(), f, existing,
-                       existing.isConstructor() ? "Cannot redefine constructor"
-                                                : "Redefinition cannot be a constructor",
+                       existing.isConstructor() ? "Must not redefine constructor"
+                                                : "Redefinition must not be a constructor",
                        "To solve this, re-think what you want to do.  The result type of a constructor is defined " +
                        "by the feature itself, so the result type of a redefinition would usually be incompatible. " +
                        "If you do not intend to use the result value, just make this a routine with unit type result, "+
@@ -1061,8 +1061,8 @@ public class AstErrors extends ANY
     else if (existing.isTypeParameter() || f.isTypeParameter())
       {
         cannotRedefine(f.pos(), f, existing,
-                       existing.isTypeParameter() ? "Cannot redefine a type parameter"
-                                                  : "Redefinition cannot be a type parameter",
+                       existing.isTypeParameter() ? "Must not redefine a type parameter"
+                                                  : "Redefinition must not be a type parameter",
                        "To solve this, re-think what you want to do.  Maybe introduce a type parameter with a new name.");
       }
     else
@@ -1456,7 +1456,7 @@ public class AstErrors extends ANY
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
   {
-    error(pos, "Loop without while condition cannot have an else block",
+    error(pos, "Loop without while condition must not have an else block",
           "Since the else block is executed if the while condition is false " +
           "or an iteration ended, it does not make sense " +
           "to have an else condition unless there is a while clause or an iterator " +
@@ -1467,7 +1467,7 @@ public class AstErrors extends ANY
   static void formalGenericAsOuterType(SourcePosition pos, UnresolvedType t)
   {
     error(pos,
-          "Formal type parameter cannot be used as outer type",
+          "Formal type parameter must not be used as outer type",
           "In a type >>a.b<<, the outer type >>a<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal type parameter used " + s(t.outer()) + "\n" +
@@ -1477,7 +1477,7 @@ public class AstErrors extends ANY
   static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, Generic generic)
   {
     error(pos,
-          "Formal type parameter cannot have type parameters",
+          "Formal type parameter must not have type parameters",
           "In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal type parameter used " + s(generic) + "\n" +
@@ -1596,7 +1596,7 @@ public class AstErrors extends ANY
   static void parentMustBeConstructor(SourcePosition pos, Feature heir, AbstractFeature parent)
   {
     error(pos,
-          "Cannot inherit from non-constructor feature",
+          "Must not inherit from non-constructor feature",
           "The parents of feature "+s(heir)+" include "+s(parent)+", which is not a constructor but a "+
           "'" + parent.kind() + "'.\n"+
           "Parent declared at " + parent.pos().show() +
@@ -1614,10 +1614,10 @@ public class AstErrors extends ANY
   static void choiceMustNotAccessSurroundingScope(SourcePosition pos, String accesses)
   {
     error(pos,
-          "Choice type must not access fields of surrounding scope.",
+          "Choice type must not access features of surrounding scope.",
           "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
           accesses + "\n" +
-          "To solve this, you might move the accessed fields outside of the common outer feature.");
+          "To solve this, you might move the accessed features outside of the common outer feature.");
   }
 
   static void choiceMustNotBeRef(SourcePosition pos)
@@ -1684,7 +1684,7 @@ public class AstErrors extends ANY
   static void choiceMustNotReferToOwnValueType(SourcePosition pos, AbstractType t)
   {
     error(pos,
-          "Choice cannot refer to its own value type as one of the choice alternatives",
+          "Choice must not refer to its own value type as one of the choice alternatives",
           "Embedding a choice type in itself would result in an infinitely large type.\n" +
           "Faulty type parameter: " + s(t));
   }
@@ -1692,7 +1692,7 @@ public class AstErrors extends ANY
   static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
   {
     error(pos,
-          "Choice cannot refer to an outer value type as one of the choice alternatives",
+          "Choice must not refer to an outer value type as one of the choice alternatives",
           "Embedding an outer value in a choice type would result in infinitely large type.\n" +
           "Faulty type parameter: " + s(t));
   }
@@ -1710,17 +1710,17 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
+  public static void illegalSelect(SourcePosition pos, String select)
   {
     error(pos,
           "Illegal select clause",
-          "Failed to parse integer " + ss(select) + ": " + e);
+          "Failed to parse integer " + ss(select) + ".");
   }
 
   static void cannotAccessValueOfOpenGeneric(SourcePosition pos, AbstractFeature f, AbstractType t)
   {
     error(pos,
-          "Cannot access value of open type parameter",
+          "Must not access value of open type parameter",
           "When calling " + s(f) + " result type " + s(t) + " is open type parameter, " +
           "which cannot be accessed directly.  You might try to access one specific type parameter parameter " +
           "by adding '.0', '.1', etc.");
@@ -1732,8 +1732,10 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Use of selector requires call to feature whose type is an open type parameter",
-              "In call to " + s(f) + "\n" +
-              "Selected variant " + ss(name + "." + select) + "\n" +
+              ((f == null || name == null)
+                ? "Selected variant: " + ss(Integer.toString(select)) + "\n"
+                : "In call to " + s(f) + "\n" +
+                  "Selected variant " + ss(name + "." + select) + "\n") +
               "Type of called feature: " + s(t));
       }
   }
@@ -1783,7 +1785,7 @@ public class AstErrors extends ANY
   static void cannotCallChoice(SourcePosition pos, AbstractFeature cf)
   {
     error(pos,
-          "Cannot call choice feature",
+          "Must not call choice feature",
           "A choice feature is only used as a type, values are created by assignments only.\n"+
           "Choice feature that is called: " + s(cf) + "\n" +
           "Declared at " + cf.pos().show());
@@ -1996,7 +1998,7 @@ public class AstErrors extends ANY
    *
    *   a => a.this
    */
-  public static void routineCannotReturnItself(AbstractFeature f)
+  public static void routineMustNotReturnItself(AbstractFeature f)
   {
     String n = f.featureName().baseNameHuman();
     String args = f.arguments().size() > 0 ? "(..args..)" : "";
@@ -2015,7 +2017,7 @@ public class AstErrors extends ANY
       "    ..code..\n"+
       "    " + n + ".this\n";
     error(f.pos(),
-          "A routine cannot return its own instance as its result",
+          "A routine must not return its own instance as its result",
           "It is not possible for a routine to return its own instance as a result.  Since the result is stored in the implicit " +
           sbn("result") + " field, this would produce cyclic field nesting.\n" +
           "To solve this, you could convert this feature into a constructor, i.e., instead of " +
@@ -2099,7 +2101,7 @@ public class AstErrors extends ANY
           }
 
         error(lazy.pos(),
-              "IMPLEMENTATION RESTRICTION: An expression used as " + what + " cannot contain feature declarations",
+              "IMPLEMENTATION RESTRICTION: An expression used as " + what + " must not contain feature declarations",
               "Declared features:\n" +
               declarationsMsg +
               "This is an implementation restriction that should be removed in a future version of Fuzion.\n" +

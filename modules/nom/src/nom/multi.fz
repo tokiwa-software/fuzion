@@ -24,10 +24,10 @@ module multi is
       match p.call input
         s1 success I O =>
           match (parse s1.rest)
-            s2 success I (Sequence O) => success s2.rest ([s1.out]++s2.out).as_seq
+            s2 success I (Sequence O) => success s2.rest [s1.out]++s2.out
             error => panic "invalid state, many0 must always succeed."
         # NYI type inference should infer correct type of empty array
-        error => success input (list O).type.empty.as_seq
+        error => success input (Sequence O).type.empty
     parser I _ _ (input -> parse input)
 
 
@@ -58,7 +58,7 @@ module multi is
       if acc.count < m
         error "matched only {acc.count} times"
       else
-        success rest acc.as_seq
+        success rest acc
 
 
   # parse a separated list of values, zero or more values
@@ -68,10 +68,10 @@ module multi is
       match p_value.call input
         s1 success =>
           match (many0 (sequence.preceded p_sep p_value)).call s1.rest
-            s2 success => success s2.rest ([s1.out]++s2.out).as_seq
+            s2 success => success s2.rest [s1.out]++s2.out
             error      => panic "invalid state, many0 always succeeds"
         # NYI type inference should infer correct type of empty array
-        error => success input (list O).type.empty.as_seq
+        error => success input (Sequence O).type.empty
     parser I _ _ (input -> parse input)
 
 
@@ -82,7 +82,7 @@ module multi is
       match p_value().call input
         s1 success =>
           match (many0 (sequence.preceded p_sep p_value())).call s1.rest
-            s2 success => success s2.rest ([s1.out]++s2.out).as_seq
+            s2 success => success s2.rest [s1.out]++s2.out
             error => panic "invalid state, many0 always succeeds"
         e error => e
     parser I _ _ (input -> parse input)

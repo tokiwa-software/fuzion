@@ -681,21 +681,18 @@ part of the (((inner features))) declarations of the corresponding
   public void addTypeParameter(AbstractFeature outer,
                                Feature typeParameter)
   {
-    var d = data(outer);
+    var df = declaredFeatures(outer);
     var fn = typeParameter.featureName();
-    if (d._declaredFeatures != null)
+    if (df != null)
       {
         if (CHECKS) check
-          (!d._declaredFeatures.containsKey(fn) || d._declaredFeatures.get(fn) == typeParameter);
-        d._declaredFeatures.put(fn, typeParameter);
+          (!df.containsKey(fn) || df.get(fn) == typeParameter);
+        df.put(fn, typeParameter);
       }
-    var doi = d._declaredOrInheritedFeatures;
-    if (doi != null)
-      {
-        if (CHECKS) check
-          (Errors.any() || !doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
-        add(doi, fn, typeParameter);
-      }
+    var doi = declaredOrInheritedFeatures(outer);
+    if (CHECKS) check
+      (Errors.any() || !doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == typeParameter);
+    add(doi, fn, typeParameter);
   }
 
 
@@ -715,15 +712,13 @@ part of the (((inner features))) declarations of the corresponding
     if (PRECONDITIONS)
       require(outer.isConstructor(), inner.isCotype());
 
-    var d = data(outer);
     var fn = inner.featureName();
-    var doi = d._declaredOrInheritedFeatures;
-    if (doi != null)
-      {
-        if (CHECKS) check
-          (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == inner);
-        add(doi, fn, inner);
-      }
+    var doi = declaredOrInheritedFeatures(outer);
+
+    if (CHECKS) check
+      (!doi.containsKey(fn) || doi.get(fn).size() == 1 && doi.get(fn).getFirst() == inner);
+
+    add(doi, fn, inner);
   }
 
 
@@ -780,15 +775,7 @@ part of the (((inner features))) declarations of the corresponding
     if (PRECONDITIONS) require
       (outer.state() == State.RESOLVING_DECLARATIONS);
 
-    var d = data(outer);
-    if (d._declaredOrInheritedFeatures == null)
-      {
-        // NYI: cleanup: See #479: there are two places that initialize
-        // _declaredOrInheritedFeatures: this place and
-        // Module.declaredOrInheritedFeatures(). There should be only one!
-        d._declaredOrInheritedFeatures = new TreeMap<>();
-      }
-    findInheritedFeatures(d._declaredOrInheritedFeatures, outer, _dependsOn);
+    findInheritedFeatures(declaredOrInheritedFeatures(outer), outer, _dependsOn);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
   }
@@ -881,7 +868,7 @@ A post-condition of a feature that redefines one or several inherited features m
                 */
                 AstErrors.redefinePostconditionMustUseThen(c._hasPost, f);
               }
-            if (visibleFor(existing, f.outer()))
+            if (visibleFor(existing, f))
               {
                 if (existing.isNonArgumentField() ||
                     // @fridis writes: "If we redefine an argument field by a field that is not an argument field,
@@ -931,14 +918,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
             */
             AstErrors.notRedefinedPostconditionMustNotUseThen(c._hasPostThen, f);
           }
-      }
-
-    // This is a fix for #978 but it might need to be removed when fixing #932.
-    if (f instanceof Feature ff &&
-        (outer.state().atLeast(State.RESOLVED_DECLARATIONS) ||
-            ff.state().atLeast(State.RESOLVED_DECLARATIONS)))
-      {
-        ff._addedLate = true;
       }
     var doi = declaredOrInheritedFeatures(outer);
     doi.remove(fn);  // NYI: remove only those features that are redefined by f!
@@ -1037,7 +1016,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       {
         for (var h : d._heirs)
           {
-            addDeclaredOrInherited(data(outer)._declaredOrInheritedFeatures, h, fn, f);
+            addDeclaredOrInherited(declaredOrInheritedFeatures(h), h, fn, f);
             addToHeirs(h, fn, f);
           }
       }
@@ -1610,10 +1589,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
         var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer())
                   .applyTypePars(o, f.generics().asActuals());    /* replace o's type pars by f's */
         var t2 = f.resultType();
-        if (o.isCoTypesThisType() && f.isCoTypesThisType())
-          { // NYI: CLEANUP: #706: allow redefinition of THIS_TYPE in type features for now, these are created internally.
-          }
-        else if (o.isConstructor() ||
+        if (o.isConstructor() ||
                  switch (o.kind())
                  {
                    case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
@@ -1653,7 +1629,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         var cod = f.code();
         var rt = cod.type();
-        if (!Types.resolved.t_unit.isAssignableFrom(rt))
+        if (!Types.resolved.t_unit.isAssignableFrom(rt) && !(Errors.any() && (rt == Types.t_UNDEFINED || rt == Types.t_ERROR)))
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }
@@ -1666,8 +1642,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           {
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
-        if (  !f.isCoTypesThisType() // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
-            && f.resultType().isChoice())
+        if (f.resultType().isChoice())
           {
             AstErrors.constraintMustNotBeChoice(f);
           }
@@ -1934,13 +1909,10 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkDuplicateFeatures(Feature f)
   {
-    var doi = data(f)._declaredOrInheritedFeatures;
-    if (doi != null)
+    var doi = declaredOrInheritedFeatures(f);
+    for (var fn : doi.keySet())
       {
-        for (var fn : doi.keySet())
-          {
-            checkDuplicateFeatures(f, fn, doi.get(fn));
-          }
+        checkDuplicateFeatures(f, fn, doi.get(fn));
       }
   }
 

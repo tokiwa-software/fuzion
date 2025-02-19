@@ -11,6 +11,7 @@ i32.pre infix +
 i32.precall infix +
 (list i32).count_n#1
 (list i32).count
+(list i32).precall count
 universe
 
 *** fatal errors encountered, stopping.

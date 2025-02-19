@@ -53,6 +53,7 @@ public abstract class AbstractCall extends Expr
    * ({@code a.b<>(x,y)}).
    */
   public static final List<AbstractType> NO_GENERICS = new List<>();
+  { NO_GENERICS.freeze(); }
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -64,11 +65,6 @@ public abstract class AbstractCall extends Expr
   public abstract List<Expr> actuals();
   public abstract int select();
   public abstract boolean isInheritanceCall();
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    say_err("Called "+this.getClass()+".visit");
-    return this;
-  }
 
 
   /**
@@ -101,20 +97,6 @@ public abstract class AbstractCall extends Expr
     return
       !(target() instanceof AbstractCurrent) &&
       !isInheritanceCall();
-  }
-
-
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  @Override
-  AbstractType typeForInferencing()
-  {
-    return type();
   }
 
 

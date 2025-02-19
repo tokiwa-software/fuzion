@@ -220,6 +220,7 @@ public class Destructure extends ExprWithPos
     if (fields != null && fields.hasNext())
       {
         var newF = (Feature) fields.next();
+
         newF._returnType = new FunctionReturnType(t);
         assign = new Assign(res, pos(), newF, call_f, context);
       }

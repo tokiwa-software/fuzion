@@ -164,6 +164,7 @@ public effect is
                       def effect.this -> R
                       ) R
   =>
+    e.check_depletion
     x := instate_helper R effect.this e code def
     instate0 e x.call_code x.call_def
     x.res.get
@@ -378,6 +379,12 @@ public effect is
   static_finally => finally
 
 
+  # trigger runtime check if effect is
+  # already depleted and may not be used any more
+  #
+  module check_depletion =>
+
+
 # instante helper to hold the result of the effect
 #
 instate_helper(# result type
@@ -433,3 +440,19 @@ public effect0(E type : effect, e E) is
   ) R
   =>
     E.instate R e code
+
+
+# linear variant of an effect
+# that may only be instated/used once.
+#
+public linear_effect : effect is
+  depleted := Depleted_Wrapper
+
+  module redef check_depletion =>
+    if !depleted.depleted.compare_and_set0 false true
+      fuzion.std.panic "effect already depleted. effect may only be instated once."
+
+
+Depleted_Wrapper ref is
+
+  depleted := concur.atomic false

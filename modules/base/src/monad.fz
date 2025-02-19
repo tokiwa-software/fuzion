@@ -49,32 +49,12 @@ public monad (public A type,
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  # NYI: This is currently useless since a redefinition is not
-  # allowed for features with generic arguments. Is there a way
-  # we could allow this anyway?
-  #
-  public infix >>=~ (B, MB type, f A -> MB) MB => abstract
+  public infix >>=~ (B type, MB type : monad B MB, f A -> MB) MB => abstract
 
 
   # join operator
   #
-  # NYI: useless since redefinition currently not supported for
-  # feature with generics.
-  #
-  # NYI: BUG: gives to following error currently:
-  #
-  #     Incompatible type parameter
-  #     public join(MMA type : monad MA (monad A MA), a MMA) MA => abstract
-  #
-  #     formal type parameter 'MA' with constraint 'monad monad.MA (monad monad.A monad.MA)'
-  #     actual type parameter 'monad monad.A monad.MA'
-  #
-  # public join(MMA type : monad MA (monad A MA), a MMA) MA => abstract
-
-
-  # NYI: fmap:
-  #
-  # fmap<B> (f A -> B) is monad.this >>= fun (x A) B is return f x
+  public join(MMA type : monad MA MMA, a MMA) MA => abstract
 
 
   # return function

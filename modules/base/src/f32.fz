@@ -44,11 +44,8 @@ public f32(public val f32) : float, java_primitive is
 
   # comparison
   #
-  fixed redef infix = (other f32) bool => intrinsic
-  fixed redef infix <= (other f32) bool => intrinsic
-  fixed redef infix >= (other f32) bool => intrinsic
-  fixed redef infix < (other f32) bool => intrinsic
-  fixed redef infix > (other f32) bool => intrinsic
+  type.equal (a, b f32) bool => intrinsic
+  type.lower_than_or_equal (a, b f32) bool => intrinsic
 
 
   # does this `f32` value fit into an `i64`?  Used in inherited
@@ -79,7 +76,7 @@ public f32(public val f32) : float, java_primitive is
   # the IEEE standard), so the hash of any NaN is the hash of
   # the "canonical" NaN.
   #
-  public redef type.hash_code(a f32.this) u64 =>
+  public fixed redef type.hash_code(a f32) u64 =>
     if a.is_NaN
       hash NaN.cast_to_u32
     else if a = zero
@@ -161,7 +158,7 @@ public f32(public val f32) : float, java_primitive is
   # is smaller than 0.001
   # or greater than 9_999_999
   #
-  public redef use_scientific_notation bool =>
+  public fixed redef use_scientific_notation bool =>
     abs<1E-3 || abs>=1E7
 
 
@@ -265,3 +262,30 @@ public f32(public val f32) : float, java_primitive is
         if q <= 0 then q+π else q-π
       else
         q
+
+
+  # equality
+  #
+  # This provides an equivalence relation in the mathematical
+  # sense and therefore breaks the IEEE semantics. infix = should
+  # be used for IEEE semantics.
+  #
+  # The equivalence relation is provided by the usual comparison
+  # of floating-point numbers, with the definition of NaN = NaN.
+  #
+  public fixed redef type.equality(a, b f32) bool =>
+    (f32.equal a b) || (a.is_NaN && b.is_NaN)
+
+
+  # total order
+  #
+  # This provides a total order in the mathematical sense and
+  # therefore breaks the IEEE semantics. infix <= should be
+  # used for IEEE semantics.
+  #
+  # The total order is provided by the usual comparison of
+  # floating-point numbers, with the definition that NaN <= x,
+  # for any x (including x = NaN).
+  #
+  public fixed redef type.lteq(a, b f32) bool =>
+    (f32.lower_than_or_equal a b) || a.is_NaN

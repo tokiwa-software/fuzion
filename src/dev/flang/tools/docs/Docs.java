@@ -78,6 +78,7 @@ public class Docs extends ANY
     /* moduleName              */ null,
     /* loadSources             */ false,
     /* needsEscapeAnalysis     */ false,
+    /* serializeFuir           */ false,
     /* timer                   */ s->{});
 
   /**

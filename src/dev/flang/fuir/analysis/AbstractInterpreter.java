@@ -29,7 +29,6 @@ package dev.flang.fuir.analysis;
 import java.util.Stack;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.ir.IR.ExprKind;
 
 import static dev.flang.ir.IR.NO_SITE;
 

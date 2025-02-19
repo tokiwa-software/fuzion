@@ -1080,13 +1080,11 @@ class CodeGen
    *
    * @param msg a message explaining the illegal state
    */
-  // NYI: BUG: #3178 reportErrorInCode may currently not be called repeatedly
-  //           triggers error: Expecting a stack map frame
-  // @Override
-  // public Expr reportErrorInCode(String msg)
-  // {
-  //   return this._jvm.reportErrorInCode(msg);
-  // }
+  @Override
+  public Expr reportErrorInCode(String msg)
+  {
+    return this._jvm.reportErrorInCode(msg);
+  }
 
 }
 

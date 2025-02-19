@@ -636,7 +636,7 @@ public class ParsedCall extends Call
    */
   Call pushCall(Resolution res, Context context, String name)
   {
-    var wasLazy = _type != null && _type.isLazyType();
+    var wasLazy = typeForInferencing() != null && typeForInferencing().isLazyType();
 
     if (CHECKS) check
       (select() == -1);
@@ -691,12 +691,12 @@ public class ParsedCall extends Call
   private boolean isImmediateFunctionCall()
   {
     return
-      _type.isFunctionTypeExcludingLazy()                      &&
+      type().isFunctionTypeExcludingLazy()                      &&
       _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       _actuals != NO_PARENTHESES
       ||
-      _type.isLazyType()                          &&   // we are `Lazy T`
+      type().isLazyType()                          &&   // we are `Lazy T`
       _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
       _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
       _actuals.isEmpty();                              // dto.

@@ -300,7 +300,13 @@ MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
 MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
 MOD_FZ_CMD = $(MOD_FZ_CMD_DIR).fum
 
-FUZION_RT = $(BUILD_DIR)/lib/__marker_for_make__
+ifeq ($(OS),Windows_NT)
+	FUZION_RT = $(BUILD_DIR)/lib/fuzion.dll
+else ifeq ($(shell uname),Darwin)
+	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.dylib
+else
+	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.so
+endif
 
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
 
@@ -452,7 +458,7 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 .DELETE_ON_ERROR:
 
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF)
 
 # everything but rarely used java modules
 .PHONY: min-java
@@ -479,7 +485,7 @@ $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 
 $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
-	$(FZ) $(FZ_SRC)/bin/ebnf.fz > $@
+	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
 
 $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
@@ -1427,23 +1433,20 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib regardless of which OS.
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
-	echo "building fuzion runtime"
+	echo " + "$@
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
 	-DFUZION_ENABLE_THREADS \
 	-DPTW32_STATIC_LIB \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
-	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/fuzion.dll \
+	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
 	-lMswsock -lAdvApi32 -lWs2_32
-	touch $(FUZION_RT)
 else
-	clang -Wall -Werror -O3 -shared \
+	clang -Wall -Werror -O3 -shared -fPIC \
 	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
-	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so
-	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
-	touch $(FUZION_RT)
+	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
 endif
 # NYI: eventuall link libgc
 # ifeq ($(OS),Windows_NT)

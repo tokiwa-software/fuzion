@@ -17,20 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue3191 is
-
-  a i32 := 256
-  b u8 := a.as_u8       # should produce an error due to a failed precondition
-  say "$a.as_u8 is $b"
-
-  c i64 := -1
-  d u32 := c.as_u32     # should produce an error due to a failed precondition
-  say "$c.as_u32 is $d"
-
-  e i8 := -1
-  f u32 := e.as_u32     # should produce an error due to a failed precondition
-  say "$e.as_u32 is $f"
+override NAME = ex_count
+include ../simple.mk

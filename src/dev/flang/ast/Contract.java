@@ -63,23 +63,6 @@ public class Contract extends ANY
                                                              null);
 
 
-  /*--------------------------  static fields  --------------------------*/
-
-
-  /**
-   * Id used to generate unique names for pre- and postcondition features.
-   */
-  public static int _id_ = 0;
-
-
-  /**
-   * Reset static fields
-   */
-  public static void reset()
-  {
-    _id_ = 0;
-  }
-
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -189,7 +172,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionFeatureName == null)
       {
-        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preConditionFeatureName;
   }
@@ -206,7 +189,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preBoolConditionFeatureName == null)
       {
-        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + (_id_++) + "_"  + f.featureName().baseName();
+        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preBoolConditionFeatureName;
   }
@@ -223,7 +206,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionAndCallFeatureName == null)
       {
-        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preConditionAndCallFeatureName;
   }
@@ -240,7 +223,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._postConditionFeatureName == null)
       {
-        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._postConditionFeatureName;
   }
@@ -256,10 +239,8 @@ public class Contract extends ANY
    */
   static boolean requiresPreConditionsFeature(Feature f)
   {
-    var fc = f.contract();
-
-    return fc._hasPre != null &&
-      (!fc._declared_preconditions.isEmpty() || !f._inheritedPre.isEmpty());
+    return !f.contract()._declared_preconditions.isEmpty() ||
+      f._inheritedPre.stream().anyMatch(x -> hasPreConditionsFeature(x));
   }
 
 
@@ -273,10 +254,8 @@ public class Contract extends ANY
    */
   static boolean requiresPostConditionsFeature(Feature f)
   {
-    var fc = f.contract();
-
-    return !fc._declared_postconditions.isEmpty() || !f._inheritedPost.isEmpty();
-
+    return !f.contract()._declared_postconditions.isEmpty() ||
+      f._inheritedPost.stream().anyMatch(x -> hasPostConditionsFeature(x));
   }
 
 
@@ -404,8 +383,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preFeature(),
-                    Types.resolved.t_unit)
+                    f.preFeature())
       .resolveTypes(res, context);
   }
 
@@ -446,8 +424,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preBoolFeature(),
-                    Types.resolved.t_bool)
+                    f.preBoolFeature())
       .resolveTypes(res, context);
   }
 
@@ -481,8 +458,7 @@ public class Contract extends ANY
                     t,
                     preAndCallOuter.generics().asActuals(),
                     args,
-                    f,
-                    null)
+                    f)
       {
         @Override
         boolean preChecked() { return true; }
@@ -563,8 +539,7 @@ public class Contract extends ANY
                                      t,
                                      origouter.isConstructor() ? new List<>() : in.generics().asActuals(),
                                      args,
-                                     origouter.postFeature(),
-                                     Types.resolved.t_unit);
+                                     origouter.postFeature());
     callPostCondition = callPostCondition.resolveTypes(res, in.context());
     return callPostCondition;
   }
@@ -674,7 +649,9 @@ public class Contract extends ANY
                                          null);
     var pF = new Feature(pos,
                          f.visibility().eraseTypeVisibility(),
-                         f.modifiers() & FuzionConstants.MODIFIER_FIXED,
+                         // we need to copy fixed modifier because
+                         // of different meaning of this-types.
+                         f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0,
                          new FunctionReturnType(result_type),
                          new List<>(name),
                          args,
@@ -687,6 +664,7 @@ public class Contract extends ANY
                             {
                               return f.contract();
                             }
+                            @Override AbstractFeature origin() { return f; }
                           };
     res._module.findDeclarations(pF, f.outer());
     res.resolveDeclarations(pF);
@@ -1018,14 +996,18 @@ all of their redefinition to `true`. +
             var code2 = new Block(l2);
             var pF2 = new Feature(pos,
                                   f.visibility().eraseTypeVisibility(),
-                                  // 0, // NYI: why not this:
-                                  f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                                  // we need to copy fixed modifier because
+                                  // of different meaning of this-types.
+                                  f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0, // modifiers
                                   NoType.INSTANCE,
                                   new List<>(name2),
                                   args2,
                                   new List<>(), // inheritance
                                   Contract.EMPTY_CONTRACT,
-                                  new Impl(pos, code2, Impl.Kind.RoutineDef));
+                                  new Impl(pos, code2, Impl.Kind.RoutineDef))
+                        {
+                          @Override AbstractFeature origin() { return f; }
+                        };
             res._module.findDeclarations(pF2, f.outer());
             f._preAndCallFeature = pF2;
 
@@ -1071,7 +1053,9 @@ all of their redefinition to `true`. +
         var code = new Block(l);
         var pF = new Feature(pos,
                              f.visibility().eraseTypeVisibility(),
-                             f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                             // we need to copy fixed modifier because
+                             // of different meaning of this-types.
+                             f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0,
                              NoType.INSTANCE,
                              new List<>(name),
                              args,
@@ -1084,6 +1068,7 @@ all of their redefinition to `true`. +
             {
               return f.contract();
             }
+            @Override AbstractFeature origin() { return f; }
           };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);

@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.SpecialClazzes;
 
 
 /**

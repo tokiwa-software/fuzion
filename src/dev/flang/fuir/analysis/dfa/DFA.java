@@ -39,6 +39,7 @@ import java.util.function.Supplier;
 
 import java.util.stream.Stream;
 
+import dev.flang.fuir.DfaFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.GeneratingFUIR;
@@ -1145,7 +1146,7 @@ public class DFA extends ANY
    * DFA analysis. In particular, Let 'clazzNeedsCode' return false for
    * routines that were found never to be called.
    */
-  public FUIR new_fuir()
+  public DfaFUIR new_fuir()
   {
     dfa();
     var called = new TreeSet<Integer>();
@@ -1154,7 +1155,7 @@ public class DFA extends ANY
         called.add(c._cc);
       }
     _options.timer("dfa");
-    var res = new GeneratingFUIR((GeneratingFUIR) _fuir)
+    var res = new DfaFUIR((GeneratingFUIR) _fuir)
       {
         /**
          * Determine the lifetime of the instance of a call to clazz cl.
@@ -1952,16 +1953,10 @@ public class DFA extends ANY
     put("f64.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f32.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f64.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix ="                    , cl -> cl._dfa.bool() );
-    put("f64.infix ="                    , cl -> cl._dfa.bool() );
-    put("f32.infix <="                   , cl -> cl._dfa.bool() );
-    put("f64.infix <="                   , cl -> cl._dfa.bool() );
-    put("f32.infix >="                   , cl -> cl._dfa.bool() );
-    put("f64.infix >="                   , cl -> cl._dfa.bool() );
-    put("f32.infix <"                    , cl -> cl._dfa.bool() );
-    put("f64.infix <"                    , cl -> cl._dfa.bool() );
-    put("f32.infix >"                    , cl -> cl._dfa.bool() );
-    put("f64.infix >"                    , cl -> cl._dfa.bool() );
+    put("f32.type.equal"                 , cl -> cl._dfa.bool() );
+    put("f64.type.equal"                 , cl -> cl._dfa.bool() );
+    put("f32.type.lower_than_or_equal"   , cl -> cl._dfa.bool() );
+    put("f64.type.lower_than_or_equal"   , cl -> cl._dfa.bool() );
     put("f32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f64.as_f32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
     put("f64.as_i64_lax"                 , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );

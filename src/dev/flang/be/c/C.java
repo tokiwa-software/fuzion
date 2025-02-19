@@ -923,11 +923,10 @@ public class C extends ANY
                      "f32.infix /",
                      "f32.infix %",
                      "f32.infix **",
-                     "f32.infix =",
-                     "f32.infix <=",
-                     "f32.infix >=",
-                     "f32.infix <",
-                     "f32.infix >",
+                     "f32.type.equal",
+                     "f32.type.lower_than_or_equal",
+                     "f64.type.equal",
+                     "f64.type.lower_than_or_equal",
                      "f32.as_f64",
                      "f64.as_f32",
                      "f64.as_i64_lax",
@@ -2241,7 +2240,7 @@ public class C extends ANY
     var obj = CExpr
       .compoundLiteral(
         _types.clazz(rc),
-        "." + _names.fieldName(_fuir.lookupJavaRef(rc)).code() + " = "
+        "." + _names.fieldName(_fuir.lookupJavaRef(cl)).code() + " = "
           + successResult
             .field(new CIdent("l"))
             .castTo("void *" /* J_Value */)
