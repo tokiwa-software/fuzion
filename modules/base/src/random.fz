@@ -197,7 +197,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   type.time_seeded Random_Handler =>
     # initialize with large numbers XORed with nano time
     #
-    simple_random_handler (u64 77777777777777 ^ time.nano.read) 98765432109876543
+    simple_random_handler (u64 77777777777777 ^ time.nano.read_for_random) 98765432109876543
 
   # create a time-seeded handler for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good
