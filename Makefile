@@ -1346,7 +1346,7 @@ rerecord_simple_tests:
 $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	rm -f $(MOD_FZ_CMD_DIR).jmod
 	jmod create --class-path $(CLASSES_DIR) $(MOD_FZ_CMD_DIR).jmod
-	echo " + build/modules/fz_cmd.jmod"
+	@echo " + build/modules/fz_cmd.jmod"
 
 $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
 	rm -Rf $(MOD_FZ_CMD_DIR)
@@ -1433,7 +1433,7 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib regardless of which OS.
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
-	echo " + "$@
+	@echo " + "$@
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
