@@ -1501,7 +1501,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return _lookupDone && !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_Function_call.outer())
+    return _lookupDone && !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_Function)
       ? NO_CLAZZ
       : lookupCall(cl, !_lookupDone);
   }
