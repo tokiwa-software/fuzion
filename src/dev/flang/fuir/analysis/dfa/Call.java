@@ -337,7 +337,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     for (var arg : _args)
       {
-        if (arg instanceof SysArray sa && sa._elements == null)
+        if (arg.value() instanceof SysArray sa && sa._elements == null)
           {
             sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(SpecialClazzes.c_i32)),
                      _dfa.newInstance(sa._elementClazz, _site, _context));
