@@ -36,7 +36,7 @@ module:public instant (val u64) : property.orderable is
   #
   public fixed infix - (other instant) time.duration
   pre
-    debug: other < instant.this
+    debug: other <= instant.this
   =>
     time.duration (val - other.val)
 
