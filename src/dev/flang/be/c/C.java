@@ -1991,8 +1991,8 @@ public class C extends ANY
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
         var i0 = i;
-        args.add(!_fuir.clazzIs(_fuir.clazzArgClazz(cl, i0), SpecialClazzes.c_sys_ptr) && safe(()->_fuir.lookupCall(_fuir.clazzArgClazz(cl, i0)), NO_CLAZZ) != NO_CLAZZ
-                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)))).castTo("void *")
+        args.add(safe(()->_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i0))), NO_CLAZZ) != NO_CLAZZ
+                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i))))).adrOf().castTo("void *")
                     : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
                     ? CIdent.arg(i).castTo("void *")
                     : CIdent.arg(i)
@@ -2000,7 +2000,7 @@ public class C extends ANY
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
+    var call = CExpr.call(_fuir.clazzBaseName(cl).split(" ", 2)[0], args);
     return switch (_fuir.getSpecialClazz(rc))
       {
         case

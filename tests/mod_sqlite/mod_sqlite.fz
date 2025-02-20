@@ -38,7 +38,7 @@ public mod_sqlite =>
   #   char **errmsg                              /* Error msg written here */
   # );
   #
-  sqlite3_exec(db fuzion.sys.Pointer, sql fuzion.sys.Pointer, callback Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer, arg fuzion.sys.Pointer, errmsg fuzion.sys.Pointer) i32 => native
+  sqlite3_exec(F type : Function i32 i32 fuzion.sys.Pointer fuzion.sys.Pointer, db fuzion.sys.Pointer, sql fuzion.sys.Pointer, callback F, arg fuzion.sys.Pointer, errmsg fuzion.sys.Pointer) i32 => native
 
 
   # helper to convert fuzion String to a c-string with \0 byte at end.
@@ -52,33 +52,34 @@ public mod_sqlite =>
   public Database(name String) ref is
 
     # exeute a query
-    public query(q String, cb Function i32 (Sequence (String, String))) outcome unit => abstract
+    public query(q String, cb Function i32 (Sequence String)) outcome unit => abstract
 
     # NYI: close
 
 
   public open(path String) outcome Database =>
 
-    db := [(array fuzion.sys.Pointer).empty.as_pointer]
+    db := [ffi.null]
 
     if sqlite3_open path.as_c_string db.as_pointer = 0
+      check !(ffi.is_null db[0])
       ref : Database path
-        redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
+        redef query(q String, cb Function i32 (Sequence String)) outcome unit =>
 
-          cb2 : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer is
-            redef call(_ fuzion.sys.Pointer, len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
+          cb2 : Function i32 i32 fuzion.sys.Pointer fuzion.sys.Pointer is
+            redef call(len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
               ct := ffi.from_array_of_pointers fuzion.sys.Pointer column_text len
               cn := ffi.from_array_of_pointers fuzion.sys.Pointer column_name len
-
               data => (cn.map (t -> ffi.from_c_string t))
-                .zip (ct.map (t -> ffi.from_c_string t)) x,y->(x,y)
-
+                .zip (ct.map (t -> ffi.from_c_string t)) x,y->"$x => $y"
               cb data
 
           # NYI: HACK: so that DFA marks this as used
-          _ := (cb2.call (array fuzion.sys.Pointer).empty.as_pointer 0 (array fuzion.sys.Pointer).empty.as_pointer (array fuzion.sys.Pointer).empty.as_pointer)
+          blabla(callback Function i32 i32 fuzion.sys.Pointer fuzion.sys.Pointer) unit =>
+            _ := (callback.call 0 [ffi.null].as_pointer [ffi.null].as_pointer)
+          blabla cb2
 
-          if sqlite3_exec db[0] q.as_c_string cb2 (array fuzion.sys.Pointer).empty.as_pointer (array fuzion.sys.Pointer).empty.as_pointer = 0
+          if sqlite3_exec db[0] q.as_c_string cb2 ffi.null [ffi.null].as_pointer = 0
             unit
           else
             error "error executing query $q"

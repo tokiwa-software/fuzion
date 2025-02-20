@@ -460,7 +460,7 @@ class LibraryOut extends ANY
                                 : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
+       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.generics() == FormalGenerics.NONE);
     if (f.hasCotype())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_COTYPE;
