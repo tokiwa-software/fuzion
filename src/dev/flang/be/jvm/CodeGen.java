@@ -30,6 +30,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.Expr;
@@ -592,7 +593,7 @@ class CodeGen
             Expr.getstatic(_names.javaClass(cc),
                            Names.METHOD_HANDLE_FIELD_NAME,
                            Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                               // MethodHandle
-                .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments)) // MethodHandle, args...
+                .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
                 .andThen(Expr.invokeVirtual(
                   Names.JAVA_LANG_INVOKE_METHODHANDLE,
                   "invoke",
@@ -708,12 +709,22 @@ class CodeGen
    * the created MemorySegments are stored in locals and
    * the slot index is added to the slots list.
    */
-  private Expr convertArgumentsToMemorySegments(int si, List<Expr> args, List<Integer> slots)
+  private Expr convertArgumentsToMemorySegments(int si, List<Expr> args, List<Integer> slots, int cc)
   {
     var result = Expr.UNIT;
     for (int i = 0; i < args.size(); i++)
       {
-        if (args.get(i).type().isPrimitive())
+        var call = _fuir.lookupCall(_fuir.clazzArgClazz(cc, i));
+        if (call != NO_CLAZZ)
+          {
+            var slot = _jvm.allocLocal(si, 1);
+            slots.addLast(slot);
+            result = result
+              .andThen(upcall(call))
+              .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
+              .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+          }
+        else if (args.get(i).type().isPrimitive())
           {
             result = result
               .andThen(args.get(i));
@@ -724,16 +735,143 @@ class CodeGen
             slots.addLast(slot);
             result = result
                 .andThen(args.get(i))
-                .andThen(Expr.invokeStatic(
-                  Names.RUNTIME_CLASS,
-                  "obj2MemorySegment",
-                  "(" + Names.JAVA_LANG_OBJECT.descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
-                  Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
+                .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
                 .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
           }
       }
     return result;
+  }
+
+
+  private Expr upcall(int call)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzBaseName(call).equals("call"));
+
+    var wrapperName = "fzC_" + call;
+
+    createWrapperCode(call, wrapperName);
+
+    return Expr
+      .stringconst(wrapperName)
+      .andThen(Expr.invokeStatic(
+          Names.RUNTIME_CLASS,
+          "upcall",
+          "(" + Names.JAVA_LANG_STRING.descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
+          Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+  }
+
+
+  private void createWrapperCode(int call, String wrapperName)
+  {
+    var cf = new ClassFile(_jvm._options, wrapperName, null, "** no source file **");
+    var code = wrapperCode(call);
+    var code_cl = cf.codeAttribute(
+      "wrapper for native callback",
+      code,
+      new List<>(), ClassFile.StackMapTable.fromCode(cf, locals(call), code));
+    cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.ROUTINE_NAME, wrapperDescriptor(call), new List<>(code_cl));
+
+    // try
+    //   {
+    //     cf.write(_jvm.classesDir());
+    //   }
+    // catch (IOException e)
+    //   {
+    //     Errors.fatal(e);
+    //   }
+
+    _jvm._runner.add(cf);
+  }
+
+  private List<VerificationType> locals(int call)
+  {
+    var result = new List<VerificationType>();
+    if (_types.hasOuterRef(call))
+      {
+        result.add(Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti());
+      }
+    var args = new int[_fuir.clazzArgCount(call)];
+    for (int i = 0; i < args.length; i++)
+      {
+        var arg = _fuir.clazzArgClazz(call, i);
+        var vt = _types.javaType(arg).isPrimitive()
+          ? _types.javaType(arg).vti()
+          : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti();
+        result.add(vt);
+      }
+    return result;
+  }
+
+  private Expr wrapperCode(int call)
+  {
+    var result = Expr.UNIT ;
+    if ( _types.hasOuterRef(call))
+      {
+        var or = _fuir.clazzOuterRef(call);
+        var ot = _fuir.clazzResultClazz(or);
+        var at = _types.resultType(ot);
+        result = at.load(0);
+      }
+    var argCount = _fuir.clazzArgCount(call);
+    var slot = _types.hasOuterRef(call) ? 1 : 0;
+    for (int i = 0; i < argCount; i++)
+      {
+        var arg = _fuir.clazzArgClazz(call, i);
+        var ct = _types.javaType(arg).isPrimitive()
+          ? _types.javaType(arg)
+          : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT;
+
+        result = result
+          .andThen(ct.isPrimitive() ? ct.load(slot) : memSegToObj(ct.load(slot)));
+
+        slot = slot + (ct.vti().needsTwoSlots() ? 2 : 1);
+
+      }
+    return result
+      .andThen(_types.invokeStatic(call, 0))
+      .andThen(_types.javaType(_fuir.clazzResultClazz(call)).return0());
+  }
+
+
+  private Expr memSegToObj(Expr expr)
+  {
+    // NYI: UNDER DEVELOPMENT:
+    return expr;
+  }
+
+
+  private String wrapperDescriptor(int call)
+  {
+    var args = new int[_fuir.clazzArgCount(call)];
+    for (int i = 0; i < args.length; i++)
+      {
+        args[i] = _fuir.clazzArgClazz(call, i);
+      }
+    return "("
+      + (_types.hasOuterRef(call) ? Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() : "")
+      + Arrays.stream(args)
+          .mapToObj(arg ->
+            _types.javaType(arg).isPrimitive()
+              ? _types.javaType(arg).descriptor()
+              : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor())
+          .collect(Collectors.joining())
+      + ")"
+      + _types.javaType(_fuir.clazzResultClazz(call)).descriptor();
+  }
+
+
+  /**
+   * create Expr for invoking Runtime.obj2MemorySegment
+   */
+  private Expr invokeObj2MemorySegment()
+  {
+    return Expr.invokeStatic(
+      Names.RUNTIME_CLASS,
+      "obj2MemorySegment",
+      "(" + Names.JAVA_LANG_OBJECT.descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
+      Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT);
   }
 
 

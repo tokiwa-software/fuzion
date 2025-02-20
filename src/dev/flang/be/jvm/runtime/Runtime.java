@@ -34,10 +34,12 @@ import java.io.StringWriter;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1374,11 +1376,23 @@ public class Runtime extends ANY
       }
   }
 
+
+
+  /**
+   * Find the method handle of a native function
+   *
+   * @param str name of the function: e.g. sqlite3_exec
+   *
+   * @param desc the FunctionDescriptor of the function
+   *
+   * @return
+   */
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc)
   {
     return Linker.nativeLinker()
       .downcallHandle(
         SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
+          .or(SymbolLookup.libraryLookup(System.mapLibraryName("sqlite3" /* NYI */), Arena.ofAuto()))
           .find(str)
           .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
         desc);
@@ -1397,6 +1411,13 @@ public class Runtime extends ANY
     else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof MemorySegment) {}
+    else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
+      {
+        for (int i = 0; i < arr.length; i++)
+          {
+            arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
+          }
+      }
     else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
     else { throw new Error("NYI memorySegment2Obj: " + obj.getClass()); }
   }
@@ -1427,6 +1448,98 @@ public class Runtime extends ANY
       }
     else { throw new Error("NYI obj2MemorySegment: " + obj.getClass()); }
 
+  }
+
+
+  public static MemorySegment upcall(String str)
+  {
+    try
+      {
+        var cls = ((FuzionThread) FuzionThread.currentThread())
+          ._loader
+          .loadClass(str);
+
+        var method = cls
+          .getMethods()[0];
+
+        if (CHECKS) check
+          (method.getName().equals(ROUTINE_NAME));
+
+        var handle = MethodHandles.lookup().unreflect(method);
+
+        var desc = method.getReturnType() == void.class
+          ? FunctionDescriptor.ofVoid(layout(method.getParameterTypes()))
+          : FunctionDescriptor.of(layout(method.getReturnType()), layout(method.getParameterTypes()));
+
+        if (CHECKS) check
+          (handle.type().equals(desc.toMethodType()));
+
+        return Linker
+          .nativeLinker()
+          .upcallStub(handle, desc, Arena.ofAuto());
+      }
+    catch (ClassNotFoundException cnfe)
+      {
+        Errors.fatal(cnfe);
+      }
+    catch (IllegalAccessException e)
+      {
+        Errors.fatal(e);
+      }
+    Errors.fatal("upcall");
+    return null;
+  }
+
+
+  private static MemoryLayout layout(Class<?> returnType)
+  {
+    if (PRECONDITIONS) require
+      (returnType != void.class);
+
+    if (returnType == boolean.class)
+      {
+        return ValueLayout.JAVA_BOOLEAN;
+      }
+    if (returnType == byte.class)
+      {
+        return ValueLayout.JAVA_BYTE;
+      }
+    if (returnType == char.class)
+      {
+        return ValueLayout.JAVA_CHAR;
+      }
+    if (returnType == short.class)
+      {
+        return ValueLayout.JAVA_SHORT;
+      }
+    if (returnType == int.class)
+      {
+        return ValueLayout.JAVA_INT;
+      }
+    if (returnType == long.class)
+      {
+        return ValueLayout.JAVA_LONG;
+      }
+    if (returnType == float.class)
+      {
+        return ValueLayout.JAVA_FLOAT;
+      }
+    if (returnType == double.class)
+      {
+        return ValueLayout.JAVA_DOUBLE;
+      }
+    return ValueLayout.ADDRESS;
+  }
+
+
+  private static MemoryLayout[] layout(Class<?>[] parameterTypes)
+  {
+    var result = new MemoryLayout[parameterTypes.length];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i] = layout(parameterTypes[i]);
+      }
+    return result;
   }
 
 

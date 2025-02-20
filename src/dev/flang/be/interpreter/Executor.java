@@ -289,12 +289,12 @@ public class Executor extends ProcessExpression<Value, Object>
         var mh = Linker.nativeLinker()
           .downcallHandle(
             SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-              .find(_fuir.clazzBaseName(cc))
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
-
+              .or(SymbolLookup.libraryLookup(System.mapLibraryName("sqlite3" /* NYI */), Arena.ofAuto()))
+              .find(_fuir.clazzBaseName(cc).split(" ", 2)[0])
+              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc).split(" ", 2)[0])),
               _fuir.clazzIsUnitType(rt)
-              ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
-              : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
+                ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
+                : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
 
         var arguments = args.stream().map(arg -> arg.toNative()).toList();
         Object tmp = null;
