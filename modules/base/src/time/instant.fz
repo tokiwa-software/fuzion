@@ -28,13 +28,16 @@ module:public instant (val u64) : property.orderable is
   # which instant will be after the time specified by the duration
   # has passed after this instant?
   #
-  public infix + (d duration) =>
+  public fixed infix + (d duration) =>
     instant (val + d.nanos)
 
 
   # how much time passed between two instants?
   #
-  public infix - (other instant) time.duration =>
+  public fixed infix - (other instant) time.duration
+  pre
+    debug: other <= instant.this
+  =>
     time.duration (val - other.val)
 
 
