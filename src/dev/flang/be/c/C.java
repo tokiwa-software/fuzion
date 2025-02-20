@@ -750,7 +750,7 @@ public class C extends ANY
           "-Werror",
           // some suggestions taken from: https://github.com/mcinglis/c-style
           "-Wextra",
-          // "-Wpedantic",
+          "-Wpedantic",
           "-Wformat=2",
           "-Wno-unused-parameter",
           "-Wno-unused-but-set-parameter", // needed for #1777
@@ -778,7 +778,10 @@ public class C extends ANY
           // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
           "-Wno-missing-include-dirs",
           // allow infinite recursion
-          "-Wno-infinite-recursion");
+          "-Wno-infinite-recursion",
+          // NYI: UNDER DEVELOPMENT: currently necessary for native with callbacks
+          "-Wno-incompatible-function-pointer-types"
+          );
 
         if (_options._cCompiler == null && clangVersion >= 13)
           {
@@ -1992,7 +1995,7 @@ public class C extends ANY
       {
         var i0 = i;
         args.add(safe(()->_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i0))), NO_CLAZZ) != NO_CLAZZ
-                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i))))).adrOf().castTo("void *")
+                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i))))).adrOf().castTo("void (*)(void)")
                     : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
                     ? CIdent.arg(i).castTo("void *")
                     : CIdent.arg(i)
