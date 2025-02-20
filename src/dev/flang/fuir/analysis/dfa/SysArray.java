@@ -42,8 +42,6 @@ public class SysArray extends Value
 
   /*----------------------------  constants  ----------------------------*/
 
-  static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
-
   /*----------------------------  variables  ----------------------------*/
 
 
