@@ -24,5 +24,5 @@
 CREATE_DB := $(shell echo "CREATE TABLE table_name (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE); INSERT INTO table_name (name, email) VALUES ('Mario', 'admin@example.com');" | sqlite3 test.db > /dev/null || true)
 
 override NAME = mod_sqlite
-FUZION_OPTIONS = -CLink=sqlite3 -CInclude=sqlite3.h
+# FUZION_OPTIONS = -CLink=sqlite3 -CInclude=sqlite3.h
 include ../simple.mk

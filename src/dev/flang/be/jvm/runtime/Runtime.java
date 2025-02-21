@@ -30,7 +30,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
@@ -38,8 +38,17 @@ import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
+import java.lang.foreign.ValueLayout.OfBoolean;
+import java.lang.foreign.ValueLayout.OfByte;
+import java.lang.foreign.ValueLayout.OfChar;
+import java.lang.foreign.ValueLayout.OfDouble;
+import java.lang.foreign.ValueLayout.OfFloat;
+import java.lang.foreign.ValueLayout.OfInt;
+import java.lang.foreign.ValueLayout.OfLong;
+import java.lang.foreign.ValueLayout.OfShort;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -56,6 +65,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import dev.flang.be.interpreter.boolValue;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.JavaInterface;
@@ -1200,7 +1210,7 @@ public class Runtime extends ANY
 
 
   /**
-   * @param code the Unary instance to be executed
+   * @param code the Unary instance to be executed, i.e. the outer instance
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
@@ -1447,51 +1457,195 @@ public class Runtime extends ANY
         return argsArray;
       }
     else { throw new Error("NYI obj2MemorySegment: " + obj.getClass()); }
-
   }
 
 
-  public static MemorySegment upcall(String str)
+  public static Object c_array(MemoryLayout memLayout, Object obj, int length)
   {
+    // NYI: remove this if else, once DFA knows hwo to trigger call of callback
+    if (obj instanceof Object[])
+      {
+        return obj;
+      }
+    else
+      {
+        var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
+        if (memLayout instanceof OfByte o)
+          {
+            var result = new byte[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(o, i);
+              }
+            return result;
+          }
+        else if (memLayout instanceof OfBoolean ob)
+          {
+            var result = new boolean[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+        else if (memLayout instanceof OfChar ob)
+          {
+            var result = new char[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+        else if (memLayout instanceof OfDouble ob)
+          {
+            var result = new double[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+        else if (memLayout instanceof OfFloat ob)
+          {
+            var result = new float[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+        else if (memLayout instanceof OfInt ob)
+          {
+            var result = new int[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+        else if (memLayout instanceof OfLong ob)
+          {
+            var result = new long[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+        else if (memLayout instanceof OfShort ob)
+          {
+            var result = new short[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+        else
+          {
+            var ob = (AddressLayout)memLayout;
+            var result = new Object[length];
+            for (int i = 0; i < result.length; i++)
+              {
+                result[i] = memSeg.getAtIndex(ob, i);
+              }
+            return result;
+          }
+      }
+  }
+
+
+  public static MemorySegment upcall(Any code, Class call)
+  {
+    Method method = null;
+    for (var m : call.getDeclaredMethods())
+      {
+        if (m.getName().equals(ROUTINE_NAME))
+          {
+            method = m;
+          }
+      }
+    if (method == null)
+      {
+        Errors.fatal("Runtime.fatal");
+      }
+
+    MethodHandle handle;
     try
       {
-        var cls = ((FuzionThread) FuzionThread.currentThread())
-          ._loader
-          .loadClass(str);
-
-        var method = cls
-          .getMethods()[0];
-
-        if (CHECKS) check
-          (method.getName().equals(ROUTINE_NAME));
-
-        var handle = MethodHandles.lookup().unreflect(method);
+        handle = MethodHandles.lookup().unreflect(method).bindTo(code);
+        handle = MethodHandles
+          .explicitCastArguments(handle, MethodType.methodType(int.class, new Class[]{ MemorySegment.class, int.class, MemorySegment.class, MemorySegment.class }));
 
         var desc = method.getReturnType() == void.class
-          ? FunctionDescriptor.ofVoid(layout(method.getParameterTypes()))
-          : FunctionDescriptor.of(layout(method.getReturnType()), layout(method.getParameterTypes()));
-
-        if (CHECKS) check
-          (handle.type().equals(desc.toMethodType()));
+          ? FunctionDescriptor.ofVoid(layout(handle.type().parameterArray()))
+          : FunctionDescriptor.of(layout(method.getReturnType()), layout(handle.type().parameterArray()));
 
         return Linker
           .nativeLinker()
           .upcallStub(handle, desc, Arena.ofAuto());
       }
-    catch (ClassNotFoundException cnfe)
-      {
-        Errors.fatal(cnfe);
-      }
     catch (IllegalAccessException e)
       {
         Errors.fatal(e);
       }
-    Errors.fatal("upcall");
     return null;
   }
 
 
-  private static MemoryLayout layout(Class<?> returnType)
+  public static int c_string_len(MemorySegment segment)
+  {
+    int length = 0;
+    segment = segment.reinterpret(10000);
+
+    while (segment.get(ValueLayout.JAVA_BYTE, length) != 0)
+      {
+        length++;
+      }
+
+    return length;
+  }
+
+
+  public static MemoryLayout layout2(String str)
+  {
+    if (str.equals("I"))
+      {
+        return layout(int.class);
+      }
+    else if (str.equals("B"))
+      {
+        return layout(byte.class);
+      }
+    else if (str.equals("Z"))
+      {
+        return layout(boolean.class);
+      }
+    else if (str.equals("F"))
+      {
+        return layout(float.class);
+      }
+    else if (str.equals("D"))
+      {
+        return layout(double.class);
+      }
+    else if (str.equals("S"))
+      {
+        return layout(short.class);
+      }
+    else if (str.equals("J"))
+      {
+        return layout(long.class);
+      }
+    else if (str.equals("C"))
+      {
+        return layout(char.class);
+      }
+    return layout(Object.class);
+  }
+
+  public static MemoryLayout layout(Class returnType)
   {
     if (PRECONDITIONS) require
       (returnType != void.class);

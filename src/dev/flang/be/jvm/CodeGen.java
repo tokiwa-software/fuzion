@@ -599,7 +599,7 @@ class CodeGen
                   "invoke",
                   invokeDescr,
                   _types.javaType(rt)))                                                           // rt
-                .andThen(copyMemorySegmentsToArrays(args, localSlotsOfMemorySegments));           // rt
+                .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments));           // rt
           res = makePair(memoryHandlerInvoke, rt);
           break;
         }
@@ -678,13 +678,14 @@ class CodeGen
   /**
    * invoke memorySegment2Obj for any of the args that are not primitives
    */
-  private Expr copyMemorySegmentsToArrays(List<Expr> args, List<Integer> slotsOfMemorySegments)
+  private Expr copyMemorySegmentsToArrays(int cc, List<Expr> args, List<Integer> slotsOfMemorySegments)
   {
     var result = Expr.UNIT;
     var slot = 0;
     for (int i = 0; i < args.size(); i++)
       {
-        if (!args.get(i).type().isPrimitive())
+        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cc, i)) != NO_CLAZZ;
+        if (!args.get(i).type().isPrimitive() && !isCall)
           {
             result = result
                 .andThen(args.get(i))
@@ -717,12 +718,8 @@ class CodeGen
         var call = _fuir.lookupCall(_fuir.clazzArgClazz(cc, i));
         if (call != NO_CLAZZ)
           {
-            var slot = _jvm.allocLocal(si, 1);
-            slots.addLast(slot);
             result = result
-              .andThen(upcall(call))
-              .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
-              .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+              .andThen(upcall(args.get(i), call));
           }
         else if (args.get(i).type().isPrimitive())
           {
@@ -744,121 +741,21 @@ class CodeGen
   }
 
 
-  private Expr upcall(int call)
+  private Expr upcall(Expr outer, int call)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzBaseName(call).equals("call"));
 
-    var wrapperName = "fzC_" + call;
-
-    createWrapperCode(call, wrapperName);
-
-    return Expr
-      .stringconst(wrapperName)
+    return outer
+      .andThen(Expr.classconst((ClassType)_types.javaType(call)))
       .andThen(Expr.invokeStatic(
           Names.RUNTIME_CLASS,
           "upcall",
-          "(" + Names.JAVA_LANG_STRING.descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
+          "(" +
+            Names.ANY_DESCR +
+            JAVA_LANG_CLASS.descriptor() +
+          ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
           Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
-  }
-
-
-  private void createWrapperCode(int call, String wrapperName)
-  {
-    var cf = new ClassFile(_jvm._options, wrapperName, null, "** no source file **");
-    var code = wrapperCode(call);
-    var code_cl = cf.codeAttribute(
-      "wrapper for native callback",
-      code,
-      new List<>(), ClassFile.StackMapTable.fromCode(cf, locals(call), code));
-    cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, Names.ROUTINE_NAME, wrapperDescriptor(call), new List<>(code_cl));
-
-    // try
-    //   {
-    //     cf.write(_jvm.classesDir());
-    //   }
-    // catch (IOException e)
-    //   {
-    //     Errors.fatal(e);
-    //   }
-
-    _jvm._runner.add(cf);
-  }
-
-  private List<VerificationType> locals(int call)
-  {
-    var result = new List<VerificationType>();
-    if (_types.hasOuterRef(call))
-      {
-        result.add(Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti());
-      }
-    var args = new int[_fuir.clazzArgCount(call)];
-    for (int i = 0; i < args.length; i++)
-      {
-        var arg = _fuir.clazzArgClazz(call, i);
-        var vt = _types.javaType(arg).isPrimitive()
-          ? _types.javaType(arg).vti()
-          : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti();
-        result.add(vt);
-      }
-    return result;
-  }
-
-  private Expr wrapperCode(int call)
-  {
-    var result = Expr.UNIT ;
-    if ( _types.hasOuterRef(call))
-      {
-        var or = _fuir.clazzOuterRef(call);
-        var ot = _fuir.clazzResultClazz(or);
-        var at = _types.resultType(ot);
-        result = at.load(0);
-      }
-    var argCount = _fuir.clazzArgCount(call);
-    var slot = _types.hasOuterRef(call) ? 1 : 0;
-    for (int i = 0; i < argCount; i++)
-      {
-        var arg = _fuir.clazzArgClazz(call, i);
-        var ct = _types.javaType(arg).isPrimitive()
-          ? _types.javaType(arg)
-          : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT;
-
-        result = result
-          .andThen(ct.isPrimitive() ? ct.load(slot) : memSegToObj(ct.load(slot)));
-
-        slot = slot + (ct.vti().needsTwoSlots() ? 2 : 1);
-
-      }
-    return result
-      .andThen(_types.invokeStatic(call, 0))
-      .andThen(_types.javaType(_fuir.clazzResultClazz(call)).return0());
-  }
-
-
-  private Expr memSegToObj(Expr expr)
-  {
-    // NYI: UNDER DEVELOPMENT:
-    return expr;
-  }
-
-
-  private String wrapperDescriptor(int call)
-  {
-    var args = new int[_fuir.clazzArgCount(call)];
-    for (int i = 0; i < args.length; i++)
-      {
-        args[i] = _fuir.clazzArgClazz(call, i);
-      }
-    return "("
-      + (_types.hasOuterRef(call) ? Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() : "")
-      + Arrays.stream(args)
-          .mapToObj(arg ->
-            _types.javaType(arg).isPrimitive()
-              ? _types.javaType(arg).descriptor()
-              : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor())
-          .collect(Collectors.joining())
-      + ")"
-      + _types.javaType(_fuir.clazzResultClazz(call)).descriptor();
   }
 
 
