@@ -65,7 +65,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import dev.flang.be.interpreter.boolValue;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.JavaInterface;
