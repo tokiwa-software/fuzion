@@ -71,8 +71,6 @@ public effect is
 
   # instate e for effect type effect.this in the current environment.
   #
-
-
   # execute code provided by `code` while this effect `e` is instated in the
   # current environment and remove the instated effect after `code` returned.
   #
