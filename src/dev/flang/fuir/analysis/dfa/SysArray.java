@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
@@ -148,6 +149,10 @@ public class SysArray extends Value
           _elements == null ? sv._elements :
           sv._elements == null ? _elements : _elements.join(dfa, sv._elements, _elementClazz);
         return _dfa.newSysArray(ne, _elementClazz);
+      }
+    else if (v instanceof RefValue rv && _dfa._fuir.clazzIs(rv._clazz, SpecialClazzes.c_sys_ptr))
+      {
+        return _dfa.newSysArray(null, _elementClazz);
       }
     else
       {

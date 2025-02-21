@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -33,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -775,7 +778,10 @@ public class C extends ANY
           // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
           "-Wno-missing-include-dirs",
           // allow infinite recursion
-          "-Wno-infinite-recursion");
+          "-Wno-infinite-recursion",
+          // NYI: UNDER DEVELOPMENT: currently necessary for native with callbacks
+          "-Wno-incompatible-function-pointer-types"
+          );
 
         if (_options._cCompiler == null && clangVersion >= 13)
           {
@@ -836,6 +842,8 @@ public class C extends ANY
       }
 
     command.addAll(cf.fileName());
+
+    command.add("-lsqlite3");
 
     if (linkJVM())
       {
@@ -1961,6 +1969,16 @@ public class C extends ANY
   }
 
 
+  // NYI: cleanup
+  private <T> T safe(Supplier<T> fn, T dflt)
+  {
+    try {
+      return fn.get();
+    } catch (Throwable e) {
+      return dflt;
+    }
+  }
+
   /**
    * Create code for a given native clazz cl.
    *
@@ -1975,13 +1993,17 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        args.add(_fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
+        var i0 = i;
+        args.add(safe(()->_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i0))), NO_CLAZZ) != NO_CLAZZ
+                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i))))).adrOf().castTo("void (*)(void)")
+                    : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
                     ? CIdent.arg(i).castTo("void *")
-                    : CIdent.arg(i));
+                    : CIdent.arg(i)
+                    );
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
+    var call = CExpr.call(_fuir.clazzBaseName(cl).split(" ", 2)[0], args);
     return switch (_fuir.getSpecialClazz(rc))
       {
         case

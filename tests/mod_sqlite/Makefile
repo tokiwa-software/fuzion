@@ -17,39 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature ffi
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
+CREATE_DB := $(shell echo "CREATE TABLE table_name (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE); INSERT INTO table_name (name, email) VALUES ('Mario', 'admin@example.com');" | sqlite3 test.db > /dev/null || true)
 
-# unit feature grouping foreign function interface related features
-#
-public ffi is
-
-  # returns a NULL Pointer
-  #
-  public null =>
-    fzE_null
-
-  # test if p is the NULL pointer
-  #
-  public is_null(p fuzion.sys.Pointer) =>
-    fzE_is_null p = 0
-
-
-  public from_c_string(x fuzion.sys.Pointer) String =>
-    len := c_string_len x
-    arr := c_array u8 x len
-    ref : String
-      redef utf8 Sequence u8 =>
-        array (fuzion.sys.internal_array u8 arr len) unit unit unit
-
-
-  public from_array(T type, x fuzion.sys.Pointer, len i32) array T =>
-    array (fuzion.sys.internal_array T (c_array T x len) len) unit unit unit
-
-
-  # NYI: what else do we need? strlen, from_c_string, from_c_struct, from_c_array
-
-c_string_len(x fuzion.sys.Pointer) i32 => intrinsic
-c_array(T type, x fuzion.sys.Pointer, len i32) fuzion.sys.Pointer => intrinsic
+override NAME = mod_sqlite
+# FUZION_OPTIONS = -CLink=sqlite3 -CInclude=sqlite3.h
+include ../simple.mk

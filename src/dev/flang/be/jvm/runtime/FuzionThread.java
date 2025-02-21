@@ -89,7 +89,7 @@ public class FuzionThread extends Thread
    * @param r the static Java method that is the main fuzion function for this
    * thread.
    *
-   * @param code the argument to pass to r.
+   * @param code the argument to pass to r, i.e. the outer instance
    */
   FuzionThread(Method r, Any code)
   {

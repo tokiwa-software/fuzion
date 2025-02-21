@@ -98,7 +98,7 @@ public class Runner extends ClassLoader
   /**
    * JVM callback to load class with given name
    *
-   * @param name the class name, e.g. "java/lang/Object".q
+   * @param name the class name, e.g. "java/lang/Object"
    */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public Class findClass(String name)
