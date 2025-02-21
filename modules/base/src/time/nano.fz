@@ -40,7 +40,15 @@ public nano (p Nano_Time_Handler) : effect is
   public read =>
     res := p.read
     replace
+    instant res
+
+
+  # workaround for making the time seeded random handler work for now
+  module read_for_random =>
+    res := p.read
+    replace
     res
+
 
   # no guarantee can be given for precision nor resolution
   public sleep(d time.duration) =>

@@ -25,7 +25,7 @@ public Sequence.sort2
 pre
   T : property.orderable
 post
-  # NYI: BUG: #4346 constraint from pre-condition is not propagated to post-condition
+  zip (drop 1) (<=) |> .reduce true (&&)
 =>
   res := sort_by (<=)
   say ((T : property.orderable): res.zip res.(drop 1)  (<=) |> .reduce true (&&))

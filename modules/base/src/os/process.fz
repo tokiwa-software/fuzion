@@ -23,7 +23,7 @@
 
 # type denoting a started process
 #
-module:public process(module id, std_in, std_out, std_err i64) : property.equatable, property.orderable is
+module:public process(module id, std_in, std_out, std_err i64) : property.orderable is
 
   # how many bytes are read at a time
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
