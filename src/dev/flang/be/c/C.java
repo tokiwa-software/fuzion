@@ -1969,16 +1969,6 @@ public class C extends ANY
   }
 
 
-  // NYI: cleanup
-  private <T> T safe(Supplier<T> fn, T dflt)
-  {
-    try {
-      return fn.get();
-    } catch (Throwable e) {
-      return dflt;
-    }
-  }
-
   /**
    * Create code for a given native clazz cl.
    *
@@ -1994,8 +1984,8 @@ public class C extends ANY
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
         var i0 = i;
-        args.add(safe(()->_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i0))), NO_CLAZZ) != NO_CLAZZ
-                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzAsValue(_fuir.clazzArgClazz(cl, i))))).adrOf().castTo("void (*)(void)")
+        args.add(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i0)) != NO_CLAZZ
+                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)))).adrOf().castTo("void (*)(void)")
                     : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
                     ? CIdent.arg(i).castTo("void *")
                     : CIdent.arg(i)
