@@ -82,6 +82,15 @@ class CIdent extends CExpr
   }
 
 
+  /**
+   *
+   */
+  static CIdent funWrapper(int cl)
+  {
+    return new CIdent("fzW_" + cl);
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 

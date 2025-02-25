@@ -851,7 +851,7 @@ public class C extends ANY
           "-I" + JAVA_HOME + "/include/darwin",
           "-L" + JAVA_HOME + "/lib/server");
 
-       if (!isWindows())
+        if (!isWindows())
           {
             command.add("-ljvm");
           }
@@ -880,7 +880,6 @@ public class C extends ANY
       {
         command.addAll("-lgc");
       }
-
 
     if (_options._cLink != null)
       {
@@ -1217,6 +1216,9 @@ public class C extends ANY
     var o = new CIdent("of");
     var s = new CIdent("sz");
     var r = new CIdent("r");
+
+    cf.println("_Thread_local void * fzW_native_outer = NULL;");
+
     cf.print
       (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
     cf.print
@@ -1918,7 +1920,11 @@ public class C extends ANY
           {
             case Routine -> codeForRoutine(cl);
             case Intrinsic -> _intrinsics.code(this, cl);
-            case Native -> codeForNative(cl);
+            case Native ->
+              {
+                l.add(functionWrapperForNative(cl));
+                yield codeForNative(cl);
+              }
             default -> null;
           };
         if (o != null)
@@ -1966,6 +1972,49 @@ public class C extends ANY
   }
 
 
+  /*
+   *
+   */
+  private CStmnt functionWrapperForNative(int cl)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Native);
+
+    var l = new List<CStmnt>();
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var i0 = i;
+        if (_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ)
+          {
+            l.add(
+              new CStmnt() {
+                @Override
+                void code(CString sb)
+                {
+                  sb.append("int ");
+                  CIdent.funWrapper(cl).code(sb);
+                  sb.append("(void * arg0, int arg1, char ** arg2, char ** arg3)\n{\n");
+                  CExpr
+                    .call(
+                      _names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i0))),
+                      new List<>(new CIdent("fzW_native_outer"),
+                                 new CIdent("arg0"),
+                                 new CIdent("arg1"),
+                                 new CIdent("arg2").castTo("void *"),
+                                 new CIdent("arg3").castTo("void *")))
+                    .ret()
+                    .code(sb);
+                  sb.append(";\n}\n");
+                }
+                @Override boolean needsSemi() { return false; }
+              });
+          }
+      }
+
+    return CStmnt.seq(l);
+  }
+
   /**
    * Create code for a given native clazz cl.
    *
@@ -1979,23 +2028,32 @@ public class C extends ANY
     var args = new List<CExpr>();
 
     /*
-      fzE_outer = &arg3;
+      fzW_native_outer = &arg3;
       int wrapper(void *, int, void * void *)
       {
-        return fzC_...(fzE_outer, arg1, arg2, arg3, arg4);
+        return fzC_...(fzW_native_outer, arg1, arg2, arg3, arg4);
       }
     */
+
+    var res = new List<CStmnt>();
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ;
+        if (isCall)
+          {
+            res.add(
+              new CIdent("fzW_native_outer").assign(CIdent.arg(i).adrOf().castTo("void *"))
+            );
+          }
+      }
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
         var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ;
         var arg = isCall
           // 1. pass as function pointer
-          ? CExpr
-              .ident(_names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i))))
-              .adrOf()
-              // NYI: correct function pointer type
-              .castTo("int (*)(void *, int, char **, char **)")
+          ? CIdent.funWrapper(cl).adrOf()
           : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
           // 2. pass as ref
           ? CIdent.arg(i).castTo("void *")
@@ -2006,7 +2064,7 @@ public class C extends ANY
 
     var rc = _fuir.clazzResultClazz(cl);
     var call = CExpr.call(_fuir.clazzBaseName(cl).split(" ", 2)[0], args);
-    return switch (_fuir.getSpecialClazz(rc))
+    var o = switch (_fuir.getSpecialClazz(rc))
       {
         case
           c_i8, c_i16, c_i32, c_i64, c_u8,
@@ -2027,6 +2085,9 @@ public class C extends ANY
             ? call.castTo("void *").ret()
             : call.ret();
       };
+
+    res.add(o);
+    return CStmnt.seq(res);
   }
 
 
