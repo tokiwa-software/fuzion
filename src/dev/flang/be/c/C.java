@@ -35,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -778,9 +777,7 @@ public class C extends ANY
           // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
           "-Wno-missing-include-dirs",
           // allow infinite recursion
-          "-Wno-infinite-recursion",
-          // NYI: UNDER DEVELOPMENT: currently necessary for native with callbacks
-          "-Wno-incompatible-function-pointer-types"
+          "-Wno-infinite-recursion"
           );
 
         if (_options._cCompiler == null && clangVersion >= 13)
@@ -1981,15 +1978,30 @@ public class C extends ANY
 
     var args = new List<CExpr>();
 
+    /*
+      fzE_outer = &arg3;
+      int wrapper(void *, int, void * void *)
+      {
+        return fzC_...(fzE_outer, arg1, arg2, arg3, arg4);
+      }
+    */
+
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var i0 = i;
-        args.add(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i0)) != NO_CLAZZ
-                    ? CExpr.ident(_names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)))).adrOf().castTo("void (*)(void)")
-                    : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
-                    ? CIdent.arg(i).castTo("void *")
-                    : CIdent.arg(i)
-                    );
+        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ;
+        var arg = isCall
+          // 1. pass as function pointer
+          ? CExpr
+              .ident(_names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i))))
+              .adrOf()
+              // NYI: correct function pointer type
+              .castTo("int (*)(void *, int, char **, char **)")
+          : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
+          // 2. pass as ref
+          ? CIdent.arg(i).castTo("void *")
+          // 3. pass as value
+          : CIdent.arg(i);
+        args.add(arg);
       }
 
     var rc = _fuir.clazzResultClazz(cl);
