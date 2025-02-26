@@ -84,11 +84,6 @@ public mod_sqlite =>
 
               cb data
 
-          # NYI: HACK: so that DFA marks this as used
-          blabla(callback Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer) unit =>
-            _ := (callback.call ffi.null 0 [ffi.null].as_pointer [ffi.null].as_pointer)
-          blabla cb2
-
           if sqlite3_exec db[0] q.as_c_string cb2 ffi.null [ffi.null].as_pointer = 0
             unit
           else
