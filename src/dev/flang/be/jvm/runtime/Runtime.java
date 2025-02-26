@@ -1198,7 +1198,7 @@ public class Runtime extends ANY
 
 
   /**
-   * @param code the Unary instance to be executed
+   * @param code the Unary instance to be executed, i.e. the outer instance
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
