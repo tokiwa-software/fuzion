@@ -1396,15 +1396,20 @@ public class Runtime extends ANY
    *
    * @return
    */
-  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc)
+  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    return Linker.nativeLinker()
-      .downcallHandle(
-        SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-          .or(SymbolLookup.libraryLookup(System.mapLibraryName("sqlite3" /* NYI */), Arena.ofAuto()))
-          .find(str)
-          .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
-        desc);
+    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto());
+    for (String library : libraries)
+      {
+        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), Arena.ofAuto()));
+      }
+    var memSeg = llu
+      .find(str)
+      .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str));
+
+    return Linker
+      .nativeLinker()
+      .downcallHandle(memSeg, desc);
   }
 
   /**

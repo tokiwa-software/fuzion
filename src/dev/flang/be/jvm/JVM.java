@@ -1008,11 +1008,33 @@ should be avoided as much as possible.
         .stringconst(_fuir.clazzBaseName(cl).split(" ", 2)[0])                         // String
         .andThen(functionDescriptorArgs(cl))                                           // String, (MemoryLayout), [MemoryLayout
         .andThen(invokeFunctionDescriptorOf(_fuir.clazzIsUnitType(rt)))                // String, FunctionDescriptor
+        .andThen(libraryArray())                                                       // String, FunctionDescriptor, [String
         .andThen(invoke_get_method_handle())                                           // MethodHandle
         .andThen(Expr.putstatic(_names.javaClass(cl),
                                 Names.METHOD_HANDLE_FIELD_NAME,
                                 Names.CT_JAVA_LANG_INVOKE_METHODHANDLE))
     );
+  }
+
+
+  private Expr libraryArray()
+  {
+    // NYI: get from options
+    var libs = new String[]{"sqlite3"};
+
+    var result = Expr
+        .iconst(libs.length)
+        .andThen(Types.JAVA_LANG_STRING.newArray());
+
+    for (int i = 0; i < libs.length; i++)
+      {
+        result = result
+          .andThen(Expr.DUP)                             // T[], T[]
+          .andThen(Expr.iconst(i))                       // T[], T[], idx
+          .andThen(Expr.stringconst(libs[i]))            // T[], T[], idx, data
+          .andThen(Types.JAVA_LANG_STRING.xastore());    // T[]
+      }
+    return result;
   }
 
 
@@ -1046,7 +1068,7 @@ should be avoided as much as possible.
     return Expr.invokeStatic(
       Names.RUNTIME_CLASS,
       "get_method_handle",
-      "(" + Names.JAVA_LANG_STRING.descriptor() + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor() + ")"
+      "(" + Names.JAVA_LANG_STRING.descriptor() + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor() + Types.JAVA_LANG_STRING.array().descriptor() + ")"
         + Names.CT_JAVA_LANG_INVOKE_METHODHANDLE.descriptor(),
       Names.CT_JAVA_LANG_INVOKE_METHODHANDLE);
   }

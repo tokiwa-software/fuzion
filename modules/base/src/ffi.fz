@@ -49,7 +49,5 @@ public ffi is
     array (fuzion.sys.internal_array T (c_array T x len) len) unit unit unit
 
 
-  # NYI: what else do we need? from_c_struct
-
 c_string_len(x fuzion.sys.Pointer) i32 => intrinsic
 c_array(T type, x fuzion.sys.Pointer, len i32) fuzion.sys.Pointer => intrinsic
