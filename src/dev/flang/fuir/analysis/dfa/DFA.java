@@ -1149,11 +1149,6 @@ public class DFA extends ANY
   public DfaFUIR new_fuir()
   {
     dfa();
-    var called = new TreeSet<Integer>();
-    for (var c : _calls.values())
-      {
-        called.add(c._cc);
-      }
     _options.timer("dfa");
     var res = new DfaFUIR((GeneratingFUIR) _fuir)
       {
@@ -1209,6 +1204,7 @@ public class DFA extends ANY
 
           return _escapesCode.contains(s);
         }
+
 
         @Override
         public boolean alwaysResultsInVoid(int s)
