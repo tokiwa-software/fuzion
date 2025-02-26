@@ -1572,7 +1572,7 @@ public class Runtime extends ANY
       }
     if (method == null)
       {
-        Errors.fatal("Runtime.fatal");
+        Errors.fatal("Runtime.upcall, could not find method " + ROUTINE_NAME + " in " + call.toString());
       }
 
     MethodHandle handle;
@@ -1580,7 +1580,19 @@ public class Runtime extends ANY
       {
         handle = MethodHandles.lookup().unreflect(method).bindTo(code);
         handle = MethodHandles
-          .explicitCastArguments(handle, MethodType.methodType(int.class, new Class[]{ MemorySegment.class, int.class, MemorySegment.class, MemorySegment.class }));
+          .explicitCastArguments(
+            handle,
+            MethodType.methodType(
+              handle
+                .type()
+                .returnType(),
+              handle
+                .type()
+                .parameterList()
+                .stream()
+                .map(c -> c.isPrimitive() ? c : MemorySegment.class)
+                .toArray(Class[]::new)
+            ));
 
         var desc = method.getReturnType() == void.class
           ? FunctionDescriptor.ofVoid(layout(handle.type().parameterArray()))
@@ -1601,7 +1613,7 @@ public class Runtime extends ANY
   public static int c_string_len(MemorySegment segment)
   {
     int length = 0;
-    segment = segment.reinterpret(10000);
+    segment = segment.reinterpret(10000 /* NYI: magic constant */);
 
     while (segment.get(ValueLayout.JAVA_BYTE, length) != 0)
       {
@@ -1612,41 +1624,42 @@ public class Runtime extends ANY
   }
 
 
+  // NYI: remove, replace by layout
   public static MemoryLayout layout2(String str)
   {
     if (str.equals("I"))
       {
-        return layout(int.class);
+        return ValueLayout.JAVA_INT;
       }
     else if (str.equals("B"))
       {
-        return layout(byte.class);
+        return ValueLayout.JAVA_BYTE;
       }
     else if (str.equals("Z"))
       {
-        return layout(boolean.class);
+        return ValueLayout.JAVA_BOOLEAN;
       }
     else if (str.equals("F"))
       {
-        return layout(float.class);
+        return ValueLayout.JAVA_FLOAT;
       }
     else if (str.equals("D"))
       {
-        return layout(double.class);
+        return ValueLayout.JAVA_DOUBLE;
       }
     else if (str.equals("S"))
       {
-        return layout(short.class);
+        return ValueLayout.JAVA_SHORT;
       }
     else if (str.equals("J"))
       {
-        return layout(long.class);
+        return ValueLayout.JAVA_LONG;
       }
     else if (str.equals("C"))
       {
-        return layout(char.class);
+        return ValueLayout.JAVA_CHAR;
       }
-    return layout(Object.class);
+    return ValueLayout.ADDRESS;
   }
 
   public static MemoryLayout layout(Class returnType)

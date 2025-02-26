@@ -635,13 +635,10 @@ public interface ClassFileConstants
     {
       return "ClassType('" + _descriptor + "')";
     }
-    public int cpIndex(ClassFile cf)
-    {
-      return cf.cpClass(this).index();
-    }
+
     public VerificationType vti()
     {
-      return new VerificationType(className(), (cf)->cpIndex(cf));
+      return new VerificationType(className(), (cf)->cf.cpClass(this).index());
     }
 
   }
