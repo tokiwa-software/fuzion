@@ -777,7 +777,9 @@ public class C extends ANY
           // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
           "-Wno-missing-include-dirs",
           // allow infinite recursion
-          "-Wno-infinite-recursion"
+          "-Wno-infinite-recursion",
+          // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
+          "-Wno-incompatible-function-pointer-types"
           );
 
         if (_options._cCompiler == null && clangVersion >= 13)
@@ -1971,7 +1973,22 @@ public class C extends ANY
 
 
   /*
+   * Generates code for a wrapper function in native
+   * functions that take callback arguments.
+   * Example:
    *
+   *     fzT_1i32 fzW_268437765(fzT_fuzion__sys_RPointer* arg0, fzT_1i32 arg1, fzT_fuzion__sys_RPointer* arg2, fzT_fuzion__sys_RPointer* arg3)
+   *     {
+   *       return fzC__L23151sqlite_u___b2__4call(fzW_native_outer,arg0,arg1,arg2,arg3);
+   *     }
+   *
+   * The function pointer is then passed to the native function
+   *
+   *     fzT_1i32 fzC__L23095sqlite3_u___H2_o_cb2(fzT_fuzion__sys_RPointer* arg0, fzT_fuzion__sys_RPointer* arg1, fzT__L23051sqlite_u___uery__cb2 arg2, fzT_fuzion__sys_RPointer* arg3, fzT_fuzion__sys_RPointer* arg4)
+   *     {
+   *       fzW_native_outer = (void *)&arg2;
+   *       return sqlite3_exec((void *)arg0,(void *)arg1,&fzW_268437765,(void *)arg3,(void *)arg4);
+   *     }
    */
   private CStmnt functionWrapperForNative(int cl)
   {
@@ -1982,27 +1999,38 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var i0 = i;
-        if (_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ)
+        var call = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
+        if (call != NO_CLAZZ)
           {
             l.add(
               new CStmnt() {
                 @Override
                 void code(CString sb)
                 {
-                  sb.append("int ");
+                  sb.append(_types.clazz(_fuir.clazzResultClazz(cl)));
+                  sb.append(" ");
                   CIdent.funWrapper(cl).code(sb);
-                  sb.append("(void * arg0, int arg1, char ** arg2, char ** arg3)\n{\n");
+                  sb.append("(");
+                  var args = new List<CExpr>(new CIdent("fzW_native_outer"));
+                  var argCountWrapper = _fuir.clazzArgCount(call);
+                  for (int j = 0; j < argCountWrapper; j++)
+                    {
+                      sb.append(_types.clazz(_fuir.clazzArgClazz(call, j)));
+                      sb.append(" ");
+                      sb.append("arg" + j);
+                      if (argCountWrapper-1 != j)
+                        {
+                          sb.append(", ");
+                        }
+                      args.add(new CIdent("arg" + j));
+                    }
+                  sb.append(")\n{\n");
                   CExpr
                     .call(
-                      _names.function(_fuir.lookupCall(_fuir.clazzArgClazz(cl, i0))),
-                      new List<>(new CIdent("fzW_native_outer"),
-                                 new CIdent("arg0"),
-                                 new CIdent("arg1"),
-                                 new CIdent("arg2").castTo("void *"),
-                                 new CIdent("arg3").castTo("void *")))
+                      _names.function(call),
+                      args)
                     .ret()
-                    .code(sb);
+                    .code(sb.indent());
                   sb.append(";\n}\n");
                 }
                 @Override boolean needsSemi() { return false; }
@@ -2012,6 +2040,7 @@ public class C extends ANY
 
     return CStmnt.seq(l);
   }
+
 
   /**
    * Create code for a given native clazz cl.
