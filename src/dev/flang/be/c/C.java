@@ -846,7 +846,7 @@ public class C extends ANY
           "-I" + JAVA_HOME + "/include/darwin",
           "-L" + JAVA_HOME + "/lib/server");
 
-       if (!isWindows())
+        if (!isWindows())
           {
             command.add("-ljvm");
           }
@@ -875,7 +875,6 @@ public class C extends ANY
       {
         command.addAll("-lgc");
       }
-
 
     if (_options._cLink != null)
       {
