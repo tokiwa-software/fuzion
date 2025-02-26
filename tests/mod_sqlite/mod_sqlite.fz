@@ -66,12 +66,22 @@ public mod_sqlite =>
       ref : Database path
         redef query(q String, cb Function i32 (Sequence String)) outcome unit =>
 
+          str := "some string"
+
           cb2 : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer is
             redef call(_ fuzion.sys.Pointer, len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
+
+              // str is called via outer reference:
+              // this tests if the outerref is correctly
+              // passed through:
+              say str
+
               ct := ffi.from_array fuzion.sys.Pointer column_text len
               cn := ffi.from_array fuzion.sys.Pointer column_name len
+
               data => (cn.map (t -> ffi.from_c_string t))
                 .zip (ct.map (t -> ffi.from_c_string t)) x,y->"$x => $y"
+
               cb data
 
           # NYI: HACK: so that DFA marks this as used
