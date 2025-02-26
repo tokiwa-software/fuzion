@@ -21,79 +21,105 @@
 #
 # -----------------------------------------------------------------------
 
-public mod_sqlite =>
 
-  # int sqlite3_open(
-  #   const char *filename,   /* Database filename (UTF-8) */
-  #   sqlite3 **ppDb          /* OUT: SQLite db handle */
-  # );
-  #
-  sqlite3_open(filename fuzion.sys.Pointer, db fuzion.sys.Pointer) i32 => native
+# int sqlite3_open(
+#   const char *filename,   /* Database filename (UTF-8) */
+#   sqlite3 **ppDb          /* OUT: SQLite db handle */
+# );
+#
+sqlite3_open(filename fuzion.sys.Pointer, db fuzion.sys.Pointer) i32 => native
 
-  # int sqlite3_exec(
-  #   sqlite3*,                                  /* An open database */
-  #   const char *sql,                           /* SQL to be evaluated */
-  #   int (*callback)(void*,int,char**,char**),  /* Callback function */
-  #   void *,                                    /* 1st argument to callback */
-  #   char **errmsg                              /* Error msg written here */
-  # );
-  #
-  sqlite3_exec(F type : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer, db fuzion.sys.Pointer, sql fuzion.sys.Pointer, callback F, arg fuzion.sys.Pointer, errmsg fuzion.sys.Pointer) i32 => native
+# int sqlite3_exec(
+#   sqlite3*,                                  /* An open database */
+#   const char *sql,                           /* SQL to be evaluated */
+#   int (*callback)(void*,int,char**,char**),  /* Callback function */
+#   void *,                                    /* 1st argument to callback */
+#   char **errmsg                              /* Error msg written here */
+# );
+#
+sqlite3_exec(F type : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer, db fuzion.sys.Pointer, sql fuzion.sys.Pointer, callback F, arg fuzion.sys.Pointer, errmsg fuzion.sys.Pointer) i32 => native
 
-
-  # helper to convert fuzion String to a c-string with \0 byte at end.
-  #
-  String.as_c_string =>
-    (String.this + codepoint 0).utf8.as_array.as_pointer
+# int sqlite3_close(sqlite3*);
+#
+sqlite3_close(db fuzion.sys.Pointer) i32 => native
 
 
-  # definition of a database API
-  #
-  public Database(name String) ref is
+sqlite_database(db fuzion.sys.Pointer) : Database is
 
-    # exeute a query
-    public query(q String, cb Function i32 (Sequence String)) outcome unit => abstract
+  redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
 
-    # NYI: close
+    str := "some string, accessed via outer reference"
+
+    cb2 : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer is
+      redef call(_ fuzion.sys.Pointer, len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
+
+        // str is called via outer reference:
+        // this tests if the outerref is correctly
+        // passed through:
+        say str
+
+        ct := ffi.from_array fuzion.sys.Pointer column_text len
+        cn := ffi.from_array fuzion.sys.Pointer column_name len
+
+        data => (cn.map (t -> ffi.from_c_string t))
+          .zip (ct.map (t -> ffi.from_c_string t)) x,y->(x,y)
+
+        cb data
+
+    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null].as_pointer = 0
+      unit
+    else
+      error "error executing query $q"
 
 
-  public open(path String) outcome Database =>
+  redef close outcome unit =>
+    # NYI: proper error handling
+    check sqlite3_close db = 0
+    unit
 
+
+  redef type.open(path String) outcome Database =>
     db := [ffi.null]
-
     if sqlite3_open path.as_c_string db.as_pointer = 0
       check !(ffi.is_null db[0])
-      ref : Database path
-        redef query(q String, cb Function i32 (Sequence String)) outcome unit =>
-
-          str := "some string"
-
-          cb2 : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer is
-            redef call(_ fuzion.sys.Pointer, len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
-
-              // str is called via outer reference:
-              // this tests if the outerref is correctly
-              // passed through:
-              say str
-
-              ct := ffi.from_array fuzion.sys.Pointer column_text len
-              cn := ffi.from_array fuzion.sys.Pointer column_name len
-
-              data => (cn.map (t -> ffi.from_c_string t))
-                .zip (ct.map (t -> ffi.from_c_string t)) x,y->"$x => $y"
-
-              cb data
-
-          if sqlite3_exec db[0] q.as_c_string cb2 ffi.null [ffi.null].as_pointer = 0
-            unit
-          else
-            error "error executing query $q"
-
+      sqlite_database db[0]
     else
       error "could not open database"
 
-  _ := (open "test.db").bind unit db->
+
+
+# helper to convert fuzion String to a c-string with \0 byte at end.
+#
+String.as_c_string =>
+  (String.this + codepoint 0).utf8.as_array.as_pointer
+
+
+# definition of a database API
+#
+public Database ref is
+
+  # exeute a query
+  #
+  public query(q String, cb Function i32 (Sequence (String, String))) outcome unit => abstract
+
+  # close database
+  #
+  public close outcome unit => abstract
+
+  # open a dabase
+  #
+  public type.open(str String) outcome Database => abstract
+
+
+mod_sqlite =>
+
+  _ := (sqlite_database.open "test.db").bind unit db->
     db.query "select * from table_name;" res->
-      say res
+      say (res.map t->"{t.0} => {t.1}")
       0
 
+    # NYI: proper error handling
+    # check qr.ok
+    # check db.close.ok
+
+mod_sqlite
