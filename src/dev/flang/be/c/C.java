@@ -840,8 +840,6 @@ public class C extends ANY
 
     command.addAll(cf.fileName());
 
-    command.add("-lsqlite3");
-
     if (linkJVM())
       {
         command.addAll(
