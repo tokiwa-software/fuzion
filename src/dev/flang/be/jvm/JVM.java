@@ -452,15 +452,6 @@ should be avoided as much as possible.
     // compile
     CODE
     {
-      void prepare(JVM jvm)
-      {
-        Errors.showAndExit();
-        jvm._runner = new Runner(()->jvm._names.methodNameToFuzionClazzNames());
-        if (!jvm._options.enableUnsafeIntrinsics())
-          {
-            Runtime.disableUnsafeIntrinsics();
-          }
-      }
       void compile(JVM jvm, int cl)
       {
         var k = jvm._fuir.clazzKind(cl);
@@ -480,6 +471,15 @@ should be avoided as much as possible.
       boolean condition(JVM jvm)
       {
         return jvm._options._run;
+      }
+      void prepare(JVM jvm)
+      {
+        Errors.showAndExit();
+        jvm._runner = new Runner(()->jvm._names.methodNameToFuzionClazzNames());
+        if (!jvm._options.enableUnsafeIntrinsics())
+          {
+            Runtime.disableUnsafeIntrinsics();
+          }
       }
       void compile(JVM jvm, int cl)
       {
