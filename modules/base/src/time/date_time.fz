@@ -23,8 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
-#
-# Represents a coordinated universal date and time (UTC) in the gregorian calendar.
+# Represents a date and a time in the Gregorian calendar, without any specification of
+# a time zone or reference point.
 #
 public date_time(public year, day_in_year, hour, minute, second, nano_second i32) : property.orderable
 pre
@@ -84,13 +84,12 @@ is
     nano_second / 1E6
 
 
-  # returns ISO 8601 UTC string, precision millisecond
-  # example: 2018-09-14T23:59:59.079Z
+  # ISO 8601 string for this datetime
+  # example: 2018-09-14T23:59:59.079
   #
   public redef as_string String =>
     "{year.as_string 2 10}-{month.as_string 2 10}-{day_of_month.as_string 2 10}" +
-      "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}Z"
-
+      "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}"
 
 
   # # NYI
