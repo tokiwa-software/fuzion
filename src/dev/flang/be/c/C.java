@@ -2001,9 +2001,9 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var call = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
-        if (call != NO_CLAZZ)
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
           {
+            var call = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
             l.add(
               new CStmnt() {
                 @Override
@@ -2076,8 +2076,7 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ;
-        if (isCall)
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
           {
             res.add(
               new CIdent("fzW_native_outer").assign(CIdent.arg(i).adrOf().castTo("void *"))
@@ -2087,10 +2086,14 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ;
-        var arg = isCall
+        var c = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
+        var arg = c != NO_CLAZZ
           // 1. pass as function pointer
-          ? CIdent.funWrapper(cl).adrOf()
+          ? (_fuir.clazzOuterRef(c) != NO_CLAZZ
+              // 1.1 needs outer ref
+              ? CIdent.funWrapper(cl).adrOf()
+              // 1.2 does not need outer ref
+              : new CIdent(_names.function(c)).adrOf())
           : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
           // 2. pass as ref
           ? CIdent.arg(i).castTo("void *")
@@ -2127,14 +2130,25 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ;
-        if (isCall)
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
           {
             res.add(new CIdent("fzW_native_outer").assign(CNames.NULL));
           }
       }
 
     return CStmnt.seq(res);
+  }
+
+
+  /**
+   * Is cl a lambda - inheriting from Function -
+   * and {@code call} needs and outer reference
+   * passed in?
+   */
+  private boolean isLambdaWithOuterRef(int cl)
+  {
+    var c = _fuir.lookupCall(cl);
+    return c != NO_CLAZZ && _fuir.clazzOuterRef(c) != NO_CLAZZ;
   }
 
 

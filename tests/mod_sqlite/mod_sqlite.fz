@@ -44,6 +44,8 @@ sqlite3_exec(F type : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuz
 sqlite3_close(db fuzion.sys.Pointer) i32 => native
 
 
+
+
 sqlite_database(db fuzion.sys.Pointer) : Database is
 
   redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
@@ -78,7 +80,7 @@ sqlite_database(db fuzion.sys.Pointer) : Database is
     unit
 
 
-  redef type.open(path String) outcome Database =>
+  type.open(path String) outcome Database =>
     db := [ffi.null]
     if sqlite3_open path.as_c_string db.as_pointer = 0
       check !(ffi.is_null db[0])
@@ -94,6 +96,7 @@ String.as_c_string =>
   (String.this + codepoint 0).utf8.as_array.as_pointer
 
 
+
 # definition of a database API
 #
 public Database ref is
@@ -106,9 +109,36 @@ public Database ref is
   #
   public close outcome unit => abstract
 
-  # open a dabase
-  #
-  public type.open(str String) outcome Database => abstract
+
+
+sqlite_database2(db fuzion.sys.Pointer) : Database is
+  redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
+
+    cb2 : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer is
+      redef call(_ fuzion.sys.Pointer, len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
+        say len
+        0
+
+    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null].as_pointer = 0
+      unit
+    else
+      error "error executing query $q"
+
+
+
+  redef close outcome unit =>
+    # NYI: proper error handling
+    check sqlite3_close db = 0
+    unit
+
+
+  type.open(path String) outcome Database =>
+    db := [ffi.null]
+    if sqlite3_open path.as_c_string db.as_pointer = 0
+      check !(ffi.is_null db[0])
+      sqlite_database2 db[0]
+    else
+      error "could not open database"
 
 
 mod_sqlite =>
@@ -121,5 +151,10 @@ mod_sqlite =>
     # NYI: proper error handling
     # check qr.ok
     # check db.close.ok
+
+  _ := (sqlite_database2.open "test.db").bind unit db->
+    db.query "select * from table_name;" res->
+      say (res.map t->"{t.0} => {t.1}")
+      0
 
 mod_sqlite

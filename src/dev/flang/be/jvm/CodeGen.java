@@ -581,9 +581,7 @@ class CodeGen
         {
           var invokeDescr = "("
             + args.stream()
-                .map(arg -> arg.type().isPrimitive()
-                              ? arg.type().descriptor()
-                              : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor())
+                .map(arg -> nativeArgDescriptor(arg))
                 .collect(Collectors.joining())
             + ")"
             + _types.javaType(rt).descriptor();
@@ -675,6 +673,20 @@ class CodeGen
   }
 
 
+  private String nativeArgDescriptor(Expr arg)
+  {
+    return
+      arg.type() == PrimitiveType.type_void
+        // case 1: a function callback
+        ? Names.JAVA_LANG_OBJECT.descriptor()
+        : arg.type().isPrimitive()
+        // case 2: a primitive
+        ? arg.type().descriptor()
+        // case 3: a "pointer" to a memory segment
+        : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor();
+  }
+
+
   /**
    * invoke memorySegment2Obj for any of the args that are not primitives
    */
@@ -719,7 +731,7 @@ class CodeGen
         if (call != NO_CLAZZ)
           {
             result = result
-              .andThen(upcall(args.get(i), call));
+              .andThen(upcall(_fuir.clazzOuterRef(call) != NO_CLAZZ ? args.get(i) : Expr.ACONST_NULL, call));
           }
         else if (args.get(i).type().isPrimitive())
           {

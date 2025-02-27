@@ -1560,7 +1560,7 @@ public class Runtime extends ANY
   }
 
 
-  public static MemorySegment upcall(Any code, Class call)
+  public static MemorySegment upcall(Any outerRef, Class call)
   {
     Method method = null;
     for (var m : call.getDeclaredMethods())
@@ -1578,7 +1578,11 @@ public class Runtime extends ANY
     MethodHandle handle;
     try
       {
-        handle = MethodHandles.lookup().unreflect(method).bindTo(code);
+        handle = MethodHandles.lookup().unreflect(method);
+        if (outerRef != null)
+          {
+            handle = handle.bindTo(outerRef);
+          }
         handle = MethodHandles
           .explicitCastArguments(
             handle,
