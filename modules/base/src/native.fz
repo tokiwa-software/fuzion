@@ -21,18 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-# all native features
-
-
-# NYI: void * fzE_malloc_safe(size_t size);
-
-
-# NYI: void fzE_memset(void *dest, int ch, size_t sz);
-
-
-# NYI: void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
-
-
 # returns the latest error number of
 # the current thread
 #
@@ -192,12 +180,6 @@ module fzE_mmap(fd fuzion.sys.Pointer, offset, size i64, res fuzion.sys.Pointer)
 module fzE_munmap(address fuzion.sys.Pointer, size i64) i32 => native
 
 
-# NYI: bool fzE_bitwise_compare_float(float f1, float f2);
-
-
-# NYI: bool fzE_bitwise_compare_double(double d1, double d2);
-
-
 # no guarantee can be given for precision nor resolution
 module fzE_nanotime u64 => native
 
@@ -231,21 +213,6 @@ module fzE_stat(
 # the meta_data array will contain the errno for the lstat call.
 #
 module fzE_lstat(path fuzion.sys.Pointer, meta_data fuzion.sys.Pointer) i32 => native # NYI behaves the same as stats in the interpreter
-
-
-# NYI: void fzE_init(void);
-
-
-# NYI: int64_t fzE_thread_create(void *(*code)(void *),void *restrict);
-
-
-# NYI: void fzE_thread_join(int64_t thrd);
-
-
-# NYI: void fzE_lock(void);
-
-
-# NYI: void fzE_unlock(void);
 
 
 # create a new process
@@ -416,116 +383,6 @@ module fzE_mapped_buffer_set
   ) unit => native
 
 
-
-
-# NYI: typedef struct fzE_jvm_result fzE_jvm_result;
-
-
-# NYI: struct fzE_jvm_result
-
-
-# NYI: void fzE_create_jvm(char * option_string);
-
-
-# NYI: void fzE_destroy_jvm(void);
-
-
-# NYI: const char * fzE_java_string_to_utf8_bytes(jstring jstr);
-
-
-# NYI: jvalue fzE_f32_to_java_object(double arg);
-
-
-# NYI: jvalue fzE_f64_to_java_object(float arg);
-
-
-# NYI: jvalue fzE_i8_to_java_object(int8_t arg);
-
-
-# NYI: jvalue fzE_i16_to_java_object(int16_t arg);
-
-
-# NYI: jvalue fzE_u16_to_java_object(uint16_t arg);
-
-
-# NYI: jvalue fzE_i32_to_java_object(int32_t arg);
-
-
-# NYI: jvalue fzE_i64_to_java_object(int64_t arg);
-
-
-# NYI: jvalue fzE_bool_to_java_object(bool arg);
-
-
-# NYI: fzE_jvm_result fzE_call_c0(jstring class_name, jstring signature, jvalue *args);
-
-
-# NYI: fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, jvalue *args);
-
-
-# NYI: fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, jobject thiz, jvalue *args);
-
-
-# NYI: jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length);
-
-
-# NYI: bool fzE_java_object_is_null(jobject jobj);
-
-
-# NYI: int32_t fzE_array_length(jarray array);
-
-
-# NYI: jvalue fzE_array_to_java_object0(jsize length, jvalue *args, const char * element_class_name);
-
-
-# NYI: jvalue fzE_array_get(jarray array, jsize index, const char *sig);
-
-
-# NYI: jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
-
-
-# NYI: jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig);
-
-
-# NYI: jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
-
-
-# NYI: jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig);
-
-
-
-
-
-# NYI: void *  fzE_mtx_init     (void);
-
-
-# NYI: int32_t fzE_mtx_lock     (void * mtx);
-
-
-# NYI: int32_t fzE_mtx_trylock  (void * mtx);
-
-
-# NYI: int32_t fzE_mtx_unlock   (void * mtx);
-
-
-# NYI: void    fzE_mtx_destroy  (void * mtx);
-
-
-# NYI: void *  fzE_cnd_init     (void);
-
-
-# NYI: int32_t fzE_cnd_signal   (void * cnd);
-
-
-# NYI: int32_t fzE_cnd_broadcast(void * cnd);
-
-
-# NYI: int32_t fzE_cnd_wait     (void * cnd, void * mtx);
-
-
-# NYI: void    fzE_cnd_destroy  (void * cnd);
-
-
 # intrinsic to get a unique id > 0
 #
 # this can be used to add a unique identifier to compare instances.
@@ -538,7 +395,9 @@ module fzE_mapped_buffer_set
 module fzE_unique_id u64 => native
 
 
-# NYI: void fzE_date_time(void * result);
+# fills arg with current UTC date time
+#
+module fzE_date_time(a fuzion.sys.Pointer) unit => native
 
 
 module fzE_null fuzion.sys.Pointer => native
