@@ -1464,7 +1464,7 @@ public class Runtime extends ANY
   }
 
 
-  public static Object c_array(MemoryLayout memLayout, Object obj, int length)
+  public static Object native_array(MemoryLayout memLayout, Object obj, int length)
   {
     // NYI: remove this if else, once DFA knows hwo to trigger call of callback
     if (obj instanceof Object[])
@@ -1610,7 +1610,7 @@ public class Runtime extends ANY
   }
 
 
-  public static int c_string_len(MemorySegment segment)
+  public static int native_string_length(MemorySegment segment)
   {
     int length = 0;
     segment = segment.reinterpret(10000 /* NYI: magic constant */);

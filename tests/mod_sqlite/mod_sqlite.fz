@@ -58,11 +58,11 @@ sqlite_database(db fuzion.sys.Pointer) : Database is
         // passed through:
         say str
 
-        ct := ffi.from_array fuzion.sys.Pointer column_text len
-        cn := ffi.from_array fuzion.sys.Pointer column_name len
+        ct := ffi.from_native_array fuzion.sys.Pointer column_text len
+        cn := ffi.from_native_array fuzion.sys.Pointer column_name len
 
-        data => (cn.map (t -> ffi.from_c_string t))
-          .zip (ct.map (t -> ffi.from_c_string t)) x,y->(x,y)
+        data => (cn.map (t -> ffi.from_native_string t))
+          .zip (ct.map (t -> ffi.from_native_string t)) x,y->(x,y)
 
         cb data
 

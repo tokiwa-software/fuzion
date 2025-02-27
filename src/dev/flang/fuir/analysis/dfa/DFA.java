@@ -2360,12 +2360,12 @@ public class DFA extends ANY
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
         return Value.UNIT;
       });
-    put("c_string_len"                      , cl ->
+    put("native_string_length"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
         return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
       });
-    put("c_array"                           , cl ->
+    put("native_array"                      , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 1));

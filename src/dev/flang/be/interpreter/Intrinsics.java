@@ -831,11 +831,11 @@ public class Intrinsics extends ANY
         }
     });
     put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> executor.unitValue());
-    put("c_string_len", (executor, innerClazz) -> args -> {
-      throw new UnsupportedOperationException("NYI: c_string_len");
+    put("native_string_length", (executor, innerClazz) -> args -> {
+      throw new UnsupportedOperationException("NYI: native_string_length");
     });
-    put("c_array", (executor, innerClazz) -> args -> {
-      throw new UnsupportedOperationException("NYI: c_array");
+    put("native_array", (executor, innerClazz) -> args -> {
+      throw new UnsupportedOperationException("NYI: native_array");
     });
   }
 

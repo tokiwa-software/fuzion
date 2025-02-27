@@ -1032,7 +1032,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         return new Pair<>(val, code);
       });
 
-    put("c_string_len",
+    put("native_string_length",
       (jvm, si, cc, tvalue, args) ->
       {
         return new Pair<>
@@ -1040,14 +1040,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(Expr
               .invokeStatic(
                 Names.RUNTIME_CLASS,
-                "c_string_len",
+                "native_string_length",
                 "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() +  ")I",
                 PrimitiveType.type_int
               ))
           , Expr.UNIT);
       });
 
-    put("c_array",
+    put("native_array",
       (jvm, si, cc, tvalue, args) ->
       {
         return new Pair<>
@@ -1065,7 +1065,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                    .andThen(args.get(1))
                     // java.lang.Class
                    .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                              "c_array",
+                                              "native_array",
                                               "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "I)" + Types.JAVA_LANG_OBJECT.descriptor(),
                                               Types.JAVA_LANG_OBJECT)),
                Expr.UNIT
