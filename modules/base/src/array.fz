@@ -90,7 +90,7 @@ module:public array(
     internal_array.data
 
 
-  # create an empty array
+  # create an empty array of type T
   #
   public fixed type.empty array T =>
     array (fuzion.sys.internal_array_init T 0) unit unit unit
