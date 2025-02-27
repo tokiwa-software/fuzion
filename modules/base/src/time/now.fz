@@ -38,6 +38,12 @@ public now (p () -> time.date_time) : effect is
   # returns the current date_time
   # the system is giving us.
   #
+  # this default handler fills the result with the UTC time of
+  # the current system.
+  #
+  # NYI since Fuzion does not properly support datetimes with
+  # timezones, these results need to be handled with care.
+  #
   type.default_now ()->time.date_time => () ->
 
     a := fuzion.sys.internal_array_init i32 6
