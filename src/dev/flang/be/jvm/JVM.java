@@ -1020,7 +1020,7 @@ should be avoided as much as possible.
   private Expr libraryArray()
   {
     // NYI: get from options
-    var libs = new String[]{"sqlite3"};
+    var libs = new String[]{"sqlite3", "clang-16"};
 
     var result = Expr
         .iconst(libs.length)
@@ -1143,8 +1143,9 @@ should be avoided as much as possible.
             }
           else
             {
-              Errors.fatal("NYI: CodeGen.layout " + _fuir.clazzAsString(c));
-              yield null;
+              // NYI: UNDER DEVELOPMENT:
+              yield Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+                                   new ClassType("java/lang/foreign/AddressLayout"));
             }
         }
       };

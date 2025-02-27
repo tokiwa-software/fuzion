@@ -398,6 +398,10 @@ public class Value extends Val
       {
         return this;
       }
+    else if (v instanceof SysArray sa)
+      {
+        return sa.joinInstances(dfa, this, clazz);
+      }
     else
       {
         return joinInstances(dfa, v, clazz);

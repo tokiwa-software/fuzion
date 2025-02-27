@@ -103,7 +103,11 @@ public class SysArray extends Value
       {
         ne = _elements.join(_dfa, el, _elementClazz);
       }
-    if (_elements == null || Value.compare(_elements, ne) != 0)
+    if (_dfa._fuir.clazzIs(_elementClazz, SpecialClazzes.c_sys_ptr))
+      {
+        _elements = ne;
+      }
+    else if (_elements == null || Value.compare(_elements, ne) != 0)
       {
         _dfa.wasChanged(() -> "elements of SysArray changed: " + _elements + " =>" + ne);
         _elements = ne;
