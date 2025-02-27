@@ -86,6 +86,12 @@ module:public array(
     array.this
 
 
+  # create an empty array of type T
+  #
+  public fixed type.empty array T =>
+    array (fuzion.sys.internal_array_init T 0) unit unit unit
+
+
   # array -- create initialized one-dimensional immutable array
   #
   public type.new(length i32, init i32 -> T) array T
