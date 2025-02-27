@@ -100,6 +100,17 @@ public class CTypes extends ANY
 
 
   /**
+   * if !hasData(rc) => void
+   * otherwise
+   * the type of a value of the given clazz.
+   */
+  public String resultClazz(int rc)
+  {
+    return _fuir.hasData(rc) ? clazz(rc) : "void";
+  }
+
+
+  /**
    * The type of a field.  This is the usually the same as clazz() of
    * the field's result clazz, except for outer refs for which
    * clazzFieldIsAdrOfValue, where it is a pointer to that type.
