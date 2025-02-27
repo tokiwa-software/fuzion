@@ -1217,6 +1217,8 @@ public class C extends ANY
     var s = new CIdent("sz");
     var r = new CIdent("r");
 
+    // NYI: UNDER DEVELOPMENT: use libffi instead of storing the outer
+    // reference in a thread local variable?
     cf.println("_Thread_local void * fzW_native_outer = NULL;");
 
     cf.print
@@ -2026,6 +2028,12 @@ public class C extends ANY
                     }
                   sb.append(")\n{\n");
                   CExpr
+                    .iff(
+                      new CIdent("fzW_native_outer").eq(CNames.NULL),
+                      reportErrorInCode0("Misuse of native callback detected, outer reference is NULL.")
+                    )
+                    .code(sb.indent());
+                  CExpr
                     .call(
                       _names.function(call),
                       args)
@@ -2063,6 +2071,8 @@ public class C extends ANY
     */
 
     var res = new List<CStmnt>();
+
+    checkNumCallsMaxOne(cl);
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
@@ -2114,7 +2124,38 @@ public class C extends ANY
       };
 
     res.add(o);
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ;
+        if (isCall)
+          {
+            res.add(new CIdent("fzW_native_outer").assign(CNames.NULL));
+          }
+      }
+
     return CStmnt.seq(res);
+  }
+
+
+  /**
+   * NYI: UNDER DEVELOPMENT: remove this implementation restriction
+   */
+  @Deprecated
+  private void checkNumCallsMaxOne(int cl)
+  {
+    var numCalls = 0;
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        if (_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ)
+          {
+            numCalls++;
+          }
+      }
+    if (numCalls > 1)
+      {
+        Errors.fatal("Implementation restriction: maximum number of callbacks in native is currently one.");
+      }
   }
 
 
