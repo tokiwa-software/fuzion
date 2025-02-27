@@ -1858,8 +1858,7 @@ public class C extends ANY
   private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = _fuir.hasData(res) ? _types.clazz(res)
-                                        : "void";
+    var resultType = _types.resultClazz(res);
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
@@ -2004,12 +2003,13 @@ public class C extends ANY
         if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
           {
             var call = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
+            var rc = _fuir.clazzResultClazz(call);
             l.add(
               new CStmnt() {
                 @Override
                 void code(CString sb)
                 {
-                  sb.append(_types.clazz(_fuir.clazzResultClazz(cl)));
+                  sb.append(_types.resultClazz(rc));
                   sb.append(" ");
                   CIdent.funWrapper(cl).code(sb);
                   sb.append("(");
@@ -2033,12 +2033,15 @@ public class C extends ANY
                       reportErrorInCode0("Misuse of native callback detected, outer reference is NULL.")
                     )
                     .code(sb.indent());
-                  CExpr
-                    .call(
-                      _names.function(call),
-                      args)
-                    .ret()
-                    .code(sb.indent());
+                  var c = CExpr.call(_names.function(call), args);
+                  if (_fuir.hasData(rc))
+                    {
+                      c.ret().code(sb.indent());
+                    }
+                  else
+                    {
+                      c.code(sb.indent());
+                    }
                   sb.append(";\n}\n");
                 }
                 @Override boolean needsSemi() { return false; }
