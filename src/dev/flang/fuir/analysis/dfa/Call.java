@@ -361,6 +361,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         case c_bool                    -> _dfa.bool();
         case c_String                  -> _dfa.newConstString(null, this);
         case c_sys_ptr                 -> _dfa.newInstance(_dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), _site, _context);
+        case c_File_Descriptor         -> _dfa.newInstance(rc, _site, _context);
         default                        ->
           _dfa._fuir.clazzIsUnitType(rc)
             ? Value.UNIT
