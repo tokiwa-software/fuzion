@@ -355,6 +355,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case c_u64     -> ValueLayout.JAVA_LONG;
       case c_sys_ptr -> ValueLayout.ADDRESS;
       case c_File_Descriptor -> ValueLayout.ADDRESS;
+      case c_Directory_Descriptor -> ValueLayout.ADDRESS;
       default -> {
         Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
         yield null;

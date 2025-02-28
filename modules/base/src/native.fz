@@ -49,7 +49,7 @@ module fzE_mkdir(
 # opaque reference to the opened directory in its first field, and an integer that is
 # not 0 in case of an error in its second field.
 #
-module fzE_opendir(path fuzion.sys.Pointer, open_results fuzion.sys.Pointer) fuzion.sys.Pointer => native
+module fzE_opendir(path fuzion.sys.Pointer, open_results fuzion.sys.Pointer) Directory_Descriptor => native
 
 
 # reads the next entry of the directory given by fuzion.sys.Pointer
@@ -57,7 +57,7 @@ module fzE_opendir(path fuzion.sys.Pointer, open_results fuzion.sys.Pointer) fuz
 #
 # returns -1 on error, 0 on end reached, length of result on success
 #
-module fzE_read_dir(ptr fuzion.sys.Pointer, res fuzion.sys.Pointer) i32 => native
+module fzE_read_dir(dd Directory_Descriptor, res fuzion.sys.Pointer) i32 => native
 
 
 # closes the directory given by opaque integer reference to an open
@@ -65,7 +65,7 @@ module fzE_read_dir(ptr fuzion.sys.Pointer, res fuzion.sys.Pointer) i32 => nativ
 #
 # returns 0 on success, something else on failure.
 #
-module fzE_close_dir(ptr fuzion.sys.Pointer) i32 => native
+module fzE_close_dir(dd Directory_Descriptor) i32 => native
 
 
 # 0 = blocking, 1 = none_blocking

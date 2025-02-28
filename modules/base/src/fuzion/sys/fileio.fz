@@ -176,7 +176,7 @@ module fileio is
   # returns an integer that is intended to be used as an opaque reference
   # to the opened directory, or an error if one was encountered.
   #
-  module open_dir(path String) outcome fuzion.sys.Pointer =>
+  module open_dir(path String) outcome Directory_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
     res := fzE_opendir (fuzion.sys.c_string path) open_results.data
     if open_results[0] = 0
