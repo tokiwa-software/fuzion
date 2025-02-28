@@ -2306,10 +2306,12 @@ public class DFA extends ANY
 
     put("concur.sync.mtx_init"              , cl ->
       {
+        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
-                       fuir(cl).clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(fuir(cl).clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       rc,
+                       cl._dfa.newInstance(ag, NO_SITE, cl._context));
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
@@ -2334,10 +2336,12 @@ public class DFA extends ANY
     put("concur.sync.cnd_init"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
-                       fuir(cl).clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(fuir(cl).clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       rc,
+                       cl._dfa.newInstance(ag, NO_SITE, cl._context));
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
