@@ -1020,7 +1020,7 @@ should be avoided as much as possible.
   private Expr libraryArray()
   {
     // NYI: get from options
-    var libs = new String[]{"sqlite3", "clang-16"};
+    var libs = new String[]{"sqlite3", /* NYI: "clang-16" */};
 
     var result = Expr
         .iconst(libs.length)
