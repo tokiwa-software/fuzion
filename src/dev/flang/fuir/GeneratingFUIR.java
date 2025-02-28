@@ -408,6 +408,10 @@ public class GeneratingFUIR extends FUIR
               case "fuzion"                    -> SpecialClazzes.c_fuzion      ;
               case "fuzion.sys"                -> SpecialClazzes.c_fuzion_sys  ;
               case "fuzion.sys.Pointer"        -> SpecialClazzes.c_sys_ptr     ;
+              case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
+              case "Condition"                 -> SpecialClazzes.c_Condition   ;
+              case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
+              case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)
