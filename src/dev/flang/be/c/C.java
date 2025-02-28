@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -775,7 +777,10 @@ public class C extends ANY
           // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
           "-Wno-missing-include-dirs",
           // allow infinite recursion
-          "-Wno-infinite-recursion");
+          "-Wno-infinite-recursion",
+          // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
+          "-Wno-incompatible-function-pointer-types"
+          );
 
         if (_options._cCompiler == null && clangVersion >= 13)
           {
@@ -1211,6 +1216,11 @@ public class C extends ANY
     var o = new CIdent("of");
     var s = new CIdent("sz");
     var r = new CIdent("r");
+
+    // NYI: UNDER DEVELOPMENT: use libffi instead of storing the outer
+    // reference in a thread local variable?
+    cf.println("_Thread_local void * fzW_native_outer = NULL;");
+
     cf.print
       (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
     cf.print
@@ -1848,8 +1858,7 @@ public class C extends ANY
   private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = _fuir.hasData(res) ? _types.clazz(res)
-                                        : "void";
+    var resultType = _types.resultClazz(res);
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
@@ -1912,7 +1921,11 @@ public class C extends ANY
           {
             case Routine -> codeForRoutine(cl);
             case Intrinsic -> _intrinsics.code(this, cl);
-            case Native -> codeForNative(cl);
+            case Native ->
+              {
+                l.add(functionWrapperForNative(cl));
+                yield codeForNative(cl);
+              }
             default -> null;
           };
         if (o != null)
@@ -1960,6 +1973,86 @@ public class C extends ANY
   }
 
 
+  /*
+   * Generates code for a wrapper function in native
+   * functions that take callback arguments.
+   * Example:
+   *
+   *     fzT_1i32 fzW_268437765(fzT_fuzion__sys_RPointer* arg0, fzT_1i32 arg1, fzT_fuzion__sys_RPointer* arg2, fzT_fuzion__sys_RPointer* arg3)
+   *     {
+   *       return fzC__L23151sqlite_u___b2__4call(fzW_native_outer,arg0,arg1,arg2,arg3);
+   *     }
+   *
+   * The function pointer is then passed to the native function
+   *
+   *     fzT_1i32 fzC__L23095sqlite3_u___H2_o_cb2(fzT_fuzion__sys_RPointer* arg0, fzT_fuzion__sys_RPointer* arg1, fzT__L23051sqlite_u___uery__cb2 arg2, fzT_fuzion__sys_RPointer* arg3, fzT_fuzion__sys_RPointer* arg4)
+   *     {
+   *       fzW_native_outer = (void *)&arg2;
+   *       return sqlite3_exec((void *)arg0,(void *)arg1,&fzW_268437765,(void *)arg3,(void *)arg4);
+   *     }
+   */
+  private CStmnt functionWrapperForNative(int cl)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Native);
+
+    var l = new List<CStmnt>();
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
+          {
+            var call = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
+            var rc = _fuir.clazzResultClazz(call);
+            l.add(
+              new CStmnt() {
+                @Override
+                void code(CString sb)
+                {
+                  sb.append(_types.resultClazz(rc));
+                  sb.append(" ");
+                  CIdent.funWrapper(cl).code(sb);
+                  sb.append("(");
+                  var args = new List<CExpr>(new CIdent("fzW_native_outer"));
+                  var argCountWrapper = _fuir.clazzArgCount(call);
+                  for (int j = 0; j < argCountWrapper; j++)
+                    {
+                      sb.append(_types.clazz(_fuir.clazzArgClazz(call, j)));
+                      sb.append(" ");
+                      sb.append("arg" + j);
+                      if (argCountWrapper-1 != j)
+                        {
+                          sb.append(", ");
+                        }
+                      args.add(new CIdent("arg" + j));
+                    }
+                  sb.append(")\n{\n");
+                  CExpr
+                    .iff(
+                      new CIdent("fzW_native_outer").eq(CNames.NULL),
+                      reportErrorInCode0("Misuse of native callback detected, outer reference is NULL.")
+                    )
+                    .code(sb.indent());
+                  var c = CExpr.call(_names.function(call), args);
+                  if (_fuir.hasData(rc))
+                    {
+                      c.ret().code(sb.indent());
+                    }
+                  else
+                    {
+                      c.code(sb.indent());
+                    }
+                  sb.append(";\n}\n");
+                }
+                @Override boolean needsSemi() { return false; }
+              });
+          }
+      }
+
+    return CStmnt.seq(l);
+  }
+
+
   /**
    * Create code for a given native clazz cl.
    *
@@ -1972,16 +2065,49 @@ public class C extends ANY
 
     var args = new List<CExpr>();
 
+    /*
+      fzW_native_outer = &arg3;
+      int wrapper(void *, int, void * void *)
+      {
+        return fzC_...(fzW_native_outer, arg1, arg2, arg3, arg4);
+      }
+    */
+
+    var res = new List<CStmnt>();
+
+    checkNumCallsMaxOne(cl);
+
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        args.add(_fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
-                    ? CIdent.arg(i).castTo("void *")
-                    : CIdent.arg(i));
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
+          {
+            res.add(
+              new CIdent("fzW_native_outer").assign(CIdent.arg(i).adrOf().castTo("void *"))
+            );
+          }
+      }
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var c = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
+        var arg = c != NO_CLAZZ
+          // 1. pass as function pointer
+          ? (_fuir.clazzOuterRef(c) != NO_CLAZZ
+              // 1.1 needs outer ref
+              ? CIdent.funWrapper(cl).adrOf()
+              // 1.2 does not need outer ref
+              : new CIdent(_names.function(c)).adrOf())
+          : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
+          // 2. pass as ref
+          ? CIdent.arg(i).castTo("void *")
+          // 3. pass as value
+          : CIdent.arg(i);
+        args.add(arg);
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
-    return switch (_fuir.getSpecialClazz(rc))
+    var call = CExpr.call(_fuir.clazzBaseName(cl).split(" ", 2)[0], args);
+    var o = switch (_fuir.getSpecialClazz(rc))
       {
         case
           c_i8, c_i16, c_i32, c_i64, c_u8,
@@ -2002,6 +2128,51 @@ public class C extends ANY
             ? call.castTo("void *").ret()
             : call.ret();
       };
+
+    res.add(o);
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
+          {
+            res.add(new CIdent("fzW_native_outer").assign(CNames.NULL));
+          }
+      }
+
+    return CStmnt.seq(res);
+  }
+
+
+  /**
+   * Is cl a lambda - inheriting from Function -
+   * and {@code call} needs and outer reference
+   * passed in?
+   */
+  private boolean isLambdaWithOuterRef(int cl)
+  {
+    var c = _fuir.lookupCall(cl);
+    return c != NO_CLAZZ && _fuir.clazzOuterRef(c) != NO_CLAZZ;
+  }
+
+
+  /**
+   * NYI: UNDER DEVELOPMENT: remove this implementation restriction
+   */
+  @Deprecated
+  private void checkNumCallsMaxOne(int cl)
+  {
+    var numCalls = 0;
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        if (_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ)
+          {
+            numCalls++;
+          }
+      }
+    if (numCalls > 1)
+      {
+        Errors.fatal("Implementation restriction: maximum number of callbacks in native is currently one.");
+      }
   }
 
 
