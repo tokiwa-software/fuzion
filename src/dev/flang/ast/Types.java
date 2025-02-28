@@ -125,6 +125,8 @@ public class Types extends ANY
 
   public static class Resolved
   {
+    public final TreeSet<AbstractType> legalNativeResultTypes;
+    public final TreeSet<AbstractType> legalNativeArgumentTypes;
     public final AbstractFeature universe;
     public final AbstractType t_i8  ;
     public final AbstractType t_i16 ;
@@ -273,6 +275,10 @@ public class Types extends ANY
         t_u64,
         t_f32,
         t_f64));
+
+      legalNativeResultTypes = new TreeSet<AbstractType>();
+      legalNativeArgumentTypes = new TreeSet<AbstractType>();
+
       resolved = this;
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(
