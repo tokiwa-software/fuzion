@@ -2025,7 +2025,74 @@ A ((Choice)) declaration must not contain a result type.
       @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
     });
 
+    checkNative();
+
     _state = State.RESOLVED;
+  }
+
+
+  /**
+   * Check native features result and argument
+   * types for legality.
+   */
+  private void checkNative()
+  {
+    if (kind() == Kind.Native)
+      {
+        for (var arg : arguments())
+          {
+            checkLegalNativeArg(arg.pos(), arg.resultType());
+          }
+
+        checkLegalNativeResultType(resultTypePos(), resultType());
+      }
+  }
+
+
+  private void checkLegalNativeArg(SourcePosition pos, AbstractType at)
+  {
+    ensureTypeSetsInitialized();
+    if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
+          || at.isFunctionTypeExcludingLazy()
+          || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()))
+      {
+        AstErrors.illegalNativeType(pos, "Argument type", at);
+      }
+  }
+
+
+  private void checkLegalNativeResultType(SourcePosition pos, AbstractType rt)
+  {
+    ensureTypeSetsInitialized();
+    if (!Types.resolved.legalNativeResultTypes.contains(rt))
+      {
+        AstErrors.illegalNativeType(pos, "Result type", rt);
+      }
+  }
+
+
+  /**
+   * Ensures that
+   *  Types.legalNativeArgumentTypes
+   * and
+   *  Types.resolved.legalNativeResultTypes
+   * are initialized.
+   * Initializes them if they are not yet initialized.
+   */
+  private void ensureTypeSetsInitialized()
+  {
+    // We can not do this in constructor of
+    // Resolved since not everything we need
+    // might be fully resolved yet.
+    if (Types.resolved.legalNativeArgumentTypes.isEmpty())
+      {
+        var ptr = Types.resolved.f_fuzion_sys_array_data.resultType();
+        Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
+        Types.resolved.legalNativeResultTypes.add(ptr);
+        Types.resolved.legalNativeResultTypes.add(Types.resolved.t_unit);
+        Types.resolved.legalNativeArgumentTypes.addAll(Types.resolved.numericTypes);
+        Types.resolved.legalNativeArgumentTypes.add(ptr);
+      }
   }
 
 
