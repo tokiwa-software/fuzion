@@ -2367,6 +2367,13 @@ public class AstErrors extends ANY
           "To solve, this specify a valid type.");
   }
 
+  public static void illegalNativeType(SourcePosition pos, String string, AbstractType at)
+  {
+    error(pos,
+          "Implementation restriction: "+ string + " " + s(at) + " is not (yet) allowed in native features.",
+          "To solve, this specify a legal type.");
+  }
+
 }
 
 /* end of file */
