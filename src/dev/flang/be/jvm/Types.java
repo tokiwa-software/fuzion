@@ -376,6 +376,8 @@ public class Types extends ANY implements ClassFileConstants
       case c_f32     -> PrimitiveType.type_float;
       case c_f64     -> PrimitiveType.type_double;
       case c_sys_ptr -> JAVA_LANG_OBJECT;
+      case c_Mutex   -> JAVA_LANG_OBJECT;
+      case c_Condition-> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||

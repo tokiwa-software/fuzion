@@ -229,6 +229,8 @@ public class JavaInterface extends FUIRContext
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_unit) && o == null             ) { return new Instance(resultClazz); }
     // NYI: UNDER DEVELOPMENT: remove this, abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_sys_ptr)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Mutex)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Condition)) { return new JavaRef(o); }
     else
       {
         var result = new Instance(resultClazz);
