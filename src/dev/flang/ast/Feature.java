@@ -2088,14 +2088,17 @@ A ((Choice)) declaration must not contain a result type.
       {
         var ptr = Types.resolved.f_fuzion_sys_array_data.resultType();
         var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0), null).selfType();
+        var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
         Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
         Types.resolved.legalNativeResultTypes.add(ptr);
         Types.resolved.legalNativeResultTypes.add(fd);
+        Types.resolved.legalNativeResultTypes.add(dd);
         Types.resolved.legalNativeResultTypes.add(Types.resolved.t_unit);
         Types.resolved.legalNativeResultTypes.add(Types.resolved.t_bool);
         Types.resolved.legalNativeArgumentTypes.addAll(Types.resolved.numericTypes);
         Types.resolved.legalNativeArgumentTypes.add(ptr);
         Types.resolved.legalNativeArgumentTypes.add(fd);
+        Types.resolved.legalNativeArgumentTypes.add(dd);
       }
   }
 
