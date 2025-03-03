@@ -38,6 +38,12 @@ module:public open(fd fuzion.sys.Pointer,
     io.dir.read.read fd
 
 
+  # close dir when de-instating effect
+  #
+  redef finally =>
+    _ := fzE_close_dir fd
+
+
 # short hand to get the currently
 # installed open effect
 #
