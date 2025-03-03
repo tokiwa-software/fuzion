@@ -33,7 +33,7 @@ public ffi is
 
   # test if p is the NULL pointer
   #
-  public is_null(p fuzion.sys.Pointer) =>
+  public is_null(p Native_Ref) =>
     fzE_is_null p = 0
 
 
