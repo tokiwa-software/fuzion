@@ -364,6 +364,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         case c_File_Descriptor         -> _dfa.newInstance(rc, _site, _context);
         case c_Directory_Descriptor    -> _dfa.newInstance(rc, _site, _context);
         case c_Java_Ref                -> _dfa.newInstance(rc, _site, _context);
+        case c_Mapped_Memory           -> _dfa.newInstance(rc, _site, _context);
         default                        ->
           _dfa._fuir.clazzIsUnitType(rc)
             ? Value.UNIT

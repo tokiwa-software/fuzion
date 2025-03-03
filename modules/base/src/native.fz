@@ -170,14 +170,14 @@ module fzE_write(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
 # note: offset+size must not exceed file size.
 # note: returning allocated memory - instead of error code - simplifies handling in DFA.
 #
-module fzE_mmap(fd File_Descriptor, offset, size i64, res fuzion.sys.Pointer) fuzion.sys.Pointer => native
+module fzE_mmap(fd File_Descriptor, offset, size i64, res fuzion.sys.Pointer) Mapped_Memory => native
 
 
 # close a memory mapped file
 #
 # return: 0 on success, -1 on error
 #
-module fzE_munmap(address fuzion.sys.Pointer, size i64) i32 => native
+module fzE_munmap(address Mapped_Memory, size i64) i32 => native
 
 
 # no guarantee can be given for precision nor resolution
@@ -362,7 +362,7 @@ module fzE_file_flush(fd File_Descriptor) i32 => native
 #
 module fzE_mapped_buffer_get
   (# memory address obtained by `mmap`
-    m fuzion.sys.Pointer,
+    m Mapped_Memory,
 
     # index of the byte
     i i64
@@ -373,7 +373,7 @@ module fzE_mapped_buffer_get
 #
 module fzE_mapped_buffer_set
   (# memory address obtained by `mmap`
-    m fuzion.sys.Pointer,
+    m Mapped_Memory,
 
     # index of the byte
     i i64,

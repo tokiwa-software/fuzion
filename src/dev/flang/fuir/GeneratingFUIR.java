@@ -413,6 +413,7 @@ public class GeneratingFUIR extends FUIR
               case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
               case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
               case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;
+              case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)

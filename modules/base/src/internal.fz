@@ -45,3 +45,8 @@ private:module Directory_Descriptor ref is
 # a type denoting a reference to a java object
 #
 private:public Java_Ref ref is
+
+
+# a type denoting mapped memory
+#
+private:module Mapped_Memory ref is

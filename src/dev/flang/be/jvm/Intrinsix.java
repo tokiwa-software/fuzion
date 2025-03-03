@@ -560,6 +560,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
       case c_Java_Ref -> {
         yield Expr.aload(slot, JAVA_LANG_OBJECT);
       }
+      case c_Mapped_Memory -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT);
+      }
       default -> {
         var rt = jvm._types.javaType(rc0);
         var jref = jvm._fuir.lookupJavaRef(rc0);
