@@ -170,7 +170,7 @@ module fzE_write(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
 # note: offset+size must not exceed file size.
 # note: returning allocated memory - instead of error code - simplifies handling in DFA.
 #
-module fzE_mmap(fd fuzion.sys.Pointer, offset, size i64, res fuzion.sys.Pointer) fuzion.sys.Pointer => native
+module fzE_mmap(fd File_Descriptor, offset, size i64, res fuzion.sys.Pointer) fuzion.sys.Pointer => native
 
 
 # close a memory mapped file
@@ -271,7 +271,7 @@ module fzE_file_open(
               # open_results[error number] as a Fuzion Pointer
               open_results fuzion.sys.Pointer,
               # opening flag (Read: 0, Write: 1, Append: 2)
-              flag i8) fuzion.sys.Pointer => native
+              flag i8) File_Descriptor => native
 
 
 # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
@@ -283,7 +283,7 @@ module fzE_file_open(
 #
 module fzE_file_read(
               # the file descriptor
-              fd fuzion.sys.Pointer,
+              fd File_Descriptor,
               # the internal array data representing the container for the bytes to be read from the file
               file_array fuzion.sys.Pointer,
               # the length of the array that represents the file bytes
@@ -295,7 +295,7 @@ module fzE_file_read(
 #
 module fzE_file_write(
               # the file descriptor
-              fd fuzion.sys.Pointer,
+              fd File_Descriptor,
               # the internal array data representing the content bytes to insert in file
               content fuzion.sys.Pointer,
               # the length of the internal array representing the content
@@ -317,7 +317,7 @@ module fzE_file_move(
 #
 module fzE_file_close(
               # file descriptor
-              fd fuzion.sys.Pointer) i32 => native
+              fd File_Descriptor) i32 => native
 
 
 # intrinsic to set the file-pointer offset at which the next read or write occurs
@@ -327,7 +327,7 @@ module fzE_file_close(
 #
 module fzE_file_seek(
               # file descriptor
-              fd fuzion.sys.Pointer,
+              fd File_Descriptor,
               # the offset to seek from the beginning of this file
               offset i64) i32 => native
 
@@ -337,25 +337,25 @@ module fzE_file_seek(
 #
 module fzE_file_position(
               # file descriptor
-              fd fuzion.sys.Pointer) i64 => native
+              fd File_Descriptor) i64 => native
 
 
 # stdin of the process
 #
-module fzE_file_stdin fuzion.sys.Pointer => native
+module fzE_file_stdin File_Descriptor => native
 
 
-module fzE_file_stdout fuzion.sys.Pointer => native
+module fzE_file_stdout File_Descriptor => native
 
 
-module fzE_file_stderr fuzion.sys.Pointer => native
+module fzE_file_stderr File_Descriptor => native
 
 
 # flush any buffers held for fd
 #
 # returns 0 in case of success, -1 in case of failure
 #
-module fzE_file_flush(fd fuzion.sys.Pointer) i32 => native
+module fzE_file_flush(fd File_Descriptor) i32 => native
 
 
 # get a byte from a given mapped buffer

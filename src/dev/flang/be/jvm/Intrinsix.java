@@ -551,6 +551,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
       case c_Condition -> {
         yield Expr.aload(slot, JAVA_LANG_OBJECT);
       }
+      case c_File_Descriptor -> {
+        yield Expr.aload(slot, JAVA_LANG_OBJECT);
+      }
       default -> {
         var rt = jvm._types.javaType(rc0);
         var jref = jvm._fuir.lookupJavaRef(rc0);
