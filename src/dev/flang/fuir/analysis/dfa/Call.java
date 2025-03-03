@@ -360,7 +360,7 @@ public class Call extends ANY implements Comparable<Call>, Context
              c_f32, c_f64              -> NumericValue.create(_dfa, rc);
         case c_bool                    -> _dfa.bool();
         case c_String                  -> _dfa.newConstString(null, this);
-        case c_sys_ptr                 -> _dfa.newInstance(_dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), _site, _context);
+        case c_Array                   -> { Errors.fatal("Cannot create generic result of Array"); yield null; }
         case c_File_Descriptor         -> _dfa.newInstance(rc, _site, _context);
         case c_Directory_Descriptor    -> _dfa.newInstance(rc, _site, _context);
         case c_Java_Ref                -> _dfa.newInstance(rc, _site, _context);
