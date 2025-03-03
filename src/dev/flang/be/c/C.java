@@ -1979,7 +1979,7 @@ public class C extends ANY
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
+    var call = CExpr.call(_fuir.clazzNativeName(cl), args);
     return switch (_fuir.getSpecialClazz(rc))
       {
         case
