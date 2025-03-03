@@ -61,6 +61,8 @@ public enum SpecialClazzes
   c_java        ("java"                       , 0, c_fuzion    ),
   c_fuzion_sys  ("sys"                        , 0, c_fuzion    ),
   c_sys_ptr     ("Pointer"                    , 0, c_fuzion_sys),
+  c_Mutex       ("Mutex"                      , 0, c_universe  ),
+  c_Condition   ("Condition"                  , 0, c_universe  ),
   ;
 
   final String _name;
