@@ -1556,8 +1556,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
-        var ta = o.handDown(_res, o.argTypes(), f.outer());
-        var ra = f.argTypes();
+        var ta = o.handDown(_res, argTypes(o), f.outer());
+        var ra = argTypes(f);
         if (ta.length != ra.length)
           {
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
@@ -1659,6 +1659,34 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkContractAccesses(f);
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
+  }
+
+
+  /**
+   * Determine the formal argument types of this feature.
+   *
+   * @return a new array containing this feature's formal argument types.
+   */
+  private AbstractType[] argTypes(AbstractFeature af)
+  {
+    int argnum = 0;
+    var args = af.arguments();
+    var result = new AbstractType[args.size()];
+    for (var frml : args)
+      {
+        if (CHECKS) check
+          (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
+
+        var frmlT = frml.resultType();
+
+        result[argnum] = frmlT;
+        argnum++;
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
