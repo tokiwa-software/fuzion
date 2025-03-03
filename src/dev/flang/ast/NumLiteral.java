@@ -804,7 +804,7 @@ public class NumLiteral extends Constant
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
-    Expr result = this;
+    Expr result = super.propagateExpectedTypeForPartial(res, context, t);
     if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
@@ -816,7 +816,6 @@ public class NumLiteral extends Constant
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        fn.resolveTypes(res, context);
         result = fn;
       }
     return result;
