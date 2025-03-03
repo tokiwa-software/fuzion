@@ -226,6 +226,18 @@ public abstract class FUIR extends IR
   }
 
 
+  /**
+   * for clazz cl return the name of the native
+   * function we are calling.
+   *
+   * @param cl a clazz id.
+   */
+  public String clazzNativeName(int cl)
+  {
+    return clazzBaseName(cl).split(" ", 2)[0];
+  }
+
+
   /*------------------------  accessing fields  ------------------------*/
 
 
