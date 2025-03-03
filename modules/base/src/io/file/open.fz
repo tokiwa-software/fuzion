@@ -63,6 +63,14 @@ module:public open(fd File_Descriptor,
     else
       (mapped_buffer mapped_memory size) ! code
 
+
+  # close file when de-instating effect
+  #
+  redef finally =>
+    _ := fuzion.sys.fileio.close fd
+
+
+
 # short hand to get the currently
 # installed open effect
 #
