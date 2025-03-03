@@ -41,7 +41,7 @@ module:public open(dd Directory_Descriptor,
   # close dir when de-instating effect
   #
   redef finally =>
-    _ := fzE_close_dir fd
+    _ := fzE_close_dir dd
 
 
 # short hand to get the currently
