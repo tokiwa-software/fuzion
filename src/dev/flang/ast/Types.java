@@ -244,7 +244,7 @@ public class Types extends ANY
       f_fuzion                  = universe.get(mod, "fuzion", 0);
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
-      f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "Java_Ref", 0);
+      f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "java_ref", 0);
       f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);

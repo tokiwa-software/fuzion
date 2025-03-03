@@ -65,6 +65,7 @@ public enum SpecialClazzes
   c_Condition   ("Condition"                  , 0, c_universe  ),
   c_File_Descriptor("File_Descriptor"         , 0, c_universe  ),
   c_Directory_Descriptor("Directory_Descriptor", 0, c_universe  ),
+  c_Java_Ref    ("Java_Ref"                   , 0, c_universe  ),
   ;
 
   final String _name;
