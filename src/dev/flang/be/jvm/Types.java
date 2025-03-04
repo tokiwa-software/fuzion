@@ -382,6 +382,7 @@ public class Types extends ANY implements ClassFileConstants
       case c_Directory_Descriptor-> JAVA_LANG_OBJECT;
       case c_Java_Ref-> JAVA_LANG_OBJECT;
       case c_Mapped_Memory-> JAVA_LANG_OBJECT;
+      case c_Native_Ref -> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||

@@ -293,8 +293,8 @@ public class Executor extends ProcessExpression<Value, Object>
               .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
 
               _fuir.clazzIsUnitType(rt)
-              ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
-              : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
+                ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
+                : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
 
         var arguments = args.stream().map(arg -> arg.toNative()).toList();
         Object tmp = null;

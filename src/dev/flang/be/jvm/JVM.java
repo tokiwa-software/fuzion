@@ -1006,28 +1006,71 @@ should be avoided as much as possible.
     cf.addToClInit(
       Expr
         .stringconst(_fuir.clazzNativeName(cl))                                        // String
-        .andThen(funDescArgs(cl))                                                      // String, (MemoryLayout), [MemoryLayout
-        // invoking: FunctionDescriptor.of(...) / FunctionDescriptor.ofVoid(...)
-        .andThen(Expr.invokeStatic(
-          Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR,
-          _fuir.clazzIsUnitType(rt) ? "ofVoid": "of",
-          _fuir.clazzIsUnitType(rt)
-              ? "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor()
-              : "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor(),
-          Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR,
-          -1,
-          true)
-        )                                                                             // String, FunctionDescriptor
-        .andThen(Expr.invokeStatic(
-          Names.RUNTIME_CLASS,
-          "get_method_handle",
-          "(" + Names.JAVA_LANG_STRING.descriptor() + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor() +")" +  Names.CT_JAVA_LANG_INVOKE_METHODHANDLE.descriptor(),
-          Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)
-        )                                                                              // MethodHandle
+        .andThen(functionDescriptorArgs(cl))                                           // String, (MemoryLayout), [MemoryLayout
+        .andThen(invokeFunctionDescriptorOf(_fuir.clazzIsUnitType(rt)))                // String, FunctionDescriptor
+        .andThen(libraryArray())                                                       // String, FunctionDescriptor, [String
+        .andThen(invoke_get_method_handle())                                           // MethodHandle
         .andThen(Expr.putstatic(_names.javaClass(cl),
                                 Names.METHOD_HANDLE_FIELD_NAME,
                                 Names.CT_JAVA_LANG_INVOKE_METHODHANDLE))
     );
+  }
+
+
+  private Expr libraryArray()
+  {
+    // NYI: get from options
+    var libs = new String[]{"sqlite3", /* NYI: "clang-16" */};
+
+    var result = Expr
+        .iconst(libs.length)
+        .andThen(Types.JAVA_LANG_STRING.newArray());
+
+    for (int i = 0; i < libs.length; i++)
+      {
+        result = result
+          .andThen(Expr.DUP)                             // T[], T[]
+          .andThen(Expr.iconst(i))                       // T[], T[], idx
+          .andThen(Expr.stringconst(libs[i]))            // T[], T[], idx, data
+          .andThen(Types.JAVA_LANG_STRING.xastore());    // T[]
+      }
+    return result;
+  }
+
+
+  /**
+   * create Expr for invoking {@link java.lang.foreign.FunctionDescriptor.of}
+   * or {@link java.lang.foreign.FunctionDescriptor.ofVoid}
+   *
+   * @param resultsInUnit
+   */
+  private Expr invokeFunctionDescriptorOf(boolean resultsInUnit)
+  {
+    return Expr.invokeStatic(
+      Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR,
+      resultsInUnit ? "ofVoid": "of",
+      resultsInUnit ? "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")"
+                      + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor()
+                    : "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor()
+                      + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")"
+                      + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor(),
+      Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR,
+      -1,
+      true);
+  }
+
+
+  /*
+   * create Expr for invoking `Runtime.get_method_handle`
+   */
+  private Expr invoke_get_method_handle()
+  {
+    return Expr.invokeStatic(
+      Names.RUNTIME_CLASS,
+      "get_method_handle",
+      "(" + Names.JAVA_LANG_STRING.descriptor() + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor() + Types.JAVA_LANG_STRING.array().descriptor() + ")"
+        + Names.CT_JAVA_LANG_INVOKE_METHODHANDLE.descriptor(),
+      Names.CT_JAVA_LANG_INVOKE_METHODHANDLE);
   }
 
 
@@ -1037,7 +1080,7 @@ should be avoided as much as possible.
    * @param cc
    * @return
    */
-  private Expr funDescArgs(int cc)
+  private Expr functionDescriptorArgs(int cc)
   {
     var result = Expr.UNIT;
     if (!_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
@@ -1097,10 +1140,22 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/AddressLayout"));
       case c_Mapped_Memory -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
         new ClassType("java/lang/foreign/AddressLayout"));
-      default -> {
-        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
-        yield null;
-      }
+      case c_Native_Ref -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+        new ClassType("java/lang/foreign/AddressLayout"));
+      default ->
+        {
+          if (_fuir.lookupCall(c) != FUIR.NO_CLAZZ)
+            {
+              yield Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+                                   new ClassType("java/lang/foreign/AddressLayout"));
+            }
+          else
+            {
+              // NYI: UNDER DEVELOPMENT:
+              yield Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+                                   new ClassType("java/lang/foreign/AddressLayout"));
+            }
+        }
       };
   }
 

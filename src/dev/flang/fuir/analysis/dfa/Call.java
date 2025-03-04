@@ -33,6 +33,8 @@ import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -297,6 +299,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
         markSysArrayArgsAsInitialized();
+        markFunctionArgsAsCalled();
+
         result = genericResult();
         if (result == null)
           {
@@ -328,6 +332,31 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
 
+  /**
+   * call all args that are Function
+   */
+  private void markFunctionArgsAsCalled()
+  {
+    for (int i = 0; i < _dfa._fuir.clazzArgCount(_cc); i++)
+      {
+        _dfa.readField(_dfa._fuir.clazzArg(_cc, i));
+
+        var call = _dfa._fuir.lookupCall(_dfa._fuir.clazzArgClazz(_cc, i));
+        if (call != NO_CLAZZ)
+          {
+            var args = new List<Val>();
+            for (int j = 0; j < _dfa._fuir.clazzArgCount(call); j++)
+              {
+                args.add(_dfa.newInstance(_dfa._fuir.clazzArgClazz(call, j), FUIR.NO_SITE, _context));
+              }
+            var ignore = _dfa
+              .newCall(call, FUIR.NO_SITE, this._args.get(i).value(), args, null /* env */, _context)
+              .result();
+          }
+      }
+  }
+
+
   /*
    * sys array arguments might be written
    * to in the native features
@@ -353,7 +382,9 @@ public class Call extends ANY implements Comparable<Call>, Context
   private Val genericResult()
   {
     var rc = _dfa._fuir.clazzResultClazz(_cc);
-    return _dfa.newInstance(rc, _site, _context);
+    return _dfa._fuir.clazzIsVoidType(rc)
+      ? null
+      : _dfa.newInstance(rc, _site, _context);
   }
 
 
