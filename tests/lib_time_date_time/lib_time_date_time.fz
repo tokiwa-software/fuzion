@@ -23,9 +23,9 @@
 
 lib_time_date_time =>
 
-  a := time.date_time 2024 30 10 30 12 1E8
-  b := time.date_time 2024 30 10 30 12 1E7
-  c := time.date_time 2023 30 10 30 12 1E8
+  a := time.date_time 2024 1 30 10 30 12 1E8
+  b := time.date_time 2024 1 30 10 30 12 1E7
+  c := time.date_time 2023 1 30 10 30 12 1E8
 
   say "a = $a"
   say "b = $b"
