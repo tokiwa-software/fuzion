@@ -169,7 +169,7 @@ public abstract class Constant extends Expr
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
-    return expectedType.isFunctionTypeExcludingLazy() && expectedType.arity() == 0
+    return expectedType.isFunctionType() && expectedType.arity() == 0
       ? new Function(_pos, NO_EXPRS, this)
       : this;
   }
