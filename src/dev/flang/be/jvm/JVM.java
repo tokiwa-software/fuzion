@@ -1005,7 +1005,7 @@ should be avoided as much as possible.
     var rt = _fuir.clazzResultClazz(cl);
     cf.addToClInit(
       Expr
-        .stringconst(_fuir.clazzBaseName(cl))                                          // String
+        .stringconst(_fuir.clazzNativeName(cl))                                        // String
         .andThen(funDescArgs(cl))                                                      // String, (MemoryLayout), [MemoryLayout
         // invoking: FunctionDescriptor.of(...) / FunctionDescriptor.ofVoid(...)
         .andThen(Expr.invokeStatic(

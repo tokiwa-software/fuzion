@@ -1848,8 +1848,7 @@ public class C extends ANY
   private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = _fuir.hasData(res) ? _types.clazz(res)
-                                        : "void";
+    var resultType = _types.resultClazz(res);
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
@@ -1980,7 +1979,7 @@ public class C extends ANY
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
+    var call = CExpr.call(_fuir.clazzNativeName(cl), args);
     return switch (_fuir.getSpecialClazz(rc))
       {
         case
