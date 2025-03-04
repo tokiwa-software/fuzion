@@ -189,7 +189,7 @@ public abstract class AbstractAssign extends Expr
     if (resultTypeKnown(res))
       {
         var rt = _assignedField.resultType();
-        if (rt.isFunctionTypeExcludingLazy() && rt.compareTo(_value.typeForInferencing()) != 0)
+        if (rt.isFunctionTypeExcludingLazy() && (_value.typeForInferencing() == null || rt.compareTo(_value.typeForInferencing()) != 0))
           {
             _value = _value.propagateExpectedTypeForPartial(res, context, rt);
           }
