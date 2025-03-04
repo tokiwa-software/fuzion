@@ -455,7 +455,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         yield Expr.checkcast(new ClassType("java/lang/Boolean"))
           .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
       }
-      case c_sys_ptr -> {
+      case c_Array -> {
         check(false);
         yield Expr.UNIT;
       }
@@ -542,7 +542,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             Expr.checkcast(new ClassType("java/lang/Boolean"))
               .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean)));
       }
-      case c_sys_ptr -> {
+      case c_Array -> {
         yield Expr.aload(slot, JAVA_LANG_OBJECT);
       }
       case c_Mutex -> {

@@ -228,7 +228,7 @@ public class JavaInterface extends FUIRContext
       }
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_unit) && o == null             ) { return new Instance(resultClazz); }
     // NYI: UNDER DEVELOPMENT: remove this, abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
-    else if (resultClazz == fuir().clazz(SpecialClazzes.c_sys_ptr)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Array)) { return new JavaRef(o); }
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_Mutex)) { return new JavaRef(o); }
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_Condition)) { return new JavaRef(o); }
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_File_Descriptor)) { return new JavaRef(o); }
@@ -279,7 +279,7 @@ public class JavaInterface extends FUIRContext
 
 
   /**
-   * Convert an instance of {@code fuzion.sys.array<fuzion.sys.Pointer>} to a
+   * Convert an instance of {@code fuzion.sys.array<Array>} to a
    * Java {@code Object[]} with the corresponding Java values.
    *
    * @param v a value of type ArrayData as it is stored in {@code fuzion.sys.array.data}.
