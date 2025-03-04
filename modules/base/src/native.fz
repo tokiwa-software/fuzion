@@ -400,7 +400,7 @@ module fzE_unique_id u64 => native
 module fzE_date_time(a fuzion.sys.Pointer) unit => native
 
 
-module fzE_null fuzion.sys.Pointer => native
+module fzE_null Native_Ref => native
 
 
-module fzE_is_null(p fuzion.sys.Pointer) i32 => native
+module fzE_is_null(p Native_Ref) i32 => native

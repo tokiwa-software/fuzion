@@ -50,3 +50,9 @@ private:public Java_Ref ref is
 # a type denoting mapped memory
 #
 private:module Mapped_Memory ref is
+
+
+# a type denoting a reference obtained
+# via native interface.
+#
+private:public Native_Ref ref is
