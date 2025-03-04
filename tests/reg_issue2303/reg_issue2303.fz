@@ -32,9 +32,9 @@ reg_issue2303 =>
   log1 "hi"
   log1 "-$p-"
   log1 p
-  log2 "hi"     # fails!
-  log2 "-$p-"   # fails!
+  log2 "hi"
+  log2 "-$p-"
   log2 p
-  log3 42       # fails!
-  log3 47+11    # fails!
+  log3 42
+  log3 47+11
   log3 i
