@@ -2025,7 +2025,7 @@ A ((Choice)) declaration must not contain a result type.
       @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
     });
 
-    checkNative();
+    checkNative(res);
 
     _state = State.RESOLVED;
   }
@@ -2035,23 +2035,23 @@ A ((Choice)) declaration must not contain a result type.
    * Check native features result and argument
    * types for legality.
    */
-  private void checkNative()
+  private void checkNative(Resolution res)
   {
     if (kind() == Kind.Native)
       {
         for (var arg : arguments())
           {
-            checkLegalNativeArg(arg.pos(), arg.resultType());
+            checkLegalNativeArg(res, arg.pos(), arg.resultType());
           }
 
-        checkLegalNativeResultType(resultTypePos(), resultType());
+        checkLegalNativeResultType(res, resultTypePos(), resultType());
       }
   }
 
 
-  private void checkLegalNativeArg(SourcePosition pos, AbstractType at)
+  private void checkLegalNativeArg(Resolution res, SourcePosition pos, AbstractType at)
   {
-    ensureTypeSetsInitialized();
+    ensureTypeSetsInitialized(res);
     if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.isFunctionTypeExcludingLazy()
           || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()))
@@ -2061,9 +2061,9 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
-  private void checkLegalNativeResultType(SourcePosition pos, AbstractType rt)
+  private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
   {
-    ensureTypeSetsInitialized();
+    ensureTypeSetsInitialized(res);
     if (!Types.resolved.legalNativeResultTypes.contains(rt))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);
@@ -2079,7 +2079,7 @@ A ((Choice)) declaration must not contain a result type.
    * are initialized.
    * Initializes them if they are not yet initialized.
    */
-  private void ensureTypeSetsInitialized()
+  private void ensureTypeSetsInitialized(Resolution res)
   {
     // We can not do this in constructor of
     // Resolved since not everything we need
@@ -2087,12 +2087,24 @@ A ((Choice)) declaration must not contain a result type.
     if (Types.resolved.legalNativeArgumentTypes.isEmpty())
       {
         var ptr = Types.resolved.f_fuzion_sys_array_data.resultType();
+        var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0), null).selfType();
+        var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
+        var mm = res._module.lookupFeature(res.universe, FeatureName.get("Mapped_Memory", 0), null).selfType();
+        var nr = res._module.lookupFeature(res.universe, FeatureName.get("Native_Ref", 0), null).selfType();
         Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
         Types.resolved.legalNativeResultTypes.add(ptr);
+        Types.resolved.legalNativeResultTypes.add(fd);
+        Types.resolved.legalNativeResultTypes.add(dd);
+        Types.resolved.legalNativeResultTypes.add(mm);
+        Types.resolved.legalNativeResultTypes.add(nr);
         Types.resolved.legalNativeResultTypes.add(Types.resolved.t_unit);
         Types.resolved.legalNativeResultTypes.add(Types.resolved.t_bool);
         Types.resolved.legalNativeArgumentTypes.addAll(Types.resolved.numericTypes);
         Types.resolved.legalNativeArgumentTypes.add(ptr);
+        Types.resolved.legalNativeArgumentTypes.add(fd);
+        Types.resolved.legalNativeArgumentTypes.add(dd);
+        Types.resolved.legalNativeArgumentTypes.add(mm);
+        Types.resolved.legalNativeArgumentTypes.add(nr);
       }
   }
 

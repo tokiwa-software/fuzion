@@ -228,7 +228,12 @@ public class JavaInterface extends FUIRContext
       }
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_unit) && o == null             ) { return new Instance(resultClazz); }
     // NYI: UNDER DEVELOPMENT: remove this, abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
-    else if (resultClazz == fuir().clazz(SpecialClazzes.c_sys_ptr)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Array)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Mutex)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Condition)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_File_Descriptor)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Directory_Descriptor)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Mapped_Memory)) { return new JavaRef(o); }
     else
       {
         var result = new Instance(resultClazz);
@@ -238,7 +243,7 @@ public class JavaInterface extends FUIRContext
             var off = (Integer) e.getValue();
             var v = switch (fuir().clazzBaseName(f))
               {
-              case "Java_Ref"   -> new JavaRef(o);
+              case "java_ref"   -> new JavaRef(o);
               case "forbidden" -> Value.NO_VALUE;
               default -> fuir().clazzIsOuterRef(f) ? new Instance(fuir().clazzOuterClazz(resultClazz))
                                         : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzAsString(f)); }};
@@ -274,7 +279,7 @@ public class JavaInterface extends FUIRContext
 
 
   /**
-   * Convert an instance of {@code fuzion.sys.array<fuzion.sys.Pointer>} to a
+   * Convert an instance of {@code fuzion.sys.array<Array>} to a
    * Java {@code Object[]} with the corresponding Java values.
    *
    * @param v a value of type ArrayData as it is stored in {@code fuzion.sys.array.data}.

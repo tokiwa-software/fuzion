@@ -27,7 +27,7 @@
 #
 module:public mapped_buffer
   (# internal pointer to the mapped memory
-    memory fuzion.sys.Pointer,
+    memory Mapped_Memory,
 
     # the length of this buffer
     public redef length i64

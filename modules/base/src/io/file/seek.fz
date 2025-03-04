@@ -33,7 +33,7 @@ public seek(ps Seek_Handler) : effect is
   #
   public seek(
        # the file descriptor
-       fd fuzion.sys.Pointer,
+       fd File_Descriptor,
        # the offset to seek from the beginning of the stream pointer
        offset i64) =>
     replace
@@ -46,7 +46,7 @@ public seek(ps Seek_Handler) : effect is
   #
   public file_position(
                 # the file descriptor
-                fd fuzion.sys.Pointer) =>
+                fd File_Descriptor) =>
     replace
     ps.file_position fd
 
@@ -54,10 +54,10 @@ public seek(ps Seek_Handler) : effect is
 # the default stream seeking
 #
 default_seek_handler : Seek_Handler is
-  redef seek(fd fuzion.sys.Pointer, offset i64) =>
+  redef seek(fd File_Descriptor, offset i64) =>
     fuzion.sys.fileio.seek fd offset
 
-  redef file_position(fd fuzion.sys.Pointer) =>
+  redef file_position(fd File_Descriptor) =>
     fuzion.sys.fileio.file_position fd
 
 
@@ -76,5 +76,5 @@ module seek =>
 # reference to the seek operations that could be provided
 #
 public Seek_Handler ref is
-  public seek(fd fuzion.sys.Pointer, offset i64) outcome unit => abstract
-  public file_position(fd fuzion.sys.Pointer) outcome i64 => abstract
+  public seek(fd File_Descriptor, offset i64) outcome unit => abstract
+  public file_position(fd File_Descriptor) outcome i64 => abstract

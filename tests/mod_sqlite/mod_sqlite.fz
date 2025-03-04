@@ -27,7 +27,7 @@
 #   sqlite3 **ppDb          /* OUT: SQLite db handle */
 # );
 #
-sqlite3_open(filename fuzion.sys.Pointer, db fuzion.sys.Pointer) i32 => native
+sqlite3_open(filename Array, db Array) i32 => native
 
 # int sqlite3_exec(
 #   sqlite3*,                                  /* An open database */
@@ -37,31 +37,31 @@ sqlite3_open(filename fuzion.sys.Pointer, db fuzion.sys.Pointer) i32 => native
 #   char **errmsg                              /* Error msg written here */
 # );
 #
-sqlite3_exec(F type : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer, db fuzion.sys.Pointer, sql fuzion.sys.Pointer, callback F, arg fuzion.sys.Pointer, errmsg fuzion.sys.Pointer) i32 => native
+sqlite3_exec(F type : Function i32 Native_Ref i32 Native_Ref Native_Ref, db Native_Ref, sql Array, callback F, arg Native_Ref, errmsg Array) i32 => native
 
 # int sqlite3_close(sqlite3*);
 #
-sqlite3_close(db fuzion.sys.Pointer) i32 => native
+sqlite3_close(db Native_Ref) i32 => native
 
 
 
 
-sqlite_database(db fuzion.sys.Pointer) : Database is
+sqlite_database(db Native_Ref) : Database is
 
   redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
 
     str := "some string, accessed via outer reference"
 
-    cb2 : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer is
-      redef call(_ fuzion.sys.Pointer, len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
+    cb2 : Function i32 Native_Ref i32 Native_Ref Native_Ref is
+      redef call(_ Native_Ref, len i32, column_text Native_Ref, column_name Native_Ref) i32 =>
 
         // str is called via outer reference:
         // this tests if the outerref is correctly
         // passed through:
         say str
 
-        ct := ffi.from_native_array fuzion.sys.Pointer column_text len
-        cn := ffi.from_native_array fuzion.sys.Pointer column_name len
+        ct := ffi.from_native_array Native_Ref column_text len
+        cn := ffi.from_native_array Native_Ref column_name len
 
         data => (cn.map (t -> ffi.from_native_string t))
           .zip (ct.map (t -> ffi.from_native_string t)) x,y->(x,y)
@@ -111,11 +111,11 @@ public Database ref is
 
 
 
-sqlite_database2(db fuzion.sys.Pointer) : Database is
+sqlite_database2(db Native_Ref) : Database is
   redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
 
-    cb2 : Function i32 fuzion.sys.Pointer i32 fuzion.sys.Pointer fuzion.sys.Pointer is
-      redef call(_ fuzion.sys.Pointer, len i32, column_text fuzion.sys.Pointer, column_name fuzion.sys.Pointer) i32 =>
+    cb2 : Function i32 Native_Ref i32 Native_Ref Native_Ref is
+      redef call(_ Native_Ref, len i32, column_text Native_Ref, column_name Native_Ref) i32 =>
         say len
         0
 

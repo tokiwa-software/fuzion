@@ -167,14 +167,12 @@ public class DFA extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
      */
     @Override
-    public void assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
+    public void assignStatic(int s, int tc, int f, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
     }
@@ -2306,10 +2304,12 @@ public class DFA extends ANY
 
     put("concur.sync.mtx_init"              , cl ->
       {
+        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
-                       fuir(cl).clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(fuir(cl).clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       rc,
+                       cl._dfa.newInstance(ag, NO_SITE, cl._context));
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
@@ -2334,10 +2334,12 @@ public class DFA extends ANY
     put("concur.sync.cnd_init"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
-                       fuir(cl).clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(fuir(cl).clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       rc,
+                       cl._dfa.newInstance(ag, NO_SITE, cl._context));
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
@@ -2369,7 +2371,7 @@ public class DFA extends ANY
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 1));
-        return cl._args.get(0).value();
+        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl._cc, 0));
       });
   }
 

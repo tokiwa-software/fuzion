@@ -34,14 +34,14 @@ public ffi is
 
   # test if p is the NULL pointer
   #
-  public is_null(p fuzion.sys.Pointer) =>
+  public is_null(p Native_Ref) =>
     fzE_is_null p = 0
 
 
   # create a fuzion string from a pointer
   # to a NULL terminated string.
   #
-  public from_native_string(x fuzion.sys.Pointer /* This should be sth. like Native_Pointer */ ) String =>
+  public from_native_string(x Native_Ref) String =>
     len := native_string_length x
     arr := native_array u8 x len
     ref : String
@@ -51,9 +51,9 @@ public ffi is
 
   # create an array from a Pointer and a length
   #
-  public from_native_array(T type, x fuzion.sys.Pointer /* This should be sth. like Native_Pointer */, len i32) array T =>
+  public from_native_array(T type, x Native_Ref, len i32) array T =>
     array (fuzion.sys.internal_array T (native_array T x len) len) unit unit unit
 
 
-native_string_length(x fuzion.sys.Pointer) i32 => intrinsic
-native_array(T type, x fuzion.sys.Pointer, len i32) fuzion.sys.Pointer => intrinsic
+native_string_length(x Native_Ref) i32 => intrinsic
+native_array(T type, x Native_Ref, len i32) Array => intrinsic

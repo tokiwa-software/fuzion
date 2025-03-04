@@ -1005,7 +1005,7 @@ should be avoided as much as possible.
     var rt = _fuir.clazzResultClazz(cl);
     cf.addToClInit(
       Expr
-        .stringconst(_fuir.clazzBaseName(cl).split(" ", 2)[0])                         // String
+        .stringconst(_fuir.clazzNativeName(cl))                                        // String
         .andThen(functionDescriptorArgs(cl))                                           // String, (MemoryLayout), [MemoryLayout
         .andThen(invokeFunctionDescriptorOf(_fuir.clazzIsUnitType(rt)))                // String, FunctionDescriptor
         .andThen(libraryArray())                                                       // String, FunctionDescriptor, [String
@@ -1132,7 +1132,15 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      case c_sys_ptr -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+      case c_Array -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+        new ClassType("java/lang/foreign/AddressLayout"));
+      case c_File_Descriptor -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+        new ClassType("java/lang/foreign/AddressLayout"));
+      case c_Directory_Descriptor -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+        new ClassType("java/lang/foreign/AddressLayout"));
+      case c_Mapped_Memory -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+        new ClassType("java/lang/foreign/AddressLayout"));
+      case c_Native_Ref -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
         new ClassType("java/lang/foreign/AddressLayout"));
       default ->
         {

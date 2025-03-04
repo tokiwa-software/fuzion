@@ -130,8 +130,6 @@ public class C extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
@@ -139,9 +137,9 @@ public class C extends ANY
      * @return statement to perform the given access
      */
     @Override
-    public CStmnt assignStatic(int s, int tc, int f, int rt, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int s, int tc, int f, CExpr tvalue, CExpr val)
     {
-      return assignField(tvalue, tc, tc, f, val, rt);
+      return assignField(tvalue, tc, tc, f, val, _fuir.clazzResultClazz(f));
     }
 
 
@@ -2106,7 +2104,7 @@ public class C extends ANY
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl).split(" ", 2)[0], args);
+    var call = CExpr.call(_fuir.clazzNativeName(cl), args);
     var o = switch (_fuir.getSpecialClazz(rc))
       {
         case
@@ -2342,7 +2340,7 @@ public class C extends ANY
       case c_String :
       case c_false_ :
       case c_true_ :
-      case c_sys_ptr :
+      case c_Array :
       case c_u32 :
       case c_u64 :
       case c_u8 :

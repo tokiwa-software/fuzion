@@ -155,7 +155,7 @@ public class ChoiceIdAsRef extends Value
            idAsRef instanceof ArrayData  );
 
         var cl = (idAsRef instanceof ValueWithClazz id) ? id._clazz
-                                                        : fuir().clazz(SpecialClazzes.c_sys_ptr);
+                                                        : fuir().clazz(SpecialClazzes.c_Array);
         do
           {
             result++;

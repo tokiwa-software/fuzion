@@ -213,8 +213,6 @@ class CodeGen
    *
    * @param f clazz id of the assigned field
    *
-   * @param rt clazz of the field type
-   *
    * @param tvalue the target instance
    *
    * @param val the new value to be assigned to the field.
@@ -222,9 +220,9 @@ class CodeGen
    * @return statement to perform the given assignment
    */
   @Override
-  public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
+  public Expr assignStatic(int s, int tc, int f, Expr tvalue, Expr val)
   {
-    return _jvm.assignField(s, f, rt, tvalue, val);
+    return _jvm.assignField(s, f, _fuir.clazzResultClazz(f), tvalue, val);
   }
 
 

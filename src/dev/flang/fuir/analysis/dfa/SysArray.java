@@ -103,11 +103,7 @@ public class SysArray extends Value
       {
         ne = _elements.join(_dfa, el, _elementClazz);
       }
-    if (_dfa._fuir.clazzIs(_elementClazz, SpecialClazzes.c_sys_ptr))
-      {
-        _elements = ne;
-      }
-    else if (_elements == null || Value.compare(_elements, ne) != 0)
+    if (_elements == null || Value.compare(_elements, ne) != 0)
       {
         _dfa.wasChanged(() -> "elements of SysArray changed: " + _elements + " =>" + ne);
         _elements = ne;
@@ -153,10 +149,6 @@ public class SysArray extends Value
           _elements == null ? sv._elements :
           sv._elements == null ? _elements : _elements.join(dfa, sv._elements, _elementClazz);
         return _dfa.newSysArray(ne, _elementClazz);
-      }
-    else if (v instanceof RefValue rv && _dfa._fuir.clazzIs(rv._clazz, SpecialClazzes.c_sys_ptr))
-      {
-        return _dfa.newSysArray(null, _elementClazz);
       }
     else
       {

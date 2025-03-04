@@ -24,7 +24,7 @@
 
 # effect for manipulating open files
 #
-module:public open(fd fuzion.sys.Pointer,
+module:public open(fd File_Descriptor,
                    public file_name String) : effect is
 
   # seek in file
@@ -62,6 +62,14 @@ module:public open(fd fuzion.sys.Pointer,
       error "mmap failed"
     else
       (mapped_buffer mapped_memory size) ! code
+
+
+  # close file when de-instating effect
+  #
+  redef finally =>
+    _ := fuzion.sys.fileio.close fd
+
+
 
 # short hand to get the currently
 # installed open effect
