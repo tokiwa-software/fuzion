@@ -1,5 +1,5 @@
 
---CURDIR--/ex_nested_lazy.fz:48:14: error 1: Incompatible types when passing argument in a call
+--CURDIR--/ex_nested_lazy.fz:50:14: error 1: Incompatible types when passing argument in a call
   say (lazy1 x1)
 -------------^^
 Actual type for argument #1 'f' does not match expected type.
@@ -10,4 +10,26 @@ assignable to       : 'i32'
 for value assigned  : 'x1'
 To solve this, you could change the type of the target 'f' to 'i32' or convert the type of the assigned value to 'Function (Lazy i32)'.
 
-one error.
+
+--CURDIR--/ex_nested_lazy.fz:39:18: error 2: Incompatible types in assignment
+  say (lazy0 ()->42)
+-----------------^^
+assignment to field : 'ex_nested_lazy.λ.call.result'
+expected formal type: 'Function i32'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '42'
+To solve this, you could change the type of the target 'ex_nested_lazy.λ.call.result' to 'i32' or convert the type of the assigned value to 'Function i32'.
+
+
+--CURDIR--/ex_nested_lazy.fz:47:18: error 3: Incompatible types in assignment
+  say (lazy1 ()->42)
+-----------------^^
+assignment to field : 'ex_nested_lazy.λ.call.result'
+expected formal type: 'Lazy i32'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '42'
+To solve this, you could change the type of the target 'ex_nested_lazy.λ.call.result' to 'i32' or convert the type of the assigned value to 'Lazy i32'.
+
+3 errors.

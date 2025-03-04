@@ -188,7 +188,12 @@ public abstract class AbstractAssign extends Expr
 
     if (resultTypeKnown(res))
       {
-        _value = _value.propagateExpectedType(res, context, _assignedField.resultType());
+        var rt = _assignedField.resultType();
+        if (rt.isFunctionTypeExcludingLazy())
+          {
+            _value = _value.propagateExpectedTypeForPartial(res, context, rt);
+          }
+        _value = _value.propagateExpectedType(res, context, rt);
       }
   }
 
