@@ -40,3 +40,8 @@ private:public File_Descriptor ref is
 # a type denoting a directory handle or file pointer
 #
 private:module Directory_Descriptor ref is
+
+
+# a type denoting a reference to a java object
+#
+private:public Java_Ref ref is

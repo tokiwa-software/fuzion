@@ -595,7 +595,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * On {@code cl} lookup field {@code Java_Ref}
+   * On {@code cl} lookup field {@code java_ref}
    *
    * @param cl Java_Object or inheriting from Java_Object
    *

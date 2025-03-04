@@ -242,7 +242,7 @@ public class JavaInterface extends FUIRContext
             var off = (Integer) e.getValue();
             var v = switch (fuir().clazzBaseName(f))
               {
-              case "Java_Ref"   -> new JavaRef(o);
+              case "java_ref"   -> new JavaRef(o);
               case "forbidden" -> Value.NO_VALUE;
               default -> fuir().clazzIsOuterRef(f) ? new Instance(fuir().clazzOuterClazz(resultClazz))
                                         : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzAsString(f)); }};
