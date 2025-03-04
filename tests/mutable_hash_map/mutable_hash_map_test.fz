@@ -31,18 +31,18 @@ show_op(A type, B type, itm (option (tuple A B))) String =>
       "($a, $b)"
 
 
-show(m container.mutable_hash_map (LM : mutate) (HK : property.hashable) V)=>
+show(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V)=>
   say "load={m.size} content={m.as_string}"
   say "\n{m.int_arr.map(x->show_op(x)).as_string}"
   say "\n"
 
-test_put(m container.mutable_hash_map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
+test_put(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
   say "put $k $v"
   m.put k v
   check m.get .get = v
   show m
 
-test_remove(m container.mutable_hash_map (LM : mutate) (HK : property.hashable) V, k HK) =>
+test_remove(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK) =>
   say "remove $k"
   _ := m.remove k
   check m.get k .is_nil
@@ -51,10 +51,10 @@ test_remove(m container.mutable_hash_map (LM : mutate) (HK : property.hashable) 
 */
 
 
-test_put(m container.mutable_hash_map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
+test_put(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
   m.put k v
 
-test_remove(m container.mutable_hash_map (LM : mutate) (HK : property.hashable) V, k HK) =>
+test_remove(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK) =>
   _ := m.remove k
 
 
@@ -65,7 +65,7 @@ str(i i32) String => "No. $i"
 # INTERVAL TEST
 #
 interval_test is
-  interval_map := container.mutable_hash_map mutate i32 String .empty 5 0.2 0.6 3.0
+  interval_map := container.Mutable_Hash_Map mutate i32 String .empty 5 0.2 0.6 3.0
 
   interval_test_size := 200
 
@@ -142,7 +142,7 @@ interval_test is
 #
 collision_test_1 is
   collision_test_size := 16
-  collision_map := container.mutable_hash_map mutate i32 String .empty collision_test_size 0.25 0.5 2.0
+  collision_map := container.Mutable_Hash_Map mutate i32 String .empty collision_test_size 0.25 0.5 2.0
 
   others1 := [4, 27]
   others2 := [1, 30]
@@ -181,7 +181,7 @@ collision_test_1 is
 #
 collision_test_2 is
   collision_test_size := 60
-  collision_map := container.mutable_hash_map mutate i32 String .empty 2 0.25 0.5 2.0
+  collision_map := container.Mutable_Hash_Map mutate i32 String .empty 2 0.25 0.5 2.0
 
   others1 := [0, 3, 15, 16]
   others2 := [1, 28, 30]
@@ -218,7 +218,7 @@ collision_test_2 is
 # PRIMES TEST
 #
 primes_test is
-  primes_map := container.mutable_hash_map mutate i32 String .empty 2 0.25 0.5 2.0
+  primes_map := container.Mutable_Hash_Map mutate i32 String .empty 2 0.25 0.5 2.0
 
   primes_test_size := 250
 
@@ -266,7 +266,7 @@ random_test is
   simple_random 42 ()->
 
     random_test_size := 600
-    random_map := container.mutable_hash_map mutate i32 String .empty 2 0.25 0.5 2.0
+    random_map := container.Mutable_Hash_Map mutate i32 String .empty 2 0.25 0.5 2.0
     verify_map := container.mutable_tree_map mutate i32 String .empty
 
     for i in 1..random_test_size do

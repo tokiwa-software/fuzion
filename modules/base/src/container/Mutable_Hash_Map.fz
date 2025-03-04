@@ -17,15 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature mutable_hash_map
+#  Source code of Fuzion standard library feature Mutable_Hash_Map
 #
 # -----------------------------------------------------------------------
 
 
 
-# mutable_hash_map -- a mutable hash map from keys HK to values V
+# Mutable_Hash_Map -- a mutable hash map from keys HK to values V
 #
-module:public mutable_hash_map(
+module:public Mutable_Hash_Map(
         # the mutate effect
         #
         public LM type : mutate,
@@ -242,7 +242,7 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  public fixed redef type.empty => container.mutable_hash_map LM HK V 8 0.25 0.5 2
+  public fixed redef type.empty => container.Mutable_Hash_Map LM HK V 8 0.25 0.5 2
   public fixed type.empty(
     # initial size, also the size of the hash map will not decrease below this
     #
@@ -259,4 +259,4 @@ is
     # factor by which the allocated_size is increased if load reaches upper_load_factor
     #
     resize_factor f32 )
-  => container.mutable_hash_map LM HK V initial_and_min_size lower_load_factor upper_load_factor resize_factor
+  => container.Mutable_Hash_Map LM HK V initial_and_min_size lower_load_factor upper_load_factor resize_factor
