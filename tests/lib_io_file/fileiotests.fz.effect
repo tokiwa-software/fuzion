@@ -8,4 +8,3 @@ panic
 fileiotests.f.delete
 fileiotests.f.move
 fuzion.runtime.post_fault
-fileiotests.f.seek
