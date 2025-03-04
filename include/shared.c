@@ -290,7 +290,7 @@ char* fzE_replace_char(const char* str, char find, char replace){
 }
 
 // convert a jstring to a utf-8 byte array
-// NYI OPTIMIZATION do conversion in C not via the JVM.
+// NYI: OPTIMIZATION: do conversion in C not via the JVM.
 const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 {
   if (jstr == NULL)
