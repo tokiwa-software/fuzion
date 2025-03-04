@@ -35,9 +35,4 @@
 public use(R type, path String, code ()-> outcome R) outcome R =>
   (fuzion.sys.fileio.open_dir path).bind R dd->
     # install effect `open T` and run `code`
-    r := open dd path
-       ! code
-    # close file
-    _ := fzE_close_dir dd
-    # return result
-    r
+    open dd path ! code
