@@ -121,7 +121,7 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   }
 }
 
-int fzE_read_dir(intptr_t * dir, void * result) {
+int fzE_dir_read(intptr_t * dir, void * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
   while ((res = FindNextFile(d->handle, &d->findData)) &&
@@ -139,7 +139,7 @@ int fzE_read_dir(intptr_t * dir, void * result) {
   }
 }
 
-int fzE_close_dir(intptr_t * dir) {
+int fzE_dir_close(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FindClose(d->handle);
   // NYI: BUG: free(dir);
@@ -362,7 +362,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // read up to count bytes bytes from sockfd
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
-int fzE_read(int sockfd, void * buf, size_t count){
+int fzE_socket_read(int sockfd, void * buf, size_t count){
   int rec_res = recvfrom( sockfd, buf, count, 0, NULL, NULL );
   if (rec_res == -1)
   {
@@ -379,7 +379,7 @@ int fzE_read(int sockfd, void * buf, size_t count){
 // write buf to sockfd
 // may block if socket is set to blocking.
 // return error code or zero on success
-int fzE_write(int sockfd, const void * buf, size_t count){
+int fzE_socket_write(int sockfd, const void * buf, size_t count){
 return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
   ? fzE_net_error()
   : 0;

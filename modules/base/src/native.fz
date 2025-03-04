@@ -57,7 +57,7 @@ module fzE_opendir(path fuzion.sys.Pointer, open_results fuzion.sys.Pointer) Dir
 #
 # returns -1 on error, 0 on end reached, length of result on success
 #
-module fzE_read_dir(dd Directory_Descriptor, res fuzion.sys.Pointer) i32 => native
+module fzE_dir_read(dd Directory_Descriptor, res fuzion.sys.Pointer) i32 => native
 
 
 # closes the directory given by opaque integer reference to an open
@@ -65,7 +65,7 @@ module fzE_read_dir(dd Directory_Descriptor, res fuzion.sys.Pointer) i32 => nati
 #
 # returns 0 on success, something else on failure.
 #
-module fzE_close_dir(dd Directory_Descriptor) i32 => native
+module fzE_dir_close(dd Directory_Descriptor) i32 => native
 
 
 # 0 = blocking, 1 = none_blocking
@@ -151,14 +151,14 @@ module fzE_get_peer_port(sockfd i32) u16 => native
 # true  => arr_result[0] is the number of bytes read
 # false => arr_result[0] is an error number
 #
-module fzE_read(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
+module fzE_socket_read(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
 
 
 # write buffer bytes on socket
 #
 # returns zero on success, anything else is an error.
 #
-module fzE_write(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
+module fzE_socket_write(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
 
 
 # memory map a file
