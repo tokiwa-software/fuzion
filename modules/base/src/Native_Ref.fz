@@ -17,31 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Internal features which are not meant
-#  to be used outside of this module.
-#
 # -----------------------------------------------------------------------
 
-# a type denoting a mutex, used in concur.sync
+# a type denoting a reference obtained
+# via native interface.
 #
-private:module Mutex ref is
-
-# a type denoting a condition, used in concur.sync
-#
-private:module Condition ref is
-
-# a type denoting a file handle or file pointer
-#
-# NYI: UNDER DEVELOPMENT this should be private:module
-#
-private:public File_Descriptor ref is
-
-
-# a type denoting a directory handle or file pointer
-#
-private:module Directory_Descriptor ref is
-
-
-# a type denoting mapped memory
-#
-private:module Mapped_Memory ref is
+private:public Native_Ref ref is
