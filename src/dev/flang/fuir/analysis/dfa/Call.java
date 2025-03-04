@@ -353,7 +353,9 @@ public class Call extends ANY implements Comparable<Call>, Context
   private Val genericResult()
   {
     var rc = _dfa._fuir.clazzResultClazz(_cc);
-    return _dfa.newInstance(rc, _site, _context);
+    return _dfa._fuir.clazzIsVoidType(rc)
+      ? null
+      : _dfa.newInstance(rc, _site, _context);
   }
 
 
