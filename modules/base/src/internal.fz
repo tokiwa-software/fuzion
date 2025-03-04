@@ -26,9 +26,11 @@
 #
 private:module Mutex ref is
 
+
 # a type denoting a condition, used in concur.sync
 #
 private:module Condition ref is
+
 
 # a type denoting a file handle or file pointer
 #
