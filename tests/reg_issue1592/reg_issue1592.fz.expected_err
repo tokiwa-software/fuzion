@@ -1,0 +1,43 @@
+
+--CURDIR--/reg_issue1592.fz:26:19: error 1: Ambiguous assignment to 'option nil' from 'nil'
+  x option nil := nil
+------------------^^^
+'nil' is assignable to 'nil', 'nil'
+
+
+--CURDIR--/reg_issue1592.fz:27:30: error 2: Ambiguous assignment to 'option nil' from 'nil'
+  y option nil := option nil nil
+-----------------------------^^^
+'nil' is assignable to 'nil', 'nil'
+
+
+--CURDIR--/reg_issue1592.fz:28:19: error 3: Ambiguous assignment to 'option nil' from 'nil'
+  z := option nil nil
+------------------^^^
+'nil' is assignable to 'nil', 'nil'
+
+
+--CURDIR--/reg_issue1592.fz:26:5: error 4: Actual type parameters to choice type must be disjoint types
+  x option nil := nil
+----^^^^^^
+The following types have overlapping values:
+'nil'
+'nil'
+
+
+--CURDIR--/reg_issue1592.fz:27:5: error 5: Actual type parameters to choice type must be disjoint types
+  y option nil := option nil nil
+----^^^^^^
+The following types have overlapping values:
+'nil'
+'nil'
+
+
+--CURDIR--/reg_issue1592.fz:28:3: error 6: Actual type parameters to choice type must be disjoint types
+  z := option nil nil
+--^
+The following types have overlapping values:
+'nil'
+'nil'
+
+6 errors.
