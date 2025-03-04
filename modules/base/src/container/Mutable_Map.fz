@@ -92,7 +92,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
   # add all key-value pairs to this map
   #
-  # if key already exists, existing value gets updated
+  # for existing keys, value gets updated
   #
   public put_all(kvs Sequence (tuple K V)) =>
     for kv in kvs do

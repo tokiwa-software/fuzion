@@ -25,6 +25,11 @@
 
 # Mutable_Hash_Map -- a mutable hash map from keys HK to values V
 #
+# Uses a mutable array internally, when upper_load_factor is reached size is multiplied
+# by resize_factor (doubled, tripled, etc.) and elements are copied to new array of this size.
+# If lower_load_factor is reached size is divided by resize_factor.
+# Insert and retrieve operations on this map are therefore in amortized O(1).
+#
 module:public Mutable_Hash_Map(
         # the mutate effect
         #
@@ -67,11 +72,6 @@ is
   #
   load := mut 0
 
-  # number of entries in this map
-  #
-  redef size =>
-    load.get
-
   # maximum number of pairs before size is increased
   #
   max_elem => (allocated_size.get.as_f32 * upper_load_factor).ceil.as_i32
@@ -84,6 +84,10 @@ is
   #
   allocated_size := mut (min_size.as_f32 / upper_load_factor).ceil.as_i32
 
+  # the contents
+  #
+  contents := mut (LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil)
+
 
   # calculate the index of k within contents array in case of no conflict
   #
@@ -95,11 +99,6 @@ is
   #
   collision (at i64) =>
     (at + 1) % allocated_size.get.as_i64  # NYI: dumb collision function, check literature and improve!
-
-
-  # the contents
-  #
-  contents := mut (LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil)
 
 
   # increase internal allocation if upper_load_factor is reached
@@ -147,6 +146,12 @@ is
           store (collision at) k v update_size
 
 
+  # number of entries in this map
+  #
+  redef size =>
+    load.get
+
+
   # add key-value pair to this map
   # if key already exists, existing value gets updated
   #
@@ -178,18 +183,20 @@ is
   #
   public redef remove(k HK) option V =>
 
+
     del(del_idx i64) option V =>
       match contents.get[del_idx]
-       nil => nil
-       t tuple =>
-        (ek, v) := t
-        if ek = k
-          contents.get[del_idx] := nil
-          load <- load.get - 1
-          fill_hole del_idx (collision del_idx)
-          v
-        else
-          del (collision del_idx)
+        nil => nil
+        t tuple =>
+          (ek, v) := t
+          if ek = k
+            contents.get[del_idx] := nil
+            load <- load.get - 1
+            fill_hole del_idx (collision del_idx)
+            v
+          else
+            del (collision del_idx)
+
 
     # move elements if they should be in the position of the removed element
     # recursively filles new holes
@@ -218,6 +225,7 @@ is
           else
             fill_hole cur_idx (collision next_idx)
 
+            
     return_val := del (idx k)
 
     decrease_if_necessary
