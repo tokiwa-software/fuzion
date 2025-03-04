@@ -37,7 +37,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
 
   # convenience feature to add a key-value pair to this map
-  # does the same as `add k v`
+  # does the same as `put k v`
   #
   public set [] (k K, v V) unit =>
     put k v
@@ -56,14 +56,14 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   # get a sequence of all keys in this map
   #
   public keys =>
-    # NYI: BUG: t.0 does not work here, see #4408
+    # NYI: BUG: t.0 does not work here, see #4750
     items.map t->t.values.0
 
 
   # get a sequence of all values in this map
   #
   public values =>
-    # NYI: BUG: t.1 does not work here, see #4408
+    # NYI: BUG: t.1 does not work here, see #4750
     items.map t->t.values.1
 
 
@@ -85,14 +85,14 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
   # add key-value pair to this map
   #
-  # if key already exists, NYI what should happen?
+  # if key already exists, existing value gets updated
   #
   public put(k K, v V) unit => abstract
 
 
   # add all key-value pairs to this map
   #
-  # if key already exists, NYI what should happen?
+  # for existing keys, value gets updated
   #
   public put_all(kvs Sequence (tuple K V)) =>
     for kv in kvs do
