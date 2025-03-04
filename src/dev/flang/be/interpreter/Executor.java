@@ -205,7 +205,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object assignStatic(int s, int tc, int f, int rt, Value tvalue, Value val)
+  public Object assignStatic(int s, int tc, int f, Value tvalue, Value val)
   {
     Interpreter.setField(f, tc, tvalue, val);
     return null;
