@@ -17,37 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_time_date_time
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-lib_time_date_time =>
-
-  a := time.date_time 2024 1 30 10 30 12 1E8
-  b := time.date_time 2024 1 30 10 30 12 1E7
-  c := time.date_time 2023 1 30 10 30 12 1E8
-
-  say "a = $a"
-  say "b = $b"
-  say "c = $c"
-
-  say "a is_after a = {a > a}"
-  say "a is_after b = {a > b}"
-  say "a is_after c = {a > c}"
-  say "b is_after a = {b > a}"
-  say "b is_after b = {b > b}"
-  say "b is_after c = {b > c}"
-  say "c is_after a = {c > a}"
-  say "c is_after b = {c > b}"
-  say "c is_after c = {c > c}"
-
-  say "a is_before a = {a < a}"
-  say "a is_before b = {a < b}"
-  say "a is_before c = {a < c}"
-  say "b is_before a = {b < a}"
-  say "b is_before b = {b < b}"
-  say "b is_before c = {b < c}"
-  say "c is_before a = {c < a}"
-  say "c is_before b = {c < b}"
-  say "c is_before c = {c < c}"
-
+override NAME = reg_issue2489
+include ../simple.mk

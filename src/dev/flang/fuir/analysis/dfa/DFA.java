@@ -167,14 +167,12 @@ public class DFA extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
      */
     @Override
-    public void assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
+    public void assignStatic(int s, int tc, int f, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
     }
