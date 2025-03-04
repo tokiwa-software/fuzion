@@ -31,7 +31,7 @@ module fzE_last_error i32 => native
 #
 module fzE_mkdir(
           # the internal array data representing the dir path in bytes
-          path fuzion.sys.Pointer) i32 => native
+          path Array) i32 => native
 
 
 # NYI: int fzE_setenv(const char *name, const char *value, int overwrite);
@@ -49,15 +49,15 @@ module fzE_mkdir(
 # opaque reference to the opened directory in its first field, and an integer that is
 # not 0 in case of an error in its second field.
 #
-module fzE_opendir(path fuzion.sys.Pointer, open_results fuzion.sys.Pointer) Directory_Descriptor => native
+module fzE_opendir(path Array, open_results Array) Directory_Descriptor => native
 
 
-# reads the next entry of the directory given by fuzion.sys.Pointer
+# reads the next entry of the directory given by Array
 # to an open directory
 #
 # returns -1 on error, 0 on end reached, length of result on success
 #
-module fzE_dir_read(dd Directory_Descriptor, res fuzion.sys.Pointer) i32 => native
+module fzE_dir_read(dd Directory_Descriptor, res Array) i32 => native
 
 
 # closes the directory given by opaque integer reference to an open
@@ -97,7 +97,7 @@ module fzE_close(sd i32) i32 => native
 # 0  => arr_result[0] is the socket descriptor
 # -1 => arr_result[0] is an error number
 #
-module fzE_bind (family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 => native
+module fzE_bind (family, socket_type, protocol i32, host Array, port Array, arr_result Array) i32 => native
 
 
 # activates a server socket, setting a backlog
@@ -122,7 +122,7 @@ module fzE_accept(sd i32) i32 => native
 # 0  => arr_result[0] is the socket descriptor
 # -1 => arr_result[0] is an error number
 #
-module fzE_connect(family, socket_type, protocol i32, host fuzion.sys.Pointer, port fuzion.sys.Pointer, arr_result fuzion.sys.Pointer) i32 => native
+module fzE_connect(family, socket_type, protocol i32, host Array, port Array, arr_result Array) i32 => native
 
 
 # get a socket's peer's ip address
@@ -133,7 +133,7 @@ module fzE_connect(family, socket_type, protocol i32, host fuzion.sys.Pointer, p
 # returns the length of the IP address written to the array,
 # in bytes (4 for IPv4, 16 for IPv6)
 #
-module fzE_get_peer_address(sockfd i32, address fuzion.sys.Pointer) i32 => native
+module fzE_get_peer_address(sockfd i32, address Array) i32 => native
 
 
 # get a socket's peer's port
@@ -151,14 +151,14 @@ module fzE_get_peer_port(sockfd i32) u16 => native
 # true  => arr_result[0] is the number of bytes read
 # false => arr_result[0] is an error number
 #
-module fzE_socket_read(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
+module fzE_socket_read(sd i32, arr_data Array, length i64) i32 => native
 
 
 # write buffer bytes on socket
 #
 # returns zero on success, anything else is an error.
 #
-module fzE_socket_write(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => native
+module fzE_socket_write(sd i32, arr_data Array, length i64) i32 => native
 
 
 # memory map a file
@@ -170,7 +170,7 @@ module fzE_socket_write(sd i32, arr_data fuzion.sys.Pointer, length i64) i32 => 
 # note: offset+size must not exceed file size.
 # note: returning allocated memory - instead of error code - simplifies handling in DFA.
 #
-module fzE_mmap(fd File_Descriptor, offset, size i64, res fuzion.sys.Pointer) Mapped_Memory => native
+module fzE_mmap(fd File_Descriptor, offset, size i64, res Array) Mapped_Memory => native
 
 
 # close a memory mapped file
@@ -188,7 +188,7 @@ module fzE_nanotime u64 => native
 module fzE_nanosleep(arg1 u64) unit => native
 
 
-module fzE_rm(path fuzion.sys.Pointer) i32 => native
+module fzE_rm(path Array) i32 => native
 
 
 # intrinsic that fills an array with some metadata of the file/dir provided by the path
@@ -200,9 +200,9 @@ module fzE_rm(path fuzion.sys.Pointer) i32 => native
 #
 module fzE_stat(
       # the internal array data representing the file/dir path in bytes
-      path fuzion.sys.Pointer,
+      path Array,
       # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
-      meta_data fuzion.sys.Pointer) i32 => native
+      meta_data Array) i32 => native
 
 
 # intrinsic that fills an array with some metadata of the file/dir provided by the path
@@ -212,20 +212,20 @@ module fzE_stat(
 # in case an error is returned (the result of this feature is false), then the size field of
 # the meta_data array will contain the errno for the lstat call.
 #
-module fzE_lstat(path fuzion.sys.Pointer, meta_data fuzion.sys.Pointer) i32 => native # NYI behaves the same as stats in the interpreter
+module fzE_lstat(path Array, meta_data Array) i32 => native # NYI behaves the same as stats in the interpreter
 
 
 # create a new process
 # NYI option to pass stdin/out/err, pwd
 #
 module fzE_process_create(
-  args fuzion.sys.Pointer,
+  args Array,
   arg_len i32,
-  env_vars fuzion.sys.Pointer,
+  env_vars Array,
   env_vars_len i32,
-  res fuzion.sys.Pointer,
-  args_str fuzion.sys.Pointer,
-  env_str fuzion.sys.Pointer) i32 => native
+  res Array,
+  args_str Array,
+  env_str Array) i32 => native
 
 
 # wait for process to exit
@@ -239,7 +239,7 @@ module fzE_pipe_read(
   # the descriptor
   desc i64,
   # the internal array data representing the container for the bytes to be read
-  file_array fuzion.sys.Pointer,
+  file_array Array,
   # the length of the array that represents the file bytes
   file_array_length i32) i32 => native
 
@@ -250,7 +250,7 @@ module fzE_pipe_write(
   # the descriptor
   desc i64,
   # the internal array data representing the content bytes to write
-  content fuzion.sys.Pointer,
+  content Array,
   # the length of the internal array representing the content
   content_length i32) i32 => native
 
@@ -267,9 +267,9 @@ module fzE_pipe_close(
 #
 module fzE_file_open(
               # a Fuzion Pointer represention the path for the source to be opened
-              path fuzion.sys.Pointer,
+              path Array,
               # open_results[error number] as a Fuzion Pointer
-              open_results fuzion.sys.Pointer,
+              open_results Array,
               # opening flag (Read: 0, Write: 1, Append: 2)
               flag i8) File_Descriptor => native
 
@@ -285,7 +285,7 @@ module fzE_file_read(
               # the file descriptor
               fd File_Descriptor,
               # the internal array data representing the container for the bytes to be read from the file
-              file_array fuzion.sys.Pointer,
+              file_array Array,
               # the length of the array that represents the file bytes
               file_array_length i32) i32 => native
 
@@ -297,7 +297,7 @@ module fzE_file_write(
               # the file descriptor
               fd File_Descriptor,
               # the internal array data representing the content bytes to insert in file
-              content fuzion.sys.Pointer,
+              content Array,
               # the length of the internal array representing the content
               content_length i32) i32 => native
 
@@ -306,9 +306,9 @@ module fzE_file_write(
 #
 module fzE_file_move(
               # the internal array data representing the old file/dir path in bytes
-              old_path fuzion.sys.Pointer,
+              old_path Array,
               # the internal array data representing the new file/dir path in bytes
-              new_path fuzion.sys.Pointer) i32 => native
+              new_path Array) i32 => native
 
 
 # intrinsic that takes an i64 value that represents the file descriptor and closes the stream
@@ -397,7 +397,7 @@ module fzE_unique_id u64 => native
 
 # fills arg with current UTC date time
 #
-module fzE_date_time(a fuzion.sys.Pointer) unit => native
+module fzE_date_time(a Array) unit => native
 
 
 module fzE_null Native_Ref => native

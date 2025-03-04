@@ -353,7 +353,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case c_f32     -> ValueLayout.JAVA_FLOAT;
       case c_f64     -> ValueLayout.JAVA_DOUBLE;
       case c_u64     -> ValueLayout.JAVA_LONG;
-      case c_sys_ptr -> ValueLayout.ADDRESS;
+      case c_Array   -> ValueLayout.ADDRESS;
       case c_File_Descriptor -> ValueLayout.ADDRESS;
       case c_Directory_Descriptor -> ValueLayout.ADDRESS;
       case c_Mapped_Memory -> ValueLayout.ADDRESS;

@@ -405,15 +405,13 @@ public class GeneratingFUIR extends FUIR
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
               case "error"                     -> SpecialClazzes.c_error       ;
-              case "fuzion"                    -> SpecialClazzes.c_fuzion      ;
-              case "fuzion.sys"                -> SpecialClazzes.c_fuzion_sys  ;
-              case "fuzion.sys.Pointer"        -> SpecialClazzes.c_sys_ptr     ;
               case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
               case "Condition"                 -> SpecialClazzes.c_Condition   ;
               case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
               case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
               case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
+              case "Array"                     -> SpecialClazzes.c_Array;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)

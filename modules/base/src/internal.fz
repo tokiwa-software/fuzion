@@ -45,3 +45,13 @@ private:module Directory_Descriptor ref is
 # a type denoting mapped memory
 #
 private:module Mapped_Memory ref is
+
+
+# a type denoting backend-specific allocated memory
+# i.e. an array with element type ET
+#
+# This must not be used for anything except assignments to other pointers, no
+# calls on this value are permitted, not even `p.as_string`, this will lead to
+# undefined behaviour.
+#
+private:module Array /* NYI: UNDER DEVELOPMENT: (ET type)*/ ref is

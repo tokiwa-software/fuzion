@@ -1089,7 +1089,7 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      case c_sys_ptr -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
+      case c_Array -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
         new ClassType("java/lang/foreign/AddressLayout"));
       case c_File_Descriptor -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
         new ClassType("java/lang/foreign/AddressLayout"));

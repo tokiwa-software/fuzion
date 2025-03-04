@@ -31,7 +31,7 @@ public fuzion.java is
   public create_jvm0(class_path String) =>
     create_jvm (sys.c_string "-Djava.class.path=$class_path")
 
-  create_jvm(option_string fuzion.sys.Pointer) unit => intrinsic
+  create_jvm(option_string universe.Array) unit => intrinsic
 
 
   # read a static field of given name in class with given name.  Wrap result into
@@ -68,22 +68,22 @@ public fuzion.java is
 
   # intrinsic to read static field
   #
-  get_static_field0(T type, clazz, field Java_Ref, signature fuzion.sys.Pointer) T => intrinsic
+  get_static_field0(T type, clazz, field Java_Ref, signature universe.Array) T => intrinsic
 
 
   # intrinsic to read instance field
   #
-  get_field0(T type, thiz, field Java_Ref, signature fuzion.sys.Pointer) T => intrinsic
+  get_field0(T type, thiz, field Java_Ref, signature universe.Array) T => intrinsic
 
 
   # intrinsic to set static field
   #
-  set_static_field0(clazz, field, val Java_Ref, signature fuzion.sys.Pointer) unit => intrinsic
+  set_static_field0(clazz, field, val Java_Ref, signature universe.Array) unit => intrinsic
 
 
   # intrinsic to set instance field
   #
-  set_field0(thiz, field, val Java_Ref, signature fuzion.sys.Pointer) unit => intrinsic
+  set_field0(thiz, field, val Java_Ref, signature universe.Array) unit => intrinsic
 
 
   # A Java reference
@@ -262,7 +262,7 @@ public fuzion.java is
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  array_get(T type, a Java_Ref, ix i32, signature fuzion.sys.Pointer) T => intrinsic
+  array_get(T type, a Java_Ref, ix i32, signature universe.Array) T => intrinsic
 
 
   # convert a Sequence to a Java Array object
@@ -271,11 +271,11 @@ public fuzion.java is
   #
   # If you want to create an array of complex types use `Java.as_java_object [...]`
   #
-  public array_to_java_object(T type, a Sequence T) Array T
+  public array_to_java_object(T type, a Sequence T) fuzion.java.Array T
     pre
       T : java_primitive
   =>
-    Array T (array_to_java_object0 T a.as_array.internal_array)
+    fuzion.java.Array T (array_to_java_object0 T a.as_array.internal_array)
 
 
   # intrinsic to convert an array to a Java Array object
