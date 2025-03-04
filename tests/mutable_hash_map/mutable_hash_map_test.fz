@@ -50,24 +50,30 @@ test_remove(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) 
   show m
 */
 
-
+# wrapper for put to be able to add debugging code easily
+#
 test_put(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
   m.put k v
 
+# wrapper for remove to be able to add debugging code easily
+#
 test_remove(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK) =>
   _ := m.remove k
 
-
+# create a string from a number to be used as value in the map
+#
 str(i i32) String => "No. $i"
 
 
 
 # INTERVAL TEST
+# add numbers of an interval and then remove them with all combinations of none, one or both reversed
 #
 interval_test is
   interval_map := container.Mutable_Hash_Map mutate i32 String .empty 5 0.2 0.6 3.0
 
   interval_test_size := 200
+
 
   # put 1..n then remove 1..n
 
@@ -87,6 +93,7 @@ interval_test is
 
 
   # put n..1 then remove 1..n
+
   for i in (1..interval_test_size).reverse do
     test_put interval_map i (str i)
     check interval_map.size = interval_map.items.count = (interval_test_size - i + 1)
@@ -101,7 +108,9 @@ interval_test is
     for j in (i+1)..interval_test_size do
       check interval_map.get j .get = (str j)
 
+
   # put n..1 then remove n..1
+
   for i in (1..interval_test_size).reverse do
     test_put interval_map i (str i)
     check interval_map.size = interval_map.items.count = (interval_test_size - i + 1)
@@ -116,7 +125,9 @@ interval_test is
     for j in 1..(i-1) do
       check interval_map.get j .get = (str j)
 
+
   # put 1..n then remove n..1
+
   for i in 1..interval_test_size do
       test_put interval_map i (str i)
       check interval_map.size = interval_map.items.count = i
@@ -134,11 +145,12 @@ interval_test is
 
 
 # COLLISION TEST 1
-# with fixed size of internal array
+#
+# Size of internal array does not change in this test.
 #
 # All collision elements get mapped to index 25, therefore subsequent elements get saved afterwards,
 # with some going into the beginning of the array after the end has been reached.
-# Some "other" elements are stored at their regular index, which would be eligible for collision handling otherwise.
+# Some "other" elements are stored at their regular index, which is in the range used for collision resolution.
 #
 collision_test_1 is
   collision_test_size := 16
@@ -177,7 +189,9 @@ collision_test_1 is
 
 
 # COLLISION TEST 2
-# with growing internal size
+#
+# requires internal array to change size multiple times
+# most elements mapped to one index, a few other elements in the range which is used for collisions
 #
 collision_test_2 is
   collision_test_size := 60
@@ -216,6 +230,7 @@ collision_test_2 is
 
 
 # PRIMES TEST
+# add and then remove prime numbers
 #
 primes_test is
   primes_map := container.Mutable_Hash_Map mutate i32 String .empty 2 0.25 0.5 2.0
@@ -260,7 +275,7 @@ primes_test is
 
 
 # RANDOM TEST
-# randomly put or remove random numbers
+# put or remove random numbers at random , checking against mutable_tree_map
 #
 random_test is
   simple_random 42 ()->
