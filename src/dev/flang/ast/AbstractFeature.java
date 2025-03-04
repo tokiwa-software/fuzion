@@ -1545,33 +1545,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Determine the formal argument types of this feature.
-   *
-   * @return a new array containing this feature's formal argument types.
-   */
-  public AbstractType[] argTypes()
-  {
-    int argnum = 0;
-    var result = new AbstractType[arguments().size()];
-    for (var frml : arguments())
-      {
-        if (CHECKS) check
-          (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
-
-        var frmlT = frml.resultType();
-
-        result[argnum] = frmlT;
-        argnum++;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
-  }
-
-
-  /**
    * Is this feature marked with the {@code fixed} modifier. If so, this feature is
    * not inherited, i.e., we know that at runtime, the outer feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()

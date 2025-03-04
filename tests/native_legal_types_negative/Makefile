@@ -17,35 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.dir.open
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# effect for manipulating open directories
-#
-module:public open(dd Directory_Descriptor,
-                   public path String) : effect is
-
-  # reads the next entry of this directory
-  #
-  # returns the name of the next entry, or an error if the operation fails
-  # for some reason (including that there are no more entries).
-  #
-  # NOTES: current directory `.` and parent directory `..` are omitted.
-  #
-  public read outcome String ! io.dir.read =>
-    io.dir.read.read dd
-
-
-  # close dir when de-instating effect
-  #
-  redef finally =>
-    _ := fzE_close_dir dd
-
-
-# short hand to get the currently
-# installed open effect
-#
-public open =>
-  open.env
+override NAME = native_legal_types_negative
+include ../simple.mk

@@ -353,23 +353,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   private Val genericResult()
   {
     var rc = _dfa._fuir.clazzResultClazz(_cc);
-    return switch (_dfa._fuir.getSpecialClazz(rc))
-      {
-        case c_i8, c_i16, c_i32, c_i64,
-             c_u8, c_u16, c_u32, c_u64,
-             c_f32, c_f64              -> NumericValue.create(_dfa, rc);
-        case c_bool                    -> _dfa.bool();
-        case c_String                  -> _dfa.newConstString(null, this);
-        case c_sys_ptr                 -> _dfa.newInstance(_dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), _site, _context);
-        case c_File_Descriptor         -> _dfa.newInstance(rc, _site, _context);
-        case c_Directory_Descriptor    -> _dfa.newInstance(rc, _site, _context);
-        case c_Java_Ref                -> _dfa.newInstance(rc, _site, _context);
-        case c_Mapped_Memory           -> _dfa.newInstance(rc, _site, _context);
-        default                        ->
-          _dfa._fuir.clazzIsUnitType(rc)
-            ? Value.UNIT
-            : null;
-      };
+    return _dfa.newInstance(rc, _site, _context);
   }
 
 
