@@ -232,6 +232,7 @@ public class JavaInterface extends FUIRContext
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_Mutex)) { return new JavaRef(o); }
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_Condition)) { return new JavaRef(o); }
     else if (resultClazz == fuir().clazz(SpecialClazzes.c_File_Descriptor)) { return new JavaRef(o); }
+    else if (resultClazz == fuir().clazz(SpecialClazzes.c_Directory_Descriptor)) { return new JavaRef(o); }
     else
       {
         var result = new Instance(resultClazz);

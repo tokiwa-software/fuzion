@@ -33,6 +33,6 @@
 #         s String => say s
 #
 public use(R type, path String, code ()-> outcome R) outcome R =>
-  (fuzion.sys.fileio.open_dir path).bind R fd->
+  (fuzion.sys.fileio.open_dir path).bind R dd->
     # install effect `open T` and run `code`
-    open fd path ! code
+    open dd path ! code
