@@ -128,8 +128,6 @@ public class C extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
@@ -137,9 +135,9 @@ public class C extends ANY
      * @return statement to perform the given access
      */
     @Override
-    public CStmnt assignStatic(int s, int tc, int f, int rt, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int s, int tc, int f, CExpr tvalue, CExpr val)
     {
-      return assignField(tvalue, tc, tc, f, val, rt);
+      return assignField(tvalue, tc, tc, f, val, _fuir.clazzResultClazz(f));
     }
 
 
