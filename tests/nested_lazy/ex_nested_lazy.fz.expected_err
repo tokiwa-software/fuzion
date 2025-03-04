@@ -1,5 +1,5 @@
 
---CURDIR--/ex_nested_lazy.fz:49:14: error 1: Incompatible types when passing argument in a call
+--CURDIR--/ex_nested_lazy.fz:50:14: error 1: Incompatible types when passing argument in a call
   say (lazy1 x1)
 -------------^^
 Actual type for argument #1 'f' does not match expected type.
