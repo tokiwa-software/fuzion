@@ -297,6 +297,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
         markSysArrayArgsAsInitialized();
+        markFunctionArgsAsCalled();
+
         result = genericResult();
         if (result == null)
           {
@@ -325,6 +327,31 @@ public class Call extends ANY implements Comparable<Call>, Context
           }
       }
     return result;
+  }
+
+
+  /**
+   * call all args that are Function
+   */
+  private void markFunctionArgsAsCalled()
+  {
+    for (int i = 0; i < _dfa._fuir.clazzArgCount(_cc); i++)
+      {
+        _dfa.readField(_dfa._fuir.clazzArg(_cc, i));
+
+        var call = _dfa._fuir.lookupCall(_dfa._fuir.clazzArgClazz(_cc, i));
+        if (call != FUIR.NO_CLAZZ)
+          {
+            var args = new List<Val>();
+            for (int j = 0; j < _dfa._fuir.clazzArgCount(call); j++)
+              {
+                args.add(_dfa.newInstance(_dfa._fuir.clazzArgClazz(call, j), FUIR.NO_SITE, _context));
+              }
+            var ignore = _dfa
+              .newCall(call, FUIR.NO_SITE, this._args.get(i).value(), args, null /* env */, _context)
+              .result();
+          }
+      }
   }
 
 
