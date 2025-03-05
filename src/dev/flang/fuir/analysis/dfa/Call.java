@@ -300,6 +300,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         markSysArrayArgsAsInitialized();
         markFunctionArgsAsCalled();
+        markArrayArgsAsRead();
 
         result = genericResult();
         if (result == null)
@@ -329,6 +330,26 @@ public class Call extends ANY implements Comparable<Call>, Context
           }
       }
     return result;
+  }
+
+
+  /**
+   * call all args that are Function
+   */
+  private void markArrayArgsAsRead()
+  {
+    for (int i = 0; i < _dfa._fuir.clazzArgCount(_cc); i++)
+      {
+        _dfa.readField(_dfa._fuir.clazzArg(_cc, i));
+
+        var at = _dfa._fuir.clazzArgClazz(_cc, i);
+        if (_dfa._fuir.clazzIsArray(at))
+          {
+            var ia = _dfa._fuir.lookup_array_internal_array(at);
+            _dfa.readField(ia);
+            _dfa.readField(_dfa._fuir.lookup_fuzion_sys_internal_array_data(_dfa._fuir.clazzResultClazz(ia)));
+          }
+      }
   }
 
 

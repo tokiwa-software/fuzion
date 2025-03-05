@@ -86,10 +86,6 @@ module:public array(
     array.this
 
 
-  public as_pointer =>
-    internal_array.data
-
-
   # create an empty array of type T
   #
   public fixed type.empty array T =>

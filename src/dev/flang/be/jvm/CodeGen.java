@@ -694,11 +694,13 @@ class CodeGen
     var slot = 0;
     for (int i = 0; i < args.size(); i++)
       {
-        var isCall = _fuir.lookupCall(_fuir.clazzArgClazz(cc, i)) != NO_CLAZZ;
+        var at = _fuir.clazzArgClazz(cc, i);
+        var isCall = _fuir.lookupCall(at) != NO_CLAZZ;
         if (!args.get(i).type().isPrimitive() && !isCall)
           {
             result = result
                 .andThen(args.get(i))
+                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
                 .andThen(Expr.invokeStatic(
                   Names.RUNTIME_CLASS,
@@ -725,7 +727,8 @@ class CodeGen
     var result = Expr.UNIT;
     for (int i = 0; i < args.size(); i++)
       {
-        var call = _fuir.lookupCall(_fuir.clazzArgClazz(cc, i));
+        var at = _fuir.clazzArgClazz(cc, i);
+        var call = _fuir.lookupCall(at);
         if (call != NO_CLAZZ)
           {
             result = result
@@ -742,12 +745,24 @@ class CodeGen
             slots.addLast(slot);
             result = result
                 .andThen(args.get(i))
+                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
                 .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
           }
       }
     return result;
+  }
+
+
+
+  private Expr getArrayDataField(int at)
+  {
+    var ia = _fuir.lookup_array_internal_array(at);
+    var iad = _fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia));
+    return _jvm
+      .getfield(ia)
+      .andThen(_jvm.getfield(iad));
   }
 
 

@@ -27,7 +27,7 @@
 #   sqlite3 **ppDb          /* OUT: SQLite db handle */
 # );
 #
-sqlite3_open(filename Array, db Array) i32 => native
+sqlite3_open(filename array u8, db array Native_Ref) i32 => native
 
 # int sqlite3_exec(
 #   sqlite3*,                                  /* An open database */
@@ -37,7 +37,7 @@ sqlite3_open(filename Array, db Array) i32 => native
 #   char **errmsg                              /* Error msg written here */
 # );
 #
-sqlite3_exec(F type : Function i32 Native_Ref i32 Native_Ref Native_Ref, db Native_Ref, sql Array, callback F, arg Native_Ref, errmsg Array) i32 => native
+sqlite3_exec(F type : Function i32 Native_Ref i32 Native_Ref Native_Ref, db Native_Ref, sql array u8, callback F, arg Native_Ref, errmsg array Native_Ref) i32 => native
 
 # int sqlite3_close(sqlite3*);
 #
@@ -68,7 +68,7 @@ sqlite_database(db Native_Ref) : Database is
 
         cb data
 
-    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null].as_pointer = 0
+    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null] = 0
       unit
     else
       error "error executing query $q"
@@ -82,7 +82,7 @@ sqlite_database(db Native_Ref) : Database is
 
   type.open(path String) outcome Database =>
     db := [ffi.null]
-    if sqlite3_open path.as_c_string db.as_pointer = 0
+    if sqlite3_open path.as_c_string db = 0
       check !(ffi.is_null db[0])
       sqlite_database db[0]
     else
@@ -93,7 +93,7 @@ sqlite_database(db Native_Ref) : Database is
 # helper to convert fuzion String to a c-string with \0 byte at end.
 #
 String.as_c_string =>
-  (String.this + codepoint 0).utf8.as_array.as_pointer
+  (String.this + codepoint 0).utf8.as_array
 
 
 
@@ -119,7 +119,7 @@ sqlite_database2(db Native_Ref) : Database is
         say len
         0
 
-    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null].as_pointer = 0
+    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null] = 0
       unit
     else
       error "error executing query $q"
@@ -134,7 +134,7 @@ sqlite_database2(db Native_Ref) : Database is
 
   type.open(path String) outcome Database =>
     db := [ffi.null]
-    if sqlite3_open path.as_c_string db.as_pointer = 0
+    if sqlite3_open path.as_c_string db = 0
       check !(ffi.is_null db[0])
       sqlite_database2 db[0]
     else

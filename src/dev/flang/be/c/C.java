@@ -2087,7 +2087,8 @@ public class C extends ANY
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        var c = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
+        var at = _fuir.clazzArgClazz(cl, i);
+        var c = _fuir.lookupCall(at);
         var arg = c != NO_CLAZZ
           // 1. pass as function pointer
           ? (_fuir.clazzOuterRef(c) != NO_CLAZZ
@@ -2095,11 +2096,15 @@ public class C extends ANY
               ? CIdent.funWrapper(cl).adrOf()
               // 1.2 does not need outer ref
               : new CIdent(_names.function(c)).adrOf())
-          : _fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
+          : _fuir.clazzIsRef(at)
           // 2. pass as ref
           ? CIdent.arg(i).castTo("void *")
           // 3. pass as value
-          : CIdent.arg(i);
+          : (_fuir.clazzIsArray(at)
+              // 3.1 array, we need to get field internal_array.data
+              ? getFieldInternalArrayData(i, at)
+              // 3.2 plain value
+              : CIdent.arg(i));
         args.add(arg);
       }
 
@@ -2138,6 +2143,18 @@ public class C extends ANY
       }
 
     return CStmnt.seq(res);
+  }
+
+
+  private CExpr getFieldInternalArrayData(int i, int at)
+  {
+    var ia = _fuir.lookup_array_internal_array(at);
+
+    return CIdent
+      .arg(i)
+      .field(_names.fieldName(ia))
+      .field(_names.fieldName(_fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia))))
+      .castTo("void *");
   }
 
 

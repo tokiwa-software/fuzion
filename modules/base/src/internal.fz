@@ -54,4 +54,4 @@ private:module Mapped_Memory ref is
 # calls on this value are permitted, not even `p.as_string`, this will lead to
 # undefined behaviour.
 #
-private:public Array /* NYI: UNDER DEVELOPMENT: (ET type)*/ ref is
+private:module Array /* NYI: UNDER DEVELOPMENT: (ET type)*/ ref is

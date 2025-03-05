@@ -1508,9 +1508,9 @@ public abstract class FUIR extends IR
   /**
    * Is {@code constCl} an array?
    */
-  public boolean clazzIsArray(int constCl)
+  public boolean clazzIsArray(int cl)
   {
-    return clazzOriginalName(constCl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(constCl);
+    return clazzOriginalName(cl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(cl);
   }
 
 
