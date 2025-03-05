@@ -91,7 +91,10 @@ is
 
   # calculate the index of k within contents array in case of no conflict
   #
-  idx (k HK) => (((hash k).low32bits.cast_to_i32 & i32.max) % allocated_size.get).as_i64
+  idx (k HK) =>
+    h1 := hash k
+    h  := ((h1 << 17) ^ (h1 << 3) ^ h1).cast_to_i64 & i64.max
+    h % allocated_size.get.as_i64
 
 
   # in case of a collision at given position,
@@ -225,7 +228,6 @@ is
           else
             fill_hole cur_idx (collision next_idx)
 
-            
     return_val := del (idx k)
 
     decrease_if_necessary
@@ -250,7 +252,7 @@ is
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  public fixed redef type.empty => container.Mutable_Hash_Map LM HK V 8 0.25 0.5 2
+  public fixed redef type.empty => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2
   public fixed type.empty(
     # initial size, also the size of the hash map will not decrease below this
     #
