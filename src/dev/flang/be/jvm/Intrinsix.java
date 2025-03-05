@@ -38,6 +38,7 @@ import dev.flang.be.jvm.classfile.Label;
 
 import dev.flang.be.jvm.runtime.Intrinsics;
 import dev.flang.be.jvm.runtime.Runtime;
+import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -455,13 +456,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
         yield Expr.checkcast(new ClassType("java/lang/Boolean"))
           .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
       }
-      case c_Array -> {
-        check(false);
-        yield Expr.UNIT;
-      }
       default -> {
         var rt = jvm._types.javaType(rc);
         var jref = jvm._fuir.lookupJavaRef(rc);
+
+        if (CHECKS) check
+          (jref != FUIR.NO_CLAZZ);
 
         yield jvm.new0(rc)                                            // result, rc0
           .andThen(Expr.DUP_X1)                                       // rc0, result, rc0
@@ -542,30 +542,20 @@ public class Intrinsix extends ANY implements ClassFileConstants
             Expr.checkcast(new ClassType("java/lang/Boolean"))
               .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean)));
       }
-      case c_Array -> {
-        yield Expr.aload(slot, JAVA_LANG_OBJECT);
-      }
-      case c_Mutex -> {
-        yield Expr.aload(slot, JAVA_LANG_OBJECT);
-      }
-      case c_Condition -> {
-        yield Expr.aload(slot, JAVA_LANG_OBJECT);
-      }
-      case c_File_Descriptor -> {
-        yield Expr.aload(slot, JAVA_LANG_OBJECT);
-      }
-      case c_Directory_Descriptor -> {
-        yield Expr.aload(slot, JAVA_LANG_OBJECT);
-      }
-      case c_Java_Ref -> {
-        yield Expr.aload(slot, JAVA_LANG_OBJECT);
-      }
-      case c_Mapped_Memory -> {
-        yield Expr.aload(slot, JAVA_LANG_OBJECT);
-      }
+      case c_Array,
+           c_Mutex,
+           c_Condition,
+           c_File_Descriptor,
+           c_Directory_Descriptor,
+           c_Java_Ref,
+           c_Mapped_Memory ->
+        Expr.aload(slot, JAVA_LANG_OBJECT);
       default -> {
         var rt = jvm._types.javaType(rc0);
         var jref = jvm._fuir.lookupJavaRef(rc0);
+
+        if (CHECKS) check
+          (jref != FUIR.NO_CLAZZ);
 
         yield Expr.aload(slot, JAVA_LANG_OBJECT)
           .andThen(jvm.new0(rc0))                                            // result, rc0
