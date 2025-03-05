@@ -1620,44 +1620,6 @@ public class Runtime extends ANY
   }
 
 
-  // NYI: remove, replace by layout
-  public static MemoryLayout layout2(String str)
-  {
-    if (str.equals("I"))
-      {
-        return ValueLayout.JAVA_INT;
-      }
-    else if (str.equals("B"))
-      {
-        return ValueLayout.JAVA_BYTE;
-      }
-    else if (str.equals("Z"))
-      {
-        return ValueLayout.JAVA_BOOLEAN;
-      }
-    else if (str.equals("F"))
-      {
-        return ValueLayout.JAVA_FLOAT;
-      }
-    else if (str.equals("D"))
-      {
-        return ValueLayout.JAVA_DOUBLE;
-      }
-    else if (str.equals("S"))
-      {
-        return ValueLayout.JAVA_SHORT;
-      }
-    else if (str.equals("J"))
-      {
-        return ValueLayout.JAVA_LONG;
-      }
-    else if (str.equals("C"))
-      {
-        return ValueLayout.JAVA_CHAR;
-      }
-    return ValueLayout.ADDRESS;
-  }
-
   public static MemoryLayout layout(Class returnType)
   {
     if (PRECONDITIONS) require

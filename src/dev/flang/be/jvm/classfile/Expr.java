@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.Stack;
 
 import dev.flang.be.jvm.classfile.ClassFile.StackMapTable;
+import dev.flang.be.jvm.Names;
+
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
@@ -1255,6 +1257,27 @@ public abstract class Expr extends ByteCode
         }
       };
   }
+
+
+  /**
+   * Load a java.lang.Class constant given by JavaType
+   */
+  public static Expr classconst(JavaType t)
+  {
+    if (t instanceof ClassType ct)
+      {
+        return classconst(ct);
+      }
+
+    if (CHECKS) check
+      (t.isPrimitive());
+
+    return getstatic(
+      "java/lang/" + t.className().substring(0,1).toUpperCase() + t.className().substring(1).toLowerCase(),
+      "TYPE",
+      Names.JAVA_LANG_CLASS);
+  }
+
 
   /**
    * Load int local variable from slot at given index.

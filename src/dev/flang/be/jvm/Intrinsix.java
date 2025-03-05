@@ -1060,23 +1060,23 @@ public class Intrinsix extends ANY implements ClassFileConstants
       {
         return new Pair<>
           (
-               Expr.stringconst(jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)).descriptor())
-                   .andThen(Expr
-                      .invokeStatic(
-                        Names.RUNTIME_CLASS,
-                        "layout2",
-                        "(" + Names.JAVA_LANG_STRING.descriptor() +  ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor(),
-                        Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT
-                      )
-                   )
-                   .andThen(args.get(0))
-                   .andThen(args.get(1))
-                    // java.lang.Class
-                   .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                              "native_array",
-                                              "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "I)" + Types.JAVA_LANG_OBJECT.descriptor(),
-                                              Types.JAVA_LANG_OBJECT)),
-               Expr.UNIT
+            Expr.classconst(jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)))
+                .andThen(Expr
+                  .invokeStatic(
+                    Names.RUNTIME_CLASS,
+                    "layout",
+                    "(" + Names.JAVA_LANG_CLASS.descriptor() +  ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor(),
+                    Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT
+                  )
+                )
+                .andThen(args.get(0))
+                .andThen(args.get(1))
+                // java.lang.Class
+                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                          "native_array",
+                                          "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "I)" + Types.JAVA_LANG_OBJECT.descriptor(),
+                                          Types.JAVA_LANG_OBJECT)),
+            Expr.UNIT
           );
       });
 
