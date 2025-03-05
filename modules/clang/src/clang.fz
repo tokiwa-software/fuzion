@@ -1,0 +1,81 @@
+// NYI:
+Native_Value ref is
+
+ex =>
+
+
+  clang_createIndex(excludeDeclarationsFromPCH, displayDiagnostics i32) Native_Ref => native
+  clang_disposeIndex(idx Native_Ref) unit => native
+  clang_parseTranslationUnit(
+    idx Native_Ref,
+    source_filename array u8,
+    command_line_args array Native_Ref,
+    num_command_line_args i32,
+    unsaved_files Native_Ref,
+    num_unsaved_files u32,
+    options u32
+  ) Native_Ref => native
+  clang_getTranslationUnitCursor(translation_unit Native_Ref) Native_Value => native
+  clang_visitChildren(CX_CURSOR_VISITOR type : Function i32 Native_Value Native_Value Native_Ref,
+                      cursor Native_Value,
+                      visitor CX_CURSOR_VISITOR,
+                      client_data Native_Ref) Native_Ref => native
+  clang_getCursorKind(cursor Native_Value) i32 => native
+  clang_getCursorSpelling(cursor Native_Value) Native_Value => native
+  clang_getCursorResultType(cursor Native_Value) Native_Value => native
+  clang_getTypeSpelling(t Native_Value) Native_Value => native
+  clang_disposeString(str Native_Value) unit => native
+  clang_Cursor_getNumArguments(cursor Native_Value) i32 => native
+  clang_Cursor_getArgument(cursor Native_Value, idx i32) Native_Value => native
+  clang_getCursorType(cursor Native_Value) Native_Value => native
+  clang_disposeTranslationUnit(tu Native_Ref) unit => native
+
+  CXChildVisit_Recurse i32 => native
+  CXCursor_FunctionDecl i32 => native
+
+
+  visitor : Function i32 Native_Value Native_Value Native_Ref is
+    redef call(crsr Native_Value, parent Native_Value, client_data Native_Ref) =>
+      if clang_getCursorKind crsr = CXCursor_FunctionDecl
+        func_name := clang_getCursorSpelling crsr
+        return_type := clang_getCursorResultType crsr
+        return_type_spelling := clang_getTypeSpelling return_type
+
+        num_args := clang_Cursor_getNumArguments crsr
+        for i in 1..num_args do
+            arg := clang_Cursor_getArgument crsr i
+            arg_name := clang_getCursorSpelling arg
+            arg_type := clang_getCursorType arg
+            arg_type_spelling := clang_getTypeSpelling arg_type
+
+            clang_disposeString arg_name
+            clang_disposeString arg_type_spelling
+
+        clang_disposeString func_name
+        clang_disposeString return_type_spelling
+
+
+      CXChildVisit_Recurse
+
+  idx := clang_createIndex 0 0
+
+  fzE_to_native(arr array u8) Native_Ref => native
+
+  header_file := "assert.h"
+
+  # args := ["-I/usr/include", "-I/usr/local/include"]
+  #   .map (arg -> fzE_to_native arg.utf8.as_array)
+  #   .as_array
+
+  tu := clang_parseTranslationUnit idx header_file.utf8.as_array /* NYI args*/[] 0 ffi.null 0 0
+
+  check !(ffi.is_null tu)
+
+  cursor := clang_getTranslationUnitCursor tu
+
+  _ := clang_visitChildren cursor visitor ffi.null
+
+  clang_disposeTranslationUnit tu
+  clang_disposeIndex idx
+
+ex
