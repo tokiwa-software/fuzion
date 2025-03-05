@@ -29,7 +29,35 @@
 public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
 pre
   debug: 1 ≤ month ≤ 12
-  debug: 1 ≤ day ≤ days_in_month year month
+  debug: {
+    # is the given year a leap year?
+    #
+    is_leap_year =>
+      (year % 4 = 0 & year % 100 != 0) |
+        ((year % 100 = 0) & (year % 400 = 0))
+
+
+    # how many days does february have in the given year?
+    #
+    days_in_february =>
+      if is_leap_year then 29 else 28
+
+
+    # the days in the months of the year
+    # starting at january, february, ..., december
+    #
+    days_in_months =>
+      [31, days_in_february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+
+    # how many days does a given month of a given year have
+    #
+    days_in_month =>
+      days_in_months[month - 1]
+
+
+    1 ≤ day ≤ days_in_month
+  }
   debug: 0 ≤ hour ≤ 23
   debug: 0 ≤ minute ≤ 59
   debug: 0 ≤ second ≤ 60 # possible leap seconds
@@ -109,38 +137,3 @@ is
            abort trit.no
 
     ternary_compare != trit.no
-
-
-# how many days does the given year have?
-#
-public days_in_year(year i32) =>
-  if is_leap_year year then 366 else 365
-
-
-# how many days does february have in the given year?
-#
-days_in_february(year i32) =>
-  if is_leap_year year then 29 else 28
-
-
-# the days in the months of the year
-# starting at january, february, ..., december
-#
-days_in_months(year i32) =>
-  [31, days_in_february year, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
-
-# how many days does a given month of a given year have
-#
-public days_in_month(year, month i32)
-pre
-  debug: 1 ≤ month ≤ 12
-=>
-  (days_in_months year)[month - 1]
-
-
-# is the given year a leap year?
-#
-is_leap_year(year i32) =>
-  (year % 4 = 0 & year % 100 != 0) |
-    ((year % 100 = 0) & (year % 400 = 0))
