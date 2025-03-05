@@ -1466,96 +1466,88 @@ public class Runtime extends ANY
 
   public static Object native_array(MemoryLayout memLayout, Object obj, int length)
   {
-    // NYI: remove this if else, once DFA knows hwo to trigger call of callback
-    if (obj instanceof Object[])
+    var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
+    if (memLayout instanceof OfByte o)
       {
-        return obj;
+        var result = new byte[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(o, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfBoolean ob)
+      {
+        var result = new boolean[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfChar ob)
+      {
+        var result = new char[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfDouble ob)
+      {
+        var result = new double[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfFloat ob)
+      {
+        var result = new float[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfInt ob)
+      {
+        var result = new int[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfLong ob)
+      {
+        var result = new long[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfShort ob)
+      {
+        var result = new short[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
       }
     else
       {
-        var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
-        if (memLayout instanceof OfByte o)
+        var ob = (AddressLayout)memLayout;
+        var result = new Object[length];
+        for (int i = 0; i < result.length; i++)
           {
-            var result = new byte[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(o, i);
-              }
-            return result;
+            result[i] = memSeg.getAtIndex(ob, i);
           }
-        else if (memLayout instanceof OfBoolean ob)
-          {
-            var result = new boolean[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
-        else if (memLayout instanceof OfChar ob)
-          {
-            var result = new char[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
-        else if (memLayout instanceof OfDouble ob)
-          {
-            var result = new double[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
-        else if (memLayout instanceof OfFloat ob)
-          {
-            var result = new float[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
-        else if (memLayout instanceof OfInt ob)
-          {
-            var result = new int[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
-        else if (memLayout instanceof OfLong ob)
-          {
-            var result = new long[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
-        else if (memLayout instanceof OfShort ob)
-          {
-            var result = new short[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
-        else
-          {
-            var ob = (AddressLayout)memLayout;
-            var result = new Object[length];
-            for (int i = 0; i < result.length; i++)
-              {
-                result[i] = memSeg.getAtIndex(ob, i);
-              }
-            return result;
-          }
+        return result;
       }
   }
 
