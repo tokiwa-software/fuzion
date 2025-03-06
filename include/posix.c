@@ -826,3 +826,26 @@ void fzE_cnd_destroy(void *cnd) {
 #else
 #endif
 }
+
+
+int64_t fzE_file_read(void * file, void * buf, int32_t size)
+{
+  int fno = fileno(file);
+  fcntl(fno, F_SETFL, O_NONBLOCK);
+
+  struct pollfd fds;
+  fds.fd = fno;
+  fds.events = POLLIN;
+
+  int ten_seconds = 10000;
+
+  while(poll(&fds, 1, ten_seconds) == 0);
+
+  size_t result = fread(buf, 1, size, (FILE*)file);
+
+  return result > 0
+    ? result
+    : result == 0
+    ? -1
+    : -2;
+}

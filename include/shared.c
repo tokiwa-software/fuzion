@@ -953,16 +953,6 @@ void fzE_date_time(void * result)
 }
 
 
-int64_t fzE_file_read(void * file, void * buf, int32_t size)
-{
-  size_t result = fread(buf, 1, size, (FILE*)file);
-  return ferror((FILE*)file)!=0
-    ? -2
-    : result==0 && feof((FILE*)file)!=0
-    ? -1
-    : (int64_t)result;
-}
-
 int64_t fzE_file_write(void * file, void * buf, int32_t size)
 {
   size_t result = fwrite(buf, 1, size, (FILE*)file);
