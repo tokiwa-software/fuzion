@@ -492,7 +492,7 @@ class LibraryOut extends ANY
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
-    if (_sourceModule._options._eraseInternalNamesInLib && n.isInternal())
+    if (_sourceModule._options._eraseInternalNamesInMod && n.isInternal())
       {
         bn = "";
       }

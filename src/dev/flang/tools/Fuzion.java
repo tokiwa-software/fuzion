@@ -331,23 +331,23 @@ public class Fuzion extends Tool
       }
     },
 
-    saveLib("-saveLib=<file>")
+    saveMod("-save-module=<file>")
     {
       boolean runsCode() { return false; }
       void parseBackendArg(Fuzion f, String a)
       {
-        f._saveLib  = parsePath(a);
+        f._saveMod  = parsePath(a);
       }
       String usage()
       {
-        return "[-XeraseInternalNamesInLib=(on|off)] ";
+        return "[-XeraseInternalNamesInMod=(on|off)] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
         boolean result = false;
-        if (o.startsWith("-XeraseInternalNamesInLib"))
+        if (o.startsWith("-XeraseInternalNamesInMod"))
           {
-            f._eraseInternalNamesInLib = parseOnOffArg(o);
+            f._eraseInternalNamesInMod = parseOnOffArg(o);
             result = true;
           }
         return result;
@@ -370,15 +370,15 @@ public class Fuzion extends Tool
             var data = fe.sourceModule().data();
             if (data != null)
               {
-                try (var os = Files.newOutputStream(f._saveLib))
+                try (var os = Files.newOutputStream(f._saveMod))
                   {
                     Channels.newChannel(os).write(data);
-                    say(" + " + f._saveLib + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
+                    say(" + " + f._saveMod + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
                   }
                 catch (IOException io)
                   {
-                    Errors.error("-saveLib: I/O error when writing module file",
-                                 "While trying to write file '"+ f._saveLib + "' received '" + io + "'");
+                    Errors.error("-save-module: I/O error when writing module file",
+                                 "While trying to write file '"+ f._saveMod + "' received '" + io + "'");
                   }
               }
           }
@@ -460,7 +460,7 @@ public class Fuzion extends Tool
     /**
      * parse the argument that activates this backend. This is not needed for
      * backends like {@code -c} or {@code -dfa}, but for those that require additional
-     * argument like {@code -saveLib=<path>}.
+     * argument like {@code -save-module=<path>}.
      */
     void parseBackendArg(Fuzion f, String a)
     {
@@ -574,22 +574,22 @@ public class Fuzion extends Tool
 
 
   /**
-   * Should we save a library?
+   * Should we save a module?
    */
-  Path _saveLib = null;
+  Path _saveMod = null;
 
 
   /**
-   * Should we load the base library? We do not want to load if when using
-   * -saveLib= backend to create the base library file.
+   * Should we load the base module? We do not want to load if when using
+   * -save-module= backend to create the base module file.
    */
-  boolean _loadBaseLib = true;
+  boolean _loadBaseMod = true;
 
 
   /**
-   * When saving a library, should we erase internal names?
+   * When saving a module, should we erase internal names?
    */
-  boolean _eraseInternalNamesInLib = false;
+  boolean _eraseInternalNamesInMod = false;
 
 
   /**
@@ -699,7 +699,7 @@ public class Fuzion extends Tool
   protected String STANDARD_OPTIONS(boolean xtra)
   {
     return super.STANDARD_OPTIONS(xtra) +
-      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseLib=(on|off)] " : "");
+      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseModule=(on|off)] " : "");
   }
 
 
@@ -1025,7 +1025,7 @@ public class Fuzion extends Tool
                 _backend.parseBackendArg(this, a);
               }
             else if (a.startsWith("-XfuzionHome="            )) { _fuzionHome              = parsePath(a);              }
-            else if (a.startsWith("-XloadBaseLib="           )) { _loadBaseLib             = parseOnOffArg(a);          }
+            else if (a.startsWith("-XloadBaseModule="        )) { _loadBaseMod             = parseOnOffArg(a);          }
             else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
@@ -1095,8 +1095,8 @@ public class Fuzion extends Tool
       {
         var options = new FrontEndOptions(_verbose,
                                           _fuzionHome,
-                                          _loadBaseLib,
-                                          _eraseInternalNamesInLib,
+                                          _loadBaseMod,
+                                          _eraseInternalNamesInMod,
                                           _modules,
                                           _moduleDirs,
                                           _dumpModules,
@@ -1203,9 +1203,9 @@ public class Fuzion extends Tool
   private String moduleName()
   {
     var n = "main";
-    if (_saveLib != null)
+    if (_saveMod != null)
        {
-         var p = _saveLib;
+         var p = _saveMod;
          n = p.getFileName().toString();
          var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
          if (n.endsWith(sfx))
