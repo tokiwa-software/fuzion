@@ -63,7 +63,7 @@ module:public Mutable_Hash_Map(
 pre
   debug: min_size > 0
   debug: 0.0 < lower_load_factor < upper_load_factor
-  debug: lower_load_factor < upper_load_factor <= 1.0
+  debug: lower_load_factor < upper_load_factor < 1.0
   debug: resize_factor >= 2.0
 
 is
@@ -253,24 +253,3 @@ is
   # create an empty instance of Mutable_Hash_Map
   #
   public fixed redef type.empty => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2
-
-  
-  # create an empty instance of Mutable_Hash_Map
-  #
-  public fixed type.empty(
-    # initial size, also the size of the hash map will not decrease below this
-    #
-    initial_and_min_size i32,
-
-    # lower boundary at which the size of the internal array is decreased
-    #
-    lower_load_factor f32,
-
-    # upper boundary at which the size of the internal array is increased
-    #
-    upper_load_factor f32,
-
-    # factor by which the allocated_size is increased if load reaches upper_load_factor
-    #
-    resize_factor f32 )
-  => container.Mutable_Hash_Map LM HK V initial_and_min_size lower_load_factor upper_load_factor resize_factor

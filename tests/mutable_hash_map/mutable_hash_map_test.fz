@@ -70,7 +70,7 @@ str(i i32) String => "No. $i"
 # add numbers of an interval and then remove them with all combinations of none, one or both reversed
 #
 interval_test is
-  interval_map := container.Mutable_Hash_Map mutate i32 String .empty 5 0.2 0.6 3.0
+  interval_map := container.Mutable_Hash_Map mutate i32 String .empty
 
   interval_test_size := 200
 
@@ -146,15 +146,14 @@ interval_test is
 
 # COLLISION TEST 1
 #
-# Size of internal array does not change in this test.
-#
-# All collision elements get mapped to index 25, therefore subsequent elements get saved afterwards,
-# with some going into the beginning of the array after the end has been reached.
+# Once more then 8 elements are in the map all collision elements get mapped to index 25,
+# therefore subsequent elements get saved afterwards, with some going into the beginning
+# of the array after the end has been reached.
 # Some "other" elements are stored at their regular index, which is in the range used for collision resolution.
 #
 collision_test_1 is
   collision_test_size := 16
-  collision_map := container.Mutable_Hash_Map mutate i32 String .empty collision_test_size 0.25 0.5 2.0
+  collision_map := container.Mutable_Hash_Map mutate i32 String .empty
 
   others1 := [4, 27]
   others2 := [1, 30]
@@ -190,12 +189,11 @@ collision_test_1 is
 
 # COLLISION TEST 2
 #
-# requires internal array to change size multiple times
 # most elements mapped to one index, a few other elements in the range which is used for collisions
 #
 collision_test_2 is
   collision_test_size := 60
-  collision_map := container.Mutable_Hash_Map mutate i32 String .empty 2 0.25 0.5 2.0
+  collision_map := container.Mutable_Hash_Map mutate i32 String .empty
 
   others1 := [0, 3, 15, 16]
   others2 := [1, 28, 30]
@@ -233,7 +231,7 @@ collision_test_2 is
 # add and then remove prime numbers
 #
 primes_test is
-  primes_map := container.Mutable_Hash_Map mutate i32 String .empty 2 0.25 0.5 2.0
+  primes_map := container.Mutable_Hash_Map mutate i32 String .empty
 
   primes_test_size := 250
 
@@ -281,7 +279,7 @@ random_test is
   simple_random 42 ()->
 
     random_test_size := 600
-    random_map := container.Mutable_Hash_Map mutate i32 String .empty 2 0.25 0.5 2.0
+    random_map := container.Mutable_Hash_Map mutate i32 String .empty
     verify_map := container.mutable_tree_map mutate i32 String .empty
 
     for i in 1..random_test_size do
