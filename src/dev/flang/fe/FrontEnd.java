@@ -183,7 +183,7 @@ public class FrontEnd extends ANY
    */
   private LibraryModule[] loadModules(AbstractFeature universe)
   {
-    if (_options._loadBaseLib)
+    if (_options._loadBaseMod)
       {
         module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME), universe);
       }
@@ -195,7 +195,7 @@ public class FrontEnd extends ANY
       .stream()
       .filter(kv -> {
         var moduleName = kv.getKey();
-        return _options._loadBaseLib && moduleName.equals(FuzionConstants.BASE_MODULE_NAME)
+        return _options._loadBaseMod && moduleName.equals(FuzionConstants.BASE_MODULE_NAME)
           || _options._modules.contains(moduleName);
       })
       .map(x -> x.getValue())

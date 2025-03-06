@@ -1012,7 +1012,7 @@ runtimeClazzId
 RuntimeException
 s's
 sameLine
-saveLib
+save-module
 scaler
 secField
 secFieldNextPos
@@ -1289,7 +1289,7 @@ xffff
 XfuzionHome
 Xhelp
 XjavaProf
-XloadBaseLib
+XloadBaseModule
 XmaxErrors
 XmaxWarning
 XmaxWarnings
