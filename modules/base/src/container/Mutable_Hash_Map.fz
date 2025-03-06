@@ -250,21 +250,25 @@ is
     container.hash_map HK V (pairs.map (.values.0) ).as_array (pairs.map (.values.1)).as_array
 
 
-  # empty -- convenience routine to create an empty instance of hash_map
+  # create an empty instance of Mutable_Hash_Map
   #
   public fixed redef type.empty => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2
+
+  
+  # create an empty instance of Mutable_Hash_Map
+  #
   public fixed type.empty(
     # initial size, also the size of the hash map will not decrease below this
     #
-    private initial_and_min_size i32,
+    initial_and_min_size i32,
 
     # lower boundary at which the size of the internal array is decreased
     #
-    private lower_load_factor f32,
+    lower_load_factor f32,
 
     # upper boundary at which the size of the internal array is increased
     #
-    private upper_load_factor f32,
+    upper_load_factor f32,
 
     # factor by which the allocated_size is increased if load reaches upper_load_factor
     #
