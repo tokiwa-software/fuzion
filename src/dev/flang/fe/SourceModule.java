@@ -675,9 +675,14 @@ part of the (((inner features))) declarations of the corresponding
   {
     findDeclarations(cotype, outerType);
     addDeclared(outerType, cotype);
-    cotype.scheduleForResolution(_res);
     resolveDeclarations(cotype);
   }
+
+
+  /**
+   * During type resolution, add a type parameter created for a free type like
+   * {@code T} in {@code f(x T) is ...}.
+   */
   public void addTypeParameter(AbstractFeature outer,
                                Feature typeParameter)
   {
