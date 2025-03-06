@@ -1473,7 +1473,7 @@ public class Feature extends AbstractFeature
    */
   private boolean isExtensionFeature()
   {
-    return _qname.size() > 1;
+    return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
   }
 
 
