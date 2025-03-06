@@ -1518,6 +1518,28 @@ public class Feature extends AbstractFeature
           }
 
         resolveArgumentTypes(res);
+
+        visit(new FeatureVisitor() {
+          @Override
+          public Expr action(Feature f, AbstractFeature outer)
+          {
+            if (f.implKind() == Impl.Kind.FieldInit && f.resultTypeIfPresent(res) != null)
+              {
+                f.impl().propagateExpectedType(res, context(), f.resultTypeIfPresent(res));
+              }
+            return f;
+          }
+        });
+
+        if (_returnType.isFunctionReturnType() &&
+            impl().expr() != null &&
+            // NYI: UNDER DEVELOPMENT: ugly special case
+            // functions trigger resolving types which may lead to "Illegal forward or cyclic type inference"
+            !_returnType.functionReturnType().isAnyFunctionType())
+          {
+            impl().expr().propagateExpectedType(res, this.context(), _returnType.functionReturnType());
+          }
+
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)
@@ -1893,7 +1915,7 @@ A ((Choice)) declaration must not contain a result type.
          * expected type as in
          *
          *   f (b bool) i64              { if (b) { 23 } else { -17 } }
-         *   g (b bool) choice<A, f32> } { b ? 3.4 : A }
+         *   g (b bool) choice A f32     { b ? 3.4 : A }
          *   abstract myfun { abstract x(a i32) i32 }
          *   h myfun { fun (a) => a*a }
          *
