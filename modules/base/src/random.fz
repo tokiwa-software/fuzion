@@ -52,6 +52,8 @@ is
 
   # return next random number of type i64 in the range 0..exclusive_bound-1
   #
+  # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
+  #
   public next_i64(exclusive_bound i64)
   pre debug: exclusive_bound ≥ 0
   => (next.get exclusive_bound.as_u64).as_i64
@@ -63,6 +65,8 @@ is
 
 
   # return next random number of type u64 in the range 0..exclusive_bound-1
+  #
+  # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
   #
   public next_u64(exclusive_bound u64) =>  next.get exclusive_bound
 
@@ -90,6 +94,8 @@ is
 
 
   # get the current random number in the range 0..exclusive_bound-1
+  #
+  # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
   #
   public get (exclusive_bound u64)
   =>
