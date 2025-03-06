@@ -43,28 +43,28 @@ is
     res
 
 
-  # return next random number of type i32 in the range 0..max-1
+  # return next random number of type i32 in the range 0..exclusive_bound-1
   #
-  public next_i32(max i32)
-  pre debug: max ≥ 0
-  => (next.get max.as_u64).as_i32
+  public next_i32(exclusive_bound i32)
+  pre debug: exclusive_bound ≥ 0
+  => (next.get exclusive_bound.as_u64).as_i32
 
 
-  # return next random number of type i64 in the range 0..max-1
+  # return next random number of type i64 in the range 0..exclusive_bound-1
   #
-  public next_i64(max i64)
-  pre debug: max ≥ 0
-  => (next.get max.as_u64).as_i64
+  public next_i64(exclusive_bound i64)
+  pre debug: exclusive_bound ≥ 0
+  => (next.get exclusive_bound.as_u64).as_i64
 
 
-  # return next random number of type u32 in the range 0..max-1
+  # return next random number of type u32 in the range 0..exclusive_bound-1
   #
-  public next_u32(max u32) => (next.get max.as_u64).as_u32
+  public next_u32(exclusive_bound u32) => (next.get exclusive_bound.as_u64).as_u32
 
 
-  # return next random number of type u64 in the range 0..max-1
+  # return next random number of type u64 in the range 0..exclusive_bound-1
   #
-  public next_u64(max u64) =>  next.get max
+  public next_u64(exclusive_bound u64) =>  next.get exclusive_bound
 
 
   # return next random number of type f32 in the range [0..1),
@@ -86,14 +86,14 @@ is
   # return next random number as a bool
   #
   public next_bool =>
-    (next.get 2) %% 2
+    p.get %% 2
 
 
-  # get the current random number in the range 0..max-1
+  # get the current random number in the range 0..exclusive_bound-1
   #
-  public get (max u64)
+  public get (exclusive_bound u64)
   =>
-    p.get % max  # NYI: This implementation is bad if max is big
+    p.get % exclusive_bound  # NYI: This implementation is bad if exclusive_bound is big
 
 
   # install default instance of random
