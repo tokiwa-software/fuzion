@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Stack;
 
 import dev.flang.be.jvm.classfile.ClassFile.StackMapTable;
-import dev.flang.be.jvm.Names;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -1275,7 +1274,7 @@ public abstract class Expr extends ByteCode
     return getstatic(
       "java/lang/" + t.className().substring(0,1).toUpperCase() + t.className().substring(1).toLowerCase(),
       "TYPE",
-      Names.JAVA_LANG_CLASS);
+      ClassFileConstants.JAVA_LANG_CLASS);
   }
 
 
