@@ -1501,16 +1501,19 @@ public abstract class FUIR extends IR
    */
   public int inlineArrayElementClazz(int constCl)
   {
+    if (PRECONDITIONS) require
+      (clazzIsArray(constCl));
+
     return this.clazzActualGeneric(constCl, 0);
   }
 
 
   /**
-   * Is {@code constCl} an array?
+   * Is {@code cl} an array?
    */
-  public boolean clazzIsArray(int constCl)
+  public boolean clazzIsArray(int cl)
   {
-    return clazzOriginalName(constCl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(constCl);
+    return clazzOriginalName(cl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(cl);
   }
 
 
