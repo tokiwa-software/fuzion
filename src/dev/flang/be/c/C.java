@@ -2133,7 +2133,7 @@ public class C extends ANY
                 ));
             break;
           }
-        case c_bool: { tmp.assign(call.cond(_names.FZ_TRUE, _names.FZ_FALSE)); break; }
+        case c_bool: { res.add(tmp.assign(call.cond(_names.FZ_TRUE, _names.FZ_FALSE))); break; }
         default:
           {
             var x = _fuir.clazzIsRef(rc)
