@@ -851,6 +851,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = _appliedTypePars2Cache;
       }
+    else if (actualGenerics.contains(Types.t_UNDEFINED))
+      {
+        result = applyTypePars_(f, actualGenerics);
+      }
     else
       {
         result = applyTypePars_(f, actualGenerics);
