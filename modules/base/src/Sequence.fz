@@ -1521,8 +1521,8 @@ is
 
   # equality
   #
-  public fixed redef type.equality(a, b equatable_sequence T) =>
-    equality0(a1, b1 equatable_sequence (T2 : property.equatable)) =>
+  public redef type.equality(a, b equatable_sequence.this) =>
+    equality0(a1, b1 equatable_sequence.this) =>
       (a1.unwrap.zip b1.unwrap x,y->x=y) ∀ id
 
     au := a.unwrap
