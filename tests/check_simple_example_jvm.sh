@@ -60,7 +60,7 @@ else
     # limit cpu time for executing test
     ulimit -S -t 120 || echo "failed setting limit via ulimit"
 
-    EXIT_CODE=$(FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -jvm "$2" >tmp_out.txt 2>tmp_err.txt; echo $?)
+    EXIT_CODE=$(FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -jvm ${FUZION_JVM_BACKEND_OPTIONS:+ $FUZION_JVM_BACKEND_OPTIONS} "$2" >tmp_out.txt 2>tmp_err.txt; echo $?)
 
     if [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ]; then
         echo "unexpected exit code"
