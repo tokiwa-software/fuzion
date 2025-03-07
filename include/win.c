@@ -45,6 +45,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <time.h>
 
 // NYI remove POSIX imports
+#include <poll.h>
 #include <fcntl.h>      // fcntl
 
 #include <winsock2.h>
