@@ -696,6 +696,20 @@ public class Impl extends ANY
     return result;
   }
 
+
+  /**
+   * Add initial call to the expression of
+   * this implementation.
+   */
+  public void addInitialCall(AbstractCall ac)
+  {
+    if (PRECONDITIONS) require
+      (ac.type().compareTo(Types.resolved.t_unit) == 0,
+       ac.calledFeature().resultType().compareTo(Types.resolved.t_unit) == 0);
+
+    _expr = new Block(new List<>(ac, _expr));
+  }
+
 }
 
 /* end of file */
