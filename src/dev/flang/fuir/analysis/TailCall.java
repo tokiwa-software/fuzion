@@ -144,7 +144,7 @@ public class TailCall extends ANY
     var cl = _fuir.clazzAt(s);
     var outerRef = _fuir.clazzOuterRef(cl);
     var res =
-      outerRef == -1 ||
+      outerRef == NO_CLAZZ ||
       nargs >= 1 &&
       (tc == _fuir.clazzUniverse() ||
        _fuir.codeAt       (ts) == IR.ExprKind.Call    &&
