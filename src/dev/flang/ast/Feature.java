@@ -113,7 +113,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is visiblity explicitly specified in source code (or already set)?
+   * Is visibility explicitly specified in source code (or already set)?
    */
   public boolean isVisibilitySpecified()
   {
@@ -127,7 +127,7 @@ public class Feature extends AbstractFeature
    *
    * @param v
    */
-  public void setVisbility(Visi v)
+  public void setVisibility(Visi v)
   {
     if (PRECONDITIONS) require
       (_visibility == Visi.UNSPECIFIED);

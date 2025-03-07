@@ -505,8 +505,7 @@ public class Html extends ANY
       + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
         // NYI rename fd-private?
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-        .replace("$1",
-          summary(af, outer))
+        .replace("$1", summary(af, outer))
         .replace("$2", Util.commentOf(af))
         .replace("$3", redefines(af))
     )

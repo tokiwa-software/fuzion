@@ -439,8 +439,8 @@ public class ParsedCall extends Call
     var paa = partiallyApplicableAlternative(res, context, expectedType);
     Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
                          : this;
-    if (l == this  /* resolution did not replace this call by sthg different */ &&
-        _calledFeature != Types.f_ERROR /* resulution did not cause an error */    )
+    if (l == this  /* resolution did not replace this call by sth different */ &&
+        _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
         if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`

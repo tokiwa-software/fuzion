@@ -259,7 +259,7 @@ private reserved is
 
 
 # internal arrays used by `expanding_array` will use values of type `slot` such that
-# we can destingish slots that are used from those that are unused or reserved.
+# we can distinguish slots that are used from those that are unused or reserved.
 #
 private slot(T type) : choice reserved unused T is
 
@@ -287,7 +287,7 @@ private slot(T type) : choice reserved unused T is
     match slot.this
       v T => v
       unused   => panic "unexpected unused slot"
-      reserved => panic "unexpected reerved slot"
+      reserved => panic "unexpected reserved slot"
 
   # String representation of slot, for debugging
   #
@@ -311,7 +311,7 @@ is
   #
   # `i` must be in the range of indices of the newly added entries.
   #
-  # `put` must be called for all indicies of newly added entries.
+  # `put` must be called for all indices of newly added entries.
   #
   public put(i i32, v T)
     pre

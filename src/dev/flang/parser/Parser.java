@@ -410,7 +410,7 @@ field       : returnType
           {
             if (first)
               {
-                f.setVisbility(v);
+                f.setVisibility(v);
 
                 list.add(f);
               }

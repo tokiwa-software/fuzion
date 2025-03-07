@@ -263,6 +263,8 @@ ContractKind
 COptions
 cosf
 coshf
+cotype
+cotypes
 createMIR
 createOuter
 createThisType
@@ -1012,7 +1014,6 @@ runtimeClazzId
 RuntimeException
 s's
 sameLine
-save-module
 scaler
 secField
 secFieldNextPos

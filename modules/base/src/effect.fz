@@ -325,7 +325,7 @@ public effect is
 
   # does this effect support abort?
   #
-  # Redefining this to return `false` helps to detect unexptected calls to
+  # Redefining this to return `false` helps to detect unexpected calls to
   # `abort` at runtime and ensure that the static analysis finds that the
   # code executed with this effect will always return normally and produce
   # a result. This is used, e.g, in `mutate` to avoid static analysis
