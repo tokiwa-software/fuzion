@@ -125,7 +125,7 @@ public class DotType extends ExprWithPos
     return _lhs.isGenericArgument() && !_lhs.genericArgument().isThisTypeInCotype()
       ? _lhsExpr
       : new Call(pos(),
-                new Universe(),
+                Universe.instance,
                 "type_as_value",
                 -1,
                 new List<>(_lhs),

@@ -110,7 +110,7 @@ public abstract class LibraryCall extends AbstractCall
     var f = lib.libraryFeature(feat);
     if (f.outer().isUniverse())
       {
-        target = new Universe();
+        target = Universe.instance;
       }
     else
       {
