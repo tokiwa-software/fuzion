@@ -207,7 +207,7 @@ public abstract class FUIR extends IR
     sb.append(clazzAsString(cl))
       .append("(");
     var o = clazzOuterClazz(cl);
-    if (o != -1)
+    if (o != NO_CLAZZ)
       {
         sb.append("outer ")
           .append(clazzAsString(o));
@@ -215,7 +215,7 @@ public abstract class FUIR extends IR
     for (var i = 0; i < clazzArgCount(cl); i++)
       {
         var ai = clazzArg(cl,i);
-        sb.append(o != -1 || i > 0 ? ", " : "")
+        sb.append(o != NO_CLAZZ || i > 0 ? ", " : "")
           .append(clazzBaseName(ai))
           .append(" ")
           .append(clazzAsString(clazzResultClazz(ai)));
@@ -1227,7 +1227,7 @@ public abstract class FUIR extends IR
                         for (var cix = 0; cix < matchCaseCount(s); cix++)
                           {
                             var f = matchCaseField(s, cix);
-                            sb.append(" " + cix + (f == -1 ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(s, cix)));
+                            sb.append(" " + cix + (f == NO_CLAZZ ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(s, cix)));
                           }
                         yield sb.toString();
                       }

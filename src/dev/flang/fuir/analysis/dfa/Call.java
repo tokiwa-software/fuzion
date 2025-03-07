@@ -33,6 +33,8 @@ import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -174,7 +176,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
         dfa.escapes(cc);
         var or = dfa._fuir.clazzOuterRef(cc);
-        while (or != -1)
+        while (or != NO_CLAZZ)
           {
             var orr = dfa._fuir.clazzResultClazz(or);
             dfa.escapes(orr);

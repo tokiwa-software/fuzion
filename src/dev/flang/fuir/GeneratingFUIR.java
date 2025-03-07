@@ -923,7 +923,7 @@ public class GeneratingFUIR extends FUIR
       {
         res[i] = result.get(i)._id;
         if (CHECKS) check
-          (res[i] != -1);
+          (res[i] != NO_CLAZZ);
       }
     return res;
   }

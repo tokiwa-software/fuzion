@@ -263,7 +263,7 @@ public class LibraryFuir extends FUIR {
           }
       }
     Errors.fatal("clazz_ref_const_string");
-    return -1;
+    return NO_CLAZZ;
   }
 
   @Override
@@ -295,7 +295,7 @@ public class LibraryFuir extends FUIR {
           }
       }
     Errors.fatal("v field not found!");
-    return -1;
+    return NO_CLAZZ;
   }
 
   @Override
@@ -309,7 +309,7 @@ public class LibraryFuir extends FUIR {
           }
       }
     Errors.fatal("internal_array field not found!");
-    return -1;
+    return NO_CLAZZ;
   }
 
   @Override
@@ -323,7 +323,7 @@ public class LibraryFuir extends FUIR {
           }
       }
     Errors.fatal("data field not found!");
-    return -1;
+    return NO_CLAZZ;
   }
 
   @Override
@@ -337,7 +337,7 @@ public class LibraryFuir extends FUIR {
           }
       }
     Errors.fatal("length field not found!");
-    return -1;
+    return NO_CLAZZ;
   }
 
   @Override
