@@ -278,6 +278,8 @@ public effect is
   # of an operation of a currently instated effect of the same effect type.
   #
   public type.replace(e effect.this)
+  pre
+    safety: effect.this.is_instated
   =>
     replace0 e
 
@@ -293,6 +295,8 @@ public effect is
   # effect of the same effect type.
   #
   public replace
+  pre
+    safety: effect.this.is_instated
   =>
     effect.this.type.replace effect.this
 
