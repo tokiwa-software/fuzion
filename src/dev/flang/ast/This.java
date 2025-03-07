@@ -235,7 +235,7 @@ public class This extends ExprWithPos
       }
     else if (f.isUniverse())
       {
-        getOuter = new Universe();
+        getOuter = Universe.instance;
       }
     else
       {

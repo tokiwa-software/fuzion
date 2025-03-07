@@ -374,7 +374,7 @@ public class Contract extends ANY
           : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
 
     var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : new Universe();
+                                       : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
       {
         addContractFeatures(res, ff, context);
@@ -415,7 +415,7 @@ public class Contract extends ANY
       }
 
     var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : new Universe();
+                                       : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, ff, context);
@@ -530,7 +530,7 @@ public class Contract extends ANY
     var t = in.isConstructor() ? new This(p, in, in).resolveTypes(res, in.context())
                                : (in.outerRef() != null)
                                   ? new This(p, in, in.outer()).resolveTypes(res, in.context())
-                                  : new Universe();
+                                  : Universe.instance;
     if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, of, context);
