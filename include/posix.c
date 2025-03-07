@@ -498,6 +498,8 @@ static pthread_mutex_t fzE_global_mutex;
  */
 void fzE_init()
 {
+  fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
@@ -825,4 +827,22 @@ void fzE_cnd_destroy(void *cnd) {
   // NYI: free(cnd);
 #else
 #endif
+}
+
+
+int32_t fzE_file_read(void * file, void * buf, int32_t size)
+{
+  struct pollfd fds;
+  fds.fd = fileno(file);
+  fds.events = POLLIN;
+
+  while(poll(&fds, 1, -1) == 0);
+
+  size_t result = fread(buf, 1, size, (FILE*)file);
+
+  return result > 0
+    ? result
+    : result == 0
+    ? -1  // EOF
+    : -2; // ERROR
 }

@@ -21,6 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
+
+# platform specific initialisation
+# of the fuzion runtime system
+#
+module fzE_init unit => native
+
+
 # returns the latest error number of
 # the current thread
 #

@@ -1118,8 +1118,6 @@ public class C extends ANY
 
     cf.println("int main(int argc, char **argv) { ");
 
-    cf.println("fzE_init();");
-
     cf.print(initializeEffectsEnvironment());
 
     var cl = _fuir.mainClazz();
