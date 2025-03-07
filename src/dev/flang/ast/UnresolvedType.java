@@ -1019,8 +1019,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     if (CHECKS) check
       (outer.isValueArgument());
 
+    var outOut = context.outerFeature().outer();
     var tp = new Feature(pos(),
-                         outer.visibility(),
+                         (outOut.isRoutine() || outOut.isIntrinsic() || outOut.isNative()) ? Visi.UNSPECIFIED : outer.visibility(),
                          0,
                          freeTypeConstraint().resolve(res, context),
                          _name,

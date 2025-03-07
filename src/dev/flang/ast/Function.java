@@ -282,7 +282,7 @@ public class Function extends AbstractLambda
         for (var n : _names)
           {
             var arg = new Feature(n._pos,
-                                  Visi.PRIV,
+                                  Visi.UNSPECIFIED,
                                   0,
                                   i < gs.size() ? gs.get(i) : Types.t_ERROR,
                                   n._name,
