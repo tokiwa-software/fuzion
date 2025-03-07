@@ -1718,9 +1718,10 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   {
     if (
         f.isArgument()
+     && !f.outer().featureName().isInternal()
      && !f.outer().definesType()
      && !f.outer().isCotype()
-     && f.visibility() != Visi.PRIV
+     && f.isVisibilitySpecified()
     )
       {
         AstErrors.illegalVisibilityArgument(f);
