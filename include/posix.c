@@ -836,9 +836,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   fds.fd = fileno(file);
   fds.events = POLLIN;
 
-  int ten_seconds = 10000;
-
-  while(poll(&fds, 1, ten_seconds) == 0);
+  while(poll(&fds, 1, -1) == 0);
 
   size_t result = fread(buf, 1, size, (FILE*)file);
 
