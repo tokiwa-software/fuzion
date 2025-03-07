@@ -275,7 +275,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
  * @param size the size of buf in bytes
  * @return amounts of bytes read, or negative number on error
  */
-int64_t fzE_file_read(void * file, void * buf, int32_t size);
+int32_t fzE_file_read(void * file, void * buf, int32_t size);
 
 /**
  * @param file the pointer to the file
@@ -283,7 +283,7 @@ int64_t fzE_file_read(void * file, void * buf, int32_t size);
  * @param size the size of buf in bytes
  * @return amounts of bytes writter, or negative number on error
  */
-int64_t fzE_file_write(void * file, void * buf, int32_t size);
+int32_t fzE_file_write(void * file, void * buf, int32_t size);
 
 /**
  * @param oldpath

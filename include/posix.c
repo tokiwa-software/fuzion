@@ -828,7 +828,7 @@ void fzE_cnd_destroy(void *cnd) {
 }
 
 
-int64_t fzE_file_read(void * file, void * buf, int32_t size)
+int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
   int fno = fileno(file);
   fcntl(fno, F_SETFL, O_NONBLOCK);
