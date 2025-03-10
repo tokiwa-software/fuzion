@@ -836,7 +836,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var arg = args.get(0);
           if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
             {
-              arg = arg.drop().andThen(Expr.ACONST_NULL);
+              arg = arg
+                .drop()
+                .andThen(
+                  Expr.getstatic(Names.RUNTIME_CLASS,
+                                 "_UNIT_TYPE_EFFECT_",
+                                 Names.ANYI_TYPE));
             }
           var result = Expr.iconst(eid)
             .andThen(arg)
@@ -853,18 +858,20 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromIntrinsic(cc);
-          var eid = jvm.effectId(ecl);
-          var arg = args.get(0);
-          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
+          var result = Expr.UNIT;
+          // _UNIT_TYPE_EFFECT_ does not need to be replaced
+          // since it has just one possible value.
+          if (jvm._types.resultType(ecl) != ClassFileConstants.PrimitiveType.type_void)
             {
-              arg = arg.drop().andThen(Expr.ACONST_NULL);
+              var eid = jvm.effectId(ecl);
+              result = Expr
+                .iconst(eid)
+                .andThen(args.get(0))
+                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                           "effect_replace",
+                                           "(I" + Names.ANYI_DESCR + ")V",
+                                           ClassFileConstants.PrimitiveType.type_void));
             }
-          var result = Expr.iconst(eid)
-            .andThen(arg)
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "effect_replace",
-                                       "(I" + Names.ANYI_DESCR + ")V",
-                                       ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
 

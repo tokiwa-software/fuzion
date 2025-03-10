@@ -143,7 +143,7 @@ public class FuzionThread extends Thread
    *
    * @param id an effect id.
    */
-  void ensure_effect_capacity(int id)
+  private void ensure_effect_capacity(int id)
   {
     while (_installedEffects.size() < id+1)
       {
