@@ -1,0 +1,55 @@
+
+--CURDIR--/function_argument_visibility.fz:39:13: error 1: Argument features of non-constructors must not have visibility modifier.
+  f1(public a i32) =>
+------------^
+To solve this, remove the visibility modifier 'public' from feature 'a'.
+
+
+--CURDIR--/function_argument_visibility.fz:41:13: error 2: Argument features of non-constructors must not have visibility modifier.
+  f2(module b String) =>
+------------^
+To solve this, remove the visibility modifier 'module' from feature 'b'.
+
+
+--CURDIR--/function_argument_visibility.fz:43:14: error 3: Argument features of non-constructors must not have visibility modifier.
+  f3(private c Any) =>
+-------------^
+To solve this, remove the visibility modifier 'private' from feature 'c'.
+
+
+--CURDIR--/function_argument_visibility.fz:45:21: error 4: Argument features of non-constructors must not have visibility modifier.
+  f4(x1 i32, public a i32, module b String, x2 i32, private c Any) =>
+--------------------^
+To solve this, remove the visibility modifier 'public' from feature 'a'.
+
+
+--CURDIR--/function_argument_visibility.fz:45:35: error 5: Argument features of non-constructors must not have visibility modifier.
+  f4(x1 i32, public a i32, module b String, x2 i32, private c Any) =>
+----------------------------------^
+To solve this, remove the visibility modifier 'module' from feature 'b'.
+
+
+--CURDIR--/function_argument_visibility.fz:45:61: error 6: Argument features of non-constructors must not have visibility modifier.
+  f4(x1 i32, public a i32, module b String, x2 i32, private c Any) =>
+------------------------------------------------------------^
+To solve this, remove the visibility modifier 'private' from feature 'c'.
+
+
+--CURDIR--/function_argument_visibility.fz:47:13: error 7: Argument features of non-constructors must not have visibility modifier.
+  f5(public a i32) Any => abstract
+------------^
+To solve this, remove the visibility modifier 'public' from feature 'a'.
+
+
+--CURDIR--/function_argument_visibility.fz:49:13: error 8: Argument features of non-constructors must not have visibility modifier.
+  f6(public a i32) Any => intrinsic
+------------^
+To solve this, remove the visibility modifier 'public' from feature 'a'.
+
+
+--CURDIR--/function_argument_visibility.fz:51:13: error 9: Argument features of non-constructors must not have visibility modifier.
+  f7(public a i32) i32 => native
+------------^
+To solve this, remove the visibility modifier 'public' from feature 'a'.
+
+9 errors.
