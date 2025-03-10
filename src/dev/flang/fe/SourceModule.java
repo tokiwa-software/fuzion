@@ -1688,7 +1688,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkRedefVisibility(f);
     checkLegalTypeVisibility(f);
     checkResultTypeVisibility(f);
-    checkArgVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
@@ -1739,24 +1738,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   private boolean inTypeFeature(AbstractFeature f)
   {
     return f.isTypeFeature() || (f.outer() != null && inTypeFeature(f.outer()));
-  }
-
-
-  /*
-   * check that arguments of functions etc.
-   * do not have visibility modifier.
-   */
-  private void checkArgVisibility(Feature f)
-  {
-    if (
-        f.isArgument()
-     && !f.outer().definesType()
-     && !f.outer().isCotype()
-     && f.visibility() != Visi.PRIV
-    )
-      {
-        AstErrors.illegalVisibilityArgument(f);
-      }
   }
 
 
