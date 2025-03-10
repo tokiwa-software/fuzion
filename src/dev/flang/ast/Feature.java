@@ -702,6 +702,18 @@ public class Feature extends AbstractFeature
   {
     this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
 
+    // arguments of function features must not have visibility modifier
+    if (!isConstructor())
+      {
+        for (var arg : a)
+          {
+            if (arg instanceof Feature f && f.isVisibilitySpecified())
+              {
+                AstErrors.illegalVisibilityArgument(f);
+              }
+          }
+      }
+
     _effects = effects;
 
     if (PRECONDITIONS) require
