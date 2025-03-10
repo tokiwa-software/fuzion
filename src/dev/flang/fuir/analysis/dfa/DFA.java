@@ -2161,9 +2161,6 @@ public class DFA extends ANY
           cl._dfa.readField(len);
           return Value.UNKNOWN_JAVA_REF;
         });
-    put("fuzion.java.bool_to_java_object"   , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.f32_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.f64_to_java_object"    , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.get_field0"            , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl._cc);
@@ -2180,13 +2177,10 @@ public class DFA extends ANY
       {
         return Value.UNIT;
       });
-    put("fuzion.java.i16_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.i32_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.i64_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.i8_to_java_object"     , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.java.create_jvm", cl -> Value.UNIT);
     put("fuzion.java.string_to_java_object0", cl -> newFuzionJavaCall(cl));
+    put("fuzion.java.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
   }
   static Value newFuzionJavaCall(Call cl) {
     var rc = fuir(cl).clazzResultClazz(cl._cc);
@@ -2301,7 +2295,6 @@ public class DFA extends ANY
 
         return Value.UNIT;
       });
-    put("fuzion.java.u16_to_java_object"    , cl -> wrappedJavaObject(cl) );
 
     put("concur.sync.mtx_init"              , cl ->
       {

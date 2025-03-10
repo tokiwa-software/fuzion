@@ -802,7 +802,7 @@ public class Intrinsics extends ANY
                                                                  : A0.field(c._names
                                                                    .fieldName(data))
                                                                    .castTo("jvalue *"),
-                    CExpr.string(javaSignature(c._fuir, elementType))))
+                    CExpr.string(c._fuir.javaDescriptor(elementType))))
                 .field(new CIdent("l"))
                 .castTo("void *")
                 .ret();
@@ -920,54 +920,27 @@ public class Intrinsics extends ANY
                     A4.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
-    put("fuzion.java.bool_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_bool_to_java_object", new List<CExpr>(A0.field(CNames.TAG_NAME))), false));
-    put("fuzion.java.f32_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_f32_to_java_object", new List<CExpr>(A0)), false));
-    put("fuzion.java.f64_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_f64_to_java_object", new List<CExpr>(A0)), false));
-    put("fuzion.java.i8_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_i8_to_java_object", new List<CExpr>(A0)), false));
-    put("fuzion.java.i16_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_i16_to_java_object", new List<CExpr>(A0)), false));
-    put("fuzion.java.i32_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_i32_to_java_object", new List<CExpr>(A0)), false));
-    put("fuzion.java.i64_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_i64_to_java_object", new List<CExpr>(A0)), false));
-    put("fuzion.java.u16_to_java_object",
-      (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                  ? noJava
-                                                  : c
-                                                    .returnJavaObject(c._fuir.clazzResultClazz(cl),
-                                                      CExpr.call("fzE_u16_to_java_object", new List<CExpr>(A0)), false));
+    put("fuzion.java.primitive_to_java_object",
+      (c, cl, outer, in) ->
+        {
+          if (C.JAVA_HOME == null)
+            {
+              return noJava;
+            }
+          else
+            {
+              var rc  = c._fuir.clazzResultClazz(cl);
+              var pt = c._fuir.clazzActualGeneric(cl, 0);
+              return
+                CExpr
+                  .call("fzE_" + c._fuir.clazzBaseName(pt) + "_to_java_object",
+                        new List<CExpr>(c._fuir.clazzIs(pt, SpecialClazzes.c_bool) ? A0.field(CNames.TAG_NAME) : A0))
+                  .field(new CIdent("l"))
+                  .castTo(c._types.clazz(rc))
+                  .ret();
+            }
+        }
+    );
     put("fuzion.java.java_string_to_string" , (c,cl,outer,in) ->
         {
           if (C.JAVA_HOME == null)
@@ -1065,35 +1038,6 @@ public class Intrinsics extends ANY
   public static Set<String> supportedIntrinsics()
   {
     return _intrinsics_.keySet();
-  }
-
-
-  /**
-   * get the java signature for a given primitive element type.
-   */
-  private static String javaSignature(FUIR fuir, int elementType)
-  {
-    switch (fuir.getSpecialClazz(elementType))
-      {
-      case c_bool :
-        return "Z";
-      case c_f32 :
-        return "F";
-      case c_f64 :
-        return "D";
-      case c_i16 :
-        return "S";
-      case c_i32 :
-        return "I";
-      case c_i64 :
-        return "J";
-      case c_i8 :
-        return "B";
-      case c_u16 :
-        return "C";
-      default:
-        return "NOT_A_PRIMITIVE";
-      }
   }
 
 
