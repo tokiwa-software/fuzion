@@ -273,7 +273,7 @@ public class SourceModule extends Module implements SrcModule
       @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
       @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
       @Override public AbstractFeature calledFeature() { return lookupFeature(_universe, FeatureName.get("fuzion_runtime_init", 0), null); }
-      @Override public Expr target() { return new Universe(); }
+      @Override public Expr target() { return Universe.instance; }
       @Override public AbstractType type() { return Types.resolved.t_unit; }
       @Override public List<Expr> actuals() { return NO_EXPRS; }
       @Override public int select() { return -1; }
