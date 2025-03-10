@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = function_argument_visibility
-include ../simple.mk
+include ../simple_and_negative.mk
