@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -176,7 +177,7 @@ public class Select extends Call {
           }
         else
           {
-            var selectTarget = new Call(pos(), _target, _name, -1, Call.NO_GENERICS, NO_EXPRS, null);
+            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
             result = new Call(pos(), selectTarget, f.featureName().baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
           }
       }

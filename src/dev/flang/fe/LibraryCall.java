@@ -36,6 +36,7 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Universe;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -118,7 +119,7 @@ public abstract class LibraryCall extends AbstractCall
       }
     _target = target;
     _calledFeature = f;
-    _select = f.resultType().isOpenGeneric() ? lib.callSelect(index) : -1;
+    _select = f.resultType().isOpenGeneric() ? lib.callSelect(index) : FuzionConstants.NO_SELECT;
   }
 
 

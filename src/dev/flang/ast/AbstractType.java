@@ -1094,7 +1094,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var generics = result.generics();
         var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
           ? actualGenerics
-          : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, -1));
+          : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
         g2 = cotypeActualGenerics(g2);

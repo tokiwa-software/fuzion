@@ -249,7 +249,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, String n, List<Expr> la)
   {
-    this(pos, t, n, -1, NO_GENERICS, la, null);
+    this(pos, t, n, FuzionConstants.NO_SELECT, NO_GENERICS, la, null);
 
     if (PRECONDITIONS) require
       (la != null);
@@ -309,7 +309,7 @@ public class Call extends AbstractCall
        List<Expr> actuals,
        AbstractFeature calledFeature)
   {
-    this(pos, target, calledFeature.featureName().baseName(), -1, generics, actuals, calledFeature);
+    this(pos, target, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, generics, actuals, calledFeature);
     if (PRECONDITIONS) check
       (calledFeature.generics().sizeMatches(generics) || generics.contains(Types.t_ERROR));
   }
@@ -326,7 +326,7 @@ public class Call extends AbstractCall
    * @param name the name of the called feature
    *
    * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
+   * index '.0', '.1', etc. NO_SELECT for none.
    *
    * @param generics
    *

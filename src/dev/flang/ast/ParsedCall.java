@@ -639,7 +639,7 @@ public class ParsedCall extends Call
     var wasLazy = typeForInferencing() != null && typeForInferencing().isLazyType();
 
     if (CHECKS) check
-      (select() == -1);
+      (select() == FuzionConstants.NO_SELECT);
 
     var result = new Call(pos(),   // NYI: ParsedCall?
                           this /* this becomes target of "call" */,
