@@ -183,9 +183,8 @@ public class Types extends ANY implements ClassFileConstants
           {
             cf.addImplements(Names.MAIN_INTERFACE);
             var maincl = _fuir.mainClazz();
-            var bc_run =
-              Expr.UNIT
-              .andThen(invokeStatic(maincl, -1)).drop()
+            var bc_run = invokeStatic(maincl, -1)
+              .drop()
               .andThen(Expr.RETURN);
             var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
