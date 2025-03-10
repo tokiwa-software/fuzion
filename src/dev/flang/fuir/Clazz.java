@@ -105,7 +105,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * If this clazz represents a field of an open generic type, then _select
    * chooses the actual generic parameter to be used as the type of this field.
-   * Otherwise, _select is -1.
+   * Otherwise, _select is NO_SELECT.
    */
   final int _select;
 
@@ -478,7 +478,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var normalized = _fuir.newClazz(normalize2(f.outer().selfType()), t, -1);
+        var normalized = _fuir.newClazz(normalize2(f.outer().selfType()), t, FuzionConstants.NO_SELECT);
         normalized._isNormalized = true;
         return normalized;
       }
@@ -978,7 +978,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        !isVoidType());
 
-    return lookup(new FeatureAndActuals(f, AbstractCall.NO_GENERICS), -1, false);
+    return lookup(new FeatureAndActuals(f, AbstractCall.NO_GENERICS), FuzionConstants.NO_SELECT, false);
   }
 
 
@@ -1029,7 +1029,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @param fa the feature and actual generics that is called
    *
    * @param select in case f is a field of open generic type, this selects the
-   * actual field.  -1 otherwise.
+   * actual field. NO_SELECT otherwise.
    *
    * @param isInheritanceCall true iff this is a call in an inheritance clause.  In
    * this case, the result clazz will not be marked as instantiated since the
@@ -1772,8 +1772,8 @@ class Clazz extends ANY implements Comparable<Clazz>
             var ty = Types.resolved.f_Type.selfType();
             _typeClazz = _type.containsError()  ? _fuir.error() :
                          feature().isUniverse() ? this    :
-                         tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe() , ty, -1)
-                                                : _fuir.newClazz(_outer.typeClazz(), tt, -1);
+                         tt.compareTo(ty) == 0  ? _fuir.newClazz(_fuir.universe()  , ty, FuzionConstants.NO_SELECT)
+                                                : _fuir.newClazz(_outer.typeClazz(), tt, FuzionConstants.NO_SELECT);
           }
       }
     return _typeClazz;
@@ -1902,7 +1902,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @param t the original type
    *
    * @param select in case t is an open generic, the variant of the actual type
-   * that is to be chosen.  -1 otherwise.
+   * that is to be chosen. NO_SELECT otherwise.
    *
    */
   private Clazz handDown(AbstractType t, int select)
@@ -1984,7 +1984,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Convenience version of {@code handDown} with {@code select} set to {@code -1}.
+   * Convenience version of {@code handDown} with {@code select} set to {@code NO_SELECT}.
    */
   private Clazz handDown(AbstractType t)
   {
@@ -1993,12 +1993,12 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        !t.isOpenGeneric());
 
-    return handDown(t, -1);
+    return handDown(t, FuzionConstants.NO_SELECT);
   }
 
 
   /**
-   * Convenience version of {@code handDown} with {@code select} set to {@code -1}. Used for
+   * Convenience version of {@code handDown} with {@code select} set to {@code NO_SELECT}. Used for
    * inlined code in inheritance for code inherited via the given inh chain.
    */
   Clazz handDown(AbstractType t, List<AbstractCall> inh)
@@ -2009,7 +2009,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        !t.isOpenGeneric(),
        inh != null);
 
-    var t1 = handDownThroughInheritsCalls(t, -1, inh);
+    var t1 = handDownThroughInheritsCalls(t, FuzionConstants.NO_SELECT, inh);
     return handDown(t1);
   }
 

@@ -212,7 +212,7 @@ public class Destructure extends ExprWithPos
     var outer = context.outerFeature();
     Expr thiz     = This.thiz(res, pos(), context, outer);
     Call thiz_tmp = new Call(pos(), thiz, tmp).resolveTypes(res, context);
-    Call call_f   = (select == -1
+    Call call_f   = (select == FuzionConstants.NO_SELECT
         ? new Call(pos(), thiz_tmp, f)
         : new Select(pos(), thiz_tmp, f.featureName().baseName(), select))
       .resolveTypes(res, context);
@@ -295,7 +295,7 @@ public class Destructure extends ExprWithPos
             else
               {
                 fieldNames.add(f.featureName().baseName());
-                addAssign(res, context, exprs, tmp, f, names, -1, fields, tf);
+                addAssign(res, context, exprs, tmp, f, names, FuzionConstants.NO_SELECT, fields, tf);
               }
           }
         if (fieldNames.size() != _names.size())

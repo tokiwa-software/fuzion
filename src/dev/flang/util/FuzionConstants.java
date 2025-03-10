@@ -65,6 +65,13 @@ public class FuzionConstants extends ANY
   public static final String BASE_MODULE_NAME = "base";
 
 
+  /**
+   * Special value, when not selecting field of
+   * open type parameter.
+   */
+  public static final int NO_SELECT = -1;
+
+
   /*----------------------  special feature names  ----------------------*/
 
 
