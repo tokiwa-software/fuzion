@@ -48,6 +48,7 @@ import dev.flang.fuir.analysis.AbstractInterpreter2;
 import dev.flang.ir.IR.ExprKind;
 import dev.flang.ir.IR.FeatureKind;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
@@ -402,7 +403,7 @@ public class DFA extends ANY
                 var or = _fuir.clazzOuterRef(cc);
                 if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
                     _escapes.contains(ca._cc) &&
-                    (or != -1) &&
+                    (or != NO_CLAZZ) &&
                     _fuir.clazzFieldIsAdrOfValue(or)    // outer ref is adr, otherwise target is passed by value (primitive type like u32)
                     )
                   {
@@ -664,7 +665,7 @@ public class DFA extends ANY
           if (tv._tag == t)
             {
               var field = _fuir.matchCaseField(s, mc);
-              if (field != -1)
+              if (field != NO_CLAZZ)
                 {
                   var untagged = tv._original;
                   _call._instance.setField(DFA.this, field, untagged);
@@ -1231,7 +1232,7 @@ public class DFA extends ANY
         public int matchCaseField(int s, int cix)
         {
           var key = ((long)s<<32)|((long)cix);
-          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : -1;
+          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : NO_CLAZZ;
         }
 
 
@@ -1410,7 +1411,7 @@ public class DFA extends ANY
           {
             var i = counts.getOrDefault(v._clazz, 0);
             counts.put(v._clazz, i+1);
-            if (v._clazz == -1 && ((i&(i-1))==0)) System.out.println("clazz is null for "+v.getClass()+" "+v);
+            if (v._clazz == NO_CLAZZ && ((i&(i-1))==0)) System.out.println("clazz is null for "+v.getClass()+" "+v);
           }
         counts
           .keySet()
@@ -1528,7 +1529,7 @@ public class DFA extends ANY
 
         // copy outer ref argument to outer ref field:
         var or = _fuir.clazzOuterRef(c._cc);
-        if (or != -1)
+        if (or != NO_CLAZZ)
           {
             i.setField(this, or, c._target);
           }
@@ -1636,10 +1637,10 @@ public class DFA extends ANY
   void tempEscapes(int s, Val v, int adrField)
   {
     if (v instanceof EmbeddedValue ev &&
-        adrField != -1 &&
+        adrField != NO_CLAZZ &&
         !_fuir.clazzIsRef(_fuir.clazzResultClazz(adrField)) &&
         _fuir.clazzFieldIsAdrOfValue(adrField)
-        && ev._site != -1
+        && ev._site != NO_SITE
         )
       {
         var cp = ev._site;
@@ -2752,7 +2753,7 @@ public class DFA extends ANY
                               Value value)
   {
     if (PRECONDITIONS) require
-      (site != -1,
+      (site != NO_SITE,
        value != null);
 
     Val r;
@@ -2795,7 +2796,7 @@ public class DFA extends ANY
     if (PRECONDITIONS) require
       (instance != null,
        value != null,
-       value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
+       value._clazz == NO_CLAZZ || !instance._dfa._fuir.clazzIsRef(value._clazz));
 
     if (CHECKS) check
       (instance._id >= 0);
@@ -2817,7 +2818,7 @@ public class DFA extends ANY
         r = e.get(i);
         if (r == null)
           {
-            var ev = new EmbeddedValue(instance, -1, value);
+            var ev = new EmbeddedValue(instance, NO_SITE, value);
             e.put(i, ev);
             r = ev;
           }
