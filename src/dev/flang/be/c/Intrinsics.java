@@ -959,16 +959,20 @@ public class Intrinsics extends ANY
             }
         });
       put("fuzion.java.string_to_java_object0", (c,cl,outer,in) -> {
+          var rc = c._fuir.clazzResultClazz(cl);
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
           var data          = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
           var length        = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
           return C.JAVA_HOME == null
             ? noJava
-            : c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
+            : CExpr
                 .call("fzE_string_to_java_object", new List<CExpr>(
                   A0.field(c._names.fieldName(data)),
                   A0.field(c._names.fieldName(length))
-                  )), false);
+                  ))
+                .field(new CIdent("l"))
+                .castTo(c._types.clazz(rc))
+                .ret();
         });
 
 

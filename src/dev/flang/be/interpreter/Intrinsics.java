@@ -405,9 +405,7 @@ public class Intrinsics extends ANY
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
-          var str = utf8ByteArrayDataToString(argzData);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(str, resultClazz);
+          return new JavaRef(utf8ByteArrayDataToString(argzData));
         });
     putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
         {

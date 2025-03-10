@@ -2179,7 +2179,7 @@ public class DFA extends ANY
       });
     put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.java.create_jvm", cl -> Value.UNIT);
-    put("fuzion.java.string_to_java_object0", cl -> newFuzionJavaCall(cl));
+    put("fuzion.java.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
     put("fuzion.java.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
   }
   static Value newFuzionJavaCall(Call cl) {
