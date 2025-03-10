@@ -2418,7 +2418,7 @@ public class Call extends AbstractCall
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void
         // _target`.
         result = new Call(pos(),
-                          new Universe(),
+                          Universe.instance,
                           new List<>(Types.resolved.t_void),
                           new List<>(_target),
                           Types.resolved.f_id);
