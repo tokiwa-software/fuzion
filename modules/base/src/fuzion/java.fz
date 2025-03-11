@@ -241,6 +241,7 @@ public fuzion.java is
   #
   public null(T type : Java_Object)
   =>
+    # NYI: UNDER DEVELOPMENT: HACK!
     cast T (call_static (Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
 
 
@@ -290,11 +291,12 @@ public fuzion.java is
 
 
   string_to_java_object1(s String) =>
-    (string_to_java_object0 s.utf8.as_array.internal_array).java_ref
+    string_to_java_object0 s.utf8.as_array.internal_array
+
 
   # intrinsic to convert a string to a Java String object
   #
-  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Object => intrinsic
+  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Ref => intrinsic
 
 
   # convert a Java String to a string
@@ -302,44 +304,50 @@ public fuzion.java is
   java_string_to_string(java_ref Java_Ref) String => intrinsic
 
 
+  primitive_to_java_object(T type, v T) Java_Ref
+    pre
+      T : java_primitive
+  => intrinsic
+
+
   # intrinsic to convert an i8 to a Java Byte object
   #
-  public i8_to_java_object(v i8) Java_Object => intrinsic
+  public i8_to_java_object(v i8) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an u16 to a Java Character object
   #
-  public u16_to_java_object(v u16) Java_Object => intrinsic
+  public u16_to_java_object(v u16) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an i16 to a Java Short object
   #
-  public i16_to_java_object(v i16) Java_Object => intrinsic
+  public i16_to_java_object(v i16) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an i32 to a Java Integer object
   #
-  public i32_to_java_object(v i32) Java_Object => intrinsic
+  public i32_to_java_object(v i32) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an i64 to a Java Long object
   #
-  public i64_to_java_object(v i64) Java_Object => intrinsic
+  public i64_to_java_object(v i64) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an f32 to a Java Float object
   #
-  public f32_to_java_object(v f32) Java_Object => intrinsic
+  public f32_to_java_object(v f32) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert a f64 to a Java Double object
   #
-  public f64_to_java_object(v f64) Java_Object => intrinsic
+  public f64_to_java_object(v f64) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert a bool to a Java Boolean object
   #
-  public bool_to_java_object(b bool) Java_Object => intrinsic
+  public bool_to_java_object(b bool) Java_Object => Java_Object (primitive_to_java_object b)
 
 
   # short-hands
