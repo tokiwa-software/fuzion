@@ -2182,50 +2182,42 @@ public class DFA extends ANY
     put("fuzion.java.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
     put("fuzion.java.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
   }
-  static Value newFuzionJavaCall(Call cl) {
+
+
+  /**
+   * create a generic fuzion java result
+   *
+   * @param cl the call that this is the result of
+   */
+  static Value fuzionJavaResult(Call cl) {
     var rc = fuir(cl).clazzResultClazz(cl._cc);
-    if (fuir(cl).clazzBaseName(rc).startsWith("outcome"))
     // NYI: HACK: should properly check if rc is an outcome
-      {
-        var oc = fuir(cl).clazzChoice(rc, 0);
-        var res = switch (fuir(cl).getSpecialClazz(oc))
-          {
-            case c_i8, c_u16, c_i16, c_i32, c_i64,
-              c_f32, c_f64, c_bool, c_unit -> {
-              var v = switch (fuir(cl).getSpecialClazz(oc))
-                {
-                  case c_i8, c_u16, c_i16, c_i32, c_i64,
-                    c_f32, c_f64 -> NumericValue.create(cl._dfa, oc);
-                  case c_bool -> cl._dfa.bool();
-                  case c_unit -> Value.UNIT;
-                  default -> Value.UNIT; // to match all the cases, should not be reached
-                };
-              yield v;
-            }
-            default -> {
-              var jref = fuir(cl).lookupJavaRef(oc);
-              var jobj = cl._dfa.newInstance(oc, NO_SITE, cl._context);
-              jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-              yield jobj;
-            }
-          };
-        var okay = cl._dfa.newTaggedValue(rc, res, 0);
-        var error_cl = fuir(cl).clazzChoice(rc, 1);
-        var error = cl._dfa.newInstance(error_cl, NO_SITE, cl._context);
-        var msg = fuir(cl).lookup_error_msg(error_cl);
-        error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
-        var err = cl._dfa.newTaggedValue(rc, error, 1);
-        return okay.join(cl._dfa, err, fuir(cl).clazzResultClazz(cl._cc));
-      }
+    return (fuir(cl).clazzBaseName(rc).startsWith("outcome"))
+      ? outcome(cl._dfa, cl, rc, fuzionJavaResult(cl, fuir(cl).clazzChoice(rc, 0)))
+      : fuzionJavaResult(cl, rc);
+  }
+
+
+  /**
+   * create a generic Java_Object or primitive
+   * based on the type of result clazz rc.
+   *
+   * @param cl the call that this is the result of
+   *
+   * @param rc
+   */
+  private static Value fuzionJavaResult(Call cl, int rc)
+  {
     return switch (fuir(cl).getSpecialClazz(rc))
       {
-        case c_i8, c_u16, c_i16, c_i32, c_i64,
-          c_f32, c_f64 -> NumericValue.create(cl._dfa, rc);
-        case c_bool -> cl._dfa.bool();
+        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
+          cl._dfa.newInstance(rc, NO_SITE, cl._context);
         case c_unit -> Value.UNIT;
         default -> {
           var jref = fuir(cl).lookupJavaRef(rc);
-          var jobj = wrappedJavaObject(cl);
+          if (CHECKS) check
+            (jref != NO_CLAZZ);
+          var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
           jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
           yield jobj;
         }
@@ -2242,7 +2234,7 @@ public class DFA extends ANY
    */
   private static Value outcome(DFA dfa, Call cl, int rc, Value res)
   {
-    var okay = dfa.newTaggedValue(rc, Value.UNIT, 0);
+    var okay = dfa.newTaggedValue(rc, res, 0);
     var error_cl = dfa._fuir.clazzChoice(rc, 1);
     var error = dfa.newInstance(error_cl, NO_SITE, cl._context);
     var msg = dfa._fuir.lookup_error_msg(error_cl);
@@ -2259,7 +2251,7 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
         cl._dfa.readField(data);
-        return newFuzionJavaCall(cl);
+        return fuzionJavaResult(cl);
       });
     put("fuzion.java.call_s0"               , cl ->
       {
@@ -2267,7 +2259,7 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
         cl._dfa.readField(data);
-        return newFuzionJavaCall(cl);
+        return fuzionJavaResult(cl);
       });
     put("fuzion.java.call_v0"               , cl ->
       {
@@ -2275,9 +2267,9 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa.readField(data);
-        return newFuzionJavaCall(cl);
+        return fuzionJavaResult(cl);
       });
-    put("fuzion.java.cast0", cl -> newFuzionJavaCall(cl));
+    put("fuzion.java.cast0", cl -> fuzionJavaResult(cl));
     put("fuzion.java.get_static_field0"     , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl._cc);
