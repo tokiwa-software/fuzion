@@ -26,13 +26,13 @@ reg_issue2564 =>
   o := (mutate.array Any).type.new mutate
 
   do_it1(n i32) =>
-    redef as_string => "do_it1 $n"
+    public redef as_string => "do_it1 $n"
     o.add do_it1.this
     if n < 3
       do_it1 n+1
 
   do_it2(n i32) is
-    redef as_string => "do_it2 $n"
+    public redef as_string => "do_it2 $n"
     o.add do_it2.this
     if n < 3
       _ := do_it2 n+1
