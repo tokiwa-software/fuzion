@@ -1650,6 +1650,57 @@ public abstract class FUIR extends IR
     return result;
   }
 
+
+
+  /*----------------------  Helpers needed in more than one backend  ----------------------*/
+
+
+
+  /**
+   * For clazz cl which maps to a java primitive
+   * get the java descriptor
+   *
+   * @return ("I", "B", ...)
+   */
+  public String javaDescriptor(int cl)
+  {
+    return switch (getSpecialClazz(cl))
+      {
+      case c_bool -> "Z";
+      case c_f32 -> "F";
+      case c_f64 -> "D";
+      case c_i16 -> "S";
+      case c_i32 -> "I";
+      case c_i64 -> "J";
+      case c_i8 -> "B";
+      case c_u16 -> "C";
+      default -> throw new Error("javatype, expected valid primitive.");
+      };
+  }
+
+
+  /**
+   * For clazz cl which maps to a java primitive
+   * get the java reference name
+   *
+   * @return ("Integer", "Boolean", ...)
+   */
+  public String javaReferenceName(int cl)
+  {
+    return switch (getSpecialClazz(cl))
+      {
+      case c_bool -> "Boolean";
+      case c_f32 -> "Float";
+      case c_f64 -> "Double";
+      case c_i16 -> "Short";
+      case c_i32 -> "Integer";
+      case c_i64 -> "Long";
+      case c_i8 -> "Byte";
+      case c_u16 -> "Character";
+      default -> throw new Error("javaType, expected valid primitive.");
+      };
+  }
+
 }
 
 /* end of file */
