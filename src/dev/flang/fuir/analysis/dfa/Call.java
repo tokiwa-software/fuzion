@@ -176,7 +176,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
         dfa.escapes(cc);
         var or = dfa._fuir.clazzOuterRef(cc);
-        while (or != -1)
+        while (or != NO_CLAZZ)
           {
             var orr = dfa._fuir.clazzResultClazz(or);
             dfa.escapes(orr);

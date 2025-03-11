@@ -3038,7 +3038,7 @@ PIPE        : "|"
                 {
                   escaped = true;
                 }
-              else if (_multiLineIndentation.isPresent() && atMultiLineStringDelimitor(getPos(pos)))
+              else if (_multiLineIndentation.isPresent() && atMultiLineStringDelimiter(getPos(pos)))
                 {
                   pos = advance(pos, 2); // skip fat quotation
                   t = _beginning.token(StringEnd.QUOTE);
@@ -3097,7 +3097,7 @@ PIPE        : "|"
       _multiLineIndentation.ifPresent(indentation ->
         {
           var codePoint = raw(curPos);
-          if (   !atMultiLineStringDelimitor(getPos(curPos))
+          if (   !atMultiLineStringDelimiter(getPos(curPos))
               && codePoint != SP
               // empty lines are allowed
               && codePoint != CR
@@ -3134,7 +3134,7 @@ PIPE        : "|"
     private Optional<Integer> startOfStringContent()
     {
       var pos = _pos;
-      if (atMultiLineStringDelimitor(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
+      if (atMultiLineStringDelimiter(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
         {
           pos = advance(pos, 2); // skip fat quotation
           while(raw(pos) != END_OF_FILE && (isCRorLF(raw(pos)) || raw(pos) == SP))
@@ -3226,7 +3226,7 @@ PIPE        : "|"
      * @param pos
      * @return
      */
-    private boolean atMultiLineStringDelimitor(int pos)
+    private boolean atMultiLineStringDelimiter(int pos)
     {
       return !(pos < 0 || pos+2 >= byteLength())
         && byteAt(pos) == '"'

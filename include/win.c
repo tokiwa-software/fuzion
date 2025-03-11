@@ -45,6 +45,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <time.h>
 
 // NYI remove POSIX imports
+#include <poll.h>
 #include <fcntl.h>      // fcntl
 
 #include <winsock2.h>
@@ -580,6 +581,8 @@ void fzE_init()
   _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode
   _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode
 
+  fcntl( _fileno( stdin ), F_SETFL, O_NONBLOCK);
+
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
@@ -925,4 +928,23 @@ void fzE_cnd_destroy(void *cnd) {
   // NYI: free(cnd);
 #else
 #endif
+}
+
+
+int32_t fzE_file_read(void * file, void * buf, int32_t size)
+{
+  struct pollfd fds;
+  fds.fd = fileno(file);
+  fds.events = POLLIN;
+
+  // NYI: poll is Posix only
+  while(poll(&fds, 1, -1) == 0);
+
+  size_t result = fread(buf, 1, size, (FILE*)file);
+
+  return result > 0
+    ? result
+    : result == 0
+    ? -1  // EOF
+    : -2; // ERROR
 }

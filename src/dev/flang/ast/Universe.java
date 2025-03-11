@@ -38,20 +38,16 @@ import dev.flang.util.SourcePosition;
 public class Universe extends ExprWithPos
 {
 
+  /*
+   * Pre-allocated Universe with no source position.
+   */
+  public static final Universe instance = new Universe(SourcePosition.notAvailable);
+
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Constructor
-   */
-  public Universe()
-  {
-    this(SourcePosition.builtIn);
-  }
 
 
   /**

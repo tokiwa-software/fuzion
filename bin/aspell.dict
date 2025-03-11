@@ -263,6 +263,8 @@ ContractKind
 COptions
 cosf
 coshf
+cotype
+cotypes
 createMIR
 createOuter
 createThisType
@@ -1012,7 +1014,6 @@ runtimeClazzId
 RuntimeException
 s's
 sameLine
-saveLib
 scaler
 secField
 secFieldNextPos
@@ -1289,7 +1290,7 @@ xffff
 XfuzionHome
 Xhelp
 XjavaProf
-XloadBaseLib
+XloadBaseModule
 XmaxErrors
 XmaxWarning
 XmaxWarnings

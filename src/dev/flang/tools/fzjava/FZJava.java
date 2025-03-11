@@ -223,8 +223,8 @@ public class FZJava extends Tool
         List<String> emptyList = new List<>();
         var feOptions = new FrontEndOptions(/* verbose */ _verbose,
                                             /* fuzionHome */ (new FuzionHome())._fuzionHome,
-                                            /* loadBaseLib */ true,
-                                            /* eraseInternalNamesInLib */ true,
+                                            /* loadBaseMod */ true,
+                                            /* eraseInternalNamesInMod */ true,
                                             /* modules */ _options._loadModules,
                                             /* moduleDirs */ _options._moduleDirs,
                                             /* dumpModules */ emptyList,

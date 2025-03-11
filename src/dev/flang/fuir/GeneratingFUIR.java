@@ -228,7 +228,7 @@ public class GeneratingFUIR extends FUIR
         _argClazzes = null;
       }
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
-    _universe  = newClazz(null, mir.universe().selfType(), -1)._id;
+    _universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT)._id;
     doesNeedCode(_universe);
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
@@ -276,7 +276,7 @@ public class GeneratingFUIR extends FUIR
   Clazz newClazz(AbstractType t)
   {
     var o = t.outer();
-    return newClazz(o == null ? null : newClazz(o), t, -1);
+    return newClazz(o == null ? null : newClazz(o), t, FuzionConstants.NO_SELECT);
   }
   Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
   {
@@ -570,7 +570,7 @@ public class GeneratingFUIR extends FUIR
       {
         var ot = thiz.outer();
         var oc = ot != null ? type2clazz(ot) : null;
-        result = newClazz(oc, thiz, -1);
+        result = newClazz(oc, thiz, FuzionConstants.NO_SELECT);
         _clazzesForTypes.put(thiz, result);
       }
 
@@ -923,7 +923,7 @@ public class GeneratingFUIR extends FUIR
       {
         res[i] = result.get(i)._id;
         if (CHECKS) check
-          (res[i] != -1);
+          (res[i] != NO_CLAZZ);
       }
     return res;
   }
@@ -1432,7 +1432,7 @@ public class GeneratingFUIR extends FUIR
             var oc = id2clazz(o);
             var of = oc.feature();
             var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
-            result = newClazz(oc, f.selfType(), -1);
+            result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
             if (CHECKS) check
               (f.isRef() == (result.isRef().yes()));
           }
@@ -2200,7 +2200,7 @@ public class GeneratingFUIR extends FUIR
             cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
-            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall());
+            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
           }
         if (needsCode)
           {

@@ -21,23 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = issue_2237
-FUZION = ../../bin/fz $(FUZION_OPTIONS)
-
-all: jvm c int
-
-int: mod
-	$(FUZION) -modules=mod -moduleDirs=mod -interpreter $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
-
-jvm: mod
-	$(FUZION) -modules=mod -moduleDirs=mod -jvm $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
-
-c: mod
-	($(FUZION) -modules=mod -moduleDirs=mod -c -o=testbin $(NAME) && ./testbin) 2>err.txt || (export RC=$$? && cat err.txt && exit $$RC)
-
-.PHONY: mod
-mod:
-	mkdir -p mod
-	$(FUZION) -sourceDirs=mod -save-module=mod/mod.fum
-
-effect:
+override NAME = function_argument_visibility
+include ../simple_and_negative.mk

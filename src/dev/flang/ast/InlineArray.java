@@ -416,7 +416,7 @@ public class InlineArray extends ExprWithPos
     var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion"              ).resolveTypes(res, context);
     var sys          = new Call(SourcePosition.builtIn, fuzion, "sys"               ).resolveTypes(res, context);
     var sysArrayCall = new Call(SourcePosition.builtIn, sys , "internal_array_init",
-                                -1, argsT, argsE, null                              ).resolveTypes(res, context);
+                                FuzionConstants.NO_SELECT, argsT, argsE, null                              ).resolveTypes(res, context);
     var fuzionT      = new ParsedType(SourcePosition.builtIn, "fuzion", UnresolvedType.NONE, null);
     var sysT         = new ParsedType(SourcePosition.builtIn, "sys"   , UnresolvedType.NONE, fuzionT);
     var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sysT);
@@ -448,7 +448,7 @@ public class InlineArray extends ExprWithPos
                                          unit1,
                                          unit2,
                                          unit3);
-    var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, -1,
+    var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, FuzionConstants.NO_SELECT,
                                    sysArrArgsT,
                                    sysArrArgsE, null).resolveTypes(res, context);
     exprs.add(arrayCall);

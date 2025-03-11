@@ -1159,7 +1159,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # Keep the order of elements unchanged.
   #
-  # Other languages call this 'distinct', (eg., Java, C# or Kotlin)
+  # Other languages call this 'distinct' (eg., Java, C# or Kotlin)
   # or `nub` (Haskell).
   #
   # ex.
@@ -1521,8 +1521,8 @@ is
 
   # equality
   #
-  public fixed redef type.equality(a, b equatable_sequence T) =>
-    equality0(a1, b1 equatable_sequence (T2 : property.equatable)) =>
+  public redef type.equality(a, b equatable_sequence.this) =>
+    equality0(a1, b1 equatable_sequence.this) =>
       (a1.unwrap.zip b1.unwrap x,y->x=y) ∀ id
 
     au := a.unwrap

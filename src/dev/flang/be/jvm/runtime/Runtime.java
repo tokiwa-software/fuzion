@@ -516,7 +516,6 @@ public class Runtime extends ANY
   public static void effect_default(int id, AnyI instance)
   {
     var t = currentThread();
-    t.ensure_effect_capacity(id);
     if (t.effect_load(id) == null)
       {
         t.effect_store(id, instance);

@@ -17,27 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion standard library feature fuzion_runtime_init
 #
 # -----------------------------------------------------------------------
 
-override NAME = issue_2237
-FUZION = ../../bin/fz $(FUZION_OPTIONS)
-
-all: jvm c int
-
-int: mod
-	$(FUZION) -modules=mod -moduleDirs=mod -interpreter $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
-
-jvm: mod
-	$(FUZION) -modules=mod -moduleDirs=mod -jvm $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
-
-c: mod
-	($(FUZION) -modules=mod -moduleDirs=mod -c -o=testbin $(NAME) && ./testbin) 2>err.txt || (export RC=$$? && cat err.txt && exit $$RC)
-
-.PHONY: mod
-mod:
-	mkdir -p mod
-	$(FUZION) -sourceDirs=mod -save-module=mod/mod.fum
-
-effect:
+# platform specific initialisation
+# of the fuzion runtime system
+#
+fuzion_runtime_init =>
+  fzE_init

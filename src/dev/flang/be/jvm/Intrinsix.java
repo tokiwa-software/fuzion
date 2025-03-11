@@ -248,38 +248,17 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
-    // arrays of fuzion-type, java reference type and java primitive type id
-    String[][] primitive_to_java_object =  {
-      {FuzionConstants.I8_NAME  , "Byte"     , "B" },
-      {FuzionConstants.I16_NAME , "Short"    , "S" },
-      {FuzionConstants.I32_NAME , "Integer"  , "I" },
-      {FuzionConstants.I64_NAME , "Long"     , "J" },
-      {FuzionConstants.U16_NAME , "Character", "C" },
-      {FuzionConstants.F32_NAME , "Float"    , "F" },
-      {FuzionConstants.F64_NAME , "Double"   , "D" },
-      {"bool", "Boolean"  , "Z" },
-    };
+    put("fuzion.java.primitive_to_java_object",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var java_type = jvm._fuir.javaDescriptor(jvm._fuir.clazzActualGeneric(cc, 0));
+          var java_Type = jvm._fuir.javaReferenceName(jvm._fuir.clazzActualGeneric(cc, 0));
 
-    for (var a : primitive_to_java_object)
-      {
-        var fz_type = a[0];
-        var java_Type = a[1];
-        var java_type = a[2];
-
-        put("fuzion.java." + fz_type + "_to_java_object",
-            (jvm, si, cc, tvalue, args) ->
-            {
-              var rc = jvm._fuir.clazzResultClazz(cc);
-              var jref = jvm._fuir.lookupJavaRef(rc);
-              var res = jvm.new0(rc)
-                .andThen(Expr.DUP)
-                .andThen(args.get(0))
-                .andThen(Expr.invokeStatic("java/lang/" + java_Type, "valueOf", "(" + java_type + ")Ljava/lang/" + java_Type + ";", Names.JAVA_LANG_OBJECT))
-                .andThen(jvm.putfield(jref))
-                .is(jvm._types.resultType(rc));
-              return new Pair<>(res, Expr.UNIT);
-            });
-      }
+          var res = args
+            .get(0)
+            .andThen(Expr.invokeStatic("java/lang/" + java_Type, "valueOf", "(" + java_type + ")Ljava/lang/" + java_Type + ";", Names.JAVA_LANG_OBJECT));
+          return new Pair<>(res, Expr.UNIT);
+        });
 
     put("fuzion.java.create_jvm",
         (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.UNIT, Expr.UNIT));
@@ -287,17 +266,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.java.string_to_java_object0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var rc = jvm._fuir.clazzResultClazz(cc);
-          var jref = jvm._fuir.lookupJavaRef(rc);
           var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
-          var res = jvm.new0(rc)
-            .andThen(Expr.DUP)
-            .andThen(args.get(0))
+          var res = args.get(0)
             .andThen(jvm.getfield(data))
             .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_java_object0", "([B)Ljava/lang/String;", Names.JAVA_LANG_OBJECT))
-            .andThen(jvm.putfield(jref))
-            .is(jvm._types.resultType(rc));
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_java_object0", "([B)Ljava/lang/String;", Names.JAVA_LANG_OBJECT));
           return new Pair<>(res, Expr.UNIT);
         });
 
@@ -836,7 +809,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var arg = args.get(0);
           if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
             {
-              arg = arg.drop().andThen(Expr.ACONST_NULL);
+              arg = arg
+                .drop()
+                .andThen(
+                  Expr.getstatic(Names.RUNTIME_CLASS,
+                                 "_UNIT_TYPE_EFFECT_",
+                                 Names.ANYI_TYPE));
             }
           var result = Expr.iconst(eid)
             .andThen(arg)
@@ -853,18 +831,20 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromIntrinsic(cc);
-          var eid = jvm.effectId(ecl);
-          var arg = args.get(0);
-          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
+          var result = Expr.UNIT;
+          // _UNIT_TYPE_EFFECT_ does not need to be replaced
+          // since it has just one possible value.
+          if (jvm._types.resultType(ecl) != ClassFileConstants.PrimitiveType.type_void)
             {
-              arg = arg.drop().andThen(Expr.ACONST_NULL);
+              var eid = jvm.effectId(ecl);
+              result = Expr
+                .iconst(eid)
+                .andThen(args.get(0))
+                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                           "effect_replace",
+                                           "(I" + Names.ANYI_DESCR + ")V",
+                                           ClassFileConstants.PrimitiveType.type_void));
             }
-          var result = Expr.iconst(eid)
-            .andThen(arg)
-            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "effect_replace",
-                                       "(I" + Names.ANYI_DESCR + ")V",
-                                       ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
 

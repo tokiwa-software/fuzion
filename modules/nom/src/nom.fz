@@ -45,12 +45,10 @@ public nom is
     #
     public map(OM type, mapper O -> outcome OM) Parser I R OM =>
       parser I R OM i->
-        match Parser.this.call i
-          s success =>
-            match mapper s.out
-              o OM => success s.rest o
-              e2 error => e2
-          e1 error => e1
+        Parser.this.call i .bind2 s->
+          id (parse_result R OM) (match mapper s.out
+                                    o OM => success s.rest o
+                                    e2 error => e2)
 
 
     # map input to parser p
@@ -87,3 +85,6 @@ public nom is
   # the result of Parser.call()
   #
   public parse_result(I, O type) : outcome (success I O) is
+    public bind2(f (success I O) -> parse_result I2 O2) parse_result I2 O2 =>
+      parse_result.this ? v (success I O) => f v
+                        | e error => e

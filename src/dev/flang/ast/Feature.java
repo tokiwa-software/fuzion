@@ -113,7 +113,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is visiblity explicitly specified in source code (or already set)?
+   * Is visibility explicitly specified in source code (or already set)?
    */
   public boolean isVisibilitySpecified()
   {
@@ -127,7 +127,7 @@ public class Feature extends AbstractFeature
    *
    * @param v
    */
-  public void setVisbility(Visi v)
+  public void setVisibility(Visi v)
   {
     if (PRECONDITIONS) require
       (_visibility == Visi.UNSPECIFIED);
@@ -701,6 +701,18 @@ public class Feature extends AbstractFeature
                  List<AbstractType> effects)
   {
     this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
+
+    // arguments of function features must not have visibility modifier
+    if (!isConstructor())
+      {
+        for (var arg : a)
+          {
+            if (arg instanceof Feature f && f.isVisibilitySpecified())
+              {
+                AstErrors.illegalVisibilityArgument(f);
+              }
+          }
+      }
 
     _effects = effects;
 
@@ -1473,7 +1485,7 @@ public class Feature extends AbstractFeature
    */
   private boolean isExtensionFeature()
   {
-    return _qname.size() > 1;
+    return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
   }
 
 

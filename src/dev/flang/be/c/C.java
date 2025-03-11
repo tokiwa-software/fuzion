@@ -987,14 +987,7 @@ public class C extends ANY
                     "fuzion.java.call_c0",
                     "fuzion.java.call_s0",
                     "fuzion.java.call_v0",
-                    "fuzion.java.bool_to_java_object",
-                    "fuzion.java.f32_to_java_object",
-                    "fuzion.java.f64_to_java_object",
-                    "fuzion.java.i8_to_java_object",
-                    "fuzion.java.i16_to_java_object",
-                    "fuzion.java.i32_to_java_object",
-                    "fuzion.java.i64_to_java_object",
-                    "fuzion.java.u16_to_java_object",
+                    "fuzion.java.primitive_to_java_object",
                     "fuzion.java.java_string_to_string",
                     "fuzion.java.string_to_java_object0",
                     "fuzion.java.fuzion.java.create_jvm")
@@ -1122,8 +1115,6 @@ public class C extends ANY
     cf.print(threadStartRoutine(true));
 
     cf.println("int main(int argc, char **argv) { ");
-
-    cf.println("fzE_init();");
 
     cf.print(initializeEffectsEnvironment());
 
