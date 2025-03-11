@@ -1583,11 +1583,6 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public void checkTypes(Feature f)
   {
-    if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
-      {
-        f.setVisibility(f.redefines().stream().map(r -> r.visibility()).sorted().findAny().get());
-      }
-
     f.impl().checkTypes(f);
     var args = f.arguments();
     var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
