@@ -337,6 +337,26 @@ public class Function extends AbstractLambda
             if (inferResultType)
               {
                 result = _feature.resultType();
+                if (!gs.get(0).isGenericArgument())
+                  {
+                    if (gs.get(0).isChoice())
+                      {
+                        if (gs.get(0).feature() != result.selfOrConstraint(res, context).feature())
+                          {
+                            var r = result;
+                            result = gs.get(0).applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? r: x);
+                            _feature.setResultType(res, result);
+                          }
+                      }
+                    else if ((gs.get(0).isChoice() || !result.isGenericArgument())
+                       && result.feature() != gs.get(0).feature()
+                       && result.feature().inheritsFrom(gs.get(0).feature()))
+                      {
+                        // could maybe be result.asRef()?
+                        result = ResolvedNormalType.create(gs.get(0), result.generics());
+                        _feature.setResultType(res, result);
+                      }
+                  }
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 

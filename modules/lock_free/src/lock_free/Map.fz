@@ -116,7 +116,7 @@ is
   redef as_string => "container_node[gen=$gen]({array.as_string ", "})"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
-    array.flat_map (tuple CTK CTV) (b -> b.as_list f)
+    array.flat_map /* NYI: UNDER DEVELOPMENT: type inference */ (tuple CTK CTV) (.as_list f)
          .as_list
 
 

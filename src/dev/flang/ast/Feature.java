@@ -2640,6 +2640,16 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
+  void setResultType(Resolution res, AbstractType result)
+  {
+    if (CHECKS) check
+      (!state().atLeast(State.RESOLVING_SUGAR1),
+      _resultType == null || result.isAssignableFrom(_resultType) || result.isAssignableFrom(_resultType.asRef()));
+
+    _resultType = result;
+  }
+
+
 }
 
 /* end of file */

@@ -1191,7 +1191,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : numeric
   =>
-    average.bind T avg->
+    average.bind avg->
       cnt := (map (_ -> T.one           )).sum
       ssd := (map (x -> (x - avg)**T.two)).sum # sum of squared deviations
       ssd / cnt

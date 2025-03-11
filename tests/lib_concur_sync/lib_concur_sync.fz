@@ -25,8 +25,8 @@ lib_concur_sync =>
 
   test_signal =>
 
-    mtx_res := concur.sync.mutex.new.bind unit mtx->
-      cnd_res := mtx.condition.bind unit cnd->
+    mtx_res := concur.sync.mutex.new.bind mtx->
+      cnd_res := mtx.condition.bind cnd->
 
         a := concur.threads.spawn ()->
           cnd.synchronized ()->
@@ -52,8 +52,8 @@ lib_concur_sync =>
 
   test_broadcast =>
 
-    mtx_res := concur.sync.mutex.new.bind unit mtx->
-      cnd_res := mtx.condition.bind unit cnd->
+    mtx_res := concur.sync.mutex.new.bind mtx->
+      cnd_res := mtx.condition.bind cnd->
 
         a := concur.threads.spawn ()->
           cnd.synchronized ()->

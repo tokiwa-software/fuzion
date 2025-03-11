@@ -39,7 +39,7 @@ is
 
   # get the last error that occurred
   #
-  public last_error => state.bind unit (_ -> unit)
+  public last_error => state.bind (_ -> unit)
 
 
   # is the server running?
@@ -51,7 +51,7 @@ is
   # close server, stop listening on port
   #
   public close =>
-    _ := state.bind unit d->
+    _ := state.bind d->
       (match fuzion.sys.net.close d
         unit =>
           server (error "not initialized") nil
@@ -119,7 +119,7 @@ is
               sd
           * =>
             sd
-      .bind unit desc->
+      .bind desc->
         (net.server desc p).replace
 
 

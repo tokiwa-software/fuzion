@@ -71,7 +71,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
     if n.open
       n.close
 
-    _ := n.get.bind unit ll->ll.freeze
+    _ := n.get.bind (.freeze)
 
 
   # create a mutable linked list from a given sequence

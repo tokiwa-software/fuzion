@@ -74,7 +74,7 @@ is
   # contained in this map
   #
   public redef get(k KEY) option VAL =>
-    root.get.bind VAL (e -> e.get k)
+    root.get.bind (.get k)
 
 
   # add the mapping k -> v as a new entry to this map
@@ -161,7 +161,7 @@ is
     # ordering of the keys
     #
     minimum(node option Entry) option Entry =>
-      node.bind Entry e->
+      node.bind e->
         e.left.get ? nil => e
                    | l Entry => minimum l
 
@@ -242,7 +242,7 @@ is
     # subtree whose root is the given node
     #
     fix_height(n option Entry) =>
-      _ := n.bind unit e->
+      _ := n.bind e->
         lh := height e.left.get
         rh := height e.right.get
 

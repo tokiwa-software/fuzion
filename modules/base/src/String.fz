@@ -835,7 +835,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     ref : String
 
       redef utf8 Sequence u8 =>
-        a.as_list.flat_map ai->ai.as_string.utf8
+        a.as_list.flat_map (.as_string.utf8)
 
 
       redef infix + (other Any) String =>
@@ -856,7 +856,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     ref : String
       redef utf8 Sequence u8 =>
         codepoints
-          .flat_map x->x.utf8
+          .flat_map (.utf8)
           .as_array_backed
 
 
