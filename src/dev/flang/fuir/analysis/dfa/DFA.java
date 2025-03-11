@@ -2186,15 +2186,14 @@ public class DFA extends ANY
 
   /**
    * create a generic fuzion java result
+   * that is wrapped in an outcome
    *
    * @param cl the call that this is the result of
    */
-  static Value fuzionJavaResult(Call cl) {
+  static Value outcomeJavaResult(Call cl)
+  {
     var rc = fuir(cl).clazzResultClazz(cl._cc);
-    // NYI: HACK: should properly check if rc is an outcome
-    return (fuir(cl).clazzBaseName(rc).startsWith("outcome"))
-      ? outcome(cl._dfa, cl, rc, fuzionJavaResult(cl, fuir(cl).clazzChoice(rc, 0)))
-      : fuzionJavaResult(cl, rc);
+    return outcome(cl._dfa, cl, rc, fuzionJavaResult(cl, fuir(cl).clazzChoice(rc, 0)));
   }
 
 
@@ -2251,7 +2250,7 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
         cl._dfa.readField(data);
-        return fuzionJavaResult(cl);
+        return outcomeJavaResult(cl);
       });
     put("fuzion.java.call_s0"               , cl ->
       {
@@ -2259,7 +2258,7 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
         cl._dfa.readField(data);
-        return fuzionJavaResult(cl);
+        return outcomeJavaResult(cl);
       });
     put("fuzion.java.call_v0"               , cl ->
       {
@@ -2267,9 +2266,9 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa.readField(data);
-        return fuzionJavaResult(cl);
+        return outcomeJavaResult(cl);
       });
-    put("fuzion.java.cast0", cl -> fuzionJavaResult(cl));
+    put("fuzion.java.cast0", cl -> outcomeJavaResult(cl));
     put("fuzion.java.get_static_field0"     , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl._cc);
