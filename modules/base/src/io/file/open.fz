@@ -34,10 +34,10 @@ module:public open(fd File_Descriptor,
 
     hndlr :=
       ref : Seek_Handler
-        redef seek(offset i64) =>
+        public redef seek(offset i64) =>
           fuzion.sys.fileio.seek fd offset
 
-        redef file_position =>
+        public redef file_position =>
           fuzion.sys.fileio.file_position fd
 
     file.this.seek hndlr ! code
@@ -68,7 +68,7 @@ module:public open(fd File_Descriptor,
 
   # close file when de-instating effect
   #
-  redef finally =>
+  public redef finally =>
     _ := fuzion.sys.fileio.close fd
 
 

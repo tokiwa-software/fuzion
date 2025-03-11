@@ -38,7 +38,7 @@ is
 
   # number of entries in this map
   #
-  redef size => ks.length
+  public redef size => ks.length
 
 
   # size of allocated contents array, allows for some empty slots

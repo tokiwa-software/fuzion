@@ -38,7 +38,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
 
   # cleanup effect
   #
-  redef finally =>
+  public redef finally =>
     running_processes.for_each p->
       _ := wait p
 
@@ -136,4 +136,3 @@ public processes =>
 public Process_Handler ref is
 
   public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process => abstract
-

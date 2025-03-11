@@ -413,12 +413,12 @@ instate_helper(# result type
 
   # wrapper to call `code` and store result in 'res`
   call_code : Function unit is
-    redef call =>
+    public redef call =>
       set res := code()
 
   # wrapper to call `def` on final effect value and store result in 'res`
   call_def : Function unit ET is
-    redef call(cur_e ET) =>
+    public redef call(cur_e ET) =>
       set res := def cur_e
 
 

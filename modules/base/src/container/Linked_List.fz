@@ -53,8 +53,7 @@ public Linked_List(public T type) ref : Sequence T is
 
   # return this linked list as a list
   #
-  redef as_list =>
+  public redef as_list =>
     match next
       ll Linked_List T => (data : ()->ll.as_list)
       nil => (data : ()->nil)
-

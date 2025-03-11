@@ -30,7 +30,7 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => is_min
+  public redef wrapped_on_neg => is_min
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other i32) => val > 0 && i32.max -° val < other
@@ -157,12 +157,12 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
 
   # identity element for 'infix +'
   #
-  fixed redef type.zero i32 => 0
+  public fixed redef type.zero i32 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed redef type.one  i32 => 1
+  public fixed redef type.one  i32 => 1
 
 
   # equality

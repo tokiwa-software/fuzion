@@ -28,7 +28,7 @@ public base32hex : base32 "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array "base
 
   # decode a valid base32hex character to 5 bits
   #
-  redef quintet_bits(n u8) =>
+  module redef quintet_bits(n u8) =>
     if 65 <= n <= 86        # case A-V
       n.as_u64 - 55
     else                    # case 0-9
@@ -37,5 +37,5 @@ public base32hex : base32 "0123456789ABCDEFGHIJKLMNOPQRSTUV".utf8.as_array "base
 
   # checks if a character is valid in the encoding
   #
-  redef is_valid(c u8) =>
+  module redef is_valid(c u8) =>
     (65 <= c <= 86) || (48 <= c <= 57)
