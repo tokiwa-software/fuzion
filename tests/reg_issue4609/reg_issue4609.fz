@@ -30,7 +30,7 @@ reg_issue4609 =>
   say "It is important that the stack trace contains no generated lambdas:"
 
   s : Function unit is
-    redef call => check false
+    public redef call => check false
   q s
   q(f ()->unit) => r f
   r(f ()->unit) => f.call

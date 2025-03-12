@@ -34,7 +34,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     T type,
 
                     # the data stored in this element.
-                    redef data T) ref : Linked_List T is
+                    public redef data T) ref : Linked_List T is
 
 
   # mutable references to next. Initializes to refer to nil to form

@@ -180,8 +180,8 @@ public abstract_array
     pre
       debug: 0 ≤ i < to ≤ length
   is
-    redef head => abstract_array.this[i]
-    redef tail => (slice i+1 to).as_list
+    public redef head => abstract_array.this[i]
+    public redef tail => (slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
@@ -246,8 +246,8 @@ public abstract_array
       debug: 0 ≤ i
       debug: i < length
   is
-    redef head => (i, index[] i)
-    redef tail list (tuple i32 T) =>
+    public redef head => (i, index[] i)
+    public redef tail list (tuple i32 T) =>
       if i < length-1 then enumerate_cons i+1
       else                 nil
 

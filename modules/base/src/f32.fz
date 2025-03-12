@@ -56,7 +56,7 @@ public f32(public val f32) : float, java_primitive is
 
 
   # conversion
-  redef as_i64 => as_f64.as_i64
+  public redef as_i64 => as_f64.as_i64
 
 
   public as_f64 f64 => intrinsic

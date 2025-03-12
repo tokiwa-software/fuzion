@@ -26,11 +26,11 @@ reg_issue1507 =>
   a is
     me a.this => abstract
     me2 => a
-    redef as_string => $"a"
+    public redef as_string => $"a"
 
   b(s String) : a is
     fixed redef me => (b "new")
-    redef as_string => "b$s"
+    public redef as_string => "b$s"
 
   say a.me2
   say (b "orig").me

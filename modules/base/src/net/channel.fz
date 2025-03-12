@@ -54,7 +54,7 @@ is
 # for a given descriptor
 #
 module read_handler(desc i32) : io.Read_Handler is
-  redef read(count i32) choice (array u8) io.end_of_file error =>
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
     match fuzion.sys.net.read desc count.as_i64
       a array => a
       e error => e
@@ -65,5 +65,5 @@ module read_handler(desc i32) : io.Read_Handler is
 # for a given descriptor
 #
 module write_handler(desc i32) : io.Write_Handler is
-  redef write(data Sequence u8) outcome unit =>
+  public redef write(data Sequence u8) outcome unit =>
     fuzion.sys.net.write desc data.as_array

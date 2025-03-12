@@ -244,7 +244,7 @@ test_local_mutate is
       next, prev Ring T => abstract
       data T => abstract
 
-      redef as_string =>
+      public redef as_string =>
         for
           s := "[ ", s + "{e.data} <-> "
           # e2 := r, e2.next    # NYI causes crash!

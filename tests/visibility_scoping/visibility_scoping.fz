@@ -55,7 +55,7 @@ visibility_scoping is
          while false
 
     ref : Function unit
-      redef call =>
+      public redef call =>
         say ar  # should flag an error: feature not found
 
 
