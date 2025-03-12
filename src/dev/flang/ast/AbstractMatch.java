@@ -130,28 +130,6 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * Helper routine for typeForInferencing to determine the type of this match
-   * expression on demand, i.e., as late as possible.
-   */
-  private AbstractType typeFromCases()
-  {
-    var result = Expr.union(cases().map2(x -> x.code()), Context.NONE);
-    if (result == Types.t_ERROR)
-      {
-        new IncompatibleResultsOnBranches(pos(),
-                                          "Incompatible types in cases of match expression",
-                                          new Iterator<Expr>()
-                                          {
-                                            Iterator<AbstractCase> it = cases().iterator();
-                                            public boolean hasNext() { return it.hasNext(); }
-                                            public Expr next() { return it.next().code(); }
-                                          });
-      }
-    return result;
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -163,7 +141,8 @@ public abstract class AbstractMatch extends Expr
   {
     if (_type == null)
       {
-        _type = typeFromCases();
+        var t = Expr.union(cases().map2(x -> x.code()), Context.NONE);
+        _type = t != Types.t_ERROR ? t : null;
       }
     return _type;
   }
@@ -187,9 +166,18 @@ public abstract class AbstractMatch extends Expr
           .map2(x -> x.code().type())
           .stream()
           .reduce(Types.resolved.t_void, (a,b) -> a.union(b, Context.NONE));
-
-        if (CHECKS) check
-          (_type != null && _type != Types.t_ERROR);
+        if (_type == Types.t_ERROR)
+          {
+            new IncompatibleResultsOnBranches(
+              pos(),
+              "Incompatible types in cases of match expression",
+              new Iterator<Expr>()
+              {
+                Iterator<AbstractCase> it = cases().iterator();
+                public boolean hasNext() { return it.hasNext(); }
+                public Expr next() { return it.next().code(); }
+              });
+          }
       }
     return _type;
   }
