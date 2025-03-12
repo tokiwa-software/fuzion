@@ -297,7 +297,8 @@ public class Function extends AbstractLambda
           }
         if (t != Types.t_ERROR)
           {
-            var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
+            var rt0 = gs.get(0);
+            var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
             var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(FuzionConstants.OPERATION_CALL), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
@@ -336,32 +337,49 @@ public class Function extends AbstractLambda
             res.resolveTypes(_feature);
             if (inferResultType)
               {
-                result = _feature.resultType();
-                if (!gs.get(0).isGenericArgument())
-                  {
-                    if (gs.get(0).isChoice())
-                      {
-                        if (gs.get(0).feature() != result.selfOrConstraint(res, context).feature())
-                          {
-                            var r = result;
-                            result = gs.get(0).applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? r: x);
-                            _feature.setRefinedResultType(res, result);
-                          }
-                      }
-                    else if ((gs.get(0).isChoice() || !result.isGenericArgument())
-                       && result.feature() != gs.get(0).feature()
-                       && result.feature().inheritsFrom(gs.get(0).feature()))
-                      {
-                        // could maybe be result.asRef()?
-                        result = ResolvedNormalType.create(gs.get(0), result.generics());
-                        _feature.setRefinedResultType(res, result);
-                      }
-                  }
+                result = refineResultType(res, context, rt0, _feature.resultType());
                 _inheritsCall._generics = gs.setOrClone(0, result);
                 _inheritsCall.notifyInferred();
               }
 
             _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Refine the result type based on the inferred lmbdRt
+   * and the expected type frmlRt.
+   *
+   * This enables type inference for lambdas in e.g.:
+   *
+   * result of lambda may need tagging:
+   *     bind(B type, f T -> outcome B) outcome B => ...
+   *
+   * result of lambda may need boxing:
+   *     flat_map(B type, f T -> Sequence B) Sequence B => ...
+   */
+  private AbstractType refineResultType(Resolution res, Context context, AbstractType frmlRt, AbstractType lmbdRt)
+  {
+    var result = lmbdRt;
+    if (!frmlRt.isGenericArgument())
+      {
+        if (frmlRt.isChoice())
+          {
+            if (frmlRt.feature() != lmbdRt.selfOrConstraint(res, context).feature())
+              {
+                result = frmlRt.applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
+                _feature.setRefinedResultType(res, result);
+              }
+          }
+        else if ((frmlRt.isChoice() || !lmbdRt.isGenericArgument())
+           && lmbdRt.feature() != frmlRt.feature()
+           && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
+          {
+            result = ResolvedNormalType.create(lmbdRt.generics(), Call.NO_GENERICS, frmlRt.outer(), frmlRt.feature());
+            _feature.setRefinedResultType(res, result);
           }
       }
     return result;

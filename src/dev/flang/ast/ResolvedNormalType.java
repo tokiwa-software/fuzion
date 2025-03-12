@@ -702,12 +702,6 @@ public class ResolvedNormalType extends ResolvedType
       }
   }
 
-
-  public static ResolvedNormalType create(AbstractType t, List<AbstractType> g)
-  {
-    return new ResolvedNormalType(g, g, t.outer(), t.feature(), RefOrVal.LikeUnderlyingFeature, false);
-  }
-
 }
 
 /* end of file */

@@ -2894,8 +2894,14 @@ public class Call extends AbstractCall
   }
 
 
+  /**
+   * Notify this call that it is fully inferred.
+   */
   public void notifyInferred()
   {
+    if (PRECONDITIONS) require
+      (!actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
+
     for (var r : _whenInferredTypeParameters)
       {
         r.run();
