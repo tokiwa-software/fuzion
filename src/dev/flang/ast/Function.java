@@ -358,6 +358,7 @@ public class Function extends AbstractLambda
                       }
                   }
                 _inheritsCall._generics = gs.setOrClone(0, result);
+                _inheritsCall.notifyInferred();
               }
 
             _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
