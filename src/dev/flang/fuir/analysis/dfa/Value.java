@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import static dev.flang.ir.IR.NO_SITE;
+import static dev.flang.ir.IR.NO_CLAZZ;
 
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.Errors;
@@ -131,7 +132,7 @@ public class Value extends Val
   /**
    * The unit value 'unit', '{}'
    */
-  static Value UNIT = new Value(-1)
+  static Value UNIT = new Value(NO_CLAZZ)
     {
       /**
        * Add v to the set of values of given field within this instance.
@@ -179,7 +180,7 @@ public class Value extends Val
   /**
    * undefined value, used for not initialized fields.
    */
-  static Value UNDEFINED = new Value(-1)
+  static Value UNDEFINED = new Value(NO_CLAZZ)
     {
       public String toString()
       {
@@ -191,7 +192,7 @@ public class Value extends Val
   /**
    * used for jref field of Java_Objects
    */
-  static Value UNKNOWN_JAVA_REF = new Value(-1)
+  static Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
     {
 
       /**

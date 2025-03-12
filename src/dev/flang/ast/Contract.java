@@ -374,7 +374,7 @@ public class Contract extends ANY
           : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
 
     var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : new Universe();
+                                       : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
       {
         addContractFeatures(res, ff, context);
@@ -383,8 +383,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preFeature(),
-                    Types.resolved.t_unit)
+                    f.preFeature())
       .resolveTypes(res, context);
   }
 
@@ -416,7 +415,7 @@ public class Contract extends ANY
       }
 
     var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : new Universe();
+                                       : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, ff, context);
@@ -425,8 +424,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preBoolFeature(),
-                    Types.resolved.t_bool)
+                    f.preBoolFeature())
       .resolveTypes(res, context);
   }
 
@@ -460,8 +458,7 @@ public class Contract extends ANY
                     t,
                     preAndCallOuter.generics().asActuals(),
                     args,
-                    f,
-                    null)
+                    f)
       {
         @Override
         boolean preChecked() { return true; }
@@ -533,7 +530,7 @@ public class Contract extends ANY
     var t = in.isConstructor() ? new This(p, in, in).resolveTypes(res, in.context())
                                : (in.outerRef() != null)
                                   ? new This(p, in, in.outer()).resolveTypes(res, in.context())
-                                  : new Universe();
+                                  : Universe.instance;
     if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, of, context);
@@ -542,8 +539,7 @@ public class Contract extends ANY
                                      t,
                                      origouter.isConstructor() ? new List<>() : in.generics().asActuals(),
                                      args,
-                                     origouter.postFeature(),
-                                     Types.resolved.t_unit);
+                                     origouter.postFeature());
     callPostCondition = callPostCondition.resolveTypes(res, in.context());
     return callPostCondition;
   }
@@ -668,6 +664,7 @@ public class Contract extends ANY
                             {
                               return f.contract();
                             }
+                            @Override AbstractFeature origin() { return f; }
                           };
     res._module.findDeclarations(pF, f.outer());
     res.resolveDeclarations(pF);
@@ -1007,7 +1004,10 @@ all of their redefinition to `true`. +
                                   args2,
                                   new List<>(), // inheritance
                                   Contract.EMPTY_CONTRACT,
-                                  new Impl(pos, code2, Impl.Kind.RoutineDef));
+                                  new Impl(pos, code2, Impl.Kind.RoutineDef))
+                        {
+                          @Override AbstractFeature origin() { return f; }
+                        };
             res._module.findDeclarations(pF2, f.outer());
             f._preAndCallFeature = pF2;
 
@@ -1068,6 +1068,7 @@ all of their redefinition to `true`. +
             {
               return f.contract();
             }
+            @Override AbstractFeature origin() { return f; }
           };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);

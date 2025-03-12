@@ -468,9 +468,7 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case boollike:
         {
-          var pos = jvm.reportErrorInCode("As per data flow analysis this code should be unreachable.");
-          var neg = jvm.reportErrorInCode("As per data flow analysis this code should be unreachable.");
-
+          Expr pos = null, neg = null;
           for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               var tags = _fuir.matchCaseTags(s, mc);
@@ -486,6 +484,8 @@ public class Choices extends ANY implements ClassFileConstants
                   }
                 }
             }
+          pos = pos != null ? pos : jvm.reportUnreachable(s, "bool pos");
+          neg = neg != null ? neg : jvm.reportUnreachable(s, "bool neg");
           code = sub
             .andThen(Expr.branch(O_ifeq, neg, pos));
           break;
@@ -522,9 +522,7 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case nullable:
         {
-          var pos = Expr.POP.andThen(jvm.reportErrorInCode("As per data flow analysis this code should be unreachable."));
-          var neg = Expr.POP.andThen(jvm.reportErrorInCode("As per data flow analysis this code should be unreachable."));
-
+          Expr pos = null, neg = null;
           for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               var field = _fuir.matchCaseField(s, mc);
@@ -556,6 +554,8 @@ public class Choices extends ANY implements ClassFileConstants
                     }
                 }
             }
+          pos = pos != null ? pos : Expr.POP.andThen(jvm.reportUnreachable(s, "nullable pos"));
+          neg = neg != null ? neg : Expr.POP.andThen(jvm.reportUnreachable(s, "nullable neg"));
           code = sub                                                            // stack is sub
             .andThen(Expr.DUP)                                                  //          sub, sub
             .andThen(Expr.branch(O_ifnull,                                      //          sub

@@ -47,7 +47,7 @@ sources_only:
 # compile src_a into a.fum
 modules/a.fum: ../../modules/base.fum
 	mkdir -p $(@D)
-	$(FZ) -sourceDirs=./src_a                                        -saveLib=$@  $(CHECK)
+	$(FZ) -sourceDirs=./src_a                                        -save-module=$@  $(CHECK)
 
 # run example using a.fum and sources from src_b and src
 a: modules/a.fum
@@ -64,7 +64,7 @@ a_c: modules/a.fum
 # compile src_b into b.fum
 modules/b.fum: modules/a.fum
 	mkdir -p $(@D)
-	$(FZ) -sourceDirs=./src_b       -modules=a   -moduleDirs=modules -saveLib=$@  $(CHECK)
+	$(FZ) -sourceDirs=./src_b       -modules=a   -moduleDirs=modules -save-module=$@  $(CHECK)
 
 # run example using a.fum and b.fum and sources src
 ab: modules/a.fum modules/b.fum
@@ -97,7 +97,7 @@ b_c: modules/b.fum
 # 'x' is defined in module, does not work currently.
 xy:
 	mkdir -p modules
-	$(FZ) -sourceDirs=src_x -saveLib=modules/x.fum
+	$(FZ) -sourceDirs=src_x -save-module=modules/x.fum
 	$(FZ) -sourceDirs=src_y -modules=x -moduleDirs=modules x.y
 
 clean:

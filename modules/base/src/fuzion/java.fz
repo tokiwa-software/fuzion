@@ -31,7 +31,7 @@ public fuzion.java is
   public create_jvm0(class_path String) =>
     create_jvm (sys.c_string "-Djava.class.path=$class_path")
 
-  create_jvm(option_string fuzion.sys.Pointer) unit => intrinsic
+  create_jvm(option_string universe.Array) unit => intrinsic
 
 
   # read a static field of given name in class with given name.  Wrap result into
@@ -48,7 +48,7 @@ public fuzion.java is
   #
   public get_field(T type, thiz Java_Object, field String, signature String) =>
     f := string_to_java_object1 field
-    get_field0 T thiz.Java_Ref f (sys.c_string signature)
+    get_field0 T thiz.java_ref f (sys.c_string signature)
 
 
   # set a static field of given name in class with given name.
@@ -56,44 +56,44 @@ public fuzion.java is
   public set_static_field(clazz String, field String, val Java_Object, signature String) =>
     c := string_to_java_object1 clazz
     f := string_to_java_object1 field
-    set_static_field0 c f val.Java_Ref (sys.c_string signature)
+    set_static_field0 c f val.java_ref (sys.c_string signature)
 
 
   # set a field of given name from given object instance thiz.
   #
   public set_field(thiz Java_Object, field String, val Java_Object, signature String) =>
     f := string_to_java_object1 field
-    set_field0 thiz.Java_Ref f val.Java_Ref (sys.c_string signature)
+    set_field0 thiz.java_ref f val.java_ref (sys.c_string signature)
 
 
   # intrinsic to read static field
   #
-  get_static_field0(T type, clazz, field, signature fuzion.sys.Pointer) T => intrinsic
+  get_static_field0(T type, clazz, field Java_Ref, signature universe.Array) T => intrinsic
 
 
   # intrinsic to read instance field
   #
-  get_field0(T type, thiz, field, signature fuzion.sys.Pointer) T => intrinsic
+  get_field0(T type, thiz, field Java_Ref, signature universe.Array) T => intrinsic
 
 
   # intrinsic to set static field
   #
-  set_static_field0(clazz, field, val, signature fuzion.sys.Pointer) unit => intrinsic
+  set_static_field0(clazz, field, val Java_Ref, signature universe.Array) unit => intrinsic
 
 
   # intrinsic to set instance field
   #
-  set_field0(thiz, field, val, signature fuzion.sys.Pointer) unit => intrinsic
+  set_field0(thiz, field, val Java_Ref, signature universe.Array) unit => intrinsic
 
 
   # A Java reference
   #
-  public Java_Object(public Java_Ref fuzion.sys.Pointer /* NYI: ugly that this is public, needed by Java.as_java_object */) ref
+  public Java_Object(public java_ref Java_Ref) ref
   is
     public is_null bool =>
-      is_null0 Java_Ref
+      is_null0 java_ref
 
-    is_null0(jr fuzion.sys.Pointer) bool => intrinsic
+    is_null0(java_ref Java_Ref) bool => intrinsic
 
     # NYI: UNDER DEVELOPMENT:
     # redef as_string String =>
@@ -103,11 +103,11 @@ public fuzion.java is
   # A Java array
   #
   public Array(public T type,
-               redef Java_Ref fuzion.sys.Pointer) ref : Sequence T, Java_Object Java_Ref
+               redef java_ref Java_Ref) ref : Sequence T, Java_Object java_ref
   is
-    public length                  => array_length T Java_Ref
+    public length                  => array_length T java_ref
     public redef finite trit       => trit.yes
-    public redef index [ ] (i i32) => array_get    T Java_Ref i (sys.c_string signature)
+    public redef index [ ] (i i32) => array_get    T java_ref i (sys.c_string signature)
     public redef as_list => as_list 0
 
 
@@ -156,9 +156,9 @@ public fuzion.java is
 
   # Java's 'java.lang.String' type
   #
-  public Java_String(redef Java_Ref fuzion.sys.Pointer) ref : String, Java_Object Java_Ref
+  public Java_String(redef java_ref Java_Ref) ref : String, Java_Object java_ref
   is
-    public redef utf8 => (java_string_to_string Java_Ref).utf8
+    public redef utf8 => (java_string_to_string java_ref).utf8
 
 
   # Call a virtual Java method class_name.name with given signature signature
@@ -176,8 +176,8 @@ public fuzion.java is
     c := string_to_java_object1 class_name
     n := string_to_java_object1 name
     s := string_to_java_object1 signature
-    t := thiz.Java_Ref
-    a := (args.map_to_array (x -> x.Java_Ref)).internal_array
+    t := thiz.java_ref
+    a := (args.map_to_array (x -> x.java_ref)).internal_array
     call_v0 T c n s t a
 
 
@@ -193,7 +193,7 @@ public fuzion.java is
     c := string_to_java_object1 class_name
     n := string_to_java_object1 name
     s := string_to_java_object1 signature
-    a := (args.map_to_array (x -> x.Java_Ref)).internal_array
+    a := (args.map_to_array (x -> x.java_ref)).internal_array
     call_s0 T c n s a
 
 
@@ -207,40 +207,41 @@ public fuzion.java is
   =>
     c := string_to_java_object1 class_name
     s := string_to_java_object1 signature
-    a := (args.map_to_array (x -> x.Java_Ref)).internal_array
+    a := (args.map_to_array (x -> x.java_ref)).internal_array
     call_c0 T c s a
 
 
   # intrinsic to call given Java instance method
   #
   call_v0(T type,
-                 class_name fuzion.sys.Pointer,
-                 name fuzion.sys.Pointer,
-                 signature fuzion.sys.Pointer,
-                 thiz fuzion.sys.Pointer,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
+                 class_name Java_Ref,
+                 name Java_Ref,
+                 signature Java_Ref,
+                 thiz Java_Ref,
+                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
 
   # intrinsic to call given Java static method
   #
   call_s0(T type,
-                 class_name fuzion.sys.Pointer,
-                 name fuzion.sys.Pointer,
-                 signature fuzion.sys.Pointer,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
+                 class_name Java_Ref,
+                 name Java_Ref,
+                 signature Java_Ref,
+                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
 
 
   # intrinsic to call given Java constructor
   #
   call_c0(T type,
-                 class_name fuzion.sys.Pointer,
-                 signature fuzion.sys.Pointer,
-                 args fuzion.sys.internal_array fuzion.sys.Pointer) outcome T => intrinsic
+                 class_name Java_Ref,
+                 signature Java_Ref,
+                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
 
 
   # get a null value of type T
   #
   public null(T type : Java_Object)
   =>
+    # NYI: UNDER DEVELOPMENT: HACK!
     cast T (call_static (Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
 
 
@@ -248,21 +249,21 @@ public fuzion.java is
   #
   public cast(T type : Java_Object, thiz Java_Object)
   =>
-    cast0 T thiz.Java_Ref
+    cast0 T thiz.java_ref
 
   # intrinsic to rewrap thiz in T
   #
-  cast0(T type : Java_Object, thiz fuzion.sys.Pointer) outcome T => intrinsic
+  cast0(T type : Java_Object, thiz Java_Ref) outcome T => intrinsic
 
 
   # intrinsic to get the length of a Java array of arbitrary type
   #
-  array_length(T type, a fuzion.sys.Pointer) i32 => intrinsic
+  array_length(T type, a Java_Ref) i32 => intrinsic
 
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  array_get(T type, a fuzion.sys.Pointer, ix i32, signature fuzion.sys.Pointer) T => intrinsic
+  array_get(T type, a Java_Ref, ix i32, signature universe.Array) T => intrinsic
 
 
   # convert a Sequence to a Java Array object
@@ -271,16 +272,16 @@ public fuzion.java is
   #
   # If you want to create an array of complex types use `Java.as_java_object [...]`
   #
-  public array_to_java_object(T type, a Sequence T) Array T
+  public array_to_java_object(T type, a Sequence T) fuzion.java.Array T
     pre
       T : java_primitive
   =>
-    Array T (array_to_java_object0 T a.as_array.internal_array)
+    fuzion.java.Array T (array_to_java_object0 T a.as_array.internal_array)
 
 
   # intrinsic to convert an array to a Java Array object
   #
-  array_to_java_object0(T type, a fuzion.sys.internal_array T) fuzion.sys.Pointer => intrinsic
+  array_to_java_object0(T type, a fuzion.sys.internal_array T) Java_Ref => intrinsic
 
 
   # convert a string to a Java String object
@@ -290,56 +291,63 @@ public fuzion.java is
 
 
   string_to_java_object1(s String) =>
-    (string_to_java_object0 s.utf8.as_array.internal_array).Java_Ref
+    string_to_java_object0 s.utf8.as_array.internal_array
+
 
   # intrinsic to convert a string to a Java String object
   #
-  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Object => intrinsic
+  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Ref => intrinsic
 
 
   # convert a Java String to a string
   #
-  java_string_to_string(Java_Ref fuzion.sys.Pointer) String => intrinsic
+  java_string_to_string(java_ref Java_Ref) String => intrinsic
+
+
+  primitive_to_java_object(T type, v T) Java_Ref
+    pre
+      T : java_primitive
+  => intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object
   #
-  public i8_to_java_object(v i8) Java_Object => intrinsic
+  public i8_to_java_object(v i8) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an u16 to a Java Character object
   #
-  public u16_to_java_object(v u16) Java_Object => intrinsic
+  public u16_to_java_object(v u16) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an i16 to a Java Short object
   #
-  public i16_to_java_object(v i16) Java_Object => intrinsic
+  public i16_to_java_object(v i16) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an i32 to a Java Integer object
   #
-  public i32_to_java_object(v i32) Java_Object => intrinsic
+  public i32_to_java_object(v i32) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an i64 to a Java Long object
   #
-  public i64_to_java_object(v i64) Java_Object => intrinsic
+  public i64_to_java_object(v i64) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert an f32 to a Java Float object
   #
-  public f32_to_java_object(v f32) Java_Object => intrinsic
+  public f32_to_java_object(v f32) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert a f64 to a Java Double object
   #
-  public f64_to_java_object(v f64) Java_Object => intrinsic
+  public f64_to_java_object(v f64) Java_Object => Java_Object (primitive_to_java_object v)
 
 
   # intrinsic to convert a bool to a Java Boolean object
   #
-  public bool_to_java_object(b bool) Java_Object => intrinsic
+  public bool_to_java_object(b bool) Java_Object => Java_Object (primitive_to_java_object b)
 
 
   # short-hands

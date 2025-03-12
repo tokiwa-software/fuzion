@@ -142,7 +142,7 @@ test_redef_using_fixed =>
 
     # An implemented feature that will be redefined only by b, not by c
     #
-    redef fixed op_implemented String => "b.op_implemented"
+    fixed redef op_implemented String => "b.op_implemented"
 
 
   c : b "from c" is

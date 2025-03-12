@@ -60,10 +60,11 @@ lib_io_utf8 =>
     say "stat resolve=false: $file size is {(f.stat file false).val.size}"
 
     _ := f.use unit lm file f.mode.read ()->
-      say  f.open.file_position
-      say (f.open.seek 1)
-      say  f.open.file_position
-      say (f.open.seek 0)
+      f.open.seek ()->
+        say  f.seek.env.file_position
+        say (f.seek.env.seek 1)
+        say  f.seek.env.file_position
+        say (f.seek.env.seek 0)
 
 
     _ := f.use (array u8) lm file f.mode.read ()->(io.buffered lm).read_fully

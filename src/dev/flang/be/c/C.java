@@ -128,8 +128,6 @@ public class C extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
@@ -137,9 +135,9 @@ public class C extends ANY
      * @return statement to perform the given access
      */
     @Override
-    public CStmnt assignStatic(int s, int tc, int f, int rt, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int s, int tc, int f, CExpr tvalue, CExpr val)
     {
-      return assignField(tvalue, tc, tc, f, val, rt);
+      return assignField(tvalue, tc, tc, f, val, _fuir.clazzResultClazz(f));
     }
 
 
@@ -846,7 +844,7 @@ public class C extends ANY
           "-I" + JAVA_HOME + "/include/darwin",
           "-L" + JAVA_HOME + "/lib/server");
 
-       if (!isWindows())
+        if (!isWindows())
           {
             command.add("-ljvm");
           }
@@ -875,7 +873,6 @@ public class C extends ANY
       {
         command.addAll("-lgc");
       }
-
 
     if (_options._cLink != null)
       {
@@ -918,11 +915,10 @@ public class C extends ANY
                      "f32.infix /",
                      "f32.infix %",
                      "f32.infix **",
-                     "f32.infix =",
-                     "f32.infix <=",
-                     "f32.infix >=",
-                     "f32.infix <",
-                     "f32.infix >",
+                     "f32.type.equal",
+                     "f32.type.lower_than_or_equal",
+                     "f64.type.equal",
+                     "f64.type.lower_than_or_equal",
                      "f32.as_f64",
                      "f64.as_f32",
                      "f64.as_i64_lax",
@@ -986,14 +982,7 @@ public class C extends ANY
                     "fuzion.java.call_c0",
                     "fuzion.java.call_s0",
                     "fuzion.java.call_v0",
-                    "fuzion.java.bool_to_java_object",
-                    "fuzion.java.f32_to_java_object",
-                    "fuzion.java.f64_to_java_object",
-                    "fuzion.java.i8_to_java_object",
-                    "fuzion.java.i16_to_java_object",
-                    "fuzion.java.i32_to_java_object",
-                    "fuzion.java.i64_to_java_object",
-                    "fuzion.java.u16_to_java_object",
+                    "fuzion.java.primitive_to_java_object",
                     "fuzion.java.java_string_to_string",
                     "fuzion.java.string_to_java_object0",
                     "fuzion.java.fuzion.java.create_jvm")
@@ -1121,8 +1110,6 @@ public class C extends ANY
     cf.print(threadStartRoutine(true));
 
     cf.println("int main(int argc, char **argv) { ");
-
-    cf.println("fzE_init();");
 
     cf.print(initializeEffectsEnvironment());
 
@@ -1850,8 +1837,7 @@ public class C extends ANY
   private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = _fuir.hasData(res) ? _types.clazz(res)
-                                        : "void";
+    var resultType = _types.resultClazz(res);
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
@@ -1982,7 +1968,7 @@ public class C extends ANY
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
+    var call = CExpr.call(_fuir.clazzNativeName(cl), args);
     return switch (_fuir.getSpecialClazz(rc))
       {
         case
@@ -2173,7 +2159,7 @@ public class C extends ANY
       case c_String :
       case c_false_ :
       case c_true_ :
-      case c_sys_ptr :
+      case c_Array :
       case c_u32 :
       case c_u64 :
       case c_u8 :
@@ -2222,7 +2208,7 @@ public class C extends ANY
     var obj = CExpr
       .compoundLiteral(
         _types.clazz(rc),
-        "." + _names.fieldName(_fuir.lookupJavaRef(rc)).code() + " = "
+        "." + _names.fieldName(_fuir.lookupJavaRef(cl)).code() + " = "
           + successResult
             .field(new CIdent("l"))
             .castTo("void *" /* J_Value */)

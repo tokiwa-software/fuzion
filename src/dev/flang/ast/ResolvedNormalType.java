@@ -279,11 +279,11 @@ public class ResolvedNormalType extends ResolvedType
          || refOrVal == RefOrVal.LikeUnderlyingFeature
       );
 
-    this._refOrVal          = refOrVal;
-    this._generics          = original._generics;
+    this._refOrVal           = refOrVal;
+    this._generics           = original._generics;
     this._unresolvedGenerics = original._unresolvedGenerics;
-    this._outer             = original._outer;
-    this._feature           = original._feature;
+    this._outer              = original._outer;
+    this._feature            = original._feature;
 
     if (POSTCONDITIONS) ensure
       (feature().generics().sizeMatches(generics()));
@@ -436,14 +436,14 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asThis()
   {
     AbstractType result = this;
-    if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
+    if (!isThisType() && this != Types.t_ERROR && this != Types.t_ADDRESS && !feature().isUniverse())
       {
         result = ResolvedNormalType.create(this, RefOrVal.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result == Types.t_ADDRESS || result.isThisType() || result.isChoice(),
-       !(isThisType() || isChoice()) || result == this);
+      (result == Types.t_ERROR || result == Types.t_ADDRESS || feature().isUniverse() || result.isThisType(),
+       !isThisType() || result == this);
 
     return result;
   }

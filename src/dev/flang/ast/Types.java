@@ -121,10 +121,12 @@ public class Types extends ANY
   public static ResolvedType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
-  public static Feature f_ERROR = new Feature(true);
+  public static Feature f_ERROR;
 
   public static class Resolved
   {
+    public final TreeSet<AbstractType> legalNativeResultTypes;
+    public final TreeSet<AbstractType> legalNativeArgumentTypes;
     public final AbstractFeature universe;
     public final AbstractType t_i8  ;
     public final AbstractType t_i16 ;
@@ -244,7 +246,7 @@ public class Types extends ANY
       f_fuzion                  = universe.get(mod, "fuzion", 0);
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
-      f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "Java_Ref", 0);
+      f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "java_ref", 0);
       f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
@@ -273,6 +275,10 @@ public class Types extends ANY
         t_u64,
         t_f32,
         t_f64));
+
+      legalNativeResultTypes = new TreeSet<AbstractType>();
+      legalNativeArgumentTypes = new TreeSet<AbstractType>();
+
       resolved = this;
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(
@@ -345,7 +351,10 @@ public class Types extends ANY
     t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
-    f_ERROR     = new Feature(true);
+    f_ERROR     = new Feature(true)
+      {
+        @Override public AbstractType selfType() { return t_ERROR; };
+      };
     _options    = options;
   }
 

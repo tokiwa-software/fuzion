@@ -100,15 +100,6 @@ public class Parser extends Lexer
 
 
   /**
-   * Create a parser for the given file
-   */
-  public Parser(Path fname)
-  {
-    this(fname, null);
-  }
-
-
-  /**
    * Fork this parer, used by fork().
    */
   private Parser(Parser original)
@@ -419,7 +410,7 @@ field       : returnType
           {
             if (first)
               {
-                f.setVisbility(v);
+                f.setVisibility(v);
 
                 list.add(f);
               }

@@ -464,13 +464,16 @@ public abstract class Module extends ANY implements FeatureLookup
           .toArray(Module[]::new);
 
         // first we search in additional modules
-        for (Module libraryModule : modules)
+        if (outer instanceof LibraryFeature)
           {
-            for (var e : libraryModule.declaredFeatures(outer).entrySet())
+            for (Module libraryModule : modules)
               {
-                addDeclaredOrInherited(s, outer, e.getKey(), e.getValue());
+                for (var e : libraryModule.declaredFeatures(outer).entrySet())
+                  {
+                    addDeclaredOrInherited(s, outer, e.getKey(), e.getValue());
+                  }
+                libraryModule.findInheritedFeatures(s, outer, selfAndModules);
               }
-            libraryModule.findInheritedFeatures(s, outer, selfAndModules);
           }
 
         // then we search in this module
@@ -479,9 +482,6 @@ public abstract class Module extends ANY implements FeatureLookup
             addDeclaredOrInherited(s, outer, e.getKey(), e.getValue());
           }
 
-        // NYI: cleanup: See #479: there are two places that initialize
-        // _declaredOrInheritedFeatures: this place and
-        // SourceModule.findDeclaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = s;
       }
     return s;

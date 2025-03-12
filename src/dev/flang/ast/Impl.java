@@ -30,7 +30,6 @@ import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -695,6 +694,20 @@ public class Impl extends ANY
         }
     }
     return result;
+  }
+
+
+  /**
+   * Add initial call to the expression of
+   * this implementation.
+   */
+  public void addInitialCall(AbstractCall ac)
+  {
+    if (PRECONDITIONS) require
+      (ac.type().compareTo(Types.resolved.t_unit) == 0,
+       ac.calledFeature().resultType().compareTo(Types.resolved.t_unit) == 0);
+
+    _expr = new Block(new List<>(ac, _expr));
   }
 
 }

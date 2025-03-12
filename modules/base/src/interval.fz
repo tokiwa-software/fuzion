@@ -50,7 +50,7 @@ public interval(T type : integer,
   : container.Set T
 
 pre
-  debug: ((step.sign = 0): (through.map =from).first false)  # step cannot be zero unless from=through
+  debug: ((step.sign = 0): through.as_equatable=from)  # step cannot be zero unless from=through
 is
 
 
@@ -61,7 +61,7 @@ is
   #
   public infix : (step_factor T)
   pre
-    debug: ((step_factor.sign = 0): (through.map =from).first false)  # step cannot be zero unless from=through
+    debug: ((step_factor.sign = 0): through.as_equatable=from)  # step cannot be zero unless from=through
     safety: (step *? step_factor).exists
   =>
     interval from through step*step_factor

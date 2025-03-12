@@ -91,9 +91,8 @@ public bool : choice false_ true_, property.equatable, java_primitive is
       true
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
-  # NYI: #1726, #2301: a and b should be marked Lazy here
   #
-  public ternary ? : (T type, a, b T) => if bool.this a else b
+  public ternary ? : (T type, a, b Lazy T) => if bool.this a else b
 
 
   # create an option from a lazily evaluated value depending on this bool

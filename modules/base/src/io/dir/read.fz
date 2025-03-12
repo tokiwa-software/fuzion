@@ -31,8 +31,8 @@ public read(ro Dir_Read_Handler) : effect is
   # returns the name of the next entry, or an error if the operation fails
   # for some reason (including that there are no more entries).
   #
-  module read(fd fuzion.sys.Pointer) outcome String =>
-    r := ro.read fd
+  module read(dd Directory_Descriptor) outcome String =>
+    r := ro.read dd
     replace
     r
 
@@ -41,9 +41,9 @@ public read(ro Dir_Read_Handler) : effect is
   #
   type.default_read_handler =>
     ref : io.dir.Dir_Read_Handler
-      redef read(fd fuzion.sys.Pointer) outcome String =>
+      redef read(dd Directory_Descriptor) outcome String =>
         internal_array := fuzion.sys.internal_array_init u8 1024
-        len := fzE_read_dir fd internal_array.data
+        len := fzE_dir_read dd internal_array.data
         if len = 0
           error "no more directory entries"
         else if len < 0
@@ -67,4 +67,4 @@ public read =>
 # reference to the reading operations that could take place
 #
 private:public Dir_Read_Handler ref is
-  read(fd fuzion.sys.Pointer) outcome String => abstract
+  read(dd Directory_Descriptor) outcome String => abstract

@@ -86,6 +86,12 @@ module:public array(
     array.this
 
 
+  # create an empty array of type T
+  #
+  public fixed type.empty array T =>
+    array (fuzion.sys.internal_array_init T 0) unit unit unit
+
+
   # array -- create initialized one-dimensional immutable array
   #
   public type.new(length i32, init i32 -> T) array T
@@ -100,12 +106,6 @@ module:public array(
       internal[x] := init x
 
     array internal unit unit unit
-
-
-  # equality
-  #
-  public fixed redef type.equality(a, b array T) => (Sequence T).type.equality a b
-
 
 
 # array -- create initialized one-dimensional immutable array

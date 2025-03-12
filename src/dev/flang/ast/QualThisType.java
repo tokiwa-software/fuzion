@@ -38,13 +38,6 @@ import dev.flang.util.SourcePosition;
 public class QualThisType extends UnresolvedType
 {
 
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  final List<ParsedName> _qual;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -58,8 +51,6 @@ public class QualThisType extends UnresolvedType
     super(SourcePosition.range(qual),
           qual.getLast()._name,
           Call.NO_GENERICS, null, RefOrVal.ThisType);
-
-    this._qual = qual;
   }
 
 

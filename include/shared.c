@@ -290,7 +290,7 @@ char* fzE_replace_char(const char* str, char find, char replace){
 }
 
 // convert a jstring to a utf-8 byte array
-// NYI OPTIMIZATION do conversion in C not via the JVM.
+// NYI: OPTIMIZATION: do conversion in C not via the JVM.
 const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 {
   if (jstr == NULL)
@@ -931,11 +931,12 @@ uint64_t fzE_unique_id()
  * result is a 32-bit array
  *
  * result[0] = year
- * result[1] = day_in_year
- * result[2] = hour
- * result[3] = min
- * result[4] = sec
- * result[5] = nanosec;
+ * result[1] = month
+ * result[2] = day_in_month
+ * result[3] = hour
+ * result[4] = min
+ * result[5] = sec
+ * result[6] = nanosec;
  */
 void fzE_date_time(void * result)
 {
@@ -943,30 +944,21 @@ void fzE_date_time(void * result)
   time(&rawtime);
   struct tm * ptm = gmtime(&rawtime);
   ((int32_t *)result)[0] = ptm->tm_year+1900;
-  ((int32_t *)result)[1] = ptm->tm_yday+1;
-  ((int32_t *)result)[2] = ptm->tm_hour;
-  ((int32_t *)result)[3] = ptm->tm_min;
-  ((int32_t *)result)[4] = ptm->tm_sec;
-  ((int32_t *)result)[5] = 0;
+  ((int32_t *)result)[1] = ptm->tm_mon+1;
+  ((int32_t *)result)[2] = ptm->tm_mday;
+  ((int32_t *)result)[3] = ptm->tm_hour;
+  ((int32_t *)result)[4] = ptm->tm_min;
+  ((int32_t *)result)[5] = ptm->tm_sec;
+  ((int32_t *)result)[6] = 0;
 }
 
 
-int64_t fzE_file_read(void * file, void * buf, int32_t size)
-{
-  size_t result = fread(buf, 1, size, (FILE*)file);
-  return ferror((FILE*)file)!=0
-    ? -2
-    : result==0 && feof((FILE*)file)!=0
-    ? -1
-    : (int64_t)result;
-}
-
-int64_t fzE_file_write(void * file, void * buf, int32_t size)
+int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
   size_t result = fwrite(buf, 1, size, (FILE*)file);
   return ferror((FILE*)file)!=0
     ? -1
-    : (int64_t)result;
+    : result;
 }
 
 int32_t fzE_file_move(const char *oldpath, const char *newpath)

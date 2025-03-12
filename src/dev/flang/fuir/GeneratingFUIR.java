@@ -183,7 +183,7 @@ public class GeneratingFUIR extends FUIR
 
   private final Map<AbstractType, Clazz> _clazzesForTypes;
 
-  boolean _lookupDone;
+  protected boolean _lookupDone;
 
 
   /**
@@ -228,7 +228,7 @@ public class GeneratingFUIR extends FUIR
         _argClazzes = null;
       }
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
-    _universe  = newClazz(null, mir.universe().selfType(), -1)._id;
+    _universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT)._id;
     doesNeedCode(_universe);
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
@@ -244,7 +244,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param original the original FUIR instance that we are cloning.
    */
-  public GeneratingFUIR(GeneratingFUIR original)
+  protected GeneratingFUIR(GeneratingFUIR original)
   {
     super(original);
     _fe = original._fe;
@@ -276,7 +276,7 @@ public class GeneratingFUIR extends FUIR
   Clazz newClazz(AbstractType t)
   {
     var o = t.outer();
-    return newClazz(o == null ? null : newClazz(o), t, -1);
+    return newClazz(o == null ? null : newClazz(o), t, FuzionConstants.NO_SELECT);
   }
   Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
   {
@@ -405,9 +405,14 @@ public class GeneratingFUIR extends FUIR
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
               case "error"                     -> SpecialClazzes.c_error       ;
-              case "fuzion"                    -> SpecialClazzes.c_fuzion      ;
-              case "fuzion.sys"                -> SpecialClazzes.c_fuzion_sys  ;
-              case "fuzion.sys.Pointer"        -> SpecialClazzes.c_sys_ptr     ;
+              case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
+              case "Condition"                 -> SpecialClazzes.c_Condition   ;
+              case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
+              case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
+              case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;
+              case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
+              case "Array"                     -> SpecialClazzes.c_Array;
+              case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)
@@ -429,7 +434,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private Clazz id2clazz(int cl)
+  protected Clazz id2clazz(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -565,7 +570,7 @@ public class GeneratingFUIR extends FUIR
       {
         var ot = thiz.outer();
         var oc = ot != null ? type2clazz(ot) : null;
-        result = newClazz(oc, thiz, -1);
+        result = newClazz(oc, thiz, FuzionConstants.NO_SELECT);
         _clazzesForTypes.put(thiz, result);
       }
 
@@ -668,8 +673,8 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    int res;
-    if (CACHE_RESULT_CLAZZ)
+    int res = NO_CLAZZ;
+    if (CACHE_RESULT_CLAZZ && _resultClazzes.length > clazzId2num(cl))
       {
         res = _resultClazzes[clazzId2num(cl)];
         if (res == NO_CLAZZ)
@@ -918,7 +923,7 @@ public class GeneratingFUIR extends FUIR
       {
         res[i] = result.get(i)._id;
         if (CHECKS) check
-          (res[i] != -1);
+          (res[i] != NO_CLAZZ);
       }
     return res;
   }
@@ -1095,6 +1100,14 @@ public class GeneratingFUIR extends FUIR
     return or == null || c._outer.isUnitType() ? NO_CLAZZ : or._id;
   }
 
+
+  /**
+   * Get the expression at the given site
+   *
+   * @param s a site
+   *
+   * @return the expression found at site s.
+   */
   @Override
   protected Object getExpr(int s)
   {
@@ -1345,7 +1358,10 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.typeName().getBytes(StandardCharsets.UTF_8);
+    return (c.feature().isCotype()
+      ? c.typeName()
+      : "-- clazzTypeName called on none cotype --")
+        .getBytes(StandardCharsets.UTF_8);
   }
 
 
@@ -1416,7 +1432,7 @@ public class GeneratingFUIR extends FUIR
             var oc = id2clazz(o);
             var of = oc.feature();
             var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
-            result = newClazz(oc, f.selfType(), -1);
+            result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
             if (CHECKS) check
               (f.isRef() == (result.isRef().yes()));
           }
@@ -1456,7 +1472,7 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * On {@code cl} lookup field {@code Java_Ref}
+   * On {@code cl} lookup field {@code java_ref}
    *
    * @param cl Java_Object or inheriting from Java_Object
    *
@@ -1468,7 +1484,11 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
+    return !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_fuzion_Java_Object_Ref.outer())
+      ? NO_CLAZZ
+      : _lookupDone
+      ? id2clazz(cl).lookup(Types.resolved.f_fuzion_Java_Object_Ref)._id
+      : id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
   }
 
 
@@ -1488,7 +1508,9 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return lookupCall(cl, !_lookupDone);
+    return !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_Function)
+      ? NO_CLAZZ
+      : lookupCall(cl, !_lookupDone);
   }
 
 
@@ -1532,7 +1554,11 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_effect_static_finally)._id;
+    return !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_effect_static_finally.outer())
+      ? NO_CLAZZ
+      : _lookupDone
+      ? id2clazz(cl).lookup(Types.resolved.f_effect_static_finally)._id
+      : id2clazz(cl).lookupNeeded(Types.resolved.f_effect_static_finally)._id;
   }
 
 
@@ -2157,6 +2183,14 @@ public class GeneratingFUIR extends FUIR
     var dynamic = c.isDynamic() && (tclazz.isRef().yes() || callToOuterRef);
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
+    // NYI: HACK
+    // can happen e.g. in compile_time_type_casts
+    // since toStack currently puts illegal code in _allCode
+    // because it does not consider the context, yet
+    if (tclazz.isVoidType() || !tclazz.feature().inheritsFrom(cf.outer()))
+      {
+        return null;
+      }
     if (!tclazz.isVoidType())
       {
         innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
@@ -2166,7 +2200,7 @@ public class GeneratingFUIR extends FUIR
             cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
-            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall());
+            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
           }
         if (needsCode)
           {
@@ -2530,7 +2564,9 @@ public class GeneratingFUIR extends FUIR
         _siteClazzCache.put(s, res);
       }
 
-    return res._id;
+    return res == null
+      ? NO_CLAZZ
+      : res._id;
   }
 
 
@@ -2578,7 +2614,9 @@ public class GeneratingFUIR extends FUIR
         rc = clazz(m.subject(), outerClazz, _inh.get(s - SITE_BASE));
         _siteClazzCache.put(s, rc);
       }
-    return rc._id;
+    return rc == null
+      ? NO_CLAZZ
+      : rc._id;
   }
 
 

@@ -41,14 +41,14 @@ public Linked_List(public T type) ref : Sequence T is
   #
   as_string0(pfx String) =>
     match next
-      ll Linked_List T => ll.as_string0 (pfx + "{ll.data} -> ")
-      nil => pfx + "nil ]"
+      ll Linked_List T => ll.as_string0 "{pfx} -> {ll.data}"
+      nil => "{pfx} ]"
 
 
   # a representation of this linked list as a string.
   #
   public redef as_string =>
-    Linked_List.this.as_string0 "[ {data} -> "
+    Linked_List.this.as_string0 "[ {data}"
 
 
   # return this linked list as a list
@@ -58,7 +58,3 @@ public Linked_List(public T type) ref : Sequence T is
       ll Linked_List T => (data : ()->ll.as_list)
       nil => (data : ()->nil)
 
-
-  # equality
-  #
-  public fixed redef type.equality(a, b container.Linked_List T) => (Sequence T).type.equality a b

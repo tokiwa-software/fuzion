@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sys.Pointer
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# backend-specific pointer type used, e.g., to refer to the actual data in an
-# array
-#
-# This must not be used for anything except assignments to other pointers, no
-# calls on this value are permitted, not even `p.as_string`, this will lead to
-# undefined behaviour.
-#
-private:public Pointer ref is
-
-  # this must not contain any declarations.
+override NAME = reg_issue4353
+include ../simple.mk

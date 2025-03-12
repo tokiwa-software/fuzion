@@ -1,4 +1,191 @@
-## 2025-xx-xx: V0.092
+## 2025-xx-xx: V0.093
+
+
+## 2025-02-14: V0.092
+
+- Base library
+
+  - New base library features
+
+    - A new feature `expanding_array` provides an efficient immutable but extensible array. This is now used internally to implement an efficient partially sorted map `ps_map`, fix [4637](https://github.com/tokiwa-software/fuzion/issues/4637) ([4651](https://github.com/tokiwa-software/fuzion/pull/4651))
+
+      This permits efficiently adding elements to an array similar to Java's `ArrayList` as follows:
+
+          for  a := (container.expanding_array String).empty, a.add "😜"*i
+               i in 1..6
+          else
+            say a
+
+    - Added `Sequence.dedup` and `Sequence.unique` to remove (adjacent) duplicates in a `Sequence`, fix #4552, workaround for [4628](https://github.com/tokiwa-software/fuzion/issues/4628) ([4629](https://github.com/tokiwa-software/fuzion/pull/4629))
+
+    - Added `Sequence.scan` that takes a function instead of a `Monoid` ([4644](https://github.com/tokiwa-software/fuzion/pull/4644))
+
+    - Added `Sequence.sliding` and `Sequence.group_map_reduce` ([4655](https://github.com/tokiwa-software/fuzion/pull/4655))
+
+    - Added features like `codepoint.is_ascii_digit` for existing sets ([4635](https://github.com/tokiwa-software/fuzion/pull/4635))
+
+    - Added ffi convenience features: `null`, `is_null` ([4533](https://github.com/tokiwa-software/fuzion/pull/4533))
+
+  - Changes to the following standard library features
+
+    - `buffered.writer` no uses mutate type parameter from `buffered` ([4595](https://github.com/tokiwa-software/fuzion/pull/4595))
+
+    - Avoid `as_list` in `Sequence.as_array` if array backed ([4653](https://github.com/tokiwa-software/fuzion/pull/4653))
+
+    - Changed `io.out`/`io.err` to be `ref` features `io.Out`/`io.Err` which avoids then need for `Print_Handler` when defining a different effect handler ([4590](https://github.com/tokiwa-software/fuzion/pull/4590))
+
+    - change impl of `Print_Handler` and `print_effect` ([4579](https://github.com/tokiwa-software/fuzion/pull/4579))
+
+    - Let `mutable_tree_map` inherit from `Mutable_Map` and add features ([4638](https://github.com/tokiwa-software/fuzion/pull/4638))
+
+    - Move type parameter from `io.buffered.reader` to `io.buffered` ([4492](https://github.com/tokiwa-software/fuzion/pull/4492))
+
+    - orderable provide implementation for `type.equality` ([4675](https://github.com/tokiwa-software/fuzion/pull/4675))
+
+    - unify string representation of maps ([4646](https://github.com/tokiwa-software/fuzion/pull/4646))
+
+    - modules: Move declaration outside of `String` as a workaround for [4619](https://github.com/tokiwa-software/fuzion/issues/4619) ([4620](https://github.com/tokiwa-software/fuzion/pull/4620))
+
+- Parser
+
+  - Fix `OpExpr` to parse expressions like `x?? &amp;&amp; y??` correctly ([4678](https://github.com/tokiwa-software/fuzion/pull/4678))
+
+  - Fix confusing error on wrong indentation ([4674](https://github.com/tokiwa-software/fuzion/pull/4674))
+
+- Front end
+
+  - Fix crash when processing
+
+        count(n) =>
+          if true then count 1
+          else         count 2
+
+        _ := [3].map count |> sum
+
+    `constraintAssignableFrom` return `false` for `void` unless constraint… ([4618](https://github.com/tokiwa-software/fuzion/pull/4618))
+
+  - Fix crash when processing
+
+        o array i32->i32 := [-]      # array of unary function `i -> -i`
+        say (o[0].call 3)
+
+    `InlineArray.propagateExpectedType` fix check condition ([4606](https://github.com/tokiwa-software/fuzion/pull/4606))
+
+  - Fix crash when processing
+
+        m 3
+        m(a A) => if A : i32 then
+        m(B type, b B) =>
+
+    check for duplicate feature when adding type parameter ([4612](https://github.com/tokiwa-software/fuzion/pull/4612))
+
+  - Suppress subsequent errors: fix [4418](https://github.com/tokiwa-software/fuzion/issues/4418) ([4605](https://github.com/tokiwa-software/fuzion/pull/4605))
+
+  - fix bug when inner feature inherits from outer feature and outer has type parameters ([4688](https://github.com/tokiwa-software/fuzion/pull/4688))
+
+  - fix handling of type constraints in inherited preconditions that resulted in unjustified errors: fix `Context.exterior` and comparison of type parameters ([4652](https://github.com/tokiwa-software/fuzion/pull/4652))
+
+  - Enable partial application of type feature as in `m.map String.from_codepoints`: fix resolving of unresolved type universe ([4663](https://github.com/tokiwa-software/fuzion/pull/4663))
+
+  - remove strange subsequent errors reported in feature that with arg types inferred from call site if there is no such call site ([4607](https://github.com/tokiwa-software/fuzion/pull/4607))
+
+  - Improve type inference for `Lazy` value in expressions like `o := true.as_option 42` ([4669](https://github.com/tokiwa-software/fuzion/pull/4669))
+
+  - Fixed to eager partial application: do not wrap function argument into a lambda, fix [4609](https://github.com/tokiwa-software/fuzion/issues/4609) ([4616](https://github.com/tokiwa-software/fuzion/pull/4616))
+
+  - remove uses of ast.Context anywhere but `ast` ([4627](https://github.com/tokiwa-software/fuzion/pull/4627))
+
+  - Fix partial application when calling infix operator, fix [4687](https://github.com/tokiwa-software/fuzion/issues/4687) ([4689](https://github.com/tokiwa-software/fuzion/pull/4689))
+
+  - In assignment `f := ... (x,y) -> ... f ...`, the declared field `f` is now accessible within the lambda: fe: fix field on left side should be visible in lambda ([4608](https://github.com/tokiwa-software/fuzion/pull/4608))
+
+  - re-enable partial application for expr in parentheses, e.g., `("hi" |> say)` ([4615](https://github.com/tokiwa-software/fuzion/pull/4615))
+
+  - fix crashes of `fz` command:
+
+    - after reporting justified errors: fix `initialValueFromCall` in case of errors ([4611](https://github.com/tokiwa-software/fuzion/pull/4611))
+
+    - fix calling type on partial not resulting in error ([4625](https://github.com/tokiwa-software/fuzion/pull/4625))
+
+    - after failure to infer type parameter ([4610](https://github.com/tokiwa-software/fuzion/pull/4610))
+
+    - fix field for result not added in nested `match`/`if` expr ([4525](https://github.com/tokiwa-software/fuzion/pull/4525))
+
+    - Relax precondition for `AbstractFeature.cotype` ([4594](https://github.com/tokiwa-software/fuzion/pull/4594))
+
+    - fe: fix index out of bounds in `SourceModule.inScope` ([4613](https://github.com/tokiwa-software/fuzion/pull/4613))
+
+    - fe: fix soundness issue in `checkLegalQualThisType` ([4660](https://github.com/tokiwa-software/fuzion/pull/4660))
+
+- DFA
+
+  - Do not remove fields used in `compare_and_*`, mark complete value as read ([4679](https://github.com/tokiwa-software/fuzion/pull/4679))
+
+  - Report error when replacing effect that is not instated ([4599](https://github.com/tokiwa-software/fuzion/pull/4599))
+
+- FUIR
+
+  - implement clazz is array in fuir ([4602](https://github.com/tokiwa-software/fuzion/pull/4602))
+
+  - cache result field ([4664](https://github.com/tokiwa-software/fuzion/pull/4664))
+
+  - do not create new clazzes when `lookupDone==true` ([4643](https://github.com/tokiwa-software/fuzion/pull/4643))
+
+  - do not create outerRef clazz when lookupDone ([4665](https://github.com/tokiwa-software/fuzion/pull/4665))
+
+  - fix instability in `clazz._id` ([4648](https://github.com/tokiwa-software/fuzion/pull/4648))
+
+  - improve robustness of `clazz_array_u8`, etc. ([4578](https://github.com/tokiwa-software/fuzion/pull/4578))
+
+  - normalise outer clazzes of fields to always be values ([4585](https://github.com/tokiwa-software/fuzion/pull/4585))
+
+  - record which sites and code where used by DFA ([4666](https://github.com/tokiwa-software/fuzion/pull/4666))
+
+  - Remove fuir field index ([4588](https://github.com/tokiwa-software/fuzion/pull/4588))
+
+- All back end
+
+  - native: `sys.process`, `sys.pipe` convert to native ([4575](https://github.com/tokiwa-software/fuzion/pull/4575))
+
+- C back end
+
+  - be/c: add `-CInclude`, `-CLink` options ([4582](https://github.com/tokiwa-software/fuzion/pull/4582))
+
+  - posix.c: remove telldir/seekdir which are not POSIX ([4569](https://github.com/tokiwa-software/fuzion/pull/4569))
+
+- Windows
+
+  - be/win: fix compilation of `fuzion.dll` ([4591](https://github.com/tokiwa-software/fuzion/pull/4591))
+
+- Build tools
+
+  - do not fix fz output to UTF8 encoding ([4636](https://github.com/tokiwa-software/fuzion/pull/4636))
+
+  - makefile: do `rm -rf $(@D)` when rebuilding modules ([4593](https://github.com/tokiwa-software/fuzion/pull/4593))
+
+  - makefile: Fix path to src directory for javadoc ([4574](https://github.com/tokiwa-software/fuzion/pull/4574))
+
+  - scripts: fix line.separator ([4573](https://github.com/tokiwa-software/fuzion/pull/4573))
+
+  - scripts: use any POSIX shell instead of bash ([4571](https://github.com/tokiwa-software/fuzion/pull/4571))
+
+- Tests
+
+  - add regression tests ([4697](https://github.com/tokiwa-software/fuzion/pull/4697),
+    [4614](https://github.com/tokiwa-software/fuzion/pull/4614),
+    [4673](https://github.com/tokiwa-software/fuzion/pull/4673),
+    [4604](https://github.com/tokiwa-software/fuzion/pull/4604))
+
+  - test file io using Unicode ([4708](https://github.com/tokiwa-software/fuzion/pull/4708))
+
+- Documentation
+
+  - Added version and hash at the bottom of the API doc pages ([4703](https://github.com/tokiwa-software/fuzion/pull/4703))
+
+  - Don't show 'Private Constructor' annotation for arguments ([4670](https://github.com/tokiwa-software/fuzion/pull/4670))
+
+  - Fixed links to Fuzion source files ([4698](https://github.com/tokiwa-software/fuzion/pull/4698))
+
 
 ## 2025-01-16: V0.091
 
