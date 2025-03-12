@@ -205,7 +205,7 @@ public class TailCall extends ANY
    */
   private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
   {
-    return switch (_fuir.codeAt(cls))
+    return _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
       {
       case Call ->
         {
