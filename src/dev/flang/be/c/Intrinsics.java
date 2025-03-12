@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
