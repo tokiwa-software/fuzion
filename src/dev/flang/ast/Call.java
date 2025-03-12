@@ -2662,7 +2662,7 @@ public class Call extends AbstractCall
                 var rft = _resolvedFormalArgumentTypes[count];
                 if (actl != null && rft != Types.t_ERROR)
                   {
-                    var a = actl.box(rft, context);
+                    var a = actl.boxAndTag(rft, context);
                     if (CHECKS) check
                       (a != null);
                     i.set(a);
@@ -2879,7 +2879,7 @@ public class Call extends AbstractCall
       @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
       @Override public AbstractType type() { return Types.t_ERROR; }
       @Override
-      Expr box(AbstractType frmlT, Context context)
+      Expr boxAndTag(AbstractType frmlT, Context context)
       {
         return this;
       }
