@@ -36,6 +36,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 /*---------------------------------------------------------------------*/
 
@@ -325,6 +326,27 @@ public class Types extends ANY
         {
           res.resolveTypes(t.feature());
         }
+    }
+
+    private Call _unitCall;
+    public Call unitCall(Resolution res, Context context)
+    {
+      if (_unitCall == null)
+        {
+          _unitCall =  new Call(SourcePosition.builtIn, Universe.instance, Types.resolved.t_unit.feature()).resolveTypes(res, context);
+        }
+      return _unitCall;
+    }
+
+    private Call _fuzionSysCall;
+    public Call fuzionSysCall(Resolution res, Context context)
+    {
+      if (_fuzionSysCall == null)
+        {
+          var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion").resolveTypes(res, context);
+          _fuzionSysCall   = new Call(SourcePosition.builtIn, fuzion, "sys" ).resolveTypes(res, context);
+        }
+      return _fuzionSysCall;
     }
   }
 
