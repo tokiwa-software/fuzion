@@ -46,7 +46,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   # short-hand features to get the mutable references from `n`
   #
   public redef next option (Linked_List T) =>
-    n.get.bind (Linked_List T) x->x
+    n.get.bind (Linked_List T) id
 
 
   # append an element to the linked list

@@ -1240,7 +1240,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : float
   =>
-    variance.and_then x->x.sqrt
+    variance.and_then (.sqrt)
 
 
   # the euclidean norm of this sequence

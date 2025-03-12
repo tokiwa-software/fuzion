@@ -89,7 +89,7 @@ public thread_pool(R type, size i32, code ()->R) outcome R =>
         res := code.call
         thread_pool.env.await
         res)
-    .bind x->x
+    .bind id
 
 
 
