@@ -345,7 +345,7 @@ public class Function extends AbstractLambda
                           {
                             var r = result;
                             result = gs.get(0).applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? r: x);
-                            _feature.setResultType(res, result);
+                            _feature.setRefinedResultType(res, result);
                           }
                       }
                     else if ((gs.get(0).isChoice() || !result.isGenericArgument())
@@ -354,7 +354,7 @@ public class Function extends AbstractLambda
                       {
                         // could maybe be result.asRef()?
                         result = ResolvedNormalType.create(gs.get(0), result.generics());
-                        _feature.setResultType(res, result);
+                        _feature.setRefinedResultType(res, result);
                       }
                   }
                 _inheritsCall._generics = gs.setOrClone(0, result);
