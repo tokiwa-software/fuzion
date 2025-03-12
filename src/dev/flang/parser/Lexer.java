@@ -1836,8 +1836,16 @@ PLUSMINUS   : "+"
     var p = curCodePoint();
     return switch (p)
       {
-      case 'P', 'E' ->
+      case 'P', 'E', 'p', 'e' ->
       {
+        if (p == 'p' || p == 'e')
+          {
+            Errors.error(sourcePos(),
+              "Broken numeric literal, exponent indicator must be in upper case.",
+              "To fix this change '" + (char) p + "' to '" + (p == 'e' ? 'E' : 'P') + "'.");
+            p = p == 'e' ? 'E' : 'P';
+          }
+
         nextCodePoint();
         var neg = switch (curCodePoint())
           {
