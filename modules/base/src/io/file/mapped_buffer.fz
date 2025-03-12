@@ -53,6 +53,6 @@ module:public mapped_buffer
 
   # cleanup
   #
-  redef finally =>
+  public redef finally =>
     # NYI: what to do on error?
     _ := fzE_munmap memory length

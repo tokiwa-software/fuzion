@@ -151,7 +151,7 @@ is
 
   # number of entries in this map
   #
-  redef size =>
+  public redef size =>
     load.get
 
 

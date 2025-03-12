@@ -1966,7 +1966,7 @@ A ((Choice)) declaration must not contain a result type.
         _state = State.BOXING;
 
         visit(new ContextVisitor(context()) {
-            @Override public void  action(AbstractAssign a) { a.boxVal     (_context);           }
+            @Override public void  action(AbstractAssign a) { a.boxAndTagVal     (_context);           }
             @Override public Call  action(Call           c) { c.boxArgs    (_context); return c; }
             @Override public Expr  action(InlineArray    i) { i.boxElements(_context); return i; }
             public void  action(AbstractCall c)

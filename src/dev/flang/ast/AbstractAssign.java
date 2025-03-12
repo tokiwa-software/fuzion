@@ -250,19 +250,19 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Boxing for assigned value: Make sure a value type that is assigned to a ref
-   * type will be boxed.
+   * Boxing/tagging for assigned value: Make sure a value type that is assigned
+   * is properly boxed/tagged.
    *
    * @param context the source code context where this assignment is used
    */
-  void boxVal(Context context)
+  void boxAndTagVal(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(_assignedField.resultType(), context);
+        _value = _value.boxAndTag(_assignedField.resultType(), context);
       }
   }
 

@@ -60,7 +60,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     n ≥ 0
     # NYI String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
   is
-    redef utf8 Sequence u8 =>
+    public redef utf8 Sequence u8 =>
       bytes := String.this.utf8
       bytes.cycle.take (bytes.count * n)
 
@@ -312,8 +312,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
         # return list of c and rest
         ret(c outcome codepoint, rest list u8) list (outcome codepoint) =>
           ref : Cons (outcome codepoint) (list (outcome codepoint))
-            redef head => c
-            redef tail => codepoints_and_errors rest
+            public redef head => c
+            public redef tail => codepoints_and_errors rest
 
         p := codepoint.type
         e(msg String) => error "Bad UTF8 encoding found: cannot decode $msg"
@@ -516,8 +516,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
       h :=  String.from_bytes (l.take_while (c -> !c.is_ascii_white_space)).as_array
       t := (String.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
       ref : Cons String (list String)
-        redef head => h
-        redef tail => t
+        public redef head => h
+        public redef tail => t
 
 
   # split string at s
@@ -781,8 +781,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.concat =>
     ref : Monoid String
-      redef infix ∙ (a, b String) => a + b
-      redef e => ""
+      public redef infix ∙ (a, b String) => a + b
+      public redef e => ""
 
 
   # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
@@ -790,8 +790,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.concat(sep String) =>
     ref : Monoid String
-      redef infix ∙ (a, b String) String => if (a.is_empty || b.is_empty) a + b else a + sep + b
-      redef e => ""
+      public redef infix ∙ (a, b String) String => if (a.is_empty || b.is_empty) a + b else a + sep + b
+      public redef e => ""
 
 
   # concat strings a and b by
@@ -799,7 +799,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.concat(a, b String) String =>
     ref : String
-      redef utf8 Sequence u8 => a.utf8 ++ b.utf8
+      public redef utf8 Sequence u8 => a.utf8 ++ b.utf8
 
 
   # Takes a sequence of strings and concatenates its elements, while adding the separator
@@ -834,11 +834,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
     ref : String
 
-      redef utf8 Sequence u8 =>
+      public redef utf8 Sequence u8 =>
         a.as_list.flat_map (.as_string.utf8)
 
 
-      redef infix + (other Any) String =>
+      public redef infix + (other Any) String =>
         a.add other
         from_mutable_array a
 
@@ -847,14 +847,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.from_bytes(utf8_bytes Sequence u8) String =>
     ref : String
-      redef utf8 := utf8_bytes.as_array_backed
+      public redef utf8 := utf8_bytes.as_array_backed
 
 
   # create string from the given codepoints
   #
   public type.from_codepoints(codepoints Sequence codepoint) String =>
     ref : String
-      redef utf8 Sequence u8 =>
+      public redef utf8 Sequence u8 =>
         codepoints
           .flat_map (.utf8)
           .as_array_backed

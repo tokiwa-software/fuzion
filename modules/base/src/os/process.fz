@@ -52,7 +52,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
   # read bytes from standard out
   #
   read_handler(desc i64) : io.Read_Handler is
-    redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
@@ -68,7 +68,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
   # write bytes to standard in
   #
   write_handler (desc i64) : io.Write_Handler is
-    redef write (bytes Sequence u8) outcome unit =>
+    public redef write (bytes Sequence u8) outcome unit =>
       if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
         error "error while writing"
       else

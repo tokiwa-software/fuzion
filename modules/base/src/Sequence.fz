@@ -1111,8 +1111,8 @@ public Sequence(public T type) ref : property.countable is
         nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
         idx i32 =>
           ref : Cons (Sequence T) (list (Sequence T))
-            redef head Sequence T := take (if split_after then idx + s.count else idx)
-            redef tail =>
+            public redef head Sequence T := take (if split_after then idx + s.count else idx)
+            public redef tail =>
               rest := drop (idx + s.count)
 
               match limit
@@ -1453,11 +1453,11 @@ public Sequence(public T type) ref : property.countable is
 
       # associative operation
       #
-      redef infix ∙ (a, b Sequence T) Sequence T => a.concat b
+      public redef infix ∙ (a, b Sequence T) Sequence T => a.concat b
 
       # identity element
       #
-      redef e Sequence T =>
+      public redef e Sequence T =>
         (list T).empty
 
 

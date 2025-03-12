@@ -26,6 +26,6 @@ ex =>
 
     (try unit String ()->
       ref : String
-        redef utf8 Sequence u8 =>
+        public redef utf8 Sequence u8 =>
           (list u8).empty
     ).as_option

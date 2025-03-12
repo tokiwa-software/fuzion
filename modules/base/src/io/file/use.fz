@@ -49,7 +49,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
   # definition of read handler for file
   #
   read_handler(desc File_Descriptor) : io.Read_Handler is
-    redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
       match fuzion.sys.fileio.read desc count.as_u64
         a array u8 => if a.is_empty then io.end_of_file else a
         e error => e
@@ -57,7 +57,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
   # definition of write handler for file
   #
   write_handler (desc File_Descriptor) : io.Write_Handler is
-    redef write (bytes Sequence u8) outcome unit =>
+    public redef write (bytes Sequence u8) outcome unit =>
       fuzion.sys.fileio.write desc bytes.as_array
 
 

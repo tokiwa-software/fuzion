@@ -1,0 +1,99 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.calendar_duration
+#
+# -----------------------------------------------------------------------
+
+# time.calendar_duration -- value representing a duration in the ISO 8601
+# calendar
+#
+module:public calendar_duration (
+
+  # the amount of years in this duration
+  #
+  public years u64,
+
+  # the amount of months in this duration
+  #
+  public months u64,
+
+  # the amount of days in this duration
+  #
+  public days u64,
+
+  # the amount of hours in this duration
+  #
+  public hours u64,
+
+  # the amount of minutes in this duration
+  #
+  public minutes u64,
+
+  # the amount of seconds in this duration
+  #
+  public seconds u64,
+
+  # the amount of nanoseconds in this duration
+  #
+  public nanos u64
+  ) : property.orderable
+
+is
+
+  # this duration and another one combined
+  #
+  # NYI overflow handling
+  #
+  public infix + (other calendar_duration) =>
+    calendar_duration
+      (years + other.years)
+      (months + other.months)
+      (days + other.days)
+      (hours + other.hours)
+      (minutes + other.minutes)
+      (seconds + other.seconds)
+      (nanos + other.nanos)
+
+
+  # this duration multiplied by n
+  #
+  # NYI overflow handling
+  #
+  public infix * (n u64) =>
+    calendar_duration
+      (years * n)
+      (months * n)
+      (days * n)
+      (hours * n)
+      (minutes * n)
+      (seconds * n)
+      (nanos * n)
+
+
+  # create a string representation of this duration.
+  #
+  public redef as_string String =>
+    "NYI"
+
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b time.calendar_duration) bool =>
+    false # NYI

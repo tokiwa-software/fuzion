@@ -281,7 +281,7 @@ public class InlineArray extends ExprWithPos
     while (li.hasNext())
       {
         var e = li.next();
-        var eb = e.box(elementType(), context);
+        var eb = e.boxAndTag(elementType(), context);
         if (CHECKS) check
           (e == eb);
       }

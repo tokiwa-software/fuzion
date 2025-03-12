@@ -30,7 +30,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u128) => u128.max -° u128.this < other
@@ -239,7 +239,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # minimum
@@ -260,4 +260,3 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # identity element for 'infix *'
   #
   public fixed redef type.one => u128 0 1
-

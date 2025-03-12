@@ -51,7 +51,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 
     # implementation of abstract feature Unary.call
     #
-    redef call(a T) R =>
+    public redef call(a T) R =>
       # compute if not yet computed
       if store[a].is_nil
         store.put a (f a)
