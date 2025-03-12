@@ -455,7 +455,7 @@ is
   # clean an indirection node:
   # compress contained container node
   clean(nd option (Indirection_Node CTK CTV), lev u32) =>
-    _ := nd.bind unit i->
+    _ := nd.bind i->
       m := gcas_read i
       _ := match m.data
         c container_node =>
