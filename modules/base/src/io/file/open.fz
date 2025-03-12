@@ -1,0 +1,80 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.file.open
+#
+# -----------------------------------------------------------------------
+
+
+# effect for manipulating open files
+#
+module:public open(fd File_Descriptor,
+                   public file_name String) : effect is
+
+
+  # install seek effect an run code
+  #
+  public seek(R type, code ()->R) outcome R =>
+
+    hndlr :=
+      ref : Seek_Handler
+        redef seek(offset i64) =>
+          fuzion.sys.fileio.seek fd offset
+
+        redef file_position =>
+          fuzion.sys.fileio.file_position fd
+
+    file.this.seek hndlr ! code
+
+
+  # install mmap effect an run code
+  #
+  # note: the offset must be a multiple of the pagesize which usually is 4096, windows 65536?
+  # note: offset+size must not exceed size of file
+  #
+  # example usage:
+  # _ := io.file.use unit "/some_file" io.file.mode.append ()->
+  #   io.file.open.mmap (i64 0) (i64 100) ()->
+  #     io.file.open.mmap[99] := 42
+  #
+  public mmap(R type, offset i64, size i64, code ()->R) outcome R
+  pre safety: offset % 4096 = 0 # NYI get real page size instead of 4096.
+  =>
+
+    res := fuzion.sys.internal_array_init i32 1
+    mapped_memory := fzE_mmap fd offset size res.data
+
+    if res[0] = -1
+      error "mmap failed"
+    else
+      (mapped_buffer mapped_memory size) ! code
+
+
+  # close file when de-instating effect
+  #
+  redef finally =>
+    _ := fuzion.sys.fileio.close fd
+
+
+
+# short hand to get the currently
+# installed open effect
+#
+public open =>
+  open.env

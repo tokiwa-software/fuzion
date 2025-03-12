@@ -121,10 +121,12 @@ public class Types extends ANY
   public static ResolvedType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
-  public static Feature f_ERROR = new Feature(true);
+  public static Feature f_ERROR;
 
   public static class Resolved
   {
+    public final TreeSet<AbstractType> legalNativeResultTypes;
+    public final TreeSet<AbstractType> legalNativeArgumentTypes;
     public final AbstractFeature universe;
     public final AbstractType t_i8  ;
     public final AbstractType t_i16 ;
@@ -140,7 +142,6 @@ public class Types extends ANY
     public final AbstractType t_Any;
     private final AbstractType t_fuzion;
     public final AbstractType t_String;
-    public final AbstractType t_Const_String;
     public final AbstractType t_unit;
 
     /* void will be used as the initial result type of tail recursive calls of
@@ -167,7 +168,6 @@ public class Types extends ANY
     public final AbstractFeature f_bool_TERNARY;
     public final AbstractFeature f_debug;
     public final AbstractFeature f_debug_level;
-    public final AbstractFeature f_Const_String_utf8_data;
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
     public final AbstractFeature f_safety;
@@ -202,20 +202,19 @@ public class Types extends ANY
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
     {
       this.universe = universe;
-      t_i8                      = universe.get(mod, "i8", 1).selfType();
-      t_i16                     = universe.get(mod, "i16", 1).selfType();
-      t_i32                     = universe.get(mod, "i32", 1).selfType();
-      t_i64                     = universe.get(mod, "i64", 1).selfType();
-      t_u8                      = universe.get(mod, "u8", 1).selfType();
-      t_u16                     = universe.get(mod, "u16", 1).selfType();
-      t_u32                     = universe.get(mod, "u32", 1).selfType();
-      t_u64                     = universe.get(mod, "u64", 1).selfType();
-      t_f32                     = universe.get(mod, "f32", 1).selfType();
-      t_f64                     = universe.get(mod, "f64", 1).selfType();
+      t_i8                      = universe.get(mod, FuzionConstants.I8_NAME,  1).selfType();
+      t_i16                     = universe.get(mod, FuzionConstants.I16_NAME, 1).selfType();
+      t_i32                     = universe.get(mod, FuzionConstants.I32_NAME, 1).selfType();
+      t_i64                     = universe.get(mod, FuzionConstants.I64_NAME, 1).selfType();
+      t_u8                      = universe.get(mod, FuzionConstants.U8_NAME,  1).selfType();
+      t_u16                     = universe.get(mod, FuzionConstants.U16_NAME, 1).selfType();
+      t_u32                     = universe.get(mod, FuzionConstants.U32_NAME, 1).selfType();
+      t_u64                     = universe.get(mod, FuzionConstants.U64_NAME, 1).selfType();
+      t_f32                     = universe.get(mod, FuzionConstants.F32_NAME, 1).selfType();
+      t_f64                     = universe.get(mod, FuzionConstants.F64_NAME, 1).selfType();
       t_bool                    = universe.get(mod, "bool", 0).selfType();
       t_fuzion                  = universe.get(mod, "fuzion", 0).selfType();
       t_String                  = universe.get(mod, FuzionConstants.STRING_NAME, 0).selfType();
-      t_Const_String            = universe.get(mod, "Const_String", 0).selfType();
       t_Any                     = universe.get(mod, FuzionConstants.ANY_NAME, 0).selfType();
       t_unit                    = universe.get(mod, FuzionConstants.UNIT_NAME, 0).selfType();
       t_void                    = universe.get(mod, "void", 0).selfType();
@@ -233,13 +232,12 @@ public class Types extends ANY
       f_bool_OR                 = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||"   , 1) : null;
       f_bool_IMPLIES            = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":"    , 1) : null;
       f_bool_TERNARY            = forFrontEnd ? f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :", 3) : null;
-      f_Const_String_utf8_data  = universe.get(mod, "Const_String", 0).get(mod, "utf8_data", 0);
       f_debug                   = universe.get(mod, "debug", 0);
       f_debug_level             = universe.get(mod, "debug_level", 0);
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
-      f_Function_call           = f_Function.get(mod, "call", 1);
+      f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
       f_safety                  = universe.get(mod, "safety", 0);
-      f_array                   = universe.get(mod, "array", 5);
+      f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
@@ -248,7 +246,7 @@ public class Types extends ANY
       f_fuzion                  = universe.get(mod, "fuzion", 0);
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
-      f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "Java_Ref", 0);
+      f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "java_ref", 0);
       f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
@@ -256,7 +254,7 @@ public class Types extends ANY
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
-      f_Type                    = universe.get(mod, "Type", 0);
+      f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);
       f_Type_infix_colon        = f_Type.get(mod, "infix :", 1);
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
       f_Type_infix_colon_false  = f_Type.get(mod, "infix_colon_false", 1);
@@ -277,6 +275,10 @@ public class Types extends ANY
         t_u64,
         t_f32,
         t_f64));
+
+      legalNativeResultTypes = new TreeSet<AbstractType>();
+      legalNativeArgumentTypes = new TreeSet<AbstractType>();
+
       resolved = this;
       ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(
@@ -313,7 +315,6 @@ public class Types extends ANY
         t_bool       ,
         t_fuzion     ,
         t_String     ,
-        t_Const_String,
         t_Any        ,
         t_unit       ,
         t_void       ,
@@ -350,7 +351,10 @@ public class Types extends ANY
     t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
-    f_ERROR     = new Feature(true);
+    f_ERROR     = new Feature(true)
+      {
+        @Override public AbstractType selfType() { return t_ERROR; };
+      };
     _options    = options;
   }
 

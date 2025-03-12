@@ -34,7 +34,7 @@ import java.nio.file.Path;
 public record DocsOptions(Path destination, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
 {
 
-  static final String baseApiDir = "/api/std";
+  static final String baseApiDir = "/api";
 
   public boolean ignoreVisibility()
   {

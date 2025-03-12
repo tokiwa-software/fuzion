@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import dev.flang.fuir.FUIR;
 
 import dev.flang.util.IntMap;
 import dev.flang.util.List;
@@ -82,7 +81,7 @@ public class ValueSet extends Value
 
 
     /**
-     * Consrtructor
+     * Constructor
      */
     Collect(DFA dfa)
     {
@@ -202,7 +201,7 @@ public class ValueSet extends Value
    * @param v2 some value
    *
    * @param cl the clazz of the resulting value. This is usually the same as the
-   * clazz of `this` or `v`, unless we are joining `ref` type values.
+   * clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   public ValueSet(DFA dfa, Value v1, Value v2, int cl)
   {
@@ -223,8 +222,8 @@ public class ValueSet extends Value
    *
    * @param other the other ValueSet
    *
-   * @return -1, 0, or +1 depending on whether this < other, this == other or
-   * this > other by some order.
+   * @return -1, 0, or +1 depending on whether this &lt; other, this == other or
+   * this &gt; other by some order.
    */
   public int compareTo(ValueSet other)
   {
@@ -288,8 +287,8 @@ public class ValueSet extends Value
    *
    * @param other the other ValueSet
    *
-   * @return -1, 0, or +1 depending on whether this < other, this == other or
-   * this > other by some order.
+   * @return -1, 0, or +1 depending on whether this &lt; other, this == other or
+   * this &gt; other by some order.
    */
   public int envCompareTo(ValueSet other)
   {

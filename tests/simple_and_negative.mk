@@ -27,7 +27,7 @@
 # required errors are shown, and then as a simple test to make sure that the
 # error output is correct.
 #
-# Even though the negative variante could not fail if the simple variant fails,
+# Even though the negative variant could not fail if the simple variant fails,
 # running both ensures that an update of error output cannot accidentally
 # introduce some missing errors.
 #
@@ -60,3 +60,5 @@ record_c:
 
 record_int:
 	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_int
+
+effect:

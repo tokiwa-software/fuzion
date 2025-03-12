@@ -69,7 +69,7 @@ public class Util
   {
     if (af.isUniverse())
       {
-        return Html.processComment("universe", universeComment());
+        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
       }
     // arguments that are defined on same line as feature have no comments.
     if (af.isArgument() && af.pos().line() == af.outer().pos().line())
@@ -127,7 +127,7 @@ public class Util
   private static String lineAt(LibraryFeature lf, SourcePosition pos)
   {
     var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), lf._libModule.srcPath())).toUri();
+      .replaceFirst("\\{(.*?)\\.fum\\}", lf._libModule.srcPath())).toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
@@ -165,7 +165,7 @@ public class Util
         (af.outer().compareTo(Types.resolved.f_Type) == 0)                    ? Kind.Cotype
         : !af.definesType()                                                   ? Kind.Other
         : af.isChoice() || af.visibility().eraseTypeVisibility() != Visi.PUB  ? Kind.Type
-        : af.isRef()                                                      ? Kind.RefConstructor
+        : af.isRef()                                                          ? Kind.RefConstructor
                                                                               : Kind.ValConstructor);
     }
   }

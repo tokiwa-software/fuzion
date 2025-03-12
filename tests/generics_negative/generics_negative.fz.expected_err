@@ -36,7 +36,7 @@ in feature: 'Any'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:106:7: error 6: Formal type parameter cannot have type parameters
+--CURDIR--/generics_negative.fz:106:7: error 6: Formal type parameter must not have type parameters
     _ A i32 := any               // 24. should flag an error: generic must not have generic args
 ------^
 In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.
@@ -250,8 +250,8 @@ In call: 'qwerty i32'
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -261,8 +261,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -272,8 +272,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 0, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -283,8 +283,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 2, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -294,8 +294,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 0, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -305,8 +305,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 2, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -316,8 +316,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -327,8 +327,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -338,8 +338,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 0, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -349,8 +349,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -360,8 +360,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -371,8 +371,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 0, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -382,8 +382,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -393,8 +393,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -574,8 +574,8 @@ To solve this, you could change the type of the target 'argument #2' to 'i32' or
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -585,8 +585,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -620,8 +620,8 @@ To solve this, you could change the type of the target 'argument #2' to 'i32' or
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -631,8 +631,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 61 errors.

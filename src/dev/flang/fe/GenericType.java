@@ -37,6 +37,7 @@ import dev.flang.ast.Types;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -156,9 +157,9 @@ public class GenericType extends LibraryType
    * A parametric type is not considered a ref type even it the actual type
    * might very well be a ref.
    */
-  public boolean isRef()
+  public YesNo isRef()
   {
-    return _isBoxed;
+    return _isBoxed ? YesNo.yes : YesNo.no;
   }
 
 

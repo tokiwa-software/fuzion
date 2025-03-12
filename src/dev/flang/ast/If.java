@@ -28,13 +28,13 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
-import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
 /**
- * If <description>
+ * If
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -103,7 +103,7 @@ public class If extends ExprWithPos
      */
     if (elseBlock == null)
       {
-        var unit = new Call(pos(), "unit");
+        var unit = new Call(pos(), FuzionConstants.UNIT_NAME);
         elseBlock = new Block(new List<>(unit));
       }
   }
@@ -113,8 +113,8 @@ public class If extends ExprWithPos
 
 
   /**
-   * Is this a normal if (`false`) or one created to implement a contract such
-   * as pre- or postconditions (`true`)?
+   * Is this a normal if ({@code false}) or one created to implement a contract such
+   * as pre- or postconditions ({@code true})?
    *
    * @return true iff this is an artificially generated if that originates in a
    * condition of a contract.
@@ -213,7 +213,7 @@ public class If extends ExprWithPos
       {
         elseBlock = elseBlock.visit(v, outer);
       }
-    var res = v.action(this, outer);
+    var res = v.action(this);
     v.actionAfterIf(this);
     return res;
   }
@@ -277,7 +277,7 @@ public class If extends ExprWithPos
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (cond != null)
       {
@@ -304,15 +304,24 @@ public class If extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
+    // NYI: CLEANUP: there should be another mechanism, for
+    // adding missing result fields instead of misusing
+    // `propagateExpectedType`.
+    //
+
+    // This will trigger addFieldForResult in some cases, e.g.:
+    // `match (if true then true else true) * =>`
+    cond = cond.propagateExpectedType(res, context, cond.type());
+
     return addFieldForResult(res, context, t);
   }
 
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution

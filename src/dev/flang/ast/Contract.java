@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Contract <description>
+ * Contract
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -55,7 +55,7 @@ public class Contract extends ANY
   /**
    * Empty contract. Note that this is currently not useable in the general case
    * since a feature that does not define a contract may still inherit one from
-   * those features it redefines, which will require the `argsSupplier` to be
+   * those features it redefines, which will require the {@code argsSupplier} to be
    * set.
    */
   public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, null, null,
@@ -63,30 +63,13 @@ public class Contract extends ANY
                                                              null);
 
 
-  /*--------------------------  static fields  --------------------------*/
-
-
-  /**
-   * Id used to generate unique names for pre- and postcondition features.
-   */
-  public static int _id_ = 0;
-
-
-  /**
-   * Reset static fields
-   */
-  public static void reset()
-  {
-    _id_ = 0;
-  }
-
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
    * List of declared preconditions in this contract. This might be null if
-   * there is no `pre` clause or it might be NO_COND if there is a `pre` clause
+   * there is no {@code pre} clause or it might be NO_COND if there is a {@code pre} clause
    * with no conditions.
    *
    * This does not include inherited preconditions.
@@ -103,7 +86,7 @@ public class Contract extends ANY
 
   /**
    * List of declared postconditions in this contract. This might be null if
-   * there is no `post` clause or it might be NO_COND if there is a `post`
+   * there is no {@code post} clause or it might be NO_COND if there is a {@code post}
    * clause with no conditions.
    *
    * This does not include inherited postconditions.
@@ -120,7 +103,7 @@ public class Contract extends ANY
 
 
   /**
-   * Did the parser find `pre` / `post` or even `pre else` / `post then` ? These
+   * Did the parser find {@code pre} / {@code post} or even {@code pre else} / {@code post then} ? These
    * might be present even if the condition list is NO_COND.
    */
   public final SourceRange _hasPre,     _hasPost;
@@ -145,16 +128,16 @@ public class Contract extends ANY
    * @param r1, r2 the preconditions, parsed twice since we will need them
    * twice.  null if not present.
    *
-   * @param hasPre if `pre` was found, this gives its position, otherwise it is null.
+   * @param hasPre if {@code pre} was found, this gives its position, otherwise it is null.
    *
-   * @param hasElse if `else` after `pre` was found, this gives its proposition,
+   * @param hasElse if {@code else} after {@code pre} was found, this gives its proposition,
    * otherwise it is null.
    *
    * @param e the postcondition or null if not present.
    *
-   * @param hasPost if `post` was found, this gives its position, otherwise it is null
+   * @param hasPost if {@code post} was found, this gives its position, otherwise it is null
    *
-   * @param hasThen if `then` after `post` was found, this gives its proposition,
+   * @param hasThen if {@code then} after {@code post} was found, this gives its proposition,
    * otherwise it is null.
    *
    * @param args supplier that forks of the parser to re-parse the formal
@@ -179,7 +162,7 @@ public class Contract extends ANY
 
 
   /**
-   * Get and cache the name of the pre feature of `f`.
+   * Get and cache the name of the pre feature of {@code f}.
    */
   static String preConditionsFeatureName(Feature f)
   {
@@ -189,14 +172,14 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionFeatureName == null)
       {
-        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preConditionFeatureName;
   }
 
 
   /**
-   * Get and cache the name of the pre bool feature of `f`.
+   * Get and cache the name of the pre bool feature of {@code f}.
    */
   static String preBoolConditionsFeatureName(AbstractFeature f)
   {
@@ -206,14 +189,14 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preBoolConditionFeatureName == null)
       {
-        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + (_id_++) + "_"  + f.featureName().baseName();
+        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preBoolConditionFeatureName;
   }
 
 
   /**
-   * Get and cache the name of the pre and call feature of `f`.
+   * Get and cache the name of the pre and call feature of {@code f}.
    */
   static String preConditionsAndCallFeatureName(AbstractFeature f)
   {
@@ -223,14 +206,14 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionAndCallFeatureName == null)
       {
-        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._preConditionAndCallFeatureName;
   }
 
 
   /**
-   * Get and cache the name of the post feature of `f`.
+   * Get and cache the name of the post feature of {@code f}.
    */
   static String postConditionsFeatureName(AbstractFeature f)
   {
@@ -240,7 +223,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._postConditionFeatureName == null)
       {
-        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + (_id_++) + "_" + f.featureName().baseName();
+        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
       }
     return c._postConditionFeatureName;
   }
@@ -256,10 +239,8 @@ public class Contract extends ANY
    */
   static boolean requiresPreConditionsFeature(Feature f)
   {
-    var fc = f.contract();
-
-    return fc._hasPre != null &&
-      (!fc._declared_preconditions.isEmpty() || !f._inheritedPre.isEmpty());
+    return !f.contract()._declared_preconditions.isEmpty() ||
+      f._inheritedPre.stream().anyMatch(x -> hasPreConditionsFeature(x));
   }
 
 
@@ -273,21 +254,19 @@ public class Contract extends ANY
    */
   static boolean requiresPostConditionsFeature(Feature f)
   {
-    var fc = f.contract();
-
-    return !fc._declared_postconditions.isEmpty() || !f._inheritedPost.isEmpty();
-
+    return !f.contract()._declared_postconditions.isEmpty() ||
+      f._inheritedPost.stream().anyMatch(x -> hasPostConditionsFeature(x));
   }
 
 
   /**
    * Does the given feature either have a precondition feature or, for a
-   * `dev.flang.ast.Feature`, will it get one due to inherited or declared pre
+   * {@code dev.flang.ast.Feature}, will it get one due to inherited or declared pre
    * conditions?
    *
    * @param f a feature
    *
-   * @return true if there will be a precondition feature for `f`.
+   * @return true if there will be a precondition feature for {@code f}.
    */
   static boolean hasPreConditionsFeature(AbstractFeature f)
   {
@@ -302,7 +281,7 @@ public class Contract extends ANY
    *
    * @param f a feature
    *
-   * @return true if there will be a postcondition feature for `f`.
+   * @return true if there will be a postcondition feature for {@code f}.
    */
   static boolean hasPostConditionsFeature(AbstractFeature f)
   {
@@ -345,7 +324,7 @@ public class Contract extends ANY
    *
    * @param f a feature with a precondition that should be called.
    *
-   * @param outer the outer feature the call will be used in.
+   * @param context the source code context where this assignment is used
    *
    * @return a call to f.preFeature() to be added to code of outer.
    */
@@ -363,8 +342,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
@@ -373,7 +351,7 @@ public class Contract extends ANY
 
 
   /**
-   * Create call to outer's precondition feature to be added to code of feature `outer`.
+   * Create call to outer's precondition feature to be added to code of feature {@code outer}.
    *
    * @param res resolution instance
    *
@@ -396,7 +374,7 @@ public class Contract extends ANY
           : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
 
     var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : new Universe();
+                                       : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
       {
         addContractFeatures(res, ff, context);
@@ -405,8 +383,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preFeature(),
-                    Types.resolved.t_unit)
+                    f.preFeature())
       .resolveTypes(res, context);
   }
 
@@ -432,14 +409,13 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, outer),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, context);
         args.add(ca);
       }
 
     var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : new Universe();
+                                       : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, ff, context);
@@ -448,8 +424,7 @@ public class Contract extends ANY
                     t,
                     outer.generics().asActuals(),
                     args,
-                    f.preBoolFeature(),
-                    Types.resolved.t_bool)
+                    f.preBoolFeature())
       .resolveTypes(res, context);
   }
 
@@ -473,8 +448,7 @@ public class Contract extends ANY
       {
         var ca = new Call(p,
                           new Current(p, preAndCallOuter),
-                          a,
-                          -1);
+                          a);
         ca = ca.resolveTypes(res, preAndCallOuter.context());
         args.add(ca);
       }
@@ -484,8 +458,7 @@ public class Contract extends ANY
                     t,
                     preAndCallOuter.generics().asActuals(),
                     args,
-                    f,
-                    null)
+                    f)
       {
         @Override
         boolean preChecked() { return true; }
@@ -498,7 +471,7 @@ public class Contract extends ANY
    *
    * @param res resolution instance
    *
-   * @param outer a feature with a postcondition whose body the result will be
+   * @param context the source code context where this assignment is used
    * added to
    *
    * @return a call to outer.postFeature() to be added to code of outer.
@@ -509,21 +482,22 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
-    for (var a : outer.valueArguments())
+    if (!outer.isConstructor())
       {
-        var ca = new Call(p,
-                          new Current(p, outer),
-                          a,
-                          -1);
-        ca = ca.resolveTypes(res, context);
-        args.add(ca);
+        for (var a : outer.valueArguments())
+          {
+            var ca = new Call(p,
+                              new Current(p, outer),
+                              a);
+            ca = ca.resolveTypes(res, context);
+            args.add(ca);
+          }
       }
     if (outer.hasResultField())
       {
         var c2 = new Call(p,
                           new Current(p, outer),
-                          outer.resultField(),
-                          -1);
+                          outer.resultField());
         c2 = c2.resolveTypes(res, context);
         args.add(c2);
       }
@@ -536,7 +510,7 @@ public class Contract extends ANY
 
 
   /**
-   * Create call to outer's postcondition feature to be added to code of feature `in`.
+   * Create call to outer's postcondition feature to be added to code of feature {@code in}.
    *
    * @param res resolution instance
    *
@@ -553,25 +527,26 @@ public class Contract extends ANY
           ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
           : in.pos();                // `in` does not have `post` clause, only inherits postconditions. So use the feature position instead
 
-    var t = (in.outerRef() != null) ? new This(p, in, in.outer()).resolveTypes(res, in.context())
-                                    : new Universe();
+    var t = in.isConstructor() ? new This(p, in, in).resolveTypes(res, in.context())
+                               : (in.outerRef() != null)
+                                  ? new This(p, in, in.outer()).resolveTypes(res, in.context())
+                                  : Universe.instance;
     if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, of, context);
       }
     var callPostCondition = new Call(p,
                                      t,
-                                     in.generics().asActuals(),
+                                     origouter.isConstructor() ? new List<>() : in.generics().asActuals(),
                                      args,
-                                     origouter.postFeature(),
-                                     Types.resolved.t_unit);
+                                     origouter.postFeature());
     callPostCondition = callPostCondition.resolveTypes(res, in.context());
     return callPostCondition;
   }
 
 
   /**
-   * Helper to create `ParsedCall` to `n` at position `p`
+   * Helper to create {@code ParsedCall} to {@code n} at position {@code p}
    */
   private static ParsedCall pc(SourcePosition p, String n)
   {
@@ -579,7 +554,7 @@ public class Contract extends ANY
   }
 
   /**
-   * Helper to create `ParsedCall` to `t`.`n` at position `p`
+   * Helper to create {@code ParsedCall} to {@code t}.{@code n} at position {@code p}
    */
   private static ParsedCall pc(Expr t, SourcePosition p, String n)
   {
@@ -587,7 +562,7 @@ public class Contract extends ANY
   }
 
   /**
-   * Helper to create `ParsedCall` to `n[0]`.`n[1]`..`n[n.length-1] a`  at position `p`
+   * Helper to create {@code ParsedCall} to {@code n[0]}.{@code n[1]}..{@code n[n.length-1] a}  at position {@code p}
    */
   private static ParsedCall pc(SourcePosition p, String[] n, List<Expr> a)
   {
@@ -669,18 +644,28 @@ public class Contract extends ANY
     var code = new Block(l);
     var result_type     = new ParsedType(pos,
                                          preBool ? "bool"
-                                                 : "unit",
+                                                 : FuzionConstants.UNIT_NAME,
                                          UnresolvedType.NONE,
                                          null);
     var pF = new Feature(pos,
                          f.visibility().eraseTypeVisibility(),
-                         f.modifiers() & FuzionConstants.MODIFIER_FIXED,
+                         // we need to copy fixed modifier because
+                         // of different meaning of this-types.
+                         f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0,
                          new FunctionReturnType(result_type),
                          new List<>(name),
                          args,
                          new List<>(), // inheritance
                          Contract.EMPTY_CONTRACT,
-                         new Impl(pos, code, Impl.Kind.Routine));
+                         new Impl(pos, code, Impl.Kind.Routine))
+                          {
+                            @Override
+                            public Contract originalContract()
+                            {
+                              return f.contract();
+                            }
+                            @Override AbstractFeature origin() { return f; }
+                          };
     res._module.findDeclarations(pF, f.outer());
     res.resolveDeclarations(pF);
     res.resolveTypes(pF);
@@ -797,7 +782,7 @@ all of their redefinition to `true`. +
 
            pre_<name>      is a feature that checks the precondition and causes a fault in case any condition fails.
 
-                           First, inherited preconditions are checked via cals to their pre_bool_<name> and
+                           First, inherited preconditions are checked via calls to their pre_bool_<name> and
                            precondition checking is stopped with success if those return true
 
                            If there are no own pre-conditions, the last inherited precondition is checked
@@ -805,7 +790,7 @@ all of their redefinition to `true`. +
 
            prebool_<name>  is a feature that check the precondition and results in true iff all preconditions hold.
 
-                           First, inherited preconditions are checked via cals to their pre_bool_<name> and
+                           First, inherited preconditions are checked via calls to their pre_bool_<name> and
                            precondition checking is stopped with success if those return true.
 
                            Finally, the own pre-condition is checked
@@ -1011,14 +996,18 @@ all of their redefinition to `true`. +
             var code2 = new Block(l2);
             var pF2 = new Feature(pos,
                                   f.visibility().eraseTypeVisibility(),
-                                  // 0, // NYI: why not this:
-                                  f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                                  // we need to copy fixed modifier because
+                                  // of different meaning of this-types.
+                                  f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0, // modifiers
                                   NoType.INSTANCE,
                                   new List<>(name2),
                                   args2,
                                   new List<>(), // inheritance
                                   Contract.EMPTY_CONTRACT,
-                                  new Impl(pos, code2, Impl.Kind.RoutineDef));
+                                  new Impl(pos, code2, Impl.Kind.RoutineDef))
+                        {
+                          @Override AbstractFeature origin() { return f; }
+                        };
             res._module.findDeclarations(pF2, f.outer());
             f._preAndCallFeature = pF2;
 
@@ -1032,8 +1021,10 @@ all of their redefinition to `true`. +
     // add postcondition feature
     if (requiresPostConditionsFeature(f) && f._postFeature == null)
       {
+        // TRICKY: if f is constructor, post condition is an inner feature of f
+        //         otherwise it is defined alongside of f.
         var name = postConditionsFeatureName(f);
-        var args = fc._argsSupplier.get();
+        var args = f.isConstructor() ? new List<AbstractFeature>() : fc._argsSupplier.get();
         var pos = fc._hasPost != null ? fc._hasPost : f.pos();
         var resultField = new Feature(pos,
                                       Visi.PRIV,
@@ -1062,14 +1053,24 @@ all of their redefinition to `true`. +
         var code = new Block(l);
         var pF = new Feature(pos,
                              f.visibility().eraseTypeVisibility(),
-                             f.modifiers() & FuzionConstants.MODIFIER_FIXED, // modifiers
+                             // we need to copy fixed modifier because
+                             // of different meaning of this-types.
+                             f.isFixed() ? FuzionConstants.MODIFIER_FIXED : 0,
                              NoType.INSTANCE,
                              new List<>(name),
                              args,
                              new List<>(), // inheritance
                              Contract.EMPTY_CONTRACT,
-                             new Impl(pos, code, Impl.Kind.RoutineDef));
-        res._module.findDeclarations(pF, f.outer());
+                             new Impl(pos, code, Impl.Kind.RoutineDef))
+          {
+            @Override
+            public Contract originalContract()
+            {
+              return f.contract();
+            }
+            @Override AbstractFeature origin() { return f; }
+          };
+        res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);
         res.resolveTypes(pF);
         f._postFeature = pF;
@@ -1092,8 +1093,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
                   {
                     var ca = new Call(pos,
                                       new Current(pos, pF),
-                                      a,
-                                      -1);
+                                      a);
                     ca = ca.resolveTypes(res, pF.context());
                     args2.add(ca);
                   }

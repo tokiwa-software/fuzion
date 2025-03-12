@@ -1,0 +1,229 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature switch
+#
+# -----------------------------------------------------------------------
+
+# switch is the parent feature of all choices
+# that encode success and failure,
+# e.g.    option  (something/nil)
+#      or outcome (something/error)
+#
+public switch(A type, B type /* NYI: B should be open generic */) :
+  choice A B,
+  monad A switch.this
+is
+
+  # NYI: CLEANUP: decide name: exists/ok, get/val?
+
+  # Does this switch contain a value of type A?
+  #
+  public exists => (switch.this ? A => true
+                                | B => false)
+
+
+  # Does this switch contain a value of type A?
+  #
+  public ok => exists
+
+
+  # short-hand postfix operator for 'exists'
+  #
+  public postfix ?? => exists
+
+
+  # short-hand postfix operator for '!exists'
+  #
+  public postfix !! => !exists
+
+
+  # short-hand prefix operator for '!exists'
+  #
+  public prefix ! => !exists
+
+
+  # unwraps a switch that is known to contain a value
+  #
+  # this can only be called in cases where it is known for sure that this switch
+  # is not nil.  A runtime error will be created otherwise.
+  #
+  public get
+  pre
+    safety: switch.this??
+  =>
+    switch.this ? a A => a
+                | B   => fuzion.std.panic "switch.get called on B. Enable `safety` to obtain a precondition failure for debugging."
+
+
+  # unwrap value or get default
+  #
+  public get (default Lazy A) =>
+    switch.this ? a A => a
+                | B => default
+
+
+  # value of a switch that is known to contain a value
+  #
+  # This can only be called in cases where it is known for sure that this
+  # switch is not a B.  A runtime error will be created otherwise.
+  #
+  public val A
+    pre
+      safety: switch.this??
+  =>
+    switch.this ? a A => a
+                | B   => panic "switch.val called on B. Enable `safety` to obtain a precondition failure for debugging."
+
+
+  # value of a switch or default if switch contains B
+  #
+  public val(default A) A
+  =>
+    switch.this ? a A => a
+                | B   => default
+
+
+  # synonym for infix >>=
+  #
+  public and_then (f A -> switch.this) switch.this =>
+    match switch.this
+      a A => f a
+      b B => b
+
+
+  # returns o if outcome is ok, otherwise return the outcome's own
+  # error.
+  #
+  public and (O type, o switch.this) switch.this =>
+    match switch.this
+      A   => o
+      b B => b
+
+
+  # if this switch is nil return the result of f
+  # otherwise just return this switch.
+  #
+  public or (f Lazy switch.this) switch.this =>
+    match switch.this
+      a A => a
+      B   => f()
+
+
+  # unwraps an switch if it exists, returns default value otherwise.
+  #
+  public or_else(default Lazy A) A =>
+    switch.this ? v A => v
+                |   B => default
+
+
+
+  # converts switch into a list of either a single element in case
+  # switch.this.exists or `nil`otherwise
+  #
+  public as_list list A
+  =>
+    switch.this ? a A => a : nil
+                | B => nil
+
+
+  # convert this switch to an option
+  #
+  public as_option option A
+  =>
+    switch.this ? a A => a
+                | B => nil
+
+
+  # convert this switch to an outcome
+  #
+  public as_outcome outcome A
+  =>
+    switch.this ? a A => a
+                | B => error "switch.as_outcome: no error message provided"
+
+
+  # convert this switch to an outcome
+  #
+  public as_outcome(e error) outcome A
+  =>
+    switch.this ? a A => a
+                | B => e
+
+
+  # monadic operator
+  #
+  public redef infix >>= (f A -> switch.this) =>
+    switch.this ? a A => f a
+                | b B => b
+
+
+  # return function
+  #
+  # NYI: BUG:
+  #
+  # ./build/modules/base/src/switch.fz:180:21: error 1: Wrong result type in redefined feature
+  #   public redef type.return (a A) => a
+  #
+  # In 'switch.type.return' that redefines 'monad.type.return'
+  # result type is       : 'switch.type.A'
+  # result type should be: 'switch.this switch.type.A switch.type.B' (from 'monad.type.MA')
+  #
+  #
+  # public redef type.return (a A) switch.this => a
+
+
+  # this switch as an equatable_switch
+  #
+  public as_equatable equatable_switch A B
+  pre
+    A : property.equatable
+  =>
+    match switch.this
+      a A => a
+      b B => b
+
+
+  # converts switch to a string
+  #
+  public redef as_string =>
+    match switch.this
+      a A => a.as_string
+      b B => b.as_string
+
+
+# Wrapper type to make a `switch` of an equatable elements itself equatable.
+#
+public equatable_switch(A type : property.equatable,
+                        B type)
+  : switch A B,
+    property.equatable
+is
+
+  # equality implementation
+  #
+  # result is only true if both x and y or
+  # of choice type A and x.A = y.A
+  #
+  public fixed redef type.equality(x, y equatable_switch A B) =>
+    x ? xa A =>
+        y ? ya A => xa = ya
+          | _  B => false
+      | _  B => false
+

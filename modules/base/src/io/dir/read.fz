@@ -1,0 +1,70 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.dir.read
+#
+# -----------------------------------------------------------------------
+
+# read -- effect providing reading operations in directories
+#
+public read(ro Dir_Read_Handler) : effect is
+
+
+  # reads the next entry of this directory
+  #
+  # returns the name of the next entry, or an error if the operation fails
+  # for some reason (including that there are no more entries).
+  #
+  module read(dd Directory_Descriptor) outcome String =>
+    r := ro.read dd
+    replace
+    r
+
+
+  # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
+  #
+  type.default_read_handler =>
+    ref : io.dir.Dir_Read_Handler
+      redef read(dd Directory_Descriptor) outcome String =>
+        internal_array := fuzion.sys.internal_array_init u8 1024
+        len := fzE_dir_read dd internal_array.data
+        if len = 0
+          error "no more directory entries"
+        else if len < 0
+          error "error reading dir"
+        else
+          String.from_bytes (internal_array.as_array.take len)
+
+
+  # install default effect io.dir.read
+  type.install_default =>
+    (io.dir.read default_read_handler).default
+
+
+# short-hand for accessing read effect in current environment
+#
+public read =>
+  read.type.install_default
+  read.env
+
+
+# reference to the reading operations that could take place
+#
+private:public Dir_Read_Handler ref is
+  read(dd Directory_Descriptor) outcome String => abstract

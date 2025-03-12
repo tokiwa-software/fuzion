@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue4250.fz:26:24: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
+  type.x(a e.this) => $a.me
+-----------------------^^^^
+The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
+Called feature: 'e.me'
+Original result type: 'option e.this'
+Type depending on target: 'e.this'
+Target type: 'p.this'
+To solve this, you could try to use a value type as the target type of the call, e,g., 'e', or change the result type of 'e.me' to no longer depend on 'e.this'.
+
+one error.

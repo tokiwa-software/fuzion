@@ -991,7 +991,7 @@ Feature
   {
     return featureKindEnum(at) == AbstractFeature.Kind.Routine;
   }
-  boolean featureIsThisRef(int at)
+  boolean featureIsRef(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
@@ -1538,7 +1538,6 @@ Expression
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match expression
    | k==Tag   | 1      | Tag           | tag expression
-   | k==Env   | 1      | Env           | env expression
 |====
 
 --asciidoc--
@@ -1561,8 +1560,6 @@ Expression
    *   | k==Mat | 1      | Match         | match expression                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Env | 1      | Env           | env expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int expressionKindPos(int at)
@@ -1621,7 +1618,6 @@ Expression
       case Match       -> matchNextPos(eAt);
       case Call        -> callNextPos (eAt);
       case Tag         -> tagNextPos  (eAt);
-      case Env         -> envNextPos  (eAt);
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
@@ -2189,44 +2185,6 @@ Tag
 
 --asciidoc--
 
-Env
-^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | type of resulting env value
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Env                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | type of resulting env value                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int envTypePos(int at)
-  {
-    return at;
-  }
-  AbstractType envType(int at)
-  {
-    return type(envTypePos(at));
-  }
-  int envNextPos(int at)
-  {
-    return typeNextPos(envTypePos(at));
-  }
-
-
-
-  /*
-
---asciidoc--
-
 InlineArray
 ^^^^^^^^^^^^
 
@@ -2424,7 +2382,7 @@ SourceFile
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of(sourceFileName(at)), ba);
+            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
             _sourceFiles.set(i, sf);
           }
         return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
@@ -2507,7 +2465,7 @@ SourceFile
   {
     // NYI: CLEANUP: library-module should/could know its source dirs.
     return Path.of(Version.REPO_PATH)
-      .resolve(name().equals("base") ? "lib" : "modules/" + name() + "/src")
+      .resolve("modules").resolve(name()).resolve("src")
       .toString();
   }
 

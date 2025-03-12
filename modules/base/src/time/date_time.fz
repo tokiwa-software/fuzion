@@ -1,0 +1,139 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.date_time
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Represents a date and a time in the Gregorian calendar, without any specification of
+# a time zone or reference point.
+#
+public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
+pre
+  debug: 1 ≤ month ≤ 12
+  debug: {
+    # is the given year a leap year?
+    #
+    is_leap_year =>
+      (year % 4 = 0 & year % 100 != 0) |
+        ((year % 100 = 0) & (year % 400 = 0))
+
+
+    # how many days does february have in the given year?
+    #
+    days_in_february =>
+      if is_leap_year then 29 else 28
+
+
+    # the days in the months of the year
+    # starting at january, february, ..., december
+    #
+    days_in_months =>
+      [31, days_in_february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+
+    # how many days does a given month of a given year have
+    #
+    days_in_month =>
+      days_in_months[month - 1]
+
+
+    1 ≤ day ≤ days_in_month
+  }
+  debug: 0 ≤ hour ≤ 23
+  debug: 0 ≤ minute ≤ 59
+  debug: 0 ≤ second ≤ 60 # possible leap seconds
+  debug: 0 ≤ nano_second ≤ 1E9
+is
+
+  # the millisecond of this datetime
+  #
+  public milli_second
+  post
+    debug: result ≥ 0 & result ≤ 999
+  =>
+    nano_second / 1E6
+
+
+  # ISO 8601 string for this datetime
+  # example: 2018-09-14T23:59:59.079
+  #
+  public redef as_string String =>
+    "{year.as_string 2 10}-{month.as_string 2 10}-{day.as_string 2 10}" +
+      "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}"
+
+
+  # # NYI
+  # infix + (other time.duration) date_time is
+
+  # infix - (other date_time) time.duration is
+  # infix - (other time.duration) date_time is
+
+  # as_string(f date_time_format, local/time_zone) String is
+  # ...
+
+
+  # returns an array containing the year, the day in the year, hour, minute,
+  # second, and nano_second of this date time
+  #
+  # internal helper feature
+  #
+  args_in_order => [year, month, day, hour, minute, second, nano_second]
+
+
+  # 0 = Sunday, 1 = Monday, etc.
+  #
+  # source: https://c-faq.com/misc/zeller.html
+  # original code by: Tomohiko Sakamoto
+  #
+  public day_of_week i32 =>
+    t := [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+    y := year - (if month < 3 then 1 else 0)
+    (y + y/4 - y/100 + y/400 + t[month-1] + day) % 7
+
+
+  # defines an equality relation for date time
+  #
+  public redef type.equality(a, b date_time.this) bool =>
+    a.nano_second = b.nano_second &
+     a.year = b.year &
+     a.month = b.month &
+     a.day = b.day &
+     a.hour = b.hour &
+     a.minute = b.minute &
+     a.second = b.second
+
+
+  # defines a partial order for date time
+  #
+  public redef type.lteq(a, b date_time.this) bool =>
+    private ternary_compare trit =>
+      a.args_in_order
+       .zip b.args_in_order x,y->(x,y)
+       .reduce trit.unknown r,t->
+         if t.values.0 = t.values.1
+           trit.unknown
+         else if t.values.0 < t.values.1
+           abort trit.yes
+         else
+           abort trit.no
+
+    ternary_compare != trit.no

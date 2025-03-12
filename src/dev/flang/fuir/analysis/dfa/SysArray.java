@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-
+import dev.flang.fuir.FUIR;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
@@ -41,8 +41,6 @@ public class SysArray extends Value
 
 
   /*----------------------------  constants  ----------------------------*/
-
-  static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -79,7 +77,7 @@ public class SysArray extends Value
    */
   public SysArray(DFA dfa, Value el, int ec)
   {
-    super(dfa._fuir.clazzAny());
+    super(FUIR.NO_CLAZZ);
 
     _dfa = dfa;
     _elements = el;
@@ -138,8 +136,8 @@ public class SysArray extends Value
    *
    * @param v the value this value should be joined with.
    *
-   * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * @param cl the clazz of the resulting value. This is usually the same as
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   @Override
   public Value joinInstances(DFA dfa, Value v, int cl)

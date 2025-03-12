@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue4486
+#
+# -----------------------------------------------------------------------
+
+reg_issue4486 =>
+
+  LM : mutate is
+
+  test_strings array (String) :=
+    ["",
+    " ",
+    "\n",
+    "\n\n",
+    "abc\ndef",
+    "abc\ndef\n"]
+
+  # Read handler for stdin
+  #
+  read_handler(arg String) : io.Read_Handler is
+    already_returned := mut false
+    redef read(count i32) choice (array u8) io.end_of_file error =>
+      if !already_returned.get
+        already_returned <- true
+        # return eof for empty string to simulate: `printf "" | fz read_lines_test.fz`
+        arg = "" ? io.end_of_file : arg.utf8.as_array
+      else
+        io.end_of_file
+
+
+  for input in test_strings do
+
+    say "input: '{input.replace "\n" "\\n"}'"
+
+    LM ! ()->
+      b := io.buffered LM
+      b.reader (read_handler input) 1024 ! ()->
+        for l := b.read_line
+            i in 1..
+        while l??
+          say "  using read_line:  $i: '$l'"
+
+    say ""
+
+    LM ! ()->
+      b := io.buffered LM
+      b.reader (read_handler input) 1024 ! ()->
+        for l in b.read_lines
+            i in 1..
+        do
+          say "  using read_lines: $i: '$l'"
+
+    say ""

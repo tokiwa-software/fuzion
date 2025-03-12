@@ -1,0 +1,96 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Mutable_Linked_List
+#
+# -----------------------------------------------------------------------
+
+# a type for mutable singly linked lists
+#
+# On call to `Mutable_Linked_List LM T data` creates a minimal list consisting
+# of only one single element. To create larger rings, you can either call
+# `append` to add single cells, or `concat` to concatenate two lists.
+#
+private:public Mutable_Linked_List(# mutate effect to be used to create mutable variables
+                    LM type : mutate,
+
+                    # type of data stored in this list
+                    T type,
+
+                    # the data stored in this element.
+                    redef data T) ref : Linked_List T is
+
+
+  # mutable references to next. Initializes to refer to nil to form
+  # a list with a single element.
+  #
+  n := LM.env.new (option (Mutable_Linked_List LM T)) nil
+
+
+  # short-hand features to get the mutable references from `n`
+  #
+  public redef next option (Linked_List T) =>
+    n.get.bind (Linked_List T) x->x
+
+
+  # append an element to the linked list
+  #
+  public append(data T) =>
+    match n.get
+      nil => n <- Mutable_Linked_List LM T append.this.data
+      ll Mutable_Linked_List => ll.append append.this.data
+
+
+  # append an entire list to this linked list
+  #
+  public concat_mutable_linked_list(other Mutable_Linked_List LM T) =>
+    match n.get
+      nil => n <- other
+      ll Mutable_Linked_List => ll.concat_mutable_linked_list other
+
+
+  # freeze this list, i.e., turn all references into immutable values
+  #
+  public freeze =>
+    if n.open
+      n.close
+
+    _ := n.get.bind unit ll->ll.freeze
+
+
+  # create a mutable linked list from a given sequence
+  #
+  # this results in a mutable linked list that is not yet frozen, i.e. it
+  # can still be modified. the list needs to be frozen manually
+  # before leaving the mutate environment.
+  #
+  # code example:
+  #
+  #     mll := (container.Mutable_Linked_List x i32).new [0,1,2,3,4]
+  #     mll.append 42
+  #     mll.freeze
+  #
+  public type.new(from Sequence T)
+    pre
+      !from.is_empty
+  =>
+    from_list := from.as_list
+    c := container.Mutable_Linked_List LM T from_list.head.get
+    from_list.tail.for_each (x -> c.append x)
+    c

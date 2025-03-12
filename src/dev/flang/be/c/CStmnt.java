@@ -544,14 +544,16 @@ abstract class CStmnt extends ANY
 
 
   /**
-   * A for-loop that loops `count` times.
+   * A for-loop that loops {@code count} times.
    *
    * example code:
    *
+   * <pre>{@code
    * for (int ..loopVar.. = 0; ..loopVar.. < ..countExpr..; ..loopVar..++)
    * {
    *   ..body..;
    * }
+   * }</pre>
    * @param loopVar
    * @param count
    * @param body

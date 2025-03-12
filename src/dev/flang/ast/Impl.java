@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Impl <description>
+ * Impl
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -73,9 +73,9 @@ public class Impl extends ANY
 
 
   /**
-   * For a field declared using `:=` this
+   * For a field declared using {@code :=} this
    * gives the initial value of that field or function.
-   * For a function declared using `=>` this
+   * For a function declared using {@code =>} this
    * gives the code of that function.
    */
   private Expr _expr;
@@ -308,7 +308,7 @@ public class Impl extends ANY
         //
         // this.visitCode(v, outer.outer());
       }
-    v.action(this, outer);
+    v.action(this);
   }
 
 
@@ -370,7 +370,7 @@ public class Impl extends ANY
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
@@ -380,7 +380,7 @@ public class Impl extends ANY
 
 
   /**
-   * Inform the expression of this implementation that its expected type is `t`.
+   * Inform the expression of this implementation that its expected type is {@code t}.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -389,7 +389,7 @@ public class Impl extends ANY
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Context context, AbstractType t)
+  void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     _expr = _expr.propagateExpectedType(res, context, t);
   }
@@ -407,15 +407,15 @@ public class Impl extends ANY
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this implementation.
+   * @param context the source code context where this assignment is used
    */
-  public void resolveSyntacticSugar2(Resolution res, Context context)
+  void resolveSyntacticSugar2(Resolution res, Context context)
   {
     var outer = context.outerFeature();
     if (outer.isConstructor() && outer.preFeature() != null)
@@ -466,8 +466,8 @@ public class Impl extends ANY
    *
    *   x := f 3 4
    *
-   * where the argument types for `a` and `b` are inferred from the actual
-   * arguments `3` and `4`.
+   * where the argument types for {@code a} and {@code b} are inferred from the actual
+   * arguments {@code 3} and {@code 4}.
    *
    * @param call an actual argument expression
    */
@@ -492,7 +492,7 @@ public class Impl extends ANY
    */
   private Expr initialValueFromCall(int i, Resolution res)
   {
-    Expr result = null;
+    Expr result = Call.ERROR;
     var ic = _initialCalls.get(i);
     var aargs = ic._actuals.listIterator();
     for (var frml : ic.calledFeature().valueArguments())
@@ -510,7 +510,7 @@ public class Impl extends ANY
                     _infiniteRecursionInResolveTypes = false;
                   }
                 if (CHECKS) check
-                  (result == null);
+                  (result == Call.ERROR);
                 result = actl;
               }
           }
@@ -546,7 +546,7 @@ public class Impl extends ANY
         exprs.add(iv);
       }
     var result = Expr.union(exprs, Context.NONE);
-    // the following line is currently necessary
+    // NYI: CLEANUP: the following line is currently necessary
     // to enable cyclic type inference e.g. in reg_issue2182
     result = result == null ? Types.resolved.t_void : result;
     if (reportError)
@@ -588,7 +588,11 @@ public class Impl extends ANY
    */
   public boolean typeInferable()
   {
-    return _kind == Kind.RoutineDef || _kind == Kind.FieldDef || _kind == Kind.FieldActual;
+    return _kind == Kind.RoutineDef
+        || _kind == Kind.FieldDef
+        // field actual is inferable via initial call(s)
+        || _kind == Kind.FieldActual
+      ;
   }
 
 
@@ -690,6 +694,20 @@ public class Impl extends ANY
         }
     }
     return result;
+  }
+
+
+  /**
+   * Add initial call to the expression of
+   * this implementation.
+   */
+  public void addInitialCall(AbstractCall ac)
+  {
+    if (PRECONDITIONS) require
+      (ac.type().compareTo(Types.resolved.t_unit) == 0,
+       ac.calledFeature().resultType().compareTo(Types.resolved.t_unit) == 0);
+
+    _expr = new Block(new List<>(ac, _expr));
   }
 
 }

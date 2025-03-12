@@ -123,7 +123,7 @@ public abstract class AbstractAssign extends Expr
       {
         _target = _target.visit(v, outer);
       }
-    v.action(this, outer);
+    v.action(this);
     return this;
   }
 
@@ -149,7 +149,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
     resolveTypes(res, context, null);
   }
@@ -165,7 +165,7 @@ public abstract class AbstractAssign extends Expr
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
-  public void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Resolution res, Context context, Destructure destructure)
   {
   }
 
@@ -181,14 +181,19 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (resultTypeKnown(res))
       {
-        _value = _value.propagateExpectedType(res, context, _assignedField.resultType());
+        var rt = _assignedField.resultType();
+        if (rt.isFunctionTypeExcludingLazy() && (_value.typeForInferencing() == null || rt.compareTo(_value.typeForInferencing()) != 0))
+          {
+            _value = _value.propagateExpectedTypeForPartial(res, context, rt);
+          }
+        _value = _value.propagateExpectedType(res, context, rt);
       }
   }
 
@@ -202,7 +207,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void wrapValueInLazy(Resolution res, Context context)
+  void wrapValueInLazy(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -222,7 +227,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void unwrapValue(Resolution res, Context context)
+  void unwrapValue(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -239,26 +244,25 @@ public abstract class AbstractAssign extends Expr
    */
   private boolean resultTypeKnown(Resolution res)
   {
-    return  _assignedField != Types.f_ERROR
-         && res.state(_assignedField).atLeast(State.RESOLVED_TYPES)
-         && _assignedField.resultTypeIfPresent(res) != null;
+    return _assignedField != Types.f_ERROR
+        && _assignedField.resultTypeIfPresent(res) != null;
   }
 
 
   /**
-   * Boxing for assigned value: Make sure a value type that is assigned to a ref
-   * type will be boxed.
+   * Boxing/tagging for assigned value: Make sure a value type that is assigned
+   * is properly boxed/tagged.
    *
    * @param context the source code context where this assignment is used
    */
-  public void boxVal(Context context)
+  void boxAndTagVal(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(_assignedField.resultType(), context);
+        _value = _value.boxAndTag(_assignedField.resultType(), context);
       }
   }
 
@@ -270,7 +274,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void checkTypes(Resolution res, Context context)
+  void checkTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -284,7 +288,7 @@ public abstract class AbstractAssign extends Expr
           (Errors.any() || frmlT != Types.t_ERROR,
            Errors.any() || _value.type() != Types.t_ERROR);
 
-        if (_value.type() != Types.t_ERROR && !frmlT.isDirectlyAssignableFrom(_value.type(), context))
+        if (_value.type() != Types.t_ERROR && !frmlT.isAssignableFromWithoutBoxing(_value.type(), context))
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value, context);
           }

@@ -2,47 +2,47 @@
 --CURDIR--/choice_negative.fz:137:30: error 1: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
     x bool : choice i64 bool := true  // 27. should flag an error, choice feature must not be field
 -----------------------------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/choice_negative.fz:140:25: error 2: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
     x : choice i64 bool := true  // 28. should flag an error, choice feature must not be field
 ------------------------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/choice_negative.fz:142:30: error 3: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
     x bool : choice i64 bool := any  // 29. should flag an error, choice feature must not be field
 -----------------------------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/choice_negative.fz:61:26: error 4: Repeated inheritance of choice is not permitted
-    A : choice i32 bool, choice String f64 is // 9. should flag an error: choice type must inherit exactly once from choice
--------------------------^^^^^^
-A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9:
-
-
---CURDIR--/choice_negative.fz:66:12: error 5: Repeated inheritance of choice is not permitted
+--CURDIR--/choice_negative.fz:66:12: error 4: Repeated inheritance of choice is not permitted
     C : A, B is // 10. should flag an error: choice type must inherit exactly once from choice
 -----------^
 A choice feature must inherit directly from choice exactly once.
 Previous inheritance from choice at --CURDIR--/choice_negative.fz:66:9:
 
 
---CURDIR--/choice_negative.fz:70:12: error 6: Repeated inheritance of choice is not permitted
+--CURDIR--/choice_negative.fz:70:12: error 5: Repeated inheritance of choice is not permitted
     B : A, choice String f64 is // 11. should flag an error: choice type must inherit exactly once from choice
 -----------^^^^^^
 A choice feature must inherit directly from choice exactly once.
 Previous inheritance from choice at --CURDIR--/choice_negative.fz:70:9:
 
 
---CURDIR--/choice_negative.fz:74:28: error 7: Repeated inheritance of choice is not permitted
+--CURDIR--/choice_negative.fz:74:28: error 6: Repeated inheritance of choice is not permitted
     B : choice String f64, A is // 12. should flag an error: choice type must inherit exactly once from choice
 ---------------------------^
 A choice feature must inherit directly from choice exactly once.
 Previous inheritance from choice at --CURDIR--/choice_negative.fz:74:9:
+
+
+--CURDIR--/choice_negative.fz:61:26: error 7: Repeated inheritance of choice is not permitted
+    A : choice i32 bool, choice String f64 is // 9. should flag an error: choice type must inherit exactly once from choice
+-------------------------^^^^^^
+A choice feature must inherit directly from choice exactly once.
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9:
 
 
 --CURDIR--/choice_negative.fz:54:10: error 8: Could not find called feature
@@ -61,7 +61,19 @@ Target feature: 'choice_negative.instantiate2'
 In call: 'MyChoice'
 
 
---CURDIR--/choice_negative.fz:137:30: error 10: Could not find called feature
+--CURDIR--/choice_negative.fz:170:21: error 10: Ambiguous assignment to 'choice choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C'
+    _ choice A B := C  // 36. should flag an error, Ambiguous assignment to ...
+--------------------^
+'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C' is assignable to 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A', 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B'
+
+
+--CURDIR--/choice_negative.fz:171:21: error 11: Ambiguous assignment to 'choice choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C'
+    t choice A B => C  // 37. should flag an error, Ambiguous assignment to ...
+--------------------^
+'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C' is assignable to 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A', 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B'
+
+
+--CURDIR--/choice_negative.fz:137:30: error 12: Could not find called feature
     x bool : choice i64 bool := true  // 27. should flag an error, choice feature must not be field
 -----------------------------^^
 Feature not found: 'prefix :=' (no arguments)
@@ -69,24 +81,12 @@ Target feature: 'bool'
 In call: ':= true'
 
 
---CURDIR--/choice_negative.fz:140:25: error 11: Could not find called feature
+--CURDIR--/choice_negative.fz:140:25: error 13: Could not find called feature
     x : choice i64 bool := true  // 28. should flag an error, choice feature must not be field
 ------------------------^^
 Feature not found: 'prefix :=' (no arguments)
 Target feature: 'bool'
 In call: ':= true'
-
-
---CURDIR--/choice_negative.fz:170:21: error 12: Ambiguous assignment to 'choice choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C'
-    _ choice A B := C  // 36. should flag an error, Ambiguous assignment to ...
---------------------^
-'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C' is assignable to 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A', 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B'
-
-
---CURDIR--/choice_negative.fz:171:21: error 13: Ambiguous assignment to 'choice choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C'
-    t choice A B => C  // 37. should flag an error, Ambiguous assignment to ...
---------------------^
-'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.C' is assignable to 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.A', 'choice_negative.this.ambiguous_assignment_to_choice_via_subtype.this.B'
 
 
 --CURDIR--/choice_negative.fz:158:11: error 14: 'match' subject type must be a choice type
@@ -101,7 +101,7 @@ Matched type: 'i32', which is not a choice type
 Matched type: 'i32', which is not a choice type
 
 
---CURDIR--/choice_negative.fz:32:5: error 16: Choice cannot refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:32:5: error 16: Choice must not refer to its own value type as one of the choice alternatives
     A : choice A i32 String is       // 1. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
@@ -114,7 +114,7 @@ Faulty type parameter: 'choice_negative.this.cyclic1.this.A'
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:38:5: error 18: Choice cannot refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:38:5: error 18: Choice must not refer to its own value type as one of the choice alternatives
     A : choice i32 A String is      // 2. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
@@ -127,7 +127,7 @@ Faulty type parameter: 'choice_negative.this.cyclic3.this.A'
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:44:5: error 20: Choice cannot refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:44:5: error 20: Choice must not refer to its own value type as one of the choice alternatives
     A : choice i32 String A is      // 3. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
@@ -248,7 +248,7 @@ The following types have overlapping values:
 'choice_negative.this.args6.this.S'
 
 
---CURDIR--/choice_negative.fz:126:5: error 35: Choice type must not access fields of surrounding scope.
+--CURDIR--/choice_negative.fz:126:5: error 35: Choice type must not access features of surrounding scope.
     A : choice i64 f32 is
 ----^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
@@ -256,10 +256,10 @@ A closure cannot be built for a choice type. Forbidden accesses occur at
         _ := x // 25. should flag an error: access to closure not permitted in choice
 -------------^
 
-To solve this, you might move the accessed fields outside of the common outer feature.
+To solve this, you might move the accessed features outside of the common outer feature.
 
 
---CURDIR--/choice_negative.fz:134:9: error 36: Choice type must not access fields of surrounding scope.
+--CURDIR--/choice_negative.fz:134:9: error 36: Choice type must not access features of surrounding scope.
     B : A, choice i64 f32 is
 --------^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
@@ -267,7 +267,7 @@ A closure cannot be built for a choice type. Forbidden accesses occur at
         _ := x // 26. should flag an error: access to closure not permitted in choice
 -------------^
 
-To solve this, you might move the accessed fields outside of the common outer feature.
+To solve this, you might move the accessed features outside of the common outer feature.
 
 
 --CURDIR--/choice_negative.fz:137:5: error 37: Choice feature must not be intrinsic

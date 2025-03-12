@@ -61,7 +61,7 @@ partial_application is
 
   i32.prefix      !! => if val <= 1 then 1 else val * !!(val-1)
   integer.postfix !  => if integer.this <= integer.this.one then integer.this.one else integer.this * (integer.this-integer.this.one)!
-  i32.postfix !  => if val <= 1 then 1 else val * (val-1)!
+  fixed redef i32.postfix !  => if val <= 1 then 1 else val * (val-1)!
   u64.postfix     !!  => if val <= u64 1 then u64 1 else val * (val-1)!!
   u64.prefix      !!  => if val <= u64 1 then u64 1 else val * !!(val-1)
 
@@ -370,3 +370,11 @@ partial_application is
     test "fun arg 4 4" (fun_arg_with_4_args f_4_args 4 2 0 69) "4,2,0,69"
 
   with_tp
+
+  # example code from #4687, partial application of infix operator
+  #
+  test_4687 =>
+
+    [(u8 0, u8 1)].map (||> x,y->unit) |> say
+
+  test_4687

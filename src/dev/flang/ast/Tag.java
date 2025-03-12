@@ -68,11 +68,11 @@ public class Tag extends ExprWithPos
   /**
    * Constructor
    *
-   * @param context the source code context where this Tag is to be used
-   *
    * @param value the value instance
+   *
+   * @param context the source code context where this Tag is to be used
    */
-  public Tag(Expr value, AbstractType taggedType, Context context)
+  Tag(Expr value, AbstractType taggedType, Context context)
   {
     super(value.pos());
 
@@ -86,7 +86,7 @@ public class Tag extends ExprWithPos
         || taggedType
             .choiceGenerics(context)
             .stream()
-            .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))
+            .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
             .count() == 1
         // NYI why is value.type() sometimes unit
         // even though none of the choice elements is unit
@@ -97,8 +97,19 @@ public class Tag extends ExprWithPos
     this._tagNum = (int)_taggedType
       .choiceGenerics(context)
       .stream()
-      .takeWhile(cg -> !cg.isDirectlyAssignableFrom(value.type(), context))
+      .takeWhile(cg -> !cg.isAssignableFromWithoutTagging(value.type(), context))
       .count();
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param value the value instance
+   */
+  public Tag(Expr value, AbstractType taggedType)
+  {
+    this(value, taggedType, Context.NONE);
   }
 
 
@@ -143,7 +154,7 @@ public class Tag extends ExprWithPos
     _value = _value.visit(v, outer);
     if (CHECKS) check
       (o.type().compareTo(_value.type()) == 0);
-    v.action(this, outer);
+    v.action(this);
     return this;
   }
 

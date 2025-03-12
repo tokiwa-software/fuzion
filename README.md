@@ -47,8 +47,8 @@ hello_world is
     # read someone's name from standard input
     #
     get_name =>
-      (io.stdin lm) ! ()->
-        io.buffered.read_line lm ? str String => str | io.end_of_file => ""
+      (io.stdin.reader lm) ! ()->
+        (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
     # greet someone with the name given
     #
@@ -100,9 +100,9 @@ ex_gcd is
     if b = 0 then a else gcd b (a % b)
 
 
-  say (gcd 8 12)
-  say (gcd -8 12)
-  say (gcd 28 0)
+  say <| gcd 8 12
+  say <| gcd -8 12
+  say <| gcd 28 0
 ```
 
 This example implements a simple variant of an algorithm that finds the greatest

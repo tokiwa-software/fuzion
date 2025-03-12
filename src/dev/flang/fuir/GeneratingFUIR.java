@@ -20,20 +20,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FUIR
+ * Source of class GeneratingFUIR
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.fuir;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -44,8 +42,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
@@ -85,9 +81,6 @@ public class GeneratingFUIR extends FUIR
   static final int[] NO_CLAZZ_IDS = new int[0];
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
    * property- or env-var-controlled flag to enable debug output whenever a
    * new clazz is created.
@@ -102,7 +95,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzResultClazz.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_RESULT_CLAZZ = true;
@@ -111,7 +104,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Flag to enable caching for result of clazzArgClazz and clazzArgCount.
    *
-   * NYI: OPTIMIZATION: Should be checked if this is actually benefitial for
+   * NYI: OPTIMIZATION: Should be checked if this is actually beneficial for
    * analysis of larger code bases.
    */
   static final boolean CACHE_ARG_CLAZZES = true;
@@ -190,7 +183,15 @@ public class GeneratingFUIR extends FUIR
 
   private final Map<AbstractType, Clazz> _clazzesForTypes;
 
-  boolean _lookupDone;
+  protected boolean _lookupDone;
+
+
+  /**
+   * For recording which sites and code where used by DFA.
+   * Used when serializing the FUIR.
+   */
+  protected TreeSet<Integer> _accessedSites = new TreeSet<>();
+  protected TreeSet<Integer> _accessedCode = new TreeSet<>();
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -227,7 +228,7 @@ public class GeneratingFUIR extends FUIR
         _argClazzes = null;
       }
     _specialClazzes = new Clazz[SpecialClazzes.values().length];
-    _universe  = newClazz(null, mir.universe().selfType(), -1)._id;
+    _universe  = newClazz(null, mir.universe().selfType(), FuzionConstants.NO_SELECT)._id;
     doesNeedCode(_universe);
     _mainClazz = newClazz(mir.main().selfType())._id;
     doesNeedCode(_mainClazz);
@@ -243,7 +244,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param original the original FUIR instance that we are cloning.
    */
-  public GeneratingFUIR(GeneratingFUIR original)
+  protected GeneratingFUIR(GeneratingFUIR original)
   {
     super(original);
     _fe = original._fe;
@@ -263,6 +264,8 @@ public class GeneratingFUIR extends FUIR
     _specialClazzes = original._specialClazzes;
     _inh = original._inh;
     _clazzesForTypes = original._clazzesForTypes;
+    _accessedCode = original._accessedCode;
+    _accessedSites = original._accessedSites;
   }
 
 
@@ -273,7 +276,7 @@ public class GeneratingFUIR extends FUIR
   Clazz newClazz(AbstractType t)
   {
     var o = t.outer();
-    return newClazz(o == null ? null : newClazz(o), t, -1);
+    return newClazz(o == null ? null : newClazz(o), t, FuzionConstants.NO_SELECT);
   }
   Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
   {
@@ -284,7 +287,7 @@ public class GeneratingFUIR extends FUIR
     var ao = actualType.feature().outer();
     while (o != null)
       {
-        if (actualType.isRef() && ao != null && ao.inheritsFrom(o.feature()) && !outer.isRef())
+        if (actualType.isRef().yes() && ao != null && ao.inheritsFrom(o.feature()) && outer.isRef().no())
           {
             outer = o;  // short-circuit outer relation if suitable outer was found
           }
@@ -337,7 +340,9 @@ public class GeneratingFUIR extends FUIR
 
     var t = actualType;
 
-    var cl = new Clazz(this, outerR, t, select, CLAZZ_BASE + _clazzes.size());
+    // normalize outer to be value in case t describes a field
+    outerR = t.feature().isField() ? outerR.asValue() : outerR;
+    var cl = new Clazz(this, outerR, t, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -345,16 +350,16 @@ public class GeneratingFUIR extends FUIR
       }
     else
       {
+        if (CHECKS) check
+          (!_lookupDone);
+
         result = cl;
+        var fuirId = CLAZZ_BASE + _clazzes.size();
         _clazzes.add(cl);
-        if (_lookupDone)
-          {
-            if (false) // NYI: BUG: #4273: This still happens for some tests and
-                       // some backends, need to check why and avoid this!
-              {
-                throw new Error("FUIR is closed, but we are adding a new clazz " + cl + " #"+clazzId2num(cl._id));
-              }
-          }
+
+        if (CHECKS) check
+          (_clazzes.get(clazzId2num(fuirId)) == cl);
+
         if (CACHE_RESULT_CLAZZ && _clazzes.size() > _resultClazzes.length)
           {
             var rc = _resultClazzes;
@@ -376,34 +381,39 @@ public class GeneratingFUIR extends FUIR
           }
 
         var s = SpecialClazzes.c_NOT_FOUND;
-        if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
+        if (cl.isRef().yes() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
             // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
             s = switch (cl.feature().qualifiedName())
               {
-              case "Any"               -> SpecialClazzes.c_Any         ;
-              case "i8"                -> SpecialClazzes.c_i8          ;
-              case "i16"               -> SpecialClazzes.c_i16         ;
-              case "i32"               -> SpecialClazzes.c_i32         ;
-              case "i64"               -> SpecialClazzes.c_i64         ;
-              case "u8"                -> SpecialClazzes.c_u8          ;
-              case "u16"               -> SpecialClazzes.c_u16         ;
-              case "u32"               -> SpecialClazzes.c_u32         ;
-              case "u64"               -> SpecialClazzes.c_u64         ;
-              case "f32"               -> SpecialClazzes.c_f32         ;
-              case "f64"               -> SpecialClazzes.c_f64         ;
-              case "unit"              -> SpecialClazzes.c_unit        ;
-              case "void"              -> SpecialClazzes.c_void        ;
-              case "bool"              -> SpecialClazzes.c_bool        ;
-              case "true_"             -> SpecialClazzes.c_true_       ;
-              case "false_"            -> SpecialClazzes.c_false_      ;
-              case "Const_String"      -> SpecialClazzes.c_Const_String;
-              case "String"            -> SpecialClazzes.c_String      ;
-              case "error"             -> SpecialClazzes.c_error       ;
-              case "fuzion"            -> SpecialClazzes.c_fuzion      ;
-              case "fuzion.sys"        -> SpecialClazzes.c_fuzion_sys  ;
-              case "fuzion.sys.Pointer"-> SpecialClazzes.c_sys_ptr     ;
-              default                  -> SpecialClazzes.c_NOT_FOUND   ;
+              case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
+              case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
+              case FuzionConstants.I16_NAME    -> SpecialClazzes.c_i16         ;
+              case FuzionConstants.I32_NAME    -> SpecialClazzes.c_i32         ;
+              case FuzionConstants.I64_NAME    -> SpecialClazzes.c_i64         ;
+              case FuzionConstants.U8_NAME     -> SpecialClazzes.c_u8          ;
+              case FuzionConstants.U16_NAME    -> SpecialClazzes.c_u16         ;
+              case FuzionConstants.U32_NAME    -> SpecialClazzes.c_u32         ;
+              case FuzionConstants.U64_NAME    -> SpecialClazzes.c_u64         ;
+              case FuzionConstants.F32_NAME    -> SpecialClazzes.c_f32         ;
+              case FuzionConstants.F64_NAME    -> SpecialClazzes.c_f64         ;
+              case FuzionConstants.UNIT_NAME   -> SpecialClazzes.c_unit        ;
+              case "void"                      -> SpecialClazzes.c_void        ;
+              case "bool"                      -> SpecialClazzes.c_bool        ;
+              case "true_"                     -> SpecialClazzes.c_true_       ;
+              case "false_"                    -> SpecialClazzes.c_false_      ;
+              case "const_string"              -> SpecialClazzes.c_const_string;
+              case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
+              case "error"                     -> SpecialClazzes.c_error       ;
+              case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
+              case "Condition"                 -> SpecialClazzes.c_Condition   ;
+              case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
+              case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
+              case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;
+              case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
+              case "Array"                     -> SpecialClazzes.c_Array;
+              case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
+              default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)
               {
@@ -412,19 +422,11 @@ public class GeneratingFUIR extends FUIR
           }
         cl._specialClazzId = s;
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
-        cl.init();
-
-        if (cl.feature().isField() && outerR.isRef() && !outerR.isBoxed())
-          { // NYI: CLEANUP: Duplicate clazzes for fields in corresponding value
-            // instance.  This is currently needed for the C backend only since
-            // that backend creates ref clazzes by embedding the underlying
-            // value instance in the ref clazz' struct:
-            var ignore = newClazz(outerR.asValue(), actualType, select);
-          }
+        cl.init(fuirId);
 
         result.registerAsHeir();
 
-        // C backend requires the value variant for all ref clazzes, so we make
+        // backends require the value variant for all ref clazzes, so we make
         // sure we have the value clazz as well:
         var ignore = clazzAsValue(result._id);
       }
@@ -432,7 +434,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private Clazz id2clazz(int cl)
+  protected Clazz id2clazz(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -490,7 +492,7 @@ public class GeneratingFUIR extends FUIR
           }
       }
 
-    else if (e instanceof AbstractCurrent c)
+    else if (e instanceof AbstractCurrent)
       {
         result = outerClazz;
       }
@@ -507,7 +509,7 @@ public class GeneratingFUIR extends FUIR
 
     else if (e instanceof Constant c)
       {
-        result = outerClazz.handDown(c.typeOfConstant(), inh);
+        result = outerClazz.handDown(c.type(), inh);
       }
 
     else if (e instanceof Tag tg)
@@ -518,11 +520,6 @@ public class GeneratingFUIR extends FUIR
     else if (e instanceof InlineArray ia)
       {
         result = outerClazz.handDown(ia.type(), inh);
-      }
-
-    else if (e instanceof Env v)
-      {
-        result = outerClazz.handDown(v.type(), inh);
       }
 
     else
@@ -573,7 +570,7 @@ public class GeneratingFUIR extends FUIR
       {
         var ot = thiz.outer();
         var oc = ot != null ? type2clazz(ot) : null;
-        result = newClazz(oc, thiz, -1);
+        result = newClazz(oc, thiz, FuzionConstants.NO_SELECT);
         _clazzesForTypes.put(thiz, result);
       }
 
@@ -589,9 +586,9 @@ public class GeneratingFUIR extends FUIR
 
   /**
    * The clazz ids form a contiguous range of integers. This method gives the
-   * smallest clazz id.  Together with `lastClazz`, this permits iteration.
+   * smallest clazz id.  Together with {@code lastClazz}, this permits iteration.
    *
-   * @return a valid clazz id such that for all clazz ids id: result <= id.
+   * @return a valid clazz id such that for all clazz ids id: result {@literal <=} id.
    */
   @Override
   public int firstClazz()
@@ -602,7 +599,7 @@ public class GeneratingFUIR extends FUIR
 
   /**
    * The clazz ids form a contiguous range of integers. This method gives the
-   * largest clazz id.  Together with `firstClazz`, this permits iteration.
+   * largest clazz id.  Together with {@code firstClazz}, this permits iteration.
    *
    * @return a valid clazz id such that for all clazz ids id: result >= id.
    */
@@ -619,7 +616,7 @@ public class GeneratingFUIR extends FUIR
    * @return a valid clazz id
    */
   @Override
-  public int mainClazzId()
+  public int mainClazz()
   {
     return _mainClazz;
   }
@@ -644,7 +641,7 @@ public class GeneratingFUIR extends FUIR
    * Return the base name of this clazz, i.e., the name excluding the outer
    * clazz' name and excluding the actual type parameters
    *
-   * @return String like `"Set"` if `cl` corresponds to `container.Set u32`.
+   * @return String like {@code "Set"} if {@code cl} corresponds to {@code container.Set u32}.
    */
   @Override
   public String clazzBaseName(int cl)
@@ -676,8 +673,8 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    int res;
-    if (CACHE_RESULT_CLAZZ)
+    int res = NO_CLAZZ;
+    if (CACHE_RESULT_CLAZZ && _resultClazzes.length > clazzId2num(cl))
       {
         res = _resultClazzes[clazzId2num(cl)];
         if (res == NO_CLAZZ)
@@ -701,7 +698,7 @@ public class GeneratingFUIR extends FUIR
    * @param cl a clazz
    *
    * @return its original name, e.g. 'Array.getel' instead of
-   * 'Const_String.getel'
+   * 'const_string.getel'
    */
   @Override
   public String clazzOriginalName(int cl)
@@ -751,42 +748,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get a String representation of a given clazz including a list of arguments
-   * and the result type. For debugging only, names might be ambiguous.
-   *
-   * @param cl a clazz id.
-   */
-  @Override
-  public String clazzAsStringWithArgsAndResult(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var sb = new StringBuilder();
-    sb.append(clazzAsString(cl))
-      .append("(");
-    var o = clazzOuterClazz(cl);
-    if (o != -1)
-      {
-        sb.append("outer ")
-          .append(clazzAsString(o));
-      }
-    for (var i = 0; i < clazzArgCount(cl); i++)
-      {
-        var ai = clazzArg(cl,i);
-        sb.append(o != -1 || i > 0 ? ", " : "")
-          .append(clazzBaseName(ai))
-          .append(" ")
-          .append(clazzAsString(clazzResultClazz(ai)));
-      }
-    sb.append(") ")
-      .append(clazzAsString(clazzResultClazz(cl)));
-    return sb.toString();
-  }
-
-
-  /**
    * Get the outer clazz of the given clazz.
    *
    * @param cl a clazz id
@@ -811,15 +772,15 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Number of value fields in clazz `cl`, including argument value fields,
+   * Number of value fields in clazz {@code cl}, including argument value fields,
    * inherited fields, artificial fields like outer refs.
    *
    * @param cl a clazz id
    *
-   * @return number of value fields in `cl`
+   * @return number of value fields in {@code cl}
    */
   @Override
-  public int clazzNumFields(int cl)
+  public int clazzFieldCount(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -845,7 +806,7 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size(),
        0 <= i,
-       i < clazzNumFields(cl));
+       i < clazzFieldCount(cl));
 
     return id2clazz(cl).fields()[i]._id;
   }
@@ -869,64 +830,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * Check if field does not store the value directly, but a pointer to the value.
-   *
-   * @param field a clazz id, not necessarily a field
-   *
-   * @return true iff the field is an outer ref field that holds an address of
-   * an outer value, false for normal fields our outer ref fields that store the
-   * outer ref or value directly.
-   */
-  @Override
-  public boolean clazzFieldIsAdrOfValue(int field)
-  {
-    if (PRECONDITIONS) require
-      (field >= CLAZZ_BASE,
-       field < CLAZZ_BASE + _clazzes.size());
-
-    var fc = id2clazz(field);
-    var f = fc.feature();
-    return f.isOuterRef() &&
-      !fc.resultClazz().isRef() &&
-      !fc.resultClazz().isUnitType() &&
-      !fc.resultClazz().feature().isBuiltInPrimitive();
-  }
-
-
-  /**
-   * NYI: CLEANUP: Remove? This seems to be used only for naming fields, maybe we could use clazzId2num(field) instead?
-   */
-  @Override
-  public int fieldIndex(int field)
-  {
-    if (PRECONDITIONS) require
-      (field >= CLAZZ_BASE,
-       field < CLAZZ_BASE + _clazzes.size(),
-       clazzKind(field) == FeatureKind.Field);
-
-    return id2clazz(field).fieldIndex();
-  }
-
-
   /*------------------------  accessing choices  -----------------------*/
-
-
-  /**
-   * is the given clazz a choice clazz
-   *
-   * @param cl a clazz id
-   */
-  @Override
-  public boolean clazzIsChoice(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var c = id2clazz(cl);
-    return c.isChoice();
-  }
 
 
   /**
@@ -938,7 +842,7 @@ public class GeneratingFUIR extends FUIR
    * otherwise.  May be 0 for the void choice.
    */
   @Override
-  public int clazzNumChoices(int cl)
+  public int clazzChoiceCount(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -969,56 +873,15 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size(),
-       i >= 0 && i < clazzNumChoices(cl));
+       i >= 0 && i < clazzChoiceCount(cl));
 
     var cc = id2clazz(cl);
     var cg = cc.choiceGenerics().get(i);
-    var res = cg.isRef()          ||
+    var res = cg.isRef().yes()     ||
               cg.isInstantiatedChoice() ? cg
                                         : id2clazz(clazz(SpecialClazzes.c_void));
     return res._id;
   }
-
-
-  /**
-   * Is this a choice type with some elements of ref type?
-   *
-   * NYI: CLEANUP: Used by C and interpreter backends only. Remove?
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is a choice with at least one ref element
-   */
-  @Override
-  public boolean clazzIsChoiceWithRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.isChoiceWithRefs();
-  }
-
-
-  /**
-   * Is this a choice type with all elements of ref type?
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is a choice with only ref or unit/void elements
-   */
-  @Override
-  public boolean clazzIsChoiceOfOnlyRefs(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.isChoiceOfOnlyRefs();
-  }
-
 
 
   /*------------------------  inheritance  -----------------------*/
@@ -1060,7 +923,7 @@ public class GeneratingFUIR extends FUIR
       {
         res[i] = result.get(i)._id;
         if (CHECKS) check
-          (res[i] != -1);
+          (res[i] != NO_CLAZZ);
       }
     return res;
   }
@@ -1173,38 +1036,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the clazz id of the type of the given argument of clazz cl
-   *
-   * @param cl clazz id
-   *
-   * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
-   *
-   * @return clazz id of the argument or -1 if no such feature exists (the
-   * argument is unused).
-   */
-  @Override
-  public int clazzArgClazz(int cl, int arg)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size(),
-       arg >= 0,
-       arg < clazzArgCount(cl));
-
-    if (CACHE_ARG_CLAZZES)
-      {
-        return clazzArgs(cl)[arg];
-      }
-    else
-      {
-        var c = id2clazz(cl);
-        var rc = c.argumentFields()[arg].resultClazz();
-        return rc._id;
-      }
-  }
-
-
-  /**
    * Get the clazz id of the given argument of clazz cl
    *
    * @param cl clazz id
@@ -1271,6 +1102,24 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * Get the expression at the given site
+   *
+   * @param s a site
+   *
+   * @return the expression found at site s.
+   */
+  @Override
+  protected Object getExpr(int s)
+  {
+    if (!_lookupDone)
+      {
+        _accessedSites.add(s);
+      }
+    return super.getExpr(s);
+  }
+
+
+  /**
    * Get access to the code of a clazz of kind Routine
    *
    * @param cl a clazz id
@@ -1286,8 +1135,8 @@ public class GeneratingFUIR extends FUIR
        Errors.any() ||
        !_lookupDone ||
        clazzNeedsCode(cl) ||
-       cl == clazz_Const_String() ||
-       cl == clazz_Const_String_utf8_data() ||
+       cl == clazz_const_string() ||
+       cl == clazz_const_string_utf8_data() ||
        cl == clazz_array_u8() ||
        cl == clazz_fuzionSysArray_u8() ||
        cl == clazz_fuzionSysArray_u8_data() ||
@@ -1296,12 +1145,10 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     var result = c._code;
-    if (result == NO_SITE)
+    if (result == NO_SITE && !_lookupDone)
       {
-        if (!_lookupDone)
-          {
-            c.doesNeedCode();
-          }
+        _accessedCode.add(cl);
+        c.doesNeedCode();
         result = addCode(cl, c);
         c._code = result;
       }
@@ -1427,33 +1274,9 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Check if the given clazz is a constructor, i.e., a routine returning
-   * its instance as a result?
-   *
-   * @param cl a clazz id
-   *
-   * @return true if the clazz is a constructor, false otherwise
-   */
-  @Override
-  public boolean isConstructor(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var c = id2clazz(cl);
-    return switch (c.feature().kind())
-      {
-      case Routine -> c.feature().isConstructor();
-      default -> false;
-      };
-  }
-
-
-  /**
    * Is the given clazz a ref clazz?
    *
-   * @parm cl a constructor clazz id
+   * @param cl a constructor clazz id
    *
    * @return true for non-value-type clazzes
    */
@@ -1465,7 +1288,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.isRef();
+    return c.isRef().yes();
   }
 
 
@@ -1482,7 +1305,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.isRef() && !c.feature().isRef();
+    return c.isRef().yes() && !c.feature().isRef();
   }
 
 
@@ -1501,12 +1324,11 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var cc = id2clazz(cl);
-    var vcc = id2clazz(cl).asValue();
-    if (vcc.isRef())
-      {
-        throw new Error("vcc.isRef in clazzAsValue for "+clazzAsString(cl)+" is "+vcc);
-      }
-    var vc0 = id2clazz(cl).asValue()._id;
+    var vcc = cc.asValue();
+
+    if (CHECKS) check
+      (!vcc.isRef().yes());
+
     var vc = vcc._id;
 
     if (POSTCONDITIONS) ensure
@@ -1522,7 +1344,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * For a clazz that represents a Fuzion type such as 'i32.type', return the
    * corresponding name of the type such as 'i32'.  This value is returned by
-   * intrinsic `Type.name`.
+   * intrinsic {@code Type.name}.
    *
    * @param cl a clazz id of a cotype
    *
@@ -1536,7 +1358,10 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.typeName().getBytes(StandardCharsets.UTF_8);
+    return (c.feature().isCotype()
+      ? c.typeName()
+      : "-- clazzTypeName called on none cotype --")
+        .getBytes(StandardCharsets.UTF_8);
   }
 
 
@@ -1585,26 +1410,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Check if a clazz is the special clazz c.
-   *
-   * @param cl a clazz id
-   *
-   * @param c one of the constants SpecialClazzes.c_i8,...
-   *
-   * @return true iff cl is the specified special clazz c
-   */
-  @Override
-  public boolean clazzIs(int cl, SpecialClazzes c)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return id2clazz(cl)._specialClazzId == c;
-  }
-
-
-  /**
    * Get the id of the given special clazz.
    *
    * @param s the special clazz we are looking for
@@ -1615,7 +1420,7 @@ public class GeneratingFUIR extends FUIR
       (s != SpecialClazzes.c_NOT_FOUND);
 
     var result = _specialClazzes[s.ordinal()];
-    if (result == null)
+    if (result == null && !_lookupDone)
       {
         if (s == SpecialClazzes.c_universe)
           {
@@ -1627,9 +1432,9 @@ public class GeneratingFUIR extends FUIR
             var oc = id2clazz(o);
             var of = oc.feature();
             var f = (LibraryFeature) of.get(of._libModule, s._name, s._argCount);
-            result = newClazz(oc, f.selfType(), -1);
+            result = newClazz(oc, f.selfType(), FuzionConstants.NO_SELECT);
             if (CHECKS) check
-              (f.isRef() == result.isRef());
+              (f.isRef() == (result.isRef().yes()));
           }
         _specialClazzes[s.ordinal()] = result;
       }
@@ -1648,150 +1453,26 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (s != SpecialClazzes.c_NOT_FOUND);
 
-    return specialClazz(s)._id;
+    var sc = specialClazz(s);
+    return sc == null ? NO_CLAZZ : sc._id;
   }
 
 
   /**
-   * Get the id of clazz Any.
+   * Get the id of clazz ref const_string
    *
-   * @return clazz id of clazz Any
+   * @return the id of ref const_string or -1 if that clazz was not created.
    */
   @Override
-  public int clazzAny()
+  public int clazz_ref_const_string()
   {
-    return clazz(SpecialClazzes.c_Const_String);
+    var cc = id2clazz(clazz_const_string());
+    return cc.asRef()._id;
   }
 
 
   /**
-   * Get the id of clazz universe.
-   *
-   * @return clazz id of clazz universe
-   */
-  @Override
-  public int clazzUniverse()
-  {
-    return _universe;
-  }
-
-
-  /**
-   * Get the id of clazz Const_String
-   *
-   * @return the id of Const_String or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_Const_String()
-  {
-    return clazz(SpecialClazzes.c_Const_String);
-  }
-
-
-  /**
-   * Get the id of clazz Const_String.utf8_data
-   *
-   * @return the id of Const_String.utf8_data or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_Const_String_utf8_data()
-  {
-    return clazz(SpecialClazzes.c_CS_utf8_data);
-  }
-
-
-  /**
-   * Get the id of clazz `array u8`
-   *
-   * @return the id of Const_String.array or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_array_u8()
-  {
-    var utf8_data = clazz_Const_String_utf8_data();
-    return clazzResultClazz(utf8_data);
-  }
-
-
-  /**
-   * Get the id of clazz fuzion.sys.array<u8>
-   *
-   * @return the id of fuzion.sys.array<u8> or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionSysArray_u8()
-  {
-    var a8 = clazz_array_u8();
-    var ia = lookup_array_internal_array(a8);
-    var res = clazzResultClazz(ia);
-    return res;
-  }
-
-
-  /**
-   * Get the id of clazz fuzion.sys.array<u8>.data
-   *
-   * @return the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionSysArray_u8_data()
-  {
-    var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_data(sa8);
-  }
-
-
-  /**
-   * Get the id of clazz fuzion.sys.array<u8>.length
-   *
-   * @return the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionSysArray_u8_length()
-  {
-    var sa8 = clazz_fuzionSysArray_u8();
-    return lookup_fuzion_sys_internal_array_length(sa8);
-  }
-
-
-  /**
-   * Get the id of clazz fuzion.java.Java_Object
-   *
-   * @return the id of fuzion.java.Java_Object or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionJavaObject()
-  {
-    return newClazz(Types.resolved.f_fuzion_Java_Object.selfType())._id;
-  }
-
-
-  /**
-   * Get the id of clazz fuzion.java.Java_Object.Java_Ref
-   *
-   * @return the id of fuzion.java.Java_Object.Java_Ref or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_fuzionJavaObject_Ref()
-  {
-    return newClazz(Types.resolved.f_fuzion_Java_Object_Ref.selfType())._id;
-  }
-
-
-  /**
-   * Get the id of clazz error
-   *
-   * @return the id of error or -1 if that clazz was not created.
-   */
-  @Override
-  public int clazz_error()
-  {
-    return clazz(SpecialClazzes.c_error);
-  }
-
-
-  /**
-   * On `cl` lookup field `Java_Ref`
+   * On {@code cl} lookup field {@code java_ref}
    *
    * @param cl Java_Object or inheriting from Java_Object
    *
@@ -1803,43 +1484,11 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
-  }
-
-
-  /**
-   * Check if the given clazz is a --possibly inherited--
-   * `fuzion.java.Java_Object.Java_Ref` field.
-   *
-   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
-   *
-   * @param cl a clazz id that should be checked, must not be NO_CLAZZ.
-   */
-  @Override
-  public boolean isJavaRef(int cl)
-  {
-    var f = id2clazz(cl).feature();
-    return isJavaRef(f);
-  }
-
-
-  /**
-   * Helper for isJavaRef to check is this is or redefineds
-   * `fuzion.java.Java_Object.Java_Ref` field.
-   *
-   * NYI: CLEANUP: #3927: Remove once #3927 is fixed.
-   */
-  boolean isJavaRef(AbstractFeature f)
-  {
-    var result = f == Types.resolved.f_fuzion_Java_Object_Ref;
-    if (!result)
-      {
-        for (var rf : f.redefines())
-          {
-            result = result || isJavaRef(rf);
-          }
-      }
-    return result;
+    return !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_fuzion_Java_Object_Ref.outer())
+      ? NO_CLAZZ
+      : _lookupDone
+      ? id2clazz(cl).lookup(Types.resolved.f_fuzion_Java_Object_Ref)._id
+      : id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_Java_Object_Ref)._id;
   }
 
 
@@ -1850,7 +1499,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl index of a clazz that is an heir of 'Function'.
    *
-   * @return the index of the requested `Function.call` feature's clazz.
+   * @return the index of the requested {@code Function.call} feature's clazz.
    */
   @Override
   public int lookupCall(int cl)
@@ -1859,7 +1508,9 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return lookupCall(cl, !_lookupDone);
+    return !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_Function)
+      ? NO_CLAZZ
+      : lookupCall(cl, !_lookupDone);
   }
 
 
@@ -1872,9 +1523,8 @@ public class GeneratingFUIR extends FUIR
    *
    * @param markAsCalled true to mark the result as called
    *
-   * @return the index of the requested `Function.call` feature's clazz.
+   * @return the index of the requested {@code Function.call} feature's clazz.
    */
-  @Override
   public int lookupCall(int cl, boolean markAsCalled)
   {
     if (PRECONDITIONS) require
@@ -1895,7 +1545,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl index of a clazz that is an heir of 'effect'.
    *
-   * @return the index of the requested `effect.finally` feature's clazz.
+   * @return the index of the requested {@code effect.finally} feature's clazz.
    */
   @Override
   public int lookup_static_finally(int cl)
@@ -1904,7 +1554,11 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_effect_static_finally)._id;
+    return !id2clazz(cl).feature().inheritsFrom(Types.resolved.f_effect_static_finally.outer())
+      ? NO_CLAZZ
+      : _lookupDone
+      ? id2clazz(cl).lookup(Types.resolved.f_effect_static_finally)._id
+      : id2clazz(cl).lookupNeeded(Types.resolved.f_effect_static_finally)._id;
   }
 
 
@@ -1913,7 +1567,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl index of a clazz representing cl's value field
    *
-   * @return the index of the requested `concur.atomic.value` field's clazz.
+   * @return the index of the requested {@code concur.atomic.value} field's clazz.
    */
   @Override
   public int lookupAtomicValue(int cl)
@@ -1929,9 +1583,9 @@ public class GeneratingFUIR extends FUIR
   /**
    * For a clazz of array, lookup the inner clazz of the internal_array field.
    *
-   * @param cl index of a clazz `array T` for some type parameter `T`
+   * @param cl index of a clazz {@code array T} for some type parameter {@code T}
    *
-   * @return the index of the requested `array.internal_array` field's clazz.
+   * @return the index of the requested {@code array.internal_array} field's clazz.
    */
   @Override
   public int lookup_array_internal_array(int cl)
@@ -1946,12 +1600,12 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
    * data field.
    *
-   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
    *
-   * @return the index of the requested `fuzion.sys.internal_array.data` field's clazz.
+   * @return the index of the requested {@code fuzion.sys.internal_array.data} field's clazz.
    */
   @Override
   public int lookup_fuzion_sys_internal_array_data(int cl)
@@ -1966,12 +1620,12 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz of fuzion.sys.internal_array, lookup the inner clazz of the
+   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
    * length field.
    *
-   * @param cl index of a clazz `fuzion.sys.internal_array T` for some type parameter `T`
+   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
    *
-   * @return the index of the requested `fuzion.sys.internal_array.length` field's clazz.
+   * @return the index of the requested {@code fuzion.sys.internal_array.length} field's clazz.
    */
   @Override
   public int lookup_fuzion_sys_internal_array_length(int cl)
@@ -1988,9 +1642,9 @@ public class GeneratingFUIR extends FUIR
   /**
    * For a clazz of error, lookup the inner clazz of the msg field.
    *
-   * @param cl index of a clazz `error`
+   * @param cl index of a clazz {@code error}
    *
-   * @return the index of the requested `error.msg` field's clazz.
+   * @return the index of the requested {@code error.msg} field's clazz.
    */
   @Override
   public int lookup_error_msg(int cl)
@@ -2008,9 +1662,9 @@ public class GeneratingFUIR extends FUIR
 
   /**
    * Is there just one single value of this class, so this type is essentially a
-   * C/Java `void` type?
+   * C/Java {@code void} type?
    *
-   * NOTE: This is false for Fuzion's `void` type!
+   * NOTE: This is false for Fuzion's {@code void} type!
    */
   @Override
   public boolean clazzIsUnitType(int cl)
@@ -2022,40 +1676,6 @@ public class GeneratingFUIR extends FUIR
     return id2clazz(cl).isUnitType();
   }
 
-
-  /**
-   * Is this a void type, i.e., values of this clazz do not exist.
-   */
-  @Override
-  public boolean clazzIsVoidType(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return id2clazz(cl).isVoidType();
-  }
-
-
-  /**
-   * Test is a given clazz is not -1 and stores data.
-   *
-   * @param cl the clazz defining a type, may be -1
-   *
-   * @return true if cl != -1 and not unit or void type.
-   */
-  @Override
-  public boolean hasData(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return
-      !clazzIsUnitType(cl) &&
-      !clazzIsVoidType(cl) &&
-      cl != clazzUniverse();
-  }
 
 
   /**
@@ -2071,13 +1691,9 @@ public class GeneratingFUIR extends FUIR
   @Override
   protected void toStack(List<Object> l, Expr e, boolean dumpResult)
   {
-    if ((e instanceof AbstractCall ||
-         e instanceof InlineArray    ) && isConst(e))
+    if (isConst(e) && !dumpResult)
       {
-        if (!dumpResult)
-          {
-            l.add(e.asCompileTimeConstant());
-          }
+        l.add(e.asCompileTimeConstant());
       }
     else
       {
@@ -2091,13 +1707,10 @@ public class GeneratingFUIR extends FUIR
    *
    * @param o an Object from the IR-Stack.
    *
-   * @return true iff `o` is an Expr and can be turned into a compile-time constant.
+   * @return true iff {@code o} is an Expr and can be turned into a compile-time constant.
    */
   private boolean isConst(Object o)
   {
-    if (PRECONDITIONS) require
-      (o instanceof Expr || o instanceof ExprKind);
-
     return o instanceof InlineArray iai && isConst(iai)
         || o instanceof Constant
         || o instanceof AbstractCall ac && isConst(ac)
@@ -2143,7 +1756,7 @@ public class GeneratingFUIR extends FUIR
       // contains no fields
       ac.calledFeature().code().containsOnlyDeclarations() &&
       // we are calling a value type feature
-      !ac.calledFeature().selfType().isRef() &&
+      ac.calledFeature().selfType().isRef().no() &&
       // only features without args and no fields may be inherited
       ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
       // no unit   // NYI we could allow units that does not contain declarations
@@ -2172,7 +1785,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @param gix indec of the generic parameter
+   * @param gix index of the generic parameter
    *
    * @return id of cl's actual generic parameter #gix
    */
@@ -2206,19 +1819,11 @@ public class GeneratingFUIR extends FUIR
   /*--------------------------  accessing code  -------------------------*/
 
 
-  /*
-  @Override
-  public boolean withinCode(int s)
-  {
-    return (s != NO_SITE) && false;
-  }
-  */
-
   /**
    * Get the clazz id at the given site
    *
    * @param s a site, may be !withinCode(s), i.e., this may be used on
-   * `clazzCode(cl)` if the code is empty.
+   * {@code clazzCode(cl)} if the code is empty.
    *
    * @return the clazz id that code at site s belongs to.
    */
@@ -2228,6 +1833,11 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size());
+
+    if (!_lookupDone)
+      {
+        _accessedSites.add(s);
+      }
 
     return _siteClazzes.get(s - SITE_BASE);
   }
@@ -2297,9 +1907,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> tagValueAndReusltClazz(int s)
+  private Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2308,10 +1916,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Tag);
 
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone);
         var cl = clazzAt(s);
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
@@ -2332,7 +1938,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param s a code site for an Env instruction.
    *
-   * @return the original type, i.e., for `o option i32 := 42`, this is `i32`.
+   * @return the original type, i.e., for {@code o option i32 := 42}, this is {@code i32}.
    */
   @Override
   public int tagValueClazz(int s)
@@ -2343,7 +1949,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
-    return tagValueAndReusltClazz(s).v0()._id;
+    return tagValueAndResultClazz(s).v0()._id;
   }
 
 
@@ -2353,8 +1959,8 @@ public class GeneratingFUIR extends FUIR
    *
    * @param s a code site for an Env instruction.
    *
-   * @return the new choice type, i.e., for `o option i32 := 42`, this is
-   * `option i32`.
+   * @return the new choice type, i.e., for {@code o option i32 := 42}, this is
+   * {@code option i32}.
    */
   @Override
   public int tagNewClazz(int s)
@@ -2365,7 +1971,7 @@ public class GeneratingFUIR extends FUIR
        withinCode(s),
        codeAt(s) == ExprKind.Tag);
 
-    return tagValueAndReusltClazz(s).v1()._id;
+    return tagValueAndResultClazz(s).v1()._id;
   }
 
 
@@ -2375,8 +1981,8 @@ public class GeneratingFUIR extends FUIR
    *
    * @param s a code site for an Env instruction.
    *
-   * @return the tag number, i.e., for `o choice a b i32 c d := 42`, this is
-   * `2`.
+   * @return the tag number, i.e., for {@code o choice a b i32 c d := 42}, this is
+   * {@code 2}.
    */
   @Override
   public int tagTagNum(int s)
@@ -2393,28 +1999,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For an instruction of type ExprKind.Env at site s, return the type of the
-   * env value.
-   *
-   * @param s a code site for an Env instruction.
-   */
-  @Override
-  public int envClazz(int s)
-  {
-    if (PRECONDITIONS) require
-      (s >= SITE_BASE,
-       withinCode(s),
-       codeAt(s) == ExprKind.Env);
-
-    var cl = clazzAt(s);
-    var outerClazz = clazz(cl);
-    var v = (Env) getExpr(s);
-    Clazz vcl = clazz(v, outerClazz, _inh.get(s - SITE_BASE));
-    return vcl == null ? -1 : vcl._id;
-  }
-
-
-  /**
    * For an instruction of type ExprKind.Box at site s, return the original type
    * of the value that is to be boxed and the new reference type.
    *
@@ -2422,9 +2006,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
-  private
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
+  private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2433,16 +2015,14 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Box);
 
     var res = (Pair<Clazz,Clazz>) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
         var cl = clazzAt(s);
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        var rc = outerClazz.handDown(b.type(), -1, _inh.get(s - SITE_BASE));
-        if (rc.isRef() &&
+        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE));
+        if (rc.isRef().yes() &&
             outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
           {
             rc = vc.asRef();
@@ -2512,35 +2092,6 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /*
-   * Is vc.asRef assignable to ec?
-   */
-  private boolean asRefAssignable(Clazz ec, Clazz vc)
-  {
-    return asRefDirectlyAssignable(ec, vc) || asRefAssignableToChoice(ec, vc);
-  }
-
-
-  /*
-   * Is vc.asRef directly assignable to ec, i.e. without the need for tagging?
-   */
-  private boolean asRefDirectlyAssignable(Clazz ec, Clazz vc)
-  {
-    return ec.isRef() && ec._type.isAssignableFrom(vc.asRef()._type, Context.NONE);
-  }
-
-
-  /*
-   * Is ec a choice and vc.asRef assignable to ec?
-   */
-  private boolean asRefAssignableToChoice(Clazz ec, Clazz vc)
-  {
-    return ec._type.isChoice() &&
-      !ec._type.isAssignableFrom(vc._type, Context.NONE) &&
-      ec._type.isAssignableFrom(vc._type.asRef(), Context.NONE);
-  }
-
-
   /**
    * Get the inner clazz for a non dynamic access or the static clazz of a dynamic
    * access.
@@ -2551,9 +2102,7 @@ public class GeneratingFUIR extends FUIR
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int accessedClazz(int s)
+  public int accessedClazz(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -2563,10 +2112,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Assign    );
 
     var res = _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone || true); // NYI, why doesn't this hold?
         res = accessedClazz(s, null);
         if (res == null)
           {
@@ -2621,7 +2168,6 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
 
-    var outer = outerClazz.feature();
     if (c.calledFeature() == null  || c.target() == null)
       {
         return error();  // previous errors, give up
@@ -2634,23 +2180,38 @@ public class GeneratingFUIR extends FUIR
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
     var callToOuterRef = c.target().isCallToOuterRef();
-    var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    var dynamic = c.isDynamic() && (tclazz.isRef().yes() || callToOuterRef);
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
+    // NYI: HACK
+    // can happen e.g. in compile_time_type_casts
+    // since toStack currently puts illegal code in _allCode
+    // because it does not consider the context, yet
+    if (tclazz.isVoidType() || !tclazz.feature().inheritsFrom(cf.outer()))
+      {
+        return null;
+      }
     if (!tclazz.isVoidType())
       {
         innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
-            cf = T._type.constraintAssignableFrom(Context.NONE, tclazz._type.generics().get(0))
+            cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
-            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), -1, c.isInheritanceCall());
+            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
           }
         if (needsCode)
           {
             innerClazz.doesNeedCode();
+          }
+
+        if (innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
+            innerClazz.clazzKind() == FeatureKind.Routine &&
+            !innerClazz.feature().isConstructor())
+          {
+            innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
           }
       }
     return innerClazz == null ? error() : innerClazz;
@@ -2818,16 +2379,15 @@ public class GeneratingFUIR extends FUIR
    *
    * This is used to feed information back from static analysis tools like DFA
    * to the GeneratingFUIR such that the given target will be added to the
-   * targets / inner clazzes tuples returned by accesedClazzes.
+   * targets / inner clazzes tuples returned by accessedClazzes.
    *
    * @param s site of the access
    *
-   * @param tclazz the target clazz of the acces.
+   * @param tclazz the target clazz of the access.
    *
    * @return the accessed inner clazz or NO_CLAZZ in case that does not exist,
    * i.e., an abstract feature is missing.
    */
-  @Override
   public int lookup(int s, int tclazz)
   {
     if (PRECONDITIONS) require
@@ -2853,7 +2413,7 @@ public class GeneratingFUIR extends FUIR
       {
         innerClazz = accessedClazz(s);
         if (CHECKS) check
-          (tclazz == clazzOuterClazz(innerClazz));
+          (Errors.any() || tclazz == clazzOuterClazz(innerClazz) || clazzAsValue(tclazz) == clazzOuterClazz(innerClazz));
       }
     if (innerClazz != NO_CLAZZ)
       {
@@ -2883,7 +2443,8 @@ public class GeneratingFUIR extends FUIR
     if (CHECKS) check
       (!_lookupDone);
 
-    _lookupDone = true;
+    // NYI: lookupDone before layout
+    // _lookupDone = true;
 
     // NYI: UNDER DEVELOPMENT: layout phase creates new clazzes, which is why we cannot iterate like this. Need to check why and remove this!
     //
@@ -2893,6 +2454,8 @@ public class GeneratingFUIR extends FUIR
         var c = _clazzes.get(i);
         c.layoutAndHandleCycle();
       }
+
+    _lookupDone = true;
   }
 
 
@@ -2919,10 +2482,10 @@ public class GeneratingFUIR extends FUIR
     var e = getExpr(s);
     var res = switch (e)
       {
-      case AbstractAssign ass  -> id2clazz(accessTargetClazz(s)).isRef();
-      case Clazz          arg  -> outerClazz.isRef() && !arg.feature().isOuterRef(); // assignment to arg field in inherits call (dynamic if outerClazz is ref)
+      case AbstractAssign ass  -> id2clazz(accessTargetClazz(s)).isRef().yes();
+      case Clazz          arg  -> outerClazz.isRef().yes() && !arg.feature().isOuterRef(); // assignment to arg field in inherits call (dynamic if outerClazz is ref)
                                                                                     // or to outer ref field (not dynamic)
-      case AbstractCall   call -> id2clazz(accessTargetClazz(s)).isRef();
+      case AbstractCall   call -> id2clazz(accessTargetClazz(s)).isRef().yes();
       default                  -> { throw new Error("accessIsDynamic found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
       };
     return res;
@@ -2931,8 +2494,6 @@ public class GeneratingFUIR extends FUIR
 
   /**
    * Get the target (outer) clazz of a feature access
-   *
-   * @param cl index of clazz containing the access
    *
    * @param s site of the access
    *
@@ -2972,10 +2533,8 @@ public class GeneratingFUIR extends FUIR
    * For an intermediate command of type ExprKind.Const, return its clazz.
    *
    * Currently, the clazz is one of bool, i8, i16, i32, i64, u8, u16, u32, u64,
-   * f32, f64, or Const_String. This will be extended by value instances without
+   * f32, f64, or const_string. This will be extended by value instances without
    * refs, choice instances with tag, arrays, etc.
-   *
-   * @param cl index of clazz containing the constant
    *
    * @param s site of the constant
    */
@@ -2989,7 +2548,7 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Const);
 
     var res = (Clazz) _siteClazzCache.get(s);
-    if (res == null)
+    if (res == null && !_lookupDone)
       {
         var cl = clazzAt(s);
         var cc = id2clazz(cl);
@@ -3005,7 +2564,9 @@ public class GeneratingFUIR extends FUIR
         _siteClazzCache.put(s, res);
       }
 
-    return res._id;
+    return res == null
+      ? NO_CLAZZ
+      : res._id;
   }
 
 
@@ -3035,9 +2596,7 @@ public class GeneratingFUIR extends FUIR
    * @return clazz id of type of the subject
    */
   @Override
-  public
-  synchronized /* NYI: remove once it is ensured that _siteClazzCache is no longer modified when _lookupDone */
-  int matchStaticSubject(int s)
+  public int matchStaticSubject(int s)
   {
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
@@ -3046,10 +2605,8 @@ public class GeneratingFUIR extends FUIR
        codeAt(s) == ExprKind.Match);
 
     var rc = (Clazz) _siteClazzCache.get(s);
-    if (rc == null)
+    if (rc == null && !_lookupDone)
       {
-        if (CHECKS) check
-          (!_lookupDone);
         var cl = clazzAt(s);
         var cc = id2clazz(cl);
         var outerClazz = cc;
@@ -3057,7 +2614,9 @@ public class GeneratingFUIR extends FUIR
         rc = clazz(m.subject(), outerClazz, _inh.get(s - SITE_BASE));
         _siteClazzCache.put(s, rc);
       }
-    return rc._id;
+    return rc == null
+      ? NO_CLAZZ
+      : rc._id;
   }
 
 
@@ -3066,7 +2625,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param s site of the match
    *
-   * @paramc cix index of the case in the match
+   * @param cix index of the case in the match
    *
    * @return clazz id of field the value in this case is assigned to, -1 if this
    * case does not have a field or the field is unused.
@@ -3098,38 +2657,11 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a given tag return the index of the corresponding case.
-   *
-   * @param s site of the match
-   *
-   * @param tag e.g. 0,1,2,...
-   *
-   * @return the index of the case for tag `tag`
-   */
-  @Override
-  public int matchCaseIndex(int s, int tag)
-  {
-    var result = -1;
-    for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
-      {
-        var mct = matchCaseTags(s, j);
-        if (Arrays.stream(mct).anyMatch(t -> t == tag))
-          {
-            result = j;
-          }
-      }
-    if (CHECKS) check
-      (result != -1);
-    return result;
-  }
-
-
-  /**
    * For a match expression, get the tags matched by a given case
    *
    * @param s site of the match
    *
-   * @paramc cix index of the case in the match
+   * @param cix index of the case in the match
    *
    * @return array of tag numbers this case matches
    */
@@ -3149,12 +2681,12 @@ public class GeneratingFUIR extends FUIR
     int nt = f != null ? 1 : ts.size();
     var resultL = new List<Integer>();
     int tag = 0;
-    for (var cg : m.subject().type().choiceGenerics(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+    for (var cg : m.subject().type().choiceGenerics())
       {
         for (int tix = 0; tix < nt; tix++)
           {
             var t = f != null ? f.resultType() : ts.get(tix);
-            if (t.isDirectlyAssignableFrom(cg, Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */))
+            if (t.isAssignableFromWithoutTagging(cg))
               {
                 resultL.add(tag);
               }
@@ -3179,7 +2711,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param s site of the match
    *
-   * @paramc cix index of the case in the match
+   * @param cix index of the case in the match
    *
    * @return code block for the case
    */
@@ -3210,7 +2742,7 @@ public class GeneratingFUIR extends FUIR
             var T = innerClazz.actualTypeParameters()[0];
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||
               cf == Types.resolved.f_Type_infix_colon  &&
-              T._type.constraintAssignableFrom(Context.NONE /* NYI: CLEANUP: Context should no longer be needed during FUIR */, tclazz._type.generics().get(0));
+              T._type.constraintAssignableFrom(tclazz._type.generics().get(0));
             var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
             if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
               {
@@ -3282,7 +2814,7 @@ public class GeneratingFUIR extends FUIR
       {
       case "effect.type.abort0"  ,
            "effect.type.default0",
-           "effect.type.instate0",
+           FuzionConstants.EFFECT_INSTATE_NAME,
            "effect.type.is_instated0",
            "effect.type.replace0" -> true;
       default -> false;
@@ -3300,7 +2832,7 @@ public class GeneratingFUIR extends FUIR
    * @return the type of the outer feature of cl
    */
   @Override
-  public int effectTypeFromInstrinsic(int cl)
+  public int effectTypeFromIntrinsic(int cl)
   {
     if (PRECONDITIONS) require
       (isEffectIntrinsic(cl));
@@ -3311,138 +2843,7 @@ public class GeneratingFUIR extends FUIR
 
   /*------------------------------  arrays  -----------------------------*/
 
-
-  /**
-   * the clazz of the elements of the array
-   *
-   * @param constCl, e.g. `array (tuple i32 codepoint)`
-   *
-   * @return e.g. `tuple i32 codepoint`
-   */
-  @Override
-  public int inlineArrayElementClazz(int constCl)
-  {
-    if (PRECONDITIONS) require
-      (clazzIsArray(constCl));
-
-    var result = type2clazz(id2clazz(constCl)._type.generics().get(0))._id;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0);
-
-    return result;
-  }
-
-
-  /**
-   * Is `cl` an array?
-   */
-  @Override
-  public boolean clazzIsArray(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return clazz(cl).feature() == Types.resolved.f_array;
-  }
-
-
   /*----------------------------  constants  ----------------------------*/
-
-
-
-
-  /**
-   * Extract bytes from `bb` that should be used when deserializing for `cl`.
-   *
-   * @param cl the constants clazz
-   *
-   * @param bb the bytes to be used when deserializing this constant.
-   *           May be more than necessary for variable length constants
-   *           like strings, arrays, etc.
-   */
-  private ByteBuffer deserializeClazz(int cl, ByteBuffer bb)
-  {
-    return switch (getSpecialClazz(cl))
-      {
-      case c_Const_String, c_String :
-        var len = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
-        yield bb.slice(bb.position(), 4+len);
-      case c_bool :
-        yield bb.slice(bb.position(), 1);
-      case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
-        var bytes = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
-        yield bb.slice(bb.position(), 4+bytes);
-      default:
-        yield this.clazzIsArray(cl)
-          ? deserializeArray(this.inlineArrayElementClazz(cl), bb)
-          : deserializeValueConst(cl, bb);
-      };
-  }
-
-
-  /**
-   * bytes used when serializing call that results in this type.
-   */
-  private ByteBuffer deserializeValueConst(int cl, ByteBuffer bb)
-  {
-    var args = clazzArgCount(cl);
-    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
-    var argBytes = 0;
-    for (int i = 0; i < args; i++)
-      {
-        var rt = clazzArgClazz(cl, i);
-        argBytes += deseralizeConst(rt, bbb).length;
-      }
-    return bb.slice(bb.position(), argBytes);
-  }
-
-
-  /**
-   * Extract bytes from `bb` that should be used when deserializing for `cl`.
-   *
-   * @param cl the constants clazz
-   *
-   * @param bb the bytes to be used when deserializing this constant.
-   *           May be more than necessary for variable length constants
-   *           like strings, arrays, etc.
-   */
-  @Override
-  public byte[] deseralizeConst(int cl, ByteBuffer bb)
-  {
-    var elBytes = deserializeClazz(cl, bb.duplicate()).order(ByteOrder.LITTLE_ENDIAN);
-    bb.position(bb.position()+elBytes.remaining());
-    var b = new byte[elBytes.remaining()];
-    elBytes.get(b);
-    return b;
-  }
-
-
-
-  /**
-   * Extract bytes from `bb` that should be used when deserializing this inline array.
-   *
-   * @param elementClazz the elements clazz
-   *
-   * @elementCount the count of elements in this array.
-   *
-   * @param bb the bytes to be used when deserializing this constant.
-   *           May be more than necessary for variable length constants
-   *           like strings, arrays, etc.
-   */
-  private ByteBuffer deserializeArray(int elementClazz, ByteBuffer bb)
-  {
-    var bbb = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN);
-    var elCount = bbb.getInt();
-    var elBytes = 0;
-    for (int i = 0; i < elCount; i++)
-      {
-        elBytes += deseralizeConst(elementClazz, bbb).length;
-      }
-    return bb.slice(bb.position(), 4+elBytes);
-  }
-
 
   /*----------------------  accessing source code  ----------------------*/
 
@@ -3461,20 +2862,6 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     return c.feature().pos()._sourceFile._fileName.toString();
-  }
-
-
-  /**
-   * Get the position where the clazz is declared
-   * in the source code.
-   *
-   * NYI: CLEANUP: This is currently used only by the interpreter backend. Maybe we should remove this?
-   */
-  @Override
-  public SourcePosition declarationPos(int cl)
-  {
-    var c = id2clazz(cl);
-    return c._type.declarationPos();
   }
 
 
@@ -3507,17 +2894,16 @@ public class GeneratingFUIR extends FUIR
    * If a called to an abstract feature was found, the DFA will use this to
    * record the missing implementation of an abstract features.
    *
-   * Later, this will be reported as an error via `reportAbstractMissing()`.
+   * Later, this will be reported as an error via {@code reportAbstractMissing()}.
    *
    * @param cl clazz is of the clazz that is missing an implementation of an
    * abstract features.
    *
    * @param f the inner clazz that is called and that is missing an implementation
    *
-   * @param instantiationPos if known, the site where `cl` was instantiated,
-   * `NO_SITE` if unknown.
+   * @param instantiationSite if known, the site where {@code cl} was instantiated,
+   * {@code NO_SITE} if unknown.
    */
-  @Override
   public void recordAbstractMissing(int cl, int f, int instantiationSite, String context, int callSite)
   {
     // we might have an assignment to a field that was removed:
@@ -3539,12 +2925,11 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * In case any errors were recorded via `recordAbstractMissing` this will
+   * In case any errors were recorded via {@code recordAbstractMissing} this will
    * create the corresponding error messages.  The errors reported will be
    * cumulative, i.e., if a clazz is missing several implementations of abstract
    * features, there will be only one error for that clazz.
    */
-  @Override
   public void reportAbstractMissing()
   {
     _abstractMissing.values()

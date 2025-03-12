@@ -31,6 +31,14 @@ on:
   schedule:
     - cron: '0 0 * * 0' # every sunday
 
+
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
+  dev_flang_tools_serializeFUIR: true
+
+
 jobs:
   run_tests:
     name: windows run tests
@@ -51,6 +59,8 @@ jobs:
             git
             mingw-w64-ucrt-x86_64-clang
             diffutils
+            patch
+
 
       - name: install choco packages
         shell: powershell
@@ -62,6 +72,7 @@ jobs:
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           clang --version
           javac --version
           whereis jvm.dll
@@ -70,6 +81,7 @@ jobs:
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
+          export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           ./bin/windows_install_boehm_gc.sh
 
       - name: run tests

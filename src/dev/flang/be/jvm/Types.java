@@ -121,7 +121,14 @@ public class Types extends ANY implements ClassFileConstants
     if (hasClassFile(cl))
       {
         var cn = _names.javaClass(cl);
-        var cf = new ClassFile(_opt, cn, Names.ANY_CLASS, _fuir.clazzSrcFile(cl));
+        var cf = new ClassFile(
+            _opt,
+            cn,
+            // in case cl is a ref we inherit from the corresponding value class
+            // otherwise we inherit from dev.flang.be.jvm.runtime.Any
+            _fuir.clazzIsRef(cl) && !_fuir.clazzIsBoxed(cl) ? _names.javaClass(_fuir.clazzAsValue(cl)) : Names.ANY_CLASS,
+            _fuir.clazzSrcFile(cl)
+          );
         _classFiles.put(cl, cf);
 
         if (cl == _fuir.clazzUniverse())
@@ -175,10 +182,9 @@ public class Types extends ANY implements ClassFileConstants
         if (cl == _fuir.clazzUniverse())
           {
             cf.addImplements(Names.MAIN_INTERFACE);
-            var maincl = _fuir.mainClazzId();
-            var bc_run =
-              Expr.UNIT
-              .andThen(invokeStatic(maincl, -1)).drop()
+            var maincl = _fuir.mainClazz();
+            var bc_run = invokeStatic(maincl, -1)
+              .drop()
               .andThen(Expr.RETURN);
             var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
@@ -246,7 +252,7 @@ public class Types extends ANY implements ClassFileConstants
             };
       case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
       case Intrinsic -> true;
-      case Native    -> true; // constains a static field methodHandler
+      case Native    -> true; // contains a static field methodHandle
       default        -> false;
       };
   }
@@ -255,7 +261,7 @@ public class Types extends ANY implements ClassFileConstants
   boolean clazzNeedsCode(int cl)
   {
     return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_Const_String_utf8_data() ||
+      cl == _fuir.clazz_const_string_utf8_data() ||
       cl == _fuir.clazz_array_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8_data() ||
@@ -347,25 +353,6 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Does the given clazz specify a scalar type in the C code, i.e, standard
-   * numeric types i32, u64, etc.
-   */
-  boolean isScalar(int cl)
-  {
-    var id = _fuir.getSpecialClazz(cl);
-    return switch (id)
-      {
-      case
-        c_i8  , c_i16 , c_i32 ,
-        c_i64 , c_u8  , c_u16 ,
-        c_u32 , c_u64 , c_f32 ,
-        c_f64                   -> true;
-      default                   -> false;
-      };
-  }
-
-
-  /**
    * Get the Java name of the given clazz type: "I" for i32, "LfzC_featureName;"
    * for a non-scalar.
    *
@@ -387,7 +374,14 @@ public class Types extends ANY implements ClassFileConstants
       case c_u64     -> PrimitiveType.type_long;
       case c_f32     -> PrimitiveType.type_float;
       case c_f64     -> PrimitiveType.type_double;
-      case c_sys_ptr -> JAVA_LANG_OBJECT;
+      case c_Array,
+           c_Mutex,
+           c_Condition,
+           c_File_Descriptor,
+           c_Directory_Descriptor,
+           c_Java_Ref,
+           c_Mapped_Memory,
+           c_Native_Ref -> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||
@@ -496,8 +490,8 @@ public class Types extends ANY implements ClassFileConstants
 
 
   /**
-   * Add `jt` to the list of locals.
-   * If `jt` is javaVoid-like it is not added.
+   * Add {@code jt} to the list of locals.
+   * If {@code jt} is javaVoid-like it is not added.
    * longs and doubles are added twice.
    *
    * @param locals

@@ -12,6 +12,7 @@ Also make sure that the feature to be redefined is visible where it is redefined
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics13.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics13.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics13.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics13'.
 
 
 --CURDIR--/argumentcount_negative.fz:36:11: error 3: Feature declared using modifier 'redef' does not redefine another feature
@@ -19,6 +20,7 @@ To solve this, check spelling and argument count against the feature you want to
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics14.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics14.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics14.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics14'.
 
 
 --CURDIR--/argumentcount_negative.fz:40:11: error 4: Feature declared using modifier 'redef' does not redefine another feature
@@ -26,6 +28,7 @@ To solve this, check spelling and argument count against the feature you want to
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics16.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics16.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics16.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics16'.
 
 
 --CURDIR--/argumentcount_negative.fz:45:11: error 5: Feature declared using modifier 'redef' does not redefine another feature
@@ -41,6 +44,7 @@ Also make sure that the feature to be redefined is visible where it is redefined
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics19.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics19.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics19.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics19'.
 
 
 --CURDIR--/argumentcount_negative.fz:50:11: error 7: Feature declared using modifier 'redef' does not redefine another feature
@@ -48,6 +52,7 @@ To solve this, check spelling and argument count against the feature you want to
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics20.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics20.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics20.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics20'.
 
 
 --CURDIR--/argumentcount_negative.fz:54:11: error 8: Feature declared using modifier 'redef' does not redefine another feature
@@ -55,6 +60,7 @@ To solve this, check spelling and argument count against the feature you want to
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics22.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics22.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics22.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics22'.
 
 
 --CURDIR--/argumentcount_negative.fz:56:3: error 9: Incompatible types in assignment

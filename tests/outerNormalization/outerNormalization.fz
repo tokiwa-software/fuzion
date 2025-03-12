@@ -44,7 +44,7 @@ outerNormalization is
 
   # similar to testCodepointsStream, testConstructor tests that constructor a.f
   # is not specialized for sub-clazzes b and c.  If it was, the result would not
-  # be assignemnt compatible to x
+  # be assignment compatible to x
   #
   testConstructor =>
 

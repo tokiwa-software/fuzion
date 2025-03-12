@@ -106,7 +106,7 @@ public class Env extends ANY implements Comparable<Env>
 
   /**
    * The actual values of the effect.  This will include all the values added
-   * via calls to `effect.replace`.
+   * via calls to {@code effect.replace}.
    */
   private Value _actualEffectValues;
 
@@ -328,8 +328,8 @@ public class Env extends ANY implements Comparable<Env>
   /**
    * Is the effect just installed here ever aborted?
    *
-   * @param ecl redudant with _effectType.  This is used only to check that this
-   * is used only by intrinsic code for `effect.instate0` on the newly created
+   * @param ecl redundant with _effectType.  This is used only to check that this
+   * is used only by intrinsic code for {@code effect.instate0} on the newly created
    * environment for the instated effect type.
    */
   boolean isAborted(int ecl)

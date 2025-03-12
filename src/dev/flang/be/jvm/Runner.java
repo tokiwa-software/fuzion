@@ -98,7 +98,7 @@ public class Runner extends ClassLoader
   /**
    * JVM callback to load class with given name
    *
-   * @param name the class name, e.g. "java/lang/Object".q
+   * @param name the class name, e.g. "java/lang/Object"
    */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public Class findClass(String name)
@@ -119,7 +119,7 @@ public class Runner extends ClassLoader
    *
    * @param name the name of the resource.
    *
-   * @return  Corresponding input stream or `null`.
+   * @return  Corresponding input stream or {@code null}.
    *
    */
   public InputStream getResourceAsStream(String name)

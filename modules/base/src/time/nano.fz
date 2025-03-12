@@ -1,0 +1,92 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.nano
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.nano -- effect providing nano time
+#
+# time.nano is a timer that provides high precision but possibly low
+# accuracy.  Such a timer is typically useful for timing the duration
+# of events, such as measuring the time it takes to perform some
+# calculation.
+#
+# time.nano may have a signficant drift compared to actual time, it might
+# not be the right source of time to, e.g., feed an alarm clock that should
+# wake you up at 6h30 every morning.
+#
+public nano (p Nano_Time_Handler) : effect is
+
+  # no guarantee can be given for precision nor resolution
+  public read =>
+    res := p.read
+    replace
+    instant res
+
+
+  # workaround for making the time seeded random handler work for now
+  module read_for_random =>
+    res := p.read
+    replace
+    res
+
+
+  # no guarantee can be given for precision nor resolution
+  public sleep(d time.duration) =>
+    res := p.sleep d
+    replace
+    res
+
+
+  type.default_nano_time =>
+
+    ref : time.Nano_Time_Handler
+
+      # no guarantee can be given for precision nor resolution
+      redef read => fzE_nanotime
+
+      # no guarantee can be given for precision nor resolution
+      redef sleep(d time.duration) => fzE_nanosleep d.nanos
+
+
+  # install default effect time using default_nano_time
+  type.install_default =>
+    (time.nano default_nano_time).default
+
+
+# short-hand for accessing time.nano effect in current environment
+#
+public nano =>
+  if !nano.is_instated
+    nano.install_default
+  nano.env
+
+
+# abstract handler that can deliver a nano time
+#
+private:public Nano_Time_Handler ref is
+
+  # no guarantee can be given for precision nor resolution
+  read u64 => abstract
+
+  # no guarantee can be given for precision nor resolution
+  sleep(d time.duration) unit => abstract

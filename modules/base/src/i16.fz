@@ -1,0 +1,178 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature i16
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# i16 -- 16-bit signed integer values
+#
+public i16(public val i16) : num.wrap_around, has_interval, java_primitive is
+
+  # overflow checking
+
+  # would negation cause an overflow?
+  redef wrapped_on_neg => is_min
+
+  # would addition + other cause an overflow or underflow?
+  public fixed redef overflow_on_add (other i16) => val > 0 && i16.max -° val < other
+  public fixed redef underflow_on_add(other i16) => val < 0 && i16.min -° val > other
+
+  # would subtraction - other cause an overflow or underflow?
+  public fixed redef overflow_on_sub (other i16) => val > 0 && val -° i16.max > other
+  public fixed redef underflow_on_sub(other i16) => val < 0 && val -° i16.min < other
+
+  # would multiplication * other cause an overflow or underflow?
+  public fixed redef overflow_on_mul (other i16) => as_i32 *° other.as_i32 > i16.max.as_i32
+  public fixed redef underflow_on_mul(other i16) => as_i32 *° other.as_i32 < i16.min.as_i32
+
+  # neg, add, sub, mul with wrap-around semantics
+  public fixed redef prefix -° i16 => intrinsic
+  public fixed redef infix +° (other i16) i16 => intrinsic
+  public fixed redef infix -° (other i16) i16 => intrinsic
+  public fixed redef infix *° (other i16) i16 => intrinsic
+
+  # division and remainder with check for div-by-zero
+  public fixed redef infix / (other i16) => div other
+  public fixed redef infix % (other i16) => mod other
+
+  # division and remainder with crash in case of div-by-zero
+  div (other i16) i16 => intrinsic
+  mod (other i16) i16 => intrinsic
+
+  # bitwise and, or and xor operations
+  public fixed redef infix &  (other i16) i16 => intrinsic
+  public fixed redef infix |  (other i16) i16 => intrinsic
+  public fixed redef infix ^  (other i16) i16 => intrinsic
+
+  # shift operations (signed)
+  public fixed redef infix >> (other i16) i16 => intrinsic
+  public fixed redef infix << (other i16) i16 => intrinsic
+
+  # does this i16 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i16
+
+  # conversion to u32, i64 and u64, with range check
+  public as_i8 i8
+    pre
+      debug: val ≥ i8.min.as_i16
+      debug: val ≤ i8.max.as_i16
+    =>
+      low8bits.cast_to_i8
+  public as_i32 i32 => intrinsic
+  public as_i64  => val.as_i32.as_i64
+  public as_i128 => val.as_i32.as_i128
+
+  public redef as_u8  u8  => low8bits
+  public as_u16 u16
+    pre
+      debug: val ≥ 0
+    =>
+      cast_to_u16
+  public as_u32 u32
+    pre
+      debug: val ≥ 0
+    =>
+      cast_to_u32
+  public as_u64 u64
+    pre
+      debug: val ≥ 0
+    =>
+      cast_to_u64
+  public as_u128 u128
+    pre
+      debug: val ≥ 0
+    =>
+      cast_to_u128
+  public as_int int =>
+    int as_i64
+
+  # casting to unsigned, adding 1<<16 if negative
+  public redef low8bits u8   => cast_to_u16.as_u8      # 0x1234 ->   0x34, -0x1234 -> 0xcc
+  public cast_to_u16    u16  => intrinsic             # 0x1234 -> 0x1234, -0x1234 -> 0xedcc
+  public cast_to_u32    u32  => cast_to_u16.as_u32    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_edcc
+  public cast_to_u64    u64  => cast_to_u16.as_u64    # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_edcc
+  public cast_to_u128   u128 => cast_to_u16.as_u128   # 0x1234 -> 0x1234, -0x1234 -> 0x0000_0000_0000_0000_0000_0000_0000_edcc
+
+
+  # create hash code from this number
+  public redef type.hash_code(a i16.this) u64 =>
+    hash a.cast_to_u64
+
+
+  # find the highest 1 bit in this integer and return integer with
+  # this single bit set or 0 if this is zero.
+  #
+  public highest_one_bit i16 =>
+    val.cast_to_u16.highest_one_bit.cast_to_i16
+
+
+  # count the number of trailing zeros in this integer.
+  #
+  public trailing_zeros i32 =>
+    val.cast_to_u16.trailing_zeros
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  public redef ones_count i32 =>
+    val.cast_to_u16.ones_count
+
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  fixed redef type.zero i16 => 0
+
+
+  # identity element for 'infix *'
+  #
+  fixed redef type.one  i16 => 1
+
+
+  # equality
+  #
+  public fixed redef type.equality(a, b i16) bool => intrinsic
+
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b i16) bool => intrinsic
+
+
+  # returns the number in whose bit representation all bits are ones
+  fixed redef type.all_bits_set => i16 -1
+
+
+  # minimum
+  #
+  public fixed redef type.min => i16 -0x8000
+
+
+  # maximum
+  #
+  public fixed redef type.max => i16 0x7fff
