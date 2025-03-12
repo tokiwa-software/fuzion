@@ -589,16 +589,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Check if this value might need boxing, unboxing or tagging and wrap this
-   * into Box()/Tag() if this is the case.
+   * Check if this value might need boxing or tagging and wrap this
+   * into Box()/Tag()/Tag(Box()) if this is the case.
    *
    * @param frmlT the formal type this value is assigned to
    *
    * @param context the source code context where this Expr is used
    *
-   * @return this or an instance of Box wrapping this.
+   * @return this or an instance of Box/Tag wrapping this.
    */
-  Expr box(AbstractType frmlT, Context context)
+  Expr boxAndTag(AbstractType frmlT, Context context)
   {
     if (PRECONDITIONS) require
       (frmlT != null);
@@ -824,12 +824,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
   {
     NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
     {
-      { _type = Types.t_ERROR; }
-      @Override
-      Expr box(AbstractType frmlT, Context context)
-      {
-        return this;
-      }
+      @Override Expr boxAndTag(AbstractType frmlT, Context context) { return this; }
+      @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+      @Override public AbstractType type() { return Types.t_ERROR; }
     };
   }
 

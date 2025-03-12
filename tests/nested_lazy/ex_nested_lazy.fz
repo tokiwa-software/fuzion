@@ -46,4 +46,5 @@ ex_nested_lazy is
   # NYI: does not work:
   say (lazy1 ()->42)
   x1 Lazy i32 := ()->42
+  # NYI: BUG: does not work: lazy execution done too eagerly
   say (lazy1 x1)

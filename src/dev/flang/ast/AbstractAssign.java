@@ -188,7 +188,12 @@ public abstract class AbstractAssign extends Expr
 
     if (resultTypeKnown(res))
       {
-        _value = _value.propagateExpectedType(res, context, _assignedField.resultType());
+        var rt = _assignedField.resultType();
+        if (rt.isFunctionTypeExcludingLazy() && (_value.typeForInferencing() == null || rt.compareTo(_value.typeForInferencing()) != 0))
+          {
+            _value = _value.propagateExpectedTypeForPartial(res, context, rt);
+          }
+        _value = _value.propagateExpectedType(res, context, rt);
       }
   }
 
@@ -245,19 +250,19 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Boxing for assigned value: Make sure a value type that is assigned to a ref
-   * type will be boxed.
+   * Boxing/tagging for assigned value: Make sure a value type that is assigned
+   * is properly boxed/tagged.
    *
    * @param context the source code context where this assignment is used
    */
-  void boxVal(Context context)
+  void boxAndTagVal(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(_assignedField.resultType(), context);
+        _value = _value.boxAndTag(_assignedField.resultType(), context);
       }
   }
 

@@ -628,7 +628,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
-              var target = f.outer().isUniverse() ? new Universe() : s.pop();
+              var target = f.outer().isUniverse() ? Universe.instance : s.pop();
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };

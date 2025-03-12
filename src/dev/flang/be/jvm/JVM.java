@@ -1005,7 +1005,7 @@ should be avoided as much as possible.
     var rt = _fuir.clazzResultClazz(cl);
     cf.addToClInit(
       Expr
-        .stringconst(_fuir.clazzBaseName(cl))                                          // String
+        .stringconst(_fuir.clazzNativeName(cl))                                        // String
         .andThen(funDescArgs(cl))                                                      // String, (MemoryLayout), [MemoryLayout
         // invoking: FunctionDescriptor.of(...) / FunctionDescriptor.ofVoid(...)
         .andThen(Expr.invokeStatic(
@@ -1089,12 +1089,7 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      case c_sys_ptr -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
-        new ClassType("java/lang/foreign/AddressLayout"));
-      default -> {
-        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
-        yield null;
-      }
+      default -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT);
       };
   }
 

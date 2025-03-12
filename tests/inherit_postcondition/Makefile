@@ -31,7 +31,7 @@ include ../simple.mk
 # compile mod into mod.fum
 modules/mod.fum: module_src/mod.fz ../../modules/base.fum
 	mkdir -p $(@D)
-	$(FUZION) -sourceDirs=./module_src -saveLib=$@ || exit 1
+	$(FUZION) -sourceDirs=./module_src -save-module=$@ || exit 1
 
 clean:
 	rm -rf modules

@@ -57,6 +57,3 @@ issue293 is
   # B    input      type
   # C    transduced type
   Transducer(TACC, B, C type) ref : Function(reducing_fn TACC C, reducing_fn TACC B) is
-
-    # NYI redef call abstract is currently necessary because of bug in c backend
-    redef call(rf reducing_fn TACC B) reducing_fn TACC C => abstract

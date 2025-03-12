@@ -425,6 +425,10 @@ public class Resolution extends ANY
 
         Feature f = forType.removeFirst();
         if (DEBUG) sayDebug("resolve types: " + f);
+        if (f.isCotype())
+          {
+            resolveTypes(f.cotypeOrigin());
+          }
         f.internalResolveTypes(this);
       }
     else if (!moreThanTypes)

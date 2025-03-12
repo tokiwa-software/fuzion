@@ -113,7 +113,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is visiblity explicitly specified in source code (or already set)?
+   * Is visibility explicitly specified in source code (or already set)?
    */
   public boolean isVisibilitySpecified()
   {
@@ -127,7 +127,7 @@ public class Feature extends AbstractFeature
    *
    * @param v
    */
-  public void setVisbility(Visi v)
+  public void setVisibility(Visi v)
   {
     if (PRECONDITIONS) require
       (_visibility == Visi.UNSPECIFIED);
@@ -356,18 +356,6 @@ public class Feature extends AbstractFeature
   }
 
 
-  /**
-   * Flag used by dev.flang.fe.SourceModule to mark Features that were added to
-   * their outer feature late.  Features that were added late will not be seen
-   * via heirs.
-   *
-   * This is used for adding internal features like wrappers for lambdas.
-   *
-   * This is a fix for #978 but it might need to be removed when fixing #932.
-   */
-  public boolean _addedLate = false;
-
-
   /*
    * true if this feature is found to be
    * declared in a block with
@@ -393,7 +381,12 @@ public class Feature extends AbstractFeature
    */
   public boolean _scoped = false;
 
+
+  /**
+   * List of effects explicitly needed by this feature.
+   */
   private List<AbstractType> _effects;
+
 
   /**
    * has this feature been used?
@@ -708,6 +701,18 @@ public class Feature extends AbstractFeature
                  List<AbstractType> effects)
   {
     this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
+
+    // arguments of function features must not have visibility modifier
+    if (!isConstructor())
+      {
+        for (var arg : a)
+          {
+            if (arg instanceof Feature f && f.isVisibilitySpecified())
+              {
+                AstErrors.illegalVisibilityArgument(f);
+              }
+          }
+      }
 
     _effects = effects;
 
@@ -1480,7 +1485,7 @@ public class Feature extends AbstractFeature
    */
   private boolean isExtensionFeature()
   {
-    return _qname.size() > 1;
+    return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
   }
 
 
@@ -1961,7 +1966,7 @@ A ((Choice)) declaration must not contain a result type.
         _state = State.BOXING;
 
         visit(new ContextVisitor(context()) {
-            @Override public void  action(AbstractAssign a) { a.boxVal     (_context);           }
+            @Override public void  action(AbstractAssign a) { a.boxAndTagVal     (_context);           }
             @Override public Call  action(Call           c) { c.boxArgs    (_context); return c; }
             @Override public Expr  action(InlineArray    i) { i.boxElements(_context); return i; }
             public void  action(AbstractCall c)
@@ -2032,7 +2037,87 @@ A ((Choice)) declaration must not contain a result type.
       @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
     });
 
+    checkNative(res);
+
     _state = State.RESOLVED;
+  }
+
+
+  /**
+   * Check native features result and argument
+   * types for legality.
+   */
+  private void checkNative(Resolution res)
+  {
+    if (kind() == Kind.Native)
+      {
+        for (var arg : arguments())
+          {
+            checkLegalNativeArg(res, arg.pos(), arg.resultType());
+          }
+
+        checkLegalNativeResultType(res, resultTypePos(), resultType());
+      }
+  }
+
+
+  private void checkLegalNativeArg(Resolution res, SourcePosition pos, AbstractType at)
+  {
+    ensureTypeSetsInitialized(res);
+    if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
+          || at.isFunctionTypeExcludingLazy()
+          || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()))
+      {
+        AstErrors.illegalNativeType(pos, "Argument type", at);
+      }
+  }
+
+
+  private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
+  {
+    ensureTypeSetsInitialized(res);
+    if (!Types.resolved.legalNativeResultTypes.contains(rt))
+      {
+        AstErrors.illegalNativeType(pos, "Result type", rt);
+      }
+  }
+
+
+  /**
+   * Ensures that
+   *  Types.legalNativeArgumentTypes
+   * and
+   *  Types.resolved.legalNativeResultTypes
+   * are initialized.
+   * Initializes them if they are not yet initialized.
+   */
+  private void ensureTypeSetsInitialized(Resolution res)
+  {
+    // We can not do this in constructor of
+    // Resolved since not everything we need
+    // might be fully resolved yet.
+    if (Types.resolved.legalNativeArgumentTypes.isEmpty())
+      {
+        var ptr = Types.resolved.f_fuzion_sys_array_data.resultType();
+        var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0), null).selfType();
+        var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
+        var mm = res._module.lookupFeature(res.universe, FeatureName.get("Mapped_Memory", 0), null).selfType();
+        var nr = res._module.lookupFeature(res.universe, FeatureName.get("Native_Ref", 0), null).selfType();
+        Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
+        Types.resolved.legalNativeResultTypes.add(ptr);
+        Types.resolved.legalNativeResultTypes.add(fd);
+        Types.resolved.legalNativeResultTypes.add(dd);
+        Types.resolved.legalNativeResultTypes.add(mm);
+        Types.resolved.legalNativeResultTypes.add(nr);
+        Types.resolved.legalNativeResultTypes.add(Types.resolved.t_unit);
+        Types.resolved.legalNativeResultTypes.add(Types.resolved.t_bool);
+        Types.resolved.legalNativeArgumentTypes.addAll(Types.resolved.numericTypes);
+        Types.resolved.legalNativeArgumentTypes.add(ptr);
+        Types.resolved.legalNativeArgumentTypes.add(fd);
+        Types.resolved.legalNativeArgumentTypes.add(dd);
+        Types.resolved.legalNativeArgumentTypes.add(mm);
+        Types.resolved.legalNativeArgumentTypes.add(nr);
+      }
   }
 
 

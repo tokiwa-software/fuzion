@@ -2150,7 +2150,7 @@ public class AstErrors extends ANY
     );
   }
 
-  public static void argTypeMoreRestrictiveVisbility(Feature f, AbstractFeature arg, Set<AbstractFeature> s)
+  public static void argTypeMoreRestrictiveVisibility(Feature f, AbstractFeature arg, Set<AbstractFeature> s)
   {
     error(f.pos(), "Argument types or any of its generics have more restrictive visibility than feature.",
       "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
@@ -2365,6 +2365,13 @@ public class AstErrors extends ANY
     error(pos,
           "Select clause is not a valid type",
           "To solve, this specify a valid type.");
+  }
+
+  public static void illegalNativeType(SourcePosition pos, String string, AbstractType at)
+  {
+    error(pos,
+          "Implementation restriction: "+ string + " " + s(at) + " is not (yet) allowed in native features.",
+          "To solve, this specify a legal type.");
   }
 
 }

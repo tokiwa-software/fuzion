@@ -76,7 +76,7 @@ module net is
   #
   module read(descriptor i32, max_bytes i64) outcome (array u8) =>
     buff := fuzion.sys.internal_array_init u8 max_bytes.as_i32
-    res := fzE_read descriptor buff.data max_bytes
+    res := fzE_socket_read descriptor buff.data max_bytes
     if res >= 0
       if res.as_i64 = max_bytes
         buff.as_array
@@ -91,7 +91,7 @@ module net is
   # may block if descriptor is set to blocking.
   #
   module write(descriptor i32, data array u8) outcome unit =>
-    res := fzE_write descriptor data.internal_array.data data.length.as_i64
+    res := fzE_socket_write descriptor data.internal_array.data data.length.as_i64
     if res = -1 then error "error: $res" else unit
 
 

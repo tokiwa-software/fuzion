@@ -1,7 +1,7 @@
-io.file.delete
+io.Err
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
-io.Err
+io.file.delete
 io.dir.make
 io.Out
 io.dir.read

@@ -272,24 +272,24 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Check if this value might need boxing and wrap this into Box() if this is
-   * the case.
+   * Check if this value might need boxing or tagging and wrap this
+   * into Box()/Tag()/Tag(Box()) if this is the case.
    *
    * @param frmlT the formal type this is assigned to.
    *
    * @param context the source code context where this Expr is used
    *
-   * @return this or an instance of Box wrapping this.
+   * @return this or an instance of Box/Tag wrapping this.
    */
   @Override
-  Expr box(AbstractType frmlT, Context context)
+  Expr boxAndTag(AbstractType frmlT, Context context)
   {
     var r = removeResultExpression();
     if (CHECKS) check
       (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
     if (r != null)
       {
-        _expressions.add(r.box(frmlT, context));
+        _expressions.add(r.boxAndTag(frmlT, context));
       }
     return this;
   }

@@ -439,8 +439,8 @@ public class ParsedCall extends Call
     var paa = partiallyApplicableAlternative(res, context, expectedType);
     Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
                          : this;
-    if (l == this  /* resolution did not replace this call by sthg different */ &&
-        _calledFeature != Types.f_ERROR /* resulution did not cause an error */    )
+    if (l == this  /* resolution did not replace this call by sth different */ &&
+        _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
         checkPartialAmbiguity(res, context, expectedType);
         if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
@@ -636,10 +636,10 @@ public class ParsedCall extends Call
    */
   Call pushCall(Resolution res, Context context, String name)
   {
-    var wasLazy = _type != null && _type.isLazyType();
+    var wasLazy = typeForInferencing() != null && typeForInferencing().isLazyType();
 
     if (CHECKS) check
-      (select() == -1);
+      (select() == FuzionConstants.NO_SELECT);
 
     var result = new Call(pos(),   // NYI: ParsedCall?
                           this /* this becomes target of "call" */,
@@ -691,12 +691,12 @@ public class ParsedCall extends Call
   private boolean isImmediateFunctionCall()
   {
     return
-      _type.isFunctionTypeExcludingLazy()                      &&
+      type().isFunctionTypeExcludingLazy()                      &&
       _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       _actuals != NO_PARENTHESES
       ||
-      _type.isLazyType()                          &&   // we are `Lazy T`
+      type().isLazyType()                          &&   // we are `Lazy T`
       _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
       _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
       _actuals.isEmpty();                              // dto.

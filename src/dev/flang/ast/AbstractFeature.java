@@ -795,7 +795,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
   {
     var o = outer();
-    var oc = o == null || o.isUniverse()                            ? new Universe()
+    var oc = o == null || o.isUniverse()                            ? Universe.instance
       : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.typeCall(p, res, that)
       : o.typeCall(p, new List<>(o.selfType(),
                                  o.generics().asActuals().map(that::rebaseTypeForCotype)),
@@ -806,8 +806,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     oc,
                     typeParameters,
                     Expr.NO_EXPRS,
-                    tf,
-                    tf.selfType());
+                    tf);
   }
 
 
@@ -1542,33 +1541,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         code().visitExpressions(v);
       }
-  }
-
-
-  /**
-   * Determine the formal argument types of this feature.
-   *
-   * @return a new array containing this feature's formal argument types.
-   */
-  public AbstractType[] argTypes()
-  {
-    int argnum = 0;
-    var result = new AbstractType[arguments().size()];
-    for (var frml : arguments())
-      {
-        if (CHECKS) check
-          (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
-
-        var frmlT = frml.resultType();
-
-        result[argnum] = frmlT;
-        argnum++;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
   }
 
 
