@@ -265,9 +265,9 @@ public class CTypes extends ANY
             for (int i = 0; i < _fuir.clazzFieldCount(cl); i++)
               {
                 var fcl = _fuir.clazzField(cl, i);
-                if (_fuir.hasData(fcl))
+                var rcl = _fuir.clazzResultClazz(fcl);
+                if (_fuir.hasData(rcl))
                   {
-                    var rcl = _fuir.clazzResultClazz(fcl);
                     if (!_fuir.clazzIsRef(rcl) && !_fuir.clazzFieldIsAdrOfValue(fcl))
                       { // fcl is a value typed field, not a ref
                         findDeclarationOrder(rcl, result, visited);
