@@ -1020,6 +1020,46 @@ public class Intrinsix extends ANY implements ClassFileConstants
         return new Pair<>(val, code);
       });
 
+    put("native_string_length",
+      (jvm, si, cc, tvalue, args) ->
+      {
+        return new Pair<>
+          (args.get(0)
+            .andThen(Expr
+              .invokeStatic(
+                Names.RUNTIME_CLASS,
+                "native_string_length",
+                "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() +  ")I",
+                PrimitiveType.type_int
+              ))
+          , Expr.UNIT);
+      });
+
+    put("native_array",
+      (jvm, si, cc, tvalue, args) ->
+      {
+        return new Pair<>
+          (
+            Expr.classconst(jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)))
+                .andThen(Expr
+                  .invokeStatic(
+                    Names.RUNTIME_CLASS,
+                    "layout",
+                    "(" + Names.JAVA_LANG_CLASS.descriptor() +  ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor(),
+                    Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT
+                  )
+                )
+                .andThen(args.get(0))
+                .andThen(args.get(1))
+                // java.lang.Class
+                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                          "native_array",
+                                          "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor() + Types.JAVA_LANG_OBJECT.descriptor() + "I)" + Types.JAVA_LANG_OBJECT.descriptor(),
+                                          Types.JAVA_LANG_OBJECT)),
+            Expr.UNIT
+          );
+      });
+
     put(new String[]
       {
         // the names of intrinsics that are not implemented in the JVM backend should go here
