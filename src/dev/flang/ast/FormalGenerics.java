@@ -35,6 +35,9 @@ import dev.flang.util.SourcePosition;
 /**
  * FormalGenerics represents a list for formal generics argument.
  *
+ * e.g. For {@code Function(public R type, public A type...) ref is}
+ * the formal generics are {@code R} and {@code A}. (With {@code A} being an open type parameter.)
+ *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class FormalGenerics extends ANY
@@ -73,6 +76,7 @@ public class FormalGenerics extends ANY
   public FormalGenerics(List<Generic> l)
   {
     list = l;
+    list.freeze();
   }
 
 
@@ -140,7 +144,7 @@ public class FormalGenerics extends ANY
     if (PRECONDITIONS) require
       (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
 
-    var result = sizeMatches(actualGenerics);
+    var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
     if (!result)
       {
         AstErrors.wrongNumberOfGenericArguments(this,
@@ -263,20 +267,7 @@ public class FormalGenerics extends ANY
    */
   FormalGenerics addTypeParameter(Generic g)
   {
-    var result = this;
-    if (this == FormalGenerics.NONE)
-      {
-        result = new FormalGenerics(new List<>(g));
-      }
-    else
-      {
-        list.add(g);
-        if (_asActuals != null)
-          {
-            _asActuals.add(g.type());
-          }
-      }
-    return result;
+    return new FormalGenerics(list.addAfterUnfreeze(g));
   }
 
 

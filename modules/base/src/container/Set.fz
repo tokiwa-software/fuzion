@@ -25,7 +25,9 @@
 
 # Set -- an abstract set of values
 #
-public Set(public E type : property.equatable) ref : Sequence E is
+public Set(public E type : property.equatable) ref : Sequence E,
+                                                     property.equatable
+is
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -127,13 +129,13 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # equality
   #
-  # NYI: remove this, since we inherit from Sequence?
+  # NYI: BUG: #4676 this could be
+  # public redef type.equality(a, b Set.this)
   #
   public fixed redef type.equality(a, b container.Set E)
-  # NYI: BUG: #3888
-  # pre else
-  #     debug: a.finite
-  #     debug: b.finite
+  pre else
+    debug: a.finite != trit.no
+    debug: b.finite != trit.no
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val
@@ -143,5 +145,5 @@ public Set(public E type : property.equatable) ref : Sequence E is
   #
   public type.union =>
     ref : Monoid (container.Set E)
-      redef infix ∙ (a, b container.Set E) => a ∪ b
-      redef e => (container.Set E).new []
+      public redef infix ∙ (a, b container.Set E) => a ∪ b
+      public redef e => (container.Set E).new []

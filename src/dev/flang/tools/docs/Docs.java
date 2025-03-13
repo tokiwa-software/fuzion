@@ -63,8 +63,8 @@ public class Docs extends ANY
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
     /* fuzionHome              */ new FuzionHome()._fuzionHome,
-    /* loadBaseLib             */ true,
-    /* eraseInternalNamesInLib */ false,
+    /* loadBaseMod             */ true,
+    /* eraseInternalNamesInMod */ false,
     /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
@@ -78,6 +78,7 @@ public class Docs extends ANY
     /* moduleName              */ null,
     /* loadSources             */ false,
     /* needsEscapeAnalysis     */ false,
+    /* serializeFuir           */ false,
     /* timer                   */ s->{});
 
   /**

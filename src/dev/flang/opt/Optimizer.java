@@ -28,7 +28,6 @@ package dev.flang.opt;
 
 import dev.flang.fe.FrontEnd;
 
-import dev.flang.fuir.FUIR;
 import dev.flang.fuir.GeneratingFUIR;
 
 import dev.flang.mir.MIR;

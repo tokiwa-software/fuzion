@@ -203,7 +203,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
           # trailing carriage returns are dropped
           add_to_res(a0 Sequence u8) unit =>
             if !a0.is_empty
-              a1 := if strip_cr && a0.last = encodings.ascii.cr
+              a1 := if strip_cr && a0.last.as_equatable = encodings.ascii.cr
                         (a0.slice 0 a0.count-1)
                       else
                         a0
@@ -221,7 +221,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
               true
 
     ref : String
-      redef utf8 Sequence u8 := res.as_array
+      public redef utf8 Sequence u8 := res.as_array
 
 
 # use the currently installed byte reader effect

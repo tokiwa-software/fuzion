@@ -144,7 +144,7 @@ public class TailCall extends ANY
     var cl = _fuir.clazzAt(s);
     var outerRef = _fuir.clazzOuterRef(cl);
     var res =
-      outerRef == -1 ||
+      outerRef == NO_CLAZZ ||
       nargs >= 1 &&
       (tc == _fuir.clazzUniverse() ||
        _fuir.codeAt       (ts) == IR.ExprKind.Call    &&
@@ -205,7 +205,7 @@ public class TailCall extends ANY
    */
   private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
   {
-    return switch (_fuir.codeAt(cls))
+    return _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
       {
       case Call ->
         {

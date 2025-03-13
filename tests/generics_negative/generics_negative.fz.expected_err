@@ -36,7 +36,7 @@ in feature: 'Any'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:106:7: error 6: Formal type parameter cannot have type parameters
+--CURDIR--/generics_negative.fz:106:7: error 6: Formal type parameter must not have type parameters
     _ A i32 := any               // 24. should flag an error: generic must not have generic args
 ------^
 In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.

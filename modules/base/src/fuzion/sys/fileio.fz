@@ -33,7 +33,7 @@ module fileio is
   # in case the outcome is an array, it may be shorter than n. this means the end of file
   # has been reached.
   #
-  module read(fd fuzion.sys.Pointer, n u64) outcome (array u8) =>
+  module read(fd File_Descriptor, n u64) outcome (array u8) =>
     len := n.as_i32
     arr := fuzion.sys.internal_array_init u8 len
     res := fzE_file_read fd arr.data len
@@ -61,7 +61,7 @@ module fileio is
   #
   # this might overwrite parts or all of an existing file.
   #
-  module write(fd fuzion.sys.Pointer, content array u8) outcome unit =>
+  module write(fd File_Descriptor, content array u8) outcome unit =>
     res := fzE_file_write fd content.internal_array.data content.length
 
     if res < 0
@@ -70,7 +70,7 @@ module fileio is
 
   # wrapper for fzE_file_flush
   #
-  module flush(fd fuzion.sys.Pointer) outcome unit =>
+  module flush(fd File_Descriptor) outcome unit =>
     if fzE_file_flush fd = 0
       unit
     else
@@ -122,8 +122,8 @@ module fileio is
   module open(
               # a Fuzion Object represention the path for the source to be opened
               path String,
-              # a flag to speicify the open method (Read: 0, Write: 1, Append: 2)
-              flag i8) outcome fuzion.sys.Pointer =>
+              # a flag to specify the open method (Read: 0, Write: 1, Append: 2)
+              flag i8) outcome File_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
     res := fzE_file_open (fuzion.sys.c_string path) open_results.data flag
     if open_results[0] = 0
@@ -137,7 +137,7 @@ module fileio is
   #
   module close(
                # file descriptor
-               fd fuzion.sys.Pointer) outcome unit =>
+               fd File_Descriptor) outcome unit =>
     closing_result := fzE_file_close fd
     if closing_result != 0
       error "error number: $closing_result"
@@ -149,7 +149,7 @@ module fileio is
   #
   module seek(
               # file descriptor
-              fd fuzion.sys.Pointer,
+              fd File_Descriptor,
               # the offset to seek from the beginning of this file
               offset i64) outcome unit =>
     res := fzE_file_seek fd offset
@@ -163,7 +163,7 @@ module fileio is
   #
   module file_position(
                        # file descriptor
-                       fd fuzion.sys.Pointer) outcome i64 =>
+                       fd File_Descriptor) outcome i64 =>
     res := fzE_file_position fd
     if res = -1
       error "error number: {res}"
@@ -176,7 +176,7 @@ module fileio is
   # returns an integer that is intended to be used as an opaque reference
   # to the opened directory, or an error if one was encountered.
   #
-  module open_dir(path String) outcome fuzion.sys.Pointer =>
+  module open_dir(path String) outcome Directory_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
     res := fzE_opendir (fuzion.sys.c_string path) open_results.data
     if open_results[0] = 0

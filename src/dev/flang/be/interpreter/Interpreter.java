@@ -29,10 +29,11 @@ package dev.flang.be.interpreter;
 
 import java.nio.charset.StandardCharsets;
 
-import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+
+import dev.flang.ir.IR.FeatureKind;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FatalError;
@@ -139,17 +140,19 @@ public class Interpreter extends FUIRContext
   static void setField(int thiz, int staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
-      (// NYI: thiz.feature().isField(),
+      (fuir().clazzKind(thiz) == FeatureKind.Field,
        (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
-       staticClazz > 0
-       // NYI: thiz.feature().isOpenGenericField() == (thiz._select != -1)
-       );
+       staticClazz > FUIR.NO_CLAZZ);
 
     int  fclazz = clazzForField(thiz);
     // if fclazz == FUIR.NO_CLAZZ
     // this likely means field was never read
     // during DFA phase.
-    if (fclazz != FUIR.NO_CLAZZ)
+    if (fclazz != FUIR.NO_CLAZZ
+      // NYI: UNDER DEVELOPMENT remove once:
+      // Layout.get(staticClazz).size() == 0 <=> isUnitType(staticClazz)
+      && Layout.get(staticClazz).size() != 0
+        )
       {
         LValue slot = fieldSlot(thiz, staticClazz, fclazz, curValue);
         setFieldSlot(thiz, fclazz, slot, v);
@@ -165,7 +168,7 @@ public class Interpreter extends FUIRContext
   private static int clazzForField(int thiz)
   {
     return fuir().clazzFieldIsAdrOfValue(thiz)
-      ? fuir().clazz(SpecialClazzes.c_sys_ptr)
+      ? fuir().clazz(SpecialClazzes.c_Array)
       : fuir().clazzResultClazz(thiz);
   }
 
@@ -225,7 +228,7 @@ public class Interpreter extends FUIRContext
   {
     var staticClazzSpecial = fuir().getSpecialClazz(staticClazz);
     if (PRECONDITIONS) require
-      (// NYI: thiz.feature().isField(),
+      (fuir().clazzKind(thiz) == FeatureKind.Field,
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
        curValue instanceof i8Value   && staticClazzSpecial == SpecialClazzes.c_i8   ||
        curValue instanceof i16Value  && staticClazzSpecial == SpecialClazzes.c_i16  ||
@@ -238,9 +241,7 @@ public class Interpreter extends FUIRContext
        curValue instanceof f32Value  && staticClazzSpecial == SpecialClazzes.c_f32  ||
        curValue instanceof f64Value  && staticClazzSpecial == SpecialClazzes.c_f64  ||
        curValue instanceof boolValue && staticClazzSpecial == SpecialClazzes.c_bool,
-       staticClazz > 0
-      //  NYI: thiz.feature().isOpenGenericField() == (thiz._select != -1)
-       );
+       staticClazz > 0);
 
     Value result = switch (staticClazzSpecial)
       {
@@ -443,6 +444,10 @@ public class Interpreter extends FUIRContext
         curValue = ((Boxed)curValue)._contents;
       }
     int off = Layout.get(clazz).offset(thiz);
+
+    // NYI: UNDER DEVELOPMENT:
+    // if (CHECKS) check
+    //   (Layout.get(clazz).size() != 0);
 
     // NYI: check if this is a can be enabled or removed:
     //

@@ -30,7 +30,7 @@ test_process =>
   # create string of given byte size
   get_str(byte_size i32) =>
     ref : String
-      redef utf8 Sequence u8 =>
+      public redef utf8 Sequence u8 =>
         (1..byte_size)
           .map u8 (x -> codepoint.type.zero_char)
 
@@ -115,3 +115,7 @@ test_process =>
     say (p.write_bytes (get_str 1E7).utf8)
     say "exit code: {p.wait}"
   */
+
+
+  test "start process that does not exist" ()->
+    (os.process.start "ohQue1AheiPu4aaw").bind unit _->

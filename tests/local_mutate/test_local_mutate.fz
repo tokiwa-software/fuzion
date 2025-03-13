@@ -87,9 +87,8 @@ test_local_mutate is
 
       caught_msg(msg) => "*** got '$msg' ***\nok"
 
-      if false       # NYI: BUG #3352: this does not work for the C backend
-        say (panic.try   neg_test3
-                  .catch caught_msg)
+      say (panic.try   neg_test3
+                .catch caught_msg)
 
       say (panic.try   neg_test4
                 .catch caught_msg)
@@ -205,7 +204,7 @@ test_local_mutate is
                     l.link c l.p.get
         c
 
-      ring3(from list T) Cell T m =>
+      ring3(from list T) =>
         r := ring2 from
 
         for
@@ -245,7 +244,7 @@ test_local_mutate is
       next, prev Ring T => abstract
       data T => abstract
 
-      redef as_string =>
+      public redef as_string =>
         for
           s := "[ ", s + "{e.data} <-> "
           # e2 := r, e2.next    # NYI causes crash!

@@ -48,11 +48,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.ast.Contract;
-import dev.flang.ast.Expr;
-import dev.flang.ast.HasGlobalIndex;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -70,22 +66,10 @@ import dev.flang.util.SourceDir;
  */
 public class FrontEnd extends ANY
 {
-
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
    * Offset added to global indices to detect false usage of these early on.
    */
   static final int GLOBAL_INDEX_OFFSET = 0x40000000;
-  static
-  {
-    // NYI: CLEANUP: #2411: Temporary solution to give global indices to the AST
-    // parts created by parser
-    HasGlobalIndex.FIRST_GLOBAL_INDEX = 0x10000000;
-    HasGlobalIndex.LAST_GLOBAL_INDEX = GLOBAL_INDEX_OFFSET-1;
-  }
-
 
   /*-----------------------------  classes  -----------------------------*/
 
@@ -197,7 +181,7 @@ public class FrontEnd extends ANY
    */
   private LibraryModule[] loadModules(AbstractFeature universe)
   {
-    if (_options._loadBaseLib)
+    if (_options._loadBaseMod)
       {
         module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME), universe);
       }
@@ -209,7 +193,7 @@ public class FrontEnd extends ANY
       .stream()
       .filter(kv -> {
         var moduleName = kv.getKey();
-        return _options._loadBaseLib && moduleName.equals(FuzionConstants.BASE_MODULE_NAME)
+        return _options._loadBaseMod && moduleName.equals(FuzionConstants.BASE_MODULE_NAME)
           || _options._modules.contains(moduleName);
       })
       .map(x -> x.getValue())
@@ -226,13 +210,9 @@ public class FrontEnd extends ANY
   {
     _totalModuleData = 0;
     Types.reset(_options);
-    FeatureAndOuter.reset();
     Errors.reset();
     FeatureName.reset();
-    Expr.reset();
     Call.reset();
-    Contract.reset();
-    HasGlobalIndex.reset();
     _sourceModule = null;
     _modules.clear();
     _mainModule = null;

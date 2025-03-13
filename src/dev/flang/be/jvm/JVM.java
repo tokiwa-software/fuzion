@@ -31,6 +31,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.ClassFile;
@@ -1004,7 +1005,7 @@ should be avoided as much as possible.
     var rt = _fuir.clazzResultClazz(cl);
     cf.addToClInit(
       Expr
-        .stringconst(_fuir.clazzBaseName(cl))                                          // String
+        .stringconst(_fuir.clazzNativeName(cl))                                        // String
         .andThen(funDescArgs(cl))                                                      // String, (MemoryLayout), [MemoryLayout
         // invoking: FunctionDescriptor.of(...) / FunctionDescriptor.ofVoid(...)
         .andThen(Expr.invokeStatic(
@@ -1088,12 +1089,7 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      case c_sys_ptr -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
-        new ClassType("java/lang/foreign/AddressLayout"));
-      default -> {
-        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
-        yield null;
-      }
+      default -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT);
       };
   }
 
@@ -1289,6 +1285,21 @@ should be avoided as much as possible.
     return Expr.stringconst(msg)
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
       .andThen(Expr.endless_loop());
+  }
+
+
+  /**
+   * Create code that is supposed to be unreachable.
+   *
+   * @param site a site index where this unreachable code occured
+   *
+   * @param msg some text explaining what kind of statement we are trying to execute.
+   *
+   * @return an Expr to reprot the error and exit(1).
+   */
+  Expr reportUnreachable(int site, String msg)
+  {
+    return reportErrorInCode("As per data flow analysis this code should be unreachable. " + msg + " " + _fuir.siteAsString(site));
   }
 
 
@@ -1745,13 +1756,18 @@ should be avoided as much as possible.
    */
   boolean fieldExists(int field)
   {
-    var occ   = _fuir.clazzOuterClazz(field);
-    var rt = _fuir.clazzResultClazz(field);
+    var result = false;
+    if (field != NO_CLAZZ)
+      {
+        var occ   = _fuir.clazzOuterClazz(field);
+        var rt = _fuir.clazzResultClazz(field);
 
-    return _fuir.hasData(rt)       &&
-      !_fuir.isScalar(occ)        &&
-      _types.clazzNeedsCode(field) &&
-      _types.resultType(rt) != PrimitiveType.type_void;
+        result = _fuir.hasData(rt)       &&
+          !_fuir.isScalar(occ)        &&
+          _types.clazzNeedsCode(field) &&
+          _types.resultType(rt) != PrimitiveType.type_void;
+      }
+    return result;
   }
 
 

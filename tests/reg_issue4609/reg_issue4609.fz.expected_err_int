@@ -17,8 +17,8 @@ fuzion.runtime.checkcondition_fault#1: {base.fum}/fuzion/runtime/check_fault.fz:
 public checkcondition_fault(msg String) => check_fault.cause msg
 -------------------------------------------^^^^^^^^^^^^^^^^^^^^^
 reg_issue4609.s.call: --CURDIR--/reg_issue4609.fz:33:25:
-    redef call => check false
-------------------------^^^^^
+    public redef call => check false
+-------------------------------^^^^^
 reg_issue4609.r#1: --CURDIR--/reg_issue4609.fz:36:20:
   r(f ()->unit) => f.call
 -------------------^^^^^^

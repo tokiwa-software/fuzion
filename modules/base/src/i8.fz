@@ -30,7 +30,7 @@ public i8(public val i8) : num.wrap_around, has_interval, java_primitive is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => is_min
+  public redef wrapped_on_neg => is_min
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other i8) => val > 0 && i8.max -° val < other
@@ -51,18 +51,8 @@ public i8(public val i8) : num.wrap_around, has_interval, java_primitive is
   public fixed redef infix *° (other i8) i8 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other i8)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => div other
-  public fixed redef infix % (other i8)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => mod other
+  public fixed redef infix / (other i8) => div other
+  public fixed redef infix % (other i8) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i8) i8 => intrinsic
@@ -151,12 +141,12 @@ public i8(public val i8) : num.wrap_around, has_interval, java_primitive is
 
   # identity element for 'infix +'
   #
-  fixed redef type.zero i8  => 0
+  public fixed redef type.zero i8  => 0
 
 
   # identity element for 'infix *'
   #
-  fixed redef type.one  i8  => 1
+  public fixed redef type.one  i8  => 1
 
 
   # equality
@@ -170,7 +160,7 @@ public i8(public val i8) : num.wrap_around, has_interval, java_primitive is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => i8 -1
+  public fixed redef type.all_bits_set => i8 -1
 
 
   # minimum

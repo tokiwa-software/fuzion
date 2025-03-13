@@ -45,6 +45,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <time.h>
 
 // NYI remove POSIX imports
+#include <poll.h>
 #include <fcntl.h>      // fcntl
 
 #include <winsock2.h>
@@ -60,6 +61,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "fz.h"
 
+
+// returns the latest error number of
+// the current thread
+int fzE_last_error(void){
+  return (int)GetLastError();
+}
+
+// NYI missing set_last_error, see posix.c
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -113,7 +122,7 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   }
 }
 
-int fzE_read_dir(intptr_t * dir, void * result) {
+int fzE_dir_read(intptr_t * dir, void * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
   while ((res = FindNextFile(d->handle, &d->findData)) &&
@@ -131,7 +140,7 @@ int fzE_read_dir(intptr_t * dir, void * result) {
   }
 }
 
-int fzE_close_dir(intptr_t * dir) {
+int fzE_dir_close(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FindClose(d->handle);
   // NYI: BUG: free(dir);
@@ -354,7 +363,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // read up to count bytes bytes from sockfd
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
-int fzE_read(int sockfd, void * buf, size_t count){
+int fzE_socket_read(int sockfd, void * buf, size_t count){
   int rec_res = recvfrom( sockfd, buf, count, 0, NULL, NULL );
   if (rec_res == -1)
   {
@@ -371,7 +380,7 @@ int fzE_read(int sockfd, void * buf, size_t count){
 // write buf to sockfd
 // may block if socket is set to blocking.
 // return error code or zero on success
-int fzE_write(int sockfd, const void * buf, size_t count){
+int fzE_socket_write(int sockfd, const void * buf, size_t count){
 return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
   ? fzE_net_error()
   : 0;
@@ -571,6 +580,8 @@ void fzE_init()
 {
   _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode
   _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode
+
+  fcntl( _fileno( stdin ), F_SETFL, O_NONBLOCK);
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
@@ -917,4 +928,23 @@ void fzE_cnd_destroy(void *cnd) {
   // NYI: free(cnd);
 #else
 #endif
+}
+
+
+int32_t fzE_file_read(void * file, void * buf, int32_t size)
+{
+  struct pollfd fds;
+  fds.fd = fileno(file);
+  fds.events = POLLIN;
+
+  // NYI: poll is Posix only
+  while(poll(&fds, 1, -1) == 0);
+
+  size_t result = fread(buf, 1, size, (FILE*)file);
+
+  return result > 0
+    ? result
+    : result == 0
+    ? -1  // EOF
+    : -2; // ERROR
 }

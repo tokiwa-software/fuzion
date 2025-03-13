@@ -2,7 +2,7 @@ ex =>
 
   a(T type, S type : array T, s S) is
 
-    redef as_string =>
+    public redef as_string =>
       s.as_string
 
   say (a [32])# This file is part of the Fuzion language implementation.
@@ -32,7 +32,7 @@ infer_via_contraints_type_parameter =>
 
   a(T type, S type : array T, s S) is
 
-    redef as_string =>
+    public redef as_string =>
       s.as_string
 
   say (a [32])

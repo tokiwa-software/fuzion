@@ -35,6 +35,7 @@ env:
   PRECONDITIONS: true
   POSTCONDITIONS: true
   FUZION_REPRODUCIBLE_BUILD: true
+  dev_flang_tools_serializeFUIR: true
 
 jobs:
   run_tests:
