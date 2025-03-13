@@ -138,7 +138,7 @@ public effect is
   #
   public default unit
   =>
-    effect.this.type.default effect.this
+    effect.this.default effect.this
 
 
   # --------------------  effect instation  --------------------
@@ -298,7 +298,7 @@ public effect is
   pre
     safety: effect.this.is_instated
   =>
-    effect.this.type.replace effect.this
+    effect.this.replace effect.this
 
 
   # --------------------  aborting code execution  --------------------
