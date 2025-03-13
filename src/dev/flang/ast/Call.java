@@ -1893,7 +1893,7 @@ public class Call extends AbstractCall
                                     t.compareTo(_calledFeature.resultTypeIfPresent(res)) == 0 &&
                                     constraint.isAssignableFrom(_propagatedType.asRef(), context))
                                   {
-                                    actual = actual.box(_propagatedType, context);
+                                    actual = actual.boxAndTag(_propagatedType, context);
                                     actualType = typeFromActual(actual, context);
 
                                     if (CHECKS) check
