@@ -1133,7 +1133,7 @@ public class Call extends AbstractCall
    * NYI: we could also permit {@code (f.g x y) 3 5} as a short form for {@code (f.g x
    * y).call 3 5{@code  in case }g} takes arguments.  But this might be too confusing
    * and it would require a change in the grammar.
-  *
+   *
    * @param context the source code context where this assignment is used
    *
    * @return result this in case this was not an immediate call, otherwise the
@@ -1264,7 +1264,7 @@ public class Call extends AbstractCall
    * Helper routine for resolveTypes to resolve the formal argument types of the
    * arguments in this call. Results will be stored in
    * _resolvedFormalArgumentTypes array.
-  *
+   *
    * @param context the source code context where this Call is used
    */
   private void resolveFormalArgumentTypes(Context context)
@@ -1326,7 +1326,7 @@ public class Call extends AbstractCall
    * In particular, this replaces formal generic types by actual generics
    * provided to this call and it replaces select calls to fields of open
    * generic type by calls to the actual fields.
-  *
+   *
    * @param context the source code context where this Call is used
    *
    * @param urgent true if we should produce an error in case the formal result
@@ -1518,7 +1518,7 @@ public class Call extends AbstractCall
    *
    * In particular, this contains special handling for calling type parameters,
    * for Types.get, for outer refs and for constructors.
-  *
+   *
    * @param t the result type of the called feature, adjusts for select, this type, etc.
    *
    * @param tt target type or constraint.
@@ -1584,7 +1584,7 @@ public class Call extends AbstractCall
    * @param formalTypeForPropagation  the formal argument type
    *
    * @param aargs iterator whose next value is the actual to process
-  *
+   *
    * @param context the source code context where this Call is used
    */
   private Expr resolveTypeForNextActual(AbstractType formalTypeForPropagation,
@@ -1629,7 +1629,7 @@ public class Call extends AbstractCall
    *
    * This is called during resolveTypes, so we have to be careful since type
    * information is not generally available yet.
-  *
+   *
    * @param context the source code context where this Call is used
    */
   private void inferGenericsFromArgs(Context context)
@@ -1725,7 +1725,7 @@ public class Call extends AbstractCall
    * Perform phase 1. of the calls to @see Expr.propagateExpectedTypeForPartial:
    * while the actual type parameters may not be known yet for this call, try to
    * create partial application lambdas for the actual arguments where needed.
-  *
+   *
    * @param context the source code context where this Call is used
    */
   void propagateForPartial(Context context)
@@ -1762,7 +1762,7 @@ public class Call extends AbstractCall
    *
    * This is called during resolveTypes, so we have to be careful since type
    * information is not generally available yet.
-  *
+   *
    * @param context the source code context where this Call is used
    *
    * @param checked boolean array for all cf.valuedArguments() that have been
@@ -1956,7 +1956,7 @@ public class Call extends AbstractCall
 
   /**
    * Perform type inference for generics used in formalType that are instantiated by actualType.
-  *
+   *
    * @param context the source code context where this Call is used
    *
    * @param formalType the (possibly generic) formal type
@@ -2093,7 +2093,7 @@ public class Call extends AbstractCall
 
   /**
    * Perform type inference for result type of lambda
-  *
+   *
    * @param context the source code context where this Call is used
    *
    * @param formalType the (possibly generic) formal type
@@ -2131,7 +2131,7 @@ public class Call extends AbstractCall
 
   /**
    * Perform type inference for result type of lambda
-  *
+   *
    * @param context the source code context where this Call is used
    *
    * @param al the lambda-expression we try to get the result from
@@ -2289,7 +2289,7 @@ public class Call extends AbstractCall
    * On success _calledFeature and _target will be set.
    * No errors are raised if this is not successful
    * since then we are probably dealing with a normal call.
-  *
+   *
    * @param context the source code context where this Call is used
    */
   void tryResolveTypeCall(Context context)
@@ -2347,7 +2347,7 @@ public class Call extends AbstractCall
 
   /**
    * determine the static type of all expressions and declared features in this feature
-  *
+   *
    * @param context the source code context where this Call is used
    */
   Call resolveTypes(Context context)
@@ -2611,7 +2611,7 @@ public class Call extends AbstractCall
   /**
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
-  *
+   *
    * @param context the source code context where this Call is used
    */
   void checkTypes(Context context)
@@ -2710,7 +2710,7 @@ public class Call extends AbstractCall
    *  - perform constant propagation for basic algebraic ops  // NYI
    *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI
    *  - replace calls to intrinsics that return compile time constants
-  *
+   *
    * @param context the source code context where this Expr is used
    *
    * @return a new Expr to replace this call or this if it remains unchanged.
@@ -2781,7 +2781,7 @@ public class Call extends AbstractCall
    * When wrapping an expression into a Lazy feature, we need to "tell it" that its
    * outer feature has changed. Otherwise, old information from previous results of
    * type resolution might remain there.
-  *
+   *
    * @param context the source code context where this Call is used
    */
   Call updateTarget(Context context)

@@ -58,7 +58,7 @@ public class OuterType extends UnresolvedType
 
   /**
    * resolve this type
-  *
+   *
    * @param context the source code context where this type is used, used for
    * resolution of generic parameters etc.
    */

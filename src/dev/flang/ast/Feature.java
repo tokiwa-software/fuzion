@@ -2167,7 +2167,7 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * resolve syntactic sugar of feature declaration, i.e., add assignment for the
    * initial value of fields.
-  *
+   *
    * @param context the source code context where this feature declaration is done
    *
    * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
@@ -2218,7 +2218,7 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * During type resolution, add a type parameter created for a free type like
    * {@code T} in {@code f(x T) is ...}.
-  *
+   *
    * @param ta the newly created type parameter feature.
    *
    * @return the generic instance for ta

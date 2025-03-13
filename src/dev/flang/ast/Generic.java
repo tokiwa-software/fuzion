@@ -111,7 +111,7 @@ public class Generic extends ANY implements Comparable<Generic>
   /**
    * constraint resolves the types of the type parameter and then returns the
    * resolved constraint using constraint():
-  *
+   *
    * @param context the source code context where this Generic is used
    *
    * @return the resolved constraint(context).

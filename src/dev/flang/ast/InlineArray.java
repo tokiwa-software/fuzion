@@ -389,7 +389,7 @@ public class InlineArray extends ExprWithPos
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
    * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
-  *
+   *
    * @param context the source code context where this Expr is used
    */
   Expr resolveSyntacticSugar2(Context context)

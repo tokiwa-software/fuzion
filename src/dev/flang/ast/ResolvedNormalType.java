@@ -659,7 +659,7 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
-  *
+   *
    * @param context the source code context where this type is used
    */
   @Override

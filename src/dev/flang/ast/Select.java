@@ -117,7 +117,7 @@ public class Select extends Call {
 
   /**
    * determine the static type of all expressions and declared features in this feature
-  *
+   *
    * @param context the source code context where this Call is used
    */
   public Call resolveTypes(Context context)
@@ -154,7 +154,7 @@ public class Select extends Call {
   /**
    * Helper to try and implicitly resolve this select
    * in case explicit is not possible.
-  *
+   *
    * @param context the source code context where this assignment is used
    *
    */
@@ -188,7 +188,7 @@ public class Select extends Call {
   /**
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
-  *
+   *
    * @param context the source code context where this Call is used
    */
   @Override

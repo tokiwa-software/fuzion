@@ -585,7 +585,7 @@ public class Impl extends ANY
    * For an Impl that uses type inference for the feature result type, this
    * determines the actual result type from the initial value, the code or the
    * actual arguments passed to a formal argument.
-  *
+   *
    * @param f the feature this is the Impl of.
    *
    * @param urgent if true and the result type is inferred and inference would

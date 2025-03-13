@@ -137,7 +137,7 @@ public class Match extends AbstractMatch
 
   /**
    * determine the static type of all expressions and declared features in this feature
-  *
+   *
    * @param context the source code context where this Call is used
    */
   void resolveTypes(Context context)

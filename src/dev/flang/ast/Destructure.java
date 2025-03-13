@@ -242,7 +242,7 @@ public class Destructure extends ExprWithPos
 
   /**
    * determine the static type of all expressions and declared features in this feature
-  *
+   *
    * @param context the source code context where this Call is used
    */
   Expr resolveTypes(Context context)
