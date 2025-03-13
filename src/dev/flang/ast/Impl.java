@@ -591,7 +591,7 @@ public class Impl extends ANY
     return _kind == Kind.RoutineDef
         || _kind == Kind.FieldDef
         // field actual is inferable via initial call(s)
-        || _kind == Kind.FieldActual
+        || _kind == Kind.FieldActual && !_initialCalls.isEmpty()
       ;
   }
 
