@@ -269,18 +269,6 @@ public class SourceModule extends Module implements SrcModule
    */
   private void addRuntimeInitCall()
   {
-    var fuzionRuntimeInitCall = new AbstractCall() {
-      @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-      @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
-      @Override public AbstractFeature calledFeature() { return lookupFeature(_universe, FeatureName.get("fuzion_runtime_init", 0), null); }
-      @Override public Expr target() { return Universe.instance; }
-      @Override public AbstractType type() { return Types.resolved.t_unit; }
-      @Override public List<Expr> actuals() { return NO_EXPRS; }
-      @Override public int select() { return -1; }
-      @Override public boolean isInheritanceCall() { return false; }
-      @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
-    };
-
     var d = _main == null
       ? _universe
       : lookupFeature(_universe, FeatureName.get(_main, 0), null);
@@ -288,8 +276,34 @@ public class SourceModule extends Module implements SrcModule
       {
         ((Feature) d)
           .impl()
-          .addInitialCall(fuzionRuntimeInitCall);
+          .addInitialCall(plainCall("fuzion_runtime_init"));
       }
+  }
+
+
+  /**
+   * A plain resolved call to a feature defined in universe
+   * with no arguments, generics, select etc.
+   *
+   * @param featureName
+   */
+  private AbstractCall plainCall(String featureName)
+  {
+    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0), null);
+    if (CHECKS) check
+      (feature.arguments().isEmpty(),
+       feature.outer().isUniverse());
+    return new AbstractCall() {
+      @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+      @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+      @Override public AbstractFeature calledFeature() { return feature; }
+      @Override public Expr target() { return Universe.instance; }
+      @Override public AbstractType type() { return calledFeature().resultType(); }
+      @Override public List<Expr> actuals() { return NO_EXPRS; }
+      @Override public int select() { return -1; }
+      @Override public boolean isInheritanceCall() { return false; }
+      @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+    };
   }
 
 
