@@ -999,7 +999,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       {
         // NYI: need to check that the scopes are disjunct
         if (existing instanceof Feature ef && ef._scoped && f._scoped
-           || visibilityPreventsConflict(f, existing))
+           || visibilityPreventsConflict(f, existing) || (f.isAbstract() && existing.isFixed()) || (f.isFixed() && existing.isAbstract()))
           {
             var existingFeatures = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFeatures.size());
@@ -2005,7 +2005,10 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                 else
                   {
                     // NYI: if (!isInherited && !sameModule(f, outer))
-                    AstErrors.duplicateFeatureDeclaration(f1, f2);
+                    if (!((f1.isAbstract() && f2.isFixed()) || f1.isFixed() && f2.isAbstract()))
+                      {
+                        AstErrors.duplicateFeatureDeclaration(f1, f2);
+                      }
                   }
               }
           }

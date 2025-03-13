@@ -2304,7 +2304,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     var existing = res._module.lookupFeature(_outer, newFeatureName, null);
-    if (existing != null)
+    if (existing != null && !(existing.isAbstract() && isFixed()) && !(existing.isFixed() && isAbstract()))
       {
         AstErrors.duplicateFeatureDeclaration(existing, this);
       }
