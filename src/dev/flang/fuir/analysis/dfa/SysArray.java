@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc

@@ -483,6 +483,9 @@ public class CFG extends ANY
     put("concur.sync.cnd_broadcast"         , (cfg, cl) -> { } );
     put("concur.sync.cnd_wait"              , (cfg, cl) -> { } );
     put("concur.sync.cnd_destroy"           , (cfg, cl) -> { } );
+
+    put("native_string_length"              , (cfg, cl) -> { } );
+    put("native_array"                      , (cfg, cl) -> { } );
   }
 
 
