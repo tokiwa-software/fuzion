@@ -219,18 +219,15 @@ public class Block extends AbstractBlock
   /**
    * Load all features that are called by this expression.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
    * @param context the source code context where this Expr is used
    */
   @Override
-  void loadCalledFeature(Resolution res, Context context)
+  void loadCalledFeature(Context context)
   {
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
-        resExpr.loadCalledFeature(res, context);
+        resExpr.loadCalledFeature(context);
       }
   }
 
@@ -317,20 +314,17 @@ public class Block extends AbstractBlock
    * expression, add corresponding assignments in each branch and convert this
    * into a expression that does not produce a value.
    *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
    * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
    */
   @Override
-  Block assignToField(Resolution res, Context context, Feature r)
+  Block assignToField(Context context, Feature r)
   {
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        _expressions.add(resExpr.assignToField(res, context, r));
+        _expressions.add(resExpr.assignToField(context, r));
       }
     else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
       {
@@ -346,9 +340,6 @@ public class Block extends AbstractBlock
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
    *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
    * @param context the source code context where this Expr is used
    *
    * @param type the expected type.
@@ -357,7 +348,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
+  Expr propagateExpectedType(Context context, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -372,13 +363,13 @@ public class Block extends AbstractBlock
 
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, context, type);
+        var x = resExpr.propagateExpectedType(context, type);
         _expressions.remove(idx);
         _expressions.add(x);
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
-        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
+        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(context));
       }
     return this;
   }

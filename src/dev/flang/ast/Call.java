@@ -382,7 +382,7 @@ public class Call extends AbstractCall
    *
    * @return the type of the target or Types.t_UNDEFINED if unknown.
    */
-  private AbstractType targetTypeOrConstraint(Resolution res, Context context)
+  private AbstractType targetTypeOrConstraint(Context context)
   {
     if (PRECONDITIONS) require
       (_target != null);
@@ -393,7 +393,7 @@ public class Call extends AbstractCall
         result = Types.t_UNDEFINED;
       }
 
-    result = result.selfOrConstraint(res, context);
+    result = result.selfOrConstraint(context);
 
     if (POSTCONDITIONS) ensure
       (!result.isGenericArgument());
@@ -415,8 +415,6 @@ public class Call extends AbstractCall
    * Convert a formal argument type in this call to the actual type defined by
    * the target of this call and the actual type parameters given in this call.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    *
    * @param frmlT the formal type. Might contain Types.t_UNDEFINED since this is
    * used during type resolution and type inference
@@ -427,13 +425,13 @@ public class Call extends AbstractCall
    * target of this call and actual type parameters given in this call. Result
    * is interned.
    */
-  private AbstractType actualArgType(Resolution res, AbstractType frmlT, AbstractFeature arg, Context context)
+  private AbstractType actualArgType(AbstractType frmlT, AbstractFeature arg, Context context)
   {
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
     AbstractType result = adjustThisTypeForTarget(frmlT, true, arg, context);
-    result = targetTypeOrConstraint(res, context)
+    result = targetTypeOrConstraint(context)
       .actualType(result, context)
       .applyTypePars(_calledFeature, _generics);
 
@@ -468,9 +466,9 @@ public class Call extends AbstractCall
    *
    * @return the type of the target.
    */
-  private AbstractType targetType(Resolution res, Context context)
+  private AbstractType targetType(Context context)
   {
-    _target = res.resolveType(_target, context);
+    _target = Resolution.instance().resolveType(_target, context);
     return
       // NYI: CLEANUP: For a type parameter, the feature result type is abused
       // and holds the type parameter constraint.  As a consequence, we have to
@@ -480,15 +478,13 @@ public class Call extends AbstractCall
       _target instanceof Call tc &&
       targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.type()
-                                       : targetTypeOrConstraint(res, context);
+                                       : targetTypeOrConstraint(context);
   }
 
 
   /**
    * Get the feature of the target of this call.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    *
    * @param context the source code context where this Call is used. For a call
    * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
@@ -497,12 +493,12 @@ public class Call extends AbstractCall
    * @return the feature of the target of this call or null if lookup for the
    * target feature failed.
    */
-  protected AbstractFeature targetFeature(Resolution res, Context context)
+  protected AbstractFeature targetFeature(Context context)
   {
     AbstractFeature result;
 
     // are we searching for features called via outer's inheritance calls?
-    if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
+    if (Resolution.instance().state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
       {
         if (_target instanceof Universe)
           {
@@ -510,7 +506,7 @@ public class Call extends AbstractCall
           }
         else if (_target instanceof Call tc)
           {
-            _target.loadCalledFeature(res, context);
+            _target.loadCalledFeature(context);
             result = tc.calledFeature();
           }
         else
@@ -521,9 +517,9 @@ public class Call extends AbstractCall
       }
     else if (_target != null)
       {
-        _target.loadCalledFeature(res, context);
-        _target = res.resolveType(_target, context);
-        var tt = targetTypeOrConstraint(res, context);
+        _target.loadCalledFeature(context);
+        _target = Resolution.instance().resolveType(_target, context);
+        var tt = targetTypeOrConstraint(context);
         result = tt == Types.t_UNDEFINED ? null : tt.feature();
       }
     else
@@ -554,11 +550,9 @@ public class Call extends AbstractCall
    *   a < {tmp := b; tmp} && tmp <= c
    * }</pre>
    *
-   * @param res Resolution instance
-   *
    * @param context the source code context where this Call is used
    */
-  protected void findChainedBooleans(Resolution res, Context context)
+  protected void findChainedBooleans(Context context)
   {
   }
 
@@ -570,19 +564,17 @@ public class Call extends AbstractCall
    * Load all features that are called by this expression.  This is called
    * during state RESOLVING_INHERITANCE for calls in the inherits clauses and
    * during state RESOLVING_TYPES for all other calls.
-   *
-   * @param res the resolution instance.
-   * instance.
+  * instance.
    *
    * @param context the source code context where this Call is used. For a call
    * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
    * feature of f.
    */
-  void loadCalledFeature(Resolution res, Context context)
+  void loadCalledFeature(Context context)
   {
     if (PRECONDITIONS) require
       (context != null);
-    var ignore = loadCalledFeatureUnlessTargetVoid(res, context);
+    var ignore = loadCalledFeatureUnlessTargetVoid(context);
   }
 
 
@@ -590,9 +582,7 @@ public class Call extends AbstractCall
    * Load all features that are called by this expression.  This is called
    * during state RESOLVING_INHERITANCE for calls in the inherits clauses and
    * during state RESOLVING_TYPES for all other calls.
-   *
-   * @param res the resolution instance.
-   * instance.
+  * instance.
    *
    * @param context the source code context where this Call is used. For a call
    * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
@@ -601,21 +591,21 @@ public class Call extends AbstractCall
    * @return true if everything is fine, false in case the target results in
    * void and we hence can replace the call by _target.
    */
-  private boolean loadCalledFeatureUnlessTargetVoid(Resolution res, Context context)
+  private boolean loadCalledFeatureUnlessTargetVoid(Context context)
   {
     var outer = context.outerFeature();
     if (PRECONDITIONS) require
       (outer.isTypeParameter()   // NYI: type parameters apparently inherit ANY and are not resolved yet. Type parameters should not inherit anything and this special handling should go.
        ||
-       (res.state(outer) == State.RESOLVING_INHERITANCE
-       ? res.state(outer.outer()).atLeast(State.RESOLVING_DECLARATIONS)
-       : res.state(outer)        .atLeast(State.RESOLVING_DECLARATIONS)));
+       (Resolution.instance().state(outer) == State.RESOLVING_INHERITANCE
+       ? Resolution.instance().state(outer.outer()).atLeast(State.RESOLVING_DECLARATIONS)
+       : Resolution.instance().state(outer)        .atLeast(State.RESOLVING_DECLARATIONS)));
 
     var targetVoid = false;
     AbstractFeature targetFeature = null;
     if (_calledFeature == null)
       {
-        targetFeature = targetFeature(res, context);
+        targetFeature = targetFeature(context);
         if (CHECKS) check
           (Errors.any() || targetFeature != Types.f_ERROR);
         targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != outer;
@@ -626,8 +616,8 @@ public class Call extends AbstractCall
       }
     if (_calledFeature == null && targetFeature != null)
       {
-        res.resolveDeclarations(targetFeature);
-        var found = findOnTarget(res, targetFeature, true);
+        Resolution.instance().resolveDeclarations(targetFeature);
+        var found = findOnTarget(targetFeature, true);
         var fos = found.v0();
         var fo  = found.v1();
         if (fo != null &&
@@ -635,16 +625,16 @@ public class Call extends AbstractCall
             fo._feature != Types.f_ERROR &&
             _generics.isEmpty() &&
             _actuals.size() != fo._feature.valueArguments().size() &&
-            !fo._feature.hasOpenGenericsArgList(res))
+            !fo._feature.hasOpenGenericsArgList())
           {
-            splitOffTypeArgs(res, fo._feature, outer);
+            splitOffTypeArgs(fo._feature, outer);
           }
         if (fo != null)
           {
             _calledFeature = fo._feature;
             if (_target == null)
               {
-                _target = fo.target(pos(), res, context);
+                _target = fo.target(pos(), context);
                 _targetFrom = fo;
               }
           }
@@ -670,7 +660,7 @@ public class Call extends AbstractCall
                                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                                         (FeatureName fn) -> false,
                                                                                         (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
-                                                    hiddenCandidates(res, tf, calledName));
+                                                    hiddenCandidates(tf, calledName));
                   }
               };
           }
@@ -678,13 +668,13 @@ public class Call extends AbstractCall
       }
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
-        resolveTypesOfActuals(res, context);
-        findChainedBooleans(res, context);
+        resolveTypesOfActuals(context);
+        findChainedBooleans(context);
       }
     // !isInheritanceCall: see issue #2153
     if (_calledFeature == null && !isInheritanceCall())
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
-        findOperatorOnOuter(res, context);
+        findOperatorOnOuter(context);
       }
     if (_calledFeature == Types.f_ERROR)
       {
@@ -694,12 +684,12 @@ public class Call extends AbstractCall
     // example where this is relevant:
     // (fails when trying to resolve `zip` but does not know fibs result type yet)
     // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
-    if (_calledFeature == null && _target instanceof Call c && c.calledFeatureKnown() && targetFeature(res, context) == null)
+    if (_calledFeature == null && _target instanceof Call c && c.calledFeatureKnown() && targetFeature(context) == null)
       {
         AstErrors.failedToInferType(c);
       }
 
-    resolveTypesOfActuals(res, context);
+    resolveTypesOfActuals(context);
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
@@ -714,27 +704,25 @@ public class Call extends AbstractCall
   /**
    * Find the feature that may be called on the given target
    *
-   * @param res the resolution instance
-   *
    * @param target the - assumed - target of the call
    *
    * @return a pair of
    *          1) all found features matching the name
    *          2) the matching feature or null if none was found
    */
-  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs)
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(AbstractFeature target, boolean mayBeSpecialWrtArgs)
   {
     var calledName = FeatureName.get(_name, _actuals.size());
-    var fos = res._module.lookup(target, _name, this, _target == null, false);
+    var fos = Resolution.instance()._module.lookup(target, _name, this, _target == null, false);
     for (var fo : fos)
       {
         if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
           {
-            ff.resolveArgumentTypes(res);
+            ff.resolveArgumentTypes();
           }
       }
     var fo = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName,
-      ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res));
+      ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList());
     if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
@@ -789,15 +777,12 @@ public class Call extends AbstractCall
   /**
    * Try to find an alternative called feature by using partial application. If
    * a suitable alternative is found, return it.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Call is used
    *
    * @param expectedType the expected type.
    */
-  FeatureAndOuter partiallyApplicableAlternative(Resolution res, Context context, AbstractType expectedType)
+  FeatureAndOuter partiallyApplicableAlternative(Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
       (expectedType.isFunctionTypeExcludingLazy(),
@@ -810,10 +795,10 @@ public class Call extends AbstractCall
     // feature in an outer feature, it will have replaced a null _target, so
     // we check _originalTarget here to not check all outer features:
     var traverseOuter = _originalTarget == null;
-    var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
+    var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(context);
     if (targetFeature != null)
       {
-        var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+        var fos = Resolution.instance()._module.lookup(targetFeature, _name, this, traverseOuter, false);
         var calledName = FeatureName.get(_name, n);
         result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
       }
@@ -837,21 +822,21 @@ public class Call extends AbstractCall
   /**
    * @return list of features that would match called name and args but are not visible.
    */
-  private List<FeatureAndOuter> hiddenCandidates(Resolution res, AbstractFeature targetFeature, FeatureName calledName)
+  private List<FeatureAndOuter> hiddenCandidates(AbstractFeature targetFeature, FeatureName calledName)
   {
-    var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
+    var fos = Resolution.instance()._module.lookup(targetFeature, _name, this, _target == null, true);
     for (var fo : fos)
       {
         if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
           {
-            ff.resolveArgumentTypes(res);
+            ff.resolveArgumentTypes();
           }
       }
     return FeatureAndOuter
       .findExactOrCandidate(
         fos,
         (FeatureName fn) -> fn.equalsExceptId(calledName),
-        ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList(res)
+        ff -> mayMatchArgList(ff, false) || ff.hasOpenGenericsArgList()
     );
   }
 
@@ -869,11 +854,9 @@ public class Call extends AbstractCall
    * called repeatedly with different outer arguments as a result of this call
    * being moved into a different feature (lambda, lazy, etc.).
    *
-   * @param res the resolution instance
-   *
    * @param context the source code context where this Call is used
    */
-  private void resolveTypesOfActuals(Resolution res, Context context)
+  private void resolveTypesOfActuals(Context context)
   {
     if (_actualsResolvedFor != context)
       {
@@ -889,7 +872,7 @@ public class Call extends AbstractCall
                     _calledFeature != Types.f_ERROR)   // or call itself could not be resolved
                {
                  var a = i.next();
-                 var a1 = res.resolveType(a, context);
+                 var a1 = Resolution.instance().resolveType(a, context);
                  if (CHECKS) check
                    (a1 != null);
                  i.set(a1);
@@ -920,18 +903,16 @@ public class Call extends AbstractCall
    * If successful, field _calledFeature will be set to the called feature and
    * fields _target and _actuals will be changed accordingly.
    *
-   * @param res Resolution instance
-   *
    * @param context the source code context where this Call is used
    */
-  private void findOperatorOnOuter(Resolution res, Context context)
+  private void findOperatorOnOuter(Context context)
   {
     if (_name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX  ) ||
         _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
         _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX)    )
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
-        var fo = res._module.lookup(context.outerFeature(), _name, this, true, false);
+        var fo = Resolution.instance()._module.lookup(context.outerFeature(), _name, this, true, false);
         var foa = FeatureAndOuter.filter(fo, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> mayMatchArgList(ff, true));
         if (foa != null)
           {
@@ -941,7 +922,7 @@ public class Call extends AbstractCall
             var newActuals = new List<>(_target);
             newActuals.addAll(_actuals);
             _actuals = newActuals;
-            _target = foa.target(pos(), res, context);
+            _target = foa.target(pos(), context);
           }
       }
   }
@@ -959,7 +940,7 @@ public class Call extends AbstractCall
    *
    * @param outer the feature surrounding this call
    */
-  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
+  protected void splitOffTypeArgs(AbstractFeature calledFeature, AbstractFeature outer)
   {
   }
 
@@ -1152,15 +1133,13 @@ public class Call extends AbstractCall
    * NYI: we could also permit {@code (f.g x y) 3 5} as a short form for {@code (f.g x
    * y).call 3 5{@code  in case }g} takes arguments.  But this might be too confusing
    * and it would require a change in the grammar.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this assignment is used
    *
    * @return result this in case this was not an immediate call, otherwise the
    * resulting call to Function/Routine.call.
    */
-  protected Call resolveImmediateFunctionCall(Resolution res, Context context)
+  protected Call resolveImmediateFunctionCall(Context context)
   {
     return this;
   }
@@ -1173,24 +1152,22 @@ public class Call extends AbstractCall
    *
    * The result will be stored in _resolvedFormalArgumentTypes[argnum..].
    *
-   * @param res Resolution instance
-   *
    * @param argnum the number of this formal argument
    *
    * @param frml the formal argument
    *
    * @param context the source code context where this Call is used
    */
-  private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml, Context context)
+  private void resolveFormalArg(int argnum, AbstractFeature frml, Context context)
   {
     int cnt = 1;
-    var frmlT = frml.resultTypeIfPresent(res);
+    var frmlT = frml.resultTypeIfPresent();
 
     var declF = _calledFeature.outer();
     var heir = _target.type();
     if (!heir.isGenericArgument() && declF != heir.feature())
       {
-        var a = _calledFeature.handDown(res, new AbstractType[] { frmlT }, heir.feature());
+        var a = _calledFeature.handDown(new AbstractType[] { frmlT }, heir.feature());
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -1205,7 +1182,7 @@ public class Call extends AbstractCall
                 a = new AbstractType[] { Types.t_ERROR }; /* do not change _resolvedFormalArgumentTypes array length */
               }
           }
-        addToResolvedFormalArgumentTypes(res, argnum, a, frml);
+        addToResolvedFormalArgumentTypes(argnum, a, frml);
         cnt = a.length;
       }
     else
@@ -1228,14 +1205,14 @@ public class Call extends AbstractCall
                 Generic g = frmlT.genericArgument();
                 var frmlTs = g.replaceOpen(g.feature() == _calledFeature
                                            ? _generics
-                                           : heir.selfOrConstraint(res, context).generics()); // see for example #1919
-                addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
+                                           : heir.selfOrConstraint(context).generics()); // see for example #1919
+                addToResolvedFormalArgumentTypes(argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
               }
             else
               {
-                _resolvedFormalArgumentTypes[argnum + i] = actualArgType(res, frmlT, frml, context);
+                _resolvedFormalArgumentTypes[argnum + i] = actualArgType(frmlT, frml, context);
               }
           }
       }
@@ -1250,8 +1227,6 @@ public class Call extends AbstractCall
    * all the actual types the open generic is replaced by to make sure the
    * corresponding features exist.
    *
-   * @param res Resolution instance
-   *
    * @param argnum index in _resolvedFormalArgumentTypes at which we add new
    * elements
    *
@@ -1259,7 +1234,7 @@ public class Call extends AbstractCall
    *
    * @param frml the argument whose type we are resolving.
    */
-  private void addToResolvedFormalArgumentTypes(Resolution res, int argnum, AbstractType[] a, AbstractFeature frml)
+  private void addToResolvedFormalArgumentTypes(int argnum, AbstractType[] a, AbstractFeature frml)
   {
     var na = new AbstractType[_resolvedFormalArgumentTypes.length - 1 + a.length];
     var j = 0;
@@ -1289,12 +1264,10 @@ public class Call extends AbstractCall
    * Helper routine for resolveTypes to resolve the formal argument types of the
    * arguments in this call. Results will be stored in
    * _resolvedFormalArgumentTypes array.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  private void resolveFormalArgumentTypes(Resolution res, Context context)
+  private void resolveFormalArgumentTypes(Context context)
   {
     if (_resolvedFormalArgumentTypes == null)
       {
@@ -1307,7 +1280,7 @@ public class Call extends AbstractCall
           {
             int argnum = count;  // effectively final copy of count
             frml.whenResolvedTypes
-              (() -> resolveFormalArg(res, argnum, frml, context));
+              (() -> resolveFormalArg(argnum, frml, context));
             count++;
           }
       }
@@ -1353,16 +1326,14 @@ public class Call extends AbstractCall
    * In particular, this replaces formal generic types by actual generics
    * provided to this call and it replaces select calls to fields of open
    * generic type by calls to the actual fields.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    *
    * @param urgent true if we should produce an error in case the formal result
    * type of the called feature is not available, false if this is still
    * acceptable and the result type can be set later.
    */
-  protected AbstractType getActualResultType(Resolution res, Context context, boolean urgent)
+  protected AbstractType getActualResultType(Context context, boolean urgent)
   {
     AbstractType result;
     if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
@@ -1376,7 +1347,7 @@ public class Call extends AbstractCall
     else
       {
         _recursiveResolveType = true;
-        result = _calledFeature.resultTypeIfPresentUrgent(res, urgent);
+        result = _calledFeature.resultTypeIfPresentUrgent(urgent);
         _recursiveResolveType = false;
 
         if (urgent && (result == Types.t_UNDEFINED || result == null))
@@ -1396,14 +1367,14 @@ public class Call extends AbstractCall
               // selfType:
               // NYI: CLEANUP: remove this special handling!
               _target.type().feature().selfType()
-              : targetType(res, context);
+              : targetType(context);
 
             var t0 = tt == Types.t_ERROR ? tt : resolveSelect(result, tt);
             var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
             var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
-            var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
+            var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(tt.feature().context());
             var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
-            var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+            var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(t4, tt, context);
             result = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
           }
       }
@@ -1547,16 +1518,14 @@ public class Call extends AbstractCall
    *
    * In particular, this contains special handling for calling type parameters,
    * for Types.get, for outer refs and for constructors.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param t the result type of the called feature, adjusts for select, this type, etc.
    *
    * @param tt target type or constraint.
    *
    * @param context the source code context where this Call is used
    */
-  private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt, Context context)
+  private AbstractType resolveForCalledFeature(AbstractType t, AbstractType tt, Context context)
   {
     if (_calledFeature.isTypeParameter())
       {
@@ -1564,7 +1533,7 @@ public class Call extends AbstractCall
           {
             // a type parameter's result type is the constraint's type as a type
             // feature with actual type parameters as given to the constraint.
-            var tf = t.feature().cotype(res);
+            var tf = t.feature().createCotype();
             var tg = new List<AbstractType>(t); // the constraint type itself
             tg.addAll(t.generics());            // followed by the generics
             t = tf.selfType().applyTypePars(tf, tg);
@@ -1580,9 +1549,9 @@ public class Call extends AbstractCall
           }
         else if (!t.isGenericArgument())
           {
-            t = t.typeType(res);
+            t = t.typeType();
           }
-        t = t.resolve(res, tt.feature().context());
+        t = t.resolve(tt.feature().context());
       }
     else if (_calledFeature.isOuterRef())
       {
@@ -1615,14 +1584,11 @@ public class Call extends AbstractCall
    * @param formalTypeForPropagation  the formal argument type
    *
    * @param aargs iterator whose next value is the actual to process
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
   private Expr resolveTypeForNextActual(AbstractType formalTypeForPropagation,
                                         ListIterator<Expr> aargs,
-                                        Resolution res,
                                         Context context)
   {
     Expr actual = aargs.next();
@@ -1637,14 +1603,14 @@ public class Call extends AbstractCall
                 var t = _generics.get(g.index());
                 if (t != Types.t_UNDEFINED)
                   {
-                    actual = actual.propagateExpectedType(res, context, t);
+                    actual = actual.propagateExpectedType(context, t);
                   }
               }
           }
       }
     if ((formalTypeForPropagation != null) || !actualWantsPropagation)
       {
-        actual = res.resolveType(actual, context);
+        actual = Resolution.instance().resolveType(actual, context);
         if (CHECKS) check
           (actual != null);
         aargs.set(actual);
@@ -1663,12 +1629,10 @@ public class Call extends AbstractCall
    *
    * This is called during resolveTypes, so we have to be careful since type
    * information is not generally available yet.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  private void inferGenericsFromArgs(Resolution res, Context context)
+  private void inferGenericsFromArgs(Context context)
   {
     var cf = _calledFeature;
     int sz = cf.generics().list.size();
@@ -1686,7 +1650,7 @@ public class Call extends AbstractCall
     do
       {
         last = next;
-        inferGenericsFromArgs(res, context, checked, conflict, foundAt);
+        inferGenericsFromArgs(context, checked, conflict, foundAt);
         next = 0;
         for (var b : foundAt)
           {
@@ -1718,7 +1682,7 @@ public class Call extends AbstractCall
       }
 
 
-    var rt = cf.resultTypeIfPresentUrgent(res, false);
+    var rt = cf.resultTypeIfPresentUrgent(false);
     // We may be able to infer generics later
     // via result type propagation, do not emit errors yet.
     if ((rt == null ||
@@ -1761,12 +1725,10 @@ public class Call extends AbstractCall
    * Perform phase 1. of the calls to @see Expr.propagateExpectedTypeForPartial:
    * while the actual type parameters may not be known yet for this call, try to
    * create partial application lambdas for the actual arguments where needed.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  void propagateForPartial(Resolution res, Context context)
+  void propagateForPartial(Context context)
   {
     var cf = _calledFeature;
 
@@ -1778,11 +1740,11 @@ public class Call extends AbstractCall
         if (aargs.hasNext())
           {
             var actual = aargs.next();
-            var t = frml.resultTypeIfPresent(res);
+            var t = frml.resultTypeIfPresent();
             if (t != null && t.isFunctionTypeExcludingLazy())
               {
                 var a = resultExpression(actual);
-                Expr l = a.propagateExpectedTypeForPartial(res, context, t);
+                Expr l = a.propagateExpectedTypeForPartial(context, t);
                 if (l != a)
                   {
                     _actuals = _actuals.setOrClone(vai, l);
@@ -1800,9 +1762,7 @@ public class Call extends AbstractCall
    *
    * This is called during resolveTypes, so we have to be careful since type
    * information is not generally available yet.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    *
    * @param checked boolean array for all cf.valuedArguments() that have been
@@ -1813,8 +1773,7 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGenericsFromArgs(Resolution res,
-                                     Context context,
+  private void inferGenericsFromArgs(Context context,
                                      boolean[] checked,
                                      boolean[] conflict,
                                      List<List<Pair<SourcePosition, AbstractType>>> foundAt)
@@ -1831,11 +1790,11 @@ public class Call extends AbstractCall
         for (var frml : va)
           {
             if (CHECKS) check
-              (Errors.any() || res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
+              (Errors.any() || Resolution.instance().state(frml).atLeast(State.RESOLVED_DECLARATIONS));
 
             if (!checked[vai])
               {
-                var t = frml.resultTypeIfPresent(res);
+                var t = frml.resultTypeIfPresent();
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
                 if (g != null && g.feature() == cf && g.isOpen())
                   {
@@ -1846,7 +1805,7 @@ public class Call extends AbstractCall
                         while (aargs.hasNext())
                           {
                             count++;
-                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
+                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, context);
                             var actualType = typeFromActual(actual, context);
                             if (actualType == null)
                               {
@@ -1860,7 +1819,7 @@ public class Call extends AbstractCall
                 else if (aargs.hasNext())
                   {
                     count++;
-                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, context);
+                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, context);
                     /*
                       without this if, type inference in this example would not work:
                       ```
@@ -1882,15 +1841,15 @@ public class Call extends AbstractCall
                             if (t.isGenericArgument())
                               {
                                 var tp = t.genericArgument().typeParameter();
-                                res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt);
+                                Resolution.instance().resolveTypes(tp);
+                                inferGeneric(context, tp.resultType(), actualType, actual.pos(), conflict, foundAt);
                               }
-                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt);
+                            inferGeneric(context, t, actualType, actual.pos(), conflict, foundAt);
                             checked[vai] = true;
                           }
                         else if (resultExpression(actual) instanceof AbstractLambda al)
                           {
-                            checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
+                            checked[vai] = inferGenericLambdaResult(context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
                   }
@@ -1997,9 +1956,7 @@ public class Call extends AbstractCall
 
   /**
    * Perform type inference for generics used in formalType that are instantiated by actualType.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    *
    * @param formalType the (possibly generic) formal type
@@ -2013,8 +1970,7 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGeneric(Resolution res,
-                            Context context,
+  private void inferGeneric(Context context,
                             AbstractType formalType,
                             AbstractType actualType,
                             SourcePosition pos,
@@ -2026,7 +1982,7 @@ public class Call extends AbstractCall
 
     if (formalType.isLazyType() && !actualType.isLazyType())
       {
-        inferGeneric(res, context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
+        inferGeneric(context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
       }
     else if (formalType.isGenericArgument())
       {
@@ -2051,7 +2007,7 @@ public class Call extends AbstractCall
     else
       {
         var fft = formalType.feature();
-        res.resolveTypes(fft);
+        Resolution.instance().resolveTypes(fft);
         var aft = actualType.isGenericArgument() ? null : actualType.feature();
         if (fft == aft)
           {
@@ -2059,8 +2015,7 @@ public class Call extends AbstractCall
               {
                 if (i < actualType.generics().size())
                   {
-                    inferGeneric(res,
-                                 context,
+                    inferGeneric(context,
                                  formalType.generics().get(i),
                                  actualType.generics().get(i),
                                  pos, conflict, foundAt);
@@ -2105,13 +2060,13 @@ public class Call extends AbstractCall
                   .toList();
                 for (var ct : matchingFeature)
                   {
-                    inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                    inferGeneric(context, ct, actualType, pos, conflict, foundAt);
                   }
                 if (matchingFeature.size() == 0)
                   {
                     for (var ct : formalType.choiceGenerics(context))
                       {
-                        inferGeneric(res, context, ct, actualType, pos, conflict, foundAt);
+                        inferGeneric(context, ct, actualType, pos, conflict, foundAt);
                       }
                   }
               }
@@ -2122,13 +2077,13 @@ public class Call extends AbstractCall
               {
                 if (p instanceof Call pc)
                   {
-                    pc.resolveTypes(res, aft.context());
+                    pc.resolveTypes(aft.context());
                   }
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
                   {
                     var apt = actualType.actualType(pt, context);
-                    inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
+                    inferGeneric(context, formalType, apt, pos, conflict, foundAt);
                   }
               }
           }
@@ -2138,9 +2093,7 @@ public class Call extends AbstractCall
 
   /**
    * Perform type inference for result type of lambda
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    *
    * @param formalType the (possibly generic) formal type
@@ -2154,8 +2107,7 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private boolean inferGenericLambdaResult(Resolution res,
-                                           Context context,
+  private boolean inferGenericLambdaResult(Context context,
                                            AbstractType formalType,
                                            AbstractFeature frml,
                                            AbstractLambda al,
@@ -2166,11 +2118,11 @@ public class Call extends AbstractCall
     var result = new boolean[] { false };
     if (formalType.isFunctionTypeExcludingLazy() || formalType.isLazyType())
       {
-        var at = actualArgType(res, formalType, frml, context);
+        var at = actualArgType(formalType, frml, context);
         if (!at.containsUndefined(true))
           {
             var lambdaResultType = formalType.generics().get(0);
-            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, new List<>(lambdaResultType), at);
+            inferGenericLambdaResult(context, al, pos, conflict, foundAt, result, lambdaResultType, new List<>(lambdaResultType), at);
           }
       }
     return result[0];
@@ -2179,9 +2131,7 @@ public class Call extends AbstractCall
 
   /**
    * Perform type inference for result type of lambda
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    *
    * @param al the lambda-expression we try to get the result from
@@ -2193,7 +2143,7 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGenericLambdaResult(Resolution res, Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
+  private void inferGenericLambdaResult(Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
     List<List<Pair<SourcePosition, AbstractType>>> foundAt, boolean[] result, AbstractType lambdaResultType, List<AbstractType> generics,
     AbstractType argumentType)
   {
@@ -2202,7 +2152,7 @@ public class Call extends AbstractCall
       .forEach(g -> {
         if (!g.isGenericArgument())
           {
-            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, g.generics(), argumentType);
+            inferGenericLambdaResult(context, al, pos, conflict, foundAt, result, lambdaResultType, g.generics(), argumentType);
           }
         else
           {
@@ -2210,10 +2160,10 @@ public class Call extends AbstractCall
             var ri = rg.index();
             if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
               {
-                var rt = al.inferLambdaResultType(res, context, argumentType);
+                var rt = al.inferLambdaResultType(context, argumentType);
                 if (rt != null)
                   {
-                      inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
+                      inferGeneric(context, lambdaResultType, rt, pos, conflict, foundAt);
                       result[0] = true;
                   }
               }
@@ -2339,12 +2289,10 @@ public class Call extends AbstractCall
    * On success _calledFeature and _target will be set.
    * No errors are raised if this is not successful
    * since then we are probably dealing with a normal call.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  void tryResolveTypeCall(Resolution res, Context context)
+  void tryResolveTypeCall(Context context)
   {
     var outer = context.outerFeature();
     if (_calledFeature == null && _target != null && outer.state().atLeast(State.RESOLVED_INHERITANCE))
@@ -2354,16 +2302,16 @@ public class Call extends AbstractCall
         {
           // check if this might be a
           // left hand side of dot-type-call
-          tt = ut.resolve(res, context, true);
-          tt = tt != null && tt != Types.t_ERROR ? tt.selfOrConstraint(res, context) : tt;
+          tt = ut.resolve(context, true);
+          tt = tt != null && tt != Types.t_ERROR ? tt.selfOrConstraint(context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
           var tf = tt.feature();
-          var ttf = tf.isUniverse() ? tf : tf.cotype(res);
-          res.resolveDeclarations(tf);
-          var fo = findOnTarget(res, tf, false).v1();
-          var tfo = findOnTarget(res, ttf, false).v1();
+          var ttf = tf.isUniverse() ? tf : tf.createCotype();
+          Resolution.instance().resolveDeclarations(tf);
+          var fo = findOnTarget(tf, false).v1();
+          var tfo = findOnTarget(ttf, false).v1();
           var f = tfo == null ? null : tfo._feature;
           if (f != null
               && f.outer() != null
@@ -2382,15 +2330,15 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _resolvedFormalArgumentTypes = null;
-                  _target = new DotType(_pos, _target).resolveTypes(res, context);
+                  _target = new DotType(_pos, _target).resolveTypes(context);
                 }
             }
           if (_calledFeature != null &&
               _generics.isEmpty() &&
               _actuals.size() != f.valueArguments().size() &&
-              !f.hasOpenGenericsArgList(res))
+              !f.hasOpenGenericsArgList())
             {
-              splitOffTypeArgs(res, f, outer);
+              splitOffTypeArgs(f, outer);
             }
         }
     }
@@ -2399,12 +2347,10 @@ public class Call extends AbstractCall
 
   /**
    * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  Call resolveTypes(Resolution res, Context context)
+  Call resolveTypes(Context context)
   {
     Call result = this;
     if (_resolvedFor == context)
@@ -2412,7 +2358,7 @@ public class Call extends AbstractCall
         return this;
       }
     _resolvedFor = context;
-    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, context))
+    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(context))
       { // target of this call results in `void`, so we replace this call by the
         // target. However, we have to return a `Call` and `_target` is
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void
@@ -2422,13 +2368,13 @@ public class Call extends AbstractCall
                           new List<>(Types.resolved.t_void),
                           new List<>(_target),
                           Types.resolved.f_id);
-        result.resolveTypes(res, context);
+        result.resolveTypes(context);
       }
 
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
     if (CHECKS) check
-      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
+      (Errors.any() || Resolution.instance()._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
 
     var cf = _calledFeature;
     if (cf == Types.f_ERROR)
@@ -2437,25 +2383,25 @@ public class Call extends AbstractCall
       }
     else if (cf != null)
       {
-        _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
-        _generics = _generics.map(g -> g.resolve(res, cf.outer().context()));
+        _generics = FormalGenerics.resolve(_generics, context.outerFeature());
+        _generics = _generics.map(g -> g.resolve(cf.outer().context()));
 
-        propagateForPartial(res, context);
+        propagateForPartial(context);
         if (needsToInferTypeParametersFromArgs())
           {
-            inferGenericsFromArgs(res, context);
+            inferGenericsFromArgs(context);
             for (var r : _whenInferredTypeParameters)
               {
                 r.run();
               }
           }
         inferFormalArgTypesFromActualArgs(context.outerFeature());
-        setActualResultType(res, context);
-        resolveFormalArgumentTypes(res, context);
+        setActualResultType(context);
+        resolveFormalArgumentTypes(context);
       }
-    resolveTypesOfActuals(res, context);
+    resolveTypesOfActuals(context);
 
-    if (!res._options.isLanguageServer() &&
+    if (!Resolution.instance()._options.isLanguageServer() &&
         (targetTypeUndefined() || _pendingError == null && result.typeForInferencing() == Types.t_ERROR))
       {
         if (_target instanceof Call tc)
@@ -2478,7 +2424,7 @@ public class Call extends AbstractCall
       {
         // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
         // arguments and returns a Function or Routine
-        result = resolveImmediateFunctionCall(res, context);
+        result = resolveImmediateFunctionCall(context);
       }
 
     if (POSTCONDITIONS) ensure
@@ -2491,9 +2437,9 @@ public class Call extends AbstractCall
   /**
    * set the actual result type of this call
    */
-  private void setActualResultType(Resolution res, Context context)
+  private void setActualResultType(Context context)
   {
-    var t = getActualResultType(res, context, false);
+    var t = getActualResultType(context, false);
 
     if (CHECKS) check
       (_type == null || t.compareTo(_type) == 0);
@@ -2503,7 +2449,7 @@ public class Call extends AbstractCall
     if (_type == null || isTailRecursive(context.outerFeature()))
       {
         _calledFeature.whenResolvedTypes
-          (() -> _type = getActualResultType(res, context, true));
+          (() -> _type = getActualResultType(context, true));
       }
   }
 
@@ -2513,15 +2459,12 @@ public class Call extends AbstractCall
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    */
-  void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(res, context, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.propagateExpectedType(context, formalType));
 
     if (_target != null)
       {
@@ -2538,7 +2481,7 @@ public class Call extends AbstractCall
         var t = _target.typeForInferencing();
         if (t != null)
           {
-            _target = _target.propagateExpectedType(res, context, t);
+            _target = _target.propagateExpectedType(context, t);
           }
       }
   }
@@ -2549,10 +2492,7 @@ public class Call extends AbstractCall
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -2561,7 +2501,7 @@ public class Call extends AbstractCall
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Context context, AbstractType t)
   {
     Expr r = this;
     if (t.isFunctionTypeExcludingLazy()         &&
@@ -2569,10 +2509,10 @@ public class Call extends AbstractCall
         _type != Types.t_ERROR     &&
         (_type == null || !_type.isFunctionType()))
       {
-        r = propagateExpectedTypeForPartial(res, context, t);
+        r = propagateExpectedTypeForPartial(context, t);
         if (r != this)
           {
-            var r2 = r.propagateExpectedType(res, context, t);
+            var r2 = r.propagateExpectedType(context, t);
             if (CHECKS) check
               (r == r2);
           }
@@ -2584,29 +2524,23 @@ public class Call extends AbstractCall
   /**
    * During type inference: Wrap expressions that are assigned to lazy actuals
    * in functions.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Call is used
    */
-  void wrapActualsInLazy(Resolution res, Context context)
+  void wrapActualsInLazy(Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(res, context, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.wrapInLazy(context, formalType));
   }
 
 
   /**
    * During type inference: automatically unwrap actuals.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Call is used
    */
-  void unwrapActuals(Resolution res, Context context)
+  void unwrapActuals(Context context)
   {
-    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(res, context, formalType));
+    applyToActualsAndFormalTypes((actual, formalType) -> actual.unwrap(context, formalType));
   }
 
 
@@ -2677,17 +2611,15 @@ public class Call extends AbstractCall
   /**
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  void checkTypes(Resolution res, Context context)
+  void checkTypes(Context context)
   {
     reportPendingError();
 
     if (CHECKS) check
-      (res._options.isLanguageServer() || Errors.any() || _type != null);
+      (Resolution.instance()._options.isLanguageServer() || Errors.any() || _type != null);
 
     if (_type != null && _type != Types.t_ERROR)
       {
@@ -2778,14 +2710,12 @@ public class Call extends AbstractCall
    *  - perform constant propagation for basic algebraic ops  // NYI
    *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI
    *  - replace calls to intrinsics that return compile time constants
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Expr is used
    *
    * @return a new Expr to replace this call or this if it remains unchanged.
    */
-  Expr resolveSyntacticSugar1(Resolution res, Context context)
+  Expr resolveSyntacticSugar1(Context context)
   {
     Expr result = this;
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
@@ -2800,30 +2730,30 @@ public class Call extends AbstractCall
         var cf = _calledFeature;
         // need to do a propagateExpectedType since this might add a result field
         // example where this results in an issue: `_ := [false: true]`
-        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(res, context, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, context, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool); }
-        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool); }
+        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(context, Types.resolved.t_bool); }
+        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(context, Types.resolved.t_bool); }
         else if (cf == Types.resolved.f_bool_TERNARY)
           {
             result = newIf(_target, _actuals.get(0), _actuals.get(1));
             if (!_generics.get(0).containsUndefined(false))
               {
-                result = result.propagateExpectedType(res, context, _generics.get(0));
+                result = result.propagateExpectedType(context, _generics.get(0));
               }
           }
 
         // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
-        else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i8 ); }
-        else if (cf == Types.resolved.t_i16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i16); }
-        else if (cf == Types.resolved.t_i32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i32); }
-        else if (cf == Types.resolved.t_i64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_i64); }
-        else if (cf == Types.resolved.t_u8 .feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u8 ); }
-        else if (cf == Types.resolved.t_u16.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u16); }
-        else if (cf == Types.resolved.t_u32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u32); }
-        else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_u64); }
-        else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_f32); }
-        else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(res, context, Types.resolved.t_f64); }
+        else if (cf == Types.resolved.t_i8 .feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_i8 ); }
+        else if (cf == Types.resolved.t_i16.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_i16); }
+        else if (cf == Types.resolved.t_i32.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_i32); }
+        else if (cf == Types.resolved.t_i64.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_i64); }
+        else if (cf == Types.resolved.t_u8 .feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_u8 ); }
+        else if (cf == Types.resolved.t_u16.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_u16); }
+        else if (cf == Types.resolved.t_u32.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_u32); }
+        else if (cf == Types.resolved.t_u64.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_u64); }
+        else if (cf == Types.resolved.t_f32.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_f32); }
+        else if (cf == Types.resolved.t_f64.feature()) { result = this._actuals.get(0).propagateExpectedType(context, Types.resolved.t_f64); }
         else if (cf != null && cf.preAndCallFeature() != null && !preChecked())
           {
             _calledFeature = cf.preAndCallFeature();
@@ -2851,16 +2781,14 @@ public class Call extends AbstractCall
    * When wrapping an expression into a Lazy feature, we need to "tell it" that its
    * outer feature has changed. Otherwise, old information from previous results of
    * type resolution might remain there.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  Call updateTarget(Resolution res, Context context)
+  Call updateTarget(Context context)
   {
     if (_targetFrom != null)
       {
-        _target = _targetFrom.target(pos(), res, context);
+        _target = _targetFrom.target(pos(), context);
       }
     return this;
   }

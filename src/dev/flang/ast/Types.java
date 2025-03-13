@@ -297,9 +297,9 @@ public class Types extends ANY
         });
       ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
     }
-    Resolved(Resolution res, AbstractFeature universe)
+    Resolved(AbstractFeature universe)
     {
-      this(res._module, universe, true);
+      this(Resolution.instance()._module, universe, true);
 
       var internalTypes = new AbstractType[] {
         t_i8         ,
@@ -323,7 +323,7 @@ public class Types extends ANY
 
       for (var t : internalTypes)
         {
-          res.resolveTypes(t.feature());
+          Resolution.instance().resolveTypes(t.feature());
         }
     }
   }

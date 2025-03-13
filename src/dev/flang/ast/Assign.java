@@ -103,8 +103,6 @@ public class Assign extends AbstractAssign
    * create an implicit assignment to result if the code does not do this
    * explicitly.
    *
-   * @param res the resolution instance.
-   *
    * @param pos the sourcecode position, used for error messages.
    *
    * @param f
@@ -113,25 +111,25 @@ public class Assign extends AbstractAssign
    *
    * @param context the source code context where this assignment is used
    */
-  Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
+  Assign(SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {
-    super(f, This.thiz(res, pos, context, f.outer()), v);
+    super(f, This.thiz(pos, context, f.outer()), v);
 
     if (PRECONDITIONS) require
       (Errors.any() ||
-       res.state(context.outerFeature()) == State.RESOLVED_DECLARATIONS ||
-       res.state(context.outerFeature()) == State.RESOLVING_TYPES       ||
-       res.state(context.outerFeature()) == State.RESOLVED_TYPES        ||
-       res.state(context.outerFeature()) == State.TYPES_INFERENCING     ||
-       res.state(context.outerFeature()) == State.RESOLVING_SUGAR1      ||
-       res.state(context.outerFeature()) == State.RESOLVING_SUGAR2,
+       Resolution.instance().state(context.outerFeature()) == State.RESOLVED_DECLARATIONS ||
+       Resolution.instance().state(context.outerFeature()) == State.RESOLVING_TYPES       ||
+       Resolution.instance().state(context.outerFeature()) == State.RESOLVED_TYPES        ||
+       Resolution.instance().state(context.outerFeature()) == State.TYPES_INFERENCING     ||
+       Resolution.instance().state(context.outerFeature()) == State.RESOLVING_SUGAR1      ||
+       Resolution.instance().state(context.outerFeature()) == State.RESOLVING_SUGAR2,
        f != null);
 
     this._name = null;
     this._pos = pos;
-    if (res.state(context.outerFeature()).atLeast(State.TYPES_INFERENCING))
+    if (Resolution.instance().state(context.outerFeature()).atLeast(State.TYPES_INFERENCING))
       {
-        propagateExpectedType(res, context);
+        propagateExpectedType(context);
       }
   }
 
@@ -151,20 +149,18 @@ public class Assign extends AbstractAssign
   /**
    * determine the static type of all expressions and declared features in this feature
    *
-   * @param res the resolution instance.
-   *
    * @param context the source code context where this Call is used
    *
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
   @Override
-  void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Context context, Destructure destructure)
   {
     var f = _assignedField;
     if (f == null)
       {
-        var fo = FeatureAndOuter.filter(res._module.lookup(context.outerFeature(),
+        var fo = FeatureAndOuter.filter(Resolution.instance()._module.lookup(context.outerFeature(),
                                                            _name,
                                                            destructure == null ? this : destructure,
                                                            true,
@@ -172,7 +168,7 @@ public class Assign extends AbstractAssign
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
         if (fo != null)
           {
-            _target = fo.target(pos(), res, context);
+            _target = fo.target(pos(), context);
             f = fo._feature;
           }
         else

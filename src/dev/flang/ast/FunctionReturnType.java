@@ -138,19 +138,17 @@ public class FunctionReturnType extends ReturnType
    * types used in an argument type, which change the number of type parameters
    * in a call.
    *
-   * @param res the resolution instance
-   *
    * @param outer the outer feature, which is the argument this is the result
    * type of.
    */
-  void resolveArgumentType(Resolution res, Feature outer)
+  void resolveArgumentType(Feature outer)
   {
     if (PRECONDITIONS) require
       (outer.isArgument(),
        this == outer.returnType());
 
-    res.resolveDeclarations(outer);
-    type = type.resolve(res, outer.context());
+    Resolution.instance().resolveDeclarations(outer);
+    type = type.resolve(outer.context());
   }
 
 

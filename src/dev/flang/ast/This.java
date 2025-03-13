@@ -129,8 +129,6 @@ public class This extends ExprWithPos
    * Create Expression to access f.this during type resolution.  This will
    * create a call to the outer references to access f.this.
    *
-   * @param res The Resolution instance to be used for resolveTypes().
-   *
    * @param pos the sourcecode position, used for error messages.
    *
    * @param context the source code context where this This is to be used
@@ -139,13 +137,13 @@ public class This extends ExprWithPos
    *
    * @return the type resolved expression to access f.this.
    */
-  static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
+  static Expr thiz(SourcePosition pos, Context context, AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (context != null,
        f != null);
 
-    return new This(pos, context.outerFeature(), f).resolveTypes(res, context);
+    return new This(pos, context.outerFeature(), f).resolveTypes(context);
   }
 
 
@@ -194,18 +192,16 @@ public class This extends ExprWithPos
   /**
    * determine the static type of all expressions and declared features in this feature
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    *
    * @param context the source code context where this Call is used
    *
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Context context)
   {
     if (PRECONDITIONS) require
-      (res != null || Errors.any(),
+      (Resolution.instance() != null || Errors.any(),
        context != null);
 
     var outer = context.outerFeature();
@@ -261,7 +257,7 @@ public class This extends ExprWithPos
                     {
                       return isAdr ? t : super.typeForInferencing();
                     }
-                  }.resolveTypes(res, context);
+                  }.resolveTypes(context);
 
                 getOuter = c;
               }

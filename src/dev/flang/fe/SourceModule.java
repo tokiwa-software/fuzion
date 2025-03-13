@@ -118,12 +118,6 @@ public class SourceModule extends Module implements SrcModule
   String _main;
 
 
-  /**
-   * Resolution instance
-   */
-  Resolution _res;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -248,7 +242,8 @@ public class SourceModule extends Module implements SrcModule
     if (CHECKS) check
       (_universe != null);
 
-    _res = new Resolution(_options, _universe, this);
+    Resolution.create(_options, _universe, this);
+
     if (_dependsOn.length > 0)
       {
         _universe.setState(State.RESOLVED);
@@ -257,9 +252,11 @@ public class SourceModule extends Module implements SrcModule
 
     _main = parseMain();
     findDeclarations(_universe, null);
-    _universe.scheduleForResolution(_res);
-    _res.resolve();
+    _universe.scheduleForResolution();
+    Resolution.instance().resolve();
     addRuntimeInitCall();
+    // make sure resolution can not be accessed anymore
+    Resolution.reset();
   }
 
 
@@ -413,7 +410,7 @@ part of the (((inner features))) declarations of the corresponding
                                      findDeclarations(inner, f);
                                      if (inner.state().atLeast(State.LOADED))
                                        {
-                                         inner.scheduleForResolution(_res);
+                                         inner.scheduleForResolution();
                                        }
                                    }
                                });
@@ -435,7 +432,7 @@ part of the (((inner features))) declarations of the corresponding
    */
   void resolveDeclarations(AbstractFeature f)
   {
-    _res.resolveDeclarations(f);
+    Resolution.instance().resolveDeclarations(f);
   }
 
 
@@ -536,7 +533,7 @@ part of the (((inner features))) declarations of the corresponding
           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
                                                       false /* ignore ambiguous */,
                                                       false /* ignore not found */)._feature
-                                        : outer.cotype(_res);
+                                         : outer.createCotype();
         if (at < q.size()-2)
           {
             setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -544,8 +541,8 @@ part of the (((inner features))) declarations of the corresponding
         else if (o != Types.f_ERROR)
           {
             setOuterAndAddInner(inner, o);
-            _res.resolveDeclarations(o);
-            inner.scheduleForResolution(_res);
+            Resolution.instance().resolveDeclarations(o);
+            inner.scheduleForResolution();
           }
         else
           {
@@ -594,7 +591,7 @@ part of the (((inner features))) declarations of the corresponding
 
     if (outer == null)
       {
-        inner.addOuterRef(_res);
+        inner.addOuterRef();
       }
     else
       {
@@ -603,7 +600,7 @@ part of the (((inner features))) declarations of the corresponding
         // This may include type parameters received via free types.
         // (Creating outer ref uses `createThisType()` which calls `generics()`.)
         outer.whenResolvedDeclarations(() -> {
-          inner.addOuterRef(_res);
+          inner.addOuterRef();
         });
       }
 
@@ -619,7 +616,7 @@ part of the (((inner features))) declarations of the corresponding
       {
         findDeclarations((Feature) a, inner); // NYI: Cast!
       }
-    inner.addResultField(_res);
+    inner.addResultField();
 
     inner.visit(new FeatureVisitor()
       {
@@ -835,7 +832,7 @@ part of the (((inner features))) declarations of the corresponding
         addToDeclaredOrInheritedFeatures(outer, f);
         if (f instanceof Feature ff)
           {
-            ff.scheduleForResolution(_res);
+            ff.scheduleForResolution();
           }
       }
   }
@@ -1083,7 +1080,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   {
     if (!outer.state().atLeast(State.RESOLVING_DECLARATIONS))
       {
-        _res.resolveDeclarations(outer);
+        Resolution.instance().resolveDeclarations(outer);
       }
     var result = new List<AbstractFeature>();
     forEachDeclaredOrInheritedFeature(outer,
@@ -1180,7 +1177,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       {
         if (!curOuter.state().atLeast(State.RESOLVING_DECLARATIONS))
           {
-            _res.resolveDeclarations(curOuter);
+            Resolution.instance().resolveDeclarations(curOuter);
           }
         var fs = FeatureName.getAll(declaredOrInheritedFeatures(curOuter), name);
 
@@ -1420,7 +1417,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     FeatureAndOuter result = FeatureAndOuter.ERROR;
     if (outer != Types.f_ERROR && name != Types.ERROR_NAME)
       {
-        _res.resolveDeclarations(outer);
+        Resolution.instance().resolveDeclarations(outer);
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
         var fs = lookup(outer, name, null, traverseOuter, false);
@@ -1588,7 +1585,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
-        var ta = o.handDown(_res, argTypes(o), f.outer());
+        var ta = o.handDown(argTypes(o), f.outer());
         var ra = argTypes(f);
         if (ta.length != ra.length)
           {
@@ -1618,7 +1615,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               }
           }
 
-        var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer())
+        var t1 = o.handDownNonOpen(o.resultType(), f.outer())
                   .applyTypePars(o, f.generics().asActuals());    /* replace o's type pars by f's */
         var t2 = f.resultType();
         if (o.isConstructor() ||

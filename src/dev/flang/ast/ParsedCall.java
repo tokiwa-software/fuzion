@@ -264,23 +264,20 @@ public class ParsedCall extends Call
    *
    * <pre>{@code a < {tmp := b; tmp} && tmp <= c}</pre>
    *
-   * @param res Resolution instance
-   *
    * @param context the source code context where this Call is used
    */
   @Override
-  protected void findChainedBooleans(Resolution res, Context context)
+  protected void findChainedBooleans(Context context)
   {
-    var cb = chainedBoolTarget(res, context);
+    var cb = chainedBoolTarget(context);
     if (cb != null && _actuals.size() == 1)
       {
-        var b = res.resolveType(cb._actuals.getLast(), context);
+        var b = Resolution.instance().resolveType(cb._actuals.getLast(), context);
         if (b.typeForInferencing() != Types.t_ERROR)
           {
             var outer = context.outerFeature();
             String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
-            var tmp = new Feature(res,
-                                  pos(),
+            var tmp = new Feature(pos(),
                                   Visi.PRIV,
                                   b.type(),
                                   tmpName,
@@ -292,10 +289,10 @@ public class ParsedCall extends Call
                 boolean isChainedBoolRHS() { return true; }
               };
             this._movedTo = movedTo;
-            Expr as = new Assign(res, pos(), tmp, b, context);
-            t1         = res.resolveType(t1     , context);
-            as         = res.resolveType(as     , context);
-            var result = res.resolveType(movedTo, context);
+            Expr as = new Assign(pos(), tmp, b, context);
+            t1         = Resolution.instance().resolveType(t1     , context);
+            as         = Resolution.instance().resolveType(as     , context);
+            var result = Resolution.instance().resolveType(movedTo, context);
             cb._actuals.set(cb._actuals.size()-1,
                             new Block(new List<Expr>(as, t1)));
             _actuals = new List<Expr>(result);
@@ -369,18 +366,16 @@ public class ParsedCall extends Call
    * stored in a temp variable, {@code c}, as an argument, i.e., {@code b <= c} or {@code t1 <=
    * c}, resp.
    *
-   * @param res Resolution instance
-   *
    * @param context the source code context where this Call is used
    *
    * @return the term whose RHS would have to be stored in a temp variable for a
    * chained boolean call.
    */
-  private Call chainedBoolTarget(Resolution res, Context context)
+  private Call chainedBoolTarget(Context context)
   {
     Call result = null;
     if (Types.resolved != null &&
-        targetFeature(res, context) == Types.resolved.f_bool &&
+        targetFeature(context) == Types.resolved.f_bool &&
         isValidOperatorInChainedBoolean() &&
         target() instanceof ParsedCall pc &&
         pc.isValidOperatorInChainedBoolean() &&
@@ -422,27 +417,24 @@ public class ParsedCall extends Call
    *   x ++       ==>  a -> x ++ a
    *
    * @see Expr#propagateExpectedTypeForPartial for details.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
       (expectedType.isFunctionTypeExcludingLazy());
 
-    var paa = partiallyApplicableAlternative(res, context, expectedType);
-    Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+    var paa = partiallyApplicableAlternative(context, expectedType);
+    Expr l = paa != null ? resolveTypes(context)  // this ensures _calledFeature is set such that possible ambiguity is reported
                          : this;
     if (l == this  /* resolution did not replace this call by sth different */ &&
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
       {
-        checkPartialAmbiguity(res, context, expectedType);
+        checkPartialAmbiguity(context, expectedType);
         if (// try to solve error through partial application, e.g., for `[["a"]].map String.from_codepoints`
             _pendingError != null                       ||
 
@@ -454,7 +446,7 @@ public class ParsedCall extends Call
             (typeForInferencing() == null ||
              !typeForInferencing().isFunctionType())       )
           {
-            l = applyPartially(res, context, expectedType);
+            l = applyPartially(context, expectedType);
           }
       }
     return l;
@@ -471,19 +463,16 @@ public class ParsedCall extends Call
    * feature f' with fewer arguments than an existing feature f would result in
    * code that used partial application in a call to f to suddenly call f'
    * without notice.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
-  void checkPartialAmbiguity(Resolution res, Context context, AbstractType expectedType)
+  void checkPartialAmbiguity(Context context, AbstractType expectedType)
   {
     if (_calledFeature != null && _calledFeature != Types.f_ERROR && this instanceof ParsedCall)
       {
-        var fo = partiallyApplicableAlternative(res, context, expectedType);
+        var fo = partiallyApplicableAlternative(context, expectedType);
         if (fo != null &&
             fo._feature != _calledFeature &&
             fo._feature.preAndCallFeature() != _calledFeature)
@@ -499,15 +488,12 @@ public class ParsedCall extends Call
    * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
-  Expr applyPartially(Resolution res, Context context, AbstractType t)
+  Expr applyPartially(Context context, AbstractType t)
   {
     Expr result;
     var n = t.arity();
@@ -551,15 +537,15 @@ public class ParsedCall extends Call
                               this)
           {
             @Override
-            AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+            AbstractType propagateTypeAndInferResult(Context context, AbstractType t, boolean inferResultType)
             {
-              var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType);
-              updateTarget(res);
+              var rs = super.propagateTypeAndInferResult(context, t, inferResultType);
+              updateTarget();
               return rs;
             }
           };
         result = fn;
-        fn.resolveTypes(res, context);
+        fn.resolveTypes(context);
       }
     else
       {
@@ -570,7 +556,7 @@ public class ParsedCall extends Call
 
 
   @Override
-  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
+  protected void splitOffTypeArgs(AbstractFeature calledFeature, AbstractFeature outer)
   {
     var g = new List<AbstractType>();
     var a = new List<Expr>();
@@ -626,15 +612,13 @@ public class ParsedCall extends Call
    * The actual arguments of this call are moved over to the new
    * call, this call's arguments are replaced by Expr.NO_EXPRS.
    *
-   * @param res Resolution instance
-   *
    * @param context the source code context where this Call is used
    *
    * @param name the name of the feature to be called.
    *
    * @return the newly created call
    */
-  Call pushCall(Resolution res, Context context, String name)
+  Call pushCall(Context context, String name)
   {
     var wasLazy = typeForInferencing() != null && typeForInferencing().isLazyType();
 
@@ -652,13 +636,13 @@ public class ParsedCall extends Call
           return wasLazy ? ParsedCall.this : super.originalLazyValue();
         }
         @Override
-        Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
+        Expr propagateExpectedType(Context context, AbstractType expectedType)
         {
           if (expectedType.isFunctionTypeExcludingLazy())
             { // produce an error if the original call is ambiguous with partial application
-              ParsedCall.this.checkPartialAmbiguity(res, context, expectedType);
+              ParsedCall.this.checkPartialAmbiguity(context, expectedType);
             }
-          return super.propagateExpectedType(res, context, expectedType);
+          return super.propagateExpectedType(context, expectedType);
         }
       };
     _movedTo = result;
@@ -670,7 +654,7 @@ public class ParsedCall extends Call
 
 
   @Override
-  protected Call resolveImmediateFunctionCall(Resolution res, Context context)
+  protected Call resolveImmediateFunctionCall(Context context)
   {
     Call result = this;
 
@@ -678,7 +662,7 @@ public class ParsedCall extends Call
     if (isImmediateFunctionCall() && !_pushedImplicitImmediateCall)
       {
         _pushedImplicitImmediateCall = true;
-        result = pushCall(res, context, FuzionConstants.OPERATION_CALL).resolveTypes(res, context);
+        result = pushCall(context, FuzionConstants.OPERATION_CALL).resolveTypes(context);
       }
     return result;
   }

@@ -145,27 +145,23 @@ public abstract class AbstractAssign extends Expr
   /**
    * determine the static type of all expressions and declared features in this feature
    *
-   * @param res the resolution instance.
-   *
    * @param context the source code context where this assignment is used
    */
-  void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Context context)
   {
-    resolveTypes(res, context, null);
+    resolveTypes(context, null);
   }
 
 
   /**
    * determine the static type of all expressions and declared features in this feature
    *
-   * @param res the resolution instance.
-   *
    * @param context the source code context where this assignment is used
    *
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure expression.
    */
-  void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Context context, Destructure destructure)
   {
   }
 
@@ -176,24 +172,21 @@ public abstract class AbstractAssign extends Expr
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
    *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
    * @param context the source code context where this Expr is used
    */
-  void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
-    if (resultTypeKnown(res))
+    if (resultTypeKnown())
       {
         var rt = _assignedField.resultType();
         if (rt.isFunctionTypeExcludingLazy() && (_value.typeForInferencing() == null || rt.compareTo(_value.typeForInferencing()) != 0))
           {
-            _value = _value.propagateExpectedTypeForPartial(res, context, rt);
+            _value = _value.propagateExpectedTypeForPartial(context, rt);
           }
-        _value = _value.propagateExpectedType(res, context, rt);
+        _value = _value.propagateExpectedType(context, rt);
       }
   }
 
@@ -202,19 +195,16 @@ public abstract class AbstractAssign extends Expr
    * During type inference: Wrap value that is assigned to lazy type variable
    * into Functions.
    *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
    * @param context the source code context where this assignment is used
    */
-  void wrapValueInLazy(Resolution res, Context context)
+  void wrapValueInLazy(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
-    if (resultTypeKnown(res))
+    if (resultTypeKnown())
       {
-        _value = _value.wrapInLazy(res, context, _assignedField.resultType());
+        _value = _value.wrapInLazy(context, _assignedField.resultType());
       }
   }
 
@@ -222,19 +212,16 @@ public abstract class AbstractAssign extends Expr
   /**
    * During type inference: automatically unwrap values.
    *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
    * @param context the source code context where this assignment is used
    */
-  void unwrapValue(Resolution res, Context context)
+  void unwrapValue(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
-    if (resultTypeKnown(res))
+    if (resultTypeKnown())
       {
-        _value = _value.unwrap(res, context, _assignedField.resultType());
+        _value = _value.unwrap(context, _assignedField.resultType());
       }
   }
 
@@ -242,10 +229,10 @@ public abstract class AbstractAssign extends Expr
   /**
    * @return Is the result type of this field already known?
    */
-  private boolean resultTypeKnown(Resolution res)
+  private boolean resultTypeKnown()
   {
     return _assignedField != Types.f_ERROR
-        && _assignedField.resultTypeIfPresent(res) != null;
+        && _assignedField.resultTypeIfPresent() != null;
   }
 
 
@@ -270,11 +257,9 @@ public abstract class AbstractAssign extends Expr
   /**
    * check the types in this assignment
    *
-   * @param res the Resolution that performs this checkTypes
-   *
    * @param context the source code context where this assignment is used
    */
-  void checkTypes(Resolution res, Context context)
+  void checkTypes(Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -294,7 +279,7 @@ public abstract class AbstractAssign extends Expr
           }
 
         if (CHECKS) check
-          (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName(), f) == f,
+          (Errors.any() || Resolution.instance()._module.lookupFeature(this._target.type().feature(), f.featureName(), f) == f,
            Errors.any() || (_value.type().isVoid() || _value.needsBoxing(frmlT, context) == null || _value.isBoxed()));
       }
   }

@@ -476,10 +476,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Obtain the effective name of this feature when actualGenerics are the
    * actual generics of its outer() feature.
    */
-  private FeatureName effectiveName(Resolution res, List<AbstractType> actualGenerics)
+  private FeatureName effectiveName(List<AbstractType> actualGenerics)
   {
     var result = featureName();
-    if (hasOpenGenericsArgList(res))
+    if (hasOpenGenericsArgList())
       {
         var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
         if (CHECKS) check
@@ -580,7 +580,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     var arr = new AbstractType[result.size()];
                     result.toArray(arr);
                     var inh = this.findInheritanceChain(p.calledFeature());
-                    result = new List<>(AbstractFeature.handDownInheritance(null, inh, arr, this));
+                    result = new List<>(AbstractFeature.handDownInheritance(inh, arr, this));
                   }
               }
           }
@@ -598,22 +598,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean hasOpenGenericsArgList()
   {
-    return hasOpenGenericsArgList(null);
-  }
-
-
-  /**
-   * Check if this features argument list contains arguments of open generic
-   * type. If this is the case, then the argCount of the feature name may change
-   * when inherited.
-   *
-   * @param res resolution used before type resolution is done to resolve
-   * argument types. May be null after type resolution.
-   *
-   * @return true iff arg list has open generic arg.
-   */
-  boolean hasOpenGenericsArgList(Resolution res)
-  {
     boolean result = false;
     AbstractFeature o = this;
     while (o != null && !result)
@@ -627,9 +611,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     AbstractType t;
                     if (a instanceof Feature af)
                       {
-                        if (res != null)
+                        if (Resolution.instance() != null)
                           {
-                            af.visit(res.resolveTypesOnly(af));
+                            af.visit(Resolution.instance().resolveTypesOnly(af));
                           }
                         t = af.returnType().functionReturnType();
                       }
@@ -783,8 +767,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param typeParameters the type parameters passed to the call
    *
-   * @param res Resolution instance used to resolve types in this call.
-   *
    * @param that the original feature that is used to lookup types.
    *
    * @param target the target of this typeCall, null for recursive calls for
@@ -792,16 +774,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
+  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, AbstractFeature that, Expr target)
   {
     var o = outer();
     var oc = o == null || o.isUniverse()                            ? Universe.instance
-      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.typeCall(p, res, that)
+      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.typeCall(p, that)
       : o.typeCall(p, new List<>(o.selfType(),
                                  o.generics().asActuals().map(that::rebaseTypeForCotype)),
-                   res, that, null);
+                   that, null);
 
-    var tf = cotype(res);
+    var tf = createCotype();
     return new Call(p,
                     oc,
                     typeParameters,
@@ -860,21 +842,19 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * For every feature 'f', this produces the corresponding type feature
-   * 'f.type'.  This feature inherits from the abstract type features of all
+   * 'f.type' if it does not already exist.
+   * This feature inherits from the abstract type features of all
    * direct ancestors of this, and, if there are no direct ancestors (for
    * Object), this inherits from 'Type'.
-   *
-   * @param res Resolution instance used to resolve this for types.
    *
    * @return The feature that should be the direct ancestor of this feature's
    * type feature.
    */
-  public AbstractFeature cotype(Resolution res)
+  public AbstractFeature createCotype()
   {
     if (PRECONDITIONS) require
-      (res != null,
-       Errors.any() || !isUniverse(),
-       Errors.any() || res.state(this).atLeast(State.FINDING_DECLARATIONS),
+      (Errors.any() || !isUniverse(),
+       Errors.any() || Resolution.instance().state(this).atLeast(State.FINDING_DECLARATIONS),
        !isCotype());
 
     if (_cotype == null)
@@ -894,12 +874,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var name = featureName().baseName() + ".";
             if (!isConstructor() && !isChoice())
               {
-                name = name + "_" + (_cotypeId_++) + "_" + res._module.name();
+                name = name + "_" + (_cotypeId_++) + "_" + Resolution.instance()._module.name();
               }
             name = name + FuzionConstants.TYPE_NAME;
 
             var p = pos();
-            var inh = cotypeInherits(res);
+            var inh = cotypeInherits();
             var typeArg = new Feature(p,
                                       Visi.PRIV,
                                       0,
@@ -933,7 +913,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                   (this instanceof Feature && featureName().baseName().equals(FuzionConstants.ANY_NAME));
                 inh.add(new Call(pos(), FuzionConstants.TYPE_FEAT));
               }
-            existingOrNewCotype(res, name, typeArgs, inh);
+            existingOrNewCotype(name, typeArgs, inh);
           }
       }
     return _cotype;
@@ -941,12 +921,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Helper method for cotype(res) to create the list of inherits calls of
+   * Helper method for cotype() to create the list of inherits calls of
    * this' type feature.
-   *
-   * @param res Resolution instance used to resolve this for types.
    */
-  private List<AbstractCall> cotypeInherits(Resolution res)
+  private List<AbstractCall> cotypeInherits()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.RESOLVED_INHERITANCE));
@@ -954,7 +932,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return inherits()
       .stream()
       .filter(pc -> pc.calledFeature() != Types.f_ERROR)
-      .map(pc -> pc.typeCall(pos(), res, this))
+      .map(pc -> pc.typeCall(pos(), this))
       .collect(List.collector());
   }
 
@@ -965,8 +943,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * The new type feature will be stored in _cotype.
    *
-   * @param res Resolution instance used to resolve this for types.
-   *
    * @param name the name of the type feature to be created
    *
    * @param typeArgs arguments of the type feature.
@@ -975,16 +951,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param inh the inheritance clause of the new type feature.
    */
-  private void existingOrNewCotype(Resolution res, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
+  private void existingOrNewCotype(String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (!isUniverse());
 
     var outerType = outer().isUniverse()    ? universe() :
                     outer().isCotype() ? outer()
-                                            : outer().cotype(res);
+                                            : outer().createCotype();
 
-    _cotype = res
+    _cotype = Resolution.instance()
       ._module
       .declaredOrInheritedFeatures(outerType,
                                    FeatureName.get(name, typeArgs.size()))
@@ -999,11 +975,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                       new Impl(p, new Block(new List<>()), Impl.Kind.Routine));
 
         // we need to set _cotype early to avoid endless recursion during
-        // res._module.addCotype for `Any.type`:
+        // Resolution.instance()._module.addCotype for `Any.type`:
         _cotype = cotype;
 
         cotype._cotypeOrigin = this;
-        res._module.addCotype(outerType, cotype);
+        Resolution.instance()._module.addCotype(outerType, cotype);
       }
   }
 
@@ -1025,7 +1001,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Check if a cotype exists already, either because this feature was
    * loaded from a library .fum file that includes a cotype, or because one
-   * was created explicitly using cotype(res).
+   * was created explicitly using cotype().
    */
   public boolean hasCotype()
   {
@@ -1087,9 +1063,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return this feature's result type, null in case the type is currently
    * unknown since the type inference is incomplete.
    */
-  AbstractType resultTypeIfPresent(Resolution res)
+  AbstractType resultTypeIfPresent()
   {
-    return resultTypeIfPresentUrgent(res, false);
+    return resultTypeIfPresentUrgent(false);
   }
 
 
@@ -1103,7 +1079,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return this feature's result type, null in case the type is currently
    * unknown since the type inference is incomplete.
    */
-  AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
+  AbstractType resultTypeIfPresentUrgent(boolean urgent)
   {
     return resultType();
   }
@@ -1117,7 +1093,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
-  void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
+  void checkNoClosureAccesses(SourcePosition errorPos)
   {
     // NYI: Check if there is any chance a library feature used in a choice makes illegal closure accesses
   }
@@ -1242,9 +1218,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * - explicit renaming during inheritance
    *
-   * @param res in case this is called during the front end phase, this is the
-   * resolution instance, null otherwise.
-   *
    * @param f a feature that is declared in or inherited by this feature
    *
    * @param fn a feature name within this feature
@@ -1255,7 +1228,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return the new feature name as seen within heir.
    */
-  public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
+  public FeatureName handDown(AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
       (this != heir);
@@ -1263,7 +1236,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (f.outer() == p.calledFeature())
       {
         // NYI: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
-        fn = f.effectiveName(res, p.actualTypeParameters());
+        fn = f.effectiveName(p.actualTypeParameters());
       }
 
     return fn;
@@ -1278,9 +1251,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Due to open generics, even the number of types may change through
    * inheritance.
    *
-   * @param res resolution instance, required only when run in front end phase,
-   * null otherwise.
-   *
    * @param a an array of types to be handed down
    *
    * @param heir a feature that inherits from outer()
@@ -1288,7 +1258,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return the types from the argument array a has seen this within
    * heir. Their number might have changed due to open generics.
    */
-  public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
+  public AbstractType[] handDown(AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
@@ -1302,7 +1272,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            a = AbstractFeature.handDownInheritance(res, inh, a, heir);
+            a = AbstractFeature.handDownInheritance(inh, a, heir);
           }
       }
     return a;
@@ -1311,8 +1281,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * Helper for handDown() to hand down an array of types along a given inheritance chain.
-   *
-   * @param res the resolution instance
    *
    * @param inh the inheritance chain from the parent down to the child
    *
@@ -1323,7 +1291,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return a new array of types as they are visible in heir. The length might
    * be different due to open type parameters being replaced by a list of types.
    */
-  private static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+  private static AbstractType[] handDownInheritance(List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
   {
     for (AbstractCall c : inh)
       {
@@ -1344,7 +1312,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             else
               {
                 var actualTypes = c.actualTypeParameters();
-                actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
+                actualTypes = FormalGenerics.resolve(actualTypes, heir);
                 ti = ti.applyTypePars(c.calledFeature(), actualTypes);
                 a[i] = ti;
               }
@@ -1366,14 +1334,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return interned type that represents t seen as it is seen from heir.
    */
-  public AbstractType handDownNonOpen(Resolution res, AbstractType t, AbstractFeature heir)
+  public AbstractType handDownNonOpen(AbstractType t, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
-       res == null || res.state(heir).atLeast(State.CHECKING_TYPES));
+       Resolution.instance() == null || Resolution.instance().state(heir).atLeast(State.CHECKING_TYPES));
 
-    var a = handDown(res, new AbstractType[] { t }, heir);
+    var a = handDown(new AbstractType[] { t }, heir);
 
     if (CHECKS) check
       (Errors.any() || a.length == 1);
@@ -1681,13 +1649,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * During type resolution, add a type parameter created for a free type like
    * {@code T} in {@code f(x T) is ...}.
    *
-   * @param res the resolution instance.
-   *
    * @param ta the newly created type parameter feature.
    *
    * @return the generic instance for ta
    */
-  Generic addTypeParameter(Resolution res, Feature ta)
+  Generic addTypeParameter(Feature ta)
   {
     if (PRECONDITIONS) require
       (ta.isFreeType());

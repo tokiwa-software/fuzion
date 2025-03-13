@@ -268,12 +268,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Load all features that are called by this expression.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    *
    * @param context the source code context where this Expr is used
    */
-  void loadCalledFeature(Resolution res, Context context)
+  void loadCalledFeature(Context context)
   {
   }
 
@@ -309,10 +307,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * this is a expression with several branches such as an "if" or a "match"
    * expression, add corresponding assignments in each branch and convert this
    * into a expression that does not produce a value.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
@@ -320,9 +315,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * @return the Expr this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Expr assignToField(Resolution res, Context context, Feature r)
+  Expr assignToField(Context context, Feature r)
   {
-    return new Assign(res, pos(), r, this, context);
+    return new Assign(pos(), r, this, context);
   }
 
 
@@ -414,15 +409,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
-  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Context context, AbstractType t)
   {
     var result = this;
 
@@ -436,9 +428,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
                                   new List<>(),
                                   result);
 
-            result = fn.propagateExpectedType(res, context, t);
-            fn.resolveTypes(res, context);
-            fn.updateTarget(res);
+            result = fn.propagateExpectedType(context, t);
+            fn.resolveTypes(context);
+            fn.updateTarget();
           }
         else
           {
@@ -454,10 +446,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -466,7 +455,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Context context, AbstractType t)
   {
     return this;
   }
@@ -487,15 +476,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * Note that this does not perform resolveTypes on the results since that
    * would be too early during 1. but it is required in 2.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
-  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Context context, AbstractType expectedType)
   {
     return this;
   }
@@ -548,22 +534,21 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
-  protected Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  protected Expr addFieldForResult(Context context, AbstractType t)
   {
     var result = this;
     if (!t.isVoid())
       {
         var pos = pos();
-        Feature r = new Feature(res,
-                                pos,
+        Feature r = new Feature(pos,
                                 Visi.PRIV,
                                 t,
                                 FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
                                 context.outerFeature());
-        r.scheduleForResolution(res);
-        res.resolveTypes();
-        result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
+        r.scheduleForResolution();
+        Resolution.instance().resolveTypes();
+        result = new Block(new List<>(assignToField(context, r),
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(context)));
       }
     return result;
   }
@@ -761,15 +746,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * Do automatic unwrapping of features inheriting {@code unwrap}
    * if the expected type fits the unwrapped type.
    *
-   * @param res the resolution instance
-   *
    * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type
    *
    * @return the unwrapped expression
    */
-  Expr unwrap(Resolution res, Context context, AbstractType expectedType)
+  Expr unwrap(Context context, AbstractType expectedType)
   {
     var t = type();
     return this != Call.ERROR && t != Types.t_ERROR
@@ -782,7 +765,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
                     && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t), context))
-      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
+      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(context)
       : this;
   }
 

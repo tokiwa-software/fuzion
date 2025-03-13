@@ -188,11 +188,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *
-   * @param res the resolution instance.
-   *
    * @param context the source code context where this type is used
    */
-  AbstractType resolve(Resolution res, Context context)
+  AbstractType resolve(Context context)
   {
     return this;
   }
@@ -204,11 +202,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param pos source code position of the unresolved types whose generics we
    * are resolving.
    *
-   * @param res the resolution instance
-   *
    * @param outerfeat the outer feature this type is declared in.
    */
-  AbstractType resolveGenerics(HasSourcePosition pos, Resolution res, AbstractFeature outerfeat)
+  AbstractType resolveGenerics(HasSourcePosition pos, AbstractFeature outerfeat)
   {
     return this;
   }
@@ -1736,10 +1732,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-
   /**
    * For a given type t, get the type of t's type feature. E.g., for t==string,
-   * this will return the type of string.type.
+   * this will return the type of string.type, which is 'string.#type string'
    *
    * @return the type of t's type.
    */
@@ -1747,26 +1742,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       feature().state().atLeast(State.RESOLVED));
-
-    return typeType(null);
-  }
-
-
-  /**
-   * For a given type t, get the type of t's type feature. E.g., for t==string,
-   * this will return the type of string.type, which is 'string.#type string'
-   *
-   * @param res Resolution instance used to resolve the type feature that might
-   * need to be created.
-   *
-   * @return the type of t's type.
-   */
-  AbstractType typeType(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (!isGenericArgument(),
-       res != null || feature().state().atLeast(State.RESOLVED));
+       Resolution.instance() != null || feature().state().atLeast(State.RESOLVED));
 
     AbstractType result = null;
     var fot = feature();
@@ -1779,12 +1755,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g = new List<AbstractType>(this);
         g.addAll(generics());
 
-        var tf = res != null ? fot.cotype(res) : fot.cotype();
+        var tf = (fot.isCotype() || fot.hasCotype()) ? fot.cotype() : fot.createCotype();
         if (CHECKS) check
           (tf != null);
         result = ResolvedNormalType.create(g,
                                            g,
-                                           outer().typeType(res),
+                                           outer().typeType(),
                                            tf);
       }
     return result;
@@ -2320,24 +2296,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * Return constraint if type is a generic, unmodified type otherwise
+   *
    * @param context the context
+   *
    * @return constraint for generics, unmodified type otherwise
    */
   AbstractType selfOrConstraint(Context context)
   {
     return (isGenericArgument() ? genericArgument().constraint(context) : this);
-  }
-
-
-  /**
-   * Return constraint if type is a generic, unmodified type otherwise
-   * @param res the resolution
-   * @param context the context
-   * @return constraint for generics, unmodified type otherwise
-   */
-  AbstractType selfOrConstraint(Resolution res, Context context)
-  {
-    return (isGenericArgument() ? genericArgument().constraint(res, context) : this);
   }
 
 

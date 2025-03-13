@@ -364,34 +364,28 @@ public class Impl extends ANY
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    */
-  void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Context context)
   {
     if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
-        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType());
+        _expr = _expr.propagateExpectedType(context, context.outerFeature().resultType());
       }
   }
 
 
   /**
    * Inform the expression of this implementation that its expected type is {@code t}.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    */
-  void propagateExpectedType(Resolution res, Context context, AbstractType t)
+  void propagateExpectedType(Context context, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, context, t);
+    _expr = _expr.propagateExpectedType(context, t);
   }
 
 
@@ -410,25 +404,22 @@ public class Impl extends ANY
    * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    *
    * @param context the source code context where this assignment is used
    */
-  void resolveSyntacticSugar2(Resolution res, Context context)
+  void resolveSyntacticSugar2(Context context)
   {
     var outer = context.outerFeature();
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
-        var c = outer.contract().callPreCondition(res, outer, context);
+        var c = outer.contract().callPreCondition(outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
     if (needsImplicitAssignmentToResult(outer))
       {
         var resultField = outer.resultField();
-        Assign ass = new Assign(res,
-                                this._expr.pos(),
+        Assign ass = new Assign(this._expr.pos(),
                                 resultField,
                                 this._expr,
                                 context);
@@ -447,7 +438,7 @@ public class Impl extends ANY
                OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Routine           ->
             {
-              var callPostCondition = Contract.callPostCondition(res, context);
+              var callPostCondition = Contract.callPostCondition(context);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
             }
           case Abstract          -> {} // ok, must be checked by redefinitions
@@ -485,12 +476,9 @@ public class Impl extends ANY
    *
    * @param i the index in _initialCalls
    *
-   * @param res the resolution. If not null, the actuals' types will be
-   * resolved.
-   *
    * @return the Expr that is assigned to this in call #i.
    */
-  private Expr initialValueFromCall(int i, Resolution res)
+  private Expr initialValueFromCall(int i)
   {
     Expr result = Call.ERROR;
     var ic = _initialCalls.get(i);
@@ -502,10 +490,10 @@ public class Impl extends ANY
             var actl = aargs.next();
             if (frml instanceof Feature f && f.impl() == this)
               {
-                if (res != null && !_infiniteRecursionInResolveTypes)
+                if (Resolution.instance() != null && !_infiniteRecursionInResolveTypes)
                   {
                     _infiniteRecursionInResolveTypes = true;
-                    actl = res.resolveType(actl, ic.resolvedFor());
+                    actl = Resolution.instance().resolveType(actl, ic.resolvedFor());
                     aargs.set(actl);
                     _infiniteRecursionInResolveTypes = false;
                   }
@@ -527,9 +515,6 @@ public class Impl extends ANY
    * Determine the type of a FieldActual by forming the union of the types of
    * all actual values added by addInitialValue.
    *
-   * @param res The resolution instance.  NOTE: res may be null, e.g., when this
-   * is called during a later phase.
-   *
    * @param formalArg the features whose Impl this is.
    *
    * @param reportError true to produce an error message, false to suppress
@@ -537,12 +522,12 @@ public class Impl extends ANY
    * found such that we can report all occurrences of actuals and all actual
    * types that were found.
    */
-  private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
+  private AbstractType typeFromInitialValues(AbstractFeature formalArg, boolean reportError)
   {
     var exprs = new List<Expr>();
     for (var i = 0; i < _initialCalls.size(); i++)
       {
-        var iv = initialValueFromCall(i, res);
+        var iv = initialValueFromCall(i);
         exprs.add(iv);
       }
     var result = Expr.union(exprs, Context.NONE);
@@ -561,7 +546,7 @@ public class Impl extends ANY
             var positions = new TreeMap<AbstractType, List<SourcePosition>>();
             for (var i = 0; i < _initialCalls.size(); i++)
               {
-                var iv = initialValueFromCall(i, null);
+                var iv = initialValueFromCall(i);
                 var t = iv.typeForInferencing();
                 if (t != null)
                   {
@@ -600,16 +585,14 @@ public class Impl extends ANY
    * For an Impl that uses type inference for the feature result type, this
    * determines the actual result type from the initial value, the code or the
    * actual arguments passed to a formal argument.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param f the feature this is the Impl of.
    *
    * @param urgent if true and the result type is inferred and inference would
    * currently not succeed, then enforce it even if that would produce an error.
    *
    */
-  AbstractType inferredType(Resolution res, AbstractFeature f, boolean urgent)
+  AbstractType inferredType(AbstractFeature f, boolean urgent)
   {
     var result = switch (_kind)
       {
@@ -629,9 +612,9 @@ public class Impl extends ANY
           // may not be resolved yet.
           // see #348 for an example.
           var fo = f.outer();
-          if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
+          if (Resolution.instance() != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
             {
-              f.visit(res.resolveTypesFully(fo), fo);
+              f.visit(Resolution.instance().resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
             }
           if (t == null && urgent)
@@ -640,7 +623,7 @@ public class Impl extends ANY
             }
           yield t;
         }
-      case FieldActual -> typeFromInitialValues(res, f, false);
+      case FieldActual -> typeFromInitialValues(f, false);
       default -> null;
       };
 
@@ -661,7 +644,7 @@ public class Impl extends ANY
   {
     if (_kind == Kind.FieldActual)
       {
-        var ignore = typeFromInitialValues(null, f, true);
+        var ignore = typeFromInitialValues(f, true);
       }
   }
 

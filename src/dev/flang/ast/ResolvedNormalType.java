@@ -644,11 +644,11 @@ public class ResolvedNormalType extends ResolvedType
          * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
         @Override
-        AbstractType resolve(Resolution res, Context context)
+        AbstractType resolve(Context context)
         {
           if (_resolved == null)
             {
-              _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false, false);
+              _resolved = UnresolvedType.finishResolve(context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false, false);
             }
           return _resolved;
         }
@@ -659,18 +659,16 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this type is used
    */
   @Override
-  AbstractType resolve(Resolution res, Context context)
+  AbstractType resolve(Context context)
   {
     // tricky: outers generics may not have been resolved yet.
     if (_outer != null)
       {
-        _outer = _outer.resolve(res, context);
+        _outer = _outer.resolve(context);
       }
     return this;
   }

@@ -492,8 +492,7 @@ public class Feature extends AbstractFeature
    * @param outer the declaring feature that will be set as an outer feature of
    * the newly created feature via a call to findDeclarations.
    */
-  Feature(Resolution res,
-          SourcePosition pos,
+  Feature(SourcePosition pos,
           Visi v,
           AbstractType t,
           String qname,
@@ -505,7 +504,7 @@ public class Feature extends AbstractFeature
          t,
          qname,
          null);
-    res._module.findDeclarations(this, outer);
+    Resolution.instance()._module.findDeclarations(this, outer);
   }
 
 
@@ -1035,7 +1034,7 @@ public class Feature extends AbstractFeature
   /**
    * if hasResultField(), add a corresponding field to hold the result.
    */
-  public void addResultField(Resolution res)
+  public void addResultField()
   {
     if (PRECONDITIONS) require
       (_state == State.FINDING_DECLARATIONS);
@@ -1048,8 +1047,7 @@ public class Feature extends AbstractFeature
 
         if (CHECKS) check
           (_resultField == null);
-        _resultField = new Feature(res,
-                                   _pos,
+        _resultField = new Feature(_pos,
                                    Visi.PRIV,
                                    t,
                                    FuzionConstants.INTERNAL_RESULT_NAME,
@@ -1158,11 +1156,8 @@ public class Feature extends AbstractFeature
    * Inheritance resolution for a feature f: recursively, perform inheritance
    * resolution for the outer feature of f and for all direct ancestors of a f,
    * then perform inheritance resolution of the feature f itself.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  public void scheduleForResolution(Resolution res)
+  public void scheduleForResolution()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.LOADED));
@@ -1170,7 +1165,7 @@ public class Feature extends AbstractFeature
     if (_state == State.LOADED)
       {
         _state = State.RESOLVING;
-        res.add(this);
+        Resolution.instance().add(this);
       }
   }
 
@@ -1295,10 +1290,8 @@ public class Feature extends AbstractFeature
    * After inheritance resolution for a feature f, add it to the set of features
    * to be type resolved.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  void resolveInheritance(Resolution res)
+  void resolveInheritance()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.LOADED));
@@ -1312,7 +1305,7 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_INHERITANCE;
 
         if (CHECKS) check
-          ((_outer == null) || res.state(_outer).atLeast(State.RESOLVING));
+          ((_outer == null) || Resolution.instance().state(_outer).atLeast(State.RESOLVING));
 
         var i = _inherits.listIterator();
         while (i.hasNext() && !_detectedCyclicInheritance)
@@ -1322,13 +1315,13 @@ public class Feature extends AbstractFeature
               {
                 cp._isInheritanceCall = true;
               }
-            p.loadCalledFeature(res, context());
+            p.loadCalledFeature(context());
             var parent = p.calledFeature();
             if (CHECKS) check
               (Errors.any() || parent != null);
             if (parent instanceof Feature fp)
               {
-                fp.resolveInheritance(res);
+                fp.resolveInheritance();
                 if (fp.detectedCyclicInheritance())
                   {
                     cyclicInheritanceError(p, i);
@@ -1340,7 +1333,7 @@ public class Feature extends AbstractFeature
               }
           }
         _state = State.RESOLVED_INHERITANCE;
-        res.scheduleForDeclarations(this);
+        Resolution.instance().scheduleForDeclarations(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1354,16 +1347,14 @@ public class Feature extends AbstractFeature
    * direct ancestors of this, and, if there are no direct ancestors (for
    * Object), this inherits from 'Type'.
    *
-   * @param res Resolution instance used to resolve this for types.
-   *
    * @return The feature that should be the direct ancestor of this feature's
    * type feature.
    */
   @Override
-  public AbstractFeature cotype(Resolution res)
+  public AbstractFeature createCotype()
   {
-    resolveInheritance(res);
-    return super.cotype(res);
+    resolveInheritance();
+    return super.createCotype();
   }
 
 
@@ -1373,10 +1364,8 @@ public class Feature extends AbstractFeature
    * features to the set of features to be resolved for inheritance. Schedule f
    * for type resolution.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  void resolveDeclarations(Resolution res)
+  void resolveDeclarations()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_INHERITANCE));
@@ -1389,7 +1378,7 @@ public class Feature extends AbstractFeature
           (_state == State.RESOLVING_DECLARATIONS);
 
         this._returnType = _impl.checkReturnType(this);
-        res._module.findDeclaredOrInheritedFeatures(this);
+        Resolution.instance()._module.findDeclaredOrInheritedFeatures(this);
 
         if (CHECKS) check
           (_state.atLeast(State.RESOLVING_DECLARATIONS));
@@ -1400,8 +1389,8 @@ public class Feature extends AbstractFeature
              * Find all the types used in this that refer to formal generic arguments of
              * this or any of this' outer classes.
              */
-            resolveArgumentTypes(res);
-            visit(res.resolveTypesOnly(this));
+            resolveArgumentTypes();
+            visit(Resolution.instance().resolveTypesOnly(this));
           }
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -1409,7 +1398,7 @@ public class Feature extends AbstractFeature
           {
             whenResolvedDeclarations.removeFirst().run();
           }
-        res.scheduleForTypeResolution(this);
+        Resolution.instance().scheduleForTypeResolution(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1440,17 +1429,15 @@ public class Feature extends AbstractFeature
 
   static class ResolveTypes extends ContextVisitor
   {
-    Resolution res;
-    ResolveTypes(Resolution r, Context context)
+    ResolveTypes(Context context)
     {
       super(context);
-      res = r;
     }
-    @Override public void         action      (AbstractAssign  a) {        a.resolveTypes      (res,   _context); }
-    @Override public void         actionBefore(Call            c) {        c.tryResolveTypeCall(res,   _context); }
-    @Override public Call         action      (Call            c) { return c.resolveTypes      (res,   _context); }
-    @Override public Expr         action      (DotType         d) { return d.resolveTypes      (res,   _context); }
-    @Override public Expr         action      (Destructure     d) { return d.resolveTypes      (res,   _context); }
+    @Override public void         action      (AbstractAssign  a) {        a.resolveTypes      (  _context); }
+    @Override public void         actionBefore(Call            c) {        c.tryResolveTypeCall(  _context); }
+    @Override public Call         action      (Call            c) { return c.resolveTypes      (  _context); }
+    @Override public Expr         action      (DotType         d) { return d.resolveTypes      (  _context); }
+    @Override public Expr         action      (Destructure     d) { return d.resolveTypes      (  _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
       if (f.isExtensionFeature() && f.outer() != null)
@@ -1463,18 +1450,18 @@ public class Feature extends AbstractFeature
         }
       return f;
     }
-    @Override public Function     action      (Function        f) {        f.resolveTypes      (res,   _context); return f; }
+    @Override public Function     action      (Function        f) {        f.resolveTypes      (  _context); return f; }
     @Override public void         action      (AbstractMatch   m)
     {
       if (m instanceof Match mm)
         {
-          mm.resolveTypes(res, _context);
+          mm.resolveTypes(_context);
         }
     }
 
-    @Override public Expr         action      (This            t) { return t.resolveTypes      (res,   _context); }
-    @Override public AbstractType action      (AbstractType    t) { return t.resolve           (res,   _context); }
-    @Override public Expr         action      (AbstractCurrent c) { return c.resolveTypes      (res,   _context); }
+    @Override public Expr         action      (This            t) { return t.resolveTypes      (  _context); }
+    @Override public AbstractType action      (AbstractType    t) { return t.resolve           (  _context); }
+    @Override public Expr         action      (AbstractCurrent c) { return c.resolveTypes      (  _context); }
 
     @Override public boolean doVisitActuals() { return false; }
   }
@@ -1492,12 +1479,10 @@ public class Feature extends AbstractFeature
   /**
    * Resolve argument types such that type parameters for free types will be
    * added.
-   *
-   * @param res the resolution instance.
-   */
-  void resolveArgumentTypes(Resolution res)
+  */
+  void resolveArgumentTypes()
   {
-    valueArguments().stream().forEach(a -> { if (a instanceof Feature af) af.returnType().resolveArgumentType(res, af); } );
+    valueArguments().stream().forEach(a -> { if (a instanceof Feature af) af.returnType().resolveArgumentType(af); } );
   }
 
 
@@ -1510,10 +1495,8 @@ public class Feature extends AbstractFeature
    * NOTE: This is called by Resolution.java. To force a feature is in state
    * RESOLVED_TYPES, use Resolution.resolveTypes(f).
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  void internalResolveTypes(Resolution res)
+  void internalResolveTypes()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_DECLARATIONS));
@@ -1526,19 +1509,19 @@ public class Feature extends AbstractFeature
 
         if (Contract.requiresPreConditionsFeature(this) && preFeature() == null)
           {
-            Contract.addPreFeature(res, this, context(), false);
+            Contract.addPreFeature(this, context(), false);
           }
 
-        resolveArgumentTypes(res);
-        visit(res.resolveTypesFully(this));
+        resolveArgumentTypes();
+        visit(Resolution.instance().resolveTypesFully(this));
 
         if (_effects != null)
         {
           for (var e : _effects)
             {
-              var t = e.resolve(res, context());
+              var t = e.resolve(context());
 
-              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+              if (t != Types.t_ERROR && (!(t.selfOrConstraint(context()))
                                             .feature().inheritsFrom(Types.resolved.f_effect)))
                 {
                   AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
@@ -1551,7 +1534,7 @@ public class Feature extends AbstractFeature
           {
             whenResolvedTypes.removeFirst().run();
           }
-        res.scheduleForSyntacticSugar1Resolution(this);
+        Resolution.instance().scheduleForSyntacticSugar1Resolution(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1588,10 +1571,8 @@ public class Feature extends AbstractFeature
    * Syntactic sugar resolution of a feature f after type resolution. Currently
    * used for lazy boolean operations like {@code &&}, {@code ||} and for compile-time constants
    * safety, debug_level, debug.
-   *
-   * @param res the resolution instance.
-   */
-  void resolveSyntacticSugar1(Resolution res)
+  */
+  void resolveSyntacticSugar1()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_TYPES));
@@ -1600,22 +1581,22 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_SUGAR1;
 
-        Contract.addContractFeatures(res, this, context());
+        Contract.addContractFeatures(this, context());
         if (!isUniverse() && !isCotype()
             && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
             && !isTypeParameter())
           {
-            cotype(res);
+            createCotype();
           }
         visit(new ContextVisitor(context())
           {
-            @Override public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(res, _context, this); }
-            @Override public Expr action(Call    c) { return c.resolveSyntacticSugar1(res, _context      ); }
+            @Override public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(_context, this); }
+            @Override public Expr action(Call    c) { return c.resolveSyntacticSugar1(_context      ); }
           });
 
 
         _state = State.RESOLVED_SUGAR1;
-        res.scheduleForTypeInference(this);
+        Resolution.instance().scheduleForTypeInference(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1627,10 +1608,10 @@ public class Feature extends AbstractFeature
    * Find list of all accesses to this feature's closure by any of its inner
    * features.
    */
-  private List<AbstractCall> closureAccesses(Resolution res)
+  private List<AbstractCall> closureAccesses()
   {
     List<AbstractCall> result = new List<>();
-    res._module.forEachDeclaredOrInheritedFeature(this,
+    Resolution.instance()._module.forEachDeclaredOrInheritedFeature(this,
                                                   af -> af.visitExpressions(s -> {
           if (s instanceof AbstractCall c && dependsOnOuterRef(c))
             {
@@ -1663,9 +1644,9 @@ public class Feature extends AbstractFeature
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
-  void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
+  void checkNoClosureAccesses(SourcePosition errorPos)
   {
-    var closureAccesses = closureAccesses(res);
+    var closureAccesses = closureAccesses();
     if (!closureAccesses.isEmpty())
       {
         StringBuilder accesses = new StringBuilder();
@@ -1707,12 +1688,8 @@ public class Feature extends AbstractFeature
    *
    * Due to bootstrapping, this cannot be performed during resolveTypes, so it
    * is part of the typeInference pass.
-   *
-   *
-   * @param res this is called during type interference, res gives the resolution
-   * instance to schedule new fields for resolution.
    */
-  private void checkChoiceAndAddInternalFields(Resolution res)
+  private void checkChoiceAndAddInternalFields()
   {
     if (PRECONDITIONS) require
       (isChoice());
@@ -1758,7 +1735,7 @@ public class Feature extends AbstractFeature
         }
       }
 
-    res._module.forEachDeclaredOrInheritedFeature(this,
+    Resolution.instance()._module.forEachDeclaredOrInheritedFeature(this,
                                                   p ->
       {
         if (_returnType != NoType.INSTANCE &&
@@ -1810,10 +1787,10 @@ A ((Choice)) declaration must not contain a result type.
           }
       }
 
-    checkNoClosureAccesses(res, _pos);
+    checkNoClosureAccesses(_pos);
     for (var p : _inherits)
       {
-        p.calledFeature().checkNoClosureAccesses(res, p.pos());
+        p.calledFeature().checkNoClosureAccesses(p.pos());
       }
   }
 
@@ -1824,31 +1801,26 @@ A ((Choice)) declaration must not contain a result type.
    *
    * Check if this is a choice and if so, call checkChoiceAndAddInternalFields
    * for further checking and adding of fields.
-   *
-   * @param res this is called during type interference, res gives the resolution
-   * instance to schedule new fields for resolution.
    */
-  void choiceTypeCheckAndInternalFields(Resolution res)
+  void choiceTypeCheckAndInternalFields()
   {
     if (isChoice())
       {
-        checkChoiceAndAddInternalFields(res);
+        checkChoiceAndAddInternalFields();
       }
     if (isBuiltInPrimitive())
       {
-        checkBuiltInPrimitive(res);
+        checkBuiltInPrimitive();
       }
   }
 
 
   /**
    * check that primitives do not contain fields
-   *
-   * @param res
    */
-  private void checkBuiltInPrimitive(Resolution res)
+  private void checkBuiltInPrimitive()
   {
-    res._module.forEachDeclaredOrInheritedFeature(this,
+    Resolution.instance()._module.forEachDeclaredOrInheritedFeature(this,
                                                   p ->
       {
         // primitives must not have any fields
@@ -1863,11 +1835,8 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * Type inference determines static types that are not given explicitly in the
    * source code.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance to schedule new features for resolution.
    */
-  void typeInference(Resolution res)
+  void typeInference()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_TYPES));
@@ -1878,12 +1847,12 @@ A ((Choice)) declaration must not contain a result type.
 
        if (outer() instanceof Feature o)
           {
-            o.typeInference(res);
+            o.typeInference();
           }
 
         if (_resultType == null)
           {
-            _resultType = resultTypeIfPresentUrgent(res, true);
+            _resultType = resultTypeIfPresentUrgent(true);
           }
 
         if (_resultType == null)
@@ -1915,11 +1884,11 @@ A ((Choice)) declaration must not contain a result type.
          * that i32 will be the type for "a".
          */
         visit(new ContextVisitor(context()) {
-            @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
-            @Override public Call  action(Call           c) { c.propagateExpectedType(res, _context); return c; }
-            @Override public void  action(Cond           c) { c.propagateExpectedType(res, _context); }
-            @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
-            @Override public Expr  action(If             i) { i.propagateExpectedType(res, _context); return i; }
+            @Override public void  action(AbstractAssign a) { a.propagateExpectedType(_context); }
+            @Override public Call  action(Call           c) { c.propagateExpectedType(_context); return c; }
+            @Override public void  action(Cond           c) { c.propagateExpectedType(_context); }
+            @Override public void  action(Impl           i) { i.propagateExpectedType(_context); }
+            @Override public Expr  action(If             i) { i.propagateExpectedType(_context); return i; }
           });
 
         /*
@@ -1931,17 +1900,17 @@ A ((Choice)) declaration must not contain a result type.
             // get the corrected nesting of Lazy features created during this
             // phase
             public boolean visitActualsLate() { return true; }
-            @Override public void  action(AbstractAssign a) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, _context); }
-            @Override public Expr  action(Call           c) { c.wrapActualsInLazy(res, _context); c.unwrapActuals(res, _context); return c; }
+            @Override public void  action(AbstractAssign a) { a.wrapValueInLazy  (_context); a.unwrapValue  (_context); }
+            @Override public Expr  action(Call           c) { c.wrapActualsInLazy(_context); c.unwrapActuals(_context); return c; }
           });
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, context(), Types.resolved.t_unit);
+            _impl.propagateExpectedType(context(), Types.resolved.t_unit);
           }
 
         _state = State.TYPES_INFERENCED;
-        res.scheduleForSyntacticSugar2Resolution(this);
+        Resolution.instance().scheduleForSyntacticSugar2Resolution(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1953,10 +1922,8 @@ A ((Choice)) declaration must not contain a result type.
    * Perform boxing, i.e., wrap value instances into ref instances if they are
    * assigned to a ref.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  void box(Resolution res)
+  void box()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_SUGAR2));
@@ -1984,7 +1951,7 @@ A ((Choice)) declaration must not contain a result type.
           });
 
         _state = State.BOXED;
-        res.scheduleForCheckTypes(this);
+        Resolution.instance().scheduleForCheckTypes(this);
       }
 
     if (POSTCONDITIONS) ensure
@@ -1996,17 +1963,15 @@ A ((Choice)) declaration must not contain a result type.
    * Perform static type checking, i.e., make sure, that for all assignments from
    * actual to formal arguments or from values to fields, the types match.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  void checkTypes(Resolution res)
+  void checkTypes()
   {
     if (PRECONDITIONS) require
       (_state == State.BOXED);
 
     _state = State.CHECKING_TYPES;
 
-    choiceTypeCheckAndInternalFields(res);
+    choiceTypeCheckAndInternalFields();
 
     selfType().checkChoice(_pos, context());
 
@@ -2015,17 +1980,17 @@ A ((Choice)) declaration must not contain a result type.
     visit(new ContextVisitor(context()) {
         /* if an error is reported in a call it might no longer make sense to check the actuals: */
         @Override public boolean visitActualsLate() { return true; }
-        @Override public void         action(AbstractAssign a) {        a.checkTypes(res,  _context);           }
-        @Override public Call         action(Call           c) {        c.checkTypes(res,  _context); return c; }
+        @Override public void         action(AbstractAssign a) {        a.checkTypes( _context);           }
+        @Override public Call         action(Call           c) {        c.checkTypes( _context); return c; }
         @Override public void         action(Constant       c) {        c.checkRange();                         }
-        @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
+        @Override public void         action(AbstractMatch  m) {        m.checkTypes(      _context);           }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         action(Cond           c) {        c.checkTypes();                         }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
       });
 
-    res._module.checkTypes(this);
+    Resolution.instance()._module.checkTypes(this);
 
     // warn about unused, non public, non ignored fields
     if (isUsageCheckRequired() && !isUsed())
@@ -2037,7 +2002,7 @@ A ((Choice)) declaration must not contain a result type.
       @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
     });
 
-    checkNative(res);
+    checkNative();
 
     _state = State.RESOLVED;
   }
@@ -2047,23 +2012,23 @@ A ((Choice)) declaration must not contain a result type.
    * Check native features result and argument
    * types for legality.
    */
-  private void checkNative(Resolution res)
+  private void checkNative()
   {
     if (kind() == Kind.Native)
       {
         for (var arg : arguments())
           {
-            checkLegalNativeArg(res, arg.pos(), arg.resultType());
+            checkLegalNativeArg(arg.pos(), arg.resultType());
           }
 
-        checkLegalNativeResultType(res, resultTypePos(), resultType());
+        checkLegalNativeResultType(resultTypePos(), resultType());
       }
   }
 
 
-  private void checkLegalNativeArg(Resolution res, SourcePosition pos, AbstractType at)
+  private void checkLegalNativeArg(SourcePosition pos, AbstractType at)
   {
-    ensureTypeSetsInitialized(res);
+    ensureTypeSetsInitialized();
     if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.isFunctionTypeExcludingLazy()
           || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()))
@@ -2073,9 +2038,9 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
-  private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
+  private void checkLegalNativeResultType(SourcePosition pos, AbstractType rt)
   {
-    ensureTypeSetsInitialized(res);
+    ensureTypeSetsInitialized();
     if (!Types.resolved.legalNativeResultTypes.contains(rt))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);
@@ -2091,7 +2056,7 @@ A ((Choice)) declaration must not contain a result type.
    * are initialized.
    * Initializes them if they are not yet initialized.
    */
-  private void ensureTypeSetsInitialized(Resolution res)
+  private void ensureTypeSetsInitialized()
   {
     // We can not do this in constructor of
     // Resolved since not everything we need
@@ -2099,10 +2064,10 @@ A ((Choice)) declaration must not contain a result type.
     if (Types.resolved.legalNativeArgumentTypes.isEmpty())
       {
         var ptr = Types.resolved.f_fuzion_sys_array_data.resultType();
-        var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0), null).selfType();
-        var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
-        var mm = res._module.lookupFeature(res.universe, FeatureName.get("Mapped_Memory", 0), null).selfType();
-        var nr = res._module.lookupFeature(res.universe, FeatureName.get("Native_Ref", 0), null).selfType();
+        var fd = Resolution.instance()._module.lookupFeature(Resolution.instance().universe, FeatureName.get("File_Descriptor", 0), null).selfType();
+        var dd = Resolution.instance()._module.lookupFeature(Resolution.instance().universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
+        var mm = Resolution.instance()._module.lookupFeature(Resolution.instance().universe, FeatureName.get("Mapped_Memory", 0), null).selfType();
+        var nr = Resolution.instance()._module.lookupFeature(Resolution.instance().universe, FeatureName.get("Native_Ref", 0), null).selfType();
         Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
         Types.resolved.legalNativeResultTypes.add(ptr);
         Types.resolved.legalNativeResultTypes.add(fd);
@@ -2152,10 +2117,8 @@ A ((Choice)) declaration must not contain a result type.
    * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  void resolveSyntacticSugar2(Resolution res)
+  void resolveSyntacticSugar2()
   {
     if (PRECONDITIONS) require
       (_state == State.TYPES_INFERENCED);
@@ -2163,14 +2126,14 @@ A ((Choice)) declaration must not contain a result type.
     _state = State.RESOLVING_SUGAR2;
 
     visit(new ContextVisitor(context()) {
-        @Override public Expr  action(Function    f) { return f.resolveSyntacticSugar2(res); }
-        @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
-        @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
-        @Override public Expr  action(If          i) { return i.resolveSyntacticSugar2(res); }
+        @Override public Expr  action(Function    f) { return f.resolveSyntacticSugar2(); }
+        @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(_context); }
+        @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(_context); }
+        @Override public Expr  action(If          i) { return i.resolveSyntacticSugar2(); }
       });
 
     _state = State.RESOLVED_SUGAR2;
-    res.scheduleForBoxing(this);
+    Resolution.instance().scheduleForBoxing(this);
   }
 
 
@@ -2204,19 +2167,17 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * resolve syntactic sugar of feature declaration, i.e., add assignment for the
    * initial value of fields.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this feature declaration is done
    *
    * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
    */
-  Expr resolveSyntacticSugar1(Resolution res, Context context, ContextVisitor rss1)
+  Expr resolveSyntacticSugar1(Context context, ContextVisitor rss1)
   {
     var outer = context.outerFeature();
 
     if (PRECONDITIONS) require
-      (res != null,
+      (Resolution.instance() != null,
        outer.state() == State.RESOLVING_SUGAR1,
        isUniverse() || outer != null || Errors.any());
 
@@ -2245,7 +2206,7 @@ A ((Choice)) declaration must not contain a result type.
         if (this.outer() == outer)
           {
             /* add assignment of initial value: */
-            AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), context);
+            AbstractAssign ass = new Assign(_pos, this, _impl.expr(), context);
             ass = ass.visit(rss1, outer);
             result = new Block(new List<>(this, ass));
           }
@@ -2257,14 +2218,12 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * During type resolution, add a type parameter created for a free type like
    * {@code T} in {@code f(x T) is ...}.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param ta the newly created type parameter feature.
    *
    * @return the generic instance for ta
    */
-  Generic addTypeParameter(Resolution res, Feature ta)
+  Generic addTypeParameter(Feature ta)
   {
     if (PRECONDITIONS) require
       (ta.isFreeType());
@@ -2281,14 +2240,14 @@ A ((Choice)) declaration must not contain a result type.
     _arguments.add(tas.size(), ta);
     tas.add(ta);
 
-    checkDuplicateFeature(res);
+    checkDuplicateFeature();
 
-    res._module.findDeclarations(ta, this);
+    Resolution.instance()._module.findDeclarations(ta, this);
 
     var g = ta.asGeneric();
     _generics = _generics.addTypeParameter(g);
-    res._module.addTypeParameter(this, ta);
-    this.whenResolvedTypes(()->res.resolveTypes(ta));
+    Resolution.instance()._module.addTypeParameter(this, ta);
+    this.whenResolvedTypes(()->Resolution.instance().resolveTypes(ta));
 
     return g;
   }
@@ -2297,13 +2256,11 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * check if outer already contains a feature with
    * the feature name of this feature
-   *
-   * @param res the current Resolution instance
    */
-  private void checkDuplicateFeature(Resolution res)
+  private void checkDuplicateFeature()
   {
     var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
-    var existing = res._module.lookupFeature(_outer, newFeatureName, null);
+    var existing = Resolution.instance()._module.lookupFeature(_outer, newFeatureName, null);
     if (existing != null)
       {
         AstErrors.duplicateFeatureDeclaration(existing, this);
@@ -2331,13 +2288,13 @@ A ((Choice)) declaration must not contain a result type.
    * unknown since the type inference is incomplete.
    */
   @Override
-  AbstractType resultTypeIfPresentUrgent(Resolution res, boolean urgent)
+  AbstractType resultTypeIfPresentUrgent(boolean urgent)
   {
     AbstractType result;
 
-    if (res != null && !res.state(this).atLeast(State.RESOLVING_TYPES))
+    if (Resolution.instance() != null && !Resolution.instance().state(this).atLeast(State.RESOLVING_TYPES))
       {
-        res.resolveTypes(this);
+        Resolution.instance().resolveTypes(this);
       }
 
     if (_resultType != null)
@@ -2346,13 +2303,13 @@ A ((Choice)) declaration must not contain a result type.
       }
     else if (outer() != null && this == outer().resultField())
       {
-        result = outer().resultTypeIfPresent(res);
+        result = outer().resultTypeIfPresent();
       }
     else if (_impl.typeInferable())
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, urgent);
+        result = _impl.inferredType(this, urgent);
       }
     else if (_returnType.isConstructorType())
       {
@@ -2370,9 +2327,9 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = result.asThis();
       }
-    if (res != null && result != null && outer() != null)
+    if (Resolution.instance() != null && result != null && outer() != null)
       {
-        result = result.resolve(res, outer().context());
+        result = result.resolve(outer().context());
       }
 
     // NYI: CLEANUP: result != Types.resolved.t_void is currently necessary
@@ -2400,7 +2357,7 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(null, true) : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(true) : null;
     if (result == null)
       {
         if (CHECKS) check
@@ -2497,7 +2454,7 @@ A ((Choice)) declaration must not contain a result type.
   /**
    * Add implicit field to the outer feature of this.
    */
-  public void addOuterRef(Resolution res)
+  public void addOuterRef()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.FINDING_DECLARATIONS));
@@ -2506,14 +2463,13 @@ A ((Choice)) declaration must not contain a result type.
       {
         var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                   : this._outer.selfType();
-        _outerRef = new Feature(res,
-                                _pos,
+        _outerRef = new Feature(_pos,
                                 Visi.PRIV,
                                 outerRefType,
                                 outerRefName(),
                                 this);
 
-        whenResolvedTypes(()->_outerRef.scheduleForResolution(res));
+        whenResolvedTypes(()->_outerRef.scheduleForResolution());
       }
   }
 

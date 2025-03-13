@@ -199,8 +199,7 @@ public class Destructure extends ExprWithPos
    *
    + NYI: Document
    */
-  private void addAssign(Resolution res,
-                         Context context,
+  private void addAssign(Context context,
                          List<Expr> exprs,
                          Feature tmp,
                          AbstractFeature f,
@@ -210,19 +209,19 @@ public class Destructure extends ExprWithPos
                          AbstractType t)
   {
     var outer = context.outerFeature();
-    Expr thiz     = This.thiz(res, pos(), context, outer);
-    Call thiz_tmp = new Call(pos(), thiz, tmp).resolveTypes(res, context);
+    Expr thiz     = This.thiz(pos(), context, outer);
+    Call thiz_tmp = new Call(pos(), thiz, tmp).resolveTypes(context);
     Call call_f   = (select == FuzionConstants.NO_SELECT
         ? new Call(pos(), thiz_tmp, f)
         : new Select(pos(), thiz_tmp, f.featureName().baseName(), select))
-      .resolveTypes(res, context);
+      .resolveTypes(context);
     Assign assign = null;
     if (fields != null && fields.hasNext())
       {
         var newF = (Feature) fields.next();
 
         newF._returnType = new FunctionReturnType(t);
-        assign = new Assign(res, pos(), newF, call_f, context);
+        assign = new Assign(pos(), newF, call_f, context);
       }
     else if (fields == null && names.hasNext())
       {
@@ -235,7 +234,7 @@ public class Destructure extends ExprWithPos
       }
     if (assign != null)
       {
-        assign.resolveTypes(res, context, this);
+        assign.resolveTypes(context, this);
         exprs.add(assign);
       }
   }
@@ -243,12 +242,10 @@ public class Destructure extends ExprWithPos
 
   /**
    * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Context context)
   {
     List<Expr> exprs = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
@@ -266,21 +263,20 @@ public class Destructure extends ExprWithPos
           .filter(n -> !n.equals("_"))
           .filter(n -> Collections.frequency(_names, n) > 1)
           .forEach(n -> AstErrors.destructuringRepeatedEntry(pos(), n, Collections.frequency(_names, n)));
-        Feature tmp = new Feature(res,
-                                  pos(),
+        Feature tmp = new Feature(pos(),
                                   Visi.PRIV,
                                   t,
                                   FuzionConstants.DESTRUCTURE_PREFIX + id++,
                                   context.outerFeature());
-        tmp.scheduleForResolution(res);
-        exprs.add(new Assign(res, pos(), tmp, _value, context));
+        tmp.scheduleForResolution();
+        exprs.add(new Assign(pos(), tmp, _value, context));
         var names = _names.iterator();
         var fields = _fields.iterator();
         List<String> fieldNames = new List<>();
         for (var f : t.feature().valueArguments())
           {
             // NYI: check if f is visible
-            var tf = f.resultTypeIfPresent(res);
+            var tf = f.resultTypeIfPresent();
             if (tf != null && tf.isOpenGeneric())
               {
                 Generic g = tf.genericArgument();
@@ -288,14 +284,14 @@ public class Destructure extends ExprWithPos
                 for (var tfs : g.replaceOpen(t.generics()))
                   {
                     fieldNames.add(f.featureName().baseName() + "." + select);
-                    addAssign(res, context, exprs, tmp, f, names, select, fields, tfs);
+                    addAssign(context, exprs, tmp, f, names, select, fields, tfs);
                     select++;
                   }
               }
             else
               {
                 fieldNames.add(f.featureName().baseName());
-                addAssign(res, context, exprs, tmp, f, names, FuzionConstants.NO_SELECT, fields, tf);
+                addAssign(context, exprs, tmp, f, names, FuzionConstants.NO_SELECT, fields, tf);
               }
           }
         if (fieldNames.size() != _names.size())

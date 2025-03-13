@@ -171,10 +171,7 @@ public class Function extends AbstractLambda
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -183,9 +180,9 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Context context, AbstractType t)
   {
-    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
+    _type = propagateTypeAndInferResult(context, t.functionTypeFromChoice(context), false);
     return this;
   }
 
@@ -203,17 +200,15 @@ public class Function extends AbstractLambda
    * What this does is for all calls {@code c} in the expression that is wrapped in
    * this lambda, call {@code c.updateTarget} with this lambda's feature as {@code outer}
    * argument.
-   *
-   * @param res the resolution instance.
-   */
-  void updateTarget(Resolution res)
+  */
+  void updateTarget()
   {
     var e = _expr.visit(new FeatureVisitor()
       {
         @Override
         public Expr action(Call c)
         {
-          return c.updateTarget(res, _feature.context());
+          return c.updateTarget(_feature.context());
         }
       },
       _feature);
@@ -225,12 +220,9 @@ public class Function extends AbstractLambda
 
 
   /**
-   * Special version of propagateExpectedType(res, outer, t) tries to infer the
+   * Special version of propagateExpectedType(outer, t) tries to infer the
    * result type of a lambda.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -243,7 +235,7 @@ public class Function extends AbstractLambda
    * case of error, return Types.t_ERROR.
    */
   @Override
-  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
@@ -331,16 +323,16 @@ public class Function extends AbstractLambda
                                    new List<>(_inheritsCall),
                                    Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(expressions), Impl.Kind.Routine));
-            res._module.findDeclarations(_wrapper, context.outerFeature());
-            res.resolveDeclarations(_wrapper);
-            res.resolveTypes(_feature);
+            Resolution.instance()._module.findDeclarations(_wrapper, context.outerFeature());
+            Resolution.instance().resolveDeclarations(_wrapper);
+            Resolution.instance().resolveTypes(_feature);
             if (inferResultType)
               {
                 result = _feature.resultType();
                 _inheritsCall._generics = gs.setOrClone(0, result);
               }
 
-            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
+            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(context);
           }
       }
     return result;
@@ -373,12 +365,10 @@ public class Function extends AbstractLambda
 
   /**
    * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Context context)
   {
     if (CHECKS) check
       (this._call == null || this._feature != null);
@@ -399,17 +389,17 @@ public class Function extends AbstractLambda
         if (f != null)
           {
             generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                         ? ff.resultTypeIfPresent(res)
+                         ? ff.resultTypeIfPresent()
                          : new BuiltInType(FuzionConstants.UNIT_NAME));
             for (var a : f.arguments())
               {
-                res.resolveTypes(a);
+                Resolution.instance().resolveTypes(a);
                 generics.add(a.resultType());
               }
           }
 
         _inheritsCall._generics = generics;
-        Call inheritsCall2 = _inheritsCall.resolveTypes(res, context);
+        Call inheritsCall2 = _inheritsCall.resolveTypes(context);
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
@@ -457,10 +447,8 @@ public class Function extends AbstractLambda
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
    * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
-   *
-   * @param res the resolution instance.
-   */
-  public Expr resolveSyntacticSugar2(Resolution res)
+  */
+  public Expr resolveSyntacticSugar2()
   {
     Expr result = this;
     var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.

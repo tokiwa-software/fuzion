@@ -116,12 +116,10 @@ public class DotType extends ExprWithPos
 
   /**
    * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Context context)
   {
     return _lhs.isGenericArgument() && !_lhs.genericArgument().isThisTypeInCotype()
       ? _lhsExpr
@@ -131,7 +129,7 @@ public class DotType extends ExprWithPos
                 FuzionConstants.NO_SELECT,
                 new List<>(_lhs),
                 new List<>(),
-                null).resolveTypes(res, context);
+                null).resolveTypes(context);
   }
 
 

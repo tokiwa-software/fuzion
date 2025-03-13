@@ -117,28 +117,26 @@ public class Select extends Call {
 
   /**
    * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
-  public Call resolveTypes(Resolution res, Context context)
+  public Call resolveTypes(Context context)
   {
     var result = Call.ERROR;
     if (_name == null)
       {
-        _currentlyResolving = resolveImplicit(res, context, _target.type());
+        _currentlyResolving = resolveImplicit(context, _target.type());
       }
     else
       {
-        loadCalledFeature(res, context);
+        loadCalledFeature(context);
         if (_calledFeature != null)
           {
-            _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
+            _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(true).isOpenGeneric()
               // explicit
               ? new Call(pos(), _target, _name, select(), Call.NO_GENERICS, NO_EXPRS, null)
               // implict
-              : resolveImplicit(res, context, getActualResultType(res, context, true));
+              : resolveImplicit(context, getActualResultType(context, true));
           }
         else
           {
@@ -147,7 +145,7 @@ public class Select extends Call {
       }
     if (_currentlyResolving != null)
       {
-        result = _currentlyResolving.resolveTypes(res, context);
+        result = _currentlyResolving.resolveTypes(context);
       }
     return result;
   }
@@ -156,18 +154,16 @@ public class Select extends Call {
   /**
    * Helper to try and implicitly resolve this select
    * in case explicit is not possible.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this assignment is used
    *
    */
-  private Call resolveImplicit(Resolution res, Context context, AbstractType at)
+  private Call resolveImplicit(Context context, AbstractType at)
   {
     var result = Call.ERROR;
 
     var typeParameter = at.isGenericArgument() ? at.genericArgument().constraint(context).feature() : at.feature();
-    var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
+    var f = Resolution.instance()._module.lookupOpenTypeParameterResult(typeParameter, this);
 
     if (f != null)
       {
@@ -192,13 +188,11 @@ public class Select extends Call {
   /**
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
-   *
-   * @param res the resolution instance.
-   *
+  *
    * @param context the source code context where this Call is used
    */
   @Override
-  void checkTypes(Resolution res, Context context)
+  void checkTypes(Context context)
   {
     throw new UnsupportedOperationException("select should have been replaced in resolveTypes");
   }

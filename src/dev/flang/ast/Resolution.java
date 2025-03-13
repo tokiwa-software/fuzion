@@ -132,7 +132,7 @@ public class Resolution extends ANY
   private static final boolean DEBUG = "true".equals(FuzionOptions.propertyOrEnv("dev.flang.ast.Resolution.DEBUG"));
 
 
-  /*----------------------------  variables  ----------------------------*/
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
@@ -145,13 +145,13 @@ public class Resolution extends ANY
     var c = f.context();
     return new FeatureVisitor()
       {
-        @Override public AbstractType action(AbstractType t) { return t.resolve(Resolution.this, c); }
+        @Override public AbstractType action(AbstractType t) { return t.resolve(c); }
       };
   }
 
   Feature.ResolveTypes resolveTypesFully(AbstractFeature f)
   {
-    return new Feature.ResolveTypes(this, f.context());
+    return new Feature.ResolveTypes(f.context());
   }
 
 
@@ -162,6 +162,9 @@ public class Resolution extends ANY
 
 
   public final SrcModule _module;
+
+
+  private static final ThreadLocal<Resolution> instance = new ThreadLocal<>();
 
 
   /**
@@ -217,13 +220,21 @@ public class Resolution extends ANY
   /**
    * Constructor to Resolve the universe.
    */
-  public Resolution(FuzionOptions options,
-                    AbstractFeature universe,
-                    SrcModule sm)
+  private Resolution(FuzionOptions options,
+                     AbstractFeature universe,
+                     SrcModule sm)
   {
     this.universe = universe;
     this._options = options;
     this._module = sm;
+  }
+
+
+  public static void create(FuzionOptions options,
+                            AbstractFeature universe,
+                            SrcModule sm)
+  {
+    instance.set(new Resolution(options, universe, sm));
   }
 
 
@@ -408,19 +419,19 @@ public class Resolution extends ANY
       {
         Feature f = forInheritance.removeFirst();
         if (DEBUG) sayDebug("resolve inheritance: " + f);
-        f.resolveInheritance(this);
+        f.resolveInheritance();
       }
     else if (!forDeclarations.isEmpty())
       {
         Feature f = forDeclarations.removeFirst();
         if (DEBUG) sayDebug("resolve declarations: " + f);
-        f.resolveDeclarations(this);
+        f.resolveDeclarations();
       }
     else if (!forType.isEmpty())
       {
         if (Types.resolved == null)
           {
-            new Types.Resolved(this, universe);
+            new Types.Resolved(universe);
           }
 
         Feature f = forType.removeFirst();
@@ -429,7 +440,7 @@ public class Resolution extends ANY
           {
             resolveTypes(f.cotypeOrigin());
           }
-        f.internalResolveTypes(this);
+        f.internalResolveTypes();
       }
     else if (!moreThanTypes)
       {
@@ -439,20 +450,20 @@ public class Resolution extends ANY
       {
         Feature f = forSyntacticSugar1.removeFirst();
         if (DEBUG) sayDebug("resolve syntax sugar 1: " + f);
-        f.resolveSyntacticSugar1(this);
+        f.resolveSyntacticSugar1();
       }
     else if (!forTypeInference.isEmpty())
       {
         Feature f = forTypeInference.removeFirst();
         if (DEBUG) sayDebug("resolve type inference: " + f);
-        f.typeInference(this);
+        f.typeInference();
       }
     else if (!_waitingForCalls.isEmpty())
       {
         // there are some features that still require calls for type resolution,
         // so try to find those fot which we have found a call meanwhile.  Only if none
         // was found, start resolving declarations anyways.
-        resolveDelayed().resolveDeclarations(this);
+        resolveDelayed().resolveDeclarations();
       }
     else if (!forSyntacticSugar2.isEmpty())
       {
@@ -460,20 +471,20 @@ public class Resolution extends ANY
         if (!_options.isLanguageServer())
           {
             if (DEBUG) sayDebug("resolve syntax sugar 2: " + f);
-            f.resolveSyntacticSugar2(this);
+            f.resolveSyntacticSugar2();
           }
       }
     else if (!forBoxing.isEmpty())
       {
         Feature f = forBoxing.removeFirst();
         if (DEBUG) sayDebug("resolve boxing: " + f);
-        f.box(this);
+        f.box();
       }
     else if (!forCheckTypes.isEmpty())
       {
         Feature f = forCheckTypes.removeFirst();
         if (DEBUG) sayDebug("resolve check types: " + f);
-        f.checkTypes(this);
+        f.checkTypes();
       }
     else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
       {
@@ -505,9 +516,9 @@ public class Resolution extends ANY
 
     if (af instanceof Feature f)
       {
-        f.scheduleForResolution(this);
-        f.resolveInheritance(this);
-        f.resolveDeclarations(this);
+        f.scheduleForResolution();
+        f.resolveInheritance();
+        f.resolveDeclarations();
       }
 
     if (POSTCONDITIONS) ensure
@@ -530,7 +541,7 @@ public class Resolution extends ANY
     if (af instanceof Feature f)
       {
         resolveDeclarations(f);
-        f.internalResolveTypes(this);
+        f.internalResolveTypes();
       }
 
     if (POSTCONDITIONS) ensure
@@ -552,7 +563,7 @@ public class Resolution extends ANY
     if (PRECONDITIONS) require
       (context != null);
 
-    return e.visit(new Feature.ResolveTypes(this, context),
+    return e.visit(new Feature.ResolveTypes(context),
                    context.outerFeature());
   }
 
@@ -568,6 +579,24 @@ public class Resolution extends ANY
        af != Types.f_ERROR);
 
     return af.state();
+  }
+
+
+  /**
+   * @return the Resolution instance of the current thread.
+   */
+  public static Resolution instance()
+  {
+    return instance.get();
+  }
+
+
+  /**
+   * set the instance to null
+   */
+  public static void reset()
+  {
+    instance.set(null);
   }
 
 }

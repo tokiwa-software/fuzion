@@ -262,17 +262,16 @@ public abstract class Module extends ANY implements FeatureLookup
                     if (CHECKS) check
                       (cf != outer);
 
-                    var res = this instanceof SourceModule sm ? sm._res : null;
                     if (!f.isFixed())
                       {
-                        var newfn = cf.handDown(res, f, fn, p, outer);
+                        var newfn = cf.handDown(f, fn, p, outer);
                         addDeclaredOrInherited(set, outer, newfn, f);
                       }
                     else
                       {
                         for (var f2 : f.redefines())
                           {
-                            var newfn = cf.handDown(res, f2, fn, p, outer);
+                            var newfn = cf.handDown(f2, fn, p, outer);
                             addDeclaredOrInherited(set, outer, newfn, f2);
                           }
                       }
