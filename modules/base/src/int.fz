@@ -1,0 +1,263 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature int
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# int -- signed integer values of arbitrary size
+#
+public int (public s num.sign, public n uint) : has_interval
+is
+
+  # normalize the sign => no minus zero
+  ns := if n = uint.zero then num.plus else s
+
+  # the actually relevant data of this uint.
+  # irrelevant zeros at start are dropped.
+  # zero is represented by the empty list.
+  data := n.b.drop_while x->x=0
+
+  name String =>
+    "int"
+
+  public fixed redef type.zero int =>
+    int num.plus uint.zero
+
+  public fixed redef type.one int =>
+    int num.plus uint.one
+
+
+  public fixed redef prefix - int =>
+    match ns
+      num.plus => int num.minus n
+      num.minus => int num.plus n
+
+
+  # add this int to other
+  public fixed redef infix +  (other int) int =>
+    if ns = other.ns
+      int ns n+other.n
+    else
+      match ns
+        num.plus => int.this - (-other)
+        num.minus => other - (-int.this)
+
+
+  # subtract other from this int
+  public fixed redef infix - (other int) int =>
+    match other.ns
+      num.plus =>
+        match ns
+          num.plus =>
+            if n ≥ other.n
+              int num.plus (n - other.n)
+            else
+              int num.minus (other.n - n)
+          num.minus => -(-int.this + other)
+      # minus, minus => plus
+      num.minus => int.this + -other
+
+
+  # the sign of the result of the
+  # multiplication or division of int.this and other
+  result_sign_mul_div(other int) num.sign =>
+    if ns = other.ns then num.plus else num.minus
+
+
+  # multiply this int by other
+  public fixed redef infix *  (other int) int =>
+    int (result_sign_mul_div other) n*other.n
+
+
+  # divide this int by other
+  public fixed redef infix /  (other int) int
+  =>
+    s := result_sign_mul_div other
+    int (infix /).this.s n/other.n
+
+
+  # modulo, returns the remainder of the
+  # division of this int by other
+  public fixed redef infix %  (other int) int =>
+    int ns n%other.n
+
+
+  # exponentation operator:
+  # this int to the power of other
+  public fixed redef infix ** (other int) int
+  =>
+    match s
+      num.plus => int num.plus (n ** other.n)
+      num.minus =>
+        s0 num.sign := if other %% (int 2) then num.plus else num.minus
+        int s0 (n ** other.n)
+
+
+  public fixed redef infix **!(other int) bool =>
+    other ≥ int.zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
+
+  public fixed redef infix **?(other int) option int =>
+    match other.ns
+      num.plus => int.this ** other
+      num.minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
+
+  public fixed redef infix **^(other int) int =>
+    match other.ns
+      num.plus => int.this ** other
+      num.minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
+
+  # equality: are these two ints equal?
+  #
+  public fixed redef type.equality(a, b int) bool =>
+    (a.ns = b.ns) & (a.n = b.n)
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b int) bool =>
+    match a.ns
+      num.plus =>
+        match b.ns
+          num.plus => a.n ≤ b.n
+          num.minus => false
+      num.minus =>
+        match b.ns
+          num.plus => true
+          num.minus => b.n ≤ a.n
+
+  public redef as_string String =>
+    s.as_string + n.as_string
+
+
+  # this int as an i32
+  public as_i32 i32 =>
+    n.as_i32
+
+
+  # this int as an i64
+  public as_i64 i64 =>
+    n.as_i64
+
+
+  # does this numeric value fit into an u8? This is redefined by children
+  # of numeric that support `as_u8`.
+  #
+  public redef fits_in_u8 =>
+    int.zero ≤ (int s n) ≤ u8.max.as_int
+
+
+  # this int as an u8
+  public redef as_u8 u8
+  =>
+      n.as_u8
+
+
+  # this int as an u32
+  public as_u32 u32
+  pre debug: (int s n) >= int.zero
+  =>
+      n.as_u32
+
+
+  # this int as an u64
+  public as_u64 u64
+  pre debug: (int s n) >= int.zero
+  =>
+    n.as_u64
+
+
+  # does this int fit into an u128?
+  public fits_in_u128 =>
+    ns = num.plus && data.count ≤ 4
+
+
+  # this int as an u128
+  public as_u128 u128
+  pre debug: fits_in_u128
+  =>
+    n.as_u128
+
+
+  # does this int fit into an i128?
+  public fits_in_i128 =>
+    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
+
+
+  # this int as an i128
+  public as_i128 i128
+  pre debug: fits_in_i128
+  =>
+    if ns = num.plus
+      n.as_i128
+    else if data.as_equatable = [u32 0x8000_0000, 0, 0, 0].as_equatable
+      i128.min
+    else
+      -n.as_i128
+
+
+  # this int as an uint
+  public as_uint uint
+  pre debug: (int s n) >= int.zero
+  =>
+    n
+
+
+  # helper feature to init int via an i64
+  type.from_i64(val i64) int =>
+    s num.sign := if val < 0 then num.minus else num.plus
+    n u64 := if val = i64.min
+               i64.max.as_u64 + 1
+             else if val < 0
+               (-val).as_u64
+             else val.as_u64
+    int s (uint n)
+
+
+  # helper feature to init int via an i128
+  public type.from_i128(val i128) int =>
+    s num.sign := if val < i128.zero then num.minus else num.plus
+
+    if val.is_min
+      int s (uint [(u32 0x8000_0000), 0, 0, 0] unit)
+    else
+      a_val := val.abs
+      u_hi := a_val.hi.cast_to_u64
+      x0 := (u_hi >> 32).as_u32
+      x1 := ((u_hi<<32)>>32).as_u32
+      x2 := (a_val.abs.lo >> 32).as_u32
+      x3 := ((a_val.abs.lo<<32)>>32).as_u32
+      int s (uint [x0, x1, x2, x3] unit)
+
+
+  # helper feature to init int via a u64
+  public type.from_u64(val u64) int =>
+    int num.plus (uint val)
+
+
+  # helper feature to init int via an i32
+  public type.from_i32(val i32) int =>
+    from_i64 val.as_i64
+
+
+
+# shorthand to create an int via an i64
+public int (val i64) int =>
+  int.from_i64 val

@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue2378.fz:24:29: error 1: Selector not permitted since no actual type parameters are given for the open type parameter type
+tuple.v0 => say "hi {values.0}"
+----------------------------^
+In call to 'tuple.values'
+Selected variant 'values.0'
+Number of actual type parameters: 0
+Actual type parameters: none
+
+one error.

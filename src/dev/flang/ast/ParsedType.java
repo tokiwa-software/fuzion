@@ -145,9 +145,9 @@ public class ParsedType extends UnresolvedType
 
   /**
    * May this unresolved type be a free type. This is the case for explicit free
-   * types such as `X : Any`, and for all normal types like `XYZ` that are not
-   * qualified by an outer type `outer.XYZ` and that do not have actual type
-   * parameters `XYZ T1 T2` and that are not boxed.
+   * types such as {@code X : Any}, and for all normal types like {@code XYZ} that are not
+   * qualified by an outer type {@code outer.XYZ} and that do not have actual type
+   * parameters {@code XYZ T1 T2} and that are not boxed.
    */
   public boolean mayBeFreeType()
   {
@@ -159,8 +159,8 @@ public class ParsedType extends UnresolvedType
 
 
   /**
-   * For a type `XYZ` with mayBeFreeType() returning true, this gives the name
-   * of the free type, which would be `"XYZ"` in this example.
+   * For a type {@code XYZ} with mayBeFreeType() returning true, this gives the name
+   * of the free type, which would be {@code "XYZ"} in this example.
    *
    * @return the name of the free type, which becomes the name of the type
    * parameter created for it.

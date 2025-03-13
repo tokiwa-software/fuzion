@@ -28,9 +28,9 @@ choice_mix is
   Nil is
   MyObj ref is
   MyRef(x,y,z i32) ref : MyObj is
-    a i32 := x+x
-    b i32 := y+y
-    c i32 := z+z
+    _ i32 := x+x
+    _ i32 := y+y
+    _ i32 := z+z
 
   Mix : choice i32
                bool

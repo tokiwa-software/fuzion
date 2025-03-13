@@ -58,3 +58,5 @@ c:
 show:
 	printf "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq
+
+effect:

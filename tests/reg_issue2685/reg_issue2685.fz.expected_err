@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue2685.fz:30:8: error 1: Broken numeric literal, exponent indicator must be in upper case.
+  say 1e3   # 1. should flag an error: exponent indicator must be in upper case
+-------^
+To fix this change 'e' to 'E'.
+
+
+--CURDIR--/reg_issue2685.fz:32:8: error 2: Broken numeric literal, exponent indicator must be in upper case.
+  say 1p10  # 2. should flag an error: exponent indicator must be in upper case
+-------^
+To fix this change 'p' to 'P'.
+
+2 errors.

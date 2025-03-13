@@ -1,0 +1,364 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.java
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# fuzion.java -- unit type grouping low-level helpers for Java interface
+#
+public fuzion.java is
+
+  // NYI: UNDER DEVELOPMENT remove this, replace with effect
+  public create_jvm0(class_path String) =>
+    create_jvm (sys.c_string "-Djava.class.path=$class_path")
+
+  create_jvm(option_string universe.Array) unit => intrinsic
+
+
+  # read a static field of given name in class with given name.  Wrap result into
+  # an instance of T.
+  #
+  public get_static_field(T type, clazz String, field String, signature String) =>
+    c := string_to_java_object1 clazz
+    f := string_to_java_object1 field
+    get_static_field0 T c f (sys.c_string signature)
+
+
+  # read a field of given name from given object instance thiz.  Wrap result into
+  # an instance of T.
+  #
+  public get_field(T type, thiz Java_Object, field String, signature String) =>
+    f := string_to_java_object1 field
+    get_field0 T thiz.java_ref f (sys.c_string signature)
+
+
+  # set a static field of given name in class with given name.
+  #
+  public set_static_field(clazz String, field String, val Java_Object, signature String) =>
+    c := string_to_java_object1 clazz
+    f := string_to_java_object1 field
+    set_static_field0 c f val.java_ref (sys.c_string signature)
+
+
+  # set a field of given name from given object instance thiz.
+  #
+  public set_field(thiz Java_Object, field String, val Java_Object, signature String) =>
+    f := string_to_java_object1 field
+    set_field0 thiz.java_ref f val.java_ref (sys.c_string signature)
+
+
+  # intrinsic to read static field
+  #
+  get_static_field0(T type, clazz, field Java_Ref, signature universe.Array) T => intrinsic
+
+
+  # intrinsic to read instance field
+  #
+  get_field0(T type, thiz, field Java_Ref, signature universe.Array) T => intrinsic
+
+
+  # intrinsic to set static field
+  #
+  set_static_field0(clazz, field, val Java_Ref, signature universe.Array) unit => intrinsic
+
+
+  # intrinsic to set instance field
+  #
+  set_field0(thiz, field, val Java_Ref, signature universe.Array) unit => intrinsic
+
+
+  # A Java reference
+  #
+  public Java_Object(public java_ref Java_Ref) ref
+  is
+    public is_null bool =>
+      is_null0 java_ref
+
+    is_null0(java_ref Java_Ref) bool => intrinsic
+
+    # NYI: UNDER DEVELOPMENT:
+    # redef as_string String =>
+    #   call_virtual "java.lang.Object" "toString" "()Ljava.lang.String;" Java_Object.this []
+
+
+  # A Java array
+  #
+  public Array(public T type,
+               public redef java_ref Java_Ref) ref : Sequence T, Java_Object java_ref
+  is
+    public length                  => array_length T java_ref
+    public redef finite trit       => trit.yes
+    public redef index [ ] (i i32) => array_get    T java_ref i (sys.c_string signature)
+    public redef as_list => as_list 0
+
+
+    # create list starting at index from
+    #
+    public as_list (from i32) list T =>
+      if length ≤ from
+        nil
+      else
+        array_cons from
+
+
+    # create a cons cell for a list of this array starting at the given
+    # index
+    #
+    array_cons (i i32) : Cons T (list T)
+      pre
+        debug: 0 ≤ i < length
+    is
+      public redef head => Array.this[i]
+      public redef tail => as_list i+1
+
+
+    # get the java signature for type T.
+    #
+    signature =>
+      if T.name = "i8"
+        "B"
+      else if T.name = "i16"
+        "S"
+      else if T.name = "u16"
+        "C"
+      else if T.name = "i32"
+        "I"
+      else if T.name = "i64"
+        "J"
+      else if T.name = "f32"
+        "F"
+      else if T.name = "f64"
+        "D"
+      else if T.name = "bool"
+        "Z"
+      else
+        "NOT_A_PRIMITIVE"
+
+
+  # Java's 'java.lang.String' type
+  #
+  public Java_String(public redef java_ref Java_Ref) ref : String, Java_Object java_ref
+  is
+    public redef utf8 => (java_string_to_string java_ref).utf8
+
+
+  # Call a virtual Java method class_name.name with given signature signature
+  # on instance thiz with given arguments
+  #
+  public call_virtual(T type,
+                     class_name String,
+                     name String,
+                     signature String,
+                     thiz Java_Object,
+                     args array Java_Object) outcome T
+  pre
+    safety: !thiz.is_null
+  =>
+    c := string_to_java_object1 class_name
+    n := string_to_java_object1 name
+    s := string_to_java_object1 signature
+    t := thiz.java_ref
+    a := (args.map_to_array (x -> x.java_ref)).internal_array
+    call_v0 T c n s t a
+
+
+  # Call a static Java method with given name and signature with given
+  # arguments
+  #
+  public call_static(T type,
+                    class_name String,
+                    name String,
+                    signature String,
+                    args array Java_Object) outcome T
+  =>
+    c := string_to_java_object1 class_name
+    n := string_to_java_object1 name
+    s := string_to_java_object1 signature
+    a := (args.map_to_array (x -> x.java_ref)).internal_array
+    call_s0 T c n s a
+
+
+  # Call a Java constructor with given signature for class with given name
+  # with given arguments
+  #
+  public call_constructor(T type,
+                         class_name String,
+                         signature String,
+                         args array Java_Object) outcome T
+  =>
+    c := string_to_java_object1 class_name
+    s := string_to_java_object1 signature
+    a := (args.map_to_array (x -> x.java_ref)).internal_array
+    call_c0 T c s a
+
+
+  # intrinsic to call given Java instance method
+  #
+  call_v0(T type,
+                 class_name Java_Ref,
+                 name Java_Ref,
+                 signature Java_Ref,
+                 thiz Java_Ref,
+                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
+
+  # intrinsic to call given Java static method
+  #
+  call_s0(T type,
+                 class_name Java_Ref,
+                 name Java_Ref,
+                 signature Java_Ref,
+                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
+
+
+  # intrinsic to call given Java constructor
+  #
+  call_c0(T type,
+                 class_name Java_Ref,
+                 signature Java_Ref,
+                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
+
+
+  # get a null value of type T
+  #
+  public null(T type : Java_Object)
+  =>
+    # NYI: UNDER DEVELOPMENT: HACK!
+    cast T (call_static (Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
+
+
+  # cast this to some other class
+  #
+  public cast(T type : Java_Object, thiz Java_Object)
+  =>
+    cast0 T thiz.java_ref
+
+  # intrinsic to rewrap thiz in T
+  #
+  cast0(T type : Java_Object, thiz Java_Ref) outcome T => intrinsic
+
+
+  # intrinsic to get the length of a Java array of arbitrary type
+  #
+  array_length(T type, a Java_Ref) i32 => intrinsic
+
+
+  # intrinsic to get an element of a Java array of arbitrary type
+  #
+  array_get(T type, a Java_Ref, ix i32, signature universe.Array) T => intrinsic
+
+
+  # convert a Sequence to a Java Array object
+  #
+  # This only works for types that map to java primitives
+  #
+  # If you want to create an array of complex types use `Java.as_java_object [...]`
+  #
+  public array_to_java_object(T type, a Sequence T) fuzion.java.Array T
+    pre
+      T : java_primitive
+  =>
+    fuzion.java.Array T (array_to_java_object0 T a.as_array.internal_array)
+
+
+  # intrinsic to convert an array to a Java Array object
+  #
+  array_to_java_object0(T type, a fuzion.sys.internal_array T) Java_Ref => intrinsic
+
+
+  # convert a string to a Java String object
+  #
+  public string_to_java_object(s String) Java_Object =>
+    Java_Object (string_to_java_object1 s)
+
+
+  string_to_java_object1(s String) =>
+    string_to_java_object0 s.utf8.as_array.internal_array
+
+
+  # intrinsic to convert a string to a Java String object
+  #
+  string_to_java_object0(s fuzion.sys.internal_array u8) Java_Ref => intrinsic
+
+
+  # convert a Java String to a string
+  #
+  java_string_to_string(java_ref Java_Ref) String => intrinsic
+
+
+  primitive_to_java_object(T type, v T) Java_Ref
+    pre
+      T : java_primitive
+  => intrinsic
+
+
+  # intrinsic to convert an i8 to a Java Byte object
+  #
+  public i8_to_java_object(v i8) Java_Object => Java_Object (primitive_to_java_object v)
+
+
+  # intrinsic to convert an u16 to a Java Character object
+  #
+  public u16_to_java_object(v u16) Java_Object => Java_Object (primitive_to_java_object v)
+
+
+  # intrinsic to convert an i16 to a Java Short object
+  #
+  public i16_to_java_object(v i16) Java_Object => Java_Object (primitive_to_java_object v)
+
+
+  # intrinsic to convert an i32 to a Java Integer object
+  #
+  public i32_to_java_object(v i32) Java_Object => Java_Object (primitive_to_java_object v)
+
+
+  # intrinsic to convert an i64 to a Java Long object
+  #
+  public i64_to_java_object(v i64) Java_Object => Java_Object (primitive_to_java_object v)
+
+
+  # intrinsic to convert an f32 to a Java Float object
+  #
+  public f32_to_java_object(v f32) Java_Object => Java_Object (primitive_to_java_object v)
+
+
+  # intrinsic to convert a f64 to a Java Double object
+  #
+  public f64_to_java_object(v f64) Java_Object => Java_Object (primitive_to_java_object v)
+
+
+  # intrinsic to convert a bool to a Java Boolean object
+  #
+  public bool_to_java_object(b bool) Java_Object => Java_Object (primitive_to_java_object b)
+
+
+  # short-hands
+  #
+  public i8    .as_java_object => fuzion.java.i8_to_java_object  val
+  public i16   .as_java_object => fuzion.java.i16_to_java_object val
+  public u16   .as_java_object => fuzion.java.u16_to_java_object val
+  public i32   .as_java_object => fuzion.java.i32_to_java_object val
+  public i64   .as_java_object => fuzion.java.i64_to_java_object val
+  public f32   .as_java_object => fuzion.java.f32_to_java_object val
+  public f64   .as_java_object => fuzion.java.f64_to_java_object val
+  public bool  .as_java_object => fuzion.java.bool_to_java_object bool.this
+  public String.as_java_object => fuzion.java.string_to_java_object String.this
+  public array .as_java_object => fuzion.java.array_to_java_object array.this

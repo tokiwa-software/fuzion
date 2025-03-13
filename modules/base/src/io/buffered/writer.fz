@@ -1,0 +1,94 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.buffered.writer
+#
+# -----------------------------------------------------------------------
+
+
+# buffered.writer effect allows buffered writing
+# by using the given Write_Handler
+#
+# note: anything in the buffer when effect is uninstalled will be discarded.
+#
+public writer(wh Write_Handler, buf_size i32) : effect
+pre debug: buf_size > 0
+is
+
+  # circular buffer backing this writer
+  #
+  buffer := (mutate.circular_buffer u8).new LM buf_size.as_i64 0
+
+
+  # flush the buffer, that is, write out everything that is still
+  # in the buffer
+  #
+  public flush outcome unit =>
+    if buffer.buffered = 0
+      unit
+    else
+      n := buffer.buffered # we are expecting to write this number of bytes
+      wh.write (buffer.flush n)
+
+
+  # buffered writing of the given byte
+  #
+  public write_byte (b u8) outcome unit =>
+    (write [b]).error
+
+
+  # helper type for write result
+  #
+  private:public write_result(public bytes_written i32, public error outcome unit) is
+
+
+  # buffered writing of the given array
+  #
+  public write (data Sequence u8) write_result =>
+    p := data.as_array
+    n := p.length
+    # NYI: BUG: #4494: store loop result in var `wr` due to this bug
+    wr := (
+      for n_written := 0, n_written + r
+          e outcome unit := unit, e0
+      while n_written < n
+        y := LM.env.new (outcome unit unit)
+        f =>
+          if buffer.buffered = 0 && (n - n_written) > buf_size
+            # can write directly
+            y <- wh.write (p.slice n_written (n_written + buf_size)).as_array
+            buf_size
+          else if buffer.buffered = 0
+            # start filling buffer, but incompletely
+            y <- buffer.enqueue (p.slice n_written n).as_array
+            n - n_written
+          else
+            # fill up the rest of the buffer
+            a := min (buf_size - buffer.buffered.as_i32) n
+            y <- buffer.enqueue (p.slice n_written (n_written + a)).as_array
+            y <- flush
+            a
+        r := f
+        e0 := y.get
+      until !e
+        (n_written, e)
+      else
+        (n_written, e)
+      )
+    write_result wr.values.0 wr.values.1

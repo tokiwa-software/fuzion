@@ -28,10 +28,10 @@ typeinference is
 
   chck(b bool, msg String) =>
     s := if b
-      "PASSED: "
-    else
-      _ := set_exit_code 1
-      "FAILED: "
+           "PASSED: "
+         else
+           _ := set_exit_code 1
+           "FAILED: "
     say (s + msg)
 
   typeInferencingFromIf1(b bool) is
@@ -65,9 +65,9 @@ typeinference is
 
     f(x abcde) choice i32 String bool E =>
       match x
-        a A => 3
+        A   => 3
         B,C => "String"
-        d D => false
+        D   => false
         e E => e
 
   r := typeInferencingFromMatch1.f typeInferencingFromMatch1.A
@@ -91,9 +91,9 @@ typeinference is
     test(x abcde) is
       f(a choice i32 String bool E) unit =>
       f (match x
-            a A => 3
+            A   => 3
             B,C => "String"
-            d D => false
+            D   => false
             e E => e
         )
 

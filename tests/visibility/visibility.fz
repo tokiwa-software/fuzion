@@ -308,7 +308,7 @@ visibility is
       r := a + ix1 + ix2 + it1 + it2 + ix3 + b
     else
       s := a + ix1 + ix2
-    t := a
+    _ := a
   visi9
 
   visiB =>

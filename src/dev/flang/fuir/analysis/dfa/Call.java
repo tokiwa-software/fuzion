@@ -28,15 +28,18 @@ package dev.flang.fuir.analysis.dfa;
 
 
 import dev.flang.fuir.FUIR;
-
-
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+
+import java.util.TreeSet;
 
 
 /**
@@ -173,7 +176,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
         dfa.escapes(cc);
         var or = dfa._fuir.clazzOuterRef(cc);
-        while (or != -1)
+        while (or != NO_CLAZZ)
           {
             var orr = dfa._fuir.clazzResultClazz(or);
             dfa.escapes(orr);
@@ -203,15 +206,15 @@ public class Call extends ANY implements Comparable<Call>, Context
   public int compareTo(Call other)
   {
     return
-      _cc         != other._cc                    ? Integer.compare(_cc        , other._cc        ) :
-      _target._id != other._target._id            ? Integer.compare(_target._id, other._target._id) :
-      DFA.SITE_SENSITIVE && _site  != other._site ? Integer.compare(_site      , other._site      ) :
+      _cc         != other._cc                        ? Integer.compare(_cc        , other._cc        ) :
+      _target._id != other._target._id                ? Integer.compare(_target._id, other._target._id) :
+      _dfa.siteSensitive(_cc) && _site != other._site ? Integer.compare(_site      , other._site      ) :
       Env.compare(env(), other.env());
   }
 
 
   /**
-   * For debugging: Why did `compareTo(other)` return a value != 0?
+   * For debugging: Why did {@code compareTo(other)} return a value != 0?
    */
   String compareToWhy(Call other)
   {
@@ -237,7 +240,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         var a0 = _args.get(i);
         var a1 =  args.get(i);
-        var an = a0.joinVal(_dfa, a1);
+        var an = a0.joinVal(_dfa, a1, _dfa._fuir.clazzArgClazz(_cc, i));
         if (an.value() != a0.value())
           {
             _args.set(i, an);
@@ -289,34 +292,21 @@ public class Call extends ANY implements Comparable<Call>, Context
               {
                 var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
                 Errors.warning(msg);
-                var rc = _dfa._fuir.clazzResultClazz(_cc);
-                result = switch (_dfa._fuir.getSpecialClazz(rc))
-                  {
-                  case c_i8, c_i16, c_i32, c_i64,
-                       c_u8, c_u16, c_u32, c_u64,
-                       c_f32, c_f64              -> NumericValue.create(_dfa, rc);
-                  case c_bool                    -> _dfa._bool;
-                  case c_TRUE, c_FALSE           -> Value.UNIT;
-                  case c_Const_String, c_String  -> _dfa.newConstString(null, this);
-                  case c_unit                    -> Value.UNIT;
-                  case c_sys_ptr                 -> new Value(_cc); // NYI: we might add a specific value for system pointers
-                  case c_NOT_FOUND               -> null;
-                  };
+                result = genericResult();
               }
           }
       }
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
-        var rc = _dfa._fuir.clazzResultClazz(_cc);
-        result = switch (_dfa._fuir.getSpecialClazz(rc))
+        markSysArrayArgsAsInitialized();
+        markFunctionArgsAsCalled();
+
+        result = genericResult();
+        if (result == null)
           {
-            case c_i8, c_i16, c_i32, c_i64,
-                 c_u8, c_u16, c_u32, c_u64,
-                 c_f32, c_f64              -> NumericValue.create(_dfa, rc);
-            case c_Const_String, c_String  -> _dfa.newConstString(null, this);
-            default                        -> { Errors.warning("DFA: cannot handle native feature " + _dfa._fuir.clazzOriginalName(_cc));
-                                                yield null; }
-          };
+            var rc = _dfa._fuir.clazzResultClazz(_cc);
+            Errors.warning("DFA: cannot handle native feature result type: " + _dfa._fuir.clazzOriginalName(rc));
+          }
       }
     else if (_returns)
       {
@@ -325,7 +315,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             result = _instance;
           }
-        else if (FUIR.SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
+        else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
           {
             result = Value.UNIT;
           }
@@ -343,31 +333,102 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * call all args that are Function
+   */
+  private void markFunctionArgsAsCalled()
+  {
+    for (int i = 0; i < _dfa._fuir.clazzArgCount(_cc); i++)
+      {
+        _dfa.readField(_dfa._fuir.clazzArg(_cc, i));
+
+        var call = _dfa._fuir.lookupCall(_dfa._fuir.clazzArgClazz(_cc, i));
+        if (call != FUIR.NO_CLAZZ)
+          {
+            var args = new List<Val>();
+            for (int j = 0; j < _dfa._fuir.clazzArgCount(call); j++)
+              {
+                args.add(_dfa.newInstance(_dfa._fuir.clazzArgClazz(call, j), FUIR.NO_SITE, _context));
+              }
+            var ignore = _dfa
+              .newCall(call, FUIR.NO_SITE, this._args.get(i).value(), args, null /* env */, _context)
+              .result();
+          }
+      }
+  }
+
+
+  /*
+   * sys array arguments might be written
+   * to in the native features
+   * so we fake that here
+   */
+  private void markSysArrayArgsAsInitialized()
+  {
+    for (var arg : _args)
+      {
+        if (arg.value() instanceof SysArray sa && sa._elements == null)
+          {
+            sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(SpecialClazzes.c_i32)),
+                     _dfa.newInstance(sa._elementClazz, _site, _context));
+          }
+      }
+  }
+
+
+  /**
+   * create a generic result for this call.
+   * used for results of native and not implemented intrinsics.
+   */
+  private Val genericResult()
+  {
+    var rc = _dfa._fuir.clazzResultClazz(_cc);
+    return _dfa._fuir.clazzIsVoidType(rc)
+      ? null
+      : _dfa.newInstance(rc, _site, _context);
+  }
+
+
+  /**
+   * toString() might end up in a complex recursion if it is used for careless
+   * debug output, so we try to catch recursion and stop it.
+   */
+  static TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
+
+
+  /**
    * Create human-readable string from this call.
    */
   public String toString()
   {
-    var sb = new StringBuilder();
-    sb.append(_dfa._fuir.clazzAsString(_cc));
-    if (_target != Value.UNIT)
+    if (_toStringRecursion_.contains(this))
       {
-        sb.append(" target=")
-          .append(_target);
+        return "*** recursive Call.toString() ***";
       }
-    for (var i = 0; i < _args.size(); i++)
+    else
       {
-        var a = _args.get(i);
-        sb.append(" a")
-          .append(i)
-          .append("=")
-          .append(a);
+        _toStringRecursion_.add(this);
+        var sb = new StringBuilder();
+        sb.append(_dfa._fuir.clazzAsString(_cc));
+        if (_target != Value.UNIT)
+          {
+            sb.append(" target=")
+              .append(_target);
+          }
+        for (var i = 0; i < _args.size(); i++)
+          {
+            var a = _args.get(i);
+            sb.append(" a")
+              .append(i)
+              .append("=")
+              .append(a);
+          }
+        sb.append(" => ")
+          .append(_returns ? "returns" : "*** VOID ***")
+          .append(" ENV: ")
+          .append(Errors.effe(Env.envAsString(env())));
+        _toStringRecursion_.remove(this);
+        return sb.toString();
       }
-    var r = result();
-    sb.append(" => ")
-      .append(r == null ? "*** VOID ***" : r)
-      .append(" ENV: ")
-      .append(Errors.effe(Env.envAsString(env())));
-    return sb.toString();
   }
 
 
@@ -381,7 +442,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     return
       (forEnv
        ? (on.equals(EFFECT_INSTATE_NAME)
-          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectTypeFromInstrinsic(_cc))) + ", old environment was "
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectTypeFromIntrinsic(_cc))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(env())) +
          " for call to "
@@ -475,7 +536,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   Value getEffectForce(int s, int ecl)
   {
     var result = getEffectCheck(ecl);
-    if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_get"))
+    if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_from_env"))
       {
         DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                          _dfa._fuir.clazzAsString(ecl),
@@ -498,6 +559,11 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void replaceEffect(int ecl, Value e)
   {
+    if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
+      {
+        Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
+               + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+      }
     if (_env != null)
       {
         _env.replaceEffect(ecl, e);

@@ -26,7 +26,7 @@ String.mysubstring(from, to i32) String
     debug: 0 <= from <= to <= String.this.byte_length
   =>
     ref : String
-      redef utf8 Sequence u8 =>
+      public redef utf8 Sequence u8 =>
         String.this.utf8.slice(from, to)
 
 

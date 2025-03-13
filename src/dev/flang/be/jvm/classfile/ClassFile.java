@@ -1258,7 +1258,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
     /**
-     * @return A union all locals states that have been found for `byteCodePos`.
+     * @return A union all locals states that have been found for {@code byteCodePos}.
      */
     public List<VerificationType> unifiedLocals(int byteCodePos)
     {
@@ -1728,6 +1728,17 @@ public class ClassFile extends ANY implements ClassFileConstants
                     List<Attribute> attributes)
   {
     _fields.add(new Field(access_flags, name, descr, attributes));
+  }
+
+
+  /**
+   * Add a field declared in this class file.
+   */
+  public void field(int access_flags,
+                    String name,
+                    String descr)
+  {
+    field(access_flags, name, descr, new List<>());
   }
 
 

@@ -1,0 +1,162 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature equals
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# equals -- feature that compares two values using the equality relation
+# defined in their type
+#
+public equals(T type : property.equatable, a, b T) => T.equality a b
+
+
+# infix ≟ -- infix operation as short-hand for 'equals'
+#
+public infix ≟(T type : property.equatable, a, b T) => equals a b
+
+
+# infix = -- infix operation as short-hand for 'equals'
+#
+public infix =(T type : property.equatable, a, b T) => equals a b
+
+
+# infix = -- infix operation as short-hand for 'equals'
+#
+public infix !=(T type : property.equatable, a, b T) => !equals a b
+
+
+# is `a` contained in `Set` `s`?
+#
+# This should usually be called using type inference as in
+#
+#   my_set := set_of ["A","B","C"]
+#   say <| "B" ∈ my_set
+#   say <| "D" ∈ my_set
+#
+public infix ∈ (T type : property.equatable,
+                a T,
+                s container.Set T)
+=>
+  s.contains a
+
+
+# is `a` not contained in `Set` `s`?
+#
+# This should usually be called using type inference as in
+#
+#   my_set := set_of ["A","B","C"]
+#   say <| "B" ∉ my_set
+#   say <| "D" ∉ my_set
+#
+public infix ∉ (T type : property.equatable,
+                a T,
+                s container.Set T)
+=>
+  !(s.contains a)
+
+
+# lteq -- feature that compares two values using the lteq relation
+# defined in their type
+#
+public lteq(T type : property.partially_orderable, a, b T) => T.lteq a b
+
+
+# infix ≤ -- infix operation as short-hand for 'lteq'
+#
+public infix ≤(T type : property.partially_orderable, a, b T) => lteq a b
+
+
+# does this come after other?
+#
+public infix ≥(T type : property.orderable, a, b T) bool =>
+  lteq b a
+
+
+# does this come strictly after other?
+#
+public infix ⩼(T type : property.orderable, a, b T) bool =>
+  !(lteq a b)
+
+
+# does this come strictly before other?
+#
+public infix ⩻(T type : property.orderable, a, b T) bool =>
+  !(lteq b a)
+
+
+# three-way comparison between this and other.
+#
+# result is < 0 if this < other
+# result is > 0 if this > other
+# result is = 0 if this = other
+#
+public infix ⋄(T type : property.orderable, a, b T) i32 =>
+  if      a < b then -1
+  else if a > b then +1
+  else                0
+
+
+# infix <= -- infix operation as short-hand for 'lteq'
+#
+public infix <=(T type : property.partially_orderable, a, b T) => lteq a b
+
+
+# does this come after other?
+#
+public infix >=(T type : property.orderable, a, b T) bool =>
+  lteq b a
+
+
+# does this come strictly after other?
+#
+public infix >(T type : property.orderable, a, b T) bool =>
+  !lteq a b
+
+
+# does this come strictly before other?
+#
+public infix <(T type : property.orderable, a, b T) bool =>
+  !lteq b a
+
+
+# three-way comparison between this and other.
+#
+# result is < 0 if this < other
+# result is > 0 if this > other
+# result is = 0 if this = other
+#
+public infix <>(T type : property.orderable, a, b T) i32 =>
+  if      a < b then -1
+  else if a > b then +1
+  else                0
+
+
+# maximum of two values
+#
+public max(T type : property.orderable, a, b T) =>
+  if a > b then a else b
+
+
+# minimum of two values
+#
+public min(T type : property.orderable, a, b T) =>
+  if a < b then a else b

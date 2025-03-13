@@ -1,6 +1,6 @@
 
 --CURDIR--/generics_negative.fz:52:20: error 1: Illegal use of open formal type parameter type
-    f4(a A, b B, c C, a1 A) is abstract  // 6. should flag an error, open generic can only be used for last argument
+    f4(a A, b B, c C, a1 A) unit => abstract  // 6. should flag an error, open generic can only be used for last argument
 -------------------^
 Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
 Open formal argument: 'C'
@@ -14,7 +14,7 @@ Open formal argument: 'C'
 
 
 --CURDIR--/generics_negative.fz:38:7: error 3: Illegal use of open formal type parameter type
-    c C := any; // 4. should flag an error, open generic cannot be field type.
+    _ C := any; // 4. should flag an error, open generic cannot be field type.
 ------^
 Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
 Open formal argument: 'C'
@@ -27,8 +27,17 @@ Open formal type parameter type is permitted only as the type of the last argume
 Open formal argument: 'C'
 
 
---CURDIR--/generics_negative.fz:106:7: error 5: Formal type parameter cannot have type parameters
-    x A i32 := any               // 24. should flag an error: generic must not have generic args
+--CURDIR--/generics_negative.fz:105:11: error 5: Type not found
+    f(a A.i32) i32 => 3          // 23. should flag an error: generic used as outer type
+----------^^^
+Type 'i32' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'i32'
+in feature: 'Any'
+To solve this, check the spelling of the type you have used.
+
+
+--CURDIR--/generics_negative.fz:106:7: error 6: Formal type parameter must not have type parameters
+    _ A i32 := any               // 24. should flag an error: generic must not have generic args
 ------^
 In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.
 Type used: 'A i32'
@@ -36,15 +45,6 @@ Formal type parameter used 'A'
 Formal type parameter declared in --CURDIR--/generics_negative.fz:104:18:
   opengenerics23(A, B, C type) is
 -----------------^
-
-
---CURDIR--/generics_negative.fz:105:11: error 6: Type not found
-    f(a A.i32) i32 => 3          // 23. should flag an error: generic used as outer type
-----------^^^
-Type 'i32' was not found, no corresponding feature nor formal type parameter exists
-Type that was not found: 'i32'
-in feature: 'Any'
-To solve this, check the spelling of the type you have used.
 
 
 --CURDIR--/generics_negative.fz:109:8: error 7: Wrong number of type parameters
@@ -56,81 +56,81 @@ expected at least one generic argument for 'R, A...'
 found none.
 
 
---CURDIR--/generics_negative.fz:132:8: error 8: Wrong number of type parameters
-    x4 g := any                  // 38. should flag an error: not enough generics
--------^
+--CURDIR--/generics_negative.fz:132:7: error 8: Wrong number of type parameters
+    _ g := any                  // 38. should flag an error: not enough generics
+------^
 Wrong number of actual type parameters in type:
 Type: g
 expected 3 generic arguments for 'A, B, C'
 found none.
 
 
---CURDIR--/generics_negative.fz:133:8: error 9: Wrong number of type parameters
-    x5 g i32 := any              // 39. should flag an error: not enough generics
--------^
+--CURDIR--/generics_negative.fz:133:7: error 9: Wrong number of type parameters
+    _ g i32 := any              // 39. should flag an error: not enough generics
+------^
 Wrong number of actual type parameters in type:
 Type: g i32
 expected 3 generic arguments for 'A, B, C'
 found 1: 'i32'.
 
 
---CURDIR--/generics_negative.fz:134:8: error 10: Wrong number of type parameters
-    x6 g i32 i32 := any          // 40. should flag an error: not enough generics
--------^
+--CURDIR--/generics_negative.fz:134:7: error 10: Wrong number of type parameters
+    _ g i32 i32 := any          // 40. should flag an error: not enough generics
+------^
 Wrong number of actual type parameters in type:
 Type: g i32 i32
 expected 3 generic arguments for 'A, B, C'
 found 2: 'i32, i32'.
 
 
---CURDIR--/generics_negative.fz:136:8: error 11: Wrong number of type parameters
-    x8 g i32 i32 i32 i32 := any  // 41. should flag an error: too many generics
--------^
+--CURDIR--/generics_negative.fz:136:7: error 11: Wrong number of type parameters
+    _ g i32 i32 i32 i32 := any  // 41. should flag an error: too many generics
+------^
 Wrong number of actual type parameters in type:
 Type: g i32 i32 i32 i32
 expected 3 generic arguments for 'A, B, C'
 found 4: 'i32, i32, i32, i32'.
 
 
---CURDIR--/generics_negative.fz:140:11: error 12: Type not found
-    hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
-----------^^^^^^
+--CURDIR--/generics_negative.fz:140:18: error 12: Type not found
+    public hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
+-----------------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.hjkl'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:142:13: error 13: Type not found
-    asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
-------------^^^^^^
+--CURDIR--/generics_negative.fz:142:20: error 13: Type not found
+    public asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
+-------------------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.asdfg1'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:143:13: error 14: Type not found
-    asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
-------------^^^^^^
+--CURDIR--/generics_negative.fz:143:20: error 14: Type not found
+    public asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
+-------------------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.asdfg2'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:144:11: error 15: Type not found
-    uiop (qwerty i32).uiop := (qwerty i32).uiop
-----------^^^^^^
+--CURDIR--/generics_negative.fz:144:18: error 15: Type not found
+    public uiop (qwerty i32).uiop := (qwerty i32).uiop
+-----------------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.uiop'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:145:11: error 16: Type not found
-    qwert qwerty i32 := qwerty i32
-----------^^^^^^
+--CURDIR--/generics_negative.fz:145:18: error 16: Type not found
+    public qwert qwerty i32 := qwerty i32
+-----------------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.qwert'
@@ -155,9 +155,9 @@ in feature: 'generics_negative.inheriting_type_parameter.child.g2'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:140:43: error 19: Could not find called feature
-    hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
-------------------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:140:50: error 19: Could not find called feature
+    public hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
+-------------------------------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
@@ -171,32 +171,32 @@ Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty'
 
 
---CURDIR--/generics_negative.fz:142:39: error 21: Could not find called feature
-    asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
---------------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:142:46: error 21: Could not find called feature
+    public asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
+---------------------------------------------^^^^^^
 Feature not found: 'qwerty' (no arguments)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty'
 
 
---CURDIR--/generics_negative.fz:143:40: error 22: Could not find called feature
-    asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
----------------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:143:47: error 22: Could not find called feature
+    public asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
+----------------------------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
 
 
---CURDIR--/generics_negative.fz:144:32: error 23: Could not find called feature
-    uiop (qwerty i32).uiop := (qwerty i32).uiop
--------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:144:39: error 23: Could not find called feature
+    public uiop (qwerty i32).uiop := (qwerty i32).uiop
+--------------------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
 
 
 --CURDIR--/generics_negative.fz:190:22: error 24: Ambiguous type
-        x  := option X  nil      // 52. should flag an error: ambiguous type parameter
+        _  := option X  nil      // 52. should flag an error: ambiguous type parameter
 ---------------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'X'
@@ -212,7 +212,7 @@ To solve this, rename these features such that each one has a unique name.
 
 
 --CURDIR--/generics_negative.fz:193:22: error 25: Ambiguous type
-        z  := option Z  nil      // 53. should flag an error: ambiguous type parameter
+        _  := option Z  nil      // 53. should flag an error: ambiguous type parameter
 ---------------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'Z'
@@ -236,165 +236,165 @@ in feature: 'generics_negative.inheriting_type_parameter.child.g3'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:145:25: error 27: Could not find called feature
-    qwert qwerty i32 := qwerty i32
-------------------------^^^^^^
+--CURDIR--/generics_negative.fz:145:32: error 27: Could not find called feature
+    public qwert qwerty i32 := qwerty i32
+-------------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
 
 
---CURDIR--/generics_negative.fz:76:14: error 28: Wrong number of actual arguments in call
-  f1r2 := f1.call 7              //  9. should flag an error, wrong number of arguments
--------------^^^^
+--CURDIR--/generics_negative.fz:76:11: error 28: Wrong number of actual arguments in call
+  _ := f1.call 7              //  9. should flag an error, wrong number of arguments
+----------^^^^
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:78:12: error 29: Wrong number of actual arguments in call
-  f1r2a := f1 7                  // 10. should flag an error, wrong number of arguments
------------^^
+--CURDIR--/generics_negative.fz:78:8: error 29: Wrong number of actual arguments in call
+  _ := f1 7                   // 10. should flag an error, wrong number of arguments
+-------^^
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:81:14: error 30: Wrong number of actual arguments in call
-  f2r1 := f2.call()              // 11. should flag an error, wrong number of arguments
--------------^^^^
+--CURDIR--/generics_negative.fz:81:11: error 30: Wrong number of actual arguments in call
+  _ := f2.call()              // 11. should flag an error, wrong number of arguments
+----------^^^^
 Number of actual arguments is 0, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:83:14: error 31: Wrong number of actual arguments in call
-  f2r3 := f2.call true false     // 12. should flag an error, wrong number of arguments
--------------^^^^
+--CURDIR--/generics_negative.fz:83:11: error 31: Wrong number of actual arguments in call
+  _ := f2.call true false     // 12. should flag an error, wrong number of arguments
+----------^^^^
 Number of actual arguments is 2, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:84:12: error 32: Wrong number of actual arguments in call
-  f2r1a := f2()                  // 13. should flag an error, wrong number of arguments
------------^^
+--CURDIR--/generics_negative.fz:84:8: error 32: Wrong number of actual arguments in call
+  _ := f2()                   // 13. should flag an error, wrong number of arguments
+-------^^
 Number of actual arguments is 0, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:86:12: error 33: Wrong number of actual arguments in call
-  f2r3a := f2 true false         // 14. should flag an error, wrong number of arguments
------------^^
+--CURDIR--/generics_negative.fz:86:8: error 33: Wrong number of actual arguments in call
+  _ := f2 true false          // 14. should flag an error, wrong number of arguments
+-------^^
 Number of actual arguments is 2, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:90:14: error 34: Wrong number of actual arguments in call
-  r1r2 := r1.call 7              // 15. should flag an error, wrong number of arguments
--------------^^^^
+--CURDIR--/generics_negative.fz:90:11: error 34: Wrong number of actual arguments in call
+  _ := r1.call 7              // 15. should flag an error, wrong number of arguments
+----------^^^^
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:92:12: error 35: Wrong number of actual arguments in call
-  r1r2a := r1 7                  // 16. should flag an error, wrong number of arguments
------------^^
+--CURDIR--/generics_negative.fz:92:8: error 35: Wrong number of actual arguments in call
+  _ := r1 7                   // 16. should flag an error, wrong number of arguments
+-------^^
 Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:95:14: error 36: Wrong number of actual arguments in call
-  r2r1 := r2.call()              // 17. should flag an error, wrong number of arguments
--------------^^^^
+--CURDIR--/generics_negative.fz:95:11: error 36: Wrong number of actual arguments in call
+  _ := r2.call()              // 17. should flag an error, wrong number of arguments
+----------^^^^
 Number of actual arguments is 0, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:96:14: error 37: Wrong number of actual arguments in call
-  r2r2 := r2.call 3              // 18. should flag an error, wrong number of arguments
--------------^^^^
+--CURDIR--/generics_negative.fz:96:11: error 37: Wrong number of actual arguments in call
+  _ := r2.call 3              // 18. should flag an error, wrong number of arguments
+----------^^^^
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:98:14: error 38: Wrong number of actual arguments in call
-  r2r4 := r2.call 3 false 7      // 19. should flag an error, wrong number of arguments
--------------^^^^
+--CURDIR--/generics_negative.fz:98:11: error 38: Wrong number of actual arguments in call
+  _ := r2.call 3 false 7      // 19. should flag an error, wrong number of arguments
+----------^^^^
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:99:12: error 39: Wrong number of actual arguments in call
-  r2r1a := r2()                  // 20. should flag an error, wrong number of arguments
------------^^
+--CURDIR--/generics_negative.fz:99:8: error 39: Wrong number of actual arguments in call
+  _ := r2()                   // 20. should flag an error, wrong number of arguments
+-------^^
 Number of actual arguments is 0, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:100:12: error 40: Wrong number of actual arguments in call
-  r2r2a := r2 3                  // 21. should flag an error, wrong number of arguments
------------^^
+--CURDIR--/generics_negative.fz:100:8: error 40: Wrong number of actual arguments in call
+  _ := r2 3                   // 21. should flag an error, wrong number of arguments
+-------^^
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:102:12: error 41: Wrong number of actual arguments in call
-  r2r4a := r2 3 false 7          // 22. should flag an error, wrong number of arguments
------------^^
+--CURDIR--/generics_negative.fz:102:8: error 41: Wrong number of actual arguments in call
+  _ := r2 3 false 7           // 22. should flag an error, wrong number of arguments
+-------^^
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -498,9 +498,9 @@ for value assigned  : '"8"'
 To solve this, you could change the type of the target 'argument #3' to 'codepoint' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:114:25: error 50: Incompatible types when passing argument in a call
-    j2a i32  := x2.call 3         // 26. should flag an error: wrong argument type
-------------------------^
+--CURDIR--/generics_negative.fz:114:23: error 50: Incompatible types when passing argument in a call
+    _ i32  := x2.call 3         // 26. should flag an error: wrong argument type
+----------------------^
 Actual type for argument #1 'a' does not match expected type.
 In call to          : 'Function.call'
 expected formal type: 'bool'
@@ -511,19 +511,19 @@ To solve this, you could change the type of the target 'a' to 'i32' or convert t
 
 
 --CURDIR--/generics_negative.fz:115:5: error 51: Incompatible types in assignment
-    b2a bool := x2.call true      // 27. should flag an error: wrong type in assignment
-----^^^
-assignment to field : 'generics_negative.opengenerics24.b2a'
+    _ bool := x2.call true      // 27. should flag an error: wrong type in assignment
+----^
+assignment to field : 'generics_negative.opengenerics24._'
 expected formal type: 'bool'
 actual type found   : 'i32'
 assignable to       : 'i32'
 for value assigned  : 'x2.call true'
-To solve this, you could change the type of the target 'generics_negative.opengenerics24.b2a' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:117:20: error 52: Incompatible types when passing argument in a call
-    j2b i32  := x2 3              // 28. should flag an error: wrong argument type
--------------------^
+--CURDIR--/generics_negative.fz:117:18: error 52: Incompatible types when passing argument in a call
+    _ i32  := x2 3              // 28. should flag an error: wrong argument type
+-----------------^
 Actual type for argument #1 'a' does not match expected type.
 In call to          : 'Function.call'
 expected formal type: 'bool'
@@ -534,14 +534,14 @@ To solve this, you could change the type of the target 'a' to 'i32' or convert t
 
 
 --CURDIR--/generics_negative.fz:118:5: error 53: Incompatible types in assignment
-    b2b bool := x2 true           // 29. should flag an error: wrong type in assignment
-----^^^
-assignment to field : 'generics_negative.opengenerics24.b2b'
+    _ bool := x2 true           // 29. should flag an error: wrong type in assignment
+----^
+assignment to field : 'generics_negative.opengenerics24._'
 expected formal type: 'bool'
 actual type found   : 'i32'
 assignable to       : 'i32'
 for value assigned  : 'x2'
-To solve this, you could change the type of the target 'generics_negative.opengenerics24.b2b' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
 --CURDIR--/generics_negative.fz:121:13: error 54: Incompatible types when passing argument in a call
@@ -574,8 +574,8 @@ To solve this, you could change the type of the target 'argument #2' to 'i32' or
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -585,8 +585,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -620,8 +620,8 @@ To solve this, you could change the type of the target 'argument #2' to 'i32' or
 Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 
@@ -631,8 +631,8 @@ Declared at $MODULE/Function.fz:35:10:
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
-Declared at $MODULE/Function.fz:35:10:
-  public call(a A) R => abstract
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R => abstract
 ---------^^^^
 
 61 errors.

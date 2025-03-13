@@ -1,9 +1,12 @@
 
-$MODULE/mutate/array.fz:112:5: error 1: Failed to verify that effect 'mutate' is installed in current environment.
-    LM.env.array T 0 (fuzion.sys.internal_array_init T 0) unit
+{base.fum}/mutate/array.fz:112:5: error 1: Failed to verify that effect 'mutate' is installed in current environment.
+    LM.env.array 0 (fuzion.sys.internal_array_init T 0) unit
 ----^^^^^^
 Callchain that lead to this point:
 
+effect environment '--empty--' for call to 'mutate.type.from_env' at {base.fum}/mutate/array.fz:112:5:
+    LM.env.array 0 (fuzion.sys.internal_array_init T 0) unit
+----^^^^^^
 effect environment '--empty--' for call to '(mutate.type.array.type Any).new#1 mutate' at --CURDIR--/reg_issue2564.fz:26:8:
   o := (mutate.array Any).type.new mutate
 -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

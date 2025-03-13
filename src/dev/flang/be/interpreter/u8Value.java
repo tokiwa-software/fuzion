@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * u8Value is a value of type u8
@@ -112,10 +112,17 @@ public class u8Value extends Value
    */
   void checkStaticClazz(int expected)
   {
-    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_u8))
+    if (expected != fuir().clazz(SpecialClazzes.c_u8))
       {
         throw new Error("u8 value not allowed for clazz " + expected);
       }
+  }
+
+
+  @Override
+  protected Object toNative()
+  {
+    return (byte)this.u8Value();
   }
 
 }

@@ -23,7 +23,7 @@
 
 lib_container_sorted_array is
 
-  sa := container.sorted_array_of [5,3,7]
+  sa := [5,3,7].sort
 
   say sa
 

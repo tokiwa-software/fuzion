@@ -1,0 +1,192 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature memoize
+#
+# -----------------------------------------------------------------------
+
+
+# memoize `f`.
+# wraps f so that f will only be called once for every unique input.
+#
+# The term "memoization" was coined by Donald Michie in 1968 and
+# is derived from the Latin word "memorandum" ("to be remembered"),
+# usually truncated as "memo" in American English, and thus carries
+# the meaning of "turning a function into something to be remembered".
+# https://en.wikipedia.org/wiki/Memoization
+#
+# example:
+#
+#     mem := memoize (lock_free.Map i32 String) i32 String x->
+#       say "computing $x"
+#       x.as_string
+#
+#     say <| mem 1
+#     say <| mem 2
+#     say <| mem 1
+#     say <| mem 3
+#
+#
+public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
+  ref : Unary R T
+
+    # the memory
+    store := MM.empty
+
+    # implementation of abstract feature Unary.call
+    #
+    public redef call(a T) R =>
+      # compute if not yet computed
+      if store[a].is_nil
+        store.put a (f a)
+      store[a].get
+
+
+# memoize the results of a function.
+#
+# example:
+#
+# say you have a function `fib` that performs poorly because it lacks
+# memoization:
+#
+#     fib(n) =>
+#       if n <= 1 then 1 else fib n-1 + fib n-2
+#
+# you can now memoize this as follows
+#
+#     fib(n) i32 : memoize => keep n _->
+#       if n <= 1 then 1 else fib n-1 + fib n-2
+#
+# there are two things required: first, the function has to inherit from
+# `memoize`.  Second, the body has to be wrapped into a call to `keep`
+# with the key and a lambda to calculate the corresponding result, which
+# would usually just wrap the original code.
+#
+# Apart from the speedup, the memoization shows up when you analyse the
+# effects:
+#
+#     > ./build//bin/fz -effects fib.fz
+#      ...
+#     fib#1.memoized i32 i32
+#      ...
+#
+# It might be desired not to keep memoized results forever. To do so, we have
+# to instate a local instance of the `memoize.memoized` effect. This can be
+# done as follows:
+#
+#     # define my own memoization effect
+#     my_fib_memo : memoize.memoized i32 i32 is
+#
+#     # create an instance of it and instate it
+#     my_fib_memo ! ()->
+#
+#       # now use keep from this effect. Don not forget the `.env`!
+#       fib2(n) => my_fib_memo.env.keep n _->
+#         if n <= 1 then 1 else fib2 n-1 + fib2 n-2
+#
+#       # running this code shows improved performance
+#       (40..45) .for_each (n->say "$n {fib2 n}")
+#
+# Since memoization is used locally only, the effect does not show up when
+# effects are analysed.
+#
+#     > ./build//bin/fz -effects fib.fz
+#      ...
+#
+# NOTE: Currently, memoizaion requires keys to be orderable. Would be great
+#       to support hashable as well
+#
+# NOTE: Memoization is currently not thread safe. In case we want memoization
+#       to be used amoung threads, we will need a thread safe variant. However,
+#       this should currently be usable in multiple threads as long as each
+#       thread has its own instance of memoized. We just do not profit from
+#       values memoized in another thread.
+#
+public memoize is
+
+
+  # effect wrapped around map of memoized keys and corresponding values
+  #
+  public memoized(# the key type, i.e, input type of memoized function
+                  #
+                  K type : property.orderable,
+
+                  # the value type, i.e., result type of memoized function
+                  #
+                  V type)
+    : effect
+  is
+
+
+    # the store used for memoization
+    #
+    # NYI: IMPROVEMENT: would be nice to also support property.hashable keys
+    # using a tree map here
+    #
+    private store := (container.ps_map K V).empty # (lock_free.Map K V).empty
+
+
+    # use this memoized effect to retrieve the value for a given key or,
+    # if that value was not calculated yet, to return it
+    #
+    public keep(# the function input
+                #
+                k K,
+
+                # the function to caculate the result
+                #
+                f K->V)
+    =>
+      store[k].or_else ()->
+        v := f k
+        memoized.this.env.update k v
+        v
+
+    private update(k,v) =>
+      set store := store.add k v
+      memoized.this.replace memoized.this
+
+
+  # use golabal memoized effect to retrieve the value for a given key or,
+  # if that value was not calculated yet, to return it
+  #
+  public keep(# the key type, i.e, input type of memoized function
+              #
+              K type : property.orderable,
+
+              # the value type, i.e., result type of memoized function
+              #
+              V type,
+
+              # the function input
+              #
+              k K,
+
+              # the function to caculate the result
+              #
+              f K->V
+              ) V
+  =>
+
+    # NYI: should be done via effect configuration file, see `effect.type.default`.
+    #
+    if !(memoized K V).is_instated
+      (memoized K V).default
+
+    (memoized K V).env.keep k f

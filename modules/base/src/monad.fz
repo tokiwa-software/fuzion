@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature monad
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# monad -- generic monad
+#
+# A monad in X is just a monoid in the category of endofunctors of X, with
+# product × replaced by composition of endofunctors and unit set by the
+# identity endofunctor.
+#       -- Saunder Mac Lane, Categories for the Working Mathematician, 1971
+#
+# Don't be scared, in Java terms: A monad is a means to compose functions
+# applied to generic types.
+#
+#
+public monad (public A type,
+              public MA type : monad A MA) is
+
+
+  # monadic operator within the same monad
+  #
+  # Apply f to elements of type A and re-wrap them in this monad.
+  #
+  public infix >>= (f A -> MA) MA => abstract
+
+
+  # monadic operator to another monad
+  #
+  # Apply f to elements of type A and wrap them in MB.
+  #
+  public infix >>=~ (B type, MB type : monad B MB, f A -> MB) MB => abstract
+
+
+  # join operator
+  #
+  public join(MMA type : monad MA MMA, a MMA) MA => abstract
+
+
+  # return function
+  #
+  public type.return (a A) MA => abstract

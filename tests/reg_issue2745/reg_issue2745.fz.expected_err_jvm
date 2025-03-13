@@ -1,0 +1,15 @@
+
+error 1: FATAL FAULT `precondition`: T : java_primitive
+Call stack:
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1
+fuzion.runtime.pre_fault.cause#1
+fuzion.runtime.precondition_fault#1
+fuzion.java.pre array_to_java_object codepoint
+fuzion.java.precall array_to_java_object codepoint
+reg_issue2745
+
+*** fatal errors encountered, stopping.
+one error.

@@ -46,11 +46,11 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   * Get the value of a Java property (set via {@code -D<name>=...})  or env variable.
    *
    * @param name property or env variable name.  Should usually be a fully
-   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
-   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since {@code .}
+   * is not permitted in env var, {@code .} will be replaced by {@code _} when checking env
    * variables.
    *
    * @return the value of the property, if found. Otherwise, the value of the
@@ -63,11 +63,11 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of a Java property (set via -D<name>=...)  or env variable.
+   * Get the value of a Java property (set via {@code -D<name>=...})  or env variable.
    *
    * @param name property or env variable name.  Should usually be a fully
-   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
-   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since {@code .}
+   * is not permitted in env var, {@code .} will be replaced by {@code _} when checking env
    * variables.
    *
    * @param defawlt value to return in case property / env var is not set.
@@ -87,8 +87,8 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Helper to convert property name to anv var name. Replaces `.` by `_` since
-   * `.` is not permitted in an env var.
+   * Helper to convert property name to anv var name. Replaces {@code .} by {@code _} since
+   * {@code .} is not permitted in an env var.
    */
   private static String envVarName(String propertyName)
   {
@@ -97,12 +97,12 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of boolean a Java property (set via -D<name>=...)  or env
+   * Get the value of boolean a Java property (set via {@code -D<name>=...})  or env
    * variable.
    *
    * @param name property or env variable name.  Should usually be a fully
-   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
-   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since {@code .}
+   * is not permitted in env var, {@code .} will be replaced by {@code _} when checking env
    * variables.
    *
    * @return true iff the property is set and equals to "true", false otherwise.
@@ -114,19 +114,19 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of boolean a Java property (set via -D<name>=...) or env
+   * Get the value of boolean a Java property (set via {@code -D<name>=...}) or env
    * variable.
    *
    * @param name property or env variable name.  Should usually be a fully
-   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
-   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since {@code .}
+   * is not permitted in env var, {@code .} will be replaced by {@code _} when checking env
    * variables.
    *
    * @param defawlt give the default value to be used if property / env var is
    * not present.
    *
    * @return true iff the property is set and equals to "true", false if it is
-   * set to something different and `defawlt` otherwise.
+   * set to something different and {@code defawlt} otherwise.
    */
   public static boolean boolPropertyOrEnv(String name, boolean defawlt)
   {
@@ -135,12 +135,12 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Get the value of int a Java property (set via -D<name>=...) or env
+   * Get the value of int a Java property (set via {@code -D<name>=...}) or env
    * variable.
    *
    * @param name property or env variable name.  Should usually be a fully
-   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since `.`
-   * is not permitted in env var, `.` will be replaced by `_` when checking env
+   * qualified class name such as "dev.flang.optimizer.Warp.enable".  Since {@code .}
+   * is not permitted in env var, {@code .} will be replaced by {@code _} when checking env
    * variables.
    *
    * @param defawlt give the default value to be used if property / env var is
@@ -216,8 +216,8 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * `_timer.accept("phase")` can be called with a phase name to measure the
-   * time spent in this "phase", printed if `-verbose` level is sufficiently
+   * {@code _timer.accept("phase")} can be called with a phase name to measure the
+   * time spent in this "phase", printed if {@code -verbose} level is sufficiently
    * high.
    */
   final Consumer<String> _timer;
@@ -230,7 +230,7 @@ public class FuzionOptions extends ANY
    * Constructor initializing fields as given.
    *
    * @param timer can be called with a phase name to measure the time spent in
-   * this phase, printed if `-verbose` level is sufficiently high.
+   * this phase, printed if {@code -verbose} level is sufficiently high.
    */
   public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics, Path fuzionHome, Consumer<String> timer)
   {
@@ -341,12 +341,26 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Measure the time spent in this phase `name`, the result is printed at the
-   * end if `-verbose` level is sufficiently high.
+   * Measure the time spent in this phase {@code name}, the result is printed at the
+   * end if {@code -verbose} level is sufficiently high.
    */
   public void timer(String name)
   {
     _timer.accept(name);
+  }
+
+
+  /**
+   * Do we need to perform escape analysis during DFA phase since the backend needs that?
+   *
+   * This currently has a significant impact on the DFA performance, so we try to
+   * avoid this for backends that do not need it (JVM and interpreter).
+   *
+   * @return true if escape analysis has to be performed.
+   */
+  public boolean needsEscapeAnalysis()
+  {
+    return false;
   }
 
 

@@ -1,14 +1,14 @@
-Testing base32hex encoding...
+Testing base32hex encoding:
 RFC 4648 test vectors are encoded correctly
 Additional test vectors are encoded correctly
 
 
-Testing base32hex decoding...
+Testing base32hex decoding:
 RFC 4648 test vectors are decoded correctly
 Additional test vectors are decoded correctly
 
 
-Test error messages when decoding broken base32hex...
+Test error messages when decoding broken base32hex:
 
 CPN
 MU===: error: line breaks are not allowed within encoded data, as required by RFC464, found LF at position 3

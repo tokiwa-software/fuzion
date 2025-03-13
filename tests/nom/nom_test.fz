@@ -38,7 +38,7 @@ nom_test =>
     p   := nom.parsers
 
     hex_color(r,g,b u8) is
-      redef as_string String =>
+      public redef as_string String =>
         "r: $r, g: $g, b: $b"
 
     is_valid(c codepoint) bool =>
@@ -80,4 +80,3 @@ nom_test =>
   simple_parser_test
   hex_parser_test
   json_parser_test
-

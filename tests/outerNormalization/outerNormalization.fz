@@ -44,7 +44,7 @@ outerNormalization is
 
   # similar to testCodepointsStream, testConstructor tests that constructor a.f
   # is not specialized for sub-clazzes b and c.  If it was, the result would not
-  # be assignemnt compatible to x
+  # be assignment compatible to x
   #
   testConstructor =>
 
@@ -96,7 +96,7 @@ outerNormalization is
     rj ref : n j is
     j : rj is
       redef a => j
-      redef as_string => "a 'j'"
+      public redef as_string => "a 'j'"
 
     t(r rj) =>
       say "testNormalize: {r.b}"
@@ -117,7 +117,7 @@ outerNormalization is
     rj ref : n is
     j : rj is
       redef a => 3
-      redef as_string => "a 'j'"
+      public redef as_string => "a 'j'"
 
     t(r rj) =>
       say "testNormalize2: {r.b}"

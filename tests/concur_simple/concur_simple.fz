@@ -25,7 +25,7 @@
 
 # test for basic threads
 #
-# A simple test for concur.thread.spawn
+# A simple test for concur.threads.spawn
 #
 # NOTE: This test is brittle on a loaded system, it depends on timing and on no
 # threads being delayed for more then a few ms during test run.  Disable this
@@ -33,7 +33,7 @@
 #
 concur_simple =>
 
-  d := time.durations
+  d := time.duration.type
 
   N := 5
   t1 := d.ms 60
@@ -46,9 +46,9 @@ concur_simple =>
       time.nano.sleep t
       yak s
 
-  thread_1 := concur.thread.spawn (()->count "/"  (d.ms 20) t1)
-  thread_2 := concur.thread.spawn (()->count "\\" (d.ms 40) t2)
-  thread_3 := concur.thread.spawn (()->count "."  (d.ms 60) t3)
+  thread_1 := concur.threads.spawn (()->count "/"  (d.ms 20) t1)
+  thread_2 := concur.threads.spawn (()->count "\\" (d.ms 40) t2)
+  thread_3 := concur.threads.spawn (()->count "."  (d.ms 60) t3)
 
   thread_1.join
   thread_2.join

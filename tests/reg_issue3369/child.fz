@@ -1,6 +1,6 @@
 public child : parent is
 
-  redef get_name => "CHILD"
+  module redef get_name => "CHILD"
 
   # This caused a java exception
-  name := get_name
+  _ := get_name

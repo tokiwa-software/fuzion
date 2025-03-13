@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # This file is part of the Fuzion language implementation.
 #
@@ -28,7 +28,7 @@
 # by dummy strings that are all the same. Result is written to stdout.
 #
 
-set -euo pipefail
+set -eu
 
 sed <&0 -E "s \.fz:[0-9]+:[0-9]+: \.fz:n:n: g" |                                                    # line numbers  \
     sed -E "s #fun[0-9]+ fun g"                | sed -E "s INTERN_fun[0-9]+ fun g "               | # lambdas       \

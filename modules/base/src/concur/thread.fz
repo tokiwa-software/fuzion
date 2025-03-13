@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.thread
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# type for a spawned thread
+#
+module:public thread(id i64) : property.equatable is
+
+  joined := concur.atomic trit.no
+
+  # wait for this thread to finish execution
+  #
+  public join =>
+    if joined.compare_and_set trit.no trit.unknown
+      fuzion.sys.thread.join0 id
+      joined.write trit.yes
+    else
+      # NYI: UNDER DEVELOPMENT:
+      # better busy loop
+      while joined.read != trit.yes
+
+    # NYI: UNDER DEVELOPMENT:
+    # should we send message to the thread that spawned this
+    # thread that it can remove its list of running threads?
+
+
+  # equality
+  #
+  public fixed redef type.equality(a, b thread.this) bool
+  =>
+    a.id = b.id

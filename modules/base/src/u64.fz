@@ -1,0 +1,259 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature u64
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# u64 -- 64-bit unsigned integer values
+#
+public u64(public val u64) : num.wrap_around, has_interval is
+
+  # overflow checking
+
+  # would negation cause an overflow?
+  public redef wrapped_on_neg => !is_zero
+
+  # would addition + other cause an overflow or underflow?
+  public fixed redef overflow_on_add (other u64) => u64.max -° val < other
+  public fixed redef underflow_on_add(other u64) => false
+
+  # would subtraction - other cause an overflow or underflow?
+  public fixed redef overflow_on_sub (other u64) => false
+  public fixed redef underflow_on_sub(other u64) => val < other
+
+  # would multiplication * other cause an overflow or underflow?
+  public fixed redef overflow_on_mul (other u64) => if other = 0 then false else (val *° other / other) != val
+  public fixed redef underflow_on_mul(other u64) => false
+
+  # neg, add, sub, mul with wrap-around semantics
+  public fixed redef prefix -° u64 => intrinsic
+  public fixed redef infix +° (other u64) u64 => intrinsic
+  public fixed redef infix -° (other u64) u64 => intrinsic
+  public fixed redef infix *° (other u64) u64 => intrinsic
+
+  # division and remainder with check for div-by-zero
+  public fixed redef infix / (other u64) => div other
+  public fixed redef infix % (other u64) => mod other
+
+  # division and remainder with crash in case of div-by-zero
+  div (other u64) u64 => intrinsic
+  mod (other u64) u64 => intrinsic
+
+  # bitwise and, or and xor operations
+  public fixed redef infix &  (other u64) u64 => intrinsic
+  public fixed redef infix |  (other u64) u64 => intrinsic
+  public fixed redef infix ^  (other u64) u64 => intrinsic
+
+  # shift operations (unsigned)
+  public fixed redef infix >> (other u64) u64 => intrinsic
+  public fixed redef infix << (other u64) u64 => intrinsic
+
+  # does this u64 fit into an u8?
+  #
+  public fixed redef fits_in_u8  => val ≤ u8.max.as_u64
+
+  # this u64 as an i8
+  public as_i8 i8
+    pre
+      debug: val ≤ i8.max.as_u64
+    =>
+      low8bits.as_i8
+
+
+  # this u64 as an i16
+  public as_i16 i16
+    pre
+      debug: val ≤ i16.max.as_u64
+    =>
+      low16bits.as_i16
+
+
+  # this u64 as an i32
+  public as_i32 i32
+    pre
+      debug: val ≤ i32.max.as_u64
+    =>
+      low32bits.as_i32
+
+
+  # this u64 as an i64
+  #
+  public as_i64 i64
+    pre
+      debug: val ≤ i64.max.as_u64
+    post
+      analysis: result.as_u64 = val
+  =>
+    cast_to_i64
+
+
+  # this u64 as an i128
+  #
+  public fixed as_i128 i128 =>
+    i128 0 val
+
+
+  # this u64 as an u8
+  #
+  public redef as_u8 u8
+  pre else
+    debug: val ≤ u8.max.as_u64
+  post then
+    analysis: result.as_u64 = val
+  =>
+    low8bits
+
+
+  # this u64 as an u16
+  #
+  public as_u16 u16
+  pre
+    debug: val ≤ u16.max.as_u64
+  post
+    analysis: result.as_u64 = val
+  =>
+    low16bits
+
+
+  # this u64 as an u32
+  #
+  public as_u32 u32
+  pre
+    debug: val ≤ u32.max.as_u64
+  post
+    analysis: result.as_u64 = val
+  =>
+    low32bits
+
+
+  # this u64 as an u128
+  #
+  public as_u128 u128
+  post
+    analysis: result.as_u64 = val
+  =>
+    u128 0 val
+
+
+  # this u64 as an int
+  #
+  public as_int  => int.from_u64 val
+
+
+  # this u64 as an uint
+  #
+  public as_uint uint
+  =>
+    uint val
+
+
+  public redef low8bits   u8  => intrinsic
+  public low16bits  u16 => intrinsic
+  public low32bits  u32 => intrinsic
+  public cast_to_i64 i64 => intrinsic
+  public cast_to_f64 f64 => intrinsic
+
+  # conversion to float
+  public as_f64 f64 => intrinsic
+  public as_f32 => as_f64.as_f32
+
+
+  # create hash code from this number
+  public redef type.hash_code(a u64.this) u64 =>
+    a.val
+
+
+  # find the highest 1 bit in this integer and return integer with
+  # this single bit set or 0 if this is 0.
+  #
+  public highest_one_bit u64 =>
+    (v, s) := (val, u64 0)
+    (v1, s1) := if (v  < 0x1_0000_0000) (v , s ) else (v  >> 32, s  + 32)
+    (v2, s2) := if (v1 < 0x1_0000)      (v1, s1) else (v1 >> 16, s1 + 16)
+    (v3, s3) := if (v2 < 0x100)         (v2, s2) else (v2 >>  8, s2 +  8)
+    (v4, s4) := if (v3 < 0x10)          (v3, s3) else (v3 >>  4, s3 +  4)
+    (v5, s5) := if (v4 < 4)             (v4, s4) else (v4 >>  2, s4 +  2)
+    (v6, s6) := if (v5 < 2)             (v5, s5) else (v5 >>  1, s5 +  1)
+    v6 << s6
+
+
+  # count the number of trailing zeros in this integer.
+  #
+  public trailing_zeros i32 =>
+    (v, s) := (val, 0)
+    (v1, s1) := if ((v  & 0x_ffff_ffff) != 0) (v , s ) else (v  >> 32, s  + 32)
+    (v2, s2) := if ((v1 &      0x_ffff) != 0) (v1, s1) else (v1 >> 16, s1 + 16)
+    (v3, s3) := if ((v2 &         0xff) != 0) (v2, s2) else (v2 >>  8, s2 +  8)
+    (v4, s4) := if ((v3 &          0xf) != 0) (v3, s3) else (v3 >>  4, s3 +  4)
+    (v5, s5) := if ((v4 &            3) != 0) (v4, s4) else (v4 >>  2, s4 +  2)
+    (v6, s6) := if ((v5 &            1) != 0) (v5, s5) else (v5 >>  1, s5 +  1)
+    if             ((v6 &            1) != 0)      s6  else                64
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  public redef ones_count i32 =>
+    v := val;
+    m  := v  & 0x_aaaaaaaa_aaaaaaaa; v1 := v  - m  + (m  >> 1)
+    m1 := v1 & 0x_cccccccc_cccccccc; v2 := v1 - m1 + (m1 >> 2)
+    m2 := v2 & 0x_f0f0f0f0_f0f0f0f0; v3 := v2 - m2 + (m2 >> 4)
+    (v3 *° 0x_01010101_01010101 >> 56).as_i32
+
+
+  # -----------------------------------------------------------------------
+  #
+  # type features:
+
+
+  # identity element for 'infix +'
+  #
+  public fixed redef type.zero u64 => 0
+
+
+  # identity element for 'infix *'
+  #
+  public fixed redef type.one  u64 => 1
+
+
+  # equality
+  #
+  public fixed redef type.equality(a, b u64) bool => intrinsic
+
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b u64) bool => intrinsic
+
+
+  # returns the number in whose bit representation all bits are ones
+  public fixed redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
+
+
+  # minimum
+  #
+  public fixed redef type.min => u64 0
+
+
+  # maximum
+  #
+  public fixed redef type.max => u64 0x_ffff_ffff_ffff_ffff

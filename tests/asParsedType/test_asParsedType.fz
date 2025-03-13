@@ -161,26 +161,26 @@ y true?1:2
 say ""
 
 say "EXP: y Type of 'codepoint'"
-y (3=4 ? TRUE  => "a"
-       | FALSE => "b")
+y (3=4 ? true_  => "a"
+       | false_ => "b")
 say ""
 
 say "EXP: y Type of 'codepoint'"
 y (match 3=4
-     TRUE  => "a"
-     FALSE => "b")
+     true_  => "a"
+     false_ => "b")
 say ""
 
 say "EXP: y Type of 'codepoint'"
 y (if 3=4 then "a" else "b")
 say ""
 
-say "EXP: y Type of 'io.out'"
-y (io.out.env)
+say "EXP: y Type of 'io.Out'"
+y (io.Out.env)
 say ""
 
 say "EXP: y Type of 'Type'"
-y (io.out.type)
+y (io.Out.type)
 say ""
 
 t := (u8 3, f32 4, i64 5)

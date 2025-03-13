@@ -289,7 +289,7 @@ public class CNames extends ANY
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
       if (o != -1 &&
-          _fuir.clazzOuterClazz(o) != -1)
+          _fuir.clazzOuterClazz(o) != FUIR.NO_CLAZZ)
         { // add o a prefix unless cl or o are universe
           clazzMangledName(o, sb);
           sep = "__";
@@ -502,9 +502,9 @@ public class CNames extends ANY
    */
   CIdent fieldName(int field)
   {
-    var index = _fuir.fieldIndex(field);
-    return new CIdent(FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field)));
-
+    var m = mangle(_fuir.clazzBaseName(field));
+    var n = FIELD_PREFIX + _fuir.clazzId2num(field) + "_" + m;
+    return new CIdent(n);
   }
 
 

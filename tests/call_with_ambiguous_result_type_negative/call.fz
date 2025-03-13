@@ -38,7 +38,7 @@ call_with_ambiguous_result_type is
   h2 : r is
 
   # v will be set to `boxed h1` or `boxed h2`
-  v r := if time.nano.read % 2 = 1 then
+  v r := if random.next_bool then
            h1
          else
            h2
@@ -46,4 +46,4 @@ call_with_ambiguous_result_type is
   # the result type of `v.g` is ambiguous: `h.e` for any
   # heir of `r`.  So this will cause an error:
   #
-  x := v.g   # error! ambiguous result type
+  _ := v.g   # error! ambiguous result type

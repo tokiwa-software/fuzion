@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature trit
+#
+# -----------------------------------------------------------------------
+
+
+# Unlike a bool with two possible states,
+# a trit has three possible states.
+#
+# wikipedia: "Analogous to a bit, a ternary digit is a trit (trinary digit)"
+#
+public trit : choice true_ false_ nil, property.equatable is
+
+  public type.yes trit     => true_
+  public type.no  trit     => false_
+  public type.unknown trit => nil
+
+  public fixed redef type.equality(a,b trit) =>
+    match a
+      true_ =>
+        match b
+          true_ => true
+          * => false
+      false_ =>
+        match b
+          false_ => true
+          * => false
+      nil =>
+        match b
+          nil => true
+          * => false

@@ -99,22 +99,22 @@ indentation_negative is
 
     # first line of code starts without LF and contains several exprs, ok
     #
-    feature3 is say "3aa"; say "3ab"
-                say "3ac"
+    feature3 is {say "3aa"; say "3ab"
+                 say "3ac"}
 
   case3b is
 
     # first line of code starts without LF and contains several exprs, with outlier to the left
     #
-    feature3 is say "3ba"; say "3bb"
-               say "3bc"  //  9. should flag an error: wrong indentation
+    feature3 is {say "3ba"; say "3bb"
+                say "3bc"}  //  9. should flag an error: wrong indentation
 
   case3c is
 
     # first line of code starts without LF and contains several exprs, with outlier to the right
     #
-    feature3 is say "3ca"; say "3cb"
-                 say "3cc"  // 10. should flag an error: wrong indentation
+    feature3 is {say "3ca"; say "3cb"
+                     say "3cc"}  // 10. should flag an error: wrong indentation
 
   _ := case1a.feature1
   _ := case1b.feature1
@@ -153,20 +153,20 @@ indentation_negative is
 
   # helper feature for a call with zero/one/two arguments
   #
-  callWith0Args(a i32)   => panic "expected no arg!"; false
-  callWith0Args          => say "ok"; true
-  callWith1Arg (a i32)   => say "$a"; true
-  callWith1Arg           => panic "expected one arg!"; false
-  callWith2Args(a,b i32) => say "$a $b"; true
-  callWith2Args(a i32)   => panic "expected two args!"; false
-  callWith2Arg           => panic "expected two args!"; false
+  callWith0Args(a i32)         => {panic "expected no arg!"; false}
+  callWith0Args                => {say "ok"; true}
+  callWith1Arg (a i32)         => {say "$a"; true}
+  callWith1Arg                 => {panic "expected one arg!"; false}
+  callWith2Args(a i32, b unit) => {say "$a $b"; true}
+  callWith2Args(a i32)         => {panic "expected two args!"; false}
+  callWith2Arg                 => {panic "expected two args!"; false}
 
   if_with_call1 is
 
     # 'if' requires the condition to be in a single line, doest not allow vertically aligned arguments
     #
     if callWith2Args arg
-                     arg  // this arg is parsed as first expr in the then-block
+                     unit  // this arg is parsed as first expr in the then-block
       say "ok"            // 11. should flag an error: wrong indentation
     else
       panic "expected true"

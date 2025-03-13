@@ -75,9 +75,9 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Constructor for a partially applied operator expression like `+` or
-   * `**`. This can expand to a lambda of the form `x -> +x`, `x -> x+`, or `x,y
-   * -> x+y`.
+   * Constructor for a partially applied operator expression like {@code +} or
+   * {@code **}. This can expand to a lambda of the form {@code x -> +x}, {@code x -> x+}, or
+   * {@code x,y -> x+y}.
    *
    * @param pos the source code position of the operator
    *
@@ -110,12 +110,19 @@ public class Partial extends AbstractLambda
    */
   static ParsedCall argName(SourcePosition pos)
   {
-    return new ParsedCall(new ParsedName(pos, argName()));
+    return new ParsedCall(new ParsedName(pos, argName()))
+      {
+        @Override
+        public AbstractType asType()
+        {
+          return null;
+        }
+      };
   }
 
 
   /**
-   * Create a partial call of the form `.f` that will be turned into a lambda `x -> x.f`.
+   * Create a partial call of the form {@code .f} that will be turned into a lambda {@code x -> x.f}.
    *
    * @param pos the source position of the call
    *
@@ -156,7 +163,7 @@ public class Partial extends AbstractLambda
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     Expr result = this;
     t = t.functionTypeFromChoice(context);
@@ -188,7 +195,7 @@ public class Partial extends AbstractLambda
    * case of error, return Types.t_ERROR.
    */
   @Override
-  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -237,19 +244,6 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   */
-  public AbstractType type()
-  {
-    return _function == null ? Types.t_UNDEFINED
-                             : _function.type();
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -263,22 +257,6 @@ public class Partial extends AbstractLambda
     // everything might eventually turn out fine in this case.
     return _function == null ? null
                              : _function.typeForInferencing();
-  }
-
-
-  /**
-   * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
-   * features to be searched for runtime types to be layouted.
-   *
-   * @param res the resolution instance.
-   *
-   * @param outer the root feature that contains this expression.
-   */
-  public Expr resolveSyntacticSugar2X(Resolution res)
-  {
-    return _function == null ? this
-                             : _function.resolveSyntacticSugar2(res);
   }
 
 

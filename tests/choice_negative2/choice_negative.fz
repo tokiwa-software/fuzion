@@ -30,9 +30,9 @@ choice_negative is
       x A | i32 | String := "Hello"  // 4. should flag an error: cyclic choice
       s =>
         match x
-          a A      => say "A.x is A"
-          i i32    => say "A.x is i32"
-          s String => say "A.x is String"
+          A      => say "A.x is A"
+          i32    => say "A.x is i32"
+          String => say "A.x is String"
 
   cyclic7.A.s // NYI: would be nice if this was detected w/o a call to x
 
@@ -42,9 +42,9 @@ choice_negative is
       x rA | i32 | String := "Hello"
       s =>
         match x
-          a rA     => say "A.x is A"
-          i i32    => say "A.x is i32"
-          s String => say "A.x is String"
+          rA     => say "A.x is A"
+          i32    => say "A.x is i32"
+          String => say "A.x is String"
 
   cyclic8.A.s
 
@@ -53,9 +53,9 @@ choice_negative is
       x i32 | A | String := "Hello"  // 5. should flag an error: cyclic choice
       s =>
         match x
-          a A      => say "A.x is A"
-          i i32    => say "A.x is i32"
-          s String => say "A.x is String"
+          A      => say "A.x is A"
+          i32    => say "A.x is i32"
+          String => say "A.x is String"
 
   cyclic9.A.s // NYI: would be nice if this was detected w/o a call to x
 
@@ -65,9 +65,9 @@ choice_negative is
       x i32 | rA | String := "Hello"
       s =>
         match x
-          a rA     => say "A.x is A"
-          i i32    => say "A.x is i32"
-          s String => say "A.x is String"
+          rA     => say "A.x is A"
+          i32    => say "A.x is i32"
+          String => say "A.x is String"
 
   cyclic10.A.s
 
@@ -76,9 +76,9 @@ choice_negative is
       x i32 | String | A := "Hello"  // 6. should flag an error: cyclic choice
       s =>
         match x
-          a A      => say "A.x is A"
-          i i32    => say "A.x is i32"
-          s String => say "A.x is String"
+          A      => say "A.x is A"
+          i32    => say "A.x is i32"
+          String => say "A.x is String"
 
   cyclic11.A.s // NYI: would be nice if this was detected w/o a call to x
 
@@ -88,9 +88,9 @@ choice_negative is
       x i32 | String | rA := "Hello"
       s =>
         match x
-          a rA  => say "A.x is A"
-          i i32    => say "A.x is i32"
-          s String => say "A.x is String"
+          rA     => say "A.x is A"
+          i32    => say "A.x is i32"
+          String => say "A.x is String"
 
   cyclic12.A.s
   unit

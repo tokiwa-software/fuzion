@@ -113,8 +113,8 @@ class FeatureWriter extends ANY
 
 
   /**
-   * For a name that is separated by '.', find all parts that are Fuzion
-   * keywords and replace them by "_k_" + <keyword>
+   * For a name that is separated by {@code .}, find all parts that are Fuzion
+   * keywords and replace them by {@code _k_} + {@code <keyword>}
    *
    * @param n a string, e.g., "java/lang/ref/PhantomReference"
    *
@@ -137,14 +137,14 @@ class FeatureWriter extends ANY
                  s.equals(FuzionConstants.ANY_NAME) ||
                  // args use this type: e.g. `arg0 Sequence (i32)`
                  s.equals("Sequence") ||
-                 s.equals("unit") || // clashes with Parser.java/unit()
+                 s.equals(FuzionConstants.UNIT_NAME) || // clashes with Parser.java/unit()
                  s.equals(FuzionConstants.STRING_NAME) ||
                  /*
                   * ```
                   * __jString.fz: error: Redefinition must be declared using modifier 'redef'
                   * public split(arg0 String) ... =>
                   * ```
-                  * could be removed if we instead added a `redef` modifier for split
+                  * could be removed if we instead added a {@code redef} modifier for split
                   */
                  s.equals("split"   )
                 )

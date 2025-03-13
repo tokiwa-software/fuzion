@@ -320,8 +320,8 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   }
 
   /**
-   * Convert this position to a string of the form "<filename>:<line>:<column>"
-   * or "<built-in>" for builtIn position.
+   * Convert this position to a string of the form {@code<filename>:<line>:<column>}
+   * or {@code<built-in>} for builtIn position.
    */
   String rawFileNameWithPosition()
   {
@@ -329,8 +329,8 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
   }
 
   /**
-   * Convert this position to a string of the form "<filename>:<line>:<column>:"
-   * or "<built-in>" for builtIn position.
+   * Convert this position to a string of the form {@code<filename>:<line>:<column>:}
+   * or {@code<built-in>} for builtIn position.
    */
   public String fileNameWithPosition()
   {
@@ -371,7 +371,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
   /**
    * Convert this position to a string of the form
-   * "<filename>:<line>:<column>:".
+   * {@code <filename>:<line>:<column>:}.
    */
   public String toString()
   {
@@ -406,6 +406,10 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
       (bytePos() <= byteEndPos);
 
     if (byteEndPos() == byteEndPos)
+      {
+        return this;
+      }
+    else if (this == SourcePosition.notAvailable)
       {
         return this;
       }

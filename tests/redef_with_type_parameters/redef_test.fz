@@ -42,18 +42,6 @@ redef_test unit =>
 
   case1
 
-  /* NYI: #22: This does not work yet, causes error for type feature of `y`:
-
-/home/fridi/fuzion/fuzion/tests/redef_with_type_parameters/redef_test.fz:47:5: error 1: Wrong number of type parameters
-    y : x is
-----^
-Wrong number of actual type parameters in call:
-Called feature: redef_test.case2.type
-expected 2 generic arguments for 'THIS#TYPE, C'
-found 1: 'redef_test.case2 redef_test.case2.C'.
-
-one error.
-
   # second case, redefining feature x.q whose type parameter has a
   # constraint depending on outer feature's type parameter.
   #
@@ -71,7 +59,6 @@ one error.
   case2 String "str"
   case2 f32 3.14
 
-  */
 
   # third case, redefining feature x.q whose type parameter has a
   # constraint depending on the same feature's type parameter.

@@ -1,0 +1,104 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature unit
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# unit -- value to be used as result of features that do not return a result
+#
+# NOTE: unit corresponds to type void in C, Java, etc.
+#
+# unit is the preferred result type for features that return without producing
+# a result value.  These are features that typically have an outside effect
+# such as
+#
+#   println(String s) unit => ...
+#
+# or features that change the state of an instance such as
+#
+#   increment(delta i64) unit =>
+#     set counter := counter + delta
+#
+# The Fuzion language implementation automatically inserts code that returns the
+# unit value as a result of these features, there is no need for an explicit unit
+# result as in
+#
+#   increment(delta i64) unit =>
+#     set counter := counter + delta
+#     unit
+#
+# but it is allowed to return unit explicitly if desired.
+#
+# Another application of the unit type are generic features when certain generic
+# values are not needed and can be ignored.  An example could be a generic map
+# implementation map K V that maps values of type K to values of type V.  Using
+# unit as the actual generic argument for V, e.g., map string unit creates a
+# map that stores no data for each key, which essentially turns the map into a
+# set of the map's keys.
+#
+# The Fuzion library knows several different unit types.  Another example is nil,
+# which is used as the alternative type in an option.  This enables the use of
+# option void, which can store two distinct values, void and nil.
+#
+# Other unit types in Fuzion are true_ and false_.
+#
+# The simplest syntax to create a value of unit type is an empty block '{}'. Note
+# that an empty tuple 'tuple' is a different unit value of a different type and
+# the syntax '()' is (at least for now) not supported.
+#
+# Please note the fundamental difference between
+#
+#   red is {}
+#   red => {}
+#
+# The first declares a feature red that defines a new unit type red, the second
+# declares a feature red with result type unit, i.e., a synonym for unit as in
+#
+#   red unit => {}
+#
+# The memory required to store a value of unit type is 0 bits, so you can use
+# plenty without worrying about space constraints.  The Fuzion code generators
+# typically will not generate any code for returning or assigning a value of unit
+# type, so these are very efficient as well.
+#
+#
+public unit is
+
+# NYI: possible alternative definitions based on tuple types
+#
+# unit : tuple is
+#
+# unit (contents tuple) is
+#
+
+  # human readable string
+  public redef as_string => "unit"
+
+  # Monoid that can be used whenever a monoid of the unit type is expected.
+  # This is the case for example in some calls to `fold`-like features.
+  #
+  # Since there is exactly one value of type unit, the operation, the equality
+  # and the identity element of this monoid are canonically defined.
+  public type.monoid =>
+    ref : Monoid unit
+      public redef infix ∙ (a, b unit) unit => unit
+      public redef e unit => unit

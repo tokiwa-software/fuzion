@@ -87,7 +87,7 @@ class PreallocatedConstant extends ANY implements Comparable<PreallocatedConstan
       _constClazz  < other._constClazz  ? -1 :
       _constClazz  > other._constClazz  ? +1 :
       _data.length < other._data.length ? -1 :
-      _data.length > other._data.length ? -1 : 0;
+      _data.length > other._data.length ? +1 : 0;
 
     for (int i = 0; result == 0 && i < _data.length; i++)
       {

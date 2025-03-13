@@ -24,8 +24,8 @@
 test_ambig is
 
   if true
-    x := 42
+    _ := 42
 
   if true
-    x := 007
-    f := ()->x # NYI type inference nullary lambda expression: issue #1015
+    _ := 007
+    _ := ()->x # NYI type inference nullary lambda expression: issue #1015
