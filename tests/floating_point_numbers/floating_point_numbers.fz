@@ -29,10 +29,10 @@ floating_point_numbers is
 
   chck(b bool, msg String) =>
     s := if b
-      "PASSED: "
-    else
-      _ := set_exit_code 1
-      "FAILED: "
+           "PASSED: "
+         else
+           _ := set_exit_code 1
+           "FAILED: "
     say (s + msg)
 
 
@@ -87,16 +87,16 @@ floating_point_numbers is
     chck (three ** two = three + three + three)                            "{T.name}: 3 to the power 2 equals 9"
 
     # is_NaN
-    chck (T.is_NaN T.NaN)                                                  "{T.name}: is_NaN NaN"
-    chck (!T.is_NaN zero  )                                                "{T.name}: is_NaN 0"
-    chck (!T.is_NaN T.π)                                                   "{T.name}: is_NaN π"
-    chck (!T.is_NaN T.infinity)                                            "{T.name}: is_NaN infinity"
+    chck T.NaN.is_NaN                                                      "{T.name}: is_NaN NaN"
+    chck !zero.is_NaN                                                      "{T.name}: is_NaN 0"
+    chck !T.π.is_NaN                                                       "{T.name}: is_NaN π"
+    chck !T.infinity.is_NaN                                                "{T.name}: is_NaN infinity"
 
     # sqrt
-    chck (T.sqrt (two * two) = two)                                        "{T.name}: sqrt (2*2) = 2"
+    chck ((two * two).sqrt = two)                                          "{T.name}: sqrt (2*2) = 2"
 
     # exponentation / logarithm
-    chck (T.exp zero     = one  )                                          "{T.name}: exp 0 = 1"
+    chck (zero.exp     = one   )                                           "{T.name}: exp 0 = 1"
     # NYI: BUG: chck (T.exp one      = T.ℇ)                                            "{T.name}: exp 1 = ℇ"
     # on macOS with ARM and be/jvm or be/int:
     # (f64.exp 1.0)              # 2.7182818284590455
@@ -104,22 +104,22 @@ floating_point_numbers is
     # (f64.ℇ = f64.exp 1.0)      # false
     # (f64.exp 1.0).cast_to_u64  # 4613303445314885482
     # f64.ℇ.cast_to_u64          # 4613303445314885481
-    chck (((T.exp one) - three*T.epsilon) <= T.ℇ <= ((T.exp one) + three*T.epsilon))   "{T.name}: exp 1 ~= ℇ"
-    chck (T.log one      = zero  )                                         "{T.name}: log 1 = 0"
+    chck ((one.exp - three*T.epsilon) <= T.ℇ <= (one.exp + three*T.epsilon))   "{T.name}: exp 1 ~= ℇ"
+    chck (one.log      = zero  )                                           "{T.name}: log 1 = 0"
 
     # trigonometric
-    chck (T.sin zero     = zero  )                                         "{T.name}: sin 0  = 0"
-    chck (T.sin T.π      < T.epsilon)                                      "{T.name}: sin π  ~= 0"
-    chck (T.cos zero     = one  )                                          "{T.name}: cos 0  = 1"
-    chck (T.cos T.π      = -one  )                                         "{T.name}: cos π  = -1"
-    chck (T.tan zero     = zero  )                                         "{T.name}: tan 0  = 0"
-    chck (T.asin zero    = zero  )                                         "{T.name}: asin 0 = 0"
-    chck (T.acos one     = zero  )                                         "{T.name}: acos 1 = 0"
-    chck (T.atan zero    = zero  )                                         "{T.name}: atan 0 = 0"
+    chck (zero.sin     = zero  )                                           "{T.name}: sin 0  = 0"
+    chck (T.π.sin      < T.epsilon)                                        "{T.name}: sin π  ~= 0"
+    chck (zero.cos     = one  )                                            "{T.name}: cos 0  = 1"
+    chck (T.π.cos      = -one  )                                           "{T.name}: cos π  = -1"
+    chck (zero.tan     = zero  )                                           "{T.name}: tan 0  = 0"
+    chck (zero.asin    = zero  )                                           "{T.name}: asin 0 = 0"
+    chck (one.acos     = zero  )                                           "{T.name}: acos 1 = 0"
+    chck (zero.atan    = zero  )                                           "{T.name}: atan 0 = 0"
 
     # atan2
-    chck (T.is_NaN (T.atan2 T.NaN one  ))                                                      "{T.name}: atan2 NaN 1            = NaN        "
-    chck (T.is_NaN (T.atan2 one   T.NaN))                                                      "{T.name}: atan2 1 NaN            = NaN        "
+    chck (T.atan2 T.NaN one  ).is_NaN                                                          "{T.name}: atan2 NaN 1            = NaN        "
+    chck (T.atan2 one   T.NaN).is_NaN                                                          "{T.name}: atan2 1 NaN            = NaN        "
     chck (T.atan2 +zero   one               = +zero  )                                         "{T.name}: atan2 +0 1             = +0         "
     chck (T.atan2 -zero   one               = -zero  )                                         "{T.name}: atan2 -0 1             = -0         "
     chck (T.atan2 +zero   -one              = +T.π)                                            "{T.name}: atan2 +0 -1            = +π         "
@@ -137,12 +137,12 @@ floating_point_numbers is
     chck (T.atan2 -T.infinity one           = -T.π/two)                                        "{T.name}: atan2 -infinity 1         = -π/two  "
 
     # hyperbolicus
-    chck (T.sinh zero       = zero)                                             "{T.name}: sinh  0 = 0"
-    chck (T.cosh zero       = one )                                             "{T.name}: cosh  0 = 1"
-    chck (T.tanh zero       = zero)                                             "{T.name}: tanh  0 = 0"
-    chck (T.asinh zero      = zero)                                             "{T.name}: asinh 0 = 0"
-    chck (T.acosh one       = zero)                                             "{T.name}: acosh 1 = 0"
-    chck (T.atanh zero      = zero)                                             "{T.name}: atanh 0 = 0"
+    chck (zero.sinh        = zero)                                           "{T.name}: sinh  0 = 0"
+    chck (zero.cosh        = one )                                           "{T.name}: cosh  0 = 1"
+    chck (zero.tanh        = zero)                                           "{T.name}: tanh  0 = 0"
+    chck (zero.asinh       = zero)                                           "{T.name}: asinh 0 = 0"
+    chck (one.acosh        = zero)                                           "{T.name}: acosh 1 = 0"
+    chck (zero.atanh       = zero)                                           "{T.name}: atanh 0 = 0"
 
     # round
     a_half := one   / two
@@ -219,12 +219,12 @@ floating_point_numbers is
   # as_f64
   chck ((f32.π.as_f64.as_f32 = f32.π))                              "f32:  π  as_f64.as_f32 = f32.π"
   chck (f32.positive_infinity.as_f64 = f64.positive_infinity)       "f32:  ∞  as_f64        = f64s.∞ "
-  chck (f64.is_NaN f32.NaN.as_f64)                                  "f32: NaN as_f64 is_NaN "
+  chck f32.NaN.as_f64.is_NaN                                        "f32: NaN as_f64 is_NaN "
 
   # as_f32
   chck (f64.π.as_f32 = f32.π)                                       "f64:  π  as_f32        = f32.π "
   chck (f64.positive_infinity.as_f32 = f32.positive_infinity)       "f64:  ∞  as_f32        = f32s.∞ "
-  chck (f32.is_NaN f64.NaN.as_f32)                                  "f64: NaN as_f32 is_NaN "
+  chck f64.NaN.as_f32.is_NaN                                        "f64: NaN as_f32 is_NaN "
 
 
   # f32.fract

@@ -31,7 +31,7 @@ import dev.flang.util.List;
 
 
 /**
- * Check is the result of parsing a Fuzion `check` statement. A Check is very
+ * Check is the result of parsing a Fuzion {@code check} statement. A Check is very
  * short lived since it is only syntax sugar, fuzion code of the form
  *
  *   check
@@ -55,9 +55,9 @@ public class Check extends ANY
 
 
   /**
-   *
+   * the list of conditions of this check
    */
-  List<Cond> _conditions;
+  private final List<Cond> _conditions;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -65,8 +65,6 @@ public class Check extends ANY
 
   /**
    * Constructor
-   *
-   * @param c
    */
   public Check(List<Cond> c)
   {
@@ -80,11 +78,6 @@ public class Check extends ANY
 
   /**
    * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
    *
    * @return this.
    */
@@ -105,8 +98,6 @@ public class Check extends ANY
 
   /**
    * toString
-   *
-   * @return
    */
   public String toString()
   {

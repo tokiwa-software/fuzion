@@ -28,7 +28,10 @@ package dev.flang.ast;
 
 import java.io.ByteArrayOutputStream;
 
+import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -46,21 +49,11 @@ public abstract class AbstractCall extends Expr
 
   /**
    * Special value for an empty generics list to distinguish a call without
-   * generics ("a.b(x,y)") from a call with an empty actual generics list
-   * ("a.b<>(x,y)").
+   * generics ({@code a.b(x,y)}) from a call with an empty actual generics list
+   * ({@code a.b<>(x,y)}).
    */
   public static final List<AbstractType> NO_GENERICS = new List<>();
-
-
-  /*-------------------------- constructors ---------------------------*/
-
-
-  /**
-   * Constructor
-   */
-  public AbstractCall()
-  {
-  }
+  { NO_GENERICS.freeze(); }
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -72,11 +65,6 @@ public abstract class AbstractCall extends Expr
   public abstract List<Expr> actuals();
   public abstract int select();
   public abstract boolean isInheritanceCall();
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    say_err("Called "+this.getClass()+".visit");
-    return this;
-  }
 
 
   /**
@@ -113,20 +101,6 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  @Override
-  AbstractType typeForInferencing()
-  {
-    return type();
-  }
-
-
-  /**
    * This call serialized as a constant.
    */
   public Constant asCompileTimeConstant()
@@ -135,7 +109,7 @@ public abstract class AbstractCall extends Expr
 
       /**
        * actuals are serialized in order. example
-       * `tuple (u8 5) (codepoint u32 72)` results in
+       * {@code tuple (u8 5) (codepoint u32 72)} results in
        * the following data:
        *        b b b b b
        * u8 ----^ ^^^^^^^--- codepoint u32 (both little endian)
@@ -173,6 +147,79 @@ public abstract class AbstractCall extends Expr
 
     };
     return result;
+  }
+
+
+  /**
+   * For a type feature, create the inheritance call for a parent type feature.
+   *
+   * @param p the source position
+   *
+   * @param res Resolution instance used to resolve types in this call.
+   *
+   * @param that the original feature that is used to lookup types.
+   *
+   * @return instance of Call to be used for the parent call in cotype().
+   */
+  Call typeCall(SourcePosition p, Resolution res, AbstractFeature that)
+  {
+    var selfType = new ParsedType(pos(),
+                                  FuzionConstants.COTYPE_THIS_TYPE,
+                                  new List<>(),
+                                  null);
+    var typeParameters = new List<AbstractType>(selfType);
+    if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
+      {
+        var git = cpc._generics.iterator();
+        for (var ignore : cpc.calledFeature().typeArguments())
+          {
+            typeParameters.add(git.hasNext() ? git.next() : Types.t_UNDEFINED);
+          }
+        cpc.whenInferredTypeParameters(() ->
+          {
+            int i = 0;
+            for (var atp : cpc.actualTypeParameters())
+              {
+                if (typeParameters.isFrozen())
+                  {
+                    if (CHECKS) check
+                      (Errors.any());
+                  }
+                else
+                  {
+                    typeParameters.set(i+1, that.rebaseTypeForCotype(atp));
+                  }
+                i++;
+              }
+          });
+      }
+    else
+      {
+        for (var atp : actualTypeParameters())
+          {
+            typeParameters.add(that.rebaseTypeForCotype(atp));
+          }
+      }
+
+    return calledFeature().typeCall(p, typeParameters, res, that, target());
+  }
+
+
+
+  /**
+   * This call as a human readable string
+   */
+  public String toString()
+  {
+    return (target() == null ||
+            (target() instanceof Universe) ||
+            (target() instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
+            ? ""
+            : target().toString() + ".")
+      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().featureName().baseNameHuman())
+      + actualTypeParameters().toString(" ", " ", "", t -> t.toStringWrapped())
+      + actuals().toString(" ", " ", "", e -> e.toStringWrapped())
+      + (select() < 0        ? "" : " ." + select());
   }
 
 

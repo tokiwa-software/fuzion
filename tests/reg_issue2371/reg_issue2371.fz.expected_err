@@ -5,6 +5,6 @@
 Indentation reference point is --CURDIR--/reg_issue2371.fz:24:1:
 _ := for i := 0, i+1
 ^
-While parsing: exprs, parse stack: exprs, block, unit
+While parsing: exprs, parse stack: exprs, block (twice), unit
 
 one error.

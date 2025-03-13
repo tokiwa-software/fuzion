@@ -65,6 +65,13 @@ public class FuzionConstants extends ANY
   public static final String BASE_MODULE_NAME = "base";
 
 
+  /**
+   * Special value, when not selecting field of
+   * open type parameter.
+   */
+  public static final int NO_SELECT = -1;
+
+
   /*----------------------  special feature names  ----------------------*/
 
 
@@ -81,48 +88,125 @@ public class FuzionConstants extends ANY
   /**
    * Prefix of artificially generated name of outer refs.
    */
-  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^";
+  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^<";
+
+  /**
+   * Suffix of artificially generated name of outer refs.
+   */
+  public static final String OUTER_REF_SUFFIX = ">";
 
   /**
    * Name of Any feature, i.e., the implicit parent feature of all other
    * features.
    */
-  public static final String ANY_NAME             = "Any";
+  public static final String ANY_NAME    = "Any";
 
 
   /**
    * Name of unit feature. The feature is used throughout the base library
    * to indicate that no result is returned.
    */
-  public static final String UNIT_NAME            = "unit";
+  public static final String UNIT_NAME   = "unit";
+
+
+  /**
+   * Name of Type feature.
+   */
+  public static final String TYPE_FEAT   = "Type";
 
 
   /**
    * Name of String feature.
    */
-  public static final String STRING_NAME          = "String";
+  public static final String STRING_NAME = "String";
 
 
   /**
-   * Name of intrinsic `effect.type.instate0`.
+   * Name of i8 feature.
+   */
+  public static final String I8_NAME     = "i8";
+
+
+  /**
+   * Name of i16 feature.
+   */
+  public static final String I16_NAME    = "i16";
+
+
+  /**
+   * Name of i32 feature.
+   */
+  public static final String I32_NAME    = "i32";
+
+
+  /**
+   * Name of i64 feature.
+   */
+  public static final String I64_NAME    = "i64";
+
+
+  /**
+   * Name of u8 feature.
+   */
+  public static final String U8_NAME     = "u8";
+
+
+  /**
+   * Name of u16 feature.
+   */
+  public static final String U16_NAME    = "u16";
+
+
+  /**
+   * Name of u32 feature.
+   */
+  public static final String U32_NAME    = "u32";
+
+
+  /**
+   * Name of u64 feature.
+   */
+  public static final String U64_NAME    = "u64";
+
+
+  /**
+   * Name of f32 feature.
+   */
+  public static final String F32_NAME    = "f32";
+
+
+  /**
+   * Name of f64 feature.
+   */
+  public static final String F64_NAME    = "f64";
+
+
+  /**
+   * Name of the array feature
+   */
+  public static final String ARRAY_NAME        = "array";
+
+
+  /**
+   * Name of intrinsic {@code effect.type.instate0}.
    */
   public static final String EFFECT_INSTATE_NAME = "effect.type.instate0";
 
 
   /**
-   * Name of feature `index []`.
+   * Name of feature {@code index []}.
    */
   public static final String FEATURE_NAME_INDEX = "index [ ]";
 
 
   /**
-   * Name of feature `index [..]`.
+   * Name of feature {@code index [..]}.
    */
   public static final String FEATURE_NAME_INDEX_DOTDOT = "index [..]";
 
 
   /**
-   * Name of feature `index [] :=`.
+   * Name of feature {@code index [] :=}.
    */
   public static final String FEATURE_NAME_INDEX_ASSIGN = "index [ ] := ";
 
@@ -145,8 +229,8 @@ public class FuzionConstants extends ANY
 
   /**
    * An operator that should match both, prefix and postfix operators. This is
-   * used for partial application where `-` applied used as a unary function may
-   * result in `prefix -` or `postfix -`.
+   * used for partial application where {@code -} applied used as a unary function may
+   * result in {@code prefix -} or {@code postfix -}.
    */
   public static final String UNARY_OPERATOR_PREFIX = "unary ";
   public static final String TERNARY_OPERATOR_PREFIX = "ternary ";
@@ -184,21 +268,25 @@ public class FuzionConstants extends ANY
    * names with this prefix will be removed from .fum files which results in
    * this not being found in redefinitions.
    */
-  public static final String TYPE_FEATURE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
+  public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
 
 
   /**
    * Field introduced in, e.g.,
    *
-   *   x := if a then 0 else 1
+   * <pre>{@code
+   *    x := if a then 0 else 1
+   * }</pre>
    *
    * converted to
    *
-   *   if a then
+   * <pre>{@code
+   *    if a then
    *     #exprResult123 := 0
    *   else
    *     #exprResult123 := 1
    *   x := #exprResult123
+   * }</pre>
    */
   public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "exprResult";
 
@@ -206,12 +294,16 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   x := a < b < c
+   * <pre>{@code
+   *    x := a < b < c
+   * }</pre>
    *
    * converted to
    *
-   *   #chainedBoolTemp123 = b
+   * <pre>{@code
+   *    #chainedBoolTemp123 = b
    *   x := a < #chainedBoolTemp123 && #chainedBoolTemp123 < c
+   * }</pre>
    */
   public static final String CHAINED_BOOL_TMP_PREFIX = INTERNAL_NAME_PREFIX + "chainedBoolTemp";
 
@@ -219,7 +311,9 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   x := a,b -> a*b
+   * <pre>{@code
+   *    x := a,b -> a*b
+   * }</pre>
    */
   public static final String LAMBDA_PREFIX = INTERNAL_NAME_PREFIX + "fun";
 
@@ -227,15 +321,19 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   x := [a, b, c]
+   * <pre>{@code
+   *    x := [a, b, c]
+   * }</pre>
    */
   public static final String INLINE_SYS_ARRAY_PREFIX = INTERNAL_NAME_PREFIX + "inlineSysArray";
 
   /**
    * Field introduced in, e.g.,
    *
-   *   for x in set do
+   * <pre>{@code
+   *    for x in set do
    *     say x
+   * }</pre>
    */
   public static final String REC_LOOP_PREFIX = INTERNAL_NAME_PREFIX + "loop";
 
@@ -250,7 +348,9 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   _ = f a
+   * <pre>{@code
+   *    _ = f a
+   * }</pre>
    */
   public static final String UNDERSCORE_PREFIX = INTERNAL_NAME_PREFIX + "_";
 
@@ -258,7 +358,9 @@ public class FuzionConstants extends ANY
   /**
    * Field introduced in, e.g.,
    *
-   *   (a,b) = f c
+   * <pre>{@code
+   *    (a,b) = f c
+   * }</pre>
    */
   public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
 
@@ -266,11 +368,15 @@ public class FuzionConstants extends ANY
   /**
    * Argument field in a partial function such as
    *
-   *   m := s.map (f 42)
+   * <pre>{@code
+   *    m := s.map (f 42)
+   * }</pre>
    *
    * that will be converted into
    *
-   *   m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
+   * <pre>{@code
+   *    m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
+   * }</pre>
    */
   public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
 
@@ -282,6 +388,11 @@ public class FuzionConstants extends ANY
   public static final String PREBOOLCONDITION_FEATURE_PREFIX    = INTERNAL_NAME_PREFIX + "prebool";
   public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "preandcall";
   public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_PREFIX + "post";
+
+  /**
+   * Internal name used for an outer type.
+   */
+  public static final String OUTER_TYPE_NAME = INTERNAL_NAME_PREFIX + "outer";
 
 
   /**
@@ -329,7 +440,13 @@ public class FuzionConstants extends ANY
   /**
    * Flag OR'ed to kind, true if feature for type 'f.type' was added.
    */
-  public static final int MIR_FILE_KIND_HAS_TYPE_FEATURE = 0x10;
+  public static final int MIR_FILE_KIND_HAS_COTYPE = 0x10;
+
+
+  /**
+   * Flag OR'ed to kind, true if feature is cotype.
+   */
+  public static final int MIR_FILE_KIND_IS_COTYPE = 0x20;
 
 
   /**
@@ -379,7 +496,6 @@ public class FuzionConstants extends ANY
     Const,
     Match,
     Tag,
-    Env,
     Pop,
     Unit,
     InlineArray;

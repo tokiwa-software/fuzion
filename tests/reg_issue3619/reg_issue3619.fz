@@ -35,10 +35,10 @@ reg_issue3619 =>
     f(p r A.this) b => b
 
   b : A is
-    redef fixed f(p r b) => p.v
+    fixed redef f(p r b) => p.v
 
   a A := b
-  x b := a.f (r A)
+  _ b := a.f (r A)
 
   # `r` contains a value of type `T`, so `r A` contains a value of type `A`.
   #
@@ -61,7 +61,7 @@ reg_issue3619 =>
   h2 : r2 is
 
   v r2 := if random.next_bool then h1 else h2
-  x2 := v.g
+  _ := v.g
 
   # The problem is that `v` may refer to `h1` or `h2` such that `v.g` will
   # result in either `h1.e` or `h2.e`.

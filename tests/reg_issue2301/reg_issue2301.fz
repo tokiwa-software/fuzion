@@ -1,0 +1,42 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue2301
+#
+# -----------------------------------------------------------------------
+
+reg_issue2301 =>
+
+  from_lazy(x Lazy T) => x
+  from_partial(x ()->T) => x()
+  from_fun(x i32->T) => x 42
+
+  s1 := "hi"
+  s2(x bool) => if x then "hello" else "salut"
+  _ := from_lazy    String s1
+  _ := from_lazy           s1
+  _ := from_partial String s1
+  _ := from_partial        s1
+  _ := from_lazy    String (s2 true)
+  _ := from_lazy           (s2 true)
+  _ := from_partial String (s2 true)
+  _ := from_partial        (s2 true)
+  _ := from_fun     String x->($x)
+  _ := from_fun            x->($x)
+  _ := from_fun               ($)

@@ -263,6 +263,8 @@ ContractKind
 COptions
 cosf
 coshf
+cotype
+cotypes
 createMIR
 createOuter
 createThisType
@@ -431,7 +433,6 @@ fieldA
 FieldActual
 fieldClazz
 FieldDef
-fieldIndex
 FieldInit
 FieldIter
 fieldName
@@ -443,8 +444,6 @@ fileno
 FileNotFoundException
 findAllClasses
 findChainedBooleans
-findClasses
-findClazzes
 findClosingBracket
 findConstantType
 findDeclarations
@@ -585,7 +584,6 @@ hasResultField
 hasRT
 HasSourcePosition
 hasState
-hasThisType
 headingSection
 heapClone
 HexDump
@@ -804,7 +802,6 @@ MapComparable
 mapOfDeclaredFeatures
 MapToN
 mapToObj
-markUsed
 maxErrorCount
 maxlength
 maxRow
@@ -1017,7 +1014,6 @@ runtimeClazzId
 RuntimeException
 s's
 sameLine
-saveLib
 scaler
 secField
 secFieldNextPos
@@ -1294,7 +1290,7 @@ xffff
 XfuzionHome
 Xhelp
 XjavaProf
-XloadBaseLib
+XloadBaseModule
 XmaxErrors
 XmaxWarning
 XmaxWarnings
@@ -1734,7 +1730,6 @@ Trigraphs
 tslot
 typeFromDescriptor
 typeinference
-typeOfConstant
 unicodes
 unresolvedGenerics
 valueOf
@@ -1782,7 +1777,6 @@ isUsedAsDynamicOuterRef
 isDynamic
 addCode
 saveActualClazzes
-HasGlobalIndex
 codeBlockIndex
 initialValueFromCall
 initialCalls

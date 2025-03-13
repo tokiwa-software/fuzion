@@ -109,26 +109,26 @@ public class FeErrors extends AstErrors
   }
 
 
-  static String versionString(byte[] v)
+  static String hashString(byte[] v)
   {
     return
       v == null     ? "-- null --" :
-      v.length == 0 ? "-- empty version --"
+      v.length == 0 ? "-- empty hash --"
                     : IntStream.range(0, v.length)
                         .map(j -> v[j] & 0xff)
                         .mapToObj(x -> Integer.toHexString(0x100 + x).substring(1))
                         .collect(Collectors.joining());
   }
 
-  static void incompatibleModuleVersion(LibraryModule user,
+  static void incompatibleModuleHash(LibraryModule user,
                                         LibraryModule m,
                                         byte[] expected_version,
                                         byte[] found_version)
   {
-    fatal("Incompatible module version encountered",
+    fatal("Incompatible module hashes encountered",
           "Module " + user + " references module " + m + "\n" +
-          "Expected version: " + versionString(expected_version) + "\n" +
-          "Actual version  : " + versionString(found_version));
+          "Expected hash: " + hashString(expected_version) + "\n" +
+          "Actual hash  : " + hashString(found_version));
   }
 
 

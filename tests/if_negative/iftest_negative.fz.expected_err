@@ -1,25 +1,25 @@
 
---CURDIR--/iftest_negative.fz:39:13: error 1: If condition must be assignable to type 'bool'
-    else if "string"  // 2. should flag an error: must be of type bool
-------------^^^^^^^^
-Actual type is 'String'
-
-
---CURDIR--/iftest_negative.fz:38:8: error 2: If condition must be assignable to type 'bool'
+--CURDIR--/iftest_negative.fz:38:8: error 1: If condition must be assignable to type 'bool'
     if "string"       // 1. should flag an error: must be of type bool
 -------^^^^^^^^
 Actual type is 'String'
 
 
---CURDIR--/iftest_negative.fz:44:13: error 3: If condition must be assignable to type 'bool'
-    else if 42        // 4. should flag an error: must be of type bool
-------------^^
+--CURDIR--/iftest_negative.fz:39:13: error 2: If condition must be assignable to type 'bool'
+    else if "string"  // 2. should flag an error: must be of type bool
+------------^^^^^^^^
+Actual type is 'String'
+
+
+--CURDIR--/iftest_negative.fz:43:8: error 3: If condition must be assignable to type 'bool'
+    if 42             // 3. should flag an error: must be of type bool
+-------^^
 Actual type is 'i32'
 
 
---CURDIR--/iftest_negative.fz:43:8: error 4: If condition must be assignable to type 'bool'
-    if 42             // 3. should flag an error: must be of type bool
--------^^
+--CURDIR--/iftest_negative.fz:44:13: error 4: If condition must be assignable to type 'bool'
+    else if 42        // 4. should flag an error: must be of type bool
+------------^^
 Actual type is 'i32'
 
 

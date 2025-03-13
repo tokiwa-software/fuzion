@@ -1,9 +1,9 @@
 
 module b : a is
-  redef as_string String =>
+  public redef as_string String =>
     if b.this.sign ≤ 0
       "negative"
     else
       "positive"
 
-  fixed redef type.identity b => b
+  public fixed redef type.identity b => b

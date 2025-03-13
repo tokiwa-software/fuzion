@@ -70,7 +70,8 @@ public class Box extends Expr
   {
     if (PRECONDITIONS) require
       (value != null,
-       frmlT.isGenericArgument() || frmlT.isThisType() || !value.type().isRef() || value.isCallToOuterRef(),
+       !frmlT.containsUndefined(false),
+       frmlT.isGenericArgument() || frmlT.isThisType() || value.type().isRef().noOrDontKnow() || value.isCallToOuterRef(),
        !(value instanceof Box));
 
     this._value = value;
@@ -136,6 +137,16 @@ public class Box extends Expr
   {
     super.visitExpressions(v);
     _value.visitExpressions(v);
+  }
+
+
+  /**
+   * Is the result of this expression boxed?
+   */
+  @Override
+  public boolean isBoxed()
+  {
+    return true;
   }
 
 

@@ -126,7 +126,7 @@ public class Match extends AbstractMatch
   {
     _subject = _subject.visit(v, outer);
     v.action(this);
-    v.action(this, outer);
+    v.action(this);
     for (var c: cases())
       {
         c.visit(v, this, outer);
@@ -142,28 +142,16 @@ public class Match extends AbstractMatch
    *
    * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
     var st = _subject.type();
     if (CHECKS) check
       (Errors.any() || st != Types.t_ERROR);
-    if (st != Types.t_ERROR)
+    if (st != Types.t_ERROR && !st.isGenericArgument())
       {
-        if (st.isGenericArgument())
-          {
-            AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
-          }
-        else
-          {
-            res.resolveTypes(st.feature());
-          }
-
-        if (!st.isChoice())
-          {
-            AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
-          }
+        res.resolveTypes(st.feature());
       }
-    if (st.isChoice())
+    if (st.isChoice() && Types.resolved.t_void != st)
       {
         var cgs = st.choiceGenerics(context);
         for (var i = 0; i < cgs.size(); i++)
@@ -246,8 +234,17 @@ public class Match extends AbstractMatch
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
+    // NYI: CLEANUP: there should be another mechanism, for
+    // adding missing result fields instead of misusing
+    // `propagateExpectedType`.
+    //
+
+    // This will trigger addFieldForResult in some cases, e.g.:
+    // `match (if true then true else true) * =>`
+    _subject = subject().propagateExpectedType(res, context, subject().type());
+
     return addFieldForResult(res, context, t);
   }
 

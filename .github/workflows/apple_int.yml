@@ -38,11 +38,16 @@ jobs:
   run_tests:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
-      - uses: actions/setup-java@b36c23c0d998641eff861008f374ee103c25ac73 # v4.4.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Set environment variables
+        run: |
+          echo "CPATH=/opt/homebrew/include:$CPATH" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: install dependencies
         run: |

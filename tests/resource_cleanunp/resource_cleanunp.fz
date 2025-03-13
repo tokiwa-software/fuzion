@@ -42,7 +42,7 @@ resource_cleanunp =>
       say "open: $s"
       (e ([s] ++ opened) state).replace
 
-    redef finally =>
+    public redef finally =>
       for s in opened do
         say "closing $s"
 

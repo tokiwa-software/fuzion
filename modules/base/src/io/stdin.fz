@@ -1,0 +1,96 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature stdin
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# short-hand to return an io.reader with a read handler
+# allowing to read from stdin.
+#
+# usage example using a local mutate instance:
+#
+#  LM : mutate is
+#  LM ! ()->
+#    io.stdin.reader LM ! ()->
+#      for l := (io.buffered LM).read_line
+#          i in 1..
+#      while l??
+#        say "$i: $l"
+#
+# usage example using read_lines:
+#
+# for l in io.stdin.read_lines
+#     i in 1..
+# do
+#   say "$i: $l"
+#
+# NYI: UNDER DEVELOPMENT: It would be good to move features reader, read_fully,
+# etc. to a parent feature and have other features, e.g., for reading files, inherit
+# from that feature as well.
+#
+public stdin is
+
+  # create a reader for stdin using the given local mutate instance
+  #
+  public reader (LM type : mutate) =>
+    (buffered LM).reader stdin_read_handler 1024
+
+  # read all of stdin in an array of u8 bytes using
+  # io.buffered.read_fully.
+  #
+  public read_fully array u8 =>
+    M : mutate is
+    M ! ()->
+      reader M ! (buffered M).read_fully
+
+  # read all of stdin in an array of String using
+  # io.buffered.read_lines.
+  #
+  public read_lines array String =>
+    M : mutate is
+    M ! ()->
+      reader M ! (buffered M).read_lines
+
+  # read all of stdin in a single String using
+  # String.from_bytes on the result of read_fully.
+  #
+  public read_string =>
+    String.from_bytes read_fully
+
+# Read handler for stdin
+#
+stdin_read_handler : Read_Handler is
+
+  # implementation of read for reading from stdin
+  #
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
+    arr := fuzion.sys.internal_array_init u8 count
+    v := fzE_file_read fzE_file_stdin arr.data count
+    if v < -1
+      error "an error occurred while reading stdin"
+    else if v <= 0
+      io.end_of_file
+    else if v < count
+      array u8 v i->arr[i]
+    else
+      arr.as_array

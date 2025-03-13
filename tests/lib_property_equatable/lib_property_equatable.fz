@@ -23,21 +23,20 @@
 
 lib_property_equatable =>
 
-  # NYI: UNDER DEVELOPMENT: ugly that we have to use as_seq here
-  say [0,1,2].as_seq=[0,1,2].as_seq
-  say [0,1,2].as_seq=[0,1,3].as_seq
-  say ["a","b","c"].as_seq=["a","b","c"].as_seq
-  say ["a","b","c"].as_seq=["a","b","d"].as_seq
+  say [0,1,2].as_equatable=[0,1,2].as_equatable
+  say [0,1,2].as_equatable=[0,1,3].as_equatable
+  say ["a","b","c"].as_equatable=["a","b","c"].as_equatable
+  say ["a","b","c"].as_equatable=["a","b","d"].as_equatable
 
-  say (option 0)=0
-  say (option 0)=1
-  say (option 0)=nil
+  say (option 0).as_equatable=0
+  say (option 0).as_equatable=1
+  say (option 0).as_equatable=nil
 
-  say (outcome 0)=(error "hello")
+  say (outcome 0).as_equatable=(error "hello")
 
-  say (num_option 0)=0
-  say (num_option 0)=1
-  say (num_option 0)=nil
+  say (option 0).as_equatable=0
+  say (option 0).as_equatable=1
+  say (option 0).as_equatable=nil
 
   # NYI: UNDER DEVELOPMENT: ugly that we have to use (id (container.Set i32) ...)
   say (id (container.Set i32) ((container.ps_set i32).empty))=((container.ps_set i32).empty)

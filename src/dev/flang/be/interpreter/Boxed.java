@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * Boxed represents a value type instance that was boxed to create a ref type.
@@ -94,7 +94,7 @@ public class Boxed extends ValueWithClazz
   public int i8Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i8));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_i8));
 
     return _contents.i8Value();
   }
@@ -108,7 +108,7 @@ public class Boxed extends ValueWithClazz
   public int i16Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i16));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_i16));
 
     return _contents.i16Value();
   }
@@ -122,7 +122,7 @@ public class Boxed extends ValueWithClazz
   public int i32Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i32));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_i32));
 
     return _contents.i32Value();
   }
@@ -136,7 +136,7 @@ public class Boxed extends ValueWithClazz
   public long i64Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_i64));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_i64));
 
     return _contents.i64Value();
   }
@@ -150,7 +150,7 @@ public class Boxed extends ValueWithClazz
   public int u8Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u8));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_u8));
 
     return _contents.u8Value();
   }
@@ -165,7 +165,7 @@ public class Boxed extends ValueWithClazz
   public int u16Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u16));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_u16));
 
     return _contents.u16Value();
   }
@@ -179,7 +179,7 @@ public class Boxed extends ValueWithClazz
   public int u32Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u32));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_u32));
 
     return _contents.u32Value();
   }
@@ -193,7 +193,7 @@ public class Boxed extends ValueWithClazz
   public long u64Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_u64));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_u64));
 
     return _contents.u64Value();
   }
@@ -207,7 +207,7 @@ public class Boxed extends ValueWithClazz
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_f32));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_f32));
 
     return _contents.f32Value();
   }
@@ -221,7 +221,7 @@ public class Boxed extends ValueWithClazz
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_f64));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_f64));
 
     return _contents.f64Value();
   }
@@ -235,9 +235,9 @@ public class Boxed extends ValueWithClazz
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_TRUE) ||
-       _valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_FALSE) ||
-       _valueClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_true_) ||
+       _valueClazz == fuir().clazz(SpecialClazzes.c_false_) ||
+       _valueClazz == fuir().clazz(SpecialClazzes.c_bool));
 
     return _contents.boolValue();
   }

@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * i32Value is a value of type i32
@@ -109,10 +109,17 @@ public class i32Value extends Value
    */
   void checkStaticClazz(int expected)
   {
-    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_i32))
+    if (expected != fuir().clazz(SpecialClazzes.c_i32))
       {
         throw new Error("i32 value not allowed for clazz " + expected);
       }
+  }
+
+
+  @Override
+  protected Object toNative()
+  {
+    return this.i32Value();
   }
 
 }

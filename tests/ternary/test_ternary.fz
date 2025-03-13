@@ -58,24 +58,24 @@ test_ternary is
   f(c x | y) =>
 
     # single line ? | match
-    _ := c ? _ x => { f } | _ y => { g }
-    _ := c ? _ x => ( f ) | _ y => ( g )
-    _ := c ? _ x =>   f   | _ y =>   g
-    c      ? _ x =>   f   | _ y =>   g
+    _ := c ? x => { f } | y => { g }
+    _ := c ? x => ( f ) | y => ( g )
+    _ := c ? x =>   f   | y =>   g
+    c      ? x =>   f   | y =>   g
 
     # multi-line ? | match
-    _ := (c ? _ x => f
-            | _ y => g)
-    c       ? _ x => f
-            | _ y => g
+    _ := (c ? x => f
+            | y => g)
+    c       ? x => f
+            | y => g
 
     # match with cases containing '|'
-    _ :=  c ? _ x => (3 | 4) | _ y => (5 | 8)
-    _ := (c ? _ x => (3 | 4)
-            | _ y => (5 | 8))
-    c ? _ x => say (3 | 4) | _ y => say (5 | 8)
-    c ? _ x => say (3 | 4)
-      | _ y => say (5 | 8)
+    _ :=  c ? x => (3 | 4) | y => (5 | 8)
+    _ := (c ? x => (3 | 4)
+            | y => (5 | 8))
+    c ? x => say (3 | 4) | y => say (5 | 8)
+    c ? x => say (3 | 4)
+      | y => say (5 | 8)
 
     f => say "found x"
     g => say "found y"

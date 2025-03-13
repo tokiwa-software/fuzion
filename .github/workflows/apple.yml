@@ -23,6 +23,11 @@
 
 name: run tests on macOS
 
+# https://lobste.rs/s/ppjtie/simple_trick_save_environment_money_when
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 permissions:
   contents: read
 
@@ -36,20 +41,27 @@ env:
   PRECONDITIONS: true
   POSTCONDITIONS: true
   FUZION_REPRODUCIBLE_BUILD: true
+  dev_flang_tools_serializeFUIR: true
+
 
 jobs:
   run_tests:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
-      - uses: actions/setup-java@b36c23c0d998641eff861008f374ee103c25ac73 # v4.4.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Set environment variables
+        run: |
+          echo "CPATH=/opt/homebrew/include:$CPATH" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH" >> $GITHUB_ENV
+
       - name: install dependencies
         run: |
-          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils
+          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils shellcheck
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: sed version
@@ -57,6 +69,9 @@ jobs:
 
       - name: make version
         run: make --version
+
+      - name: check shell scripts
+        run: make shellcheck
 
       - name: build java code
         run: make javac
@@ -68,7 +83,7 @@ jobs:
         run: make doc
 
       - name: run tests
-        run: |
-          export CPATH=/opt/homebrew/include
-          export LIBRARY_PATH=/opt/homebrew/lib
-          make run_tests_parallel
+        run: make run_tests_parallel
+
+      - name: syntax check
+        run: make syntaxcheck

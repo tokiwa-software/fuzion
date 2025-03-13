@@ -1,0 +1,81 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.sync
+#
+# -----------------------------------------------------------------------
+
+# concur.sync -- synchronization primitives
+# NYI: sync should probably be an effect
+#
+public sync is
+
+  mtx_init outcome Mutex => intrinsic
+  mtx_lock(mtx Mutex) bool => intrinsic
+  # NYI: mtx_timedlock
+  mtx_trylock(mtx Mutex) bool => intrinsic
+  mtx_unlock(mtx Mutex) bool => intrinsic
+  mtx_destroy(mtx Mutex) unit => intrinsic
+
+  cnd_init(mtx Mutex) outcome Condition => intrinsic
+  cnd_signal(cnd Condition) bool => intrinsic
+  cnd_broadcast(cnd Condition) bool => intrinsic
+  cnd_wait(cnd Condition, mtx Mutex) bool => intrinsic
+  # NYI: cnd_timedwait
+  cnd_destroy(cnd Condition) unit => intrinsic
+
+
+  # NYI: documentation missing, waiting for JVM backend impl
+
+  private:public mutex(module mtx Mutex) is
+
+    public type.new outcome concur.sync.mutex =>
+      concur.sync.mtx_init.bind concur.sync.mutex mtx->
+        concur.sync.mutex mtx
+
+    public condition outcome concur.sync.condition =>
+      (concur.sync.cnd_init mtx).bind concur.sync.condition cnd->
+        concur.sync.condition mtx cnd
+
+    # NYI destroy
+
+
+  private:public condition(mtx Mutex, cnd Condition) is
+
+    public is_locked := concur.atomic false
+
+    public synchronized(T type, code ()->T) T =>
+      check mtx_lock mtx
+      is_locked.write true
+      res := code.call
+      is_locked.write false
+      check mtx_unlock mtx
+      res
+
+    public signal
+    pre is_locked.read
+    => cnd_signal cnd
+    public broadcast
+    pre is_locked.read
+    => cnd_broadcast cnd
+    public wait
+    pre is_locked.read
+    => cnd_wait cnd mtx
+
+    # NYI destroy

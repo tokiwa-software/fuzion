@@ -1,0 +1,175 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature bool
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# bool -- Standard Fuzion type 'bool'
+#
+# We need to apologize to George Boole for crippling his name a bit,
+# just to safe us from typing one more letter.  But at least we stop
+# here and do not use boo, bo or similar.
+#
+# bool is a choice type that can either be true_ of false_.
+#
+# Note that 'true_' and 'false_' themselves are not of type 'bool'.
+# Routines 'true' and 'false' are the preferred way to get a constant
+# value of type 'bool'.
+#
+#
+public bool : choice false_ true_, property.equatable, java_primitive is
+
+  # not
+  public prefix ! bool =>
+    if bool.this then false else true
+
+  # or with lazy evaluation
+  #
+  public infix || (other Lazy bool) bool =>
+    if bool.this
+      true
+    else
+      other
+
+  # and with lazy evaluation
+  #
+  public infix && (other Lazy bool) bool =>
+    if bool.this
+      other
+    else
+      false
+
+  # or
+  public infix |   (other bool) => bool.this || other
+
+  # and
+  public infix &   (other bool) => bool.this && other
+
+  # equivalence
+  #
+  # note that we do not use '==' for this to avoid confusion since
+  # a == b == c for booleans might not behave as expected
+  # ('true <=> false <=> false' evaluates to 'true')
+  public infix <=> (other bool) => if bool.this other else !other
+
+  # equality check implementation for inherited property.equatable
+  #
+  public fixed redef type.equality(a, b bool) =>
+    if a
+      b
+    else
+      !b
+
+  # xor
+  public infix ^   (other bool) => if bool.this (!other) else  other
+
+  # implies
+  #
+  public infix : (other Lazy bool) bool =>
+    if bool.this
+      other
+    else
+      true
+
+  # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
+  #
+  public ternary ? : (T type, a, b Lazy T) => if bool.this a else b
+
+
+  # create an option from a lazily evaluated value depending on this bool
+  #
+  public as_option(# value that will be evaluated and wrapped in an option
+                   # iff bool.this holds.
+                   v Lazy T) option T
+  =>
+    if bool.this then v else nil
+
+
+  # human readable string
+  public redef as_string => if bool.this "true" else "false"
+
+
+  # monoid of bool with infix & operation.  Will be true iff all elements are
+  # true.
+  #
+  public type.all =>
+    ref : Monoid bool
+      public redef infix ∙ (a, b bool) => a & b
+      public redef e => true
+
+
+  # monoid of bool with infix | operation.  Will be false iff all elements are
+  # false.
+  #
+  public type.any =>
+    ref : Monoid bool
+      public redef infix ∙ (a, b bool) => a | b
+      public redef e => false
+
+
+  # monoid of bool with infix ^ operation.  Will be true iff an odd number of
+  # elements is true. This gives the even parity.
+  #
+  public type.parity =>
+    ref: Monoid bool
+      public redef infix ∙ (a, b bool) => a ^ b
+      public redef e => false
+
+
+# boolean value "false"
+#
+# Note that this value is of unit type >>false_<<, not of type >>bool<<, i.e.,
+# if it is used for type inference as in
+#
+#    my_boolean := false_
+#
+# you will get a variable of type >>false_<<, it will not be possible to assign
+# >>true_<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
+#
+#
+module:public false_ is
+
+
+# boolean value "true"
+#
+# Note that this value is of unit type >>true_<<, not of type >>bool<<, i.e.,
+# if it is used for type inference as in
+#
+#    my_boolean := true_
+#
+# you will get a variable of type >>true_<<, it will not be possible to assign
+# >>false_<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
+#
+#
+module:public true_ is
+
+
+# boolean value "false" as a constant of type >>bool<<.
+#
+#
+public false bool => false_
+
+
+# boolean value "true" as a constant of type >>bool<<.
+#
+#
+public true bool => true_

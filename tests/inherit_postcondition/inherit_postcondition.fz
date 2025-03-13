@@ -197,7 +197,7 @@ test_postcondition is
     f
       post
         ok "original $result"
-        { io.out.env.println "hi"; true }
+        { io.Out.env.println "hi"; true }
         { v := post_accessing_result.this; true }
         { [1,result,2].fold i32.sum > 3 }
         { fn i32->i32 := *result; fn 3 > 120 }
@@ -212,15 +212,15 @@ test_postcondition is
     redef f
       post then
         ok "redef $result"
-        { io.out.env.println "hi"; true }
+        { io.Out.env.println "hi"; true }
         result % 5 = 1
     =>
       4711
 
-    redef g
+    public redef g
       post then
         ok "redef g $result"
-        { io.out.env.println "ho"; true }
+        { io.Out.env.println "ho"; true }
         result % 5 = 4
     => 69
 
@@ -228,15 +228,15 @@ test_postcondition is
     redef f
       post then
         ok "redef2 $result"
-        { io.out.env.println "hi"; true }
+        { io.Out.env.println "hi"; true }
         true
     =>
       4716
 
-    redef g
+    public redef g
       post then
         ok "redef g $result"
-        { io.out.env.println "he"; true }
+        { io.Out.env.println "he"; true }
         result % 10 = 9
     => 42069
 
@@ -273,7 +273,7 @@ test_postcondition is
   _ := mod.post_accessing_result_child4.f
 
   inh_module1 : mod.post_accessing_result is
-    redef f
+    public redef f
       post then
         ok "redef $result"
     =>
@@ -283,9 +283,9 @@ test_postcondition is
     # redefining non-argument field is not allowed
     # redef n := 64
     # redefining a routine as a field is allowed
-    redef m := 64
-    redef r => 128
-    redef f
+    public redef m := 64
+    public redef r => 128
+    public redef f
       post then
         ok "redef $result"
     =>

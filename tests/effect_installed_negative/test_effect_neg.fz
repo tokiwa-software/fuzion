@@ -41,30 +41,30 @@ test_effect_neg is
   use_b_err2 => _ := b.env       # 2. should flag an error: effect not installed
   use_c_err3 => _ := c.env       # 3. should flag an error: effect not installed
   use_d_err4 => _ := d.env       # 4. should flag an error: effect not installed
-  FA : Function unit is redef call => use_a
-  FB : Function unit is redef call => use_b
-  FC : Function unit is redef call => use_c
+  FA : Function unit is public redef call => use_a
+  FB : Function unit is public redef call => use_b
+  FC : Function unit is public redef call => use_c
   fa Function unit := FA
   fb Function unit := FB
   fc Function unit := FC
   a.instate_self unit fa
   b.instate_self unit fb
   c.instate_self unit fc
-  a.instate_self ()->use_a
-  b.instate_self ()->use_b
-  c.instate_self ()->use_c
-  a.instate_self ()->
-    b.instate_self ()->
-      c.instate_self ()->
+  a ! ()->use_a
+  b ! ()->use_b
+  c ! ()->use_c
+  a ! ()->
+    b ! ()->
+      c ! ()->
         use_a
         use_b
         use_c
-  a.instate_self ()->use_b_err2
-  b.instate_self ()->use_c_err3
-  c.instate_self ()->use_a_err1
-  a.instate_self ()->
-    b.instate_self ()->
-      c.instate_self ()->
+  a ! ()->use_b_err2
+  b ! ()->use_c_err3
+  c ! ()->use_a_err1
+  a ! ()->
+    b ! ()->
+      c ! ()->
         use_a
         use_b
         use_c
@@ -74,14 +74,14 @@ test_effect_neg is
   # positive cases above, so the call traces might get mixed up.
   #
   if maybe
-    a.instate_self ()->
-      b.instate_self ()->
+    a ! ()->
+      b ! ()->
         use_c      # 5. should flag an error: effect not installed
   if maybe
-    a.instate_self ()->
-      c.instate_self ()->
+    a ! ()->
+      c ! ()->
         use_b      # 6. should flag an error: effect not installed
   if maybe
-    b.instate_self ()->
-      c.instate_self ()->
+    b ! ()->
+      c ! ()->
         use_a      # 7. should flag an error: effect not installed

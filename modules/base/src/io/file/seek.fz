@@ -1,0 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature seek
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# seek -- effect providing stream seeking operations
+#
+public seek(ps Seek_Handler) : effect is
+
+  # seek offset in the stream represented by fd
+  # returns an outcome i64 that represents the new offset
+  # returns an error in case of failure
+  #
+  public seek(
+       # the offset to seek from the beginning of the stream pointer
+       offset i64) =>
+    replace
+    ps.seek offset
+
+
+  # returns the current file-pointer offset as an outcome i64,
+  # the offset is measured from the beginning of the file indicated by the file descriptor
+  # returns the current offset in success and error in failure
+  #
+  public file_position =>
+    replace
+    ps.file_position
+
+
+# reference to the seek operations that could be provided
+#
+public Seek_Handler ref is
+  public seek(offset i64) outcome unit => abstract
+  public file_position outcome i64 => abstract

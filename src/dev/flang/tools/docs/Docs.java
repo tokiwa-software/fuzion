@@ -27,20 +27,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools.docs;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,45 +48,69 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
-import dev.flang.mir.MIR;
+import dev.flang.fe.LibraryFeature;
+import dev.flang.fe.LibraryModule;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 public class Docs extends ANY
 {
 
-  /**
-   * Compare Features by basename + args
-   */
-  private static final Comparator<? super AbstractFeature> byFeatureName = Comparator.comparing(
-    af -> af.featureName(), (name1, name2) -> name1.compareTo(name2));
-
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
     /* fuzionHome              */ new FuzionHome()._fuzionHome,
-    /* loadBaseLib             */ true,
-    /* eraseInternalNamesInLib */ false,
-    /* modules                 */ new List<>("terminal", "lock_free"),
+    /* loadBaseMod             */ true,
+    /* eraseInternalNamesInMod */ false,
+    /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
     /* fuzionSafety            */ false,
     /* enableUnsafeIntrinsics  */ false,
     /* sourceDirs              */ null,
-    /* readStdin               */ true,
+    /* readStdin               */ false,
     /* executeCode             */ null,
     /* main                    */ null,
-    /* loadSources             */ true,
+    /* moduleName              */ null,
+    /* loadSources             */ false,
+    /* needsEscapeAnalysis     */ false,
+    /* serializeFuir           */ false,
     /* timer                   */ s->{});
+
+  /**
+   * Generate a list of all fuzion modules available in build/modules
+   */
+  private List<String> allModules()
+  {
+    List<String> modules = new List<>();
+
+    try {
+      modules.addAll((Files.list(new FuzionHome()._fuzionHome.resolve("modules"))
+                            .filter(Files::isRegularFile)
+                            .map(Path::getFileName)
+                            .map(Path::toString)
+                            .filter(name -> name.endsWith(FuzionConstants.MODULE_FILE_SUFFIX))
+                            // exclude Java Modules from API docs
+                            // (they also caused an endless recursion when using the docs generation on them)
+                            .filter(name -> !name.startsWith("java."))
+                            .map(name -> name.substring(0, name.lastIndexOf('.')))
+                            .collect(Collectors.toList())));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return modules;
+  }
 
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
-  private final MIR mir = fe.createMIR();
+  private final AbstractFeature universe = fe._feUniverse;
 
-  private final AbstractFeature universe = mir.universe();
+  public final static Pattern nonAsciiPattern = Pattern
+    .compile("[^\\x00-\\x7F]");
 
 
   /**
@@ -114,7 +138,7 @@ public class Docs extends ANY
    */
   private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
-    return fe.mainModule()
+    return fe.feModule()
       .declaredFeatures(f)
       .values()
       .stream();
@@ -129,7 +153,7 @@ public class Docs extends ANY
   private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
   {
     var result = new List<AbstractFeature>();
-    fe.mainModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+    fe.feModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
     return result
       .stream();
   }
@@ -160,8 +184,7 @@ public class Docs extends ANY
   {
     if (args.length < 1)
       {
-        say_err(usage());
-        System.exit(1);
+        Errors.fatal(usage());
       }
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
@@ -240,48 +263,73 @@ public class Docs extends ANY
       || af.featureName().isInternal()
       || af.featureName().isNameless()
       || !(ignoreVisibility || Util.isVisible(af))
-      || af.isTypeFeature()
+      || af.isCotype()
       || Util.isArgument(af)
-      || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME)
-      || isDummyFeature(af);
-  }
-
-
-  /**
-   * is this feature the dummy feature?
-   * @param af
-   * @return
-   */
-  private static boolean isDummyFeature(AbstractFeature af)
-  {
-    return af.qualifiedName().equals("dummyFeature");
+      || af.featureName().baseName().equals(FuzionConstants.RESULT_NAME);
   }
 
 
   /**
    * Get a path for a feature.
    * This is where the docs of this feature are
-   * @param f
+   * @param f the feature for which to get the path for
+   * @param module the module for which the docs are created
    * @return
    */
-  private static String featurePath(AbstractFeature f)
+  private static String featurePath(AbstractFeature f, LibraryModule module)
+  {
+    return nonAsciiPattern
+      .matcher(featurePath(f, module, true))
+      .replaceAll(match ->String.format("U+%04X", match.group().codePointAt(0)));
+  }
+
+
+  /**
+   * Get a path for a feature.
+   * This is where the docs of this feature are
+   * @param f the feature for which to get the path for
+   * @param module the module for which the docs are created
+   * @param modulePrefix whether the module prefix should be included in the path
+   * @return
+   */
+  private static String featurePath(AbstractFeature f, LibraryModule module, boolean modulePrefix)
   {
     if (f.isUniverse())
       {
         return "";
       }
 
-    String path = f.isTypeFeature() ? (featurePath(f.typeFeatureOrigin()) + "/" + "type.")
-                                    : (featurePath(f.outer()) + f.featureName().toString()) + "/";
+      // docs are generated per module, for features in universe add the module's folder
+      String path = (modulePrefix && f.outer().isUniverse()) ? module.name() + "/" : "";
+
+      path += f.isCotype() ? (featurePath(f.cotypeOrigin(), module, false) + "/" + "type.")
+                                : (featurePath(f.outer(), module) + f.featureName().toString()) + "/";
 
     return path
       .replace(" ", "+");
   }
 
+  /**
+   * Cast an AbstractFeature to LibraryFeature, requires that this is possible
+   * @param af an AbstractFeature that can be casted to LibraryFeature
+   * @return
+   */
+  private static final LibraryFeature lf(AbstractFeature af)
+  {
+    return (LibraryFeature) af;
+  }
+
 
   private void run(DocsOptions config)
   {
-    // declared features are sorted by feature name
+    // get all modules
+    var all_modules = allInnerAndInheritedFeatures(universe)
+              .map(af->lf(af)._libModule)
+              .distinct()
+              .filter(m->!m.name().equals("main")) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
+              .collect(Collectors.toCollection(List::new));
+
+    // collect all features for all modules
     var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
 
     breadthFirstTraverse(feature -> {
@@ -293,9 +341,9 @@ public class Docs extends ANY
         .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
 
       Stream<AbstractFeature> st = Stream.empty();
-      if (feature.hasTypeFeature())
+      if (feature.hasCotype())
         {
-          var tf = feature.typeFeature();
+          var tf = feature.cotype();
           st = allInnerAndInheritedFeatures(tf)
             .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
         }
@@ -309,31 +357,55 @@ public class Docs extends ANY
 
     }, universe);
 
-    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, fe.mainModule());
 
-    mapOfDeclaredFeatures
-      .keySet()
-      .stream()
-      .forEach(af -> {
-        var path = af.isUniverse()
-                                    ? config.destination()
-                                    : config.destination().resolve(featurePath(af));
-        path.toFile().mkdirs();
+    // generate documentation per module
+    for (var module : all_modules)
+    {
+        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
 
-        try
-          {
-            FileWriter writer = new FileWriter(new File(path.toFile(), "index.html"));
-            var output = htmlTool.content(af);
-            writer.write(output);
-            writer.close();
-          }
-        catch (IOException e)
-          {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-      });
-  }
+        mapOfDeclaredFeatures
+          .keySet()
+          .stream()
+          .filter(af -> af.isUniverse() || lf(af).showInMod(module))
+          .forEach(af -> {
+            var path = af.isUniverse()
+                                        ? config.destination().resolve(module.name())
+                                        : config.destination().resolve(featurePath(af, module));
+            path.toFile().mkdirs();
+
+            var file = new File(path.toFile(), "index.html");
+            try
+              {
+                FileWriter writer = new FileWriter(file);
+                var output = htmlTool.content(af);
+                writer.write(output);
+                writer.close();
+              }
+            catch (IOException e)
+              {
+                throw new Error("file not writable: " + file.getPath());
+              }
+          });
+        }
+
+      // generate overview page of modules
+      var path = config.destination();
+      path.toFile().mkdirs();
+      var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
+
+      var file = new File(path.toFile(), "index.html");
+      try
+        {
+          FileWriter writer = new FileWriter(file);
+          writer.write(htmlTool.modulePage());
+          writer.close();
+        }
+      catch (IOException e)
+        {
+          throw new Error("file not writable: " + file.getPath());
+        }
+    }
+
 
 
   /**
@@ -348,11 +420,6 @@ public class Docs extends ANY
         System.exit(0);
         return;
       }
-
-
-    // NYI get rid of this hack
-    var fakeIn = new ByteArrayInputStream("dummyFeature is".getBytes());
-    System.setIn(fakeIn);
 
     new Docs().run(config);
   }

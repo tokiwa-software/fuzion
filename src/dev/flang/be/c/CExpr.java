@@ -476,6 +476,7 @@ abstract class CExpr extends CStmnt
    *
    * See Chapter 6.5 in http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2596.pdf for detail:
    *
+   * <pre>{@literal
    *  0 for prim-expr: identifier, constant, string-literal, '(' expression ')' and generic-selection
    *
    *  1 for postfix-expr: prim-expr | postfix-expr ('[' expr ']'| '(' arglist ')'| '.'| '->'| '++'| '--'
@@ -511,6 +512,7 @@ abstract class CExpr extends CStmnt
    * 15 for ass-expr; cond.expr | unary-expr ('='|'*='|'/='|'%='|'+='|'-='|'<<='|'>>='|'&='|'^='|'|=') ass-expr
    *
    * 16 expr: ass-exp | expr ',' ass-expr
+   * }</pre>
    *
    * A good reference is from https://en.cppreference.com/w/c/language/operator_precedence,
    * only difference is that this source does not define a level for cast-expr, so levels >= 3 are off by one.
@@ -620,7 +622,7 @@ abstract class CExpr extends CStmnt
   }
 
   /**
-   * Create CExpr that corresponds to C unary operator '&' with precedence 2
+   * Create CExpr that corresponds to C unary operator {@code &} with precedence 2
    * applied to this.
    *
    * @return the resulting expression
@@ -786,9 +788,9 @@ abstract class CExpr extends CStmnt
 
 
   /**
-   * Create CExpr that corresponds to C binary operators '*', '/', '%', '+',
+   * Create CExpr that corresponds to C binary operators {@literal '*', '/', '%', '+',
    * '-', '<<', '>>', '<', '<=', '>', '>=', '==', '!=', '&', '^', '|', '&&',
-   * '||' with precedence 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 applied to this and
+   * '||'} with precedence 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 applied to this and
    * right.
    *
    * @return the resulting expression

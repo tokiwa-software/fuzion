@@ -30,7 +30,7 @@ import dev.flang.util.List;
 
 
 /**
- * Cond <description>
+ * Cond
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -65,11 +65,11 @@ public class Cond
 
 
   /**
-   * Wrap Expr instances from given list into new `Cond` instances
+   * Wrap Expr instances from given list into new {@code Cond} instances
    *
-   * @param b a list of `Expr` to be used as conditions
+   * @param b a list of {@code Expr} to be used as conditions
    *
-   * @return a new list with each `Expr` form `l` wrapped into a `Cond`.
+   * @return a new list with each {@code Expr} form {@code l} wrapped into a {@code Cond}.
    */
   public static List<Cond> from(Block b)
   {
@@ -91,7 +91,7 @@ public class Cond
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     cond = cond.visit(v, outer);
-    v.action(this, outer);
+    v.action(this);
   }
 
 
@@ -129,7 +129,7 @@ public class Cond
    *
    * @param context the source code context where this Cond is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
   }

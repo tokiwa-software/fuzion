@@ -34,11 +34,12 @@ main =>
   #
   Sequence.prefix ! String =>
     lm : mutate is
-    lm.instate_self ()->
-      match process.spawn (map x->x.as_string).as_array
+    lm ! ()->
+      seq := map x->x.as_string
+      match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing {Sequence.this}, error is $e"
-        p process.Process =>
-          match p.with_out String lm (()->String.from_bytes (io.buffered.read_fully lm))
+        p os.process =>
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
             s String => s
 
@@ -48,15 +49,15 @@ main =>
   #
   String.infix | (seq Sequence String) String =>
     lm : mutate is
-    lm.instate_self ()->
-      match process.spawn (seq.map x->x.as_string).as_array
+    lm ! ()->
+      match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing $seq, error is $e"
-        p process.Process =>
+        p os.process =>
           _ := p.with_in unit lm ()->
-            _ := (io.buffered.writer lm).write String.this.utf8
-            _ := (io.buffered.writer lm).flush
+            _ := (io.buffered lm).writer.env.write String.this.utf8
+            _ := (io.buffered lm).writer.env.flush
             _ := p.wait # close stdin
-          match p.with_out String lm (()->String.from_bytes (io.buffered.read_fully lm))
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from $seq, error is: $e"
             s String => s
 
@@ -73,6 +74,9 @@ main =>
 
   new_line := "\n"
 
+  if envir.args.count < 2
+    panic "expecting at least one file name argument"
+
   # first, strip out asciidoc code that is enclosed as blocks of the form
   #
   #   // tag::bla_bla
@@ -80,8 +84,6 @@ main =>
   #   // end::bla_bla
   #
   asciidoc_matcher        := ["pcregrep", "-v", "-M", "// tag::(\\n|.)*?// end::"]
-  lexer_without_asciidoc  := !(asciidoc_matcher ++ ["./src/dev/flang/parser/Lexer.java"])
-  parser_without_asciidoc := !(asciidoc_matcher ++ ["./src/dev/flang/parser/Parser.java"])
 
   # then, extract EBNF rules of the form
   #
@@ -97,16 +99,20 @@ main =>
   #         ;
   #
   rule_matcher := ["pcregrep", "-M",  "^(fragment\\n)*[a-zA-Z0-9_]+[ ]*:(\\n|.)*?( ;)"]
-  ebnf_lexer   := lexer_without_asciidoc  | rule_matcher
-  ebnf_parser  := parser_without_asciidoc | rule_matcher
-
 
   # header
   ebnf_header := "grammar Fuzion;$new_line$new_line"
-  # combine parser and lexer
-  ebnf := "$ebnf_header$ebnf_parser$new_line$ebnf_lexer"
-  # replace " by '
-    .replace "\"" "'"
+
+  ebnf := envir.args.drop 1
+    .map src->
+      if !io.file.exists src
+        panic "file not found '$src'."
+
+      src_without_asciidoc  := !(asciidoc_matcher ++ [src])
+      (src_without_asciidoc | rule_matcher)
+        .replace "\"" "'"     # replace " by '
+
+    .reduce ebnf_header (+)
 
   say ebnf
 
@@ -114,7 +120,7 @@ main =>
   tmp := !!"mktemp -d"
   _ := !!"mkdir -p $tmp/fuzion_grammar"
   _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
-  antlr := if ((process.spawn ["antlr4"]).bind u32 p->p.wait) = 0 then "antlr4" else "antlr"
+  antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
   # NYI add option -Werror
   _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
   !!"rm -rf $tmp"

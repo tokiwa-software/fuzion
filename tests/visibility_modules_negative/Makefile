@@ -48,6 +48,9 @@ c: clean modules/mod.fum
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: clean modules/mod.fum
+	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+
+record_int: clean modules/mod.fum
 	$(ENV) ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
 
 record_jvm: clean modules/mod.fum
@@ -60,7 +63,9 @@ record_c: clean modules/mod.fum
 # compile mod into mod.fum
 modules/mod.fum:
 	mkdir -p $(@D)
-	$(FUZION) -sourceDirs=./mod -saveLib=$@  $(CHECK)
+	$(FUZION) -sourceDirs=./mod -save-module=$@  $(CHECK)
 
 clean:
 	rm -rf modules *~ */*~ */*/*~
+
+effect:

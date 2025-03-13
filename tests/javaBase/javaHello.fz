@@ -108,7 +108,7 @@ javaHello : Java is
   # checked exception: IOException
   match java.io.FileReader.new "not_a_valid_file"
     Java.java.io.FileReader => say "success opening file reader"
-    e error => say "error: not_a_valid_file (No such file or directory)"
+    error => say "error: not_a_valid_file (No such file or directory)"
 
 
   # get field (non-null)
@@ -140,7 +140,7 @@ javaHello : Java is
 
     tm2 := Java.java.util.TreeMap.new
     _ := try (outcome Java.java.util.Map) unit ()->
-      tm2.putAll util_map
+      tm2.putAll util_map.get
       say tm2.toString
 
   test_casting
@@ -155,7 +155,7 @@ javaHello : Java is
 
     tm2 := Java.java.util.TreeMap.new
     _ := try (outcome Java.java.util.Map) unit ()->
-      tm2.putAll util_map
+      tm2.putAll util_map.get
       say tm2.toString
 
   catch_panics ()->
@@ -165,3 +165,6 @@ javaHello : Java is
 
   catch_panics ()->
     say (Java.java.util.ArrayList.new_I -7)
+
+
+  say (fuzion.java.null (fuzion.java.Java_String))

@@ -45,96 +45,105 @@ import dev.flang.util.SourcePosition;
  * successful loop termination and one after failed loop termination.
  *
  * In general, this is
+ * <pre>{@code
 
-  for
-    x1 := init1, next1
-    x2 in set2
-    x3 := init3, next3
-    x4 in set4
-    x5 := init5, next5
-  while <whileCond>
-    <body>
-  until <untilCond>
-    <success>
-  else
-    <failure>
+for
+  x1 := init1, next1
+  x2 in set2
+  x3 := init3, next3
+  x4 in set4
+  x5 := init5, next5
+while <whileCond>
+  <body>
+until <untilCond>
+  <success>
+else
+  <failure>
 
- * This will be converted into a loop prolog that defines a variable to hold the
+ * }</pre>This will be converted into a loop prolog that defines a variable to hold the
  * loop success, defines temp vars for streams as needed and initializes the
  * index variables
+ * <pre>{@code
 
-  // loop prolog
-  x1 := init1
-  list2 := set2.as_list
-  ### loopElse will be put here ###
-  match list2
-    c2 Cons =>
-      x2 := c2.head
-      x2t := c2.tail
-      x3 := init3
-      list4 := set4.as_list
-      match list4
-        c4 Cons =>
-          x4 := c4.head
-          x4t := c4.tail
-          x5 := init5
+// loop prolog
+x1 := init1
+list2 := set2.as_list
+### loopElse will be put here ###
+match list2
+  c2 Cons =>
+    x2 := c2.head
+    x2t := c2.tail
+    x3 := init3
+    list4 := set4.as_list
+    match list4
+      c4 Cons =>
+        x4 := c4.head
+        x4t := c4.tail
+        x5 := init5
 
-          ### loop will be put here ###
+        ### loop will be put here ###
 
-        _ nil => loopElse
-    _ nil => loopElse
+      _ nil => loopElse
+  _ nil => loopElse
 
+ * }</pre>
  * The loop will be implemented using a tail recursive feature as follows
+ * <pre>{@code
 
-  loop(x1, x2, x2a, x3, x4, x4a, x5, ... inferred-type) =>
-     if whileCond
-       <body>
-       if untilCond
-         <success>
-         ### OPTIONAL TRUE ###
-       else ### nextIteration will be put here ###
-         loop(x1,x2,x2t,x3,x4,x4t,x5,...)   // tail recursion
-       else
-         <failure>
-     else
-       <failure>
-  loop(x1,x2,x2t,x3,x4,x4t,x5,...)
+loop(x1, x2, x2a, x3, x4, x4a, x5, ... inferred-type) =>
+    if whileCond
+      <body>
+      if untilCond
+        <success>
+        ### OPTIONAL TRUE ###
+      else ### nextIteration will be put here ###
+        loop(x1,x2,x2t,x3,x4,x4t,x5,...)   // tail recursion
+      else
+        <failure>
+    else
+      <failure>
+loop(x1,x2,x2t,x3,x4,x4t,x5,...)
 
+ *}</pre>
  * The part marked
  *
  *   ### nextIteration will be put here ###
  *
  * is code that calculates the next values of the index variables similar
  * to the prolog
+ * <pre>{@code
 
-  // nextIteration:
-  x1 := next1
-  ### loopElse will be put here ###
-  match x2a
-    c2 Cons =>
-      x2 := c2.head
-      x2t := c2.tail
-      x3 := next3
-      match x4a
-        c4 Cons =>
-          x4 := c4.head
-          x4t := c4.tail
-          x5 := next5
+// nextIteration:
+x1 := next1
+### loopElse will be put here ###
+match x2a
+  c2 Cons =>
+    x2 := c2.head
+    x2t := c2.tail
+    x3 := next3
+    match x4a
+      c4 Cons =>
+        x4 := c4.head
+        x4t := c4.tail
+        x5 := next5
 
-          ### loop tail recursive call will be put here ###
+        ### loop tail recursive call will be put here ###
 
-        _ nil => loopElse
-    _ nil => loopElse
+      _ nil => loopElse
+  _ nil => loopElse
 
- * If needed, the code for the <failure> case will be put into a loopElse
+ * }</pre>
+ * If needed, the code for the {@code <failure>} case will be put into a loopElse
  * feature that can be called at different locations:
+ * <pre>{@code
 
-  loopElse() =>
-    <failure>
-    ### OPTIONAL FALSE ###
+loopElse() =>
+  <failure>
+  ### OPTIONAL FALSE ###
 
- * In case <success> or <failure> are missing or do (syntactically) not produce
- * a result, an automatic result TRUE or FALSE, resp., will be added.
+ * }</pre>
+ * In case {@code <success>} or {@code <failure>} are missing or do (syntactically) not produce
+ * a result, an automatic result {@code TRUE} or {@code FALSE}, resp., will be added.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -278,8 +287,8 @@ public class Loop extends ANY
       }
 
     var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
-    // if there are no iteratees then else block may access every loop var.
-    // if there are iteratees we move else block to feature and
+    // if there are no iterates then else block may access every loop var.
+    // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
     if (_elseBlock0 != null && iterates())
       {
@@ -562,20 +571,20 @@ public class Loop extends ANY
   {
     return new FeatureVisitor() {
       @Override
-      public Expr action(Call c, AbstractFeature outer)
+      public Expr action(Call c)
       {
         if (c._target == null && names.contains(c._name))
           {
             c._name = prefix + c._name;
           }
-        return super.action(c, outer);
+        return super.action(c);
       }
 
       @Override
-      public Expr action(Function f, AbstractFeature outer)
+      public Expr action(Function f)
       {
-        f._expr.visit(this, outer);
-        return super.action(f, outer);
+        f._expr.visit(this, null);
+        return super.action(f);
       }
     };
   }
@@ -680,7 +689,7 @@ public class Loop extends ANY
     var f1 = new Feature(f.visibility(), f.modifiers(), f.returnType(),
       new List<>(new ParsedName(f.pos(), prefix + f.featureName().baseName())),
       new List<>(), new List<>(),
-      Contract.EMPTY_CONTRACT, f.impl());
+      Contract.EMPTY_CONTRACT, f.impl(), null);
     f1._isLoopIterator = f._isLoopIterator;
     f1._loopIteratorListName = f._loopIteratorListName;
     f1._isIndexVarUpdatedByLoop = f._isIndexVarUpdatedByLoop;

@@ -56,7 +56,7 @@ public class ANY
 
 
   /**
-   * Property to set the command name, i.e. the result of `envir.args[0]`.
+   * Property to set the command name, i.e. the result of {@code envir.args[0]}.
    */
   public static final String FUZION_COMMAND_PROPERTY = "fuzion.command";
 
@@ -65,7 +65,7 @@ public class ANY
 
 
   /**
-   * `class:method:line` of the condition that failed
+   * {@code class:method:line} of the condition that failed
    */
   private static String origin()
   {
@@ -780,6 +780,13 @@ public class ANY
     say_err("");
   }
 
+  /**
+   * say but to be used for printing debug output in color
+   */
+  public static void sayDebug(String str)
+  {
+    say(Terminal.BLUE + str + Terminal.REGULAR_COLOR);
+  }
 
   /* ----------------------------------------------------------------------------- */
 

@@ -55,7 +55,7 @@ public class FuzionThread extends Thread
 
   /**
    * Stack of previously installed effect instances. On Runtime.effect_push, the
-   * original existing instance will be pused onto this stack, while
+   * original existing instance will be pushed onto this stack, while
    * Runtime.effect_pop will remove the last element in this list and install it
    * back as the effect instance.
    *
@@ -89,7 +89,7 @@ public class FuzionThread extends Thread
    * @param r the static Java method that is the main fuzion function for this
    * thread.
    *
-   * @param code the argument to pass to r.
+   * @param code the argument to pass to r, i.e. the outer instance
    */
   FuzionThread(Method r, Any code)
   {
@@ -143,7 +143,7 @@ public class FuzionThread extends Thread
    *
    * @param id an effect id.
    */
-  void ensure_effect_capacity(int id)
+  private void ensure_effect_capacity(int id)
   {
     while (_installedEffects.size() < id+1)
       {
@@ -157,7 +157,7 @@ public class FuzionThread extends Thread
    *
    * @param id an effect id.
    */
-  AnyI effect_load(int id)
+  public AnyI effect_load(int id)
   {
     ensure_effect_capacity(id);
     return _installedEffects.get(id);

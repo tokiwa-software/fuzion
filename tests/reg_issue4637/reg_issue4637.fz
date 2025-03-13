@@ -1,0 +1,252 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue4637
+#
+# -----------------------------------------------------------------------
+
+# test for diverting ps_maps with shared internal data
+#
+test_map =>
+
+  # original code from #4637
+  #
+  e := container.ps_map i32 String .empty
+  a := e.add 1 "一"
+  b := a.add 2 "二"
+  c := b.add 3 "三"
+  _ := b.add 4 "四"
+  _ := c.add 4 "四"
+
+  # simple test mapping 7 items
+  #
+  m7 := e.add 1 "一"
+         .add 2 "二"
+         .add 3 "三"
+         .add 4 "四"
+         .add 5 "五"
+         .add 6 "六"
+         .add 7 "七"
+  say m7
+
+  # incrementally create maps with up to 10 items with shared internal arrays
+  #
+  # thse will be used below to create divering maps
+  #
+  m1          := e         .add 1 "一"
+  m12         := m1        .add 2 "二"
+  m123        := m12       .add 3 "三"
+  m1234       := m123      .add 4 "四"
+  m12345      := m1234     .add 5 "五"
+  m123456     := m12345    .add 6 "六"
+  m1234567    := m123456   .add 7 "七"
+  m12345678   := m1234567  .add 8 "八"
+  m123456789  := m12345678 .add 9 "九"
+  m123456789A := m123456789.add 10 "十"
+
+  # create diversions by adding a larger element
+  n1          := m1         .add 12 "十二"
+  n12         := m12        .add 12 "十二"
+  n123        := m123       .add 12 "十二"
+  n1234       := m1234      .add 12 "十二"
+  n12345      := m12345     .add 12 "十二"
+  n123456     := m123456    .add 12 "十二"
+  n1234567    := m1234567   .add 12 "十二"
+  n12345678   := m12345678  .add 12 "十二"
+  n123456789  := m123456789 .add 12 "十二"
+  n123456789A := m123456789A.add 12 "十二"
+
+  say "n1         : $n1"
+  say "n12        : $n12"
+  say "n123       : $n123"
+  say "n1234      : $n1234"
+  say "n12345     : $n12345"
+  say "n123456    : $n123456"
+  say "n1234567   : $n1234567"
+  say "n12345678  : $n12345678"
+  say "n123456789 : $n123456789"
+  say "n123456789A: $n123456789A"
+
+  # create diversions by adding a smaller element
+  n01          := m1         .add 0 "ゼロ"
+  n012         := m12        .add 0 "ゼロ"
+  n0123        := m123       .add 0 "ゼロ"
+  n01234       := m1234      .add 0 "ゼロ"
+  n012345      := m12345     .add 0 "ゼロ"
+  n0123456     := m123456    .add 0 "ゼロ"
+  n01234567    := m1234567   .add 0 "ゼロ"
+  n012345678   := m12345678  .add 0 "ゼロ"
+  n0123456789  := m123456789 .add 0 "ゼロ"
+  n0123456789A := m123456789A.add 0 "ゼロ"
+
+  say "n01         : $n01"
+  say "n012        : $n012"
+  say "n0123       : $n0123"
+  say "n01234      : $n01234"
+  say "n012345     : $n012345"
+  say "n0123456    : $n0123456"
+  say "n01234567   : $n01234567"
+  say "n012345678  : $n012345678"
+  say "n0123456789 : $n0123456789"
+  say "n0123456789A: $n0123456789A"
+
+  # create diversion maps of 9 omitting one item
+  #
+  o23456789A := e        .add 2 "二"
+                         .add 3 "三"
+                         .add 4 "四"
+                         .add 5 "五"
+                         .add 6 "六"
+                         .add 7 "七"
+                         .add 8 "八"
+                         .add 9 "九"
+                         .add 10 "十"
+
+  o13456789A := m1       .add 3 "三"
+                         .add 4 "四"
+                         .add 5 "五"
+                         .add 6 "六"
+                         .add 7 "七"
+                         .add 8 "八"
+                         .add 9 "九"
+                         .add 10 "十"
+
+  o12456789A := m12      .add 4 "四"
+                         .add 5 "五"
+                         .add 6 "六"
+                         .add 7 "七"
+                         .add 8 "八"
+                         .add 9 "九"
+                         .add 10 "十"
+
+  o12356789A := m123     .add 5 "五"
+                         .add 6 "六"
+                         .add 7 "七"
+                         .add 8 "八"
+                         .add 9 "九"
+                         .add 10 "十"
+
+  o12346789A := m1234    .add 6 "六"
+                         .add 7 "七"
+                         .add 8 "八"
+                         .add 9 "九"
+                         .add 10 "十"
+
+  o12345789A := m12345   .add 7 "七"
+                         .add 8 "八"
+                         .add 9 "九"
+                         .add 10 "十"
+
+  o12345689A := m123456  .add 8 "八"
+                         .add 9 "九"
+                         .add 10 "十"
+
+  o12345679A := m1234567 .add 9 "九"
+                         .add 10 "十"
+
+  o12345678A := m12345678.add 10 "十"
+
+  say o23456789A
+  say o13456789A
+  say o12456789A
+  say o12356789A
+  say o12346789A
+  say o12345789A
+  say o12345689A
+  say o12345679A
+  say o12345678A
+  say o12345678A
+
+  # create diversion maps of 10 replacing one item by "何"
+  #
+  p_23456789A := e        .add 1 "何"
+                          .add 2 "二"
+                          .add 3 "三"
+                          .add 4 "四"
+                          .add 5 "五"
+                          .add 6 "六"
+                          .add 7 "七"
+                          .add 8 "八"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p1_3456789A := m1       .add 2 "何"
+                          .add 3 "三"
+                          .add 4 "四"
+                          .add 5 "五"
+                          .add 6 "六"
+                          .add 7 "七"
+                          .add 8 "八"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p12_456789A := m12      .add 3 "何"
+                          .add 4 "四"
+                          .add 5 "五"
+                          .add 6 "六"
+                          .add 7 "七"
+                          .add 8 "八"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p123_56789A := m123     .add 4 "何"
+                          .add 5 "五"
+                          .add 6 "六"
+                          .add 7 "七"
+                          .add 8 "八"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p1234_6789A := m1234    .add 5 "何"
+                          .add 6 "六"
+                          .add 7 "七"
+                          .add 8 "八"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p12345_789A := m12345   .add 6 "何"
+                          .add 7 "七"
+                          .add 8 "八"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p123456_89A := m123456  .add 7 "何"
+                          .add 8 "八"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p1234567_9A := m1234567 .add 8 "何"
+                          .add 9 "九"
+                          .add 10 "十"
+
+  p12345678_A := m12345678.add 9 "何"
+                          .add 10 "十"
+
+  p123456789_ := m123456789.add 10 "何"
+
+  say p_23456789A
+  say p1_3456789A
+  say p12_456789A
+  say p123_56789A
+  say p1234_6789A
+  say p12345_789A
+  say p123456_89A
+  say p1234567_9A
+  say p12345678_A
+  say p123456789_

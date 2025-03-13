@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.stream.Collectors;
 
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
@@ -38,11 +39,11 @@ import dev.flang.util.StringHelpers;
 
 
 /**
- * Expr <description>
+ * Expr
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
+public abstract class Expr extends ANY implements HasSourcePosition
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -58,35 +59,13 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * Dummy Expr value. Used e.g. in 'Actual' to represent non-existing value version
    * of the actual.
    */
-  public static Call NO_VALUE;
-
-
-  /**
-   * Dummy Expr value. Used to represent error values.
-   */
-  public static final Expr ERROR_VALUE = new Expr()
-    {
-      public SourcePosition pos()
-      {
-        return SourcePosition.builtIn;
-      }
-      public void setSourceRange(SourceRange r)
-      { // do not change the source position if there was an error.
-      }
-      public Expr visit(FeatureVisitor v, AbstractFeature outer)
-      {
-        return this;
-      }
-      @Override
-      AbstractType typeForInferencing()
-      {
-        return Types.t_ERROR;
-      }
-      public String toString()
-      {
-        return Errors.ERROR_STRING;
-      }
-    };
+  public static final Expr NO_VALUE = new Expr()
+  {
+    @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+    @Override public AbstractType type() { return Types.t_ERROR; }
+    @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+    @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
+  };
 
 
   /*-------------------------  static variables -------------------------*/
@@ -125,7 +104,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    *    f (x.q y)
    *
-   * The argument to f is the call `x.q y` whose position is
+   * The argument to f is the call {@code x.q y} whose position is
    *
    *    f (x.q y)
    * --------^
@@ -147,7 +126,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   {
     if (PRECONDITIONS) require
       (/* make sure we do not accidentally set this repeatedly, as for special
-        * Exprs like ERROR_VALUE, but we might extend it as in adding
+        * Exprs like Call.ERROR, but we might extend it as in adding
         * parentheses around the Expr:
         */
        _range == null ||
@@ -215,7 +194,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * @return the union of exprs result type, defaulting to Types.resolved.t_void if
    * no expression can be inferred yet.
    */
-  public static AbstractType union(List<Expr> exprs, Context context)
+  static AbstractType union(List<Expr> exprs, Context context)
   {
     AbstractType t = Types.resolved.t_void;
 
@@ -354,16 +333,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * A lazy value v (one of type `Lazy T`) will automatically be replaced by
-   * `v.call` during type resolution, such that it behaves as if it was of type
-   * `T`.
+   * A lazy value v (one of type {@code Lazy T}) will automatically be replaced by
+   * {@code v.call} during type resolution, such that it behaves as if it was of type
+   * {@code T}.
    *
-   * However, when `v` is passed to a value of type `Lazy T`, it does not make
-   * sense to wrap this call into `Lazy` again. Instead. we would like to pass
-   * the lazy value `v` directly.  So this method gives the original value for a
-   * lazy value `v` t was replaced by `v.call`.
+   * However, when {@code v} is passed to a value of type {@code Lazy T}, it does not make
+   * sense to wrap this call into {@code Lazy} again. Instead. we would like to pass
+   * the lazy value {@code v} directly.  So this method gives the original value for a
+   * lazy value {@code v} t was replaced by {@code v.call}.
    *
-   * @return `this` in case this was not replaced by a `call` to a `Lazy` value,
+   * @return {@code this} in case this was not replaced by a {@code call} to a {@code Lazy} value,
    * the original lazy value if it was.
    */
   Expr originalLazyValue()
@@ -396,7 +375,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     var declarations = new List<Feature>();
     visit(new FeatureVisitor()
       {
-        public Expr action (Feature f, AbstractFeature outer)
+        @Override public Expr action (Feature f, AbstractFeature outer)
         {
           declarations.add(f);
           return f;
@@ -449,7 +428,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @param t the type this expression is assigned to.
    */
-  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     var result = this;
 
@@ -469,7 +448,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           }
         else
           {
-            result = ERROR_VALUE;
+            result = Call.ERROR;
           }
       }
     return result;
@@ -493,7 +472,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     return this;
   }
@@ -501,12 +480,12 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
   /**
    * Try to perform partial application such that this expression matches
-   * `expectedType`.  Note that this may happen twice:
+   * {@code expectedType}.  Note that this may happen twice:
    *
    * 1. during RESOLVING_DECLARATIONS phase of outer when resolving arguments to
-   *    a call such as `l.map +1`. In this case, expectedType may be a function
-   *    type `Function R A` with generic arguments not yet replaced by actual
-   *    arguments, in particular the result type `R` is unknown since it is the
+   *    a call such as {@code l.map +1}. In this case, expectedType may be a function
+   *    type {@code Function R A} with generic arguments not yet replaced by actual
+   *    arguments, in particular the result type {@code R} is unknown since it is the
    *    result type of this expression.
    *
    * 2. during TYPES_INFERENCING phase when the target variable's type is fully
@@ -540,6 +519,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
   public UnresolvedType asParsedType()
   {
     return null;
+  }
+
+
+  /*
+   * Returns either result of asParsedType()
+   * or Types.t_UNDEFINED in case types name is '_'.
+   */
+  public AbstractType asType()
+  {
+    return asParsedType();
   }
 
 
@@ -606,16 +595,16 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * Check if this value might need boxing, unboxing or tagging and wrap this
-   * into Box()/Tag() if this is the case.
+   * Check if this value might need boxing or tagging and wrap this
+   * into Box()/Tag()/Tag(Box()) if this is the case.
    *
    * @param frmlT the formal type this value is assigned to
    *
    * @param context the source code context where this Expr is used
    *
-   * @return this or an instance of Box wrapping this.
+   * @return this or an instance of Box/Tag wrapping this.
    */
-  Expr box(AbstractType frmlT, Context context)
+  Expr boxAndTag(AbstractType frmlT, Context context)
   {
     if (PRECONDITIONS) require
       (frmlT != null);
@@ -678,11 +667,11 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     else if (frmlT
              .choiceGenerics(context)
               .stream()
-             .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))
+             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
               .count() > 1)
       {
         AstErrors.ambiguousAssignmentToChoice(frmlT, value);
-        return Expr.ERROR_VALUE;
+        return Call.ERROR;
       }
     // Case 2.2: no nested tagging necessary:
     // there is a choice generic in this choice
@@ -690,7 +679,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
     else if (frmlT
               .choiceGenerics(context)
               .stream()
-             .anyMatch(cg -> cg.isDirectlyAssignableFrom(value.type(), context)))
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type(), context)))
       {
         return new Tag(value, frmlT, context);
       }
@@ -716,7 +705,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
           (Errors.any() || cgs.size() == 1);
 
         return cgs.size() == 1 ? tag(frmlT, tag(cgs.get(0), value, context), context)
-                               : Expr.ERROR_VALUE;
+                               : Call.ERROR;
       }
   }
 
@@ -728,21 +717,25 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @return the type after boxing or null if boxing is not needed
    */
-  private AbstractType needsBoxing(AbstractType frmlT, Context context)
+  protected AbstractType needsBoxing(AbstractType frmlT, Context context)
   {
     var t = type();
-    if (frmlT.isGenericArgument() || frmlT.isThisType())
+    if (t == Types.t_ERROR)
+      {
+        return null;
+      }
+    else if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
       { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
          * could be a ref) or frmlT is this type and the underlying feature is by
          * default a ref?
          */
         return frmlT;
       }
-    else if (t.isRef() && !isCallToOuterRef())
+    else if (t.isRef().yes() && !isCallToOuterRef())
       {
         return null;
       }
-    else if (frmlT.isRef())
+    else if (frmlT.isRef().yes())
       {
         return frmlT;
       }
@@ -771,7 +764,7 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * Do automatic unwrapping of features inheriting `unwrap`
+   * Do automatic unwrapping of features inheriting {@code unwrap}
    * if the expected type fits the unwrapped type.
    *
    * @param res the resolution instance
@@ -782,10 +775,10 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
    *
    * @return the unwrapped expression
    */
-  public Expr unwrap(Resolution res, Context context, AbstractType expectedType)
+  Expr unwrap(Resolution res, Context context, AbstractType expectedType)
   {
     var t = type();
-    return this != ERROR_VALUE && t != Types.t_ERROR
+    return this != Call.ERROR && t != Types.t_ERROR
       && !expectedType.isAssignableFrom(t, context)
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
@@ -831,28 +824,20 @@ public abstract class Expr extends HasGlobalIndex implements HasSourcePosition
 
 
   /**
-   * Reset static fields
-   */
-  public static void reset()
-  {
-    NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
-    {
-      { _type = Types.t_ERROR; }
-      @Override
-      Expr box(AbstractType frmlT, Context context)
-      {
-        return this;
-      }
-    };
-  }
-
-
-  /**
    * wrap the result of toString in parentheses if necessary
    */
   public String toStringWrapped()
   {
     return StringHelpers.wrapInParentheses(toString());
+  }
+
+
+  /**
+   * Is the result of this expression boxed?
+   */
+  public boolean isBoxed()
+  {
+    return false;
   }
 
 

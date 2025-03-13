@@ -214,6 +214,21 @@ public class Names extends ANY implements ClassFileConstants
   static final String PREALLOCATED_CONSTANT_PREFIX = "fzK_";
 
 
+  /**
+   * Predefined constants used when calling native code.
+   */
+  static final String    JAVA_LANG_INVOKE_METHODHANDLE = "java/lang/invoke/MethodHandle";
+  static final String    JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR = "java/lang/foreign/FunctionDescriptor";
+  static final String    METHOD_HANDLE_FIELD_NAME = "methodHandle";
+  static final String    JAVA_LANG_FOREIGN_VALUELAYOUT = "java/lang/foreign/ValueLayout";
+  static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT = new ClassType("java/lang/foreign/MemoryLayout");
+  static final ClassType CT_JAVA_LANG_INVOKE_METHODHANDLE = new ClassType(Names.JAVA_LANG_INVOKE_METHODHANDLE);
+  static final ClassType CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR = new ClassType(Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR);
+  static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT = new ClassType("java/lang/foreign/MemorySegment");
+  static final ClassType CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT = new ClassType("java/lang/foreign/AddressLayout");
+
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -242,8 +257,7 @@ public class Names extends ANY implements ClassFileConstants
     {
       String rawName(int field)
       {
-        var index = _fuir.fieldIndex(field);
-        return _prefix + index + "_" + baseName(field);
+        return _prefix + _fuir.clazzId2num(field) + "_" + baseName(field);
       }
     };
 
@@ -415,7 +429,7 @@ public class Names extends ANY implements ClassFileConstants
       // NYI: UNDER DEVELOPMENT: there might be name conflicts due to different generic instances, so
       // we need to add the clazz id or the actual generics if this is the case:
       //
-      //   sb.append("_").append(clazzId2num(cl)).append("_");
+      // sb.append("_").append(_fuir.clazzId2num(cl)).append("_");
       return sb.toString();
     }
   }
@@ -637,7 +651,7 @@ public class Names extends ANY implements ClassFileConstants
     if (PRECONDITIONS) check
       (// NYI: CLEANUP: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
        tagNum >= 0,
-       tagNum < _fuir.clazzNumChoices(cc));
+       tagNum < _fuir.clazzChoiceCount(cc));
 
     var tc = _fuir.clazzChoice(cc, tagNum);
     return _fuir.clazzIsRef(tc) ? CHOICE_REF_ENTRY_NAME

@@ -18,9 +18,10 @@
 module branch is
 
   # return result of first succeeding parser
-  public alt(I, R, O type, parser Sequence (Parser I R O)) Parser I R O =>
+  #
+  public alt(I, R, O type, parser Sequence (Parser I R O)) =>
     parser I R O input->
       parser
         .map (p -> p.call input)
-        .filter (r -> r ? success => true | error => false)
+        .filter (r -> r.ok)
         .first (error "alt: no parser successful")

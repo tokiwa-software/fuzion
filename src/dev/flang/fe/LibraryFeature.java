@@ -27,25 +27,25 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.charset.StandardCharsets;
-
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
-import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
-import dev.flang.ast.Cond;
+import dev.flang.ast.Constant;
 import dev.flang.ast.Contract;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -55,7 +55,6 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
-
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -143,6 +142,11 @@ public class LibraryFeature extends AbstractFeature
    */
   private AbstractFeature _outerRef;
 
+  /**
+   * cached result of modulesOfInnerFeatures()
+   */
+  private Set<LibraryModule> _modulesOfInnerFeatures = null;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -158,15 +162,6 @@ public class LibraryFeature extends AbstractFeature
     _libModule = lib;
     _index = index;
     _kind = lib.featureKindEnum(index);
-
-    var tf = existingTypeFeature();
-    if (tf != null)
-      {
-        // NYI: HACK: This is somewhat ugly, would be nicer if the type feature
-        // in the fum file would contain a reference to the origin such that we
-        // do not need to patch this into the type feature's field.
-        tf._typeFeatureOrigin = this;
-      }
   }
 
 
@@ -204,9 +199,9 @@ public class LibraryFeature extends AbstractFeature
   /**
    * Is this a constructor returning a reference result?
    */
-  public boolean isThisRef()
+  public boolean isRef()
   {
-    return _libModule.featureIsThisRef(_index);
+    return _libModule.featureIsRef(_index);
   }
 
 
@@ -343,12 +338,38 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * If we have an existing type feature (store in a .fum library file), return that
-   * type feature. return null otherwise.
+   * Check if a cotype exists already, either because this feature was
+   * loaded from a library .fum file that includes a cotype, or because one
+   * was created explicitly using cotype(res).
    */
-  public AbstractFeature existingTypeFeature()
+  @Override
+  public boolean hasCotype()
   {
-    return _libModule.featureHasTypeFeature(_index) ? _libModule.featureTypeFeature(_index) : null;
+    return _libModule.featureHasCotype(_index);
+  }
+
+
+  /**
+   * Return existing cotype.
+   */
+  @Override
+  public AbstractFeature cotype()
+  {
+    return _libModule.featureHasCotype(_index) ? _libModule.featureCotype(_index) : null;
+  }
+
+
+  @Override
+  public boolean isCotype()
+  {
+    return _libModule.featureIsCotype(_index);
+  }
+
+
+  @Override
+  public AbstractFeature cotypeOrigin()
+  {
+    return _libModule.featureIsCotype(_index) ? _libModule.featureCotypeOrigin(_index) : null;
   }
 
 
@@ -387,27 +408,27 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic feature to determine the resultClazz().
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object.
    *
    * @return this feature's frame object
    */
-  public AbstractType createThisType()
+  @Override
+  public AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
+      (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
     var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this,
-                                         isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                                     : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                         isRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                                 : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                          generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this);
 
@@ -607,7 +628,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
-              var target = f.outer().isUniverse() ? new Universe() : s.pop();
+              var target = f.outer().isUniverse() ? Universe.instance : s.pop();
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
@@ -700,14 +721,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType, Context.NONE);
-              break;
-            }
-          case Env:
-            {
-              var envType = _libModule.envType(iat);
-              x = new Env(LibraryModule.DUMMY_POS, envType)
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:
@@ -777,22 +791,6 @@ public class LibraryFeature extends AbstractFeature
   private SourcePosition pos(int pos, int posEnd)
   {
     return _libModule.pos(pos, posEnd);
-  }
-
-
-  /**
-   * Read a list a n conditions at given position in _libModule.
-   */
-  private List<Cond> condList(int n, int at)
-  {
-    var result = new List<Cond>();
-    for (var i = 0; i < n; i++)
-      {
-        var x = code1(at);
-        result.add(new Cond(x));
-        at = _libModule.codeNextPos(at);
-      }
-    return result;
   }
 
 
@@ -868,7 +866,58 @@ public class LibraryFeature extends AbstractFeature
     return result;
   }
 
+  /**
+   * Union of the library modules of all inner features. Checks inner features recursively.
+   * @return immutable set with all library modules for which an inner feature exists
+   */
+  public Set<LibraryModule> modulesOfInnerFeatures()
+  {
+    if (_modulesOfInnerFeatures == null)
+      {
+        _modulesOfInnerFeatures = new TreeSet<LibraryModule>(Comparator.comparingInt(System::identityHashCode));
+
+        var declaredOrInherited = new LinkedList<AbstractFeature>();
+        _libModule.forEachDeclaredOrInheritedFeature(this, f -> declaredOrInherited.add(f));
+
+        var libFeatures = declaredOrInherited.stream()
+                           .map(f -> (LibraryFeature) f)
+                           .collect(Collectors.toList());
+
+        for (LibraryFeature lf : libFeatures)
+        {
+            // modules of inner features
+            _modulesOfInnerFeatures.add( lf._libModule );
+            // for inner features recursively add modules their inner features
+            _modulesOfInnerFeatures.addAll( lf.modulesOfInnerFeatures() );
+          }
+      }
+
+    return Collections.unmodifiableSet(_modulesOfInnerFeatures);
+  }
+
+  /**
+   * Does this feature belong to or contain inner features of the given module
+   * and should therefore be shown on the API doc page for that module?
+   *
+   * @param module the module for which the belonging is to be checked
+   * @return true iff this feature needs to be included in the API doc page for module
+   */
+  public boolean showInMod(LibraryModule module)
+  {
+    // Problem: all features inherit from any, which is in base
+    // therefore all features from other modules would be shown in base module because they always have an inner feature from base
+    if (module.name().equals(FuzionConstants.BASE_MODULE_NAME))
+      {
+        return _libModule == module || isUniverse();
+      }
+    else
+      {
+        return _libModule == module || modulesOfInnerFeatures().contains(module);
+      }
+  }
 
 }
+
+
 
 /* end of file */

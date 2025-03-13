@@ -38,4 +38,6 @@ c: mod
 .PHONY: mod
 mod:
 	mkdir -p mod
-	$(FUZION) -sourceDirs=mod -saveLib=mod/mod.fum
+	$(FUZION) -sourceDirs=mod -save-module=mod/mod.fum
+
+effect:

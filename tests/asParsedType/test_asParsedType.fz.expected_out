@@ -30,12 +30,12 @@ GOT: x Type of 'Unary a a.b'
 GOT: x Type of 'Unary a a.b'
 
 EXP: x Type of 'Function String i32 u64'
-GOT: x Type of 'Function String i32 u64'
-GOT: x Type of 'Function String i32 u64'
+GOT: x Type of 'Binary String i32 u64'
+GOT: x Type of 'Binary String i32 u64'
 
 EXP: x Type of 'Function String (Sequence u64) a.b'
-GOT: x Type of 'Function String (Sequence u64) a.b'
-GOT: x Type of 'Function String (Sequence u64) a.b'
+GOT: x Type of 'Binary String (Sequence u64) a.b'
+GOT: x Type of 'Binary String (Sequence u64) a.b'
 
 EXP: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
 GOT: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
@@ -87,8 +87,8 @@ GOT: y Type of 'codepoint'
 EXP: y Type of 'codepoint'
 GOT: y Type of 'codepoint'
 
-EXP: y Type of 'io.out'
-GOT: y Type of 'io.out'
+EXP: y Type of 'io.Out'
+GOT: y Type of 'io.Out'
 
 EXP: y Type of 'Type'
 GOT: y Type of 'Type'

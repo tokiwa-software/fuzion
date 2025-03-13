@@ -1,5 +1,5 @@
 
---CURDIR--/issue698.fz:31:3: error 1: Choice type must not access fields of surrounding scope.
+--CURDIR--/issue698.fz:31:3: error 1: Choice type must not access features of surrounding scope.
   tree(A type : property.orderable) : choice nil (Node A (tree A) (tree A)) is
 --^^^^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
@@ -10,6 +10,6 @@ A closure cannot be built for a choice type. Forbidden accesses occur at
       ref : Node A (tree A) (tree A)
 ------^
 
-To solve this, you might move the accessed fields outside of the common outer feature.
+To solve this, you might move the accessed features outside of the common outer feature.
 
 one error.

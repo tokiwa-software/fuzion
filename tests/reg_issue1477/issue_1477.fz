@@ -27,7 +27,7 @@ n is
 
   u unit =>
     y := n.this.type
-    q := y.z
+    _ := y.z
 
 i : n is
   fixed redef type.z => i

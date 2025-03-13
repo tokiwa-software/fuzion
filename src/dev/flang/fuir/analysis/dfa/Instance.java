@@ -27,7 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import java.util.TreeMap;
+
 import dev.flang.ir.IR;
+
+import dev.flang.util.Errors;
 
 
 /**
@@ -131,7 +134,7 @@ public class Instance extends Value
 
   /**
    * Compare this to another instance, used to compare effect instances in
-   * Env[ironmnents].  The main different to `compareTo` is that the effect
+   * Env[ironmnents].  The main different to {@code compareTo} is that the effect
    * environment is ignored since that would lead to an explosion of
    * Environments.
    */
@@ -163,7 +166,7 @@ public class Instance extends Value
     var oldv = _fields.get(field);
     if (oldv != null)
       {
-        v = oldv.join(dfa, v);
+        v = oldv.join(dfa, v, dfa._fuir.clazzResultClazz(field));
       }
     if (oldv != v)
       {
@@ -183,12 +186,12 @@ public class Instance extends Value
     if (PRECONDITIONS) require
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
 
-    dfa._readFields.set(field);
+    dfa.readField(field);
     var v = _fields.get(field);
     Val res = v;
     if (v == null)
       {
-        if (dfa._reportResults)
+        if (dfa._reportResults && !Errors.any())
           {
             DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
                                                 site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
@@ -197,7 +200,7 @@ public class Instance extends Value
                                                 why);
           }
       }
-    else if (!dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
+    else if (dfa._options.needsEscapeAnalysis() && !dfa._fuir.clazzIsRef(dfa._fuir.clazzResultClazz(field)))
       {
         res = dfa.newEmbeddedValue(this, v);
       }
