@@ -1547,7 +1547,7 @@ public class Feature extends AbstractFeature
             impl().expr() != null &&
             // NYI: UNDER DEVELOPMENT: ugly special case
             // functions trigger resolving types which may lead to "Illegal forward or cyclic type inference"
-            !_returnType.functionReturnType().isAnyFunctionType())
+            !_returnType.functionReturnType().isFunctionType())
           {
             impl().expr().propagateExpectedType(res, this.context(), _returnType.functionReturnType());
           }
