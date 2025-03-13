@@ -48,7 +48,8 @@ is
   # returns a sequence of ascii values
   #
   public encode(data array u8) =>
-    data.flat_map u8 (b->[alphabet[(b>>4).as_i32], alphabet[(b&15).as_i32]])
+    data.flat_map b->
+      [alphabet[(b>>4).as_i32], alphabet[(b&15).as_i32]]
 
 
   # Encodes a given byte sequence in base16

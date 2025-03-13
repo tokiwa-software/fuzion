@@ -123,7 +123,7 @@ is
       "∅"
     else
       ("\{"
-       + (as_list.map x->x.as_string).fold(String.concat ";")
+       + (as_list.map (.as_string)).fold(String.concat ";")
        + "}")
 
 

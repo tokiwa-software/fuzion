@@ -32,7 +32,7 @@ is
   # irrelevant zeros at start are dropped.
   # zero is represented by the empty list.
   data := b
-    .drop_while x->x=0
+    .drop_while (=0)
 
   # bitwise operations
 

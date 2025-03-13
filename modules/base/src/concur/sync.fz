@@ -46,11 +46,11 @@ public sync is
   private:public mutex(module mtx Mutex) is
 
     public type.new outcome concur.sync.mutex =>
-      concur.sync.mtx_init.bind concur.sync.mutex mtx->
+      concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
 
     public condition outcome concur.sync.condition =>
-      (concur.sync.cnd_init mtx).bind concur.sync.condition cnd->
+      (concur.sync.cnd_init mtx).bind cnd->
         concur.sync.condition mtx cnd
 
     # NYI destroy

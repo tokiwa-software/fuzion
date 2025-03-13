@@ -58,5 +58,5 @@ module Entry(module key KEY, module val VAL) ref is
   #
   module items Sequence (tuple KEY VAL) =>
     [(key,val)] ++
-      (left.get.bind (Sequence (tuple KEY VAL)) x->x.items).or_else (list (tuple KEY VAL)).empty ++
-      (right.get.bind (Sequence (tuple KEY VAL)) x->x.items).or_else (list (tuple KEY VAL)).empty
+      (left.get.bind (.items)).or_else (list (tuple KEY VAL)).empty ++
+      (right.get.bind (.items)).or_else (list (tuple KEY VAL)).empty

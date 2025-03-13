@@ -66,7 +66,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
                 mode.write => i8 1
                 mode.append => i8 2
 
-  (fuzion.sys.fileio.open file_name mode_num).bind R fd->
+  (fuzion.sys.fileio.open file_name mode_num).bind fd->
     # install effect `open T` and run `code`
     ((open fd file_name) ! ()->
           (io.buffered LM).reader (read_handler fd) 1024 ! ()->
@@ -76,5 +76,5 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
               _ := (io.buffered LM).writer.env.flush
               tmp)
       # NYI: UNDER DEVELOPMENT: nested outcomes
-      .bind (outcome R) x->x
-      .bind R x->x
+      .bind id
+      .bind id

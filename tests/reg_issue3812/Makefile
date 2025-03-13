@@ -17,22 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.dir.use
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# this opens a directory and installs the (open T) effect to be used
-# in `code()`.
-#
-# usage example:
-#
-#     use some_type path ()->
-#       match (open some_type).read
-#         e error => e
-#         s String => say s
-#
-public use(R type, path String, code ()-> outcome R) outcome R =>
-  (fuzion.sys.fileio.open_dir path).bind dd->
-    # install effect `open T` and run `code`
-    open dd path ! code
+override NAME = reg_issue3812
+include ../simple.mk

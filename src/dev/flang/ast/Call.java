@@ -2302,7 +2302,7 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && (_generics == NO_GENERICS || _generics.contains(Types.t_UNDEFINED)) && _calledFeature.generics() != FormalGenerics.NONE;
+    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && _calledFeature.generics() != FormalGenerics.NONE;
   }
 
 
@@ -2891,6 +2891,21 @@ public class Call extends AbstractCall
         return this;
       }
     };
+  }
+
+
+  /**
+   * Notify this call that it is fully inferred.
+   */
+  public void notifyInferred()
+  {
+    if (PRECONDITIONS) require
+      (!actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
+
+    for (var r : _whenInferredTypeParameters)
+      {
+        r.run();
+      }
   }
 
 }

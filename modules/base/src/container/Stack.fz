@@ -54,7 +54,7 @@ public stack(LM type : mutate, T type) : Stack T is
   # pop an element from the stack
   #
   public redef pop option T =>
-    top.get.bind T n->
+    top.get.bind n->
       top <- n.next
       n.data
 
@@ -62,6 +62,6 @@ public stack(LM type : mutate, T type) : Stack T is
   # peek at the top element from the stack
   #
   public redef peek option T =>
-    top.get.bind T n->n.data
+    top.get.bind n->n.data
 
 
