@@ -304,7 +304,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         int select)
   {
     if (PRECONDITIONS) require
-      (!type.dependsOnGenericsExceptTHIS_TYPE(),
+      (!type.dependsOnGenericsNoOuter(),
        !type.containsThisType(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
        type != Types.t_ERROR,
