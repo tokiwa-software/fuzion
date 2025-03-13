@@ -159,19 +159,10 @@ public class If extends ExprWithPos
   /**
    * Helper routine for typeForInferencing to determine the
    * type of this if expression on demand, i.e., as late as possible.
-   *
-   * @param context the source code context where this Expr is used
    */
-  private AbstractType typeFromIfOrElse(Context context)
+  private AbstractType typeFromBranches()
   {
-    var result = Expr.union(new List<>(branches()), context);
-    if (result==Types.t_ERROR)
-      {
-        new IncompatibleResultsOnBranches(pos(),
-                                          "Incompatible types in branches of if expression",
-                                          branches());
-      }
-    return result;
+    return Expr.union(new List<>(branches()), Context.NONE);
   }
 
 
@@ -187,7 +178,35 @@ public class If extends ExprWithPos
   {
     if (_type == null)
       {
-        _type = typeFromIfOrElse(Context.NONE);
+        var t = typeFromBranches();
+        _type = t != Types.t_ERROR ? t : null;
+      }
+    return _type;
+  }
+
+
+  /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known
+   * yet. t_UNDEFINED in case Expr depends on the inferred result type of a
+   * feature that is not available yet (or never will due to circular
+   * inference).
+   */
+  @Override
+  public AbstractType type()
+  {
+    if (_type == null)
+      {
+        _type = typeFromBranches();
+        if (_type == Types.t_ERROR)
+          {
+            new IncompatibleResultsOnBranches(
+              pos(),
+              "Incompatible types in branches of if expression",
+              branches());
+          }
       }
     return _type;
   }
@@ -213,7 +232,7 @@ public class If extends ExprWithPos
       {
         elseBlock = elseBlock.visit(v, outer);
       }
-    var res = v.action(this, outer);
+    var res = v.action(this);
     v.actionAfterIf(this);
     return res;
   }
@@ -277,7 +296,7 @@ public class If extends ExprWithPos
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (cond != null)
       {
@@ -304,8 +323,17 @@ public class If extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
+    // NYI: CLEANUP: there should be another mechanism, for
+    // adding missing result fields instead of misusing
+    // `propagateExpectedType`.
+    //
+
+    // This will trigger addFieldForResult in some cases, e.g.:
+    // `match (if true then true else true) * =>`
+    cond = cond.propagateExpectedType(res, context, cond.type());
+
     return addFieldForResult(res, context, t);
   }
 

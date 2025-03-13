@@ -47,7 +47,7 @@ public class Nop extends ExprWithPos
   /**
    * Constructor
    */
-  public Nop(SourcePosition pos)
+  Nop(SourcePosition pos)
   {
     super(pos);
   }

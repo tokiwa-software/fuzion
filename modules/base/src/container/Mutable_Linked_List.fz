@@ -34,7 +34,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     T type,
 
                     # the data stored in this element.
-                    redef data T) ref : Linked_List T is
+                    public redef data T) ref : Linked_List T is
 
 
   # mutable references to next. Initializes to refer to nil to form
@@ -77,31 +77,20 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   # create a mutable linked list from a given sequence
   #
   # this results in a mutable linked list that is not yet frozen, i.e. it
-  # can still be modified. however, the list needs to be frozen manually
+  # can still be modified. the list needs to be frozen manually
   # before leaving the mutate environment.
   #
+  # code example:
+  #
+  #     mll := (container.Mutable_Linked_List x i32).new [0,1,2,3,4]
+  #     mll.append 42
+  #     mll.freeze
+  #
   public type.new(from Sequence T)
-    pre
-      !from.is_empty
-  =>
-    new from true
-
-
-  # create a mutable linked list from a given sequence
-  #
-  # the argument freeze specifies whether the resulting list is frozen. if
-  # true, the list is frozen after creation, i.e. it can no longer be changed,
-  # but the mutate environment can be left.
-  #
-  public type.new(from Sequence T, freeze bool)
     pre
       !from.is_empty
   =>
     from_list := from.as_list
     c := container.Mutable_Linked_List LM T from_list.head.get
     from_list.tail.for_each (x -> c.append x)
-
-    if freeze
-      c.freeze
-
     c

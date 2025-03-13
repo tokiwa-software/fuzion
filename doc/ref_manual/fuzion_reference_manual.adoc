@@ -57,6 +57,9 @@ related to the Fuzion project, to mark sections that need further work or future
 enhancements.  This is often equivalent to comments starting *TODO* or similar
 used in other projects.
 
+In addition to rfc2119 https://www.rfc-editor.org/rfc/rfc2119
+we use "cannot" if something is logically impossible.
+
 The specification contains a number of rules that must be implemented by the
 language implementations. These rules are identified by identifiers such as
 *DOMAIN_DETAIL*. Rules are shown as follows:

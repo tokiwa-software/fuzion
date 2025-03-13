@@ -25,7 +25,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #define _POSIX_C_SOURCE 200809L
-#define _GNU_SOURCE
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -60,6 +59,25 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "fz.h"
 
+// thread local to hold the last
+// error that occurred in fuzion runtime.
+_Thread_local int last_error = 0;
+
+
+// returns the latest error number of
+// the current thread
+int fzE_last_error(void){
+  return last_error;
+}
+
+// helper to set last_error
+// if return value of some function is -1.
+inline int set_last_error(int ret_val)
+{
+  last_error = ret_val == -1 ? errno : 0;
+  return ret_val;
+}
+
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -87,40 +105,35 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
 }
 
 
-int fzE_read_dir(intptr_t * dir, void * result) {
-  struct dirent * d = readdir((DIR *)dir);
-  if ( d == NULL )
-  {
-    return -1;
+int fzE_dir_read(intptr_t * dir, void * result) {
+  errno = 0;
+
+  DIR * dir1 = (DIR *)dir;
+  struct dirent * entry = NULL;
+
+  while ((entry = readdir(dir1)) != NULL &&
+         // skip dot and dot-dot paths.
+         (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
+
+  if ( entry == NULL ) {
+    last_error = errno;
+    return errno == 0
+      // end reached
+      ? 0
+      // some error occured
+      : -1;
   }
-  else
-  {
-    size_t len = strlen(d->d_name);
+  else {
+    size_t len = strlen(entry->d_name);
     assert(len<1024); // NYI:
-    fzE_memcpy(result, d->d_name, len + 1);
+    fzE_memcpy(result, entry->d_name, len + 1);
     return len;
   }
 }
 
 
-int fzE_read_dir_has_next(intptr_t * dir) {
-  DIR * dir1 = (DIR *)dir;
-  struct dirent * entry = NULL;
-  long pos = -1;
-  do {
-    pos = telldir(dir1);
-  }
-  while ((entry = readdir(dir1)) != NULL &&
-         // skip dot and dot-dot paths.
-         (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
-  seekdir(dir1, pos);
-
-  return entry == NULL ? 1 : 0;
-}
-
-
-int fzE_close_dir(intptr_t * dir) {
-  return closedir((DIR *)dir);
+int fzE_dir_close(intptr_t * dir) {
+  return set_last_error(closedir((DIR *)dir));
 }
 
 
@@ -133,14 +146,6 @@ int fzE_set_blocking(int sockfd, int blocking)
     : fcntl(sockfd, F_GETFL, 0) & ~O_NONBLOCK;
 
   return fcntl(sockfd, F_SETFL, flag);
-}
-
-
-// helper function to retrieve
-// the last error that occurred.
-int fzE_net_error()
-{
-  return errno;
 }
 
 
@@ -188,9 +193,7 @@ int fzE_get_protocol(int protocol)
 // close a socket descriptor
 int fzE_close(int sockfd)
 {
-  return ( close(sockfd) == - 1 )
-    ? fzE_net_error()
-    : 0;
+  return set_last_error(close(sockfd));
 }
 
 
@@ -198,8 +201,11 @@ int fzE_close(int sockfd)
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
   // NYI use lock to make this _atomic_.
-  int sockfd = socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
-  fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+  int sockfd = set_last_error(socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol)));
+  if (sockfd != -1)
+  {
+    fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+  }
   return sockfd;
 }
 
@@ -225,7 +231,7 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
-    result[0] = fzE_net_error();
+    result[0] = errno;
     return -1;
   }
   struct addrinfo *addr_info = NULL;
@@ -241,7 +247,7 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
   if(bind_res == -1)
   {
     fzE_close(result[0]);
-    result[0] = fzE_net_error();
+    result[0] = errno;
     return -1;
   }
   freeaddrinfo(addr_info);
@@ -252,16 +258,14 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
 // set the given socket to listening
 // backlog = queuelength of pending connections
 int fzE_listen(int sockfd, int backlog){
-  return ( listen(sockfd, backlog) == -1 )
-    ? fzE_net_error()
-    : 0;
+  return set_last_error(listen(sockfd, backlog));
 }
 
 
 // accept a new connection
 // blocks if socket is blocking
 int fzE_accept(int sockfd){
-  return accept(sockfd, NULL, NULL);
+  return set_last_error(accept(sockfd, NULL, NULL));
 }
 
 
@@ -273,7 +277,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
-    result[0] = fzE_net_error();
+    result[0] = errno;
     return -1;
   }
   struct addrinfo *addr_info = NULL;
@@ -289,7 +293,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   {
     // NYI do we want to try another address in addr_info->ai_next?
     fzE_close(result[0]);
-    result[0] = fzE_net_error();
+    result[0] = errno;
   }
   freeaddrinfo(addr_info);
   return con_res;
@@ -305,7 +309,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   fzE_memset(&peeraddr, 0, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
+  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
       fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
       return 4;
@@ -327,7 +331,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   fzE_memset(&peeraddr, 0, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
+  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
       return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
     } else if (peeraddr.ss_family == AF_INET6) {
@@ -341,26 +345,24 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // read up to count bytes bytes from sockfd
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
-int fzE_read(int sockfd, void * buf, size_t count){
-  return recvfrom( sockfd, buf, count, 0, NULL, NULL );
+int fzE_socket_read(int sockfd, void * buf, size_t count){
+  return set_last_error(recvfrom( sockfd, buf, count, 0, NULL, NULL));
 }
 
 
 // write buf to sockfd
 // may block if socket is set to blocking.
 // return error code or zero on success
-int fzE_write(int sockfd, const void * buf, size_t count){
-  return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
-    ? fzE_net_error()
-    : 0;
+int fzE_socket_write(int sockfd, const void * buf, size_t count){
+  return set_last_error(sendto( sockfd, buf, count, 0, NULL, 0));
 }
 
 
 // returns -1 on error, size of file in bytes otherwise
 long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = ftell((FILE *)file);
-  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
+  long cur_pos = set_last_error(ftell((FILE *)file));
+  if(cur_pos == -1 || set_last_error(fseek((FILE *)file, 0, SEEK_END)) == -1){
     return -1;
   }
 
@@ -410,7 +412,7 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
 int fzE_munmap(void * mapped_address, const int file_size){
-  return munmap(mapped_address, file_size);
+  return set_last_error(munmap(mapped_address, file_size));
 }
 
 
@@ -446,7 +448,7 @@ int fzE_rm(char * path)
 {
   return unlink(path) == 0
     ? 0
-    : rmdir(path) == 0
+    : set_last_error(rmdir(path)) == 0
     ? 0
     : -1;
 }
@@ -458,19 +460,15 @@ int fzE_rm(char * path)
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  if (stat(pathname,&statbuf)==((int8_t) 0))
+  int result = set_last_error(stat(pathname,&statbuf));
+  if (result == 0)
   {
     metadata[0] = statbuf.st_size;
     metadata[1] = statbuf.st_mtime;
     metadata[2] = S_ISREG(statbuf.st_mode);
     metadata[3] = S_ISDIR(statbuf.st_mode);
-    return 0;
   }
-  metadata[0] = errno;
-  metadata[1] = 0LL;
-  metadata[2] = 0LL;
-  metadata[3] = 0LL;
-  return -1;
+  return result;
 }
 
 
@@ -480,19 +478,15 @@ int fzE_stat(const char *pathname, int64_t * metadata)
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  if (lstat(pathname,&statbuf)==((int8_t) 0))
+  int result = set_last_error(lstat(pathname,&statbuf));
+  if (result == 0)
   {
     metadata[0] = statbuf.st_size;
     metadata[1] = statbuf.st_mtime;
     metadata[2] = S_ISREG(statbuf.st_mode);
     metadata[3] = S_ISDIR(statbuf.st_mode);
-    return 0;
   }
-  metadata[0] = errno;
-  metadata[1] = 0LL;
-  metadata[2] = 0LL;
-  metadata[3] = 0LL;
-  return -1;
+  return result;
 }
 
 #ifdef FUZION_ENABLE_THREADS
@@ -504,6 +498,8 @@ static pthread_mutex_t fzE_global_mutex;
  */
 void fzE_init()
 {
+  fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
@@ -606,80 +602,90 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   // how it is done in jdk:
   // https://github.com/openjdk/jdk/blob/c2d9fa26ce903be7c86a47db5ff289cdb9de3a62/src/java.base/unix/native/libjava/ProcessImpl_md.c#L53
 
+  errno = 0;
+
   int stdIn[2];
   int stdOut[2];
   int stdErr[2];
-  if (pipe(stdIn ) == -1)
+  int ret = 0;
+  if (set_last_error(pipe(stdIn)) == -1)
   {
-    return -1;
+    ret = -1;
   }
-  if (pipe(stdOut) == -1)
+  if (ret == 0 && set_last_error(pipe(stdOut)) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
-    return -1;
+    ret = -1;
   }
-  if (pipe(stdErr) == -1)
+  if (ret == 0 && set_last_error(pipe(stdErr)) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
     close(stdOut[0]);
     close(stdOut[1]);
-    return -1;
+    ret = -1;
   }
+  if (set_last_error(ret) == 0)
+  {
+    fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
+    fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
+    fcntl(stdErr[0], F_SETFD, FD_CLOEXEC);
 
-  fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
-  fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
-  fcntl(stdErr[0], F_SETFD, FD_CLOEXEC);
+    pid_t processId;
 
-  pid_t processId;
+    posix_spawn_file_actions_t file_actions;
 
-  posix_spawn_file_actions_t file_actions;
-
-  if (posix_spawn_file_actions_init(&file_actions) != 0)
-    exit(1);
-
-  posix_spawn_file_actions_adddup2(&file_actions, stdIn[0], 0);
-  posix_spawn_file_actions_adddup2(&file_actions, stdOut[1], 1);
-  posix_spawn_file_actions_adddup2(&file_actions, stdErr[1], 2);
-  posix_spawn_file_actions_addclose(&file_actions, stdIn[0]);
-  posix_spawn_file_actions_addclose(&file_actions, stdOut[1]);
-  posix_spawn_file_actions_addclose(&file_actions, stdErr[1]);
-
-  args[argsLen -1] = NULL;
-  env[envLen -1] = NULL;
-
-  int s = posix_spawnp(
-        &processId,
-        args[0],
-        &file_actions,
-        NULL,
-        args, // args
-        env  // environment
-        );
-
-  close(stdIn[0]);
-  close(stdOut[1]);
-  close(stdErr[1]);
-
-  posix_spawn_file_actions_destroy(&file_actions);
-
-  if(s != 0)
+    if (posix_spawn_file_actions_init(&file_actions) != 0)
     {
+      exit(1);
+    }
+
+    posix_spawn_file_actions_adddup2(&file_actions, stdIn[0], 0);
+    posix_spawn_file_actions_adddup2(&file_actions, stdOut[1], 1);
+    posix_spawn_file_actions_adddup2(&file_actions, stdErr[1], 2);
+    posix_spawn_file_actions_addclose(&file_actions, stdIn[0]);
+    posix_spawn_file_actions_addclose(&file_actions, stdOut[1]);
+    posix_spawn_file_actions_addclose(&file_actions, stdErr[1]);
+
+    args[argsLen -1] = NULL;
+    env[envLen -1] = NULL;
+
+    int s = posix_spawnp(
+          &processId,
+          args[0],
+          &file_actions,
+          NULL,
+          args, // args
+          env  // environment
+          );
+
+    close(stdIn[0]);
+    close(stdOut[1]);
+    close(stdErr[1]);
+
+    posix_spawn_file_actions_destroy(&file_actions);
+
+    if(s != 0)
+    {
+      last_error = s;
       close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);
       close(stdOut[1]);
       close(stdErr[0]);
       close(stdErr[1]);
-      return -1;
+      ret = -1;
     }
-
-  result[0] = processId;
-  result[1] = (int64_t) stdIn[1];
-  result[2] = (int64_t) stdOut[0];
-  result[3] = (int64_t) stdErr[0];
-  return 0;
+    else
+    {
+      result[0] = processId;
+      result[1] = (int64_t) stdIn[1];
+      result[2] = (int64_t) stdOut[0];
+      result[3] = (int64_t) stdErr[0];
+    }
+  }
+  return ret;
 }
 
 
@@ -687,7 +693,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 // returns exit code or -1 on wait-failure.
 int32_t fzE_process_wait(int64_t p){
   int status;
-  return waitpid(p, &status, WUNTRACED | WCONTINUED) == -1
+  return set_last_error(waitpid(p, &status, WUNTRACED | WCONTINUED)) == -1
     ? -1
     : WIFEXITED(status)
     // man waitpid: "This macro should be employed only if WIFEXITED returned true."
@@ -699,20 +705,20 @@ int32_t fzE_process_wait(int64_t p){
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
-  return read((int) desc, buf, nbytes);
+  return set_last_error(read((int) desc, buf, nbytes));
 }
 
 
 // return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
-  return write((int) desc, buf, nbytes);
+  return set_last_error(write((int) desc, buf, nbytes));
 }
 
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
 // NYI do we need to flush?
-  return close((int) desc);
+  return set_last_error(close((int) desc));
 }
 
 
@@ -821,4 +827,22 @@ void fzE_cnd_destroy(void *cnd) {
   // NYI: free(cnd);
 #else
 #endif
+}
+
+
+int32_t fzE_file_read(void * file, void * buf, int32_t size)
+{
+  struct pollfd fds;
+  fds.fd = fileno(file);
+  fds.events = POLLIN;
+
+  while(poll(&fds, 1, -1) == 0);
+
+  size_t result = fread(buf, 1, size, (FILE*)file);
+
+  return result > 0
+    ? result
+    : result == 0
+    ? -1  // EOF
+    : -2; // ERROR
 }

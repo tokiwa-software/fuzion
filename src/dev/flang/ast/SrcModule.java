@@ -63,7 +63,7 @@ public interface SrcModule extends AbstractModule
   void findDeclaredOrInheritedFeatures(Feature outer);
   List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter, boolean hidden);
   AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use);
-  void checkTypes(Feature f, Context context);
+  void checkTypes(Feature f);
   FeatureAndOuter lookupType(SourcePosition pos,
                              AbstractFeature outer,
                              String name,
@@ -72,9 +72,9 @@ public interface SrcModule extends AbstractModule
                              boolean ignoreNotFound);
 
   void addCotype(AbstractFeature outerType,
-                      Feature         innerType);
+                 Feature         innerType);
   void addTypeParameter(AbstractFeature outerType,
-                      Feature         innerType);
+                        Feature         innerType);
 
   /*----------------------  methods needed by AIR  ----------------------*/
 

@@ -263,6 +263,8 @@ ContractKind
 COptions
 cosf
 coshf
+cotype
+cotypes
 createMIR
 createOuter
 createThisType
@@ -431,7 +433,6 @@ fieldA
 FieldActual
 fieldClazz
 FieldDef
-fieldIndex
 FieldInit
 FieldIter
 fieldName
@@ -583,7 +584,6 @@ hasResultField
 hasRT
 HasSourcePosition
 hasState
-hasThisType
 headingSection
 heapClone
 HexDump
@@ -1014,7 +1014,6 @@ runtimeClazzId
 RuntimeException
 s's
 sameLine
-saveLib
 scaler
 secField
 secFieldNextPos
@@ -1291,7 +1290,7 @@ xffff
 XfuzionHome
 Xhelp
 XjavaProf
-XloadBaseLib
+XloadBaseModule
 XmaxErrors
 XmaxWarning
 XmaxWarnings
@@ -1778,7 +1777,6 @@ isUsedAsDynamicOuterRef
 isDynamic
 addCode
 saveActualClazzes
-HasGlobalIndex
 codeBlockIndex
 initialValueFromCall
 initialCalls

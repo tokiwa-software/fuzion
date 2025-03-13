@@ -30,7 +30,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u32) => u32.max -° val < other
@@ -51,18 +51,8 @@ public u32(public val u32) : num.wrap_around, has_interval is
   public fixed redef infix *° (other u32) u32 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u32)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => div other
-  public fixed redef infix % (other u32)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => mod other
+  public fixed redef infix / (other u32) => div other
+  public fixed redef infix % (other u32) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u32) u32 => intrinsic
@@ -220,12 +210,12 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed redef type.zero u32 => 0
+  public fixed redef type.zero u32 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed redef type.one  u32 => 1
+  public fixed redef type.one  u32 => 1
 
 
   # equality

@@ -225,6 +225,7 @@ public class Names extends ANY implements ClassFileConstants
   static final ClassType CT_JAVA_LANG_INVOKE_METHODHANDLE = new ClassType(Names.JAVA_LANG_INVOKE_METHODHANDLE);
   static final ClassType CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR = new ClassType(Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR);
   static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT = new ClassType("java/lang/foreign/MemorySegment");
+  static final ClassType CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT = new ClassType("java/lang/foreign/AddressLayout");
 
 
 
@@ -256,7 +257,7 @@ public class Names extends ANY implements ClassFileConstants
     {
       String rawName(int field)
       {
-        return _prefix + _fuir.fieldIndex(field) + "_" + baseName(field);
+        return _prefix + _fuir.clazzId2num(field) + "_" + baseName(field);
       }
     };
 
@@ -650,7 +651,7 @@ public class Names extends ANY implements ClassFileConstants
     if (PRECONDITIONS) check
       (// NYI: CLEANUP: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
        tagNum >= 0,
-       tagNum < _fuir.clazzNumChoices(cc));
+       tagNum < _fuir.clazzChoiceCount(cc));
 
     var tc = _fuir.clazzChoice(cc, tagNum);
     return _fuir.clazzIsRef(tc) ? CHOICE_REF_ENTRY_NAME

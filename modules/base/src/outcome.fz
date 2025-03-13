@@ -32,7 +32,7 @@
 # reasons for an operation to fail, e.g.
 #
 #   get_data (u User, t Type) outcome data IO_Error Permission_Error is
-#     if u.allowed_to_acces T
+#     if u.allowed_to_access T
 #       (read_file t.file_name)?
 #     else
 #       Permission_Error u, t
@@ -49,9 +49,7 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type) : switch T error,
-                                monad T (outcome T),
-                                property.equatable
+public outcome(public T type) : switch T error
 is
 
   # Does this outcome contain an error
@@ -80,11 +78,6 @@ is
   public redef as_string =>
     outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
-
-
-  # monadic operator
-  #
-  public redef infix >>= (f T -> outcome T) => outcome.this.bind f
 
 
   # monadic operator
@@ -124,28 +117,6 @@ is
   public redef as_outcome outcome T
   =>
     outcome.this
-
-
-  # return function
-  #
-  public fixed redef type.return (a T) => outcome a
-
-
-  # option is equatable only if T is
-  #
-  public redef type.is_equatable => T : property.equatable
-
-
-  # equality
-  #
-  # NYI: UNDER DEVELOPMENT: (how) move this to switch?
-  #
-  public fixed redef type.equality(x, y outcome T) =>
-    if T : property.equatable
-      x ? v T     => y.exists  && v = y.val
-        | e error => !y.exists && e = y.err
-    else
-      panic "***"
 
 
 

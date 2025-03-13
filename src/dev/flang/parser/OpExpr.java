@@ -38,40 +38,73 @@ import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 
 /**
- * OpExpr
+ * Helper class to collect parsed operators and expressions
+ * then determine order of evaluation based on precedences.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class OpExpr extends ANY
+class OpExpr extends ANY
 {
 
-  /*----------------------------  variables  ----------------------------*/
+  /**
+   * Operator kind, prefix, infix or postfix
+   */
+  private enum Kind { prefix, infix, postfix };
+
+
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
+   * Initial characters of operators that bind to the right.
+   */
+  private static final String RIGHT_TO_LEFT_CHARS = "^";
+
+
+  /**
+   * List of freshly parsed operators and expressions.
+   */
+  private final ArrayList<Object> _els = new ArrayList<>();
+
+
+  /**
+   * table of precedences
+   */
+  private final Precedence[] precedences = {
+    new Precedence(16,        "@"  ),
+    new Precedence(15,        "^"  ),
+    new Precedence(14, 5, 14, "!"  ),
+    new Precedence(13,        "~"  ),
+    new Precedence(12,        "⁄"  ),
+    new Precedence(11,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
+    new Precedence(10,        "+-⊕⊖" ),
+    new Precedence( 9,        "."  ),
+    new Precedence( 8,        "#"  ),
+    new Precedence(14, 7, 14, "$"  ),
+    new Precedence( 6,        ""   ),
+    new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
+    new Precedence( 4,        "&"  ),
+    new Precedence( 3,        "|⦶⦷"),
+    new Precedence( 2,        "∀"  ),
+    new Precedence( 1,        "∃"  ),
+    // all other operators: 0
+    new Precedence( -1,       ":" ),
+  };
+
+
+  /**
+   * Offset added to the precedence if operator and expression
+   * have no white space in between.
    *
+   * NOTE: this must be higher than any other precendence
    */
-  final private ArrayList<Object> _els = new ArrayList<>();
-
-
-  /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Constructor
-   */
-  OpExpr()
-  {
-  }
-
+  static final int NO_WHITESPACE_PRECENDENCE_OFFSET = 1000;
 
   /*-----------------------------  methods  -----------------------------*/
 
 
   /**
-   * add
-   *
-   * @param o
+   * add an element to list
    */
   void add(Object o)
   {
@@ -79,17 +112,6 @@ public class OpExpr extends ANY
       (o instanceof Expr || o instanceof Operator);
 
     _els.add(o);
-  }
-
-
-  /**
-   * toExpr
-   *
-   * @return
-   */
-  Expr toExpr()
-  {
-    return toExprUsePrecedence();
   }
 
 
@@ -103,7 +125,7 @@ public class OpExpr extends ANY
    * @return Expr an expression instance corresponding to this
    * operator expression.
    */
-  Expr toExprUsePrecedence()
+  Expr toExpr()
   {
     while (_els.size() > 1 && _els.get(0) != Call.ERROR)
       {
@@ -133,15 +155,16 @@ public class OpExpr extends ANY
                     if (// 'a + + b' => '(a+) + b' and
                         // 'a + +b' => 'a + (+b)'
                         // 'a+ +b'  => 'a + (+b)' due to white space
-                        isOp(i-1) && !op._whiteSpaceAfter && op._whiteSpaceBefore && op(i-1)._whiteSpaceBefore)
+                        isOp(i-1) && !op._whiteSpaceAfter && op._whiteSpaceBefore && op(i-1)._whiteSpaceBefore &&
+                        precedence(i, Kind.prefix) + NO_WHITESPACE_PRECENDENCE_OFFSET > pmax)
                       {
                         max = i;
-                        pmax = Integer.MAX_VALUE;
+                        pmax = precedence(i, Kind.prefix) + NO_WHITESPACE_PRECENDENCE_OFFSET;
                       }
                     else if (// 'a + * b' => 'a + (* b)' and
                              // 'a + + b' => 'a + (+ b)' and
                              // 'a * + b' => '(a *) + b' due to precedence
-                             precedence(i, Kind.prefix)  >= pmax)
+                             precedence(i, Kind.prefix)  > pmax)
                       { // a prefix operator
                         max = i;
                         pmax = precedence(i, Kind.prefix);
@@ -149,19 +172,21 @@ public class OpExpr extends ANY
                   }
                 else if (isExpr(i-1))  // a postfix operator
                   {
-                    if (// 'a+ + b' => '(a+) + b' and
-                        // 'a + +b' => 'a + (+b)'
-                        // 'a+ +b'  => 'a + (+b)' due to white space
-                        isOp(i+1) && !op._whiteSpaceBefore && op._whiteSpaceAfter && op(i+1)._whiteSpaceAfter)
+                    if (// 'a+ + b'  => '(a+) + b' and
+                        // 'a + +b'  => 'a + (+b)' and
+                        // 'a+ +b'   => 'a + (+b)' and
+                        // 'a+ + b+' => '(a+) + (b+)' due to white space
+                        (isOp(i+1) && op(i+1)._whiteSpaceAfter || isOp(i-2) && op(i-2)._whiteSpaceAfter) && !op._whiteSpaceBefore && op._whiteSpaceAfter &&
+                        precedence(i, Kind.postfix) + NO_WHITESPACE_PRECENDENCE_OFFSET > pmax)
                       {
                         // in case white space suggests higher precedence for
                         // postfix op, then treat it as a postfix op.
                         max = i;
-                        pmax = Integer.MAX_VALUE;
+                        pmax = precedence(i, Kind.postfix) + NO_WHITESPACE_PRECENDENCE_OFFSET;
                       }
                     else if (// 'a + * b' => 'a + (* b)' and
                              // 'a * + b' => '(a *) + b' due to precedence
-                             precedence(i, Kind.postfix) >= pmax)
+                             precedence(i, Kind.postfix) > pmax)
                       {
                         max = i;
                         pmax = precedence(i, Kind.postfix);
@@ -250,7 +275,7 @@ public class OpExpr extends ANY
    * @return true iff i is a valid index in els and els.get(i)
    * contains an operator.
    */
-  boolean isOp(int i)
+  private boolean isOp(int i)
   {
     return (i>=0) && (i<_els.size()) && (_els.get(i) instanceof Operator);
   }
@@ -278,7 +303,7 @@ public class OpExpr extends ANY
    *
    * @return -1 iff !isOp(i), else the precedence of the operator at index i.
    */
-  int precedence(int i, Kind kind)
+  private int precedence(int i, Kind kind)
   {
     return
       isOp(i)
@@ -294,7 +319,7 @@ public class OpExpr extends ANY
    *
    * @return true iff isOp(i) and the operator at index i is handled left-to-right
    */
-  boolean isLeftToRight(int i)
+  private boolean isLeftToRight(int i)
   {
     return isOp(i) && isLeftToRight(op(i));
   }
@@ -307,7 +332,7 @@ public class OpExpr extends ANY
    *
    * @return true iff isOp(i) and the operator at index i is handled right-to-left
    */
-  boolean isRightToLeft(int i)
+  private boolean isRightToLeft(int i)
   {
     return isOp(i) && isRightToLeft(op(i));
   }
@@ -333,7 +358,7 @@ public class OpExpr extends ANY
   /**
    * determine the precedence of operator op.
    */
-  int precedence(Operator op, Kind kind)
+  private int precedence(Operator op, Kind kind)
   {
     char c = op._text.charAt(0);
     int i=0;
@@ -349,36 +374,11 @@ public class OpExpr extends ANY
             : 0);
   }
 
-  enum Kind { prefix, infix, postfix };
-
-  /**
-   *
-   */
-  public final Precedence[] precedences = { new Precedence(16,        "@"  ),
-                                            new Precedence(15,        "^"  ),
-                                            new Precedence(14, 5, 14, "!"  ),
-                                            new Precedence(13,        "~"  ),
-                                            new Precedence(12,        "⁄"  ),
-                                            new Precedence(11,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
-                                            new Precedence(10,        "+-⊕⊖" ),
-                                            new Precedence( 9,        "."  ),
-                                            new Precedence( 8,        "#"  ),
-                                            new Precedence(14, 7, 14, "$"  ),
-                                            new Precedence( 6,        ""   ),
-                                            new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
-                                            new Precedence( 4,        "&"  ),
-                                            new Precedence( 3,        "|⦶⦷"),
-                                            new Precedence( 2,        "∀"  ),
-                                            new Precedence( 1,        "∃"  ),
-                                            // all other operators: 0
-                                            new Precedence( -1,       ":" ),
-  };
-
 
   /**
    * Precedence represents the precedence of an operator
    */
-  class Precedence
+  private class Precedence
   {
 
     /**
@@ -431,7 +431,7 @@ public class OpExpr extends ANY
   /**
    * Does the given operator bind to the left?
    */
-  boolean isLeftToRight(Operator op)
+  private boolean isLeftToRight(Operator op)
   {
     return !isRightToLeft(op);
   }
@@ -439,16 +439,11 @@ public class OpExpr extends ANY
   /**
    * Does the given operator bind to the right?
    */
-  boolean isRightToLeft(Operator op)
+  private boolean isRightToLeft(Operator op)
   {
     char c = op._text.charAt(0);
     return RIGHT_TO_LEFT_CHARS.indexOf(c) >= 0;
   }
-
-  /**
-   * Initial characters of operators that bind to the right.
-   */
-  public final String RIGHT_TO_LEFT_CHARS = "^";
 
 }
 

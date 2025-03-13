@@ -56,7 +56,7 @@ public sorted_array
 
   )
 
-  : array T (sort from.as_array 1).internal_array unit unit unit
+  : array (sort from.as_array 1).internal_array unit unit unit
 
 is
 

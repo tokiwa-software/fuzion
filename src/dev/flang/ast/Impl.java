@@ -30,7 +30,6 @@ import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -309,7 +308,7 @@ public class Impl extends ANY
         //
         // this.visitCode(v, outer.outer());
       }
-    v.action(this, outer);
+    v.action(this);
   }
 
 
@@ -371,7 +370,7 @@ public class Impl extends ANY
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
@@ -390,7 +389,7 @@ public class Impl extends ANY
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Context context, AbstractType t)
+  void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     _expr = _expr.propagateExpectedType(res, context, t);
   }
@@ -416,7 +415,7 @@ public class Impl extends ANY
    *
    * @param context the source code context where this assignment is used
    */
-  public void resolveSyntacticSugar2(Resolution res, Context context)
+  void resolveSyntacticSugar2(Resolution res, Context context)
   {
     var outer = context.outerFeature();
     if (outer.isConstructor() && outer.preFeature() != null)
@@ -493,7 +492,7 @@ public class Impl extends ANY
    */
   private Expr initialValueFromCall(int i, Resolution res)
   {
-    Expr result = null;
+    Expr result = Call.ERROR;
     var ic = _initialCalls.get(i);
     var aargs = ic._actuals.listIterator();
     for (var frml : ic.calledFeature().valueArguments())
@@ -511,7 +510,7 @@ public class Impl extends ANY
                     _infiniteRecursionInResolveTypes = false;
                   }
                 if (CHECKS) check
-                  (result == null);
+                  (result == Call.ERROR);
                 result = actl;
               }
           }
@@ -695,6 +694,19 @@ public class Impl extends ANY
         }
     }
     return result;
+  }
+
+
+  /**
+   * Add initial call to the expression of
+   * this implementation.
+   */
+  public void addInitialCall(AbstractCall ac)
+  {
+    if (PRECONDITIONS) require
+      (ac.type().compareTo(Types.resolved.t_unit) == 0);
+
+    _expr = new Block(new List<>(ac, _expr));
   }
 
 }

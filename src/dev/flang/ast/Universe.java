@@ -38,20 +38,16 @@ import dev.flang.util.SourcePosition;
 public class Universe extends ExprWithPos
 {
 
+  /*
+   * Pre-allocated Universe with no source position.
+   */
+  public static final Universe instance = new Universe(SourcePosition.notAvailable);
+
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Constructor
-   */
-  public Universe()
-  {
-    this(SourcePosition.builtIn);
-  }
 
 
   /**
@@ -105,7 +101,7 @@ public class Universe extends ExprWithPos
     return new UnresolvedType(SourcePosition.notAvailable, FuzionConstants.UNIVERSE_NAME, UnresolvedType.NONE, null)
     {
       @Override
-      AbstractType resolve(Resolution res, Context context)
+      AbstractType resolve(Resolution res, Context context, boolean tolerant)
       {
         return typeForInferencing();
       }

@@ -33,11 +33,11 @@ reg_issue4486 =>
     "abc\ndef",
     "abc\ndef\n"]
 
-  # Read provider for stdin
+  # Read handler for stdin
   #
-  read_provider(arg String) : io.Read_Provider is
+  read_handler(arg String) : io.Read_Handler is
     already_returned := mut false
-    redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
       if !already_returned.get
         already_returned <- true
         # return eof for empty string to simulate: `printf "" | fz read_lines_test.fz`
@@ -51,8 +51,9 @@ reg_issue4486 =>
     say "input: '{input.replace "\n" "\\n"}'"
 
     LM ! ()->
-      (io.buffered.reader LM (read_provider input) 1024) ! ()->
-        for l := io.buffered.read_line LM
+      b := io.buffered LM
+      b.reader (read_handler input) 1024 ! ()->
+        for l := b.read_line
             i in 1..
         while l??
           say "  using read_line:  $i: '$l'"
@@ -60,8 +61,9 @@ reg_issue4486 =>
     say ""
 
     LM ! ()->
-      (io.buffered.reader LM (read_provider input) 1024) ! ()->
-        for l in io.buffered.read_lines LM
+      b := io.buffered LM
+      b.reader (read_handler input) 1024 ! ()->
+        for l in b.read_lines
             i in 1..
         do
           say "  using read_lines: $i: '$l'"

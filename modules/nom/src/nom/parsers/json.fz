@@ -27,7 +27,7 @@
 # json supports the following types: strings, numbers, booleans, null, arrays and objects
 #
 public json_value : choice String f64 bool nil (Sequence json_value) (container.Map String json_value) is
-  redef as_string =>
+  public redef as_string =>
     match json_value.this
       s String => "\"$s\""
       f f64 => $f
@@ -52,8 +52,8 @@ public json =>
     parser_hex_unicode =>
       preceded (tag "\\") (take_while_m_n codepoint 4 4 (c -> is_hex_digit c))
         .map (Sequence codepoint) d->
-          (c,_) := d.reduce (u32 0, u32 4) (r, c -> (_, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
-          [(codepoint c)]
+          (v,_) := d.reduce (u32 0, u32 4) (r, c -> (_, exp) := r; (c.parse_u32_hex.val * 10**exp, exp-1))
+          [(codepoint v)]
 
     parse_and_map(t, r String) =>
       (tag t).map (Sequence codepoint) _->r.as_codepoints

@@ -65,6 +65,13 @@ public class FuzionConstants extends ANY
   public static final String BASE_MODULE_NAME = "base";
 
 
+  /**
+   * Special value, when not selecting field of
+   * open type parameter.
+   */
+  public static final int NO_SELECT = -1;
+
+
   /*----------------------  special feature names  ----------------------*/
 
 
@@ -92,86 +99,92 @@ public class FuzionConstants extends ANY
    * Name of Any feature, i.e., the implicit parent feature of all other
    * features.
    */
-  public static final String ANY_NAME             = "Any";
+  public static final String ANY_NAME    = "Any";
 
 
   /**
    * Name of unit feature. The feature is used throughout the base library
    * to indicate that no result is returned.
    */
-  public static final String UNIT_NAME            = "unit";
+  public static final String UNIT_NAME   = "unit";
 
 
   /**
    * Name of Type feature.
    */
-  public static final String TYPE_FEAT            = "Type";
+  public static final String TYPE_FEAT   = "Type";
 
 
   /**
    * Name of String feature.
    */
-  public static final String STRING_NAME          = "String";
+  public static final String STRING_NAME = "String";
 
 
   /**
    * Name of i8 feature.
    */
-  public static final String I8_NAME          = "i8";
+  public static final String I8_NAME     = "i8";
 
 
   /**
    * Name of i16 feature.
    */
-  public static final String I16_NAME          = "i16";
+  public static final String I16_NAME    = "i16";
 
 
   /**
    * Name of i32 feature.
    */
-  public static final String I32_NAME          = "i32";
+  public static final String I32_NAME    = "i32";
 
 
   /**
    * Name of i64 feature.
    */
-  public static final String I64_NAME          = "i64";
+  public static final String I64_NAME    = "i64";
 
 
   /**
    * Name of u8 feature.
    */
-  public static final String U8_NAME          = "u8";
+  public static final String U8_NAME     = "u8";
 
 
   /**
    * Name of u16 feature.
    */
-  public static final String U16_NAME          = "u16";
+  public static final String U16_NAME    = "u16";
 
 
   /**
    * Name of u32 feature.
    */
-  public static final String U32_NAME          = "u32";
+  public static final String U32_NAME    = "u32";
 
 
   /**
    * Name of u64 feature.
    */
-  public static final String U64_NAME          = "u64";
+  public static final String U64_NAME    = "u64";
 
 
   /**
    * Name of f32 feature.
    */
-  public static final String F32_NAME          = "f32";
+  public static final String F32_NAME    = "f32";
 
 
   /**
    * Name of f64 feature.
    */
-  public static final String F64_NAME          = "f64";
+  public static final String F64_NAME    = "f64";
+
+
+  /**
+   * Name of the array feature
+   */
+  public static final String ARRAY_NAME        = "array";
 
 
   /**

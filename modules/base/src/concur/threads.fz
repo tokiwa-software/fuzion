@@ -55,7 +55,7 @@ is
 
   # join all running threads
   #
-  redef finally =>
+  public redef finally =>
     running.for_each t->
       t.join
 
@@ -80,7 +80,7 @@ public threads =>
 
 
 
-# Thread_Provider -- abstract source of concurrency
+# Thread_Handler -- abstract source of concurrency
 #
 private:public Thread_Handler ref is
 

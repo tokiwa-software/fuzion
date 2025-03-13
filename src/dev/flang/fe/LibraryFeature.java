@@ -45,7 +45,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -409,13 +408,13 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic feature to determine the resultClazz().
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object.
    *
    * @return this feature's frame object
    */
-  public AbstractType createThisType()
+  @Override
+  public AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
       (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());
@@ -629,7 +628,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
-              var target = f.outer().isUniverse() ? new Universe() : s.pop();
+              var target = f.outer().isUniverse() ? Universe.instance : s.pop();
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
@@ -722,7 +721,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType, Context.NONE);
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:
@@ -897,10 +896,11 @@ public class LibraryFeature extends AbstractFeature
   }
 
   /**
-   * Does this feature belong to or contain inner features of the given module?
-   * And should therefore be shown on the api page for that module
+   * Does this feature belong to or contain inner features of the given module
+   * and should therefore be shown on the API doc page for that module?
+   *
    * @param module the module for which the belonging is to be checked
-   * @return true iff this feature needs to be included in the api page for module
+   * @return true iff this feature needs to be included in the API doc page for module
    */
   public boolean showInMod(LibraryModule module)
   {

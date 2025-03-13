@@ -205,7 +205,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object assignStatic(int s, int tc, int f, int rt, Value tvalue, Value val)
+  public Object assignStatic(int s, int tc, int f, Value tvalue, Value val)
   {
     Interpreter.setField(f, tc, tvalue, val);
     return null;
@@ -289,14 +289,12 @@ public class Executor extends ProcessExpression<Value, Object>
         var mh = Linker.nativeLinker()
           .downcallHandle(
             SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-              .or(SymbolLookup.loaderLookup())
-              .or(Linker.nativeLinker().defaultLookup())
-              .find(_fuir.clazzBaseName(cc))
+              .find(_fuir.clazzNativeName(cc))
               .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
 
               _fuir.clazzIsUnitType(rt)
-              ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
-              : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
+                ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
+                : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
 
         var arguments = args.stream().map(arg -> arg.toNative()).toList();
         Object tmp = null;
@@ -355,11 +353,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case c_f32     -> ValueLayout.JAVA_FLOAT;
       case c_f64     -> ValueLayout.JAVA_DOUBLE;
       case c_u64     -> ValueLayout.JAVA_LONG;
-      case c_sys_ptr -> ValueLayout.ADDRESS;
-      default -> {
-        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
-        yield null;
-      }
+      default        -> ValueLayout.ADDRESS;
       };
   }
 

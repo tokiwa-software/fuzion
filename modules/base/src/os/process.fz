@@ -23,7 +23,7 @@
 
 # type denoting a started process
 #
-module:public process(module id, std_in, std_out, std_err i64) : property.equatable, property.orderable is
+module:public process(module id, std_in, std_out, std_err i64) : property.orderable is
 
   # how many bytes are read at a time
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
@@ -31,30 +31,30 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   pipe_buffer_size := 4096
 
 
-  # predefined read provider for reading from
+  # predefined read handler for reading from
   # standard out of the process
   #
-  std_out_read_provider => read_provider std_out
+  std_out_read_handler => read_handler std_out
 
 
-  # predefined read provider for reading from
+  # predefined read handler for reading from
   # standard err of the process
   #
-  std_err_read_provider => read_provider std_err
+  std_err_read_handler => read_handler std_err
 
 
-  # predefined write provider for writing to
+  # predefined write handler for writing to
   # standard in of the process
   #
-  std_in_write_provider => write_provider std_in
+  std_in_write_handler => write_handler std_in
 
 
   # read bytes from standard out
   #
-  read_provider(desc i64) : io.Read_Provider is
-    redef read(count i32) choice (array u8) io.end_of_file error =>
+  read_handler(desc i64) : io.Read_Handler is
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
-      res := fuzion.sys.pipe.read desc arr.internal_array.data arr.count
+      res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
         error "error reading from stdout."
       else if res = 0
@@ -67,9 +67,9 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
 
   # write bytes to standard in
   #
-  write_provider (desc i64) : io.Write_Provider is
-    redef write (bytes Sequence u8) outcome unit =>
-      if (fuzion.sys.pipe.write desc bytes.as_array.internal_array.data bytes.count) = -1
+  write_handler (desc i64) : io.Write_Handler is
+    public redef write (bytes Sequence u8) outcome unit =>
+      if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
         error "error while writing"
       else
         unit
@@ -91,7 +91,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
       .chunk pipe_buffer_size
       .reduce_or_error 0 (r, t)->
         arr := t.as_array
-        bw := fuzion.sys.pipe.write desc arr.internal_array.data arr.count
+        bw := fzE_pipe_write desc arr.internal_array.data arr.count
         if bw = -1
           abort (outcome i32) (error "error while writing. wrote $r bytes already.")
         else
@@ -101,17 +101,17 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_out_read_provider) pipe_buffer_size) ! f
+    (io.buffered LM).reader (std_out_read_handler) pipe_buffer_size ! f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered.reader LM (std_err_read_provider) pipe_buffer_size) ! f
+    (io.buffered LM).reader (std_err_read_handler) pipe_buffer_size ! f
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered.writer std_in_write_provider pipe_buffer_size) ! f
+    (io.buffered LM).writer std_in_write_handler pipe_buffer_size ! f
 
 
   # write string to stdin of child process
@@ -135,16 +135,16 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
       # thread to pipe from one process to other
       _ := concur.threads.spawn ()->
         _ :=
-          for p1rb := std_out_read_provider.read pipe_buffer_size
+          for p1rb := std_out_read_handler.read pipe_buffer_size
           while
             match p1rb
               s array u8 => (write_bytes p.std_in s).ok
               * => false
 
         # NYI error handling
-        _ := fuzion.sys.pipe.close p.std_in
-        _ := fuzion.sys.pipe.close process.this.std_out
-        _ := fuzion.sys.pipe.close process.this.std_err
+        _ := fzE_pipe_close p.std_in
+        _ := fzE_pipe_close process.this.std_out
+        _ := fzE_pipe_close process.this.std_err
 
       p
 
@@ -176,10 +176,10 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
 
   # equality
   #
-  public redef fixed type.equality(a, b process.this) => a.id = b.id
+  public fixed redef type.equality(a, b process.this) => a.id = b.id
 
 
   # lteq
   #
-  public redef fixed type.lteq(a, b process.this) bool =>
+  public fixed redef type.lteq(a, b process.this) bool =>
     a.id <= b.id

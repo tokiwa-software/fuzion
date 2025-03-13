@@ -212,8 +212,6 @@ class CodeGen
    *
    * @param f clazz id of the assigned field
    *
-   * @param rt clazz of the field type
-   *
    * @param tvalue the target instance
    *
    * @param val the new value to be assigned to the field.
@@ -221,9 +219,9 @@ class CodeGen
    * @return statement to perform the given assignment
    */
   @Override
-  public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
+  public Expr assignStatic(int s, int tc, int f, Expr tvalue, Expr val)
   {
-    return _jvm.assignField(s, tvalue, f, val, rt);
+    return _jvm.assignField(s, f, _fuir.clazzResultClazz(f), tvalue, val);
   }
 
 
@@ -372,11 +370,11 @@ class CodeGen
         s = s.andThen(calpair.v1());
         res = calpair.v0();
       }
-    if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc0)))
+    if (_fuir.alwaysResultsInVoid(si))
       {
         if (res != null)
           {
-            s = s.andThen(res);
+            s = s.andThen(res.drop());
           }
         res = null;
       }
@@ -399,7 +397,7 @@ class CodeGen
   {
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
-    var dn = _names.dynamicFunction(cc0);
+    var dn = _names.dynamicFunction(cc0) + (isCall ? "_c" : "");
     var ds = isCall ? _types.dynDescriptor(cc0) : "(" + _types.javaType(rc).argDescriptor() + ")V";
     var dr = isCall ? _types.resultType(rc)     : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
@@ -516,8 +514,9 @@ class CodeGen
 
     return isCall ? staticCall(si, tv, args, cc)
                   : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(si, tv, cc, args.get(0),
-                               _fuir.clazzResultClazz(cc)));
+                               _jvm.assignField(
+                                si, cc, _fuir.clazzResultClazz(cc), tv, args.get(0)
+                              ));
   }
 
 
@@ -791,7 +790,7 @@ class CodeGen
   public Pair<Expr, Expr> current(int s)
   {
     var cl = _fuir.clazzAt(s);
-    if (_types.isScalar(cl))
+    if (_fuir.isScalar(cl))
       {
         return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
       }
@@ -911,13 +910,9 @@ class CodeGen
    */
   JVMOptions.ConstantCreation constantCreationStrategy(int constCl)
   {
-    return switch (_fuir.getSpecialClazz(constCl))
-      {
-      case c_bool, c_i8 , c_i16, c_i32,
-           c_i64 , c_u8 , c_u16, c_u32,
-           c_u64 , c_f32, c_f64         -> JVMOptions.ConstantCreation.onEveryUse;
-      default                           -> _jvm._options._constantCreationStrategy;
-      };
+    return _fuir.clazzIsBuiltInPrimitive(constCl)
+      ? JVMOptions.ConstantCreation.onEveryUse
+      : _jvm._options._constantCreationStrategy;
   }
 
 
@@ -1017,10 +1012,9 @@ class CodeGen
    * @return the code for the match, produces unit type result.
    */
   @Override
-  public Pair<Expr, Expr> match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
+  public Expr match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
   {
-    var code = _choices.match(_jvm, ai, s, sub);
-    return new Pair<>(Expr.UNIT, code);
+    return _choices.match(_jvm, ai, s, sub);
   }
 
 
@@ -1084,13 +1078,11 @@ class CodeGen
    *
    * @param msg a message explaining the illegal state
    */
-  // NYI: BUG: #3178 reportErrorInCode may currently not be called repeatedly
-  //           triggers error: Expecting a stack map frame
-  // @Override
-  // public Expr reportErrorInCode(String msg)
-  // {
-  //   return this._jvm.reportErrorInCode(msg);
-  // }
+  @Override
+  public Expr reportErrorInCode(String msg)
+  {
+    return this._jvm.reportErrorInCode(msg);
+  }
 
 }
 

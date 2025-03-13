@@ -24,7 +24,7 @@
 
 # effect for manipulating open directories
 #
-module:public open(fd fuzion.sys.Pointer,
+module:public open(dd Directory_Descriptor,
                    public path String) : effect is
 
   # reads the next entry of this directory
@@ -35,7 +35,13 @@ module:public open(fd fuzion.sys.Pointer,
   # NOTES: current directory `.` and parent directory `..` are omitted.
   #
   public read outcome String ! io.dir.read =>
-    io.dir.read.read fd
+    io.dir.read.read dd
+
+
+  # close dir when de-instating effect
+  #
+  public redef finally =>
+    _ := fzE_dir_close dd
 
 
 # short hand to get the currently

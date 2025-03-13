@@ -137,7 +137,7 @@ is
   #
   # returns true, if successful
   #
-  compare_and_set0(expected, new_value T) bool => intrinsic
+  module compare_and_set0(expected, new_value T) bool => intrinsic
 
 
   # unwrap this atomic value

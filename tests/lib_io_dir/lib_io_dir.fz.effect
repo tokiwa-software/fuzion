@@ -1,8 +1,9 @@
-io.file.delete
+io.Err
 fuzion.runtime.pre_fault
 fuzion.runtime.fault
+io.file.delete
 io.dir.make
-io.out
+io.Out
 io.dir.read
 panic
 fuzion.runtime.post_fault

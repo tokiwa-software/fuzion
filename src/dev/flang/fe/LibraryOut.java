@@ -153,7 +153,7 @@ class LibraryOut extends ANY
         sm._options.verbosePrintln(2, "" +
                                    _data.featureCount() + " features " +
                                    _data.typeCount() + " types and " +
-                                   _sourceFiles.size() + " source files includes in fum file.");
+                                   _sourceFiles.size() + " source files included in fum file.");
       }
   }
 
@@ -456,11 +456,11 @@ class LibraryOut extends ANY
     _data.add(f);
     int k = f.visibility().ordinal() << 7;
     k = k | (!f.isConstructor() ? f.kind().ordinal() :
-              f.isRef()     ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
+              f.isRef()         ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
                                 : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
+       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.generics() == FormalGenerics.NONE);
     if (f.hasCotype())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_COTYPE;
@@ -492,7 +492,7 @@ class LibraryOut extends ANY
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
-    if (_sourceModule._options._eraseInternalNamesInLib && n.isInternal())
+    if (_sourceModule._options._eraseInternalNamesInMod && n.isInternal())
       {
         bn = "";
       }

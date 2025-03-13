@@ -128,8 +128,6 @@ public class C extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
@@ -137,9 +135,9 @@ public class C extends ANY
      * @return statement to perform the given access
      */
     @Override
-    public CStmnt assignStatic(int s, int tc, int f, int rt, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int s, int tc, int f, CExpr tvalue, CExpr val)
     {
-      return assignField(tvalue, tc, tc, f, val, rt);
+      return assignField(tvalue, tc, tc, f, val, _fuir.clazzResultClazz(f));
     }
 
 
@@ -414,7 +412,7 @@ public class C extends ANY
      * Perform a match on value subv.
      */
     @Override
-    public Pair<CExpr, CStmnt> match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
+    public CStmnt match(int s, AbstractInterpreter<CExpr, CStmnt> ai, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(s);
       var uniyon    = sub.field(CNames.CHOICE_UNION_NAME);
@@ -479,7 +477,7 @@ public class C extends ANY
           var notFound = reportErrorInCode0("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
-      return new Pair<>(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
+      return CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault));
     }
 
 
@@ -757,11 +755,11 @@ public class C extends ANY
           "-Wredundant-decls",
           "-Wnested-externs",
           "-Wmissing-include-dirs",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-strict-prototypes",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-gnu-empty-initializer",
-          // NYI: UNDER DEVELOPEMENT:
+          // NYI: UNDER DEVELOPMENT:
           "-Wno-zero-length-array",
           "-Wno-trigraphs",
           "-Wno-gnu-empty-struct",
@@ -846,7 +844,7 @@ public class C extends ANY
           "-I" + JAVA_HOME + "/include/darwin",
           "-L" + JAVA_HOME + "/lib/server");
 
-       if (!isWindows())
+        if (!isWindows())
           {
             command.add("-ljvm");
           }
@@ -874,6 +872,15 @@ public class C extends ANY
     if(_options._useBoehmGC)
       {
         command.addAll("-lgc");
+      }
+
+    if (_options._cLink != null)
+      {
+        var libraries = Arrays
+          .stream(_options._cLink.split(" "))
+          .map(x -> "-l" + x)
+          .iterator();
+        command.addAll(libraries);
       }
 
     return command;
@@ -908,11 +915,10 @@ public class C extends ANY
                      "f32.infix /",
                      "f32.infix %",
                      "f32.infix **",
-                     "f32.infix =",
-                     "f32.infix <=",
-                     "f32.infix >=",
-                     "f32.infix <",
-                     "f32.infix >",
+                     "f32.type.equal",
+                     "f32.type.lower_than_or_equal",
+                     "f64.type.equal",
+                     "f64.type.lower_than_or_equal",
                      "f32.as_f64",
                      "f64.as_f32",
                      "f64.as_i64_lax",
@@ -976,14 +982,7 @@ public class C extends ANY
                     "fuzion.java.call_c0",
                     "fuzion.java.call_s0",
                     "fuzion.java.call_v0",
-                    "fuzion.java.bool_to_java_object",
-                    "fuzion.java.f32_to_java_object",
-                    "fuzion.java.f64_to_java_object",
-                    "fuzion.java.i8_to_java_object",
-                    "fuzion.java.i16_to_java_object",
-                    "fuzion.java.i32_to_java_object",
-                    "fuzion.java.i64_to_java_object",
-                    "fuzion.java.u16_to_java_object",
+                    "fuzion.java.primitive_to_java_object",
                     "fuzion.java.java_string_to_string",
                     "fuzion.java.string_to_java_object0",
                     "fuzion.java.fuzion.java.create_jvm")
@@ -1084,7 +1083,7 @@ public class C extends ANY
              _effectClazzes = ordered
                .stream()
                .filter(_fuir::isEffectIntrinsic)
-               .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+               .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
                .sorted()
                .distinct()
                .toArray();
@@ -1111,8 +1110,6 @@ public class C extends ANY
     cf.print(threadStartRoutine(true));
 
     cf.println("int main(int argc, char **argv) { ");
-
-    cf.println("fzE_init();");
 
     cf.print(initializeEffectsEnvironment());
 
@@ -1193,6 +1190,13 @@ public class C extends ANY
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
+    if (_options._cLink != null)
+      {
+        Arrays
+          .stream(_options._cInclude.split(" "))
+          .forEach(x -> cf.println("#include <" + x + ">"));
+      }
+
     var o = new CIdent("of");
     var s = new CIdent("sz");
     var r = new CIdent("r");
@@ -1244,7 +1248,7 @@ public class C extends ANY
           _types.inOrder()
             .stream()
             .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
-            .mapToInt(cl -> _fuir.effectTypeFromInstrinsic(cl))
+            .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
             .distinct()
             .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
             .iterator()))
@@ -1348,11 +1352,12 @@ public class C extends ANY
             var cc = ccs[cci+1];                   // called clazz in case of match
             var cco = _fuir.clazzOuterClazz(cc);   // outer clazz of called clazz, usually equal to tt unless tt is boxed value type
             var rti = _fuir.clazzResultClazz(cc);
-            var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
-            tv = unbox(tt, cc, tv);
             if (isCall)
               {
-                var calpair = call(s, tv, args, cc);
+                var tv = tt != tc ? tvalue.castTo(_types.clazz(tt)) : tvalue;
+                var ut = _fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(cco) ? cco : tt;
+                tv = unbox(tt, cc, tv);
+                var calpair = call(s, tv, args, ut, cc);
                 var rv  = calpair.v0();
                 acc = calpair.v1();
                 if (ccs.length == 2)
@@ -1372,7 +1377,7 @@ public class C extends ANY
               }
             else
               {
-                acc = assignField(tv, tc, cco, cc, args.get(0), rti);
+                acc = assignField(tvalue, tc, tt, cc, args.get(0), rti);
               }
             cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                   CStmnt.seq(acc, CStmnt.BREAK)));
@@ -1387,7 +1392,7 @@ public class C extends ANY
                                                    CExpr.string(_fuir.siteAsString(s))));
           }
         ol.add(acc);
-        res = _fuir.clazzIsVoidType(rt)
+        res = _fuir.alwaysResultsInVoid(s)
           ? null
           : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate expression for this
             ? res.deref()
@@ -1620,7 +1625,7 @@ public class C extends ANY
       {
         tvalue = tvalue.castTo(_types.clazz(tt));
       }
-    var af = accessField(tvalue, tt, f);
+    var af = accessField(tvalue, tc, f);
     if (_fuir.clazzIsRef(rt))
       {
         value = value.castTo(_types.clazz(rt));
@@ -1668,9 +1673,8 @@ public class C extends ANY
    *
    * @return the code to perform the call
    */
-  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int cc)
+  Pair<CExpr, CStmnt> call(int s, CExpr tvalue, List<CExpr> args, int tt, int cc)
   {
-    var tc = _fuir.clazzOuterClazz(cc);
     CStmnt result = CStmnt.EMPTY;
     var resultValue = CExpr.UNIT;
     var rt = _fuir.clazzResultClazz(cc);
@@ -1693,6 +1697,7 @@ public class C extends ANY
                   _tailCall.callIsTailCall(cl, s)
                 )
                 { // then we can do tail recursion optimization!
+                  var tc = _fuir.clazzOuterClazz(cc);
                   result = tailRecursion(cl, s, tc, a);
                   resultValue = null;
                 }
@@ -1724,7 +1729,7 @@ public class C extends ANY
         }
       case Field:
         {
-          resultValue = accessField(tvalue, tc, cc);
+          resultValue = accessField(tvalue, tt, cc);
           break;
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
@@ -1832,8 +1837,7 @@ public class C extends ANY
   private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = _fuir.hasData(res) ? _types.clazz(res)
-                                        : "void";
+    var resultType = _types.resultClazz(res);
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
@@ -1964,7 +1968,7 @@ public class C extends ANY
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
+    var call = CExpr.call(_fuir.clazzNativeName(cl), args);
     return switch (_fuir.getSpecialClazz(rc))
       {
         case
@@ -2155,7 +2159,7 @@ public class C extends ANY
       case c_String :
       case c_false_ :
       case c_true_ :
-      case c_sys_ptr :
+      case c_Array :
       case c_u32 :
       case c_u64 :
       case c_u8 :
@@ -2204,7 +2208,7 @@ public class C extends ANY
     var obj = CExpr
       .compoundLiteral(
         _types.clazz(rc),
-        "." + _names.fieldName(_fuir.lookupJavaRef(rc)).code() + " = "
+        "." + _names.fieldName(_fuir.lookupJavaRef(cl)).code() + " = "
           + successResult
             .field(new CIdent("l"))
             .castTo("void *" /* J_Value */)
@@ -2279,7 +2283,7 @@ public class C extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzIsChoice(choiceCl),
         !_fuir.clazzIsChoiceOfOnlyRefs(choiceCl),
-        _fuir.clazzNumChoices(choiceCl) == 2);
+        _fuir.clazzChoiceCount(choiceCl) == 2);
 
     return _fuir.clazzIsUnitType(valuecl)
       ? CExpr.compoundLiteral(

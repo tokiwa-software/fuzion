@@ -804,7 +804,7 @@ public class NumLiteral extends Constant
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
-    Expr result = this;
+    Expr result = super.propagateExpectedTypeForPartial(res, context, t);
     if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
@@ -816,7 +816,6 @@ public class NumLiteral extends Constant
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        fn.resolveTypes(res, context);
         result = fn;
       }
     return result;
@@ -840,25 +839,17 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    var result = propagateExpectedTypeForPartial(res, context, t);
-    if (result != this)
+    // if expected type is choice, examine if there is exactly one numeric
+    // constant type in choice generics, if so use that for further type
+    // propagation.
+    t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
+    if (_propagatedType == null && findConstantType(t) != null)
       {
-        result = result.propagateExpectedType(res, context, t);
+        _propagatedType = t;
       }
-    else
-      {
-        // if expected type is choice, examine if there is exactly one numeric
-        // constant type in choice generics, if so use that for further type
-        // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
-        if (_propagatedType == null && findConstantType(t) != null)
-          {
-            _propagatedType = t;
-          }
-      }
-    return result;
+    return this;
   }
 
 
@@ -875,7 +866,7 @@ public class NumLiteral extends Constant
    * @param t the type this expression is assigned to.
    */
   @Override
-  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     if (t.isLazyType())
       {

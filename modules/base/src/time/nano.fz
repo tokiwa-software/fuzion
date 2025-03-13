@@ -40,7 +40,15 @@ public nano (p Nano_Time_Handler) : effect is
   public read =>
     res := p.read
     replace
+    instant res
+
+
+  # workaround for making the time seeded random handler work for now
+  module read_for_random =>
+    res := p.read
+    replace
     res
+
 
   # no guarantee can be given for precision nor resolution
   public sleep(d time.duration) =>
@@ -54,10 +62,10 @@ public nano (p Nano_Time_Handler) : effect is
     ref : time.Nano_Time_Handler
 
       # no guarantee can be given for precision nor resolution
-      redef read => fuzion.std.fzE_nanotime
+      redef read => fzE_nanotime
 
       # no guarantee can be given for precision nor resolution
-      redef sleep(d time.duration) => fuzion.std.fzE_nanosleep d.nanos
+      redef sleep(d time.duration) => fzE_nanosleep d.nanos
 
 
   # install default effect time using default_nano_time

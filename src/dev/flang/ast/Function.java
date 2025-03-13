@@ -183,7 +183,7 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
     return this;
@@ -211,10 +211,8 @@ public class Function extends AbstractLambda
     var e = _expr.visit(new FeatureVisitor()
       {
         @Override
-        public Expr action(Call c, AbstractFeature outer)
+        public Expr action(Call c)
         {
-          if (CHECKS)
-            check(outer == _feature);
           return c.updateTarget(res, _feature.context());
         }
       },
@@ -245,14 +243,18 @@ public class Function extends AbstractLambda
    * case of error, return Types.t_ERROR.
    */
   @Override
-  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
         if (!t.isFunctionType())
           {
-            AstErrors.expectedFunctionTypeForLambda(pos(), t);
+            // suppress error for t_UNDEFINED, but only if other error was already reported
+            if (t != Types.t_UNDEFINED || !Errors.any())
+              {
+                AstErrors.expectedFunctionTypeForLambda(pos(), t);
+              }
             t = Types.t_ERROR;
             result = Types.t_ERROR;
           }
@@ -365,7 +367,7 @@ public class Function extends AbstractLambda
           (e == this._call); // NYI: This will fail e.g. if _call is a call to bool.infix &&, need to handle explicitly
         this._call = (Call) e;
       }
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -376,7 +378,7 @@ public class Function extends AbstractLambda
    *
    * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (this._call == null || this._feature != null);

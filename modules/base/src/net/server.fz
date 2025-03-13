@@ -111,7 +111,7 @@ is
         match p
           net.protocol.tcp =>
             # listen
-            listen_res := fuzion.sys.net.fzE_listen sd backlog
+            listen_res := fzE_listen sd backlog
             if listen_res != 0
               _ := fuzion.sys.net.close sd
               error "listening on socket failed with error $listen_res."
@@ -129,4 +129,3 @@ public server =>
   if !server.is_instated
     (server (error "not initialized") nil).default
   server.env
-

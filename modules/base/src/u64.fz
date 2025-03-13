@@ -30,7 +30,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u64) => u64.max -° val < other
@@ -51,18 +51,8 @@ public u64(public val u64) : num.wrap_around, has_interval is
   public fixed redef infix *° (other u64) u64 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u64)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => div other
-  public fixed redef infix % (other u64)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => mod other
+  public fixed redef infix / (other u64) => div other
+  public fixed redef infix % (other u64) => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u64) u64 => intrinsic
@@ -106,60 +96,71 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
 
   # this u64 as an i64
+  #
   public as_i64 i64
     pre
       debug: val ≤ i64.max.as_u64
-#    post
-#      analysis:  result.as_u64 == val
-    =>
-      cast_to_i64
+    post
+      analysis: result.as_u64 = val
+  =>
+    cast_to_i64
+
+
+  # this u64 as an i128
+  #
   public fixed as_i128 i128 =>
     i128 0 val
 
 
   # this u64 as an u8
+  #
   public redef as_u8 u8
-#    pre
-#      debug: val ≤ u8.max.as_i64
-#    post
-#      analysis: result.as_u64 == val
-    =>
-      low8bits
+  pre else
+    debug: val ≤ u8.max.as_u64
+  post then
+    analysis: result.as_u64 = val
+  =>
+    low8bits
 
 
   # this u64 as an u16
+  #
   public as_u16 u16
-#    pre
-#      debug: val ≤ u16.max.as_i64
-#    post
-#      analysis: result.as_u64 == val
-    =>
-      low16bits
+  pre
+    debug: val ≤ u16.max.as_u64
+  post
+    analysis: result.as_u64 = val
+  =>
+    low16bits
 
 
   # this u64 as an u32
+  #
   public as_u32 u32
-#    pre
-#      debug: val ≤ u32.max.as_i64
-#    post
-#      analysis: result.as_u64 == val
-    =>
-      low32bits
+  pre
+    debug: val ≤ u32.max.as_u64
+  post
+    analysis: result.as_u64 = val
+  =>
+    low32bits
 
 
   # this u64 as an u128
+  #
   public as_u128 u128
-#    post
-#      analysis: result.as_u64 == val
-    =>
-      u128 0 val
+  post
+    analysis: result.as_u64 = val
+  =>
+    u128 0 val
 
 
   # this u64 as an int
+  #
   public as_int  => int.from_u64 val
 
 
   # this u64 as an uint
+  #
   public as_uint uint
   =>
     uint val
@@ -226,12 +227,12 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # identity element for 'infix +'
   #
-  fixed redef type.zero u64 => 0
+  public fixed redef type.zero u64 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed redef type.one  u64 => 1
+  public fixed redef type.one  u64 => 1
 
 
   # equality
@@ -245,7 +246,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
 
 
   # minimum

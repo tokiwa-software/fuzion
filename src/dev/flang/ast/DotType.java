@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -91,7 +92,7 @@ public class DotType extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _lhs = _lhs.visit(v, outer);
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -120,17 +121,16 @@ public class DotType extends ExprWithPos
    *
    * @param context the source code context where this Call is used
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
     return _lhs.isGenericArgument() && !_lhs.genericArgument().isThisTypeInCotype()
       ? _lhsExpr
       : new Call(pos(),
-                new Universe(),
+                Universe.instance,
                 "type_as_value",
-                -1,
+                FuzionConstants.NO_SELECT,
                 new List<>(_lhs),
                 new List<>(),
-                null,
                 null).resolveTypes(res, context);
   }
 

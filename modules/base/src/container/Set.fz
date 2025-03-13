@@ -25,7 +25,9 @@
 
 # Set -- an abstract set of values
 #
-public Set(public E type : property.equatable) ref : Sequence E is
+public Set(public E type : property.equatable) ref : Sequence E,
+                                                     property.equatable
+is
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -52,12 +54,12 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # create a new Set from a sequence of elements
   #
-  public type.new (s Sequence E) Set.this => abstract
+  public type.new (s Sequence E) container.Set E => abstract
 
 
   # create a union of these two Sets
   #
-  public union(other container.Set E) Set E =>
+  public union(other container.Set E) container.Set E =>
     Set.this.new (Set.this ++ other)
 
 
@@ -69,7 +71,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # create an intersection of these two Sets
   #
-  public intersection(other container.Set E) Set E =>
+  public intersection(other container.Set E) container.Set E =>
     Set.this.new (Set.this ++ other).filter(el -> Set.this.contains el && other.contains el)
 
 
@@ -81,7 +83,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # this Set without all elements in other
   #
-  public difference(other container.Set E) Set E =>
+  public difference(other container.Set E) container.Set E =>
     Set.this.new filter(el -> !other.contains el)
 
 
@@ -127,13 +129,13 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # equality
   #
-  # NYI: remove this, since we inherit from Sequence?
+  # NYI: BUG: #4676 this could be
+  # public redef type.equality(a, b Set.this)
   #
   public fixed redef type.equality(a, b container.Set E)
-  # NYI: BUG: #3888
-  # pre else
-  #     debug: a.finite
-  #     debug: b.finite
+  pre else
+    debug: a.finite != trit.no
+    debug: b.finite != trit.no
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val
@@ -141,8 +143,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # monoid of Set with infix ∪ operation.
   #
-  # NYI: BUG: name clash with union
-  public type.unionize =>
+  public type.union =>
     ref : Monoid (container.Set E)
-      redef infix ∙ (a, b container.Set E) => a ∪ b
-      redef e => (container.Set E).new []
+      public redef infix ∙ (a, b container.Set E) => a ∪ b
+      public redef e => (container.Set E).new []

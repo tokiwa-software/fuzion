@@ -32,7 +32,7 @@
 # calendars that may require time spans exceeding several centuries or millennia,
 # nor astrological time spans.
 #
-private:public duration (
+module:public duration (
 
   # the duration in nano seconds
   #
@@ -72,6 +72,11 @@ is
   # this duration in whole Julian years, omitting fractional part
   #
   public years => nanos / units.nanos_per_year
+
+
+  # this duration and another one combined
+  #
+  public infix + (other duration) => duration (nanos + other.nanos)
 
 
   # this duration multiplied by n

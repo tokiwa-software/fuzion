@@ -204,14 +204,14 @@ public class Block extends AbstractBlock
    */
   public Block visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.actionBefore(this, outer);
+    v.actionBefore(this);
     ListIterator<Expr> i = _expressions.listIterator();
     while (i.hasNext())
       {
         Expr e = i.next();
         i.set(e.visit(v, outer));
       }
-    v.actionAfter(this, outer);
+    v.actionAfter(this);
     return this;
   }
 
@@ -272,24 +272,24 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Check if this value might need boxing and wrap this into Box() if this is
-   * the case.
+   * Check if this value might need boxing or tagging and wrap this
+   * into Box()/Tag()/Tag(Box()) if this is the case.
    *
    * @param frmlT the formal type this is assigned to.
    *
    * @param context the source code context where this Expr is used
    *
-   * @return this or an instance of Box wrapping this.
+   * @return this or an instance of Box/Tag wrapping this.
    */
   @Override
-  Expr box(AbstractType frmlT, Context context)
+  Expr boxAndTag(AbstractType frmlT, Context context)
   {
     var r = removeResultExpression();
     if (CHECKS) check
       (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
     if (r != null)
       {
-        _expressions.add(r.box(frmlT, context));
+        _expressions.add(r.boxAndTag(frmlT, context));
       }
     return this;
   }
@@ -357,7 +357,7 @@ public class Block extends AbstractBlock
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -406,10 +406,9 @@ public class Block extends AbstractBlock
       .limit(_expressions.isEmpty() ? 0 : _expressions.size() - 1)
       .forEach(e -> {
         if (e.producesResult() &&
-            e.typeForInferencing() != null &&
-            e.typeForInferencing().compareTo(Types.resolved.t_unit) != 0 &&
-            !e.typeForInferencing().isVoid() &&
-            e.typeForInferencing() != Types.t_ERROR)
+            e.type().compareTo(Types.resolved.t_unit) != 0 &&
+            !e.type().isVoid() &&
+            e.type() != Types.t_ERROR)
           {
             AstErrors.unusedResult(e);
           }

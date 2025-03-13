@@ -145,7 +145,7 @@ public class Resolution extends ANY
     var c = f.context();
     return new FeatureVisitor()
       {
-        public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, c); }
+        @Override public AbstractType action(AbstractType t) { return t.resolve(Resolution.this, c); }
       };
   }
 
@@ -425,6 +425,10 @@ public class Resolution extends ANY
 
         Feature f = forType.removeFirst();
         if (DEBUG) sayDebug("resolve types: " + f);
+        if (f.isCotype())
+          {
+            resolveTypes(f.cotypeOrigin());
+          }
         f.internalResolveTypes(this);
       }
     else if (!moreThanTypes)

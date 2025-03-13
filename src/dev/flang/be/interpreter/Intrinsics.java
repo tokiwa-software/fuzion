@@ -27,30 +27,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
-import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 
 import static dev.flang.ir.IR.NO_SITE;
@@ -109,42 +95,6 @@ public class Intrinsics extends ANY
 
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
-
-  /**
-   * This contains all open files/streams.
-   */
-  private static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
-  {
-    @Override
-    protected boolean close(AutoCloseable f) {
-      try
-      {
-        f.close();
-        return true;
-      }
-      catch(Throwable e)
-      {
-        return false;
-      }
-    }
-  };
-  private static Value _stdin  = new i64Value(_openStreams_.add(System.in ));
-  private static Value _stdout = new i64Value(_openStreams_.add(System.out));
-  private static Value _stderr = new i64Value(_openStreams_.add(System.err));
-
-
-  /**
-   * This contains all open processes.
-   */
-  private static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
-  {
-    @Override
-    protected boolean close(Process p) {
-      if(PRECONDITIONS) require
-        (p != null);
-      return true;
-    }
-  };
 
   /**
    * This contains all started threads.
@@ -412,7 +362,7 @@ public class Intrinsics extends ANY
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
-              var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
+              var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
 
               String clName =                          (String) clNameI._javaRef;
               String name   = nameI   == null ? null : (String) nameI._javaRef;
@@ -444,7 +394,7 @@ public class Intrinsics extends ANY
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var res = Interpreter
-            .getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false)
+            .getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false)
             .arrayData()
             ._array;
           return new JavaRef(res);
@@ -454,71 +404,29 @@ public class Intrinsics extends ANY
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().clazz_fuzionSysArray_u8_data(), sac, argz, false);
-          var str = utf8ByteArrayDataToString(argzData);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(str, resultClazz);
+          var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
+          return new JavaRef(utf8ByteArrayDataToString(argzData));
         });
     putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) ((JavaRef)args.get(1))._javaRef;
           return Interpreter.boxedConstString(javaString == null ? "--null--" : javaString);
         });
-    putUnsafe("fuzion.java.i8_to_java_object", (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.java.primitive_to_java_object", (executor, innerClazz) -> args ->
         {
-          var b = args.get(1).i8Value();
-          var jb = Byte.valueOf((byte) b);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(jb, resultClazz);
-        });
-    putUnsafe("fuzion.java.u16_to_java_object", (executor, innerClazz) -> args ->
-        {
-          var c = args.get(1).u16Value();
-          var jc = Character.valueOf((char) c);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(jc, resultClazz);
-        });
-    putUnsafe("fuzion.java.i16_to_java_object", (executor, innerClazz) -> args ->
-        {
-          var s = args.get(1).i16Value();
-          var js = Short.valueOf((short) s);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(js, resultClazz);
-        });
-    putUnsafe("fuzion.java.i32_to_java_object", (executor, innerClazz) -> args ->
-        {
-          var i = args.get(1).i32Value();
-          var ji = Integer.valueOf(i);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(ji, resultClazz);
-        });
-    putUnsafe("fuzion.java.i64_to_java_object", (executor, innerClazz) -> args ->
-        {
-          var l = args.get(1).i64Value();
-          var jl = Long.valueOf(l);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(jl, resultClazz);
-        });
-    putUnsafe("fuzion.java.f32_to_java_object", (executor, innerClazz) -> args ->
-        {
-          var f32 = args.get(1).f32Value();
-          var jf = Float.valueOf(f32);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(jf, resultClazz);
-        });
-    putUnsafe("fuzion.java.f64_to_java_object", (executor, innerClazz) -> args ->
-        {
-          var d = args.get(1).f64Value();
-          var jd = Double.valueOf(d);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(jd, resultClazz);
-        });
-    putUnsafe("fuzion.java.bool_to_java_object", (executor, innerClazz) -> args ->
-        {
-          var b = args.get(1).boolValue();
-          var jb = Boolean.valueOf(b);
-          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
-          return JavaInterface.javaObjectToInstance(jb, resultClazz);
+          var res =  switch (executor.fuir().getSpecialClazz(executor.fuir().clazzActualGeneric(innerClazz, 0)))
+          {
+            case c_bool -> Boolean  .valueOf(args.get(1).boolValue());
+            case c_f32  -> Float    .valueOf(args.get(1).f32Value());
+            case c_f64  -> Double   .valueOf(args.get(1).f64Value());
+            case c_i16  -> Short    .valueOf((short)args.get(1).i16Value());
+            case c_i32  -> Integer  .valueOf(args.get(1).i32Value());
+            case c_i64  -> Long     .valueOf(args.get(1).i64Value());
+            case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
+            case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
+            default -> throw new Error("NYI");
+          };
+          return new JavaRef(res);
         });
     put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
@@ -737,11 +645,9 @@ public class Intrinsics extends ANY
     put("f32.infix /"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() /  args.get(1).f32Value())));
     put("f32.infix %"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
     put("f32.infix **"          , (executor, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
-    put("f32.infix ="           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() == args.get(1).f32Value())));
-    put("f32.infix <="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <= args.get(1).f32Value())));
-    put("f32.infix >="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >= args.get(1).f32Value())));
-    put("f32.infix <"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() <  args.get(1).f32Value())));
-    put("f32.infix >"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f32Value() >  args.get(1).f32Value())));
+    put("f32.type.equal"        , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() == args.get(2).f32Value())));
+    put("f32.type.lower_than_or_equal"
+                                , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() <= args.get(2).f32Value())));
     put("f32.as_f64"            , (executor, innerClazz) -> args -> new f64Value((double)                                    args.get(0).f32Value() ));
     put("f32.cast_to_u32"       , (executor, innerClazz) -> args -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())));
     put("f64.prefix -"          , (executor, innerClazz) -> args -> new f64Value (                (                       -  args.get(0).f64Value())));
@@ -751,11 +657,9 @@ public class Intrinsics extends ANY
     put("f64.infix /"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())));
     put("f64.infix %"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
     put("f64.infix **"          , (executor, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
-    put("f64.infix ="           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())));
-    put("f64.infix <="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <= args.get(1).f64Value())));
-    put("f64.infix >="          , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())));
-    put("f64.infix <"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())));
-    put("f64.infix >"           , (executor, innerClazz) -> args -> new boolValue(                (args.get(0).f64Value() >  args.get(1).f64Value())));
+    put("f64.type.equal"        , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() == args.get(2).f64Value())));
+    put("f64.type.lower_than_or_equal"
+                                , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() <= args.get(2).f64Value())));
     put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
@@ -817,96 +721,6 @@ public class Intrinsics extends ANY
 
           return result;
         });
-
-    putUnsafe("fuzion.sys.process.create"  , (executor, innerClazz) -> args -> {
-      var process_and_args = Arrays
-        .stream(((Value[])args.get(1).arrayData()._array))
-        .limit(args.get(2).i32Value()-1)
-        .map(x -> utf8ByteArrayDataToString(x))
-        .collect(Collectors.toList());
-
-      var env_vars = Arrays
-        .stream(((Value[])args.get(3).arrayData()._array))
-        .limit(args.get(4).i32Value()-1)
-        .map(x -> utf8ByteArrayDataToString(x))
-        .collect(Collectors.toMap((x -> x.split("=")[0]), (x -> x.split("=")[1])));
-
-      var result = (long[])args.get(5).arrayData()._array;
-      try
-        {
-          var pb = new ProcessBuilder()
-                              .command(process_and_args);
-
-          pb.environment().putAll(env_vars);
-
-          var process = pb.start();
-
-          result[0] = _openProcesses_.add(process);
-          result[1] = _openStreams_.add(process.getOutputStream());
-          result[2] = _openStreams_.add(process.getInputStream());
-          result[3] = _openStreams_.add(process.getErrorStream());
-          return new i32Value(0);
-        }
-      catch (Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.process.wait"    , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      var p = _openProcesses_.get(desc);
-      try
-        {
-          var result = p.waitFor();
-          _openProcesses_.remove(desc);
-          return new i32Value(result);
-        }
-      catch(Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.pipe.read"       , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      var buff = (byte[])args.get(2).arrayData()._array;
-      var is = (InputStream) _openStreams_.get(desc);
-      try
-        {
-          var readBytes = is.read(buff);
-
-          return readBytes == -1
-            ? new i32Value(0)
-            : new i32Value(readBytes);
-        }
-      catch (Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.pipe.write"      , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      var buff = (byte[])args.get(2).arrayData()._array;
-      var os = (OutputStream) _openStreams_.get(desc);
-      try
-        {
-          os.write(buff);
-          return new i32Value(buff.length);
-        }
-      catch (Throwable e)
-        {
-          return new i32Value(-1);
-        }
-    });
-
-    put("fuzion.sys.pipe.close"      , (executor, innerClazz) -> args -> {
-      var desc = args.get(1).i64Value();
-      return _openStreams_.remove(desc)
-        ? new i32Value(0)
-        : new i32Value(-1);
-    });
 
     /* NYI: UNDER DEVELOPMENT: abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
       replace by returnOutcome like in jvm backend.
@@ -1002,7 +816,7 @@ public class Intrinsics extends ANY
       {
         var fuir = executor.fuir();
         var in  = fuir.clazzOriginalName(innerClazz);
-        int ecl = fuir.effectTypeFromInstrinsic(innerClazz);
+        int ecl = fuir.effectTypeFromIntrinsic(innerClazz);
         var ev  = args.size() > 1 ? args.get(1) : null;
         var effects = FuzionThread.current()._effects;
         switch (in)
@@ -1052,14 +866,6 @@ public class Intrinsics extends ANY
         return Value.EMPTY_VALUE;
       };
   }
-
-
-  @SuppressWarnings("unchecked")
-  private static Iterator<Path> getIterator(long v)
-  {
-    return (Iterator<Path>)_openStreams_.get(v);
-  }
-
 
   /**
    * Get InetSocketAddress of TCP (SocketChannel) or UDP (DatagramChannel) channel.

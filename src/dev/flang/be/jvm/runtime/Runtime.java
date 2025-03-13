@@ -36,6 +36,7 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -504,7 +505,6 @@ public class Runtime extends ANY
   public static void effect_default(int id, AnyI instance)
   {
     var t = currentThread();
-    t.ensure_effect_capacity(id);
     if (t.effect_load(id) == null)
       {
         t.effect_store(id, instance);
@@ -534,7 +534,7 @@ public class Runtime extends ANY
    *
    * @param instance a new instance to replace the old one
    */
-  public static void effect_replace(int id, Any instance)
+  public static void effect_replace(int id, AnyI instance)
   {
     var t = currentThread();
 
@@ -1197,7 +1197,7 @@ public class Runtime extends ANY
 
 
   /**
-   * @param code the Unary instance to be executed
+   * @param code the Unary instance to be executed, i.e. the outer instance
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
@@ -1378,8 +1378,6 @@ public class Runtime extends ANY
     return Linker.nativeLinker()
       .downcallHandle(
         SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-          .or(SymbolLookup.loaderLookup())
-          .or(Linker.nativeLinker().defaultLookup())
           .find(str)
           .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
         desc);
@@ -1398,12 +1396,13 @@ public class Runtime extends ANY
     else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof MemorySegment) {}
-    else { throw new Error("NYI"); }
+    else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
+    else { throw new Error("NYI memorySegment2Obj: " + obj.getClass()); }
   }
 
 
   /**
-   * creates a new MemorySegment and copys
+   * creates a new MemorySegment and copies
    * content of object to the memory segment
    */
   public static MemorySegment obj2MemorySegment(Object obj)
@@ -1416,7 +1415,16 @@ public class Runtime extends ANY
     else if (obj instanceof float  [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
     else if (obj instanceof double [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
     else if (obj instanceof MemorySegment memSeg) { return memSeg; }
-    else { throw new Error("NYI"); }
+    else if (obj instanceof Object [] arr)
+      {
+        var argsArray = Arena.ofAuto().allocate(arr.length * 8);
+        for (int i = 0; i < arr.length; i++)
+          {
+            argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
+          }
+        return argsArray;
+      }
+    else { throw new Error("NYI obj2MemorySegment: " + obj.getClass()); }
 
   }
 

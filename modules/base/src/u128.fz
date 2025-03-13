@@ -30,7 +30,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u128) => u128.max -° u128.this < other
@@ -79,18 +79,8 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
      u128 p03<<32 0         )
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u128)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != u128.zero
-  => div other
-  public fixed redef infix % (other u128)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != u128.zero
-  => mod other
+  public fixed redef infix / (other u128) => div other
+  public fixed redef infix % (other u128) => mod other
 
   # division and remainder with crash in case of div-by-zero
   fixed div (other u128) u128 =>
@@ -249,7 +239,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # minimum
@@ -270,4 +260,3 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # identity element for 'infix *'
   #
   public fixed redef type.one => u128 0 1
-  

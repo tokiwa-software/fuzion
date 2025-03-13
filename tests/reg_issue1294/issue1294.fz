@@ -118,7 +118,7 @@ ex202 =>
 
   # using sum and map
   sum_map =>
-    sum := sum (a.map x->x*x)
+    sum := a.map x->x*x .sum
     say "sum is $sum"
 
   sum_map_fold =>
@@ -323,7 +323,7 @@ scenario8 is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
+    public redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -332,8 +332,8 @@ scenario8 is
 
     type.sum =>
       ref : Monoid num0.this
-        redef infix ∙ (a, b num0.this) => a.plus b
-        redef e => zero
+        public redef infix ∙ (a, b num0.this) => a.plus b
+        public redef e => zero
 
 
   # integer mod 2 implementation of num0

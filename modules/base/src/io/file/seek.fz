@@ -32,49 +32,23 @@ public seek(ps Seek_Handler) : effect is
   # returns an error in case of failure
   #
   public seek(
-       # the file descriptor
-       fd fuzion.sys.Pointer,
        # the offset to seek from the beginning of the stream pointer
        offset i64) =>
     replace
-    ps.seek fd offset
+    ps.seek offset
 
 
   # returns the current file-pointer offset as an outcome i64,
   # the offset is measured from the beginning of the file indicated by the file descriptor
   # returns the current offset in success and error in failure
   #
-  public file_position(
-                # the file descriptor
-                fd fuzion.sys.Pointer) =>
+  public file_position =>
     replace
-    ps.file_position fd
-
-
-# the default stream seeking
-#
-default_seek_handler : Seek_Handler is
-  redef seek(fd fuzion.sys.Pointer, offset i64) =>
-    fuzion.sys.fileio.seek fd offset
-
-  redef file_position(fd fuzion.sys.Pointer) =>
-    fuzion.sys.fileio.file_position fd
-
-
-# install default effect seek
-install_default_seek unit =>
-  (seek default_seek_handler).default
-
-
-# short-hand for accessing seek effect in current environment
-#
-module seek =>
-  install_default_seek
-  seek.env
+    ps.file_position
 
 
 # reference to the seek operations that could be provided
 #
 public Seek_Handler ref is
-  public seek(fd fuzion.sys.Pointer, offset i64) outcome unit => abstract
-  public file_position(fd fuzion.sys.Pointer) outcome i64 => abstract
+  public seek(offset i64) outcome unit => abstract
+  public file_position outcome i64 => abstract

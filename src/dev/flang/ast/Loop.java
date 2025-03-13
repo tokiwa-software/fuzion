@@ -287,8 +287,8 @@ public class Loop extends ANY
       }
 
     var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
-    // if there are no iteratees then else block may access every loop var.
-    // if there are iteratees we move else block to feature and
+    // if there are no iterates then else block may access every loop var.
+    // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
     if (_elseBlock0 != null && iterates())
       {
@@ -571,20 +571,20 @@ public class Loop extends ANY
   {
     return new FeatureVisitor() {
       @Override
-      public Expr action(Call c, AbstractFeature outer)
+      public Expr action(Call c)
       {
         if (c._target == null && names.contains(c._name))
           {
             c._name = prefix + c._name;
           }
-        return super.action(c, outer);
+        return super.action(c);
       }
 
       @Override
-      public Expr action(Function f, AbstractFeature outer)
+      public Expr action(Function f)
       {
-        f._expr.visit(this, outer);
-        return super.action(f, outer);
+        f._expr.visit(this, null);
+        return super.action(f);
       }
     };
   }

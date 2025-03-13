@@ -133,7 +133,7 @@ public class Choices extends ANY implements ClassFileConstants
     int units = 0;
     int refs = 0;
     boolean overlappingRefs = false;
-    for (var i = 0; i < _fuir.clazzNumChoices(cl); i++)
+    for (var i = 0; i < _fuir.clazzChoiceCount(cl); i++)
       {
         var tc = _fuir.clazzChoice(cl, i);
         if (!_fuir.clazzIsVoidType(tc))
@@ -188,7 +188,7 @@ public class Choices extends ANY implements ClassFileConstants
       (_fuir.clazzIsChoice(cl),
        kind(cl) == ImplKind.nullable);
 
-    var nc = _fuir.clazzNumChoices(cl);
+    var nc = _fuir.clazzChoiceCount(cl);
     for (var i = 0; i < nc; i++)
       {
         var tc = _fuir.clazzChoice(cl, i);
@@ -274,7 +274,7 @@ public class Choices extends ANY implements ClassFileConstants
 
               var gtn = _names.getTag(cl);
               ci.method(ACC_PUBLIC | ACC_ABSTRACT, gtn, "()I", new List<>());
-              var nc = _fuir.clazzNumChoices(cl);
+              var nc = _fuir.clazzChoiceCount(cl);
               for (var tagNum = 0; tagNum < nc; tagNum++)
                 {
                   var tc = _fuir.clazzChoice(cl, tagNum);
@@ -297,7 +297,7 @@ public class Choices extends ANY implements ClassFileConstants
               var bc_clinit = Expr.UNIT;
               var ut = new ClassType(cf._name);
               var uti = _types.javaType(cl);
-              for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+              for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
                 {
                   var tc = _fuir.clazzChoice(cl, i);
                   if (_fuir.clazzIsUnitType(tc))
@@ -347,7 +347,7 @@ public class Choices extends ANY implements ClassFileConstants
             }
           case general:
             {
-              for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+              for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
                 {
                   var tc = _fuir.clazzChoice(cl, i);
                   if (_fuir.clazzIsRef(tc))
@@ -397,11 +397,11 @@ public class Choices extends ANY implements ClassFileConstants
                  case unitlike, boollike, intlike -> true;
                  default -> false;
                },
-       tagNum >= 0 && tagNum < _fuir.clazzNumChoices(choice));
+       tagNum >= 0 && tagNum < _fuir.clazzChoiceCount(choice));
 
     int result = -1;
     int nonVoid = 0;
-    for (var i = 0; result < 0 && i < _fuir.clazzNumChoices(choice); i++)
+    for (var i = 0; result < 0 && i < _fuir.clazzChoiceCount(choice); i++)
       {
         var tc = _fuir.clazzChoice(choice, i);
         if (!_fuir.clazzIsVoidType(tc))
@@ -468,9 +468,7 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case boollike:
         {
-          var pos = jvm.reportErrorInCode("As per data flow analysis this code should be unreachable.");
-          var neg = jvm.reportErrorInCode("As per data flow analysis this code should be unreachable.");
-
+          Expr pos = null, neg = null;
           for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               var tags = _fuir.matchCaseTags(s, mc);
@@ -486,6 +484,8 @@ public class Choices extends ANY implements ClassFileConstants
                   }
                 }
             }
+          pos = pos != null ? pos : jvm.reportUnreachable(s, "bool pos");
+          neg = neg != null ? neg : jvm.reportUnreachable(s, "bool neg");
           code = sub
             .andThen(Expr.branch(O_ifeq, neg, pos));
           break;
@@ -522,9 +522,7 @@ public class Choices extends ANY implements ClassFileConstants
         }
       case nullable:
         {
-          var pos = Expr.POP.andThen(jvm.reportErrorInCode("As per data flow analysis this code should be unreachable."));
-          var neg = Expr.POP.andThen(jvm.reportErrorInCode("As per data flow analysis this code should be unreachable."));
-
+          Expr pos = null, neg = null;
           for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
             {
               var field = _fuir.matchCaseField(s, mc);
@@ -556,6 +554,8 @@ public class Choices extends ANY implements ClassFileConstants
                     }
                 }
             }
+          pos = pos != null ? pos : Expr.POP.andThen(jvm.reportUnreachable(s, "nullable pos"));
+          neg = neg != null ? neg : Expr.POP.andThen(jvm.reportUnreachable(s, "nullable neg"));
           code = sub                                                            // stack is sub
             .andThen(Expr.DUP)                                                  //          sub, sub
             .andThen(Expr.branch(O_ifnull,                                      //          sub
@@ -807,7 +807,7 @@ public class Choices extends ANY implements ClassFileConstants
     if (PRECONDITIONS) require
       (_fuir.clazzIsChoice(cl),
        kind(cl) == ImplKind.general,
-       0 <= tagNum && tagNum <= _fuir.clazzNumChoices(cl));
+       0 <= tagNum && tagNum <= _fuir.clazzChoiceCount(cl));
 
     return _names.choiceEntryName(cl, tagNum);
   }
@@ -828,7 +828,7 @@ public class Choices extends ANY implements ClassFileConstants
     if (PRECONDITIONS) require
       (_fuir.clazzIsChoice(cl),
        kind(cl) == ImplKind.general,
-       0 <= tagNum && tagNum <= _fuir.clazzNumChoices(cl));
+       0 <= tagNum && tagNum <= _fuir.clazzChoiceCount(cl));
 
     var tc = _fuir.clazzChoice(cl, tagNum);
     var ft = _fuir.clazzIsRef(tc) ? Names.ANYI_TYPE

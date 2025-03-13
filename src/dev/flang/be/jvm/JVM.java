@@ -31,6 +31,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.ClassFile;
@@ -1004,7 +1005,7 @@ should be avoided as much as possible.
     var rt = _fuir.clazzResultClazz(cl);
     cf.addToClInit(
       Expr
-        .stringconst(_fuir.clazzBaseName(cl))                                          // String
+        .stringconst(_fuir.clazzNativeName(cl))                                        // String
         .andThen(funDescArgs(cl))                                                      // String, (MemoryLayout), [MemoryLayout
         // invoking: FunctionDescriptor.of(...) / FunctionDescriptor.ofVoid(...)
         .andThen(Expr.invokeStatic(
@@ -1088,24 +1089,19 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      case c_sys_ptr -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS",
-        new ClassType("java/lang/foreign/AddressLayout"));
-      default -> {
-        Errors.fatal("NYI: CodeGen.layout " + _fuir.getSpecialClazz(c));
-        yield null;
-      }
+      default -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT);
       };
   }
 
 
   int current_index(int cl)
   {
-    if (_types.isScalar(cl))
+    if (_fuir.isScalar(cl))
       {
         return 0;
       }
     var o = _fuir.clazzOuterClazz(cl);
-    var l = _types.hasOuterRef(cl) ? (_types.isScalar(o) ? _types.javaType(o).stackSlots()  // outer of scalars like i64 are just copies of the value
+    var l = _types.hasOuterRef(cl) ? (_fuir.isScalar(o) ? _types.javaType(o).stackSlots()  // outer of scalars like i64 are just copies of the value
                                                          : 1)
                                    : 0;
     for (var j = 0; j < _fuir.clazzArgCount(cl); j++)
@@ -1138,7 +1134,7 @@ should be avoided as much as possible.
   Expr prolog(int cl)
   {
     var result = Expr.UNIT;
-    if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
+    if (!_fuir.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
         var vti = _types.resultType(cl).vti();
         result = result.andThen(new0(cl))
@@ -1289,6 +1285,21 @@ should be avoided as much as possible.
     return Expr.stringconst(msg)
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
       .andThen(Expr.endless_loop());
+  }
+
+
+  /**
+   * Create code that is supposed to be unreachable.
+   *
+   * @param site a site index where this unreachable code occured
+   *
+   * @param msg some text explaining what kind of statement we are trying to execute.
+   *
+   * @return an Expr to reprot the error and exit(1).
+   */
+  Expr reportUnreachable(int site, String msg)
+  {
+    return reportErrorInCode("As per data flow analysis this code should be unreachable. " + msg + " " + _fuir.siteAsString(site));
   }
 
 
@@ -1745,13 +1756,18 @@ should be avoided as much as possible.
    */
   boolean fieldExists(int field)
   {
-    var occ   = _fuir.clazzOuterClazz(field);
-    var rt = _fuir.clazzResultClazz(field);
+    var result = false;
+    if (field != NO_CLAZZ)
+      {
+        var occ   = _fuir.clazzOuterClazz(field);
+        var rt = _fuir.clazzResultClazz(field);
 
-    return _fuir.hasData(rt)       &&
-      !_types.isScalar(occ)        &&
-      _types.clazzNeedsCode(field) &&
-      _types.resultType(rt) != PrimitiveType.type_void;
+        result = _fuir.hasData(rt)       &&
+          !_fuir.isScalar(occ)        &&
+          _types.clazzNeedsCode(field) &&
+          _types.resultType(rt) != PrimitiveType.type_void;
+      }
+    return result;
   }
 
 
@@ -1838,7 +1854,7 @@ should be avoided as much as possible.
           .andThen(LOAD_UNIVERSE);
       }
     return
-      _types.isScalar(occ)      ? tvalue :   // reading, e.g., `val` field from `i32` is identity operation
+      _fuir.isScalar(occ)      ? tvalue :   // reading, e.g., `val` field from `i32` is identity operation
       _fuir.clazzIsVoidType(rt) ? null       // NYI: UNDER DEVELOPMENT: this should not be possible, a field of type void is guaranteed to be uninitialized!
                                 : tvalue.getFieldOrUnit(_names.javaClass(occ),
                                                         _names.field(f),
@@ -1851,16 +1867,16 @@ should be avoided as much as possible.
    *
    * @param s site of the assignment or NO_SITE if this is a call in an interface method stub.
    *
-   * @param tvalue the target value that contains the field
-   *
    * @param f the field
-   *
-   * @param value the new value for the field
    *
    * @param rt the type of the field.
    *
+   * @param tvalue the target value that contains the field
+   *
+   * @param value the new value for the field
+   *
    */
-  Expr assignField(int s, Expr tvalue, int f, Expr value, int rt)
+  Expr assignField(int s, int f, int rt, Expr tvalue, Expr value)
   {
     if (CHECKS) check
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse(),
@@ -1892,7 +1908,7 @@ should be avoided as much as possible.
       {
         res = Expr.comment("Not setting field `" + _fuir.clazzAsString(f) + "`: "+
                            (!_fuir.hasData(rt)       ? "type `" + _fuir.clazzAsString(rt) + "` is a unit type" :
-                            _types.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
+                            _fuir.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
                                                  : "FUIR.clazzNeedsCode() is false for this field"))
           // make sure we evaluate tvalue and value:
           .andThen(tvalue.drop())
@@ -1931,7 +1947,7 @@ should be avoided as much as possible.
   {
     if (!_fuir.clazzIsRef(rt) &&
         (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
-        !_types.isScalar(rt) &&
+        !_fuir.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();
@@ -1951,7 +1967,7 @@ should be avoided as much as possible.
               .andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int))
               .andThen(Expr.putfield(cc, Names.TAG_NAME, PrimitiveType.type_int));
             var hasref = false;
-            for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
+            for (int i = 0; i < _fuir.clazzChoiceCount(rt); i++)
               {
                 var tc = _fuir.clazzChoice(rt, i);
                 if (_fuir.clazzIsRef(tc))
@@ -1985,7 +2001,7 @@ should be avoided as much as possible.
           }
         else
           {
-            for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+            for (var i = 0; i < _fuir.clazzFieldCount(rt); i++)
               {
                 var fi = _fuir.clazzField(rt, i);
                 if (fieldExists(fi))
@@ -2156,7 +2172,7 @@ should be avoided as much as possible.
                                        Expr.iconst(1),
                                        Expr.iconst(0)));
                 var hasref = false;
-                for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
+                for (int i = 0; i < _fuir.clazzChoiceCount(rt); i++)
                   {
                     var tc = _fuir.clazzChoice(rt, i);
                     if (_fuir.clazzIsRef(tc))
@@ -2202,10 +2218,10 @@ should be avoided as much as possible.
             else // not a choice, so a 'normal' product type
               {
                 if (CHECKS) check
-                  (_fuir.clazzNumFields(rt) > 0);  // unit-types where handled above
+                  (_fuir.clazzFieldCount(rt) > 0);  // unit-types where handled above
 
                 var count = 0;
-                for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+                for (var i = 0; i < _fuir.clazzFieldCount(rt); i++)
                   {
                     var fi = _fuir.clazzField(rt, i);
                     if (fieldExists(fi))
