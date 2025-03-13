@@ -194,45 +194,45 @@
 >   public void process(int s, Stack<VALUE> stack)
 557d545
 <     RESULT res;
-570c558
+572c560
 <               res = _processor.assign(s, tvalue, avalue);
 ---
 >               _processor.assign(s, tvalue, avalue);
-574,575c562,563
+576,577c564,565
 <               res = _processor.sequence(new List<>(_processor.drop(tvalue, tc),
 <                                                     _processor.drop(avalue, ft)));
 ---
 >               _processor.drop(tvalue, tc);
 >               _processor.drop(avalue, ft);
-586c574
+588c576
 <               res = _processor.comment("Box is a NOP, clazz is already a ref");
 ---
 >               _processor.comment("Box is a NOP, clazz is already a ref");
-592,593c580
+594,595c582
 <               push(stack, rc, r.v0());
 <               res = r.v1();
 ---
 >               push(stack, rc, r);
-604c591
+606c593
 <           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
 ---
 >           if (r == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
-611c598
+613c600
 <               push(stack, rt, r.v0());
 ---
 >               push(stack, rt, r);
-613d599
+615d601
 <           res = r.v1();
-618c604
+620c606
 <           res = _processor.comment(_fuir.comment(s));
 ---
 >           _processor.comment(_fuir.comment(s));
-625,626c611
+627,628c613
 <           push(stack, cl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, cl, r);
-635,640c620
+637,642c622
 <           if (CHECKS) check
 <             // check that constant creation has no side effects.
 <             (r.v1() == _processor.nop());
@@ -241,29 +241,29 @@
 <           res = r.v1();
 ---
 >           push(stack, constCl, r);
-647,648c627,628
+649,650c629,630
 <           res = _processor.match(s, this, subv);
 <           if (_fuir.alwaysResultsInVoid(s))
 ---
 >           var r = _processor.match(s, this, subv);
 >           if (r == null)
-651a632,633
+653a634,635
 >           if (CHECKS) check
 >             (r == null || r == _processor.unitValue());
-663,664c645
+665,666c647
 <           push(stack, newcl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, newcl, r);
-678c659
+680c661
 <           res = _processor.drop(v, rt);
 ---
 >           _processor.drop(v, rt);
-684d664
+686d666
 <           res = null;
-693c673
+695c675
 <         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
 ---
 >         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
-695d674
+697d676
 <     return res;

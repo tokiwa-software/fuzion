@@ -567,6 +567,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var f = _fuir.accessedClazz(s);
           if (f != FUIR.NO_CLAZZ)  // field we are assigning to may be unused, i.e., -1
             {
+              if (CHECKS) check
+                (_fuir.hasData(ft));
               res = _processor.assign(s, tvalue, avalue);
             }
           else
