@@ -406,15 +406,12 @@ public class InlineArray extends ExprWithPos
 
     var et = elementType();
     var eT           = new List<AbstractType>(et);
-    var argsT        = new List<AbstractType>(et);
+    eT.freeze();
     var argsE        = new List<Expr>(new NumLiteral(_elements.size()));
-    var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion"              ).resolveTypes(context);
-    var sys          = new Call(SourcePosition.builtIn, fuzion, "sys"               ).resolveTypes(context);
-    var sysArrayCall = new Call(SourcePosition.builtIn, sys , "internal_array_init",
-                                FuzionConstants.NO_SELECT, argsT, argsE, null                              ).resolveTypes(context);
-    var fuzionT      = new ParsedType(SourcePosition.builtIn, "fuzion", UnresolvedType.NONE, null);
-    var sysT         = new ParsedType(SourcePosition.builtIn, "sys"   , UnresolvedType.NONE, fuzionT);
-    var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sysT);
+    var sys          = Types.resolved.fuzionSysCall(context);
+    var sysArrayCall = new Call(SourcePosition.builtIn, sys, "internal_array_init",
+                                FuzionConstants.NO_SELECT, eT, argsE, null).resolveTypes(context);
+    var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sys.calledFeature().selfType());
     var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
     var sysArrayVar  = new Feature(SourcePosition.builtIn, Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
     Resolution.instance()._module.findDeclarations(sysArrayVar, context.outerFeature());
@@ -422,29 +419,26 @@ public class InlineArray extends ExprWithPos
     Resolution.instance().resolveTypes();
     var sysArrayAssign = new Assign(SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);
     var exprs = new List<Expr>(sysArrayAssign);
+    var readSysArrayVar = new Call(SourcePosition.builtIn,
+                                   new Current(SourcePosition.notAvailable, context.outerFeature()),
+                                   sysArrayVar).resolveTypes(context);
     for (var i = 0; i < _elements.size(); i++)
       {
         var e = _elements.get(i);
-        var setArgs         = new List<Expr>(new NumLiteral(i),
-                                             e);
-        var readSysArrayVar = new Call(SourcePosition.builtIn, null           ,
-                                       sysArrayName                                 ).resolveTypes(context);
-        var setElement      = new Call(SourcePosition.builtIn, readSysArrayVar,
-                                        FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
-                                       setArgs                                      ).resolveTypes(context);
+        var setArgs    = new List<Expr>(new NumLiteral(i),
+                                        e);
+        var setElement = new Call(SourcePosition.builtIn, readSysArrayVar,
+                                  FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
+                                  setArgs).resolveTypes(context);
         exprs.add(setElement);
       }
-    var readSysArrayVar = new Call(SourcePosition.builtIn, null, sysArrayName              ).resolveTypes(context);
-    var unit1           = new Call(SourcePosition.builtIn, null, FuzionConstants.UNIT_NAME ).resolveTypes(context);
-    var unit2           = new Call(SourcePosition.builtIn, null, FuzionConstants.UNIT_NAME ).resolveTypes(context);
-    var unit3           = new Call(SourcePosition.builtIn, null, FuzionConstants.UNIT_NAME ).resolveTypes(context);
-    var sysArrArgsT     = new List<AbstractType>(et);
+    var unit = Types.resolved.unitCall(context);
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
-                                         unit1,
-                                         unit2,
-                                         unit3);
+                                         unit,
+                                         unit,
+                                         unit);
     var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, FuzionConstants.NO_SELECT,
-                                   sysArrArgsT,
+                                   eT,
                                    sysArrArgsE, null).resolveTypes(context);
     exprs.add(arrayCall);
 

@@ -36,6 +36,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 /*---------------------------------------------------------------------*/
 
@@ -121,7 +122,10 @@ public class Types extends ANY
   public static ResolvedType t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
-  public static Feature f_ERROR;
+  public static final Feature f_ERROR = new Feature(true)
+  {
+    @Override public AbstractType selfType() { return t_ERROR; };
+  };
 
   public static class Resolved
   {
@@ -326,6 +330,27 @@ public class Types extends ANY
           Resolution.instance().resolveTypes(t.feature());
         }
     }
+
+    private Call _unitCall;
+    public Call unitCall(Context context)
+    {
+      if (_unitCall == null)
+        {
+          _unitCall =  new Call(SourcePosition.builtIn, Universe.instance, Types.resolved.t_unit.feature()).resolveTypes(context);
+        }
+      return _unitCall;
+    }
+
+    private Call _fuzionSysCall;
+    public Call fuzionSysCall(Context context)
+    {
+      if (_fuzionSysCall == null)
+        {
+          var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion").resolveTypes(context);
+          _fuzionSysCall   = new Call(SourcePosition.builtIn, fuzion, "sys" ).resolveTypes(context);
+        }
+      return _fuzionSysCall;
+    }
   }
 
 
@@ -351,10 +376,6 @@ public class Types extends ANY
     t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
-    f_ERROR     = new Feature(true)
-      {
-        @Override public AbstractType selfType() { return t_ERROR; };
-      };
     _options    = options;
   }
 
