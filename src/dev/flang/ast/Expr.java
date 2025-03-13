@@ -59,7 +59,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * Dummy Expr value. Used e.g. in 'Actual' to represent non-existing value version
    * of the actual.
    */
-  public static Call NO_VALUE;
+  public static final Expr NO_VALUE = new Expr()
+  {
+    @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+    @Override public AbstractType type() { return Types.t_ERROR; }
+    @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+    @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
+  };
 
 
   /*-------------------------  static variables -------------------------*/
@@ -814,20 +820,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public boolean producesResult()
   {
     return true;
-  }
-
-
-  /**
-   * Reset static fields
-   */
-  public static void reset()
-  {
-    NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
-    {
-      @Override Expr boxAndTag(AbstractType frmlT, Context context) { return this; }
-      @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
-      @Override public AbstractType type() { return Types.t_ERROR; }
-    };
   }
 
 
