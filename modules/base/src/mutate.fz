@@ -92,7 +92,7 @@ public mutate : linear_effect is
     # `mutate.this`
     #
     is_currently_instated =>
-      match mutate.this.type.get_if_instated
+      match mutate.this.get_if_instated
         x mutate.this => my_id = x.id
         nil           => false
 

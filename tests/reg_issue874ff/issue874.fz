@@ -81,7 +81,7 @@ test_this3 is
         u := u32 0, u+1
       while num0.this.zero.lessThan x
 
-    redef as_string => "num0.this {to_u32_loop} 'as_string'"
+    public redef as_string => "num0.this {to_u32_loop} 'as_string'"
 
   intM5(v u8) : num0 is
     fixed redef type.zero => test_this3.intM5 0
@@ -112,7 +112,7 @@ test_this4 is
       else
         u
 
-    redef as_string => "num0.this {to_u32_loop} 'as_string'"
+    public redef as_string => "num0.this {to_u32_loop} 'as_string'"
 
 
   intM5(v u8) : num0 is
@@ -139,7 +139,7 @@ test_cov is
       x := n.this
       _ := x.p n.this
 
-    redef as_string => "{f}"
+    public redef as_string => "{f}"
 
   i(is_zero bool) : n is
     fixed redef p(other i) => other
@@ -180,7 +180,7 @@ test_cov2 is
       x := n.this
       _ := x.p n.this
 
-    redef as_string => "{f}"
+    public redef as_string => "{f}"
 
   i(is_zero bool) : n is
     fixed redef p(other i) => other
@@ -277,10 +277,10 @@ test_return_this =>
   a is
     x a.this =>
       a.this
-    redef as_string => $"a"
+    public redef as_string => $"a"
 
   b : a is
-    redef as_string => $"b"
+    public redef as_string => $"b"
 
   say a.x
   say b.x
@@ -293,10 +293,10 @@ test_return_this
 aaa is
   x aaa.this =>
     aaa.this
-  redef as_string => $"a"
+  public redef as_string => $"a"
 
 bbb : aaa is
-  redef as_string => $"b"
+  public redef as_string => $"b"
 
 say aaa.x
 say bbb.x
@@ -306,16 +306,16 @@ say bbb.x
 #
 q is
   b : aaa is
-    redef as_string => "q.b"
+    public redef as_string => "q.b"
 
 r is
   a is
     x a.this =>
       a.this
-    redef as_string => "r.a"
+    public redef as_string => "r.a"
 
 c : r.a is
-  redef as_string => $"c"
+  public redef as_string => $"c"
 
 say q.b.x
 say r.a.x
@@ -327,13 +327,13 @@ say c.x
 d is
   y => 3
   x d.this =>
-    redef as_string => $"d"
+    public redef as_string => $"d"
     d.this
 
 t is
   e : d is
     redef y := 4
-    redef as_string => "s.e"
+    public redef as_string => "s.e"
 
 _ := t.e.x.y
 
@@ -343,25 +343,25 @@ _ := t.e.x.y
 ua is
   x ua.this =>
     ua.this
-  redef as_string => $"a"
+  public redef as_string => $"a"
 
 ub : ua is
-  redef as_string => $"b"
+  public redef as_string => $"b"
 
 uq is
   v := "v"
   say v
   b : ua is
-    redef as_string => "q.b"
+    public redef as_string => "q.b"
 
 ur is
   a is
     x a.this =>
       a.this
-    redef as_string => "r.a"
+    public redef as_string => "r.a"
 
 uc : ur.a is
-  redef as_string => $"c"
+  public redef as_string => $"c"
 
 say ua.x
 say ub.x
@@ -382,10 +382,10 @@ test_generic_this_type is
     call_f =>
       f g.this
 
-    redef as_string => "g $T"
+    public redef as_string => "g $T"
 
   h : g bool is
-    redef as_string => $"h"
+    public redef as_string => $"h"
 
   a := g i32
   b := g i32

@@ -55,7 +55,7 @@ is
 
   # join all running threads
   #
-  redef finally =>
+  public redef finally =>
     running.for_each t->
       t.join
 

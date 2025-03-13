@@ -17,15 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test reg_issue2685
 #
 # -----------------------------------------------------------------------
 
-ex =>
-  read_line option String =>
+reg_issue2685 =>
 
-    (try unit String ()->
-      ref : String
-        public redef utf8 Sequence u8 =>
-          (list u8).empty
-    ).as_option
+  say 1E3
+
+  say 1P10
+
+  say 1e3   # 1. should flag an error: exponent indicator must be in upper case
+
+  say 1p10  # 2. should flag an error: exponent indicator must be in upper case

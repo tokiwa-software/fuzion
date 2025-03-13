@@ -30,7 +30,7 @@ public u16(public val u16) : num.wrap_around, has_interval, java_primitive is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg => !is_zero
 
   # would addition + other cause an overflow or underflow?
   public fixed redef overflow_on_add (other u16) => u16.max -° val < other
@@ -140,12 +140,12 @@ public u16(public val u16) : num.wrap_around, has_interval, java_primitive is
 
   # identity element for 'infix +'
   #
-  fixed redef type.zero u16 => 0
+  public fixed redef type.zero u16 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed redef type.one  u16 => 1
+  public fixed redef type.one  u16 => 1
 
 
   # equality
@@ -159,7 +159,7 @@ public u16(public val u16) : num.wrap_around, has_interval, java_primitive is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => u16 0xffff
+  public fixed redef type.all_bits_set => u16 0xffff
 
 
   # minimum

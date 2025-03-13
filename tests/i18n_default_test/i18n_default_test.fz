@@ -24,7 +24,7 @@
 i18n_default_test is
 
     h : envir.Vars_Handler is
-      redef get(v String) option String => "de_DE.UTF-8"
+      public redef get(v String) option String => "de_DE.UTF-8"
 
     (envir.vars h) ! ()->
 
@@ -34,4 +34,3 @@ i18n_default_test is
             say "{internationalization.provide.current.currency 300000}"
 
         main
-

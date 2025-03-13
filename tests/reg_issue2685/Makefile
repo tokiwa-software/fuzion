@@ -17,15 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-ex =>
-  read_line option String =>
-
-    (try unit String ()->
-      ref : String
-        public redef utf8 Sequence u8 =>
-          (list u8).empty
-    ).as_option
+override NAME = reg_issue2685
+include ../simple_and_negative.mk

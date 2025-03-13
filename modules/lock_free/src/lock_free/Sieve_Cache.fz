@@ -23,7 +23,7 @@
 
 
 Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic (option (lock_free.Node K V)), next concur.atomic (option (lock_free.Node K V))) ref is
-  redef as_string => "({pair.0},{pair.1})"
+  public redef as_string => "({pair.0},{pair.1})"
 
 
 # "SIEVE is a cache eviction algorithm that decides what to keep in the cache and what to discard.

@@ -71,7 +71,7 @@ is
 
   # create a sorted array from the elements of this set
   #
-  redef as_array => psm.as_key_array
+  public redef as_array => psm.as_key_array
 
 
   # check if an element equal to given element k is part of this set

@@ -46,7 +46,7 @@ is
     int num.plus uint.one
 
 
-  fixed redef prefix - int =>
+  public fixed redef prefix - int =>
     match ns
       num.plus => int num.minus n
       num.minus => int num.plus n
