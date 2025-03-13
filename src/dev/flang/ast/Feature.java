@@ -2066,7 +2066,9 @@ A ((Choice)) declaration must not contain a result type.
     ensureTypeSetsInitialized(res);
     if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.isFunctionTypeExcludingLazy()
-          || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()))
+          || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()
+          // NYI: BUG: check if array element type is valid
+          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array))
       {
         AstErrors.illegalNativeType(pos, "Argument type", at);
       }

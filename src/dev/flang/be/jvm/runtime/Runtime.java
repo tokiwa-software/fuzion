@@ -30,14 +30,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
+import java.lang.foreign.ValueLayout.OfBoolean;
+import java.lang.foreign.ValueLayout.OfByte;
+import java.lang.foreign.ValueLayout.OfChar;
+import java.lang.foreign.ValueLayout.OfDouble;
+import java.lang.foreign.ValueLayout.OfFloat;
+import java.lang.foreign.ValueLayout.OfInt;
+import java.lang.foreign.ValueLayout.OfLong;
+import java.lang.foreign.ValueLayout.OfShort;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1373,14 +1384,31 @@ public class Runtime extends ANY
       }
   }
 
-  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc)
+
+
+  /**
+   * Find the method handle of a native function
+   *
+   * @param str name of the function: e.g. sqlite3_exec
+   *
+   * @param desc the FunctionDescriptor of the function
+   *
+   * @return
+   */
+  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    return Linker.nativeLinker()
-      .downcallHandle(
-        SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-          .find(str)
-          .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
-        desc);
+    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto());
+    for (String library : libraries)
+      {
+        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), Arena.ofAuto()));
+      }
+    var memSeg = llu
+      .find(str)
+      .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str));
+
+    return Linker
+      .nativeLinker()
+      .downcallHandle(memSeg, desc);
   }
 
   /**
@@ -1396,6 +1424,13 @@ public class Runtime extends ANY
     else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof MemorySegment) {}
+    else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
+      {
+        for (int i = 0; i < arr.length; i++)
+          {
+            arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
+          }
+      }
     else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
     else { throw new Error("NYI memorySegment2Obj: " + obj.getClass()); }
   }
@@ -1425,7 +1460,244 @@ public class Runtime extends ANY
         return argsArray;
       }
     else { throw new Error("NYI obj2MemorySegment: " + obj.getClass()); }
+  }
 
+
+  public static Object native_array(MemoryLayout memLayout, Object obj, int length)
+  {
+    var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
+    if (memLayout instanceof OfByte o)
+      {
+        var result = new byte[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(o, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfBoolean ob)
+      {
+        var result = new boolean[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfChar ob)
+      {
+        var result = new char[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfDouble ob)
+      {
+        var result = new double[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfFloat ob)
+      {
+        var result = new float[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfInt ob)
+      {
+        var result = new int[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfLong ob)
+      {
+        var result = new long[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfShort ob)
+      {
+        var result = new short[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else
+      {
+        var ob = (AddressLayout)memLayout;
+        var result = new Object[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+  }
+
+
+  /**
+   * @param outerRef the outer reference that the Function.call needs
+   *                 or null if Function.call does not need an outer
+   *                 reference passed in
+   *
+   * @param call     the java class of the Function.call that we create an
+   *                 upcall for.
+   *
+   * @return An upcall which can be passed to other foreign functions as a function pointer
+   */
+  public static MemorySegment upcall(Any outerRef, Class call)
+  {
+    Method method = null;
+    for (var m : call.getDeclaredMethods())
+      {
+        if (m.getName().equals(ROUTINE_NAME))
+          {
+            method = m;
+          }
+      }
+    if (method == null)
+      {
+        Errors.fatal("Runtime.upcall, could not find method " + ROUTINE_NAME + " in " + call.toString());
+      }
+
+    MethodHandle handle;
+    try
+      {
+        handle = MethodHandles.lookup().unreflect(method);
+        if (outerRef != null)
+          {
+            handle = handle.bindTo(outerRef);
+          }
+        handle = MethodHandles
+          .explicitCastArguments(
+            handle,
+            MethodType.methodType(
+              handle
+                .type()
+                .returnType(),
+              handle
+                .type()
+                .parameterList()
+                .stream()
+                .map(c -> c.isPrimitive() ? c : MemorySegment.class)
+                .toArray(Class[]::new)
+            ));
+
+        var desc = method.getReturnType() == void.class
+          ? FunctionDescriptor.ofVoid(layout(handle.type().parameterArray()))
+          : FunctionDescriptor.of(layout(method.getReturnType()), layout(handle.type().parameterArray()));
+
+        return Linker
+          .nativeLinker()
+          .upcallStub(handle, desc, Arena.ofAuto());
+      }
+    catch (IllegalAccessException e)
+      {
+        Errors.fatal(e);
+      }
+    return null;
+  }
+
+
+  /**
+   * For segment extract the length of the NULL-terminated
+   * string.
+   *
+   * @param segment
+   *
+   * @return
+   */
+  public static int native_string_length(MemorySegment segment)
+  {
+    int length = 0;
+    segment = segment.reinterpret(10000 /* NYI: magic constant */);
+
+    while (segment.get(ValueLayout.JAVA_BYTE, length) != 0)
+      {
+        length++;
+      }
+
+    return length;
+  }
+
+
+  /**
+   * For a given java class get the native MemoryLayout.
+   *
+   * @param ct
+   * @return
+   */
+  public static MemoryLayout layout(Class ct)
+  {
+    if (PRECONDITIONS) require
+      (ct != void.class);
+
+    if (ct == boolean.class)
+      {
+        return ValueLayout.JAVA_BOOLEAN;
+      }
+    if (ct == byte.class)
+      {
+        return ValueLayout.JAVA_BYTE;
+      }
+    if (ct == char.class)
+      {
+        return ValueLayout.JAVA_CHAR;
+      }
+    if (ct == short.class)
+      {
+        return ValueLayout.JAVA_SHORT;
+      }
+    if (ct == int.class)
+      {
+        return ValueLayout.JAVA_INT;
+      }
+    if (ct == long.class)
+      {
+        return ValueLayout.JAVA_LONG;
+      }
+    if (ct == float.class)
+      {
+        return ValueLayout.JAVA_FLOAT;
+      }
+    if (ct == double.class)
+      {
+        return ValueLayout.JAVA_DOUBLE;
+      }
+    return ValueLayout.ADDRESS;
+  }
+
+
+  /**
+   * get the layouts for the given classes
+   *
+   * @param types
+   * @return
+   */
+  private static MemoryLayout[] layout(Class<?>[] types)
+  {
+    var result = new MemoryLayout[types.length];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i] = layout(types[i]);
+      }
+    return result;
   }
 
 

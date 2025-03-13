@@ -95,6 +95,7 @@ public class Fuzion extends Tool
   static String _cLink_ = null;
   static boolean _keepGeneratedCode_ = false;
   static String  _jvmOutName_ = null;
+  static String  _jvmLib_ = null;
 
 
   /**
@@ -197,13 +198,18 @@ public class Fuzion extends Tool
       boolean handleOption(Fuzion f, String o)
       {
         boolean result = false;
+        if (o.startsWith("-JLibraries="))
+          {
+            _jvmLib_ = o.substring(12);
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
         try
           {
-            new JVM(new JVMOptions(options, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+            new JVM(new JVMOptions(options, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty(), Optional.ofNullable(_jvmLib_)), fuir).compile();
           }
         catch (QuietThreadTermination e)
           {
@@ -234,11 +240,16 @@ public class Fuzion extends Tool
             _jvmOutName_ = o.substring(3);
             result = true;
           }
+        else if (o.startsWith("-JLibraries="))
+          {
+            _jvmLib_ = o.substring(12);
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, /* run */ false, /* save classes */ true, /* save JAR */ false, Optional.ofNullable(_jvmOutName_)), fuir).compile();
+        new JVM(new JVMOptions(options, /* run */ false, /* save classes */ true, /* save JAR */ false, Optional.ofNullable(_jvmOutName_), Optional.ofNullable(_jvmLib_)), fuir).compile();
       }
       boolean serializeFuir()
       {
@@ -261,11 +272,16 @@ public class Fuzion extends Tool
             _jvmOutName_ = o.substring(3);
             result = true;
           }
+        else if (o.startsWith("-JLibraries="))
+          {
+            _jvmLib_ = o.substring(12);
+            result = true;
+          }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, /* run */ false, /* save classes */ false, /* save JAR */ true, Optional.ofNullable(_jvmOutName_)), fuir).compile();
+        new JVM(new JVMOptions(options, /* run */ false, /* save classes */ false, /* save JAR */ true, Optional.ofNullable(_jvmOutName_), Optional.ofNullable(_jvmLib_)), fuir).compile();
       }
       boolean serializeFuir()
       {

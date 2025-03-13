@@ -64,7 +64,7 @@ else
     ulimit -S -t 120  || echo "failed setting limit via ulimit"
     ulimit -S -s 1024 || echo "failed setting limit via ulimit"
 
-    EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
+    EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -c ${FUZION_C_BACKEND_OPTIONS:+$FUZION_C_BACKEND_OPTIONS} "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
 
     # pipe to head may result in exit code 141 -- broken pipe.
     if [ "$EXIT_CODE" -ne 0   ] &&
