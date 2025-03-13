@@ -160,7 +160,7 @@ public memoize is
 
     private update(k,v) =>
       set store := store.add k v
-      memoized.this.type.replace memoized.this
+      memoized.this.replace memoized.this
 
 
   # use golabal memoized effect to retrieve the value for a given key or,
