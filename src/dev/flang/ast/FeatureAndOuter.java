@@ -137,19 +137,17 @@ public class FeatureAndOuter extends ANY
    *
    * @param pos source code position of the access
    *
-   * @param res Resolution instance
-   *
    * @param context the source code context where this access is used
    */
-  Expr target(SourcePosition pos, Resolution res, Context context)
+  Expr target(SourcePosition pos, Context context)
   {
     var outer = context.outerFeature();
     var t = new This(pos, outer, _outer);
     Expr result = t;
-    if (res.state(outer) != State.RESOLVING_INHERITANCE &&
-        res.state(outer) != State.RESOLVING)
+    if (Resolution.instance().state(outer) != State.RESOLVING_INHERITANCE &&
+        Resolution.instance().state(outer) != State.RESOLVING)
       {
-        result = t.resolveTypes(res, context);
+        result = t.resolveTypes(context);
       }
     return result;
   }

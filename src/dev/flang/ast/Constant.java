@@ -158,16 +158,13 @@ public abstract class Constant extends Expr
    *
    * Note that this does not perform resolveTypes on the results since that
    * would be too early during 1. but it is required in 2.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param expectedType the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
+  Expr propagateExpectedTypeForPartial(Context context, AbstractType expectedType)
   {
     return expectedType.isFunctionType() && expectedType.arity() == 0
       ? new Function(_pos, NO_EXPRS, this)

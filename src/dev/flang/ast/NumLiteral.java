@@ -793,18 +793,15 @@ public class NumLiteral extends Constant
    * a literal with a sign such as {@code -2} into a lambda of the form {@code x -> x - 2}.
    *
    * @see Expr#propagateExpectedTypeForPartial for details.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
    */
   @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedTypeForPartial(Context context, AbstractType t)
   {
-    Expr result = super.propagateExpectedTypeForPartial(res, context, t);
+    Expr result = super.propagateExpectedTypeForPartial(context, t);
     if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
@@ -827,10 +824,7 @@ public class NumLiteral extends Constant
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -839,7 +833,7 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Context context, AbstractType t)
   {
     // if expected type is choice, examine if there is exactly one numeric
     // constant type in choice generics, if so use that for further type
@@ -857,22 +851,19 @@ public class NumLiteral extends Constant
    * After propagateExpectedType: if type inference up until now has figured
    * out that a Lazy feature is expected, but the current expression is not
    * a Lazy feature, then wrap this expression in a Lazy feature.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
    */
   @Override
-  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Context context, AbstractType t)
   {
     if (t.isLazyType())
       {
-        propagateExpectedType(res, context, t.generics().get(0));
+        propagateExpectedType(context, t.generics().get(0));
       }
-    return super.wrapInLazy(res, context, t);
+    return super.wrapInLazy(context, t);
   }
 
 

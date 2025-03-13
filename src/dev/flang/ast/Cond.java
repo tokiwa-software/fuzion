@@ -124,14 +124,11 @@ public class Cond
    * During type inference: Inform the condition that it is used in an
    * environment that expects a bool type.
    *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
    * @param context the source code context where this Cond is used
    */
-  void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Context context)
   {
-    cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
+    cond = cond.propagateExpectedType(context, Types.resolved.t_bool);
   }
 
 

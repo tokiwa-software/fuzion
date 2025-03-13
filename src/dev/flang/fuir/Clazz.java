@@ -920,7 +920,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             for (var p: chain)
               {
-                fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+                fn = f.outer().handDown(f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
               }
           }
       }
@@ -2034,7 +2034,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         inh.size() > 0)
       {
         var typesa = new AbstractType[] { ft };
-        typesa = fouter.handDown(null, typesa, _outer.feature());
+        typesa = fouter.handDown(typesa, _outer.feature());
         types = new List<AbstractType>();
         for (var t : typesa)
           {

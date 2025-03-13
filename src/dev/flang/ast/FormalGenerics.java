@@ -165,11 +165,11 @@ public class FormalGenerics extends ANY
    *
    * @return a new array of the resolved generics
    */
-  public static List<AbstractType> resolve(Resolution res, List<AbstractType> generics, AbstractFeature outer)
+  public static List<AbstractType> resolve(List<AbstractType> generics, AbstractFeature outer)
   {
     if (!(generics instanceof FormalGenerics.AsActuals))
       {
-        generics = generics.map(t -> t.resolve(res, outer.context()));
+        generics = generics.map(t -> t.resolve(outer.context()));
       }
     return generics;
   }

@@ -101,7 +101,7 @@ public class Universe extends ExprWithPos
     return new UnresolvedType(SourcePosition.notAvailable, FuzionConstants.UNIVERSE_NAME, UnresolvedType.NONE, null)
     {
       @Override
-      AbstractType resolve(Resolution res, Context context, boolean tolerant)
+      AbstractType resolve(Context context, boolean tolerant)
       {
         return typeForInferencing();
       }

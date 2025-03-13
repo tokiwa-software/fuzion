@@ -150,10 +150,7 @@ public class Partial extends AbstractLambda
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -163,26 +160,23 @@ public class Partial extends AbstractLambda
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Context context, AbstractType t)
   {
     Expr result = this;
     t = t.functionTypeFromChoice(context);
-    var type = propagateTypeAndInferResult(res, context, t, false);
+    var type = propagateTypeAndInferResult(context, t, false);
     if (_function != null)
       {
-        result = _function.propagateExpectedType(res, context, type);
+        result = _function.propagateExpectedType(context, type);
       }
     return result;
   }
 
 
   /**
-   * Special version of propagateExpectedType(res, outer, t) tries to infer the
+   * Special version of propagateExpectedType(outer, t) tries to infer the
    * result type of a lambda.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -195,7 +189,7 @@ public class Partial extends AbstractLambda
    * case of error, return Types.t_ERROR.
    */
   @Override
-  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -219,7 +213,7 @@ public class Partial extends AbstractLambda
       }
     if (_function != null)
       {
-        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType);
+        result = _function.propagateTypeAndInferResult(context, t, inferResultType);
       }
     return result;
   }

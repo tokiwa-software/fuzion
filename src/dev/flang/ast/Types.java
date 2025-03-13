@@ -301,9 +301,9 @@ public class Types extends ANY
         });
       ((ArtificialBuiltInType) t_ERROR    ).resolveArtificialType(f_ERROR);
     }
-    Resolved(Resolution res, AbstractFeature universe)
+    Resolved(AbstractFeature universe)
     {
-      this(res._module, universe, true);
+      this(Resolution.instance()._module, universe, true);
 
       var internalTypes = new AbstractType[] {
         t_i8         ,
@@ -327,27 +327,27 @@ public class Types extends ANY
 
       for (var t : internalTypes)
         {
-          res.resolveTypes(t.feature());
+          Resolution.instance().resolveTypes(t.feature());
         }
     }
 
     private Call _unitCall;
-    public Call unitCall(Resolution res, Context context)
+    public Call unitCall(Context context)
     {
       if (_unitCall == null)
         {
-          _unitCall =  new Call(SourcePosition.builtIn, Universe.instance, Types.resolved.t_unit.feature()).resolveTypes(res, context);
+          _unitCall =  new Call(SourcePosition.builtIn, Universe.instance, Types.resolved.t_unit.feature()).resolveTypes(context);
         }
       return _unitCall;
     }
 
     private Call _fuzionSysCall;
-    public Call fuzionSysCall(Resolution res, Context context)
+    public Call fuzionSysCall(Context context)
     {
       if (_fuzionSysCall == null)
         {
-          var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion").resolveTypes(res, context);
-          _fuzionSysCall   = new Call(SourcePosition.builtIn, fuzion, "sys" ).resolveTypes(res, context);
+          var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion").resolveTypes(context);
+          _fuzionSysCall   = new Call(SourcePosition.builtIn, fuzion, "sys" ).resolveTypes(context);
         }
       return _fuzionSysCall;
     }

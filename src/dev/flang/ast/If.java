@@ -261,10 +261,7 @@ public class If extends ExprWithPos
    * this is a expression with several branches such as an "if" or a "match"
    * expression, add corresponding assignments in each branch and convert this
    * into a expression that does not produce a value.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param r the field this should be assigned to.
@@ -273,12 +270,12 @@ public class If extends ExprWithPos
    * that performs the assignment to r.
    */
   @Override
-  If assignToField(Resolution res, Context context, Feature r)
+  If assignToField(Context context, Feature r)
   {
-    block = block.assignToField(res, context, r);
+    block = block.assignToField(context, r);
     if (elseBlock != null)
       {
-        elseBlock = elseBlock.assignToField(res, context, r);
+        elseBlock = elseBlock.assignToField(context, r);
       }
     _assignedToField = true;
     return this;
@@ -290,17 +287,14 @@ public class If extends ExprWithPos
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    */
-  void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Context context)
   {
     if (cond != null)
       {
-        cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
+        cond = cond.propagateExpectedType(context, Types.resolved.t_bool);
       }
   }
 
@@ -310,10 +304,7 @@ public class If extends ExprWithPos
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -323,7 +314,7 @@ public class If extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Context context, AbstractType t)
   {
     // NYI: CLEANUP: there should be another mechanism, for
     // adding missing result fields instead of misusing
@@ -332,9 +323,9 @@ public class If extends ExprWithPos
 
     // This will trigger addFieldForResult in some cases, e.g.:
     // `match (if true then true else true) * =>`
-    cond = cond.propagateExpectedType(res, context, cond.type());
+    cond = cond.propagateExpectedType(context, cond.type());
 
-    return addFieldForResult(res, context, t);
+    return addFieldForResult(context, t);
   }
 
 
@@ -343,10 +334,8 @@ public class If extends ExprWithPos
    * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
    */
-  public Expr resolveSyntacticSugar2(Resolution res)
+  public Expr resolveSyntacticSugar2()
   {
     return typeForInferencing() == Types.t_ERROR
       ? this  // no need to possible produce more errors

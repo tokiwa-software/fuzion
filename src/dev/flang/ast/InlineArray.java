@@ -153,10 +153,7 @@ public class InlineArray extends ExprWithPos
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
    * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
+
    * @param context the source code context where this Expr is used
    *
    * @param t the expected type.
@@ -166,7 +163,7 @@ public class InlineArray extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Context context, AbstractType t)
   {
     if (_type == null)
       {
@@ -180,7 +177,7 @@ public class InlineArray extends ExprWithPos
             var li = _elements.listIterator();
             while (li.hasNext())
               {
-                li.set(li.next().propagateExpectedType(res, context, elementType));
+                li.set(li.next().propagateExpectedType(context, elementType));
               }
             var arr = Types.resolved.f_array;
             _type = arr.resultType()
@@ -393,11 +390,9 @@ public class InlineArray extends ExprWithPos
    * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
-   * @param res the resolution instance.
-   *
    * @param context the source code context where this Expr is used
    */
-  Expr resolveSyntacticSugar2(Resolution res, Context context)
+  Expr resolveSyntacticSugar2(Context context)
   {
     // elements may be boxed later
     // therefore wrap all elements in block
@@ -413,20 +408,20 @@ public class InlineArray extends ExprWithPos
     var eT           = new List<AbstractType>(et);
     eT.freeze();
     var argsE        = new List<Expr>(new NumLiteral(_elements.size()));
-    var sys          = Types.resolved.fuzionSysCall(res, context);
+    var sys          = Types.resolved.fuzionSysCall(context);
     var sysArrayCall = new Call(SourcePosition.builtIn, sys, "internal_array_init",
-                                FuzionConstants.NO_SELECT, eT, argsE, null).resolveTypes(res, context);
+                                FuzionConstants.NO_SELECT, eT, argsE, null).resolveTypes(context);
     var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sys.calledFeature().selfType());
     var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
     var sysArrayVar  = new Feature(SourcePosition.builtIn, Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
-    res._module.findDeclarations(sysArrayVar, context.outerFeature());
-    res.resolveDeclarations(sysArrayVar);
-    res.resolveTypes();
-    var sysArrayAssign = new Assign(res, SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);
+    Resolution.instance()._module.findDeclarations(sysArrayVar, context.outerFeature());
+    Resolution.instance().resolveDeclarations(sysArrayVar);
+    Resolution.instance().resolveTypes();
+    var sysArrayAssign = new Assign(SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);
     var exprs = new List<Expr>(sysArrayAssign);
     var readSysArrayVar = new Call(SourcePosition.builtIn,
                                    new Current(SourcePosition.notAvailable, context.outerFeature()),
-                                   sysArrayVar).resolveTypes(res, context);
+                                   sysArrayVar).resolveTypes(context);
     for (var i = 0; i < _elements.size(); i++)
       {
         var e = _elements.get(i);
@@ -434,17 +429,17 @@ public class InlineArray extends ExprWithPos
                                         e);
         var setElement = new Call(SourcePosition.builtIn, readSysArrayVar,
                                   FuzionConstants.FEATURE_NAME_INDEX_ASSIGN,
-                                  setArgs).resolveTypes(res, context);
+                                  setArgs).resolveTypes(context);
         exprs.add(setElement);
       }
-    var unit = Types.resolved.unitCall(res, context);
+    var unit = Types.resolved.unitCall(context);
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
                                          unit,
                                          unit,
                                          unit);
     var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, FuzionConstants.NO_SELECT,
                                    eT,
-                                   sysArrArgsE, null).resolveTypes(res, context);
+                                   sysArrArgsE, null).resolveTypes(context);
     exprs.add(arrayCall);
 
     // we do not "replace" this inline array by instantiation code

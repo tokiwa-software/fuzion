@@ -155,13 +155,11 @@ public abstract class AbstractCall extends Expr
    *
    * @param p the source position
    *
-   * @param res Resolution instance used to resolve types in this call.
-   *
    * @param that the original feature that is used to lookup types.
    *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call typeCall(SourcePosition p, Resolution res, AbstractFeature that)
+  Call typeCall(SourcePosition p, AbstractFeature that)
   {
     var selfType = new ParsedType(pos(),
                                   FuzionConstants.COTYPE_THIS_TYPE,
@@ -201,7 +199,7 @@ public abstract class AbstractCall extends Expr
           }
       }
 
-    return calledFeature().typeCall(p, typeParameters, res, that, target());
+    return calledFeature().typeCall(p, typeParameters, that, target());
   }
 
 
