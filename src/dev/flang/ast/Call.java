@@ -1729,7 +1729,7 @@ public class Call extends AbstractCall
         // the types of the actuals:
         if (!missing.isEmpty() &&
             (!Errors.any() ||
-            !_actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR)))
+            _actuals.stream().allMatch(x -> x.type() != Types.t_ERROR)))
           {
             AstErrors.failedToInferActualGeneric(pos(),cf, missing);
           }
