@@ -696,6 +696,37 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Does this type depend on generics?
+   * The outer of this type may still depend on generics
+   */
+  public boolean dependsOnGenericsNoOuter()
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    boolean result = false;
+    if (isGenericArgument())
+      {
+        result = true;
+      }
+    else
+      {
+        for (var t: generics())
+          {
+            if (CHECKS) check
+              (Errors.any() || t != null);
+            if (t != null &&
+                t.dependsOnGenerics())
+              {
+                result = true;
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Does this type (or its outer type) depend on generics. If not, applyTypePars()
    * will not need to do anything on this.
    */
@@ -736,24 +767,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         _dependsOnGenerics = result;
       }
     return result == YesNo.yes;
-  }
-
-
-  /**
-   * Does this type (or its outer type) depend on generics except the implicit
-   * THIS_TYPE used for type features?
-   *
-   * NYI: HACK: This is a workaround for #3160 that is used in the air package
-   * instead of dependsOnGenerics() temporarily until we have a proper fix.
-   */
-  public boolean dependsOnGenericsExceptTHIS_TYPE()
-  {
-    var res =
-      dependsOnGenerics()  &&
-      (    isGenericArgument() && !isThisTypeInCotype()
-       || !isGenericArgument() && (generics().stream().anyMatch(t -> t.dependsOnGenericsExceptTHIS_TYPE()) ||
-                                   outer() != null && outer().dependsOnGenericsExceptTHIS_TYPE()));
-    return res;
   }
 
 
