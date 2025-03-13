@@ -298,7 +298,7 @@ private slot(T type) : choice reserved unused T is
       reserved => "reserved"
 
 
-# effect that will be installed by `expanding_array.expand` will running `filler`
+# effect that will be installed by `expanding_array.expand` when running `filler`
 #
 private:public expanding(T type,
                          data fuzion.sys.internal_array (container.slot T),
