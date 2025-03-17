@@ -90,7 +90,45 @@ is
   # create a string representation of this duration.
   #
   public redef as_string String =>
-    "NYI"
+    lm : mutate.
+    lm ! ()->
+      is_positive := lm.env.new bool false
+      time_prefix := lm.env.new bool false
+      s := lm.env.new String "P"
+
+      with_time_prefix (x String) =>
+        if !time_prefix.get
+          time_prefix <- true
+          "{s.get}T{x}"
+        else
+          "{s.get}{x}"
+
+      if years > 0
+        s <- "{s.get}{years}Y"
+        is_positive <- true
+
+      if months > 0
+        s <- "{s.get}{months}M"
+        is_positive <- true
+
+      if days > 0
+        s <- "{s.get}{days}D"
+        is_positive <- true
+
+      if hours > 0
+        s <- with_time_prefix "{hours}H"
+        is_positive <- true
+
+      if minutes > 0
+        s <- with_time_prefix "{minutes}M"
+        is_positive <- true
+
+      if (seconds > 0 || !is_positive.get) && nanos = 0
+        s <- with_time_prefix "{seconds}S"
+      else if nanos != 0
+        s <- with_time_prefix "{seconds}.{nanos.as_string 9 10}S"
+
+      s.get
 
 
   # total order
