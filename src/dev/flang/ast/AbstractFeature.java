@@ -269,7 +269,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * resultType returns the result type of this feature using.
    *
    * @return the result type, t_ERROR in case of an error.
-   * Never null. Never is or contains t_UNDEFINED.
+   * Never null.
    */
   public abstract AbstractType resultType();
 

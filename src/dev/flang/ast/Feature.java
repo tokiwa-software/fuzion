@@ -2393,7 +2393,7 @@ A ((Choice)) declaration must not contain a result type.
    * feature using the formal generic argument.
    *
    * @return the result type, t_ERROR in case of an error.
-   * Never null. Never is or contains t_UNDEFINED.
+   * Never null.
    */
   @Override
   public AbstractType resultType()
@@ -2407,7 +2407,7 @@ A ((Choice)) declaration must not contain a result type.
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || result != Types.t_ERROR,
-       !result.containsUndefined(false));
+       Errors.any() || !result.containsUndefined(false));
 
     return result;
   }
