@@ -1863,6 +1863,25 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
+  protected boolean isRecordLike()
+  {
+    return isConstructor()
+      && !isRef()
+      && !hasOuterRef()
+      && typeArguments().isEmpty()
+      && inherits().size() == 1
+      && contract() == Contract.EMPTY_CONTRACT
+      && (code() instanceof Block b && b._expressions.isEmpty())
+      && valueArguments()
+        .stream()
+        .map(va -> va.resultType())
+        .allMatch(rt ->
+             Types.resolved.numericTypes.contains(rt)
+             || true
+             || !rt.isGenericArgument() && rt.feature().isRecordLike());
+  }
+
+
 }
 
 /* end of file */
