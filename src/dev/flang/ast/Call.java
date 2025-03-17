@@ -1080,7 +1080,7 @@ public class Call extends AbstractCall
     var result = typeForInferencing();
     if (result == null)
       {
-        result = Types.t_UNDEFINED;
+        result = Types.t_ERROR;
       }
     return result;
   }
@@ -1372,6 +1372,10 @@ public class Call extends AbstractCall
     else if (!genericSizesMatch())
       {
         result = Types.t_ERROR;
+      }
+    else if (_generics.contains(Types.t_UNDEFINED))
+      {
+        result = null;
       }
     else
       {
@@ -2496,7 +2500,8 @@ public class Call extends AbstractCall
     var t = getActualResultType(res, context, false);
 
     if (CHECKS) check
-      (_type == null || t.compareTo(_type) == 0);
+      (_type == null || t.compareTo(_type) == 0,
+       t != Types.t_UNDEFINED);
 
     _type = t;
 
