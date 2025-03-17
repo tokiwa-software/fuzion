@@ -554,6 +554,7 @@ public class Impl extends ANY
         if (_initialCalls.size() == 0)
           {
             AstErrors.noActualCallFound(formalArg);
+            result = Types.t_ERROR;
           }
         else if (result == Types.t_ERROR)
           {
