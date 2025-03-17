@@ -1940,7 +1940,7 @@ operatorExpr  : opExpr
 opExpr      :     opTail
             | ops opTail
             | op
-            | dot call
+            | callTail
             ;
    */
   Expr opExpr(boolean mayUseCommas)
@@ -1962,8 +1962,7 @@ opExpr      :     opTail
       }
     else
       {
-        return Partial.dotCall(tokenSourcePos(), a -> current() == Token.t_numliteral ? select(a, null)
-                                                                                      : pureCall(a));
+        return Partial.dotCall(tokenSourcePos(), a -> callTail(true, a));
       }
   }
 

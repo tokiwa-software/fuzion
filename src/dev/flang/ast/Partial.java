@@ -132,7 +132,7 @@ public class Partial extends AbstractLambda
    *
    * @return the corresponding lambda expression.
    */
-  public static Function dotCall(SourcePosition pos, java.util.function.Function<Call,Call> call)
+  public static Function dotCall(SourcePosition pos, java.util.function.Function<Expr,Expr> call)
   {
     var a = argName(pos);
     var c = call.apply(a);
