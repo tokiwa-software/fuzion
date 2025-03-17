@@ -1876,7 +1876,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-       if (outer() instanceof Feature o)
+        if (outer() instanceof Feature o)
           {
             o.typeInference(res);
           }
@@ -2354,7 +2354,8 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, urgent);
+        _resultType = _impl.inferredType(res, this, urgent);
+        result = _resultType;
       }
     else if (_returnType.isConstructorType())
       {
