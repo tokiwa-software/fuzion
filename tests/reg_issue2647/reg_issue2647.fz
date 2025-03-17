@@ -24,6 +24,6 @@
 reg_issue2647 =>
 
   a(ELEMENT_TYPE type...) is
-      redef as_string => ELEMENT_TYPE.as_string
+      public redef as_string => ELEMENT_TYPE.as_string
 
   say (a 3)

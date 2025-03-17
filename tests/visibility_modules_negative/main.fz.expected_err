@@ -14,7 +14,7 @@ To solve this, check the spelling of the type you have used.
 Feature not found: 'mod_pub' (no arguments)
 Target feature: 'b'
 In call: 'b.mod_pub'
-To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at $MODULE/b.fz:26:17:
+To solve this, you might change the visibility of the feature 'mod_pub' (no arguments) at {mod.fum}/b.fz:26:17:
   module:public mod_pub is
 ----------------^^^^^^^
 
@@ -94,18 +94,18 @@ To solve this, increase the visibility of 'm.my_false' or do not use this featur
 --CURDIR--/main.fz:80:18: error 15: Redefinition must not have more restrictive visibility.
     module redef b unit => // should flag an error Redefinition must not have more restrictive visibility.
 -----------------^
-To solve this, increase the visibility of 'm.redef_test_0.b' to at least 'public'
+To solve this, increase the visibility of 'm.redef_test_0.b' to 'public'
 
 
 --CURDIR--/main.fz:82:18: error 16: Redefinition must not have more restrictive visibility.
     module redef e unit => // should flag an error Redefinition must not have more restrictive visibility.
 -----------------^
-To solve this, increase the visibility of 'm.redef_test_0.e' to at least 'public'
+To solve this, increase the visibility of 'm.redef_test_0.e' to 'public'
 
 
 --CURDIR--/main.fz:89:5: error 17: Abstract features visibility must not be more restrictive than outer features visibility.
     inner_abstract i32 => abstract // should flag an error Abstract features visibility must not be more restrictive than outer features visibility.
 ----^^^^^^^^^^^^^^
-To solve this, increase the visibility of 'm.outer.inner_abstract' to at least 'public'
+To solve this, increase the visibility of 'm.outer.inner_abstract' to 'public'
 
 17 errors.

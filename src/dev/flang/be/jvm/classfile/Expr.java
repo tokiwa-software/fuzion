@@ -26,9 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 import dev.flang.be.jvm.classfile.ClassFile.StackMapTable;
+
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
@@ -140,8 +142,8 @@ public abstract class Expr extends ByteCode
    * This inherits from Label that defines the start of this try-catch.
    *
    * The main thing that this does when it is part of the code is inform the
-   * `ByteCodeWriter` passed to `code()` about its existance by calling
-   * `by.addExceptionTable`.
+   * {@code ByteCodeWriter} passed to {@code code()} about its existence by calling
+   * {@code by.addExceptionTable}.
    */
   static class TryCatch extends Label
   {
@@ -656,6 +658,10 @@ public abstract class Expr extends ByteCode
   }
   public static Expr invokeStatic(String cls, String name, String descr, JavaType rt, int lineNumber)
   {
+    return invokeStatic(cls, name, descr, rt, lineNumber, false);
+  }
+  public static Expr invokeStatic(String cls, String name, String descr, JavaType rt, int lineNumber, boolean isInterface)
+  {
     return new Expr()
       {
         public String toString() { return "invokeStatic " + cls + "." + name; }
@@ -667,7 +673,7 @@ public abstract class Expr extends ByteCode
           var d   = cf.cpUtf8(descr);
           var cl  = cf.cpClass(c);
           var nat = cf.cpNameAndType(n, d);
-          var m   = cf.cpMethod(cl, nat);
+          var m   = isInterface ? cf.cpInterfaceMethod(cl, nat) : cf.cpMethod(cl, nat);
           code(ba, O_invokestatic, m);
         }
         @Override
@@ -1251,6 +1257,27 @@ public abstract class Expr extends ByteCode
       };
   }
 
+
+  /**
+   * Load a java.lang.Class constant given by JavaType
+   */
+  public static Expr classconst(JavaType t)
+  {
+    if (t instanceof ClassType ct)
+      {
+        return classconst(ct);
+      }
+
+    if (CHECKS) check
+      (t.isPrimitive());
+
+    return getstatic(
+      "java/lang/" + t.className().substring(0,1).toUpperCase() + t.className().substring(1).toLowerCase(),
+      "TYPE",
+      ClassFileConstants.JAVA_LANG_CLASS);
+  }
+
+
   /**
    * Load int local variable from slot at given index.
    */
@@ -1710,7 +1737,7 @@ public abstract class Expr extends ByteCode
 
   /**
    * Create conditional branch with one Expr executed if the condition holds
-   * (`pos`) and one if it does not (`neg`).
+   * ({@code pos}) and one if it does not ({@code neg}).
    *
    * @param bc a condition bytecode O_if*
    *
@@ -1865,7 +1892,7 @@ public abstract class Expr extends ByteCode
   /**
    * Create conditional branch with one Expr executed if the condition
    * holds. I.e., this typically results in a branch using the negated condition
-   * that jumps behind the code given as `pos`.
+   * that jumps behind the code given as {@code pos}.
    *
    * @param bc a condition bytecode O_if*
    *
@@ -1936,6 +1963,8 @@ public abstract class Expr extends ByteCode
           // backend does not generate redundant
           // checkcasts anymore.
           isRedundant = type().vti().compareTo(stack.peek()) == 0;
+          stack.pop();
+          stack.push(new VerificationType(type.className(), (cf)->cf.cpClass(type.className()).index()));
         }
         @Override
         public void buildLineNumberTable(ClassFile cf, List<Pair<Integer, Integer>> lnt, int[] idx)
@@ -2044,13 +2073,27 @@ public abstract class Expr extends ByteCode
    *
    * @param try_handler label marking the catch code
    *
-   * @param type the exception type that is to be caught, must not be null.
+   * @param exc_type the exception type that is to be caught, must not be null.
    */
   public static Expr tryCatch(Label try_end,
                               Label try_handler,
                               ClassType exc_type)
   {
     return new TryCatch(try_end, try_handler, exc_type);
+  }
+
+
+  /**
+   * For debugging only.
+   *
+   * Add a comment to byte code containing the stack trace.
+   *
+   * Useful to find out how an expression was inserted into the byte code.
+   */
+  public static Expr trace()
+  {
+    var st = Arrays.toString(Thread.currentThread().getStackTrace()).replace(',', '\n');
+    return Expr.commentAlways(st);
   }
 
 
@@ -2064,7 +2107,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Create a sequence of two Expr: `this` followed by `s`.
+   * Create a sequence of two Expr: {@code this} followed by {@code s}.
    *
    * @param s another Expr that is to be execute after this.
    */
@@ -2138,7 +2181,7 @@ public abstract class Expr extends ByteCode
 
   /**
    * Create a sequence of this Expr, followed by a statement and a value from a
-   * Pair<> of value and statement.
+   * {@code Pair<>} of value and statement.
    *
    * @param p a pair of value and statement, both encoded as expr. value may be
    * null to indicate the statements do not return.

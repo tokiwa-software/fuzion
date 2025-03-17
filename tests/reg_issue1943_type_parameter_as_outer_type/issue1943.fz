@@ -30,7 +30,7 @@ test_outer_as_type_parameter is
   # here the test from #1943
   x is
     y is
-      redef as_string => "y in {x.this}"
+      public redef as_string => "y in {x.this}"
 
   z : x is
 
@@ -49,7 +49,7 @@ test_outer_as_type_parameter is
     n
 
   mm : mutate.
-  mm.instate_self ()->
+  mm ! ()->
     {
       cnt := mm.env.new 100
       cnt1 := count mm i32 cnt [1,2,3]

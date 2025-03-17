@@ -51,11 +51,11 @@ choice_negative is
   phases caused errors: */
 
   instantiate1 is
-    x := choice i32 String  // 7. should flag an error: cannot instantiate choice
+    _ := choice i32 String  // 7. should flag an error: cannot instantiate choice
 
   instantiate2 is
     MyChoice : choice String bool f64 is
-    x := MyChoice  // 8. should flag an error: cannot instantiate choice
+    _ := MyChoice  // 8. should flag an error: cannot instantiate choice
 
   multi1 is
     A : choice i32 bool, choice String f64 is // 9. should flag an error: choice type must inherit exactly once from choice
@@ -75,17 +75,17 @@ choice_negative is
 
   nofields1 is
     A : choice i32 String bool is // 13. should flag an error: choice type must not have any fields
-      x i32 := any
+      public x i32 := any
 
   nofields2 is
     A (x i32) : choice i32 String bool is  // 14. should flag an error: choice type must not have any fields
 
   nofields3 is
-    A is x i32 := any
+    A is public x i32 := any
     B : A, choice i32 String bool is // 15. should flag an error: choice type must not have any fields
 
   nofields4 is
-    A is x i32 := any
+    A is public x i32 := any
     B : choice i32 String bool, A is // 16. should flag an error: choice type must not have any fields
 
   nofields5 is
@@ -102,10 +102,10 @@ choice_negative is
     A : choice i32 i32 is // 19. should flag an error: generic args to choice must be different
 
   args2 is
-    x choice i32 i32 := any // 20. should flag an error: generic args to choice must be different
+    _ choice i32 i32 := any // 20. should flag an error: generic args to choice must be different
 
   args3 is
-    x i32 | i32 := any  // 21. should flag an error: generic args to choice must be different
+    _ i32 | i32 := any  // 21. should flag an error: generic args to choice must be different
 
   args4 is
     S ref is
@@ -115,22 +115,22 @@ choice_negative is
   args5 is
     S ref is
     R ref : S is
-    x choice R S := any  // 23. should flag an error: generic args to choice must be different
+    _ choice R S := any  // 23. should flag an error: generic args to choice must be different
 
   args6 is
     S ref is
     R ref : S is
-    x R | S := any  // 24. should flag an error: generic args to choice must be different
+    _ R | S := any  // 24. should flag an error: generic args to choice must be different
 
   outer1(x i32) is
     A : choice i64 f32 is
       f is
-        y := x // 25. should flag an error: access to closure not permitted in choice
+        _ := x // 25. should flag an error: access to closure not permitted in choice
 
   outer2(x i32) is
     A is
       f is
-        y := x // 26. should flag an error: access to closure not permitted in choice
+        _ := x // 26. should flag an error: access to closure not permitted in choice
     B : A, choice i64 f32 is
 
   impl1 is
@@ -145,13 +145,13 @@ choice_negative is
   impl5 is
     x : choice i64 bool is say "Hello" // 31. should flag an error, choice feature must not contain code
   impl6 is
-    x : choice i64 bool is abstract  // 32. should flag an error, choice feature must not be abstract
+    x unit : choice i64 bool => abstract  // 32. should flag an error, choice feature must not be abstract
   impl7 is
-     x : choice i64 bool is intrinsic  // 33. should flag an error, choice feature must not be intrinsic
+     x unit : choice i64 bool => intrinsic  // 33. should flag an error, choice feature must not be intrinsic
   impl8 is
     x : choice i64 bool is  // ok
   impl9 is
-    x choice i64 bool := false  // ok
+    _ choice i64 bool := false  // ok
 
   issue23 is
 
@@ -159,7 +159,7 @@ choice_negative is
       true_  => say "T"
       false_ => say "F"
 
-    j := (42 ? true_ => true   // 35. should flag an error, match subject must be choice
+    _ := (42 ? true_ => true   // 35. should flag an error, match subject must be choice
              | false_ => false) # NYI: parentheses are currently required for this to work, see #3776
 
 
@@ -167,5 +167,5 @@ choice_negative is
     A ref is
     B ref is
     C ref : B, A is
-    t1 choice A B := C  // 36. should flag an error, Ambiguous assignment to ...
-    t2 choice A B => C  // 37. should flag an error, Ambiguous assignment to ...
+    _ choice A B := C  // 36. should flag an error, Ambiguous assignment to ...
+    t choice A B => C  // 37. should flag an error, Ambiguous assignment to ...

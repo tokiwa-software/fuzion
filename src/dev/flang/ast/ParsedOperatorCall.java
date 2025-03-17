@@ -54,8 +54,8 @@ public class ParsedOperatorCall extends ParsedCall
 
   /**
    * Has this been put into parentheses? If so, it may no longer be used as
-   * chained boolean `(a < b) < c`, but it may still used as partial call `l.map
-   * (+x)`.
+   * chained boolean {@code (a < b) < c}, but it may still used as partial call
+   * {@code l.map (+x)}.
    */
   private boolean _inParentheses = false;
 
@@ -97,11 +97,11 @@ public class ParsedOperatorCall extends ParsedCall
 
 
   /**
-   * Is this an operator call like `a+b` or `-x` in contrast to a named call `f`
-   * or `t.g`?
+   * Is this an operator call like {@code a+b} or {@code -x} in contrast to a named call {@code f}
+   * or {@code t.g}?
    *
    * @param parenthesesAllowed true if an operator call in parentheses is still
-   * ok.  (+x)`.
+   * ok.  {@code (+x)}.
    */
   boolean isOperatorCall(boolean parenthesesAllowed)
   {
@@ -110,9 +110,8 @@ public class ParsedOperatorCall extends ParsedCall
 
 
   /**
-   * Is this Expr put into parentheses `(`/`)`. If so, we no longer want to do
-   * certain transformations like chained booleans `a < b < c` to `a < b && b <
-   * c`.
+   * Is this Expr put into parentheses {@code (}/{@code )}. If so, we no longer want to do
+   * certain transformations like chained booleans {@code a < b < c} to {@code a < b && b < c}.
    */
   public void putInParentheses()
   {

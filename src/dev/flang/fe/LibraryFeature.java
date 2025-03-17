@@ -44,11 +44,8 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Box;
-import dev.flang.ast.Cond;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -165,15 +162,6 @@ public class LibraryFeature extends AbstractFeature
     _libModule = lib;
     _index = index;
     _kind = lib.featureKindEnum(index);
-
-    var tf = existingCotype();
-    if (tf != null)
-      {
-        // NYI: HACK: This is somewhat ugly, would be nicer if the type feature
-        // in the fum file would contain a reference to the origin such that we
-        // do not need to patch this into the type feature's field.
-        tf._cotypeOrigin = this;
-      }
   }
 
 
@@ -211,9 +199,9 @@ public class LibraryFeature extends AbstractFeature
   /**
    * Is this a constructor returning a reference result?
    */
-  public boolean isThisRef()
+  public boolean isRef()
   {
-    return _libModule.featureIsThisRef(_index);
+    return _libModule.featureIsRef(_index);
   }
 
 
@@ -350,12 +338,38 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * If we have an existing type feature (store in a .fum library file), return that
-   * type feature. return null otherwise.
+   * Check if a cotype exists already, either because this feature was
+   * loaded from a library .fum file that includes a cotype, or because one
+   * was created explicitly using cotype(res).
    */
-  public AbstractFeature existingCotype()
+  @Override
+  public boolean hasCotype()
+  {
+    return _libModule.featureHasCotype(_index);
+  }
+
+
+  /**
+   * Return existing cotype.
+   */
+  @Override
+  public AbstractFeature cotype()
   {
     return _libModule.featureHasCotype(_index) ? _libModule.featureCotype(_index) : null;
+  }
+
+
+  @Override
+  public boolean isCotype()
+  {
+    return _libModule.featureIsCotype(_index);
+  }
+
+
+  @Override
+  public AbstractFeature cotypeOrigin()
+  {
+    return _libModule.featureIsCotype(_index) ? _libModule.featureCotypeOrigin(_index) : null;
   }
 
 
@@ -394,27 +408,27 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic feature to determine the resultClazz().
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object.
    *
    * @return this feature's frame object
    */
-  public AbstractType createThisType()
+  @Override
+  public AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
+      (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
     var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this,
-                                         isThisRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                                     : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                         isRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
+                                                 : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
                                          generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this);
 
@@ -614,7 +628,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
-              var target = f.outer().isUniverse() ? new Universe() : s.pop();
+              var target = f.outer().isUniverse() ? Universe.instance : s.pop();
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
@@ -707,14 +721,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType, Context.NONE);
-              break;
-            }
-          case Env:
-            {
-              var envType = _libModule.envType(iat);
-              x = new Env(LibraryModule.DUMMY_POS, envType)
-                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:
@@ -889,16 +896,17 @@ public class LibraryFeature extends AbstractFeature
   }
 
   /**
-   * Does this feature belong to or contain inner features of the given module?
-   * And should therefore be shown on the api page for that module
+   * Does this feature belong to or contain inner features of the given module
+   * and should therefore be shown on the API doc page for that module?
+   *
    * @param module the module for which the belonging is to be checked
-   * @return true iff this feature needs to be included in the api page for module
+   * @return true iff this feature needs to be included in the API doc page for module
    */
   public boolean showInMod(LibraryModule module)
   {
     // Problem: all features inherit from any, which is in base
     // therefore all features from other modules would be shown in base module because they always have an inner feature from base
-    if (module.name().equals("base"))
+    if (module.name().equals(FuzionConstants.BASE_MODULE_NAME))
       {
         return _libModule == module || isUniverse();
       }

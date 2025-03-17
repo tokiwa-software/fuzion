@@ -1,6 +1,6 @@
 
 --CURDIR--/reg_issue3292.fz:25:15: error 1: Could not find called feature
-  x := "漢字" ≥≥≥≥≥≥ "ひらがな"
+  _ := "漢字" ≥≥≥≥≥≥ "ひらがな"
 --------------^^^^^^
 Feature not found: 'infix ≥≥≥≥≥≥' (one argument)
 Target feature: 'String'

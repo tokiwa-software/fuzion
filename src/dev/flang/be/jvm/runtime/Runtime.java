@@ -30,7 +30,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-
+import java.lang.foreign.AddressLayout;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
+import java.lang.foreign.ValueLayout.OfBoolean;
+import java.lang.foreign.ValueLayout.OfByte;
+import java.lang.foreign.ValueLayout.OfChar;
+import java.lang.foreign.ValueLayout.OfDouble;
+import java.lang.foreign.ValueLayout.OfFloat;
+import java.lang.foreign.ValueLayout.OfInt;
+import java.lang.foreign.ValueLayout.OfLong;
+import java.lang.foreign.ValueLayout.OfShort;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -126,7 +144,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Value used for `FuzionThread.effect_store` and `FuzionThread.effect_load`
+   * Value used for {@code FuzionThread.effect_store} and {@code FuzionThread.effect_load}
    * to distinguish a unit value effect from a not existing effect
    */
   public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI() { };
@@ -182,11 +200,6 @@ public class Runtime extends ANY
     }
   };
 
-  static long _stdin  = _openStreams_.add(System.in );
-  static long _stdout = _openStreams_.add(System.out);
-  static long _stderr = _openStreams_.add(System.err);
-
-
   /**
    * This contains all open processes.
    */
@@ -214,19 +227,11 @@ public class Runtime extends ANY
   };
 
 
-  static long _next_unique_id = 0xf0015feedbadf00dL;
-
-  static final long UNIQUE_ID_INCREMENT = 1000000000000223L; // large prime generated using https://www.browserling.com/tools/prime-numbers
-
-
-  static final Object UNIQUE_ID_LOCK = new Object() {};
-
-
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
   /**
-   * The result of `envir.args[0]`
+   * The result of {@code envir.args[0]}
    */
   public static String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
@@ -237,7 +242,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The results of `envir.args[1..n]`
+   * The results of {@code envir.args[1..n]}
    */
   public static String[] _args_ = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
@@ -320,7 +325,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for a `Const_String` from data in the
+   * Create the internal (Java) array for a {@code const_string} from data in the
    * chars of a Java String.
    *
    * @param str the Java string as unicodes.
@@ -334,7 +339,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i8` or `array u8` from data
+   * Create the internal (Java) array for an {@code array i8} or {@code array u8} from data
    * in the chars of a Java String.
    *
    * @param str the Java string, lower byte is the first, upper the second byte.
@@ -358,7 +363,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i16` from data in the chars
+   * Create the internal (Java) array for an {@code array i16} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, each char is one i16.
@@ -379,7 +384,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array u16` from data in the chars
+   * Create the internal (Java) array for an {@code array u16} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, each char is one u16.
@@ -400,7 +405,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i32` or `array u32` from
+   * Create the internal (Java) array for an {@code array i32} or {@code array u32} from
    * data in the chars of a Java String.
    *
    * @param str the Java string, two char form one i32 or u32 in little endian order.
@@ -423,7 +428,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i64` or `array u64` from
+   * Create the internal (Java) array for an {@code array i64} or {@code array u64} from
    * data in the chars of a Java String.
    *
    * @param str the Java string, four char form one i64 or u64 in little endian
@@ -449,7 +454,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array f32` from data in the chars
+   * Create the internal (Java) array for an {@code array f32} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, two chars form the bits of one f32 in little
@@ -472,7 +477,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array f64` from data in the chars
+   * Create the internal (Java) array for an {@code array f64} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, four chars form the bits of one f64 in little
@@ -511,7 +516,6 @@ public class Runtime extends ANY
   public static void effect_default(int id, AnyI instance)
   {
     var t = currentThread();
-    t.ensure_effect_capacity(id);
     if (t.effect_load(id) == null)
       {
         t.effect_store(id, instance);
@@ -539,9 +543,9 @@ public class Runtime extends ANY
    *
    * @param id an effect type id.
    *
-   * @instance a new instance to replace the old one
+   * @param instance a new instance to replace the old one
    */
-  public static void effect_replace(int id, Any instance)
+  public static void effect_replace(int id, AnyI instance)
   {
     var t = currentThread();
 
@@ -600,7 +604,7 @@ public class Runtime extends ANY
    *
    * @param id the id of the effect type that is instated
    *
-   * @param instance the effect instance that is instated, NOTE: This is `_UNIT_TYPE_EFFECT_`
+   * @param instance the effect instance that is instated, NOTE: This is {@code _UNIT_TYPE_EFFECT_}
    * for a unit type effect.
    */
   public static void effect_push(int id, AnyI instance)
@@ -640,29 +644,6 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement `effect.env` expressions.  Returns the instated
-   * effect with the given id.  Causes an error in case no such effect exists.
-   *
-   * @param id the id of the effect that should be loaded.
-   *
-   * @return the instance that was instated for this id
-   *
-   * @throws Error in case no instance was instated.
-   */
-  public static AnyI effect_get(int id)
-  {
-    var t = currentThread();
-
-    var result = t.effect_load(id);
-    if (result == null)
-      {
-        throw new Error("No effect of "+id+" instated");
-      }
-    return result;
-  }
-
-
-  /**
    * Get the message of last exception thrown in the current thread.
    */
   public static String getException()
@@ -689,7 +670,7 @@ public class Runtime extends ANY
 
 
   /**
-   * cached results of `classNameToFeatureName`.
+   * cached results of {@code classNameToFeatureName}.
    */
   static WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
 
@@ -1227,7 +1208,7 @@ public class Runtime extends ANY
 
 
   /**
-   * @param code the Unary instance to be executed
+   * @param code the Unary instance to be executed, i.e. the outer instance
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
@@ -1250,18 +1231,6 @@ public class Runtime extends ANY
       {
         var t = new FuzionThread(r, code);
         result = _startedThreads_.add(t);
-      }
-    return result;
-  }
-
-
-  static long unique_id()
-  {
-    long result;
-    synchronized (UNIQUE_ID_LOCK)
-      {
-        result = _next_unique_id;
-        _next_unique_id = result + UNIQUE_ID_INCREMENT;
       }
     return result;
   }
@@ -1413,6 +1382,322 @@ public class Runtime extends ANY
             Errors.fatal("Attempt to modify immutable array", stackTrace());
           }
       }
+  }
+
+
+
+  /**
+   * Find the method handle of a native function
+   *
+   * @param str name of the function: e.g. sqlite3_exec
+   *
+   * @param desc the FunctionDescriptor of the function
+   *
+   * @return
+   */
+  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
+  {
+    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto());
+    for (String library : libraries)
+      {
+        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), Arena.ofAuto()));
+      }
+    var memSeg = llu
+      .find(str)
+      .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str));
+
+    return Linker
+      .nativeLinker()
+      .downcallHandle(memSeg, desc);
+  }
+
+  /**
+   * copy the contents of memSeg to obj
+   */
+  public static void memorySegment2Obj(Object obj, MemorySegment memSeg)
+  {
+    if      (obj instanceof byte   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof short  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof char   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof int    [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof long   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof MemorySegment) {}
+    else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
+      {
+        for (int i = 0; i < arr.length; i++)
+          {
+            arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
+          }
+      }
+    else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
+    else { throw new Error("NYI memorySegment2Obj: " + obj.getClass()); }
+  }
+
+
+  /**
+   * creates a new MemorySegment and copies
+   * content of object to the memory segment
+   */
+  public static MemorySegment obj2MemorySegment(Object obj)
+  {
+    if      (obj instanceof byte   [] arr) { return Arena.ofAuto().allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof short  [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof char   [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof int    [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof long   [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof float  [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof double [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof MemorySegment memSeg) { return memSeg; }
+    else if (obj instanceof Object [] arr)
+      {
+        var argsArray = Arena.ofAuto().allocate(arr.length * 8);
+        for (int i = 0; i < arr.length; i++)
+          {
+            argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
+          }
+        return argsArray;
+      }
+    else { throw new Error("NYI obj2MemorySegment: " + obj.getClass()); }
+  }
+
+
+  public static Object native_array(MemoryLayout memLayout, Object obj, int length)
+  {
+    var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
+    if (memLayout instanceof OfByte o)
+      {
+        var result = new byte[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(o, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfBoolean ob)
+      {
+        var result = new boolean[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfChar ob)
+      {
+        var result = new char[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfDouble ob)
+      {
+        var result = new double[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfFloat ob)
+      {
+        var result = new float[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfInt ob)
+      {
+        var result = new int[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfLong ob)
+      {
+        var result = new long[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfShort ob)
+      {
+        var result = new short[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else
+      {
+        var ob = (AddressLayout)memLayout;
+        var result = new Object[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+  }
+
+
+  /**
+   * @param outerRef the outer reference that the Function.call needs
+   *                 or null if Function.call does not need an outer
+   *                 reference passed in
+   *
+   * @param call     the java class of the Function.call that we create an
+   *                 upcall for.
+   *
+   * @return An upcall which can be passed to other foreign functions as a function pointer
+   */
+  public static MemorySegment upcall(Any outerRef, Class call)
+  {
+    Method method = null;
+    for (var m : call.getDeclaredMethods())
+      {
+        if (m.getName().equals(ROUTINE_NAME))
+          {
+            method = m;
+          }
+      }
+    if (method == null)
+      {
+        Errors.fatal("Runtime.upcall, could not find method " + ROUTINE_NAME + " in " + call.toString());
+      }
+
+    MethodHandle handle;
+    try
+      {
+        handle = MethodHandles.lookup().unreflect(method);
+        if (outerRef != null)
+          {
+            handle = handle.bindTo(outerRef);
+          }
+        handle = MethodHandles
+          .explicitCastArguments(
+            handle,
+            MethodType.methodType(
+              handle
+                .type()
+                .returnType(),
+              handle
+                .type()
+                .parameterList()
+                .stream()
+                .map(c -> c.isPrimitive() ? c : MemorySegment.class)
+                .toArray(Class[]::new)
+            ));
+
+        var desc = method.getReturnType() == void.class
+          ? FunctionDescriptor.ofVoid(layout(handle.type().parameterArray()))
+          : FunctionDescriptor.of(layout(method.getReturnType()), layout(handle.type().parameterArray()));
+
+        return Linker
+          .nativeLinker()
+          .upcallStub(handle, desc, Arena.ofAuto());
+      }
+    catch (IllegalAccessException e)
+      {
+        Errors.fatal(e);
+      }
+    return null;
+  }
+
+
+  /**
+   * For segment extract the length of the NULL-terminated
+   * string.
+   *
+   * @param segment
+   *
+   * @return
+   */
+  public static int native_string_length(MemorySegment segment)
+  {
+    int length = 0;
+    segment = segment.reinterpret(10000 /* NYI: magic constant */);
+
+    while (segment.get(ValueLayout.JAVA_BYTE, length) != 0)
+      {
+        length++;
+      }
+
+    return length;
+  }
+
+
+  /**
+   * For a given java class get the native MemoryLayout.
+   *
+   * @param ct
+   * @return
+   */
+  public static MemoryLayout layout(Class ct)
+  {
+    if (PRECONDITIONS) require
+      (ct != void.class);
+
+    if (ct == boolean.class)
+      {
+        return ValueLayout.JAVA_BOOLEAN;
+      }
+    if (ct == byte.class)
+      {
+        return ValueLayout.JAVA_BYTE;
+      }
+    if (ct == char.class)
+      {
+        return ValueLayout.JAVA_CHAR;
+      }
+    if (ct == short.class)
+      {
+        return ValueLayout.JAVA_SHORT;
+      }
+    if (ct == int.class)
+      {
+        return ValueLayout.JAVA_INT;
+      }
+    if (ct == long.class)
+      {
+        return ValueLayout.JAVA_LONG;
+      }
+    if (ct == float.class)
+      {
+        return ValueLayout.JAVA_FLOAT;
+      }
+    if (ct == double.class)
+      {
+        return ValueLayout.JAVA_DOUBLE;
+      }
+    return ValueLayout.ADDRESS;
+  }
+
+
+  /**
+   * get the layouts for the given classes
+   *
+   * @param types
+   * @return
+   */
+  private static MemoryLayout[] layout(Class<?>[] types)
+  {
+    var result = new MemoryLayout[types.length];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i] = layout(types[i]);
+      }
+    return result;
   }
 
 

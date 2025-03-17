@@ -1,0 +1,59 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature ffi
+#
+# -----------------------------------------------------------------------
+
+
+# unit feature grouping foreign function interface related features
+#
+public ffi is
+
+  # returns a NULL Pointer
+  #
+  public null =>
+    fzE_null
+
+
+  # test if p is the NULL pointer
+  #
+  public is_null(p Native_Ref) =>
+    fzE_is_null p = 0
+
+
+  # create a fuzion string from a pointer
+  # to a NULL terminated string.
+  #
+  public from_native_string(x Native_Ref) String =>
+    len := native_string_length x
+    arr := native_array u8 x len
+    ref : String
+      public redef utf8 Sequence u8 =>
+        array (fuzion.sys.internal_array u8 arr len) unit unit unit
+
+
+  # create an array from a Pointer and a length
+  #
+  public from_native_array(T type, x Native_Ref, len i32) array T =>
+    array (fuzion.sys.internal_array T (native_array T x len) len) unit unit unit
+
+
+native_string_length(x Native_Ref) i32 => intrinsic
+native_array(T type, x Native_Ref, len i32) Array /* NYI: T */ => intrinsic

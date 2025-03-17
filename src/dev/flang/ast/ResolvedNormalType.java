@@ -32,6 +32,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -95,7 +96,7 @@ public class ResolvedNormalType extends ResolvedType
    * Cached result of isRef(). Even though this function looks harmless, it is
    * surprisingly performance critical.
    */
-  Boolean _isRef;
+  YesNo _isRef;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -278,11 +279,11 @@ public class ResolvedNormalType extends ResolvedType
          || refOrVal == RefOrVal.LikeUnderlyingFeature
       );
 
-    this._refOrVal          = refOrVal;
-    this._generics          = original._generics;
+    this._refOrVal           = refOrVal;
+    this._generics           = original._generics;
     this._unresolvedGenerics = original._unresolvedGenerics;
-    this._outer             = original._outer;
-    this._feature           = original._feature;
+    this._outer              = original._outer;
+    this._feature            = original._feature;
 
     if (POSTCONDITIONS) ensure
       (feature().generics().sizeMatches(generics()));
@@ -352,17 +353,21 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Helper to extract `RefOrVal` from given type.
+   * Helper to extract {@code RefOrVal} from given type.
    *
    * @param t a type, must not be generic argument.
    */
   private static RefOrVal refOrVal(AbstractType t)
   {
     return
-      t instanceof ResolvedNormalType tt         ? tt._refOrVal                   :
-      t.isRef() == t.feature().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
-      t.isRef()                                  ? RefOrVal.Boxed
-                                                 : RefOrVal.Value;
+      t instanceof ResolvedNormalType tt              ? tt._refOrVal                   :
+      (t.isRef() == YesNo.yes) == t.feature().isRef() ? RefOrVal.LikeUnderlyingFeature :
+      switch(t.isRef())
+        {
+          case YesNo.no -> RefOrVal.Value;
+          case YesNo.yes -> RefOrVal.Boxed;
+          case YesNo.dontKnow -> RefOrVal.ThisType;
+        };
   }
 
 
@@ -416,7 +421,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asRef()
   {
     AbstractType result = this;
-    if (!isRef() && !isVoid() && this != Types.t_ERROR)
+    if (isRef().noOrDontKnow() && !isVoid() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, RefOrVal.Boxed);
       }
@@ -431,14 +436,14 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asThis()
   {
     AbstractType result = this;
-    if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
+    if (!isThisType() && this != Types.t_ERROR && this != Types.t_ADDRESS && !feature().isUniverse())
       {
         result = ResolvedNormalType.create(this, RefOrVal.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result == Types.t_ADDRESS || result.isThisType() || result.isChoice(),
-       !(isThisType() || isChoice()) || result == this);
+      (result == Types.t_ERROR || result == Types.t_ADDRESS || feature().isUniverse() || result.isThisType(),
+       !isThisType() || result == this);
 
     return result;
   }
@@ -451,7 +456,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asValue()
   {
     AbstractType result = this;
-    if (isRef() && this != Types.t_ERROR)
+    if (isRef().yesOrDontKnow() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, RefOrVal.Value);
       }
@@ -462,17 +467,18 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * isRef
    */
-  public boolean isRef()
+  @Override
+  public YesNo isRef()
   {
     var r = _isRef;
     if (r == null)
       {
         r = switch (this._refOrVal)
           {
-          case Boxed                -> true;
-          case Value                -> false;
-          case LikeUnderlyingFeature-> feature().isThisRef();
-          case ThisType             -> false;
+          case Boxed                -> YesNo.yes;
+          case Value                -> YesNo.no;
+          case LikeUnderlyingFeature-> feature().isRef() ? YesNo.yes : YesNo.no;
+          case ThisType             -> YesNo.dontKnow;
           };
         this._isRef = r;
       }
@@ -509,8 +515,8 @@ public class ResolvedNormalType extends ResolvedType
           + (outer == "" ||
              outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
                                                          : outer + ".")
-          + (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
-             _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
+          + (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
+             _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
                                                                                       : ""       )
           + (_feature == null ? Errors.ERROR_STRING
                               : _feature.featureName().baseNameHuman());
@@ -519,8 +525,8 @@ public class ResolvedNormalType extends ResolvedType
       {
         result =
           _feature == null ? "<null-feature>" :
-          ((_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isThisRef()) ? "ref " :
-            _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isThisRef()  ? "value "
+          ((_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
+            _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
                                                                                     : ""       )
            + _feature.qualifiedName());
       }
@@ -547,7 +553,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    return v.action(this, outerfeat);
+    return v.action(this);
   }
 
 
@@ -570,11 +576,11 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Is this the type of a type feature, e.g., the type of `(list
-   * i32).type`. Will return false for an instance of Type for which this is
-   * still unknown since Type.resolve() was not called yet.
+   * Is this the type of a type feature, e.g., the type of {@code (list i32).type}.
+   * Will return false for an instance of Type for which this is
+   * still unknown since {@code Type.resolve()} was not called yet.
    *
-   * This is redefined here since `feature` might still be null while this type
+   * This is redefined here since {@code feature} might still be null while this type
    * was not resolved yet.
    */
   boolean isTypeType()
@@ -625,7 +631,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return this == Types.t_UNDEFINED ? this :
+    return (this == Types.t_UNDEFINED || this == Types.t_ERROR) ? this :
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)

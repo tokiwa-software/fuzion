@@ -1,0 +1,160 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test mod_sqlite
+#
+# -----------------------------------------------------------------------
+
+
+# int sqlite3_open(
+#   const char *filename,   /* Database filename (UTF-8) */
+#   sqlite3 **ppDb          /* OUT: SQLite db handle */
+# );
+#
+sqlite3_open(filename array u8, db array Native_Ref) i32 => native
+
+# int sqlite3_exec(
+#   sqlite3*,                                  /* An open database */
+#   const char *sql,                           /* SQL to be evaluated */
+#   int (*callback)(void*,int,char**,char**),  /* Callback function */
+#   void *,                                    /* 1st argument to callback */
+#   char **errmsg                              /* Error msg written here */
+# );
+#
+sqlite3_exec(F type : Function i32 Native_Ref i32 Native_Ref Native_Ref, db Native_Ref, sql array u8, callback F, arg Native_Ref, errmsg array Native_Ref) i32 => native
+
+# int sqlite3_close(sqlite3*);
+#
+sqlite3_close(db Native_Ref) i32 => native
+
+
+
+
+sqlite_database(db Native_Ref) : Database is
+
+  public redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
+
+    str := "some string, accessed via outer reference"
+
+    cb2 : Function i32 Native_Ref i32 Native_Ref Native_Ref is
+      public redef call(_ Native_Ref, len i32, column_text Native_Ref, column_name Native_Ref) i32 =>
+
+        // str is called via outer reference:
+        // this tests if the outerref is correctly
+        // passed through:
+        say str
+
+        ct := ffi.from_native_array Native_Ref column_text len
+        cn := ffi.from_native_array Native_Ref column_name len
+
+        data => (cn.map (t -> ffi.from_native_string t))
+          .zip (ct.map (t -> ffi.from_native_string t)) x,y->(x,y)
+
+        cb data
+
+    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null] = 0
+      unit
+    else
+      error "error executing query $q"
+
+
+  public redef close outcome unit =>
+    # NYI: proper error handling
+    check sqlite3_close db = 0
+    unit
+
+
+  type.open(path String) outcome Database =>
+    db := [ffi.null]
+    if sqlite3_open path.as_c_string db = 0
+      check !(ffi.is_null db[0])
+      sqlite_database db[0]
+    else
+      error "could not open database"
+
+
+
+# helper to convert fuzion String to a c-string with \0 byte at end.
+#
+String.as_c_string =>
+  (String.this + codepoint 0).utf8.as_array
+
+
+
+# definition of a database API
+#
+public Database ref is
+
+  # exeute a query
+  #
+  public query(q String, cb Function i32 (Sequence (String, String))) outcome unit => abstract
+
+  # close database
+  #
+  public close outcome unit => abstract
+
+
+
+sqlite_database2(db Native_Ref) : Database is
+  public redef query(q String, cb Function i32 (Sequence (String, String))) outcome unit =>
+
+    cb2 : Function i32 Native_Ref i32 Native_Ref Native_Ref is
+      public redef call(_ Native_Ref, len i32, column_text Native_Ref, column_name Native_Ref) i32 =>
+        say len
+        0
+
+    if sqlite3_exec db q.as_c_string cb2 ffi.null [ffi.null] = 0
+      unit
+    else
+      error "error executing query $q"
+
+
+
+  public redef close outcome unit =>
+    # NYI: proper error handling
+    check sqlite3_close db = 0
+    unit
+
+
+  type.open(path String) outcome Database =>
+    db := [ffi.null]
+    if sqlite3_open path.as_c_string db = 0
+      check !(ffi.is_null db[0])
+      sqlite_database2 db[0]
+    else
+      error "could not open database"
+
+
+mod_sqlite =>
+
+  _ := (sqlite_database.open "test.db").bind unit db->
+    db.query "select * from table_name;" res->
+      say (res.map t->"{t.0} => {t.1}")
+      0
+
+    # NYI: proper error handling
+    # check qr.ok
+    # check db.close.ok
+
+  _ := (sqlite_database2.open "test.db").bind unit db->
+    db.query "select * from table_name;" res->
+      say (res.map t->"{t.0} => {t.1}")
+      0
+
+mod_sqlite

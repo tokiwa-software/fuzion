@@ -31,12 +31,24 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <assert.h>
+
+static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 bytes");
+static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8 bytes");
+
 
 void * fzE_malloc_safe(size_t size);
 
 void fzE_memset(void *dest, int ch, size_t sz);
 
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
+
+// returns the latest error number of
+// the current thread
+int fzE_last_error(void);
+
+// NYI: UNDER DEVELOPMENT: fzE_last_error_as_string, returning the error as a human readable string
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
@@ -47,30 +59,22 @@ int fzE_setenv(const char *name, const char *value, int overwrite);
 // unset environment variable, return zero on success
 int fzE_unsetenv(const char *name);
 
-void fzE_opendir(const char *pathname, int64_t * result);
+// on error result[0]!=0
+// returns pointer to directory
+void * fzE_opendir(const char *pathname, int64_t * result);
 
-char * fzE_readdir(intptr_t * dir);
+// NYI: UNDER DEVELOPMENT
+// returns -1 on error, 0 on end reached, length of result on success
+// result contains the bytes of the string, NYI: UNDER DEVELOPMENT (max 1024)
+int fzE_dir_read(intptr_t * dir, void * result);
 
-int fzE_read_dir_has_next(intptr_t * dir);
-
-int fzE_closedir(intptr_t * dir);
+// close the dir
+// return 0 if successful, -1 if not
+int fzE_dir_close(intptr_t * dir);
 
 // 0 = blocking
 // 1 = none_blocking
 int fzE_set_blocking(int sockfd, int blocking);
-
-// helper function to retrieve
-// the last error that occurred.
-int fzE_net_error();
-
-// fuzion family number -> system family number
-int get_family(int family);
-
-// fuzion socket type number -> system socket type number
-int get_socket_type(int socktype);
-
-// fuzion protocol number -> system protocol number
-int get_protocol(int protocol);
 
 // close a socket descriptor
 int fzE_close(int sockfd);
@@ -82,7 +86,7 @@ int fzE_socket(int family, int type, int protocol);
 // create a new socket and bind to given host:port
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int64_t * result);
+int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
 
 // set the given socket to listening
 // backlog = queuelength of pending connections
@@ -95,7 +99,7 @@ int fzE_accept(int sockfd);
 // create connection for given parameters
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int64_t * result);
+int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
 
 // get the peer's ip address
 // result is the length of the ip address written to buf
@@ -110,15 +114,13 @@ unsigned short fzE_get_peer_port(int sockfd);
 // read up to count bytes bytes from sockfd
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
-int fzE_read(int sockfd, void * buf, size_t count);
+int fzE_socket_read(int sockfd, void * buf, size_t count);
 
 // write buf to sockfd
 // may block if socket is set to blocking.
 // return error code or zero on success
-int fzE_write(int sockfd, const void * buf, size_t count);
+int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
-// returns -1 on error, size of file in bytes otherwise
-long fzE_get_file_size(FILE* file);
 
 /*
  * create a memory map of a file at an offset.
@@ -130,7 +132,7 @@ long fzE_get_file_size(FILE* file);
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result);
+void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
 
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
@@ -163,7 +165,7 @@ bool fzE_bitwise_compare_double(double d1, double d2);
 /**
  * returns a monotonically increasing timestamp.
  */
-uint64_t fzE_nanotime();
+uint64_t fzE_nanotime(void);
 
 /**
  * Sleep for `n` nano seconds.
@@ -188,7 +190,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata);
 /**
  * Run plattform specific initialisation code
  */
-void fzE_init();
+void fzE_init(void);
 
 /**
  * Start a new thread, returns a pointer to the thread.
@@ -205,8 +207,8 @@ void fzE_thread_join(int64_t thrd);
 /**
  * Global lock
  */
-void fzE_lock();
-void fzE_unlock();
+void fzE_lock(void);
+void fzE_unlock(void);
 
 /**
  * @param args array of process + arguments
@@ -260,12 +262,90 @@ int fzE_pipe_close(int64_t desc);
  *
  * @param file_name the files name
  *
- * @param open_results [file descriptor, error number]
+ * @param open_results [error number]
  *
  * @param mode 0 read, 1 write, 2 append
  *
  */
-void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+
+/**
+ * @param file the pointer to the file
+ * @param buf pointer to a byte array
+ * @param size the size of buf in bytes
+ * @return amounts of bytes read, or negative number on error
+ */
+int32_t fzE_file_read(void * file, void * buf, int32_t size);
+
+/**
+ * @param file the pointer to the file
+ * @param buf pointer to a byte array
+ * @param size the size of buf in bytes
+ * @return amounts of bytes writter, or negative number on error
+ */
+int32_t fzE_file_write(void * file, void * buf, int32_t size);
+
+/**
+ * @param oldpath
+ * @param newpath
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_move(const char *oldpath, const char *newpath);
+
+/**
+ * @param file pointer to the open file
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_close(void * file);
+
+/**
+ * @param file pointer to the open file
+ * @param offset amount of bytes to seek forward
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_seek(void * file, int64_t offset);
+
+/**
+ * @param file pointer to the open file
+ * @return -1 on error, the (byte-)position in the file
+ */
+int64_t fzE_file_position(void * file);
+
+/**
+ * @return the pointer to handle/FILE of stdin
+ */
+void *  fzE_file_stdin(void);
+
+/**
+ * @return the pointer to handle/FILE of stdout
+ */
+void *  fzE_file_stdout(void);
+
+/**
+ * @return the pointer to handle/FILE of stderr
+ */
+void *  fzE_file_stderr(void);
+
+/**
+ * flush user-space buffers for file
+ * @return 0 on success, -1 on error
+ */
+int32_t fzE_file_flush(void * file);
+
+
+/**
+ * @param addr pointer to an address in memory
+ * @param idx  the index at where to do the get
+ * @return the addr[idx]
+ */
+uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx);
+
+/**
+ * @param addr pointer to an address in memory
+ * @param idx  the index at where to do the set
+ * @param x    the byte to set
+ */
+void    fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x);
 
 
 #ifdef FUZION_LINK_JVM
@@ -291,7 +371,7 @@ struct fzE_jvm_result
 void fzE_create_jvm(char * option_string);
 
 // close the JVM.
-void fzE_destroy_jvm();
+void fzE_destroy_jvm(void);
 
 // convert a jstring to a utf-8 byte array
 const char * fzE_java_string_to_utf8_bytes(jstring jstr);
@@ -340,7 +420,7 @@ jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, co
  * initialize a mutex
  * @return NULL on error or pointer to mutex
  */
-void *  fzE_mtx_init     ();
+void *  fzE_mtx_init     (void);
 /**
  * lock a mutex, undefined behaviour if mutex already locked by current thread
  * @return -1 on error, 0 on success
@@ -364,7 +444,7 @@ void    fzE_mtx_destroy  (void * mtx);
  * initialize a condition
  * @return NULL on error or pointer to condition
  */
-void *  fzE_cnd_init     ();
+void *  fzE_cnd_init     (void);
 /**
  * unblocks one thread waiting on this condition
  * @return -1 on error, 0 on success
@@ -384,6 +464,31 @@ int32_t fzE_cnd_wait     (void * cnd, void * mtx);
  * destroys the condition
  */
 void    fzE_cnd_destroy  (void * cnd);
+
+
+/**
+ * get a unique id > 0
+ */
+uint64_t fzE_unique_id(void);
+
+/**
+ * result is a 32-bit array
+ *
+ * result[0] = year
+ * result[1] = day_in_year
+ * result[2] = hour
+ * result[3] = min
+ * result[4] = sec
+ * result[5] = nanosec;
+ */
+void fzE_date_time(void * result);
+
+
+// returns NULL pointer
+void * fzE_null(void);
+
+// returns 0 if p is NULL
+int fzE_is_null(void * p);
 
 
 #endif /* fz.h  */

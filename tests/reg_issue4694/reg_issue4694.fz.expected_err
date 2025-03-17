@@ -1,0 +1,27 @@
+
+--CURDIR--/reg_issue4694.fz:26:8: error 1: Wrong number of arguments in lambda expression
+  0 |> x,y->container.expanding.env.put
+-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Lambda expression has 2 arguments while the target type expects one argument.
+Arguments of lambda expression: 'x', 'y'
+Expected function type: Unary --UNDEFINED-- i32
+To solve this, remove one argument from the list 'x', 'y' before the '->' of the lambda expression.
+
+
+--CURDIR--/reg_issue4694.fz:26:23: error 2: Wrong number of type parameters
+  0 |> x,y->container.expanding.env.put
+----------------------^^^^^^^^^
+Wrong number of actual type parameters in type:
+Type: container.expanding
+expected one generic argument for 'T'
+found none.
+
+
+--CURDIR--/reg_issue4694.fz:26:5: error 3: Failed to infer actual type parameters
+  0 |> x,y->container.expanding.env.put
+----^^
+In call to 'infix |>', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, R'
+Type inference failed for one type parameter 'R'
+
+3 errors.

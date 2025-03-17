@@ -23,4 +23,4 @@
 
 my_string : String is
 my_choice2 : choice String my_string is
-mc2 my_choice2 := "str"
+_ my_choice2 := "str"

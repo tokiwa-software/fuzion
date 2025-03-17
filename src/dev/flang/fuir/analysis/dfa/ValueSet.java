@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+
 import dev.flang.util.IntMap;
 import dev.flang.util.List;
 
@@ -80,7 +81,7 @@ public class ValueSet extends Value
 
 
     /**
-     * Consrtructor
+     * Constructor
      */
     Collect(DFA dfa)
     {
@@ -128,7 +129,7 @@ public class ValueSet extends Value
 
           var oo = _forTags.getIfExists(tv._tag);
           var no = tv._original;
-          var o = oo == null ? no : _dfa.newValueSet(oo, no);
+          var o = oo == null ? no : _dfa.newValueSet(oo, no, _dfa._fuir.clazzChoice(v._clazz, tv._tag));
           _forTags.force(tv._tag, o);
         }
       else
@@ -198,10 +199,13 @@ public class ValueSet extends Value
    * @param v1 some value
    *
    * @param v2 some value
+   *
+   * @param cl the clazz of the resulting value. This is usually the same as the
+   * clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
-  public ValueSet(DFA dfa, Value v1, Value v2)
+  public ValueSet(DFA dfa, Value v1, Value v2, int cl)
   {
-    super(-1);
+    super(cl);
 
     var coll = new Collect(dfa);
     coll.add(v1);
@@ -218,8 +222,8 @@ public class ValueSet extends Value
    *
    * @param other the other ValueSet
    *
-   * @return -1, 0, or +1 depending on whether this < other, this == other or
-   * this > other by some order.
+   * @return -1, 0, or +1 depending on whether this &lt; other, this == other or
+   * this &gt; other by some order.
    */
   public int compareTo(ValueSet other)
   {
@@ -283,8 +287,8 @@ public class ValueSet extends Value
    *
    * @param other the other ValueSet
    *
-   * @return -1, 0, or +1 depending on whether this < other, this == other or
-   * this > other by some order.
+   * @return -1, 0, or +1 depending on whether this &lt; other, this == other or
+   * this &gt; other by some order.
    */
   public int envCompareTo(ValueSet other)
   {
@@ -352,7 +356,7 @@ public class ValueSet extends Value
     for (var v : _componentsArray)
       {
         var u = v.box(dfa, vc, rc, context);
-        result = result == null ? u : dfa.newValueSet(result, u);
+        result = result == null ? u : dfa.newValueSet(result, u, rc);
       }
     return result;
   }
@@ -368,7 +372,7 @@ public class ValueSet extends Value
     for (var v : _componentsArray)
       {
         var u = v.unbox(dfa, vc);
-        result = result == null ? u : dfa.newValueSet(result, u);
+        result = result == null ? u : dfa.newValueSet(result, u, vc);
       }
     return result;
   }

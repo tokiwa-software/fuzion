@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
-
 import java.util.ArrayList;
+
+import dev.flang.fuir.SpecialClazzes;
 
 
 /**
@@ -96,10 +96,10 @@ public class ChoiceIdAsRef extends Value
     if (PRECONDITIONS) require
       (fuir().clazzIsChoice(clazz),
        id >= 0,
-       id <  fuir().clazzNumChoices(clazz));
+       id <  fuir().clazzChoiceCount(clazz));
 
     ChoiceIdAsRef result;
-    if (fuir().clazzNumChoices(clazz) > 2)
+    if (fuir().clazzChoiceCount(clazz) > 2)
       {
         // make sure all values are preallocated
         while (_preallocated.size() <= id)
@@ -138,7 +138,7 @@ public class ChoiceIdAsRef extends Value
       {
         // null stands for the first (and only) non-reference type
         result = 0;
-        while (result < fuir().clazzNumChoices(clazz) && fuir().clazzIsRef(fuir().clazzChoice(clazz, result)))
+        while (result < fuir().clazzChoiceCount(clazz) && fuir().clazzIsRef(fuir().clazzChoice(clazz, result)))
           {
             result++;
           }
@@ -151,10 +151,11 @@ public class ChoiceIdAsRef extends Value
       {
         if (CHECKS) check
           (idAsRef instanceof ValueWithClazz ||
-           idAsRef instanceof JavaRef          );
+           idAsRef instanceof JavaRef        ||
+           idAsRef instanceof ArrayData  );
 
         var cl = (idAsRef instanceof ValueWithClazz id) ? id._clazz
-                                                        : fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr);
+                                                        : fuir().clazz(SpecialClazzes.c_Array);
         do
           {
             result++;
@@ -163,7 +164,7 @@ public class ChoiceIdAsRef extends Value
       }
 
     if (POSTCONDITIONS) ensure
-      (0 <= result && result < fuir().clazzNumChoices(clazz));
+      (0 <= result && result < fuir().clazzChoiceCount(clazz));
 
     return result;
   }

@@ -126,10 +126,7 @@ public class List<T>
   {
     super();
     add(o);
-    for (T x : l)
-      {
-        add(x);
-      }
+    addAll(l);
   }
 
 
@@ -154,6 +151,21 @@ public class List<T>
   {
     super();
     addAll(l);
+  }
+
+
+  /**
+   * Constructor that adds elements of given List.
+   *
+   * @param l
+   *
+   * @param t
+   */
+  public List(T[] l, T t)
+  {
+    super();
+    addAll(l);
+    add(t);
   }
 
 
@@ -286,8 +298,7 @@ public class List<T>
   public boolean add(T e)
   {
     if (ANY.PRECONDITIONS) ANY.require
-      (true || !isFrozen() // NYI: disabled since tests/reg_issue1943_type_parameter_as_outer_type crashes if enabled, need to check
-       );
+      (!isFrozen());
 
     return super.add(e);
   }
@@ -445,9 +456,9 @@ public class List<T>
    *
    * @param i index of element to set
    *
-   * @return the element at index i or null if size() <= i.
+   * @return the element at index i or null if size() {@literal <=} i.
    *
-   * @throws IndexOutOfBoundsException if i < 0.
+   * @throws IndexOutOfBoundsException if i &lt; 0.
    */
   public T getIfExists(int i)
   {
@@ -476,7 +487,7 @@ public class List<T>
 
 
   /**
-   * Set an element of this list using `set(i,x)`, but first make sure the
+   * Set an element of this list using {@code set(i,x)}, but first make sure the
    * list's capacity is sufficient.
    *
    * @param i index of element to set

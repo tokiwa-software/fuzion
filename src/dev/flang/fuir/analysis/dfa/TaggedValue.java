@@ -54,7 +54,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   /**
    * The original, un-tagged value.
    */
-  Value _original;
+  final Value _original;
 
 
   /**
@@ -81,6 +81,8 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   public TaggedValue(DFA dfa, int nc, Value original, int tag)
   {
     super(nc);
+    if (PRECONDITIONS) require
+      (nc != original._clazz);
 
     _dfa = dfa;
     _original = original;
@@ -120,12 +122,24 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
+   *
+   * @param dfa the current analysis context.
+   *
+   * @param v the value this value should be joined with.
+   *
+   * @param clazz the clazz of the resulting value. This is usually the same as
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
-  public Value joinInstances(DFA dfa, Value v)
+  @Override
+  public Value joinInstances(DFA dfa, Value v, int clazz)
   {
     if (v instanceof TaggedValue tv && _tag == tv._tag)
       {
-        return _dfa.newTaggedValue(_clazz, _original.join(dfa, tv._original), _tag);
+        if (CHECKS) check
+          (tv._clazz == clazz);
+
+        var oc = dfa._fuir.clazzChoice(tv._clazz, tv._tag);
+        return _dfa.newTaggedValue(_clazz, _original.join(dfa, tv._original, oc), _tag);
       }
     else
       {
@@ -146,7 +160,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
                   }
               }
           }
-        return super.joinInstances(dfa, v);
+        return super.joinInstances(dfa, v, clazz);
       }
   }
 

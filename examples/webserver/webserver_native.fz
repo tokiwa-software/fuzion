@@ -56,12 +56,12 @@ webserver_native is
       _ := c.with unit mutate ()->
         say "accepted connection:"
 
-        match io.buffered.read_line mutate
+        match (io.buffered mutate).read_line
           str String => say str
           * =>
 
         send200(data String) =>
-          _ := (io.buffered.writer mutate)
+          _ := (io.buffered mutate).writer.env
             .write """
               HTTP/1.1 200 OK
               Connection: close
@@ -71,10 +71,8 @@ webserver_native is
 
               {data}
             """.utf8.as_array
-          (io.buffered.writer mutate).flush
+          (io.buffered mutate).writer.env.flush
 
         _ := send200 "<html>Hello Fuzion $n!</html>"
 
         say "closed connection"
-
-

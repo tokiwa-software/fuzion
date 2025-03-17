@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-
+import dev.flang.fuir.FUIR;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
@@ -41,8 +41,6 @@ public class SysArray extends Value
 
 
   /*----------------------------  constants  ----------------------------*/
-
-  static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -79,7 +77,7 @@ public class SysArray extends Value
    */
   public SysArray(DFA dfa, Value el, int ec)
   {
-    super(dfa._fuir.clazzAny());
+    super(FUIR.NO_CLAZZ);
 
     _dfa = dfa;
     _elements = el;
@@ -102,7 +100,7 @@ public class SysArray extends Value
       }
     else
       {
-        ne = _elements.join(_dfa, el);
+        ne = _elements.join(_dfa, el, _elementClazz);
       }
     if (_elements == null || Value.compare(_elements, ne) != 0)
       {
@@ -133,14 +131,22 @@ public class SysArray extends Value
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instance, UNDEFINED) have been handled.
+   *
+   * @param dfa the current analysis context.
+   *
+   * @param v the value this value should be joined with.
+   *
+   * @param cl the clazz of the resulting value. This is usually the same as
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
-  public Value joinInstances(DFA dfa, Value v)
+  @Override
+  public Value joinInstances(DFA dfa, Value v, int cl)
   {
     if (v instanceof SysArray sv)
       {
         Value ne =
           _elements == null ? sv._elements :
-          sv._elements == null ? _elements : _elements.join(dfa, sv._elements);
+          sv._elements == null ? _elements : _elements.join(dfa, sv._elements, _elementClazz);
         return _dfa.newSysArray(ne, _elementClazz);
       }
     else

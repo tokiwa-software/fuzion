@@ -38,4 +38,4 @@ checkGenericConstraint is
   hm (T type : H, x T) is
     _ := x.h
 
-  m := hm m32 m32     # should produce error, m32 is not compatible to H
+  _ := hm m32 m32     # should produce error, m32 is not compatible to H

@@ -101,9 +101,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Counter for assigning unique names to cotype() results. This is
    * currently used only for non-constructors since they do not create a type
    * name.
-   *
-   * NYI (see #285): This might create name clashes since equal ids might be
-   * assigned to type features in different modules.
    */
   static int _cotypeId_ = 0;
 
@@ -112,7 +109,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a Feature that can be called and hasThisType() is true, this will be
+   * For a Feature that can be called, this will be
    * set to the abstract type referring to the instance, i.e., the actual value
    * by be _selfType or the _selfType of any heir feature of this or the self
    * type of this after it was inherited by any different outer type.
@@ -123,7 +120,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a Feature that can be called and hasThisType() is true, this will be
+   * For a Feature that can be called, this will be
    * set to the abstract type referring to the instance.  Unlike _thisType, this
    * does not permit this to be replaced by an inherited feature, but any outer
    * feature might be.
@@ -158,16 +155,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a Feature that can be called and hasThisType() is true, this will be
-   * set to concrete the frame type during resolution.  This type uses the formal
-   * generics as actual generics. For a generic feature, these must be replaced.
-   *
-   * For a feature a.b.c, _selfType is a.b.c.
-   */
-  protected AbstractType _selfType = null;
-
-
-  /**
    * The formal generic arguments of this feature, cached result of generics()
    */
   protected FormalGenerics _generics;
@@ -177,7 +164,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * For a type feature, this specifies the base feature the type feature was
    * created for.
    */
-  public AbstractFeature _cotypeOrigin;
+  AbstractFeature _cotypeOrigin;
 
 
   /**
@@ -238,7 +225,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Is this a constructor returning a reference result?
    */
-  public abstract boolean isThisRef();
+  public abstract boolean isRef();
 
 
   /**
@@ -261,7 +248,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * The inherits calls of this feature.
-   * Almost never empty since almost every feature inherits from `Any`.
+   * Almost never empty since almost every feature inherits from {@code Any}.
    */
   public abstract List<AbstractCall> inherits();
 
@@ -355,14 +342,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * If this feature has a pre condition or redefines a feature from which it
    * inherits a pre condition, this gives the feature that combines a call to
    * preFeature() and a call to this feature.  This is used at call sites as a
-   * replacement to a call to this to implement precondition checking.
+   * replacement to a call to this to implement precondition checking.<p>
    *
    * Note that dynamic binding is done by the preAndCallFeature, i.e., on a call
-   * `a.f` where `a` is of a ref type `A` containing a reference to an instance
-   * of `B`, calling the preAndCallFeature of `a.f` results in checking the
-   * precondition of `A.f` and then calling `B.f`, i.e., the precondition that
+   * {@code a.f} where {@code a} is of a ref type {@code A} containing a reference to an instance
+   * of {@code B}, calling the preAndCallFeature of {@code a.f} results in checking the
+   * precondition of {@code A.f} and then calling {@code B.f}, i.e., the precondition that
    * is checked is that of the static type, not the (possibly relaxed)
-   * precondition of the dynamic actual type.
+   * precondition of the dynamic actual type.<p>
    *
    * The preBoolFeature has the same outer feature as the original feature and
    * the same arguments.
@@ -376,7 +363,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * If this feature has a post condition or redefines a feature from which it
    * inherits a post condition, this gives the feature that implements the post
    * condition check.  The postFeature has tha same outer feature as the
-   * original feature and the same arguments except for an additional `result`
+   * original feature and the same arguments except for an additional {@code result}
    * argument in case the feature has a non-unit result.
    */
   public abstract AbstractFeature postFeature();
@@ -396,15 +383,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
-
-  /**
-   * Does this feature has an arrow "=>" in it's signature, i.e. is a function or an intrinsic
-   * @return true if the signature contains an arrow "=>"
-   */
-  public boolean signatureWithArrow()
-  {
-    return (isRoutine() && !isConstructor()) || isIntrinsic() || isAbstract() || isNative();
-  }
 
 
   /**
@@ -705,9 +683,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * selfType returns the type of this feature's frame object.  This can be
-   * called even if !hasThisType() since thisClazz() is used also for abstract
-   * or intrinsic feature to determine the resultClazz().
+   * selfType returns the type of this feature's frame object.
    *
    * @return this feature's frame object
    */
@@ -716,22 +692,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
 
-    AbstractType result = _selfType;
-    if (result == null)
-      {
-        result = this == Types.f_ERROR
-          ? Types.t_ERROR
-          : createThisType();
-        _selfType = result;
-      }
+    var selfType = createSelfType();
 
     if (POSTCONDITIONS) ensure
-      (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+      (selfType != null,
+       Errors.any() || selfType.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || result.feature() == this);
+       Errors.any() || selfType.feature() == this);
 
-    return result;
+    return selfType;
   }
 
 
@@ -818,27 +787,26 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param that the original feature that is used to lookup types.
    *
+   * @param target the target of this typeCall, null for recursive calls for
+   * outer typeCalls of to this method.
+   *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that)
+  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
   {
     var o = outer();
-    var oc = o == null || o.isUniverse()
-      ? new Universe()
-      : outer().typeCall(p, new List<>(outer().selfType()), res, that);
+    var oc = o == null || o.isUniverse()                            ? Universe.instance
+      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.typeCall(p, res, that)
+      : o.typeCall(p, new List<>(o.selfType(),
+                                 o.generics().asActuals().map(that::rebaseTypeForCotype)),
+                   res, that, null);
+
     var tf = cotype(res);
-    var typeParameters2 = new List<AbstractType>();
-    for (var tp : typeParameters)
-      {
-        var tpa = that.rebaseTypeForCotype(tp);
-        typeParameters2.add(typeParameters2.size() == 0 ? tp : tpa);
-      }
     return new Call(p,
                     oc,
-                    typeParameters2,
+                    typeParameters,
                     Expr.NO_EXPRS,
-                    tf,
-                    tf.selfType());
+                    tf);
   }
 
 
@@ -906,7 +874,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (res != null,
        Errors.any() || !isUniverse(),
-       res.state(this).atLeast(State.FINDING_DECLARATIONS),
+       Errors.any() || res.state(this).atLeast(State.FINDING_DECLARATIONS),
        !isCotype());
 
     if (_cotype == null)
@@ -926,7 +894,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var name = featureName().baseName() + ".";
             if (!isConstructor() && !isChoice())
               {
-                name = name + "_" + (_cotypeId_++);
+                name = name + "_" + (_cotypeId_++) + "_" + res._module.name();
               }
             name = name + FuzionConstants.TYPE_NAME;
 
@@ -962,8 +930,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (inh.isEmpty() && !Errors.any())
               { // let `Any.type` inherit from `Type`
                 if (CHECKS) check
-                  (this instanceof Feature && featureName().baseName().equals("Any"));
-                inh.add(new Call(pos(), "Type"));
+                  (this instanceof Feature && featureName().baseName().equals(FuzionConstants.ANY_NAME));
+                inh.add(new Call(pos(), FuzionConstants.TYPE_FEAT));
               }
             existingOrNewCotype(res, name, typeArgs, inh);
           }
@@ -1061,7 +1029,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean hasCotype()
   {
-    return _cotype != null || existingCotype() != null || this == Types.f_ERROR;
+    return _cotype != null || this == Types.f_ERROR;
   }
 
 
@@ -1073,13 +1041,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (isCotype() || hasCotype());
 
-    if (_cotype == null)
-      {
-        _cotype = this == Types.f_ERROR ? this :
-                       isCotype()       ? Types.resolved.f_Type
-                                             : existingCotype();
-      }
-    var result = _cotype;
+    var result =
+      this == Types.f_ERROR ? this
+                            : isCotype()
+                              ? Types.resolved.f_Type
+                              : _cotype;
 
     if (POSTCONDITIONS) ensure
       (result != null);
@@ -1089,23 +1055,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * If we have an existing type feature (stored in a .fum library file), return that
-   * type feature. return null otherwise.
-   */
-  protected AbstractFeature existingCotype()
-  {
-    return null;
-  }
-
-
-  /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic features to determine the resultClazz().
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object.
    *
    * @return this feature's frame object
    */
-  protected AbstractType createThisType()
+  protected AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
@@ -1116,7 +1071,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef() == isThisRef(),
+       Errors.any() || result.isRef().yes() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this,
        result.feature().generics().sizeMatches(result.generics()));
@@ -1195,16 +1150,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return !isUniverse()
       && outer() != null
       && outer().isUniverse()
-      && (   "i8"  .equals(featureName().baseName())
-          || "i16" .equals(featureName().baseName())
-          || "i32" .equals(featureName().baseName())
-          || "i64" .equals(featureName().baseName())
-          || "u8"  .equals(featureName().baseName())
-          || "u16" .equals(featureName().baseName())
-          || "u32" .equals(featureName().baseName())
-          || "u64" .equals(featureName().baseName())
-          || "f32" .equals(featureName().baseName())
-          || "f64" .equals(featureName().baseName())
+      && (   FuzionConstants.I8_NAME  .equals(featureName().baseName())
+          || FuzionConstants.I16_NAME .equals(featureName().baseName())
+          || FuzionConstants.I32_NAME .equals(featureName().baseName())
+          || FuzionConstants.I64_NAME .equals(featureName().baseName())
+          || FuzionConstants.U8_NAME  .equals(featureName().baseName())
+          || FuzionConstants.U16_NAME .equals(featureName().baseName())
+          || FuzionConstants.U32_NAME .equals(featureName().baseName())
+          || FuzionConstants.U64_NAME .equals(featureName().baseName())
+          || FuzionConstants.F32_NAME .equals(featureName().baseName())
+          || FuzionConstants.F64_NAME .equals(featureName().baseName())
           || "bool".equals(featureName().baseName()));
   }
 
@@ -1242,7 +1197,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (outer() != null);
 
-    return !this.outer().isThisRef() && !isOuterRefCopyOfValue();
+    return !this.outer().isRef() && !isOuterRefCopyOfValue();
   }
 
 
@@ -1343,7 +1298,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var inh = heir.findInheritanceChain(outer());
         if (CHECKS) check
-          (inh != null);
+          (Errors.any() || inh != null);
 
         if (inh != null)
           {
@@ -1482,7 +1437,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public List<AbstractCall> findInheritanceChain(AbstractFeature ancestor)
   {
     if (PRECONDITIONS) require
-      (ancestor != null);
+      (ancestor != null,
+       this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.any() || inheritsFrom(ancestor));
 
     List<AbstractCall> result = tryFindInheritanceChain(ancestor);
 
@@ -1503,7 +1459,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean inheritsFrom(AbstractFeature parent)
   {
     if (PRECONDITIONS) require
-                         (state().atLeast(State.LOADED),
+      (state().atLeast(State.LOADED),
        parent != null && parent.state().atLeast(State.LOADED));
 
     if (this == parent)
@@ -1589,34 +1545,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Determine the formal argument types of this feature.
-   *
-   * @return a new array containing this feature's formal argument types.
-   */
-  public AbstractType[] argTypes()
-  {
-    int argnum = 0;
-    var result = new AbstractType[arguments().size()];
-    for (var frml : arguments())
-      {
-        if (CHECKS) check
-          (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
-
-        var frmlT = frml.resultType();
-
-        result[argnum] = frmlT;
-        argnum++;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
-  }
-
-
-  /**
-   * Is this feature marked with the `fixed` modifier. If so, this feature is
+   * Is this feature marked with the {@code fixed} modifier. If so, this feature is
    * not inherited, i.e., we know that at runtime, the outer feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()
    * could might be a heir.
@@ -1750,7 +1679,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * During type resolution, add a type parameter created for a free type like
-   * `T` in `f(x T) is ...`.
+   * {@code T} in {@code f(x T) is ...}.
    *
    * @param res the resolution instance.
    *
@@ -1782,12 +1711,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           }
         else
           {
-            var l = new List<Generic>();
-            for (var a0 : typeArguments())
-              {
-                l.add(a0.asGeneric());
-              }
-            _generics = new FormalGenerics(l);
+            _generics = new FormalGenerics(typeArguments().map2(ta -> ta.asGeneric()));
           }
       }
     return _generics;
@@ -1888,8 +1812,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * The Context associated with this feature without any context from
-   * statements like `if T : x then`.  This provides a way to get this as an
-   * outer feature via `result.outerFeature()'.
+   * statements like {@code if T : x then}.  This provides a way to get this as an
+   * outer feature via {@code result.outerFeature()}.
    *
    * @return the context for this feature.
    */
@@ -1908,6 +1832,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     return result;
   }
+
+
+  /**
+   * Origin of this feature, usually this.
+   * For pre, prebool, preandcall and post features this
+   * returns the origin feature.
+   */
+  AbstractFeature origin()
+  {
+    return this;
+  }
+
 
   /**
    * this feature as a human readable string

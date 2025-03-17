@@ -138,6 +138,12 @@ public class Errors extends ANY
   public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
 
 
+  /**
+   * Counter for unused field errors.
+   */
+  public static int unusedFieldErrCount = 0;
+
+
   /*-----------------------------  classes  -----------------------------*/
 
 
@@ -300,7 +306,7 @@ public class Errors extends ANY
 
 
   /**
-   * Where any errors encountered so far?
+   * Were any errors encountered so far?
    */
   public static synchronized boolean any()
   {
@@ -318,12 +324,12 @@ public class Errors extends ANY
 
 
   /**
-   * Convert given message into an error message preceded by "error <count>: "
+   * Convert given message into an error message preceded by {@code error <count>}: "
    * and increment the count.
    *
    * @param s a message, e.g., "undefined variable".
    *
-   * @return a message including error count, e..g, "error 23: undefined variable".
+   * @return a message including error count, e.g., "error 23: undefined variable".
    */
   static String errorMessage(String s)
   {
@@ -435,7 +441,7 @@ public class Errors extends ANY
                 warning(SourcePosition.builtIn,
                         "Maximum error count reached, stop error output.",
                         "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
-                        "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
+                        "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "=<n>'.");
               }
           }
       }
@@ -586,7 +592,7 @@ public class Errors extends ANY
   /**
    * Record the given runtime error and exit immediately with exit code 1.
    *
-   * @param k the kind of error we encountered, currently "postcondition" is the
+   * @param kind the kind of error we encountered, currently "postcondition" is the
    * only supported kind that is treated specially.
    *
    * @param msg a message to be shown
@@ -688,20 +694,19 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    if (!_shutting_down_ &&
-        (warningCount() < MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1))
+    if (!_shutting_down_)
       {
-        if (warningCount()+1 == MAX_WARNING_MESSAGES)
-          {
-            pos = SourcePosition.builtIn;
-            msg = "Maximum warning count reached, suppressing further warnings";
-            detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
-              "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
-          }
         Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
-        if (!_warnings_.contains(e))
+        var isnew = _warnings_.add(e);
+        if (isnew && (warningCount() <= MAX_WARNING_MESSAGES || MAX_WARNING_MESSAGES == -1))
           {
-            _warnings_.add(e);
+            if (warningCount() == MAX_WARNING_MESSAGES)
+              {
+                pos = SourcePosition.builtIn;
+                msg = "Maximum warning count reached, suppressing further warnings";
+                detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
+                  "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
+              }
             print(pos, warningMessage(msg), detail);
           }
       }
@@ -885,6 +890,7 @@ public class Errors extends ANY
   {
     _errors_.clear();
     _warnings_.clear();
+    unusedFieldErrCount = 0;
   }
 
 

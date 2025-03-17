@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 /**
  * u32Value is a value of type u32
@@ -109,10 +109,17 @@ public class u32Value extends Value
    */
   void checkStaticClazz(int expected)
   {
-    if (expected != fuir().clazz(FUIR.SpecialClazzes.c_u32))
+    if (expected != fuir().clazz(SpecialClazzes.c_u32))
       {
         throw new Error("u32 value not allowed for clazz " + expected);
       }
+  }
+
+
+  @Override
+  protected Object toNative()
+  {
+    return this.u32Value();
   }
 
 }

@@ -26,40 +26,40 @@
 stdintest =>
 
   lm : mutate is
-  say (lm.instate_self ()->((io.stdin lm).try unit ()->
+  lm ! ()->
+    (io.stdin.reader lm) ! ()->
 
-    read(n i32) => io.buffered.read_string lm n
-    read_line => io.buffered.read_line lm ? str String => str | io.end_of_file => ""
+      read(n i32) => (io.buffered lm).read_string n
+      read_line => (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
-    a := read 1
-    # read 0 should not read anything
-    _ := read 0
-    b := read 1
-    # read 0 should not read anything
-    _ := read 0
-    # read 1 utf8 codepoint
-    smiley := read 1
+      a := read 1
+      # read 0 should not read anything
+      _ := read 0
+      b := read 1
+      # read 0 should not read anything
+      _ := read 0
+      # read 1 utf8 codepoint
+      smiley := read 1
 
-    # printing repeatedly should always yield the same string
-    say "😀: $smiley"
-    say "😀: $smiley"
-    say "b: $b"
-    say "b: $b"
-    say "a: $a"
-    say "a: $a"
+      # printing repeatedly should always yield the same string
+      say "😀: $smiley"
+      say "😀: $smiley"
+      say "b: $b"
+      say "b: $b"
+      say "a: $a"
+      say "a: $a"
 
 
-    line := read_line
-    line2 := read_line
+      line := read_line
+      line2 := read_line
 
-    # printing repeatedly should always yield the same string
-    say "%s😀: $line"
-    say "%s😀: $line"
-    say "123456: $line2"
-    say "123456: $line2"
+      # printing repeatedly should always yield the same string
+      say "%s😀: $line"
+      say "%s😀: $line"
+      say "123456: $line2"
+      say "123456: $line2"
 
-    # when stdin is empty, read_line should return an empty string
-    say "nothing: '$read_line'."
-    # this code should not run because reading from stdin now errors.
-    say "nothing: '{read 1}'."
-  ))
+      # when stdin is empty, read_line should return an empty string
+      say "nothing: '$read_line'."
+      # now at end_of_file.
+      say "nothing: '{read 1}'."

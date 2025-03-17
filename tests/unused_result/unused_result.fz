@@ -36,7 +36,7 @@ unused_result is
     t true_  => t
 
   match true # should flag an error
-    f false_ => true
-    t true_  => true
+    false_ => true
+    true_  => true
 
   unit

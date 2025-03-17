@@ -1,0 +1,3 @@
+some string, accessed via outer reference
+[id => 1, name => Mario, email => admin@example.com]
+3

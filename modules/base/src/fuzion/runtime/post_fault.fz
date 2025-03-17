@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature post_fault
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# post_fault -- effect that terminates a computation due to a failed runtime post
+# condition check
+#
+public post_fault (
+  # the handler this effect uses to fail
+  p String -> void
+  ) : eff.fallible p
+is
+
+
+  # install default post_fault handler
+  type.install_default =>
+    (fuzion.runtime.post_fault msg->
+      fuzion.runtime.fault.cause ("postcondition", msg)).default
+
+
+  # create an instance of `post_fault` with the given error handler.
+  #
+  public fixed redef type.new(h String -> void) => fuzion.runtime.post_fault h
+
+
+# post_fault with no argument returns post_fault.env, the currently installed
+# runtime post_fault handler.
+#
+public post_fault =>
+  post_fault.install_default
+  post_fault.env
+
+
+# cause a postcondition fault with given msg argument, i.e., call post_fault.cause
+# msg, i.e., use the current post_fault effect to fail with the given message.
+#
+public postcondition_fault(msg String) => post_fault.cause msg

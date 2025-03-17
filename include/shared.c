@@ -25,6 +25,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #ifdef GC_THREADS
+#define GC_DONT_INCLUDE_WINDOWS_H
 #include <gc.h>
 #endif
 #include <stdio.h>
@@ -34,6 +35,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <stdatomic.h>
+#include <time.h>
 
 
 /**
@@ -112,7 +114,7 @@ void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
 
 // global instance of the jvm
 JavaVM *fzE_jvm                = NULL;
-// global instance of the jvm environment
+// thread local instance of the jvm environment
 __thread JNIEnv *fzE_jni_env   = NULL;
 _Bool jvm_running              = false;
 
@@ -288,7 +290,7 @@ char* fzE_replace_char(const char* str, char find, char replace){
 }
 
 // convert a jstring to a utf-8 byte array
-// NYI OPTIMIZATION do conversion in C not via the JVM.
+// NYI: OPTIMIZATION: do conversion in C not via the JVM.
 const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 {
   if (jstr == NULL)
@@ -797,7 +799,7 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 
 
 // set a static field in class.
-void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig) // TODO:FIXME:
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig)
 {
   jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );
@@ -913,3 +915,101 @@ void fzE_cnd_destroy(void * cnd)
 }
 
 */
+
+
+/**
+ * get a unique id > 0
+ */
+uint64_t fzE_unique_id()
+{
+  static atomic_uint_least64_t last_id = 0;
+  return ++last_id;
+}
+
+
+/**
+ * result is a 32-bit array
+ *
+ * result[0] = year
+ * result[1] = month
+ * result[2] = day_in_month
+ * result[3] = hour
+ * result[4] = min
+ * result[5] = sec
+ * result[6] = nanosec;
+ */
+void fzE_date_time(void * result)
+{
+  time_t rawtime;
+  time(&rawtime);
+  struct tm * ptm = gmtime(&rawtime);
+  ((int32_t *)result)[0] = ptm->tm_year+1900;
+  ((int32_t *)result)[1] = ptm->tm_mon+1;
+  ((int32_t *)result)[2] = ptm->tm_mday;
+  ((int32_t *)result)[3] = ptm->tm_hour;
+  ((int32_t *)result)[4] = ptm->tm_min;
+  ((int32_t *)result)[5] = ptm->tm_sec;
+  ((int32_t *)result)[6] = 0;
+}
+
+
+int32_t fzE_file_write(void * file, void * buf, int32_t size)
+{
+  size_t result = fwrite(buf, 1, size, (FILE*)file);
+  return ferror((FILE*)file)!=0
+    ? -1
+    : result;
+}
+
+int32_t fzE_file_move(const char *oldpath, const char *newpath)
+{
+  return rename(oldpath, newpath);
+}
+
+int32_t fzE_file_close(void * file)
+{
+  return fclose((FILE*)file);
+}
+
+int32_t fzE_file_seek(void * file, int64_t offset)
+{
+  return fseek((FILE*)file, offset, SEEK_SET);
+}
+
+int64_t fzE_file_position(void * file)
+{
+  return ftell((FILE*)file);
+}
+
+void * fzE_file_stdin(void) { return stdin; }
+void * fzE_file_stdout(void) { return stdout; }
+void * fzE_file_stderr(void) { return stderr; }
+
+int32_t fzE_file_flush(void * file)
+{
+  return fflush(file) == 0 ? 0 : -1;
+}
+
+
+uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
+{
+  return ((uint8_t *)addr)[idx];
+}
+
+void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
+{
+  ((uint8_t *)addr)[idx] = x;
+}
+
+void * fzE_null(void)
+{
+  return NULL;
+}
+
+int fzE_is_null(void * p)
+{
+  return p == NULL
+    ? 0
+    : -1;
+}
+

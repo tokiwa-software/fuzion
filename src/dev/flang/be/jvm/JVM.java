@@ -29,9 +29,9 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
-import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.TailCall;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.ClassFile;
@@ -43,6 +43,7 @@ import dev.flang.be.jvm.runtime.Runtime;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
@@ -57,6 +58,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -339,7 +341,7 @@ Dynamically bounds calls are performed on a reference target, which means the
 target instance has a unique corresponding Java class. This means we could
 leverage the Java class to perform this call, either by
 
-* adding an `id()` method to `FuzionInstance` that is redefined for each ref
+* adding an {@code id()} method to {@code FuzionInstance} that is redefined for each ref
   type to return the corresponding clazz id. A `lookupswitch` could then be used
   to perform the call (in O(log n)!)
 
@@ -441,8 +443,7 @@ should be avoided as much as possible.
               {
                 cf.field(ACC_PUBLIC,
                          jvm._names.field(cl),
-                         jvm._types.resultType(jvm._fuir.clazzResultClazz(cl)).descriptor(),
-                         new List<>());
+                         jvm._types.resultType(jvm._fuir.clazzResultClazz(cl)).descriptor());
               }
           }
       }
@@ -457,11 +458,11 @@ should be avoided as much as possible.
         switch (k)
           {
           case Intrinsic    :
-          case Routine      :
-          case Abstract     : jvm.code(cl); break;
+          case Routine      : jvm.code(cl); break;
           case Choice       : jvm._types._choices.createCode(cl); break;
+          case Native       : jvm.native0(cl); break;
+          case Abstract     :
           case Field        : break;
-          case Native       : Errors.warning("JVM backend cannot compile native " + jvm._fuir.clazzAsString(cl)); break;
           default           : throw new Error ("Unexpected feature kind: " + k);
           };
       }
@@ -608,7 +609,6 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/Runtime$2.class",
               "dev/flang/be/jvm/runtime/Runtime$3.class",
               "dev/flang/be/jvm/runtime/Runtime$4.class",
-              "dev/flang/be/jvm/runtime/Runtime$5.class",
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
               "dev/flang/util/Errors.class",
@@ -802,7 +802,6 @@ should be avoided as much as possible.
              FUIR fuir)
   {
     _options = opt;
-    fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _fuir = fuir;
     _names = new Names(fuir);
     _types = new Types(opt, fuir, _names);
@@ -828,7 +827,7 @@ should be avoided as much as possible.
    */
   String mainName()
   {
-    return _fuir.clazzBaseName(_fuir.mainClazzId());
+    return _fuir.clazzBaseName(_fuir.mainClazz());
   }
 
 
@@ -845,7 +844,7 @@ should be avoided as much as possible.
 
 
   /**
-   * For `-jar` backend: Name of the JAR file to be created.
+   * For {@code -jar} backend: Name of the JAR file to be created.
    *
    * @return jar file path created from main feature's base name
    */
@@ -856,7 +855,7 @@ should be avoided as much as possible.
 
 
   /**
-   * For `-classes` backend: Name of the classes directory to be created.
+   * For {@code -classes} backend: Name of the classes directory to be created.
    *
    * @return classes directory name created from main feature's base name
    */
@@ -867,7 +866,7 @@ should be avoided as much as possible.
 
 
   /**
-   * For `-jar` and `-classes` backend: Path of the executable script to run the
+   * For {@code -jar} and {@code -classes} backend: Path of the executable script to run the
    * application.
    *
    * @return executable script path created from main feature's base name
@@ -879,10 +878,10 @@ should be avoided as much as possible.
 
 
   /**
-   * Create shell script to execute `java` with given arguments.  This is used
+   * Create shell script to execute {@code java} with given arguments.  This is used
    * by -jar and -classes backends to create an executable file.
    *
-   * @param args the space-separated arguments for `java`.
+   * @param args the space-separated arguments for {@code java}.
    */
   void createJavaExecutable(String args)
   {
@@ -896,12 +895,27 @@ should be avoided as much as possible.
                                   """
                                   #!/bin/sh
 
-                                  java -D%s="$0" %s "$@"
+                                  SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
+
+                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
+                                  PATH="$PATH:$SCRIPT_PATH" \
+                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
+                                  java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
                                   """,
                                   FUZION_COMMAND_PROPERTY,
                                   args));
         out.close();
         f.setExecutable(true);
+        for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
+          {
+            var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
+            if (file.toFile().exists())
+              {
+                Files.copy(file,
+                           executableName.toAbsolutePath().getParent().resolve(str),
+                           StandardCopyOption.REPLACE_EXISTING);
+              }
+          }
       }
     catch (IOException io)
       {
@@ -973,14 +987,170 @@ should be avoided as much as possible.
       }
   }
 
+
+  /**
+   * Create native for given clazz cl.
+   *
+   * store MethodHandle for native calling
+   * in field methodHandle.
+   *
+   * @param cl id of clazz to compile
+   */
+  public void native0(int cl)
+  {
+    var cf = _types.classFile(cl);
+    cf.field(ACC_PUBLIC | ACC_STATIC,
+             Names.METHOD_HANDLE_FIELD_NAME,
+             Names.CT_JAVA_LANG_INVOKE_METHODHANDLE.descriptor());
+    var rt = _fuir.clazzResultClazz(cl);
+    cf.addToClInit(
+      Expr
+        .stringconst(_fuir.clazzNativeName(cl))                                        // String
+        .andThen(functionDescriptorArgs(cl))                                           // String, (MemoryLayout), [MemoryLayout
+        .andThen(invokeFunctionDescriptorOf(_fuir.clazzIsUnitType(rt)))                // String, FunctionDescriptor
+        .andThen(libraryArray())                                                       // String, FunctionDescriptor, [String
+        .andThen(invoke_get_method_handle())                                           // MethodHandle
+        .andThen(Expr.putstatic(_names.javaClass(cl),
+                                Names.METHOD_HANDLE_FIELD_NAME,
+                                Names.CT_JAVA_LANG_INVOKE_METHODHANDLE))
+    );
+  }
+
+
+  /**
+   * @return code that puts a {@code String[]} on the stack
+   * filled with the libraries of command line option
+   * {@code -JLibraries}
+   */
+  private Expr libraryArray()
+  {
+    var libs = _options._jLibs
+      .map(l -> l.split(" "))
+      .orElse(new String[0]);
+
+    var result = Expr
+        .iconst(libs.length)
+        .andThen(Types.JAVA_LANG_STRING.newArray());
+
+    for (int i = 0; i < libs.length; i++)
+      {
+        result = result
+          .andThen(Expr.DUP)                             // T[], T[]
+          .andThen(Expr.iconst(i))                       // T[], T[], idx
+          .andThen(Expr.stringconst(libs[i]))            // T[], T[], idx, data
+          .andThen(Types.JAVA_LANG_STRING.xastore());    // T[]
+      }
+    return result;
+  }
+
+
+  /**
+   * create Expr for invoking {@link java.lang.foreign.FunctionDescriptor.of}
+   * or {@link java.lang.foreign.FunctionDescriptor.ofVoid}
+   *
+   * @param resultsInUnit
+   */
+  private Expr invokeFunctionDescriptorOf(boolean resultsInUnit)
+  {
+    return Expr.invokeStatic(
+      Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR,
+      resultsInUnit ? "ofVoid": "of",
+      resultsInUnit ? "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")"
+                      + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor()
+                    : "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.descriptor()
+                      + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")"
+                      + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor(),
+      Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR,
+      -1,
+      true);
+  }
+
+
+  /*
+   * create Expr for invoking `Runtime.get_method_handle`
+   */
+  private Expr invoke_get_method_handle()
+  {
+    return Expr.invokeStatic(
+      Names.RUNTIME_CLASS,
+      "get_method_handle",
+      "(" + Names.JAVA_LANG_STRING.descriptor() + Names.CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR.descriptor() + Types.JAVA_LANG_STRING.array().descriptor() + ")"
+        + Names.CT_JAVA_LANG_INVOKE_METHODHANDLE.descriptor(),
+      Names.CT_JAVA_LANG_INVOKE_METHODHANDLE);
+  }
+
+
+  /**
+   * Put args for FunctionDescriptor onto stack.
+   *
+   * @param cc
+   * @return
+   */
+  private Expr functionDescriptorArgs(int cc)
+  {
+    var result = Expr.UNIT;
+    if (!_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
+      {
+        result = result.andThen(layout(_fuir.clazzResultClazz(cc)));
+      }
+    var jt = new ClassType(Names.JAVA_LANG_FOREIGN_VALUELAYOUT);
+    result = result
+      .andThen(Expr.iconst(_fuir.clazzArgCount(cc)))
+      .andThen(jt.newArray());
+    for (int i = 0; i < _fuir.clazzArgCount(cc); i++)
+      {
+        result = result
+          .andThen(Expr.DUP)                             // T[], T[]
+          .andThen(Expr.iconst(i))                       // T[], T[], idx
+          .andThen(layout(_fuir.clazzArgClazz(cc, i)))   // T[], T[], idx, data
+          .andThen(jt.xastore());                        // T[]
+      }
+    return result;
+  }
+
+
+  /*
+   * Put MemoryLayout/ValueLayout of c onto stack.
+   */
+  private Expr layout(int c)
+  {
+    return switch (_fuir.getSpecialClazz(c))
+      {
+      case c_bool    -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_BOOLEAN",
+        new ClassType("java/lang/foreign/ValueLayout$OfBoolean"));
+      case c_i8      -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_BYTE",
+        new ClassType("java/lang/foreign/ValueLayout$OfByte"));
+      case c_i16     -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_SHORT",
+        new ClassType("java/lang/foreign/ValueLayout$OfShort"));
+      case c_i32     -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_INT",
+        new ClassType("java/lang/foreign/ValueLayout$OfInt"));
+      case c_i64     -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
+        new ClassType("java/lang/foreign/ValueLayout$OfLong"));
+      case c_u8      -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_BYTE",
+        new ClassType("java/lang/foreign/ValueLayout$OfByte"));
+      case c_u16     -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_CHAR",
+        new ClassType("java/lang/foreign/ValueLayout$OfChar"));
+      case c_u32     -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_INT",
+        new ClassType("java/lang/foreign/ValueLayout$OfInt"));
+      case c_f32     -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_FLOAT",
+        new ClassType("java/lang/foreign/ValueLayout$OfFloat"));
+      case c_f64     -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_DOUBLE",
+        new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
+      case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
+        new ClassType("java/lang/foreign/ValueLayout$OfLong"));
+      default -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT);
+      };
+  }
+
+
   int current_index(int cl)
   {
-    if (_types.isScalar(cl))
+    if (_fuir.isScalar(cl))
       {
         return 0;
       }
     var o = _fuir.clazzOuterClazz(cl);
-    var l = _types.hasOuterRef(cl) ? (_types.isScalar(o) ? _types.javaType(o).stackSlots()  // outer of scalars like i64 are just copies of the value
+    var l = _types.hasOuterRef(cl) ? (_fuir.isScalar(o) ? _types.javaType(o).stackSlots()  // outer of scalars like i64 are just copies of the value
                                                          : 1)
                                    : 0;
     for (var j = 0; j < _fuir.clazzArgCount(cl); j++)
@@ -1013,7 +1183,7 @@ should be avoided as much as possible.
   Expr prolog(int cl)
   {
     var result = Expr.UNIT;
-    if (!_types.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
+    if (!_fuir.isScalar(cl))  // not calls like `u8 0x20` or `f32 3.14`.
       {
         var vti = _types.resultType(cl).vti();
         result = result.andThen(new0(cl))
@@ -1168,6 +1338,21 @@ should be avoided as much as possible.
 
 
   /**
+   * Create code that is supposed to be unreachable.
+   *
+   * @param site a site index where this unreachable code occured
+   *
+   * @param msg some text explaining what kind of statement we are trying to execute.
+   *
+   * @return an Expr to reprot the error and exit(1).
+   */
+  Expr reportUnreachable(int site, String msg)
+  {
+    return reportErrorInCode("As per data flow analysis this code should be unreachable. " + msg + " " + _fuir.siteAsString(site));
+  }
+
+
+  /**
    * Get the number of local var slots for the given routine
    *
    * @param cl id of clazz to generate code for
@@ -1219,9 +1404,9 @@ should be avoided as much as possible.
   /**
    * Alloc local var slots for the given routine.
    *
-   * @param cl id of clazz to generate code for
+   * @param si id of clazz to generate code for
    *
-   * @param numSlots the number of slots to be alloced
+   * @param numSlots the number of slots to be allocated
    *
    * @return the local var index of the allocated slots
    */
@@ -1326,7 +1511,7 @@ should be avoided as much as possible.
    *
    * @param i the local variable index whose slot we are looking for.
    *
-   * @return the slot that contains arg #i on a call to the Java code for `cl`.
+   * @return the slot that contains arg #i on a call to the Java code for {@code cl}.
    */
   public int argSlot(int cl, int i)
   {
@@ -1365,9 +1550,9 @@ should be avoided as much as possible.
    *
    * @param bytes the utf8 bytes of the string.
    */
-  Pair<Expr, Expr> constString(byte[] bytes)
+  Pair<Expr, Expr> boxedConstString(byte[] bytes)
   {
-    return constString(Expr.stringconst(bytes)
+    return boxedConstString(Expr.stringconst(bytes)
                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING,
                                                   Names.RUNTIME_INTERNAL_ARRAY_FOR_CONST_STRING_SIG,
@@ -1381,10 +1566,11 @@ should be avoided as much as possible.
    *
    * @param bytes the utf8 bytes of the string as a Java string.
    */
-  Pair<Expr, Expr> constString(Expr bytes)
+  Pair<Expr, Expr> boxedConstString(Expr bytes)
   {
-    var cs = _fuir.clazz_Const_String();
-    var cs_utf8_data = _fuir.clazz_Const_String_utf8_data();
+    var cs = _fuir.clazz_const_string();
+    var ref_cs = _fuir.clazz_ref_const_string();
+    var cs_utf8_data = _fuir.clazz_const_string_utf8_data();
     var arr = _fuir.clazz_array_u8();
     var internalArray = _fuir.lookup_array_internal_array(arr);
     var data = _fuir.clazz_fuzionSysArray_u8_data();
@@ -1405,7 +1591,15 @@ should be avoided as much as possible.
       .andThen(putfield(length))                      //        cs, cs, arr, arr, fsa
       .andThen(putfield(internalArray))               //        cs, cs, arr
       .andThen(putfield(cs_utf8_data))                //        cs
-      .is(_types.resultType(cs));                     //        -
+      .andThen(Expr                                   //        cs (boxed)
+        .invokeStatic(
+          _names.javaClass(ref_cs),
+          Names.BOX_METHOD_NAME,
+          _types.boxSignature(ref_cs),
+          _types.javaType(ref_cs)
+        )
+      );
+
     return new Pair<>(res, Expr.UNIT);
   }
 
@@ -1417,7 +1611,7 @@ should be avoided as much as possible.
    */
   Pair<Expr, Expr> constString(String str)
   {
-    return constString(str.getBytes(StandardCharsets.UTF_8));
+    return boxedConstString(str.getBytes(StandardCharsets.UTF_8));
   }
 
 
@@ -1445,7 +1639,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array i8` and `array u8`.
+   * Create code to create a constant {@code array i8} and {@code array u8}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1463,7 +1657,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array i16`.
+   * Create code to create a constant {@code array i16}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1480,7 +1674,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array u16`.
+   * Create code to create a constant {@code array u16}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1497,7 +1691,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constants `array i32` and `array u32`.
+   * Create code to create a constants {@code array i32} and {@code array u32}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1514,7 +1708,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array i64` and `array u64`.
+   * Create code to create a constant {@code array i64} and {@code array u64}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1531,7 +1725,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constants `array f32`.
+   * Create code to create a constants {@code array f32}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1548,7 +1742,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Create code to create a constant `array f64`.
+   * Create code to create a constant {@code array f64}.
    *
    * @param bytes the byte data of the array contents in Fuzions serialized from
    * (little endian).
@@ -1611,13 +1805,18 @@ should be avoided as much as possible.
    */
   boolean fieldExists(int field)
   {
-    var occ   = _fuir.clazzOuterClazz(field);
-    var rt = _fuir.clazzResultClazz(field);
+    var result = false;
+    if (field != NO_CLAZZ)
+      {
+        var occ   = _fuir.clazzOuterClazz(field);
+        var rt = _fuir.clazzResultClazz(field);
 
-    return _fuir.hasData(rt)       &&
-      !_types.isScalar(occ)        &&
-      _types.clazzNeedsCode(field) &&
-      _types.resultType(rt) != PrimitiveType.type_void;
+        result = _fuir.hasData(rt)       &&
+          !_fuir.isScalar(occ)        &&
+          _types.clazzNeedsCode(field) &&
+          _types.resultType(rt) != PrimitiveType.type_void;
+      }
+    return result;
   }
 
 
@@ -1704,7 +1903,7 @@ should be avoided as much as possible.
           .andThen(LOAD_UNIVERSE);
       }
     return
-      _types.isScalar(occ)      ? tvalue :   // reading, e.g., `val` field from `i32` is identity operation
+      _fuir.isScalar(occ)      ? tvalue :   // reading, e.g., `val` field from `i32` is identity operation
       _fuir.clazzIsVoidType(rt) ? null       // NYI: UNDER DEVELOPMENT: this should not be possible, a field of type void is guaranteed to be uninitialized!
                                 : tvalue.getFieldOrUnit(_names.javaClass(occ),
                                                         _names.field(f),
@@ -1717,16 +1916,16 @@ should be avoided as much as possible.
    *
    * @param s site of the assignment or NO_SITE if this is a call in an interface method stub.
    *
-   * @param tvalue the target value that contains the field
-   *
    * @param f the field
-   *
-   * @param value the new value for the field
    *
    * @param rt the type of the field.
    *
+   * @param tvalue the target value that contains the field
+   *
+   * @param value the new value for the field
+   *
    */
-  Expr assignField(int s, Expr tvalue, int f, Expr value, int rt)
+  Expr assignField(int s, int f, int rt, Expr tvalue, Expr value)
   {
     if (CHECKS) check
       (tvalue != null || !_fuir.hasData(rt) || _fuir.clazzOuterClazz(f) == _fuir.clazzUniverse(),
@@ -1758,7 +1957,7 @@ should be avoided as much as possible.
       {
         res = Expr.comment("Not setting field `" + _fuir.clazzAsString(f) + "`: "+
                            (!_fuir.hasData(rt)       ? "type `" + _fuir.clazzAsString(rt) + "` is a unit type" :
-                            _types.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
+                            _fuir.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
                                                  : "FUIR.clazzNeedsCode() is false for this field"))
           // make sure we evaluate tvalue and value:
           .andThen(tvalue.drop())
@@ -1775,9 +1974,9 @@ should be avoided as much as possible.
    * this creates a new instance and copies all the fields from value into the
    * new instance.
    *
-   * NYI: OPTIMIZATION: Once value features like `point(x,y i32)` are
-   * represented as tuples of primitive values (`int, int`) instead of instances
-   * of Java classes (`class Point { int x, y; }`, this cloning will no longer
+   * NYI: OPTIMIZATION: Once value features like {@code point(x,y i32)} are
+   * represented as tuples of primitive values ({@code int, int}) instead of instances
+   * of Java classes ({@code class Point { int x, y; }}, this cloning will no longer
    * be needed.
    *
    * @param s site of code that requires this cloning
@@ -1797,7 +1996,7 @@ should be avoided as much as possible.
   {
     if (!_fuir.clazzIsRef(rt) &&
         (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
-        !_types.isScalar(rt) &&
+        !_fuir.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
         var vti = _types.resultType(rt).vti();
@@ -1817,7 +2016,7 @@ should be avoided as much as possible.
               .andThen(Expr.getfield(cc, Names.TAG_NAME, PrimitiveType.type_int))
               .andThen(Expr.putfield(cc, Names.TAG_NAME, PrimitiveType.type_int));
             var hasref = false;
-            for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
+            for (int i = 0; i < _fuir.clazzChoiceCount(rt); i++)
               {
                 var tc = _fuir.clazzChoice(rt, i);
                 if (_fuir.clazzIsRef(tc))
@@ -1851,7 +2050,7 @@ should be avoided as much as possible.
           }
         else
           {
-            for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+            for (var i = 0; i < _fuir.clazzFieldCount(rt); i++)
               {
                 var fi = _fuir.clazzField(rt, i);
                 if (fieldExists(fi))
@@ -1886,7 +2085,7 @@ should be avoided as much as possible.
    * In a product type, the value of a field may be null if that value was not
    * yet initialized. This may currently be the case of local variables on
    * branches that were executed yet, or that may never be executed at all as for
-   * `str` in
+   * {@code str} in
    *
    *    point (x, y i32) is
    *      if x > y
@@ -2022,7 +2221,7 @@ should be avoided as much as possible.
                                        Expr.iconst(1),
                                        Expr.iconst(0)));
                 var hasref = false;
-                for (int i = 0; i < _fuir.clazzNumChoices(rt); i++)
+                for (int i = 0; i < _fuir.clazzChoiceCount(rt); i++)
                   {
                     var tc = _fuir.clazzChoice(rt, i);
                     if (_fuir.clazzIsRef(tc))
@@ -2068,10 +2267,10 @@ should be avoided as much as possible.
             else // not a choice, so a 'normal' product type
               {
                 if (CHECKS) check
-                  (_fuir.clazzNumFields(rt) > 0);  // unit-types where handled above
+                  (_fuir.clazzFieldCount(rt) > 0);  // unit-types where handled above
 
                 var count = 0;
-                for (var i = 0; i < _fuir.clazzNumFields(rt); i++)
+                for (var i = 0; i < _fuir.clazzFieldCount(rt); i++)
                   {
                     var fi = _fuir.clazzField(rt, i);
                     if (fieldExists(fi))

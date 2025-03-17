@@ -2,7 +2,6 @@
 
 [![OpenSSF
 Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-software/fuzion/badge)](https://api.securityscorecards.dev/projects/github.com/tokiwa-software/fuzion)
-[![syntax check fz files](https://github.com/tokiwa-software/fuzion/actions/workflows/syntax_check_fuzion.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/syntax_check_fuzion.yml)
 [![run tests on linux](https://github.com/tokiwa-software/fuzion/actions/workflows/linux.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/linux.yml)
 [![run tests on macOS](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml)
 [![run tests on windows](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml)
@@ -43,15 +42,13 @@ hello_world is
   # `instate_self` is then used to instate this instance and
   # run code in the context of the instated effect.
   #
-  lm.instate_self ()->
+  lm ! ()->
 
     # read someone's name from standard input
     #
-    get_name String =>
-      match ((io.stdin lm).with ()->
-                io.buffered.read_line lm ? str String => str | io.end_of_file => "")
-        name String => name
-        e error => panic "Could not get your name!"
+    get_name =>
+      (io.stdin.reader lm) ! ()->
+        (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
     # greet someone with the name given
     #
@@ -92,7 +89,7 @@ ex_gcd is
 
   # find the greatest common divisor of a and b
   #
-  gcd(a, b i32) i32
+  gcd(a, b i32)
     pre
       safety: (a != 0 || b != 0)
     post
@@ -103,9 +100,9 @@ ex_gcd is
     if b = 0 then a else gcd b (a % b)
 
 
-  say (gcd 8 12)
-  say (gcd -8 12)
-  say (gcd 28 0)
+  say <| gcd 8 12
+  say <| gcd -8 12
+  say <| gcd 28 0
 ```
 
 This example implements a simple variant of an algorithm that finds the greatest
@@ -130,7 +127,7 @@ generator_effect is
 
   # bind the yield operation dynamically
   #
-  (gen i32 (i -> say "yielded $i")).instate_self ()->
+  (gen i32 (i -> say "yielded $i")) ! ()->
     [0,8,15].as_list.traverse
 ```
 

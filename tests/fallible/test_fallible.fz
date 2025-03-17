@@ -83,4 +83,4 @@ test_fallible
 # instance via `test_fallible.try_unit h` would result in an endless recursion.
 #
 try_unit(h error->void) : try unit h unit unit is
-  public redef fixed type.new(h error->void) => try_unit h
+  public fixed redef type.new(h error->void) => try_unit h

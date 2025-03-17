@@ -32,6 +32,8 @@
 #  FUZION_OPTIONS -- options to be passed to $(FUZION)
 
 FUZION_OPTIONS ?=
+FUZION_JVM_BACKEND_OPTIONS ?=
+FUZION_C_BACKEND_OPTIONS ?=
 FUZION_DEPENDENCIES ?=
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
@@ -41,6 +43,8 @@ ENV = \
   $(if $(FUZION_JAVA)           , FUZION_JAVA=$(FUZION_JAVA)                      ,) \
   $(if $(FUZION_JAVA_STACK_SIZE), FUZION_JAVA_STACK_SIZE=$(FUZION_JAVA_STACK_SIZE),) \
   $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
+  $(if $(FUZION_JVM_BACKEND_OPTIONS), FUZION_JVM_BACKEND_OPTIONS="$(FUZION_JVM_BACKEND_OPTIONS)",) \
+  $(if $(FUZION_C_BACKEND_OPTIONS), FUZION_C_BACKEND_OPTIONS="$(FUZION_C_BACKEND_OPTIONS)",) \
 
 
 # for libjvm.so
@@ -66,6 +70,9 @@ jvm: $(FUZION_DEPENDENCIES)
 c: $(FUZION_DEPENDENCIES)
 	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
+effect: $(FUZION_DEPENDENCIES)
+	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
 record: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
 
@@ -77,3 +84,6 @@ record_jvm: $(FUZION_DEPENDENCIES)
 
 record_c: $(FUZION_DEPENDENCIES)
 	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+
+record_effect: $(FUZION_DEPENDENCIES)
+	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)

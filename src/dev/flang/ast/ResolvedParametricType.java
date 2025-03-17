@@ -31,6 +31,7 @@ import java.util.Set;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -105,7 +106,7 @@ public class ResolvedParametricType extends ResolvedType
    */
   public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    return v.action(this, outerfeat);
+    return v.action(this);
   }
 
 
@@ -157,9 +158,9 @@ public class ResolvedParametricType extends ResolvedType
    * A parametric type is not considered a ref type even it the actual type
    * might very well be a ref.
    */
-  public boolean isRef()
+  public YesNo isRef()
   {
-    return _isBoxed;
+    return _isBoxed ? YesNo.yes : YesNo.no;
   }
 
 
@@ -234,7 +235,7 @@ public class ResolvedParametricType extends ResolvedType
       {
         n = _generic.typeParameter().qualifiedName();
       }
-    return n + (this.isRef() ? " (boxed)" : "");
+    return n + (isRef().yes() ? " (boxed)" : "");
   }
 
 

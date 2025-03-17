@@ -34,88 +34,88 @@ import dev.flang.util.FuzionOptions;
 
 
 /**
- * Resolution provides feature resolution for Fuzion.
+ * Resolution provides feature resolution for Fuzion.<p>
  *
  * The purpose of feature resolution is to determine the actual types of all
  * fields, expressions and features, to replace syntactic sugar (such as
  * inline function definition) by proper feature declarations, to determine
  * actual generic parameters to form runtime types and to layout objects and
- * frames and to provide the basis for code analysis.
+ * frames and to provide the basis for code analysis.<p>
  *
  * Certain errors are detected during resolution, e.g., cyclic inheritance or
- * cyclic nesting of types.
+ * cyclic nesting of types.<p>
  *
  * Resolution starts with the universe, the outermost feature, and proceeds
  * forward further and further inside. This approach clearly does not scale to
  * large applications with big libraries, so it will be necessary to revisit
  * this and implement a more on-demand approach once the language is more
  * stable (e.g., by adding singleton features lazily only when they are
- * referenced).
+ * referenced).<p>
  *
- * Resolution consists of the following steps
+ * Resolution consists of the following steps<p>
  *
  * 1. Start by creating the universe and add it to the set of features to be
- *    resolved for inheritance.
+ *    resolved for inheritance.<p>
  *
  * 2. Take the first feature of the list of features to be inheritance
- *    resolved and perform inheritance resolution for it.
+ *    resolved and perform inheritance resolution for it.<p>
  *
  * 3. Inheritance resolution for a feature f: recursively, perform inheritance
  *    resolution for the outer feature of f and for all direct ancestors of a
- *    f, then perform inheritance resolution of the feature f itself.
+ *    f, then perform inheritance resolution of the feature f itself.<p>
  *
  * 4. after inheritance resolution for a feature f, add it to the set of
- *    features to be type resolved.
+ *    features to be type resolved.<p>
  *
  * 5. As long as there are features to be inheritance resolved, go to step
  *    2. Otherwise, take the first feature of the list of features to be
- *    resolved for declarations.
+ *    resolved for declarations.<p>
  *
  * 6. Declaration resolution for a feature f: For all declarations of features
  *    in f (formal arguments, local features, implicit result field), add these
  *    features to the set of features to be resolved for inheritance. Schedule f
- *    for type resolution.
+ *    for type resolution.<p>
  *
  * 7. As long as there are features to be declaration resolved, go to step
  *    6. Otherwise, take the first feature of the list of features to be
- *    resolved for types.
+ *    resolved for types.<p>
  *
  * 8. Type resolution for a feature f: For all expressions and expressions in f's
  *    inheritance clause, contract, and implementation, determine the static
  *    type of the expression. Were needed, perform type inference. Schedule f
- *    for syntactic sugar resolution.
+ *    for syntactic sugar resolution.<p>
  *
  * 9. If there are any features schedule for inheritance, declaration or type
  *    resolution, go to step 7. Otherwise, take the first feature of the list of
- *    features to be syntactic sugar resolved.
+ *    features to be syntactic sugar resolved.<p>
  *
  * 10. Syntactic sugar resolution of a feature f: For all expressions and
  *     expressions in f's inheritance clause, contract, and implementation,
  *     resolve syntactic sugar, e.g., by replacing anonymous inner functions by
- *     declaration of corresponding inner features. Add (f,<>) to the list of
- *     features to be searched for runtime types to be layouted.
+ *     declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
+ *     features to be searched for runtime types to be layouted.<p>
  *
- * 11. If there are any features scheduled for inheritance, declaration. type,
+ * 11. If there are any features scheduled for inheritance, declaration, type,
  *     or syntactic sugar resolution, go to step 9. Otherwise, take the first
  *     entry (f,G) from the list of features with actual generics to be searched
- *     for runtime types to be layouted.
+ *     for runtime types to be layouted.<p>
  *
  * 10. Searching for runtime types for a feature f with actual generics G: For
  *     all expressions and expressions in f's inheritance clause, contract, and
  *     implementation, find declarations and calls to features f1 with actual
  *     generic arguments G1. Add all found (f1,G1) to the set of runtime types
- *     to be layouted.
+ *     to be layouted.<p>
  *
  * 11. If there are any features scheduled for inheritance, declaration. type,
  *     syntactic sugar resolution, or entries in the list of features to be
  *     searched for runtime types, go to step 10. Otherwise, take a type (f,G)
- *     from the list of runtime types to be layouted and start the layout.
+ *     from the list of runtime types to be layouted and start the layout.<p>
  *
  * 12. Recursive layout of (f,G): For all fields in f, determine the actual
  *     type using the actual generic parameters. For actual types that are
  *     non-references, recursively perform the layout if that has not been
  *     done yet. Flag an error for recursive value types in case this leads to
- *     an endless recursion.
+ *     an endless recursion.<p>
  *
  * 13. Now that all fields in f are layouted, perform the layout of (f,G) as a
  *     needed as a stack frame, value type, and a heap allocated object. For
@@ -127,6 +127,9 @@ import dev.flang.util.FuzionOptions;
  */
 public class Resolution extends ANY
 {
+
+  /* flag to control debug output */
+  private static final boolean DEBUG = "true".equals(FuzionOptions.propertyOrEnv("dev.flang.ast.Resolution.DEBUG"));
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -142,7 +145,7 @@ public class Resolution extends ANY
     var c = f.context();
     return new FeatureVisitor()
       {
-        public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve(Resolution.this, c); }
+        @Override public AbstractType action(AbstractType t) { return t.resolve(Resolution.this, c); }
       };
   }
 
@@ -404,11 +407,13 @@ public class Resolution extends ANY
     if (!forInheritance.isEmpty())
       {
         Feature f = forInheritance.removeFirst();
+        if (DEBUG) sayDebug("resolve inheritance: " + f);
         f.resolveInheritance(this);
       }
     else if (!forDeclarations.isEmpty())
       {
         Feature f = forDeclarations.removeFirst();
+        if (DEBUG) sayDebug("resolve declarations: " + f);
         f.resolveDeclarations(this);
       }
     else if (!forType.isEmpty())
@@ -419,6 +424,11 @@ public class Resolution extends ANY
           }
 
         Feature f = forType.removeFirst();
+        if (DEBUG) sayDebug("resolve types: " + f);
+        if (f.isCotype())
+          {
+            resolveTypes(f.cotypeOrigin());
+          }
         f.internalResolveTypes(this);
       }
     else if (!moreThanTypes)
@@ -428,11 +438,13 @@ public class Resolution extends ANY
     else if (!forSyntacticSugar1.isEmpty())
       {
         Feature f = forSyntacticSugar1.removeFirst();
+        if (DEBUG) sayDebug("resolve syntax sugar 1: " + f);
         f.resolveSyntacticSugar1(this);
       }
     else if (!forTypeInference.isEmpty())
       {
         Feature f = forTypeInference.removeFirst();
+        if (DEBUG) sayDebug("resolve type inference: " + f);
         f.typeInference(this);
       }
     else if (!_waitingForCalls.isEmpty())
@@ -447,17 +459,20 @@ public class Resolution extends ANY
         Feature f = forSyntacticSugar2.removeFirst();
         if (!_options.isLanguageServer())
           {
+            if (DEBUG) sayDebug("resolve syntax sugar 2: " + f);
             f.resolveSyntacticSugar2(this);
           }
       }
     else if (!forBoxing.isEmpty())
       {
         Feature f = forBoxing.removeFirst();
+        if (DEBUG) sayDebug("resolve boxing: " + f);
         f.box(this);
       }
     else if (!forCheckTypes.isEmpty())
       {
         Feature f = forCheckTypes.removeFirst();
+        if (DEBUG) sayDebug("resolve check types: " + f);
         f.checkTypes(this);
       }
     else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
@@ -543,7 +558,7 @@ public class Resolution extends ANY
 
 
   /**
-   * Returns the state the feature `af` is in
+   * Returns the state the feature {@code af} is in
    * w.r.t. this resolution.
    */
   public State state(AbstractFeature af)

@@ -42,10 +42,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 // NYI remove POSIX imports
+#include <poll.h>
 #include <fcntl.h>      // fcntl
-#include <sys/stat.h>   // mkdir
 
 #include <winsock2.h>
 #include <windows.h>
@@ -60,6 +61,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "fz.h"
 
+
+// returns the latest error number of
+// the current thread
+int fzE_last_error(void){
+  return (int)GetLastError();
+}
+
+// NYI missing set_last_error, see posix.c
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -87,7 +96,7 @@ typedef struct {
     WIN32_FIND_DATA findData;
 } fzE_dir_struct;
 
-void fzE_opendir(const char *pathname, int64_t * result) {
+void * fzE_opendir(const char *pathname, int64_t * result) {
   fzE_dir_struct *dir = (fzE_dir_struct *)fzE_malloc_safe(sizeof(fzE_dir_struct));
 
   /* NYI: UNDER DEVELOPMENT:
@@ -105,33 +114,33 @@ void fzE_opendir(const char *pathname, int64_t * result) {
   dir->handle = FindFirstFile(searchPath, &dir->findData);
   if (dir->handle == INVALID_HANDLE_VALUE) {
     // NYI: BUG: free(dir);
-    result[0] = 0;
-    result[1] = GetLastError();
+    result[0] = GetLastError();
+    return dir;
   } else {
-    result[0] = (uintptr_t)dir;
-    result[1] = 0;
+    result[0] = 0;
+    return dir;
   }
 }
 
-char * fzE_readdir(intptr_t * dir) {
-  fzE_dir_struct *d = (fzE_dir_struct *)dir;
-  size_t len = strlen(d->findData.cFileName);
-  char *dup = (char *) fzE_malloc_safe(len + 1);
-  fzE_memcpy(dup, d->findData.cFileName, len + 1);
-  return dup;
-}
-
-int fzE_read_dir_has_next(intptr_t * dir) {
+int fzE_dir_read(intptr_t * dir, void * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
   while ((res = FindNextFile(d->handle, &d->findData)) &&
         // skip dot and dot-dot paths.
         (strcmp(d->findData.cFileName, ".") == 0 || strcmp(d->findData.cFileName, "..") == 0));
-  return res
-    ? 0 : 1;
+
+  if (!res) {
+    return GetLastError() == ERROR_NO_MORE_FILES ? 0 : -1;
+  }
+  else {
+    int len = (int)strlen(d->findData.cFileName);
+    assert(len >= 0 && len<1024); // NYI:
+    fzE_memcpy(result, d->findData.cFileName, len + 1);
+    return len;
+  }
 }
 
-int fzE_closedir(intptr_t * dir) {
+int fzE_dir_close(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FindClose(d->handle);
   // NYI: BUG: free(dir);
@@ -161,7 +170,7 @@ int fzE_net_error()
 
 
 // fuzion family number -> system family number
-int get_family(int family)
+int fzE_get_family(int family)
 {
   return family == 1
     ? AF_UNIX
@@ -174,7 +183,7 @@ int get_family(int family)
 
 
 // fuzion socket type number -> system socket type number
-int get_socket_type(int socktype)
+int fzE_get_socket_type(int socktype)
 {
   return socktype == 1
     ? SOCK_STREAM
@@ -187,7 +196,7 @@ int get_socket_type(int socktype)
 
 
 // fuzion protocol number -> system protocol number
-int get_protocol(int protocol)
+int fzE_get_protocol(int protocol)
 {
   return protocol == 6
     ? IPPROTO_TCP
@@ -215,7 +224,7 @@ int fzE_socket(int family, int type, int protocol){
   WSADATA wsaData;
   return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
     ? -1
-    : socket(get_family(family), get_socket_type(type), get_protocol(protocol));
+    : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
 }
 
 
@@ -225,9 +234,9 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
   ZeroMemory(&hints, sizeof(hints));
 
-  hints.ai_family = get_family(family);
-  hints.ai_socktype = get_socket_type(socktype);
-  hints.ai_protocol = get_protocol(protocol);
+  hints.ai_family = fzE_get_family(family);
+  hints.ai_socktype = fzE_get_socket_type(socktype);
+  hints.ai_protocol = fzE_get_protocol(protocol);
   hints.ai_flags = flags;
 
   return getaddrinfo(host, port, &hints, result);
@@ -237,7 +246,7 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 // create a new socket and bind to given host:port
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int64_t * result){
+int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
@@ -284,7 +293,7 @@ int fzE_accept(int sockfd){
 // create connection for given parameters
 // result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int64_t * result){
+int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
   // get socket
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
@@ -318,8 +327,9 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
 int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
+    return -1;
+  } else if (peeraddr.ss_family == AF_INET) {
     fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
     return 4;
   } else if (peeraddr.ss_family == AF_INET6) {
@@ -338,8 +348,9 @@ int fzE_get_peer_address(int sockfd, void * buf) {
 unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   socklen_t peeraddrlen = sizeof(peeraddr);
-  int res = getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen);
-  if (peeraddr.ss_family == AF_INET) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == -1) {
+    return 0;
+  } else if (peeraddr.ss_family == AF_INET) {
     return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
   } else if (peeraddr.ss_family == AF_INET6) {
     return ntohs(((struct sockaddr_in6 *)&peeraddr)->sin6_port);
@@ -352,7 +363,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // read up to count bytes bytes from sockfd
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
-int fzE_read(int sockfd, void * buf, size_t count){
+int fzE_socket_read(int sockfd, void * buf, size_t count){
   int rec_res = recvfrom( sockfd, buf, count, 0, NULL, NULL );
   if (rec_res == -1)
   {
@@ -369,7 +380,7 @@ int fzE_read(int sockfd, void * buf, size_t count){
 // write buf to sockfd
 // may block if socket is set to blocking.
 // return error code or zero on success
-int fzE_write(int sockfd, const void * buf, size_t count){
+int fzE_socket_write(int sockfd, const void * buf, size_t count){
 return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
   ? fzE_net_error()
   : 0;
@@ -391,17 +402,17 @@ DWORD low_word(off_t value) {
 
 
 // returns -1 on error, size of file in bytes otherwise
-long fzE_get_file_size(FILE* file) {
+long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = ftell(file);
-  if(cur_pos == -1 || fseek(file, 0, SEEK_END) == -1){
+  long cur_pos = ftell((FILE *)file);
+  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
     return -1;
   }
 
-  long size = ftell(file);
+  long size = ftell((FILE *)file);
 
   // reset seek position
-  fseek(file, cur_pos, SEEK_SET);
+  fseek((FILE *)file, cur_pos, SEEK_SET);
 
   return size;
 }
@@ -417,14 +428,14 @@ long fzE_get_file_size(FILE* file) {
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
  */
-void * fzE_mmap(FILE * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 
-  if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
+  if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
     result[0] = -1;
     return NULL;
   }
 
-  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno(file));
+  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno((FILE *)file));
 
   /* "If dwMaximumSizeLow and dwMaximumSizeHigh are 0 (zero), the maximum size of the file mapping
       object is equal to the current size of the file that hFile identifies.
@@ -462,13 +473,21 @@ int fzE_munmap(void * mapped_address, const int file_size){
  */
 uint64_t fzE_nanotime()
 {
-  struct timespec result;
-  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
-  {
-    fprintf(stderr,"*** clock_gettime failed\012");
-    exit(EXIT_FAILURE);
+  static LARGE_INTEGER frequency = {0};
+  if (frequency.QuadPart == 0) {
+      if (!QueryPerformanceFrequency(&frequency)) {
+          fprintf(stderr, "*** QueryPerformanceFrequency failed\n");
+          exit(EXIT_FAILURE);
+      }
   }
-  return result.tv_sec*1000000000ULL+result.tv_nsec;
+
+  LARGE_INTEGER counter;
+  if (!QueryPerformanceCounter(&counter)) {
+      fprintf(stderr, "*** QueryPerformanceCounter failed\n");
+      exit(EXIT_FAILURE);
+  }
+
+  return (uint64_t)(counter.QuadPart * (1000000000ULL / frequency.QuadPart));
 }
 
 
@@ -477,9 +496,17 @@ uint64_t fzE_nanotime()
  */
 void fzE_nanosleep(uint64_t n)
 {
-  // NYI replace with native windows
-  struct timespec req = (struct timespec){n/1000000000LL,n-n/1000000000LL*1000000000LL};
-  while (nanosleep(&req, &req));
+  uint64_t start = fzE_nanotime();
+  uint64_t end = start + n;
+
+  while (fzE_nanotime() < end) {
+      uint64_t remaining_ns = end - fzE_nanotime();
+      if (remaining_ns > 1000000ULL) {
+          Sleep((DWORD)(remaining_ns / 1000000ULL));
+      } else {
+          YieldProcessor();
+      }
+  }
 }
 
 
@@ -488,12 +515,15 @@ void fzE_nanosleep(uint64_t n)
  */
 int fzE_rm(char * path)
 {
-  // NYI replace with native windows
-  return unlink(path) == 0
-    ? 0
-    : rmdir(path) == 0
-    ? 0
-    : -1;
+  if (DeleteFileA(path)) {
+    return 0;
+  }
+
+  if (RemoveDirectoryA(path)) {
+    return 0;
+  }
+
+  return -1;
 }
 
 
@@ -502,20 +532,31 @@ int fzE_rm(char * path)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
-  struct stat statbuf;
-  // NYI replace with native windows
-  if (stat(pathname,&statbuf)==((int8_t) 0))
-  {
-    metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+  WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+
+  if (GetFileAttributesExA(pathname, GetFileExInfoStandard, &fileInfo)) {
+    LARGE_INTEGER fileSize;
+    fileSize.HighPart = fileInfo.nFileSizeHigh;
+    fileSize.LowPart = fileInfo.nFileSizeLow;
+
+    FILETIME ft = fileInfo.ftLastWriteTime;
+    ULARGE_INTEGER ull;
+    ull.LowPart = ft.dwLowDateTime;
+    ull.HighPart = ft.dwHighDateTime;
+
+    metadata[0] = fileSize.QuadPart;
+    metadata[1] = (ull.QuadPart / 10000000ULL) - 11644473600ULL;
+    metadata[2] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[3] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+
     return 0;
   }
-  metadata[0] = errno;
+
+  metadata[0] = (int64_t)GetLastError();
   metadata[1] = 0LL;
   metadata[2] = 0LL;
   metadata[3] = 0LL;
+
   return -1;
 }
 
@@ -525,21 +566,7 @@ int fzE_stat(const char *pathname, int64_t * metadata)
  */
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
-  struct stat statbuf;
-  // NYI replace with native windows
-  if (stat(pathname,&statbuf)==((int8_t) 0))
-  {
-    metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
-    return 0;
-  }
-  metadata[0] = errno;
-  metadata[1] = 0LL;
-  metadata[2] = 0LL;
-  metadata[3] = 0LL;
-  return -1;
+  return fzE_stat(pathname, metadata);
 }
 
 #ifdef FUZION_ENABLE_THREADS
@@ -553,6 +580,8 @@ void fzE_init()
 {
   _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode
   _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode
+
+  fcntl( _fileno( stdin ), F_SETFL, O_NONBLOCK);
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
@@ -798,54 +827,24 @@ int fzE_pipe_close(int64_t desc){
 }
 
 
-// open_results[0] the filedescriptor, unchanged on error
-// open_results[1] the error number
-void fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+// open_results[0] the error number
+void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
+  assert( mode >= 0 && mode <= 2 );
   // NYI use lock to make fopen and fcntl _atomic_.
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
   // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
   // to a race condition that may unintentionally leak the file descriptor to the
   // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
   // for details and a remedy to the problem."
-  FILE * fp;
   errno = 0;
-  switch (mode)
+  FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
+  if (fp!=NULL)
   {
-    case 0:
-    {
-      fp = fopen(file_name,"rb");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    case 1:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    case 2:
-    {
-      fp = fopen(file_name,"a+b");
-      if (fp!=NULL)
-      {
-        open_results[0] = (int64_t)fp;
-      }
-      break;
-    }
-    default:
-    {
-      fprintf(stderr,"*** Unsupported open flag. Please use: 0 for READ, 1 for WRITE, 2 for APPEND. ***\012");
-      exit(1);
-    }
+    open_results[0] = (int64_t)errno;
   }
-  open_results[1] = (int64_t)errno;
+  // NYI: UNDER DEVELOPMENT: not available on windows: fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
+  return fp;
 }
 
 
@@ -929,4 +928,23 @@ void fzE_cnd_destroy(void *cnd) {
   // NYI: free(cnd);
 #else
 #endif
+}
+
+
+int32_t fzE_file_read(void * file, void * buf, int32_t size)
+{
+  struct pollfd fds;
+  fds.fd = fileno(file);
+  fds.events = POLLIN;
+
+  // NYI: poll is Posix only
+  while(poll(&fds, 1, -1) == 0);
+
+  size_t result = fread(buf, 1, size, (FILE*)file);
+
+  return result > 0
+    ? result
+    : result == 0
+    ? -1  // EOF
+    : -2; // ERROR
 }

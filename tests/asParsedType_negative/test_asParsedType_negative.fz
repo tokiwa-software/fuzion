@@ -143,8 +143,8 @@ test_asParsedType_negative is
        true_  => "a"
        false_ => "b")
   x (if 3=4 then "a" else "b")  // 7. should flag an error: if is not a type
-  x (io.out.env)                // 8. should flag an error: env is not a type
-  x (io.out.type)               // 9. should flag an error: type instance is not a type
+  x (io.Out.env)                // 8. should flag an error: env is not a type
+  x (io.Out.type)               // 9. should flag an error: type instance is not a type
   t := (3,4,5)
   x t.values.0                  // 10. should flag an error: select is not a type
   x t.values.2                  // 11. should flag an error: select is not a type
@@ -194,12 +194,12 @@ test_asParsedType_negative is
   y (if 3=4 then "a" else "b")
   say ""
 
-  say "EXP: y Type of 'io.out'"
-  y (io.out.env)
+  say "EXP: y Type of 'io.Out'"
+  y (io.Out.env)
   say ""
 
   say "EXP: y Type of 'Type'"
-  y (io.out.type)
+  y (io.Out.type)
   say ""
 
   t2 := (u8 3, f32 4, i64 5)

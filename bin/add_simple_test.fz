@@ -25,13 +25,13 @@
 #
 add_simple_test =>
 
-  say "Name of the new test: "
+  say "Name of the new test:"
 
   lm : mutate is
-  lm.instate_self ()->
+  lm ! ()->
 
-    _ := (io.stdin lm).with ()->
-      match io.buffered.read_line lm
+    _ := (io.stdin.reader lm).instate_self unit ()->
+      match (io.buffered lm).read_line
         test String =>
 
           header(name String) => """
@@ -84,12 +84,8 @@ add_simple_test =>
 
           _ := io.dir.make "tests/$test"
           _ := io.file.use unit lm "tests/$test/$test.fz" io.file.mode.write ()->
-                ((io.buffered.writer lm).write ((header test)+(test_body test)).utf8).error
+                ((io.buffered lm).writer.env.write ((header test)+(test_body test)).utf8).error
           _ := io.file.use unit lm "tests/$test/Makefile" io.file.mode.write ()->
-                ((io.buffered.writer lm).write ((header "Makefile")+(makefile_body test)).utf8).error
+                ((io.buffered lm).writer.env.write ((header "Makefile")+(makefile_body test)).utf8).error
 
         io.end_of_file => exit 1
-
-
-
-

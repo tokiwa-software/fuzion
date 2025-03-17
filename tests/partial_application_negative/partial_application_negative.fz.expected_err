@@ -1,15 +1,15 @@
 
---CURDIR--/partial_application_negative.fz:49:20: error 1: Could not find called feature
-  x4 := data.map 3.prefix*    // 4. should flag an error, do not change named prefix call to infix call
--------------------^^^^^^^
+--CURDIR--/partial_application_negative.fz:49:19: error 1: Could not find called feature
+  _ := data.map 3.prefix*    // 4. should flag an error, do not change named prefix call to infix call
+------------------^^^^^^^
 Feature not found: 'prefix *' (no arguments)
 Target feature: 'i32'
 In call: '3.prefix*'
 
 
---CURDIR--/partial_application_negative.fz:50:20: error 2: Could not find called feature
-  x5 := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
--------------------^^^^^^^^
+--CURDIR--/partial_application_negative.fz:50:19: error 2: Could not find called feature
+  _ := data.map 3.postfix*   // 5. should flag an error, do not change named postfix call to infix call
+------------------^^^^^^^^
 Feature not found: 'postfix *' (no arguments)
 Target feature: 'i32'
 In call: '3.postfix*'
@@ -81,14 +81,14 @@ In call: '3.postfix*'
 Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at $MODULE/Sequence.fz:340:10:
+To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) at {base.fum}/Sequence.fz:379:10:
   public map(B type, f Unary B T) Sequence B =>
 ---------^^^
 
 
---CURDIR--/partial_application_negative.fz:72:21: error 10: Ambiguity between direct and partially applied call target
-  a2 i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
---------------------^^^^^^
+--CURDIR--/partial_application_negative.fz:72:20: error 10: Ambiguity between direct and partially applied call target
+  _ i32->String := ambig2 4711     // 9. should flag an error: ambiguous call to implicit ambig2.call (1 argument) or partially applied ambig2 (2 arguments)
+-------------------^^^^^^
 This call can be resolved in two ways, either as a direct call to 'partial_application_negative.ambig2' declared at --CURDIR--/partial_application_negative.fz:66:3:
   ambig2 Unary String i32 => x->"#$x#"
 --^^^^^^

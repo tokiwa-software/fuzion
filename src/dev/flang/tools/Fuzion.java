@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -36,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -53,7 +56,7 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
 import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.LibraryFuir;
 import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
@@ -85,12 +88,14 @@ public class Fuzion extends Tool
 
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = true;
-  static boolean _xdfa_ = true;
   static String _cCompiler_ = null;
   static String _cFlags_ = null;
   static String _cTarget_ = null;
+  static String _cInclude_ = null;
+  static String _cLink_ = null;
   static boolean _keepGeneratedCode_ = false;
   static String  _jvmOutName_ = null;
+  static String  _jvmLib_ = null;
 
 
   /**
@@ -106,9 +111,12 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        var new_fuir = _xdfa_ ? new DFA(options, fuir).new_fuir() : fuir;
-
-        new Interpreter(options, new_fuir).run();
+        new Interpreter(options, fuir).run();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -116,7 +124,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-Xgc=(on|off)] [-Xdfa=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] ";
+        return "[-o=<file>] [-Xgc=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -129,11 +137,6 @@ public class Fuzion extends Tool
         else if (o.startsWith("-Xgc="))
           {
             _useBoehmGC_ = parseOnOffArg(o);
-            result = true;
-          }
-        else if (o.startsWith("-Xdfa="))
-          {
-            _xdfa_ = parseOnOffArg(o);
             result = true;
           }
         else if (o.startsWith("-CC="))
@@ -151,6 +154,16 @@ public class Fuzion extends Tool
             _cTarget_ = o.substring(9);
             result = true;
           }
+        else if (o.startsWith("-CInclude="))
+          {
+            _cInclude_ = o.substring(10);
+            result = true;
+          }
+        else if (o.startsWith("-CLink="))
+          {
+            _cLink_ = o.substring(7);
+            result = true;
+          }
         else if (o.startsWith("-XkeepGeneratedCode="))
           {
             _keepGeneratedCode_ = parseOnOffArg(o);
@@ -158,9 +171,19 @@ public class Fuzion extends Tool
           }
         return result;
       }
+      @Override
+      public boolean needsEscapeAnalysis()
+      {
+        return true;
+      }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_, _cCompiler_, _cFlags_, _cTarget_, _keepGeneratedCode_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_), fuir).compile();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -170,14 +193,14 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-Xdfa=(on|off)] ";
+        return "";
       }
       boolean handleOption(Fuzion f, String o)
       {
         boolean result = false;
-        if (o.startsWith("-Xdfa="))
+        if (o.startsWith("-JLibraries="))
           {
-            _xdfa_ = parseOnOffArg(o);
+            _jvmLib_ = o.substring(12);
             result = true;
           }
         return result;
@@ -186,7 +209,7 @@ public class Fuzion extends Tool
       {
         try
           {
-            new JVM(new JVMOptions(options, _xdfa_, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty()), fuir).compile();
+            new JVM(new JVMOptions(options, /* run */ true, /* save classes */ false, /* save JAR */ false, Optional.empty(), Optional.ofNullable(_jvmLib_)), fuir).compile();
           }
         catch (QuietThreadTermination e)
           {
@@ -196,32 +219,42 @@ public class Fuzion extends Tool
       {
         return true;
       }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
+      }
     },
 
     classes    ("-classes")
     {
       String usage()
       {
-        return "[-o=<outputName>] [-Xdfa=(on|off)] ";
+        return "[-o=<outputName>] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
         boolean result = false;
-        if (o.startsWith("-Xdfa="))
-          {
-            _xdfa_ = parseOnOffArg(o);
-            result = true;
-          }
         if (o.startsWith("-o="))
           {
             _jvmOutName_ = o.substring(3);
+            result = true;
+          }
+        else if (o.startsWith("-JLibraries="))
+          {
+            _jvmLib_ = o.substring(12);
             result = true;
           }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ true, /* save JAR */ false, Optional.ofNullable(_jvmOutName_)), fuir).compile();
+        new JVM(new JVMOptions(options, /* run */ false, /* save classes */ true, /* save JAR */ false, Optional.ofNullable(_jvmOutName_), Optional.ofNullable(_jvmLib_)), fuir).compile();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -229,26 +262,31 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<outputName>] [-Xdfa=(on|off)] ";
+        return "[-o=<outputName>] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
         boolean result = false;
-        if (o.startsWith("-Xdfa="))
-          {
-            _xdfa_ = parseOnOffArg(o);
-            result = true;
-          }
         if (o.startsWith("-o="))
           {
             _jvmOutName_ = o.substring(3);
+            result = true;
+          }
+        else if (o.startsWith("-JLibraries="))
+          {
+            _jvmLib_ = o.substring(12);
             result = true;
           }
         return result;
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new JVM(new JVMOptions(options, _xdfa_, /* run */ false, /* save classes */ false, /* save JAR */ true, Optional.ofNullable(_jvmOutName_)), fuir).compile();
+        new JVM(new JVMOptions(options, /* run */ false, /* save classes */ false, /* save JAR */ true, Optional.ofNullable(_jvmOutName_), Optional.ofNullable(_jvmLib_)), fuir).compile();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -258,7 +296,7 @@ public class Fuzion extends Tool
     {
       void process(FuzionOptions options, FUIR fuir)
       {
-        new DFA(options, fuir).dfa();
+        // nothing to be done, DFA was already run by processFrontEnd which calls us.
       }
     },
 
@@ -282,9 +320,13 @@ public class Fuzion extends Tool
       {
         return "";
       }
-      void process(FuzionOptions options, FUIR fuir)
+      @Override
+      void processFrontEnd(Fuzion f, FrontEnd fe)
       {
-        new Effects(options, fuir).find();
+        var o    = fe._options;
+        var mir  = fe.createMIR();                             f.timer("createMIR");
+        var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
+        new Effects(o, new DFA(o, fuir)).find();
       }
     },
 
@@ -305,23 +347,23 @@ public class Fuzion extends Tool
       }
     },
 
-    saveLib("-saveLib=<file>")
+    saveMod("-save-module=<file>")
     {
       boolean runsCode() { return false; }
       void parseBackendArg(Fuzion f, String a)
       {
-        f._saveLib  = parsePath(a);
+        f._saveMod  = parsePath(a);
       }
       String usage()
       {
-        return "[-XeraseInternalNamesInLib=(on|off)] ";
+        return "[-XeraseInternalNamesInMod=(on|off)] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
         boolean result = false;
-        if (o.startsWith("-XeraseInternalNamesInLib"))
+        if (o.startsWith("-XeraseInternalNamesInMod"))
           {
-            f._eraseInternalNamesInLib = parseOnOffArg(o);
+            f._eraseInternalNamesInMod = parseOnOffArg(o);
             result = true;
           }
         return result;
@@ -341,25 +383,18 @@ public class Fuzion extends Tool
          */
         if (!Errors.any())
           {
-            var p = f._saveLib;
-            var n = p.getFileName().toString();
-            var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
-            if (n.endsWith(sfx))
-              {
-                n = n.substring(0, n.length() - sfx.length());
-              }
-            var data = fe.sourceModule().data(n);
+            var data = fe.sourceModule().data();
             if (data != null)
               {
-                try (var os = Files.newOutputStream(p))
+                try (var os = Files.newOutputStream(f._saveMod))
                   {
                     Channels.newChannel(os).write(data);
-                    say(" + " + p + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
+                    say(" + " + f._saveMod + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
                   }
                 catch (IOException io)
                   {
-                    Errors.error("-saveLib: I/O error when writing module file",
-                                 "While trying to write file '"+ p + "' received '" + io + "'");
+                    Errors.error("-save-module: I/O error when writing module file",
+                                 "While trying to write file '"+ f._saveMod + "' received '" + io + "'");
                   }
               }
           }
@@ -388,8 +423,12 @@ public class Fuzion extends Tool
     {
       void process(FuzionOptions options, FUIR fuir)
       {
-        new DFA(options, fuir).new_fuir();
         Errors.showAndExit();
+      }
+      boolean serializeFuir()
+      {
+        // NYI: UNDER DEVELOPMENT: use sth. like -XdisableSerializeFUIR
+        return FuzionOptions.boolPropertyOrEnv("dev.flang.tools.serializeFUIR");
       }
     },
 
@@ -436,8 +475,8 @@ public class Fuzion extends Tool
 
     /**
      * parse the argument that activates this backend. This is not needed for
-     * backends like '-c' or '-dfa', but for those that require additional
-     * argument like '-saveLib=<path>'.
+     * backends like {@code -c} or {@code -dfa}, but for those that require additional
+     * argument like {@code -save-module=<path>}.
      */
     void parseBackendArg(Fuzion f, String a)
     {
@@ -478,7 +517,20 @@ public class Fuzion extends Tool
     }
 
     /**
-     * Does this backend require a main feature or main file or '-' for stdin?
+     * Do we need to perform escape analysis during DFA phase since the backend needs that?
+     *
+     * This currently has a significant impact on the DFA performance, so we try to
+     * avoid this for backends that do not need it (JVM and interpreter).
+     *
+     * @return true if escape analysis has to be performed.
+     */
+    public boolean needsEscapeAnalysis()
+    {
+      return false;
+    }
+
+    /**
+     * Does this backend require a main feature or main file or {@code -} for stdin?
      */
     boolean needsMain()
     {
@@ -499,15 +551,28 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
+      var o    = fe._options;
       var mir  = fe.createMIR();                             f.timer("createMIR");
-      var fuir = new Optimizer(fe._options, fe, mir).fuir(); f.timer("ir");
-      process(fe._options, fuir);
+      var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
+      process(o, new DFA(o, fuir).new_fuir());
     }
 
+    /**
+     * Process backend
+     */
     void process(FuzionOptions options, FUIR fuir)
     {
       Errors.fatal("backend '" + this + "' not supported yet");
     }
+
+    /**
+     * Should the FUIR be serialized?
+     */
+    boolean serializeFuir()
+    {
+      return false;
+    }
+
   }
 
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
@@ -525,22 +590,22 @@ public class Fuzion extends Tool
 
 
   /**
-   * Should we save a library?
+   * Should we save a module?
    */
-  Path _saveLib = null;
+  Path _saveMod = null;
 
 
   /**
-   * Should we load the base library? We do not want to load if when using
-   * -saveLib= backend to create the base library file.
+   * Should we load the base module? We do not want to load if when using
+   * -save-module= backend to create the base module file.
    */
-  boolean _loadBaseLib = true;
+  boolean _loadBaseMod = true;
 
 
   /**
-   * When saving a library, should we erase internal names?
+   * When saving a module, should we erase internal names?
    */
-  boolean _eraseInternalNamesInLib = false;
+  boolean _eraseInternalNamesInMod = false;
 
 
   /**
@@ -557,25 +622,25 @@ public class Fuzion extends Tool
 
 
   /**
-   * List of modules added using '-modules'.
+   * List of modules added using {@code -modules}.
    */
   List<String> _modules = new List<>();
 
 
   /**
-   * List of module directories added using '-moduleDirs'.
+   * List of module directories added using {@code -moduleDirs}.
    */
   List<String> _moduleDirs = new List<>();
 
 
   /**
-   * List of modules added using '-XdumpModules'.
+   * List of modules added using {@code -XdumpModules}.
    */
   List<String> _dumpModules = new List<>();
 
 
   /**
-   * List of source directories added using '-sourceDirs'.
+   * List of source directories added using {@code -sourceDirs}.
    */
   List<String> _sourceDirs = null;
 
@@ -593,7 +658,7 @@ public class Fuzion extends Tool
 
 
   /**
-   * Code provided via comment line argument `-e` or `-exec`, null if none.
+   * Code provided via comment line argument {@code -e} or {@code -exec}, null if none.
    */
   byte[] _executeCode = null;
 
@@ -650,7 +715,7 @@ public class Fuzion extends Tool
   protected String STANDARD_OPTIONS(boolean xtra)
   {
     return super.STANDARD_OPTIONS(xtra) +
-      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseLib=(on|off)] " : "");
+      (xtra ? "[-XfuzionHome=<path>] [-XloadBaseModule=(on|off)] " : "");
   }
 
 
@@ -757,9 +822,9 @@ public class Fuzion extends Tool
 
 
   /**
-   * Check if `a` is `-e` or `-execute`.
+   * Check if {@code a} is {@code -e} or {@code -execute}.
    *
-   * Cause an error in case of repeated `-e` or `-execute` arguments.
+   * Cause an error in case of repeated {@code -e} or {@code -execute} arguments.
    *
    * @return true if that is that case and the next argument gives the code.
    */
@@ -788,10 +853,10 @@ public class Fuzion extends Tool
 
   /**
    * This must be called after a argument parsing loop that contains
-   * parseExecute() to check that code was actually given following `-e` or
-   * `-execute`.
+   * parseExecute() to check that code was actually given following {@code -e} or
+   * {@code -execute}.
    *
-   * @param nextIsCode did the call to `parseExecute` return true for the last
+   * @param nextIsCode did the call to {@code parseExecute} return true for the last
    * argument?
    */
   private void checkMissingCode(boolean nextIsCode)
@@ -896,7 +961,7 @@ public class Fuzion extends Tool
    * Parse the given command line args for the acemode generator and create a
    * runnable that executes it.  System.exit() in case of error or -help.
    * A mode provides syntax highlighting, code folding etc. for text editor ace.
-   * For more information see: https://ace.c9.io/#nav=higlighter&api=tokenizer
+   * For more information see: {@see https://ace.c9.io/#nav=higlighter&api=tokenizer}
    *
    * @param args the command line arguments
    *
@@ -976,12 +1041,12 @@ public class Fuzion extends Tool
                 _backend.parseBackendArg(this, a);
               }
             else if (a.startsWith("-XfuzionHome="            )) { _fuzionHome              = parsePath(a);              }
-            else if (a.startsWith("-XloadBaseLib="           )) { _loadBaseLib             = parseOnOffArg(a);          }
+            else if (a.startsWith("-XloadBaseModule="        )) { _loadBaseMod             = parseOnOffArg(a);          }
             else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
             else if (a.startsWith("-moduleDirs="             )) {                             _moduleDirs.addAll(parseStringListArg(a)); }
-            else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parsePositiveIntArg(a, 1); }
+            else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parseIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
             else if (_backend.runsCode() && a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
             else if (_backend.handleOption(this, a))
@@ -1046,8 +1111,8 @@ public class Fuzion extends Tool
       {
         var options = new FrontEndOptions(_verbose,
                                           _fuzionHome,
-                                          _loadBaseLib,
-                                          _eraseInternalNamesInLib,
+                                          _loadBaseMod,
+                                          _eraseInternalNamesInMod,
                                           _modules,
                                           _moduleDirs,
                                           _dumpModules,
@@ -1058,17 +1123,113 @@ public class Fuzion extends Tool
                                           _readStdin,
                                           _executeCode,
                                           _main,
+                                          moduleName(),
                                           _backend.needsSources(),
+                                          _backend.needsEscapeAnalysis(),
+                                          _backend.serializeFuir(),
                                           s -> timer(s));
         options.setBackendArgs(applicationArgs);
         timer("prep");
-        var fe = new FrontEnd(options);
-        timer("fe");
-        Errors.showAndExit();
-        _backend.processFrontEnd(this, fe);
-        timer("be");
+        if (!options.serializeFuir())
+          {
+            var fe = new FrontEnd(options);
+            timer("fe");
+            Errors.showAndExit();
+            _backend.processFrontEnd(this, fe);
+            timer("be");
+          }
+        else
+          {
+            if(CHECKS) check
+              (options.needsEscapeAnalysis() == true, _backend != Backend.effects);
+
+            Path fuirFile = fuirFile(options);
+            if (!Files.exists(fuirFile))
+              {
+                var fe = new FrontEnd(options);                       timer("fe");
+                Errors.showAndExit();
+                var mir  = fe.createMIR();                            timer("createMIR");
+                var fuir = new Optimizer(options, fe, mir).fuir();    timer("ir");
+                var dfuir = new DFA(options, fuir).new_fuir();        timer("dfa");
+                var data = dfuir.serialize();                         timer("serializeFUIR");
+
+                try (FileOutputStream stream = new FileOutputStream(fuirFile.toFile()))
+                  {
+                    stream.write(data);
+                  }
+                catch (IOException e)
+                  {
+                    Errors.fatal(e);
+                  }
+              }
+            try
+              {
+                var fuir = new LibraryFuir(Files.readAllBytes(fuirFile));
+                timer("loadFUIR");
+                _backend.process(options, fuir);
+                timer("be");
+              }
+            catch (IOException e)
+              {
+                Errors.fatal(e);
+              }
+          }
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
+  }
+
+
+  /**
+   * determine the path of the .fuir-file
+   *
+   * The filename that is automatically chosen is currently
+   * Arrays.hashCode() over the (first/main) code
+   * and the file extension fuir.
+   */
+  private Path fuirFile(FrontEndOptions options)
+  {
+    long hashCode = -1;
+    try
+      {
+        var bytes = _readStdin
+          ? System.in.readAllBytes()
+          : options.inputFile() != null
+            ? Files.readAllBytes(options.inputFile())
+            : _executeCode;
+
+        hashCode = Arrays.hashCode(bytes) + Integer.MAX_VALUE;
+
+        if (_readStdin)
+          {
+            System.setIn(new ByteArrayInputStream(bytes));
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("I/O Error: " + e.getMessage());
+      }
+
+    return Path.of(hashCode + ".fuir");
+  }
+
+
+  /**
+   * The name of the module we are compiling.
+   */
+  private String moduleName()
+  {
+    var n = "main";
+    if (_saveMod != null)
+       {
+         var p = _saveMod;
+         n = p.getFileName().toString();
+         var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
+         if (n.endsWith(sfx))
+           {
+             n = n.substring(0, n.length() - sfx.length());
+           }
+       }
+    return n;
   }
 
 

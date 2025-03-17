@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -47,6 +48,11 @@ public class DotType extends ExprWithPos
    */
   public AbstractType _lhs;
 
+  /**
+   * the lhs expr, as parsed by parser.
+   */
+  private Expr _lhsExpr;
+
 
   /*-------------------------- constructors ---------------------------*/
 
@@ -58,14 +64,15 @@ public class DotType extends ExprWithPos
    *
    * @param lhs the left hand side of the dot-type.
    */
-  public DotType(SourcePosition pos, AbstractType lhs)
+  public DotType(SourcePosition pos, Expr lhs)
   {
     super(pos);
 
     if (CHECKS) check
-      (lhs != null);
+      (lhs != null, lhs.asParsedType() != null);
 
-    _lhs = lhs;
+    _lhsExpr = lhs;
+    _lhs = lhs.asParsedType();
   }
 
 
@@ -85,7 +92,7 @@ public class DotType extends ExprWithPos
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _lhs = _lhs.visit(v, outer);
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -114,16 +121,17 @@ public class DotType extends ExprWithPos
    *
    * @param context the source code context where this Call is used
    */
-  public Call resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
-    return new Call(pos(),
-                    new Universe(),
-                    "type_as_value",
-                    -1,
-                    new List<>(_lhs),
-                    new List<>(),
-                    null,
-                    null).resolveTypes(res, context);
+    return _lhs.isGenericArgument() && !_lhs.genericArgument().isThisTypeInCotype()
+      ? _lhsExpr
+      : new Call(pos(),
+                Universe.instance,
+                "type_as_value",
+                FuzionConstants.NO_SELECT,
+                new List<>(_lhs),
+                new List<>(),
+                null).resolveTypes(res, context);
   }
 
 

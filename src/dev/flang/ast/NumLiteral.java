@@ -38,7 +38,7 @@ import java.nio.ByteOrder;
 import java.util.stream.Collectors;
 
 /**
- * NumLiteral <description>
+ * NumLiteral
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -357,7 +357,7 @@ public class NumLiteral extends Constant
   /**
    * Create new constant by removing the added sign.
    *
-   * @return a NumLiteral equal to the original one `addSign` was called on.
+   * @return a NumLiteral equal to the original one {@code addSign} was called on.
    */
   public NumLiteral stripSign()
   {
@@ -371,7 +371,7 @@ public class NumLiteral extends Constant
 
 
   /**
-   * If this NumLiteral has an explicit sign as in `+127 or `-128`, return that
+   * If this NumLiteral has an explicit sign as in {@code +127} or {@code -128}, return that
    * sign as a String, return null otherwise.
    *
    * @return "+", "-", or null,
@@ -644,7 +644,7 @@ public class NumLiteral extends Constant
 
 
   /**
-   * Helper routine to shift BigInteger v left (sh > 0) or right (sh < 0) and
+   * Helper routine to shift BigInteger v left (sh &gt; 0) or right (sh &lt; 0) and
    * perform rounding in case of a right shift.
    *
    * @param v a BigInteger value
@@ -790,7 +790,7 @@ public class NumLiteral extends Constant
 
   /**
    * Perform partial application for a NumLiteral. In particular, this converts
-   * a literal with a sign such as `-2` into a lambda of the form `x -> x - 2`.
+   * a literal with a sign such as {@code -2} into a lambda of the form {@code x -> x - 2}.
    *
    * @see Expr#propagateExpectedTypeForPartial for details.
    *
@@ -804,8 +804,8 @@ public class NumLiteral extends Constant
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
-    Expr result = this;
-    if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
+    Expr result = super.propagateExpectedTypeForPartial(res, context, t);
+    if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
         pns.add(Partial.argName(pos()));
@@ -816,7 +816,6 @@ public class NumLiteral extends Constant
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        fn.resolveTypes(res, context);
         result = fn;
       }
     return result;
@@ -840,25 +839,17 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    var result = propagateExpectedTypeForPartial(res, context, t);
-    if (result != this)
+    // if expected type is choice, examine if there is exactly one numeric
+    // constant type in choice generics, if so use that for further type
+    // propagation.
+    t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
+    if (_propagatedType == null && findConstantType(t) != null)
       {
-        result = result.propagateExpectedType(res, context, t);
+        _propagatedType = t;
       }
-    else
-      {
-        // if expected type is choice, examine if there is exactly one numeric
-        // constant type in choice generics, if so use that for further type
-        // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
-        if (_propagatedType == null && findConstantType(t) != null)
-          {
-            _propagatedType = t;
-          }
-      }
-    return result;
+    return this;
   }
 
 
@@ -875,7 +866,7 @@ public class NumLiteral extends Constant
    * @param t the type this expression is assigned to.
    */
   @Override
-  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     if (t.isLazyType())
       {

@@ -23,8 +23,8 @@
 
 test_mutable_linked_list is
   x : mutate is
-  y := x.instate_self ()->
-    yy := (container.Mutable_Linked_List x i32).new [0,1,2,3,4] false
+  y := x ! ()->
+    yy := (container.Mutable_Linked_List x i32).new [0,1,2,3,4]
     yy.append 42
     yy.freeze
     yy

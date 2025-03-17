@@ -63,11 +63,11 @@ base64_test is
   # ENCODING
 
   say """
-      Testing base64 encoding..."""
+      Testing base64 encoding:"""
 
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
       (plain, code_expected) := tup
@@ -101,9 +101,9 @@ base64_test is
 
   say """
       \n
-      Testing base64 decoding..."""
+      Testing base64 decoding:"""
   dec_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
       (plain_exp, code) := tup
@@ -140,7 +140,7 @@ base64_test is
 
   say """
       \n
-      Test error messages when decoding broken base32...
+      Test error messages when decoding broken base64:
       """
 
   broken_enc := ["""

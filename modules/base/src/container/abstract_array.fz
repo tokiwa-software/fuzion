@@ -1,0 +1,264 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature abstract_array
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# abstract_array -- parent of array implementation like `array` and `expanding_array`
+#
+# This provides basic functionality that an array should provide based on `index[i]`
+# and `length` that have to be provided by children of `abstract_array`.
+#
+public abstract_array
+  (
+   # element type
+   public T type
+  ) : Sequence T is
+
+
+  # the length of the array
+  #
+  public length i32 => abstract
+
+
+  # redefines Sequence.count for array,
+  # reducing complexity from O(n) to O(1).
+  #
+  public redef count => length
+
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  public redef finite trit => trit.yes
+
+
+  # is this Sequence known to be array backed? If so, this means that operations
+  # like index[] are fast.
+  #
+  public redef is_array_backed => true
+
+
+  # check if argument is a valid index in this array.
+  #
+  # Unlike for general Sequences, this performs in O(1).
+  #
+  public redef is_valid_index(i i32) => 0 ≤ i ≤ length
+
+
+  # create a list that consists of the elements of this Sequence except the first
+  # n elements
+  #
+  # For arrays, this has performance in O(1).
+  #
+  public redef drop (n i32) Sequence T =>
+    n >= count ? (list T).empty : as_list (max 0 n)
+
+
+  # a sequence of all valid indices to access this array. Useful e.g., for
+  # `for`-loops:
+  #
+  #   for i in arr.indices do
+  #     say arr[i]
+  #
+  public indices => 0..length-1
+
+
+  # get the contents of this array at the given index
+  #
+  public redef index [ ] (i i32) T
+  =>
+    abstract
+
+
+  # apply f to all elements in this array
+  #
+  public redef for_each (f T -> unit) unit =>
+    for i in indices do
+      f index[](i)
+
+
+  # create a list from this array
+  #
+  public redef as_list => as_list 0
+
+
+  # create a list from this array starting at the given index
+  #
+  public as_list(i i32) list T
+    pre
+      debug: i ≥ 0
+      debug: i=0 || i<length
+  =>
+    (slice i length).as_list
+
+
+  # create a slice from this array's elements at index 'from' (included)
+  # up to 'to' (excluded).
+  #
+  # Complexity:
+  # index access : O(1)
+  # count        : O(1)
+  #
+  public redef slice(from, to i32) Sequence T
+  =>
+    arrayslice : Sequence T is
+
+      # this array slice as a list
+      #
+      public redef as_list list T =>
+        if to ≤ from
+          nil
+        else
+          array_cons from to
+
+      # get the contents of this slice at the given index
+      #
+      public redef index [ ] (i i32) T
+      =>
+        abstract_array.this[from+i]
+
+      # is this sequence known to be finite?  For infinite sequences, features like
+      # count diverge.
+      #
+      public redef finite trit => trit.yes
+
+
+      # is this Sequence known to be array backed? If so, this means that operations
+      # like index[] are fast.
+      #
+      public redef is_array_backed => true
+
+
+      # redefines Sequence.count for array.slice,
+      # reducing complexity from O(n) to O(1).
+      #
+      public redef count => to-from
+
+
+      # check if argument is a valid index in this array.
+      #
+      # Unlike for general Sequences, this performs in O(1).
+      #
+      public redef is_valid_index(i i32) => 0 ≤ i ≤ arrayslice.this.count
+
+
+      # create a list that consists of the elements of this Sequence except the first
+      # n elements
+      #
+      # For arrays, this has performance in O(1).
+      #
+      public redef drop (n i32) =>
+        abstract_array.this.slice from+(max 0 n) to
+
+    arrayslice
+
+
+  # create a cons cell for a list of this array starting at the given
+  # index `i` and up to `to`
+  #
+  array_cons (i, to i32) : Cons T (list T)
+    pre
+      debug: 0 ≤ i < to ≤ length
+  is
+    public redef head => abstract_array.this[i]
+    public redef tail => (slice i+1 to).as_list
+
+
+  # map the array to a new array applying function f to all elements
+  #
+  public map_to_array(B type, f T -> B) array B =>
+    array B abstract_array.this.length (i -> f abstract_array.this[i])
+
+
+  # variant of map which additionally passes the index to
+  # the mapping function f
+  #
+  public map_indexed(B type, f (T, i32) -> B) array B =>
+    array B abstract_array.this.length (i -> f abstract_array.this[i] i)
+
+
+  # fold the elements of this array using the given monoid.
+  #
+  # e.g., to sum the elements of an array of i32, use a.fold i32.sum
+  #
+  public redef fold (m Monoid T) => fold 0 m.e m
+
+
+  # fold the elements of this array using the given monoid and initial value
+  #
+  # Used to fold an array tail-recursively
+  #
+  public fold (i i32, s T, m Monoid T) T
+    pre
+      debug: 0 ≤ i ≤ length
+  =>
+    if i = length
+      s
+    else
+      fold i+1 (m.op s abstract_array.this[i]) m
+
+
+  # reverse the order of the elements in this array
+  #
+  public redef reverse Sequence T => reverse_array
+
+
+  # reverse the order of the elements in this array
+  #
+  public reverse_array =>
+    array abstract_array.this.length (i -> abstract_array.this[abstract_array.this.length-1-i])
+
+
+  # get a list of tuples of indices and elements in this array
+  #
+  public enumerate Sequence (i32, T) =>
+    if length = 0
+      id (list (i32,T)) nil
+    else
+      id (list (i32,T)) (enumerate_cons 0)
+
+
+  # create a cons cell for a list of tuples of this array's indices and elements
+  # starting at the given indices.
+  #
+  enumerate_cons (i i32) : Cons (i32, T) (list (i32, T))
+    pre
+      debug: 0 ≤ i
+      debug: i < length
+  is
+    public redef head => (i, index[] i)
+    public redef tail list (tuple i32 T) =>
+      if i < length-1 then enumerate_cons i+1
+      else                 nil
+
+
+  # returns a copy of this array as a mutable array
+  #
+  public as_mutable(LM type : mutate) =>
+    data := fuzion.sys.internal_array_init T length
+
+    # NYI: PERFORMANCE: copy complete array at once
+    for x in data.indices do
+      data[x] := abstract_array.this[x]
+
+    LM.env.array length.as_i64 data unit

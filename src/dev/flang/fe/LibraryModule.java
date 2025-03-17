@@ -566,7 +566,7 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.6+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.8+|true      | 1      | byte[]        | MIR_FILE_MAGIC
 
               | 1      | Name          | module name
 
@@ -763,7 +763,7 @@ DeclFeatures
 |====
    |cond.     | repeat | type          | what
 
-.6+|true      | 1      | int           | outer feature index, 0 for outer==universe
+.2+|true      | 1      | int           | outer feature index, 0 for outer==universe
 
               | 1      | InnerFeatures | inner Features
 |====
@@ -811,7 +811,7 @@ InnerFeatures
 
 .2+| true     | 1      | int           | sizeof(inner Features)
 
-   |          | 1      | Features      | inner Features
+              | 1      | Features      | inner Features
 |====
 
 Features
@@ -873,12 +873,14 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = unused, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
+.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
                        | Pos           | source code position
                        | int           | outer feature index, 0 for outer()==null
+   | Y=1      | 1      | Feature       | the cotype
+   | C=1      | 1      | Feature       | the cotype origin
    | hasRT    | 1      | Type          | optional result type,
                                        hasRT = !isConstructor && !isChoice
 .2+| true NYI! !isField? !isIntrinsc
@@ -904,7 +906,7 @@ Feature
    *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
-   *   |        |        |               |           C = unused                          |
+   *   |        |        |               |           C = is cotype                       |
    *   |        |        |               |           F = has 'fixed' modifier            |
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
@@ -921,6 +923,8 @@ Feature
    *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | Y=1    | 1      | int           | type feature index                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | C=1    | 1      | int           | cotype index                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
@@ -987,7 +991,7 @@ Feature
   {
     return featureKindEnum(at) == AbstractFeature.Kind.Routine;
   }
-  boolean featureIsThisRef(int at)
+  boolean featureIsRef(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
@@ -995,6 +999,10 @@ Feature
   boolean featureHasCotype(int at)
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_COTYPE) != 0);
+  }
+  boolean featureIsCotype(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_COTYPE) != 0);
   }
   boolean featureIsFixed(int at)
   {
@@ -1075,7 +1083,7 @@ Feature
   {
     return featureOuterPos(at) + 4;
   }
-  int featureCotypePos(int at)
+  int featureCoTypeOrOriginPos(int at)
   {
     return featureOuterNextPos(at);
   }
@@ -1083,11 +1091,17 @@ Feature
   {
     if (PRECONDITIONS) require
       (featureHasCotype(at));
-    return feature(data().getInt(featureCotypePos(at)));
+    return feature(data().getInt(featureCoTypeOrOriginPos(at)));
+  }
+  AbstractFeature featureCotypeOrigin(int at)
+  {
+    if (PRECONDITIONS) require
+      (featureIsCotype(at));
+    return feature(data().getInt(featureCoTypeOrOriginPos(at)));
   }
   int featureCotypeNextPos(int at)
   {
-    return featureCotypePos(at) + (featureHasCotype(at) ? 4 : 0);
+    return featureCoTypeOrOriginPos(at) + (featureHasCotype(at) || featureIsCotype(at) ? 4 : 0);
   }
   int featureResultTypePos(int at)
   {
@@ -1519,12 +1533,11 @@ Expression
 
    | true     | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7
    | hasPos   | 1      | int           | source position: index in this file's SourceFiles section, 0 for builtIn pos
-   | k==Add   | 1      | Assign        | assignment
+   | k==Ass   | 1      | Assign        | assignment
    | k==Con   | 1      | Constant      | constant
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match expression
    | k==Tag   | 1      | Tag           | tag expression
-   | k==Env   | 1      | Env           | env expression
 |====
 
 --asciidoc--
@@ -1538,7 +1551,7 @@ Expression
    *   | hasPos | 1      | int           | source position: index in this file's         |
    *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Add | 1      | Assign        | assignment                                    |
+   *   | k==Ass | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1547,8 +1560,6 @@ Expression
    *   | k==Mat | 1      | Match         | match expression                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Env | 1      | Env           | env expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int expressionKindPos(int at)
@@ -1607,7 +1618,6 @@ Expression
       case Match       -> matchNextPos(eAt);
       case Call        -> callNextPos (eAt);
       case Tag         -> tagNextPos  (eAt);
-      case Env         -> envNextPos  (eAt);
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
@@ -1674,7 +1684,7 @@ Box
 |====
    |cond.     | repeat | type          | what
 
-.3+| true  .2+| 1      | Type          | box result type
+   | true     | 1      | Type          | box result type
 |====
 
 --asciidoc--
@@ -2175,44 +2185,6 @@ Tag
 
 --asciidoc--
 
-Env
-^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | type of resulting env value
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Env                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | type of resulting env value                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int envTypePos(int at)
-  {
-    return at;
-  }
-  AbstractType envType(int at)
-  {
-    return type(envTypePos(at));
-  }
-  int envNextPos(int at)
-  {
-    return typeNextPos(envTypePos(at));
-  }
-
-
-
-  /*
-
---asciidoc--
-
 InlineArray
 ^^^^^^^^^^^^
 
@@ -2322,7 +2294,7 @@ SourceFile
 |====
    |cond.     | repeat | type          | what
 
-.2+| true     | 1      | Name          | file name
+.3+| true     | 1      | Name          | file name
               | 1      | int           | size s
               | s      | byte          | source file data
 |====
@@ -2410,7 +2382,7 @@ SourceFile
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of(sourceFileName(at)), ba);
+            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
             _sourceFiles.set(i, sf);
           }
         return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
@@ -2493,7 +2465,7 @@ SourceFile
   {
     // NYI: CLEANUP: library-module should/could know its source dirs.
     return Path.of(Version.REPO_PATH)
-      .resolve(name().equals("base") ? "lib" : "modules/" + name() + "/src")
+      .resolve("modules").resolve(name()).resolve("src")
       .toString();
   }
 

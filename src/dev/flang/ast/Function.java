@@ -33,7 +33,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Function represents a lambda expression `(x,y) -> f x y` in Fuzion.
+ * Function represents a lambda expression {@code (x,y) -> f x y} in Fuzion.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -67,7 +67,7 @@ public class Function extends AbstractLambda
 
 
   /**
-   * The implementation of `Function.call` that contains the code of this lambda.
+   * The implementation of {@code Function.call} that contains the code of this lambda.
    */
   Feature _feature;
 
@@ -84,20 +84,20 @@ public class Function extends AbstractLambda
    * will be used put the correct return type in case of a fun declaration using
    * => that requires type inference.
    *
-   * I.e. a call to (Function/Unary/Binary/Nullary/Lazy <generics>)
+   * I.e. a call to ({@code Function}/{@code Unary}/{@code Binary}/{@code Nullary}/{@code Lazy <generics>})
    */
   Call _inheritsCall;
 
 
   /**
-   * The feature that inherits from `Function/Unary/Binary/Nullary/Lazy/...` that implements this lambda in
-   * its `call` feature.
+   * The feature that inherits from {@code Function/Unary/Binary/Nullary/Lazy/...} that implements this lambda in
+   * its {@code call} feature.
    */
   Feature _wrapper;
 
 
   /**
-   * Names of argument fields `x, y` of a lambda `x, y -> f x y`
+   * Names of argument fields {@code x, y} of a lambda {@code x, y -> f x y}
    */
   final List<Expr> _namesAsExprs;
   final List<ParsedName> _names;
@@ -183,7 +183,7 @@ public class Function extends AbstractLambda
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
     _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
     return this;
@@ -200,8 +200,8 @@ public class Function extends AbstractLambda
    * This must be called after this Function's resolveTypes was resolved since
    * this creates the new feature surrounding the expression.
    *
-   * What this does is for all calls `c` in the expression that is wrapped in
-   * this lambda, call `c.updateTarget` with this lambda's feature as `outer`
+   * What this does is for all calls {@code c} in the expression that is wrapped in
+   * this lambda, call {@code c.updateTarget} with this lambda's feature as {@code outer}
    * argument.
    *
    * @param res the resolution instance.
@@ -211,10 +211,8 @@ public class Function extends AbstractLambda
     var e = _expr.visit(new FeatureVisitor()
       {
         @Override
-        public Expr action(Call c, AbstractFeature outer)
+        public Expr action(Call c)
         {
-          if (CHECKS)
-            check(outer == _feature);
           return c.updateTarget(res, _feature.context());
         }
       },
@@ -245,14 +243,18 @@ public class Function extends AbstractLambda
    * case of error, return Types.t_ERROR.
    */
   @Override
-  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
-        if (!t.isFunctionType() && !t.isLazyType())
+        if (!t.isFunctionType())
           {
-            AstErrors.expectedFunctionTypeForLambda(pos(), t);
+            // suppress error for t_UNDEFINED, but only if other error was already reported
+            if (t != Types.t_UNDEFINED || !Errors.any())
+              {
+                AstErrors.expectedFunctionTypeForLambda(pos(), t);
+              }
             t = Types.t_ERROR;
             result = Types.t_ERROR;
           }
@@ -297,7 +299,7 @@ public class Function extends AbstractLambda
           {
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>("call"), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(FuzionConstants.OPERATION_CALL), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -365,7 +367,7 @@ public class Function extends AbstractLambda
           (e == this._call); // NYI: This will fail e.g. if _call is a call to bool.infix &&, need to handle explicitly
         this._call = (Call) e;
       }
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -376,7 +378,7 @@ public class Function extends AbstractLambda
    *
    * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (this._call == null || this._feature != null);
@@ -428,7 +430,10 @@ public class Function extends AbstractLambda
   {
     if (_type == null)
       {
-        AstErrors.noTypeInferenceFromLambda(pos());
+        if (_expr.type() != Types.t_ERROR || !Errors.any())
+          {
+            AstErrors.noTypeInferenceFromLambda(pos());
+          }
         _type = Types.t_ERROR;
       }
     return _type;
@@ -453,7 +458,7 @@ public class Function extends AbstractLambda
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res the resolution instance.

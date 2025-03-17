@@ -57,7 +57,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Class representing tokens like t_lparen or specific operators like '<', '<'.
+   * Class representing tokens like t_lparen or specific operators like {@code <}, {@code >}.
    */
   static class TokenOrOp
   {
@@ -91,7 +91,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Class representing parentheses like '(', ')' or '<', '<'.
+   * Class representing parentheses like {@code (}, {@code )} or {@code <}, {@code >}.
    */
   static class Parens
   {
@@ -113,7 +113,7 @@ public class Lexer extends SourceFile
 
 
     /**
-     * Create Parens for operators like '<', '>'
+     * Create Parens for operators like {@code <}, {@code >}
      */
     Parens(String l, String r)
     {
@@ -616,46 +616,46 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Minimum indentation required for the current token: current() must have
-   * indentation > _minIndent, while currentAtMinIndent() must have indentation
-   * >= _minIndent.
+   * Minimum indentation required for the current token: {@code current()} must have
+   * {@code indentation > _minIndent}, while {@code currentAtMinIndent()} must have {@code indentation
+   * >= _minIndent}.
    */
   private int _minIndent = -1;
 
 
   /**
-   * Token at this pos will be returned by current() even if its indentation is
-   * at <= _minIndent. If set to the first token of a expression that sets
-   * _minIndent, this ensures that we can still parse the first token of this
+   * Token at this pos will be returned by {@code current()} even if its indentation is
+   * at {@code <= _}minIndent. If set to the first token of a expression that sets
+   * {@code _minIndent}, this ensures that we can still parse the first token of this
    * expression.
    */
   private int _minIndentStartPos = -1;
 
 
   /**
-   * Line restriction for current()/currentAtMinIndent(): Symbols not in this
+   * Line restriction for {@code current()}/{@code currentAtMinIndent()}: Symbols not in this
    * line will be replaced by t_lineLimit.
    */
   private int _sameLine = -1;
 
 
   /**
-   * White space and semicolon restriction for current()/currentAtMinIndent(): Symbols after
+   * White space and semicolon restriction for {@code current()}/{@code currentAtMinIndent()}: Symbols after
    * this position that are preceded by white space or semicolon will be replaced by
-   * t_spaceLimit.
+   * {@code t_spaceLimit}.
    */
   private int _endAtSpace = Integer.MAX_VALUE;
 
 
   /**
-   * ':' operator restriction for current()/currentAtMinIndent(): if set,
-   * operator ":" will be replaced by t_colonLimit.
+   * {@code :} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
+   * operator ":" will be replaced by {@code t_colonLimit}.
    */
   private boolean _endAtColon = false;
 
 
   /**
-   * '|' operator restriction for current()/currentAtMinIndent(): if set,
+   * {@code |} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
    * operator "|" will be replaced by t_barLimit.
    */
   private boolean _endAtBar = false;
@@ -664,8 +664,8 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Has the raw token before current() been skipped because ignore(t) resulted
-   * in true?
+   * Has the raw token before {@code current()} been skipped because {@code ignore(t)} resulted
+   * in {@code true}?
    */
   private boolean _ignoredTokenBefore = false;
 
@@ -1661,7 +1661,7 @@ A Fuzion identifier starts with a codepoint that is a xref:fuzion_letter[Fuzion 
    *
    * @param cp a code point
    *
-   * @return true iff cp may be part of an identifier, e.g., 'i', '3', '²', etc.
+   * @return true iff cp may be part of an identifier, e.g., {@code i}, {@code 3}, {@code ²}, etc.
    */
   private boolean partOfIdentifier(int cp)
   {
@@ -1836,8 +1836,16 @@ PLUSMINUS   : "+"
     var p = curCodePoint();
     return switch (p)
       {
-      case 'P', 'E' ->
+      case 'P', 'E', 'p', 'e' ->
       {
+        if (p == 'p' || p == 'e')
+          {
+            Errors.error(sourcePos(),
+              "Broken numeric literal, exponent indicator must be in upper case.",
+              "To fix this change '" + (char) p + "' to '" + (p == 'e' ? 'E' : 'P') + "'.");
+            p = p == 'e' ? 'E' : 'P';
+          }
+
         nextCodePoint();
         var neg = switch (curCodePoint())
           {
@@ -1898,7 +1906,7 @@ PLUSMINUS   : "+"
     public final Digits _exponent;
 
     /**
-     * Is the exponent given with 'P' (and not with 'E').  E.g., for
+     * Is the exponent given with {@code P} (and not with {@code E}).  E.g., for
      * "0x_de_ad.c0deP0o123", this will be true.
      */
     public final boolean _binaryExponent;
@@ -1964,8 +1972,8 @@ PLUSMINUS   : "+"
 
 
     /**
-     * The value of the mantissa, ignoring decimal '.' position (i.e., value of
-     * '123.456' is 123456).
+     * The value of the mantissa, ignoring decimal {@code .} position (i.e., value of
+     * {@code 123.456} is 123456).
      */
     BigInteger mantissaValue()
     {
@@ -2033,14 +2041,14 @@ PLUSMINUS   : "+"
 
 
     /**
-     * The base as indicated by prefix '0b', '0o', '0d', '0x'. E.g., for
+     * The base as indicated by prefix {@code 0b}, {@code 0o}, {@code 0d}, {@code 0x}. E.g., for
      * "0x_de_ad.c0de", this will be hex.
      */
     public final Base _base;
 
 
     /**
-     * The digits, without base prefix and without '_' separators.  E.g., for
+     * The digits, without base prefix and without {@code _} separators.  E.g., for
      * "0x_de_ad.c0de", this will be "deadc0de"
      */
     public final String _digits;
@@ -2052,7 +2060,7 @@ PLUSMINUS   : "+"
     public int _dotAt = 0;
 
     /**
-     * Was there a '-' preceding these digits?
+     * Was there a {@code -} preceding these digits?
      */
     public final boolean _negative;
 
@@ -2064,7 +2072,7 @@ PLUSMINUS   : "+"
 
     /**
      * Helper routine to check if codepoint p is a digit for base. This is
-     * generous, i.e., it will consider any digits '0'..'9' a digit even for
+     * generous, i.e., it will consider any digits {@code 0}..{@code 9} a digit even for
      * bases bin and oct and it will consider any letter a digit for base hex.
      */
     boolean isDigit(int p)
@@ -2079,7 +2087,7 @@ PLUSMINUS   : "+"
      *
      * @param allowDot true to parse DIGITS_W_DOT, false to parse DIGITS
      *
-     * @param negative true if a '-' was encountered before firstDigit.
+     * @param negative true if a {@code -} was encountered before firstDigit.
      *
 DIGITS      :         DEC_DIGIT_ DEC_DIGITS_
             | "0" "b" BIN_DIGIT_ BIN_DIGITS_
@@ -2292,7 +2300,7 @@ HEX_TAIL    : "." HEX_DIGITS
 
 
     /**
-     * The value, ignoring '-' and ignoring decimal '.' position (i.e., value of '123.456' is
+     * The value, ignoring {@code -} and ignoring decimal {@code .} position (i.e., value of {@code 123.456} is
      * 123456).
      */
     BigInteger absValue()
@@ -2301,7 +2309,7 @@ HEX_TAIL    : "." HEX_DIGITS
     }
 
     /**
-     * The value, ignoring decimal '.' position (i.e., value of '123.456' is
+     * The value, ignoring decimal {@code .} position (i.e., value of {@code 123.456} is
      * 123456).
      */
     BigInteger signedValue()
@@ -2314,8 +2322,8 @@ HEX_TAIL    : "." HEX_DIGITS
 
 
   /**
-   * Skip comments of the form '/''*' .. '*''/', skip them recursively if nested
-   * comments are found.  Called with the current code point at the first '*'.
+   * Skip comments of the form {@code /}{@code *} .. {@code *}{@code /}, skip them recursively if nested
+   * comments are found.  Called with the current code point at the first {@code *}.
    */
   private Token skipComment()
   {
@@ -2665,8 +2673,8 @@ PIPE        : "|"
    * remaining string.
    *
    * This is useful, e.g., to parse nested generics lists such as
-   * Stack<List<i32>>, where the last token is seen by the lexer as a single
-   * operator >>, while the parser prefers to see two consecutive operators >.
+   * {@code Stack<List<i32>>}, where the last token is seen by the lexer as a single
+   * operator {@code >>}, while the parser prefers to see two consecutive operators {@code >}.
    */
   void splitOperator(String op)
   {
@@ -2762,7 +2770,7 @@ PIPE        : "|"
 
 
   /**
-   * Parse state to decide between normal parsing and $<id> and {<expr>} within
+   * Parse state to decide between normal parsing and {@code $<id>} and {@code {<expr>}} within
    * strings.
    */
   private enum StringState
@@ -2802,8 +2810,8 @@ PIPE        : "|"
 
 
   /**
-   * For a given string token, return if that string starts with '"' or follows
-   * an embedded '$<id>' or '{<expr>}'.
+   * For a given string token, return if that string starts with {@code "} or follows
+   * an embedded {@code $<id>} or {@code {<expr>}}.
    */
   StringEnd beginning(Token t)
   {
@@ -2828,8 +2836,8 @@ PIPE        : "|"
 
 
   /**
-   * For a given string token, return if that string ends with '"' or with an
-   * embedded '$<id>' or '{<expr>}'.
+   * For a given string token, return if that string ends with {@code "} or with an
+   * embedded {@code $<id>} or {@code {<expr>}}.
    */
   StringEnd end(Token t)
   {
@@ -2859,8 +2867,8 @@ PIPE        : "|"
   private class StringLexer
   {
     /**
-     * The original string that started with '"', i.e., disregarding any partial
-     * strings following '$<id>' or '{<expr>}'.  Used for proper error messages.
+     * The original string that started with {@code "}, i.e., disregarding any partial
+     * strings following {@code $<id>} or {@code {<expr>}}.  Used for proper error messages.
      */
     final int _stringStart;
 
@@ -3038,7 +3046,7 @@ PIPE        : "|"
                 {
                   escaped = true;
                 }
-              else if (_multiLineIndentation.isPresent() && atMultiLineStringDelimitor(getPos(pos)))
+              else if (_multiLineIndentation.isPresent() && atMultiLineStringDelimiter(getPos(pos)))
                 {
                   pos = advance(pos, 2); // skip fat quotation
                   t = _beginning.token(StringEnd.QUOTE);
@@ -3097,7 +3105,7 @@ PIPE        : "|"
       _multiLineIndentation.ifPresent(indentation ->
         {
           var codePoint = raw(curPos);
-          if (   !atMultiLineStringDelimitor(getPos(curPos))
+          if (   !atMultiLineStringDelimiter(getPos(curPos))
               && codePoint != SP
               // empty lines are allowed
               && codePoint != CR
@@ -3134,7 +3142,7 @@ PIPE        : "|"
     private Optional<Integer> startOfStringContent()
     {
       var pos = _pos;
-      if (atMultiLineStringDelimitor(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
+      if (atMultiLineStringDelimiter(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
         {
           pos = advance(pos, 2); // skip fat quotation
           while(raw(pos) != END_OF_FILE && (isCRorLF(raw(pos)) || raw(pos) == SP))
@@ -3226,7 +3234,7 @@ PIPE        : "|"
      * @param pos
      * @return
      */
-    private boolean atMultiLineStringDelimitor(int pos)
+    private boolean atMultiLineStringDelimiter(int pos)
     {
       return !(pos < 0 || pos+2 >= byteLength())
         && byteAt(pos) == '"'
@@ -3344,7 +3352,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is started, i.e., it is not
-   * preceded by an embedded identifier '$id' or expression '{expr}.
+   * preceded by an embedded identifier {@code $id} or expression {@code {expr}}.
    *
    * @param t a token
    *
@@ -3358,7 +3366,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is completed, i.e., it is not
-   * followed by an embedded identifier '$id' or expression '{expr}.
+   * followed by an embedded identifier {@code $id} or expression {@code {expr}}.
    *
    * @param t a token
    *
