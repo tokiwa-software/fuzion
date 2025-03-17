@@ -126,7 +126,10 @@ is
       if (seconds > 0 || !is_positive.get) && nanos = 0
         s <- with_time_prefix "{seconds}S"
       else if nanos != 0
-        s <- with_time_prefix "{seconds}.{nanos.as_string 9 10}S"
+        combined := seconds * 1E9 + nanos
+        newsecs := combined / 1E9
+        newnanos := combined % 1E9
+        s <- with_time_prefix "{newsecs}.{newnanos.as_string 9 10}S"
 
       s.get
 
