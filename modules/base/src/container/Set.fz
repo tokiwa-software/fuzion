@@ -145,5 +145,5 @@ is
   #
   public type.union =>
     ref : Monoid (container.Set E)
-      redef infix ∙ (a, b container.Set E) => a ∪ b
-      redef e => (container.Set E).new []
+      public redef infix ∙ (a, b container.Set E) => a ∪ b
+      public redef e => (container.Set E).new []

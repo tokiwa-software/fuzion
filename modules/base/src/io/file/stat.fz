@@ -83,10 +83,10 @@ install_default =>
 # the default file stat provided
 #
 default_stat_handler : Stat_Handler is
-  redef stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+  redef stats(path Array, meta_data_arr Array) =>
     fzE_stat path meta_data_arr
 
-  redef lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) =>
+  redef lstats(path Array, meta_data_arr Array) =>
     fzE_lstat path meta_data_arr
 
 
@@ -119,5 +119,5 @@ public stat(
 # reference to the stats that could be provided
 #
 private:public Stat_Handler ref is
-  stats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) i32 => abstract
-  lstats(path fuzion.sys.Pointer, meta_data_arr fuzion.sys.Pointer) i32 => abstract
+  stats(path Array, meta_data_arr Array) i32 => abstract
+  lstats(path Array, meta_data_arr Array) i32 => abstract

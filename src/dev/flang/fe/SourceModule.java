@@ -61,6 +61,7 @@ import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
+import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
 
 import dev.flang.parser.Parser;
@@ -258,6 +259,51 @@ public class SourceModule extends Module implements SrcModule
     findDeclarations(_universe, null);
     _universe.scheduleForResolution(_res);
     _res.resolve();
+    addRuntimeInitCall();
+  }
+
+
+  /**
+   * Add call at beginnig of application
+   * to initialize the fuzion runtime system
+   */
+  private void addRuntimeInitCall()
+  {
+    var d = _main == null
+      ? _universe
+      : lookupFeature(_universe, FeatureName.get(_main, 0), null);
+    if (d != null)
+      {
+        ((Feature) d)
+          .impl()
+          .addInitialCall(plainCall("fuzion_runtime_init"));
+      }
+  }
+
+
+  /**
+   * A plain resolved call to a feature defined in universe
+   * with no arguments, generics, select etc.
+   *
+   * @param featureName
+   */
+  private AbstractCall plainCall(String featureName)
+  {
+    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0), null);
+    if (CHECKS) check
+      (feature.arguments().isEmpty(),
+       feature.outer().isUniverse());
+    return new AbstractCall() {
+      @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+      @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+      @Override public AbstractFeature calledFeature() { return feature; }
+      @Override public Expr target() { return Universe.instance; }
+      @Override public AbstractType type() { return calledFeature().resultType(); }
+      @Override public List<Expr> actuals() { return NO_EXPRS; }
+      @Override public int select() { return -1; }
+      @Override public boolean isInheritanceCall() { return false; }
+      @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+    };
   }
 
 
@@ -675,9 +721,14 @@ part of the (((inner features))) declarations of the corresponding
   {
     findDeclarations(cotype, outerType);
     addDeclared(outerType, cotype);
-    cotype.scheduleForResolution(_res);
     resolveDeclarations(cotype);
   }
+
+
+  /**
+   * During type resolution, add a type parameter created for a free type like
+   * {@code T} in {@code f(x T) is ...}.
+   */
   public void addTypeParameter(AbstractFeature outer,
                                Feature typeParameter)
   {
@@ -1016,7 +1067,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       {
         for (var h : d._heirs)
           {
-            addDeclaredOrInherited(declaredOrInheritedFeatures(outer), h, fn, f);
+            addDeclaredOrInherited(declaredOrInheritedFeatures(h), h, fn, f);
             addToHeirs(h, fn, f);
           }
       }
@@ -1546,18 +1597,13 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public void checkTypes(Feature f)
   {
-    if (!f.isVisibilitySpecified() && !f.redefines().isEmpty())
-      {
-        f.setVisbility(f.redefines().stream().map(r -> r.visibility()).sorted().findAny().get());
-      }
-
     f.impl().checkTypes(f);
     var args = f.arguments();
     var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
-        var ta = o.handDown(_res, o.argTypes(), f.outer());
-        var ra = f.argTypes();
+        var ta = o.handDown(_res, argTypes(o), f.outer());
+        var ra = argTypes(f);
         if (ta.length != ra.length)
           {
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
@@ -1651,7 +1697,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkRedefVisibility(f);
     checkLegalTypeVisibility(f);
     checkResultTypeVisibility(f);
-    checkArgVisibility(f);
     checkArgTypesVisibility(f);
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
@@ -1659,6 +1704,34 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkContractAccesses(f);
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
+  }
+
+
+  /**
+   * Determine the formal argument types of this feature.
+   *
+   * @return a new array containing this feature's formal argument types.
+   */
+  private AbstractType[] argTypes(AbstractFeature af)
+  {
+    int argnum = 0;
+    var args = af.arguments();
+    var result = new AbstractType[args.size()];
+    for (var frml : args)
+      {
+        if (CHECKS) check
+          (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
+
+        var frmlT = frml.resultType();
+
+        result[argnum] = frmlT;
+        argnum++;
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
@@ -1674,24 +1747,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   private boolean inTypeFeature(AbstractFeature f)
   {
     return f.isTypeFeature() || (f.outer() != null && inTypeFeature(f.outer()));
-  }
-
-
-  /*
-   * check that arguments of functions etc.
-   * do not have visibility modifier.
-   */
-  private void checkArgVisibility(Feature f)
-  {
-    if (
-        f.isArgument()
-     && !f.outer().definesType()
-     && !f.outer().isCotype()
-     && f.visibility() != Visi.PRIV
-    )
-      {
-        AstErrors.illegalVisibilityArgument(f);
-      }
   }
 
 
@@ -1857,7 +1912,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             var s = arg.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
             if (!s.isEmpty())
               {
-                AstErrors.argTypeMoreRestrictiveVisbility(f, arg, s);
+                AstErrors.argTypeMoreRestrictiveVisibility(f, arg, s);
               }
           }
       }

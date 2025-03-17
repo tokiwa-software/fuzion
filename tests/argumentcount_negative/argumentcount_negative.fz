@@ -26,7 +26,7 @@
 argumentcount_negative is
 
   opengenerics11 ref : Function i32 is
-    redef call() i32 => 42
+    public redef call() i32 => 42
   opengenerics12 ref : Function i32 is
     redef call(x i32) i32 => 42                // 1. should flag an error, wrong number of arguments
   opengenerics13 ref : Function i32 is
@@ -35,12 +35,12 @@ argumentcount_negative is
   opengenerics14 ref : Function i32 bool is
     redef call() i32 => 42                     // 3. should flag an error, wrong number of arguments
   opengenerics15 ref : Function i32 bool is
-    redef call(x bool) i32 => 42
+    public redef call(x bool) i32 => 42
   opengenerics16 ref : Function i32 bool is
     redef call(x bool, y bool) i32 => 42       // 4. should flag an error, wrong number of arguments
 
   opengenerics17 ref : Function unit is
-    redef call() => unit
+    public redef call() => unit
   opengenerics18 ref : Function unit is
     redef call(x i32) is                       // 5. should flag an error, wrong number of arguments
   opengenerics19 ref : Function unit is
@@ -49,7 +49,7 @@ argumentcount_negative is
   opengenerics20 ref : Function unit bool is
     redef call() is                            // 7. should flag an error, wrong number of arguments
   opengenerics21 ref : Function unit bool is
-    redef call(x bool) => unit
+    public redef call(x bool) => unit
   opengenerics22 ref : Function unit i32 is
     redef call(x, y bool) is                   // 8. should flag an error, wrong number of arguments
 

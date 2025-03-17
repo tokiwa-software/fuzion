@@ -48,6 +48,7 @@ import dev.flang.fuir.analysis.AbstractInterpreter2;
 import dev.flang.ir.IR.ExprKind;
 import dev.flang.ir.IR.FeatureKind;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.util.ANY;
@@ -167,14 +168,12 @@ public class DFA extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
      */
     @Override
-    public void assignStatic(int s, int tc, int f, int rt, Val tvalue, Val val)
+    public void assignStatic(int s, int tc, int f, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
     }
@@ -404,7 +403,7 @@ public class DFA extends ANY
                 var or = _fuir.clazzOuterRef(cc);
                 if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
                     _escapes.contains(ca._cc) &&
-                    (or != -1) &&
+                    (or != NO_CLAZZ) &&
                     _fuir.clazzFieldIsAdrOfValue(or)    // outer ref is adr, otherwise target is passed by value (primitive type like u32)
                     )
                   {
@@ -666,7 +665,7 @@ public class DFA extends ANY
           if (tv._tag == t)
             {
               var field = _fuir.matchCaseField(s, mc);
-              if (field != -1)
+              if (field != NO_CLAZZ)
                 {
                   var untagged = tv._original;
                   _call._instance.setField(DFA.this, field, untagged);
@@ -1149,11 +1148,6 @@ public class DFA extends ANY
   public DfaFUIR new_fuir()
   {
     dfa();
-    var called = new TreeSet<Integer>();
-    for (var c : _calls.values())
-      {
-        called.add(c._cc);
-      }
     _options.timer("dfa");
     var res = new DfaFUIR((GeneratingFUIR) _fuir)
       {
@@ -1210,6 +1204,7 @@ public class DFA extends ANY
           return _escapesCode.contains(s);
         }
 
+
         @Override
         public boolean alwaysResultsInVoid(int s)
         {
@@ -1237,7 +1232,7 @@ public class DFA extends ANY
         public int matchCaseField(int s, int cix)
         {
           var key = ((long)s<<32)|((long)cix);
-          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : -1;
+          return _takenMatchCases.contains(key) ?  super.matchCaseField(s, cix) : NO_CLAZZ;
         }
 
 
@@ -1416,7 +1411,7 @@ public class DFA extends ANY
           {
             var i = counts.getOrDefault(v._clazz, 0);
             counts.put(v._clazz, i+1);
-            if (v._clazz == -1 && ((i&(i-1))==0)) System.out.println("clazz is null for "+v.getClass()+" "+v);
+            if (v._clazz == NO_CLAZZ && ((i&(i-1))==0)) System.out.println("clazz is null for "+v.getClass()+" "+v);
           }
         counts
           .keySet()
@@ -1534,7 +1529,7 @@ public class DFA extends ANY
 
         // copy outer ref argument to outer ref field:
         var or = _fuir.clazzOuterRef(c._cc);
-        if (or != -1)
+        if (or != NO_CLAZZ)
           {
             i.setField(this, or, c._target);
           }
@@ -1642,10 +1637,10 @@ public class DFA extends ANY
   void tempEscapes(int s, Val v, int adrField)
   {
     if (v instanceof EmbeddedValue ev &&
-        adrField != -1 &&
+        adrField != NO_CLAZZ &&
         !_fuir.clazzIsRef(_fuir.clazzResultClazz(adrField)) &&
         _fuir.clazzFieldIsAdrOfValue(adrField)
-        && ev._site != -1
+        && ev._site != NO_SITE
         )
       {
         var cp = ev._site;
@@ -2166,9 +2161,6 @@ public class DFA extends ANY
           cl._dfa.readField(len);
           return Value.UNKNOWN_JAVA_REF;
         });
-    put("fuzion.java.bool_to_java_object"   , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.f32_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.f64_to_java_object"    , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.get_field0"            , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl._cc);
@@ -2185,58 +2177,46 @@ public class DFA extends ANY
       {
         return Value.UNIT;
       });
-    put("fuzion.java.i16_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.i32_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.i64_to_java_object"    , cl -> wrappedJavaObject(cl) );
-    put("fuzion.java.i8_to_java_object"     , cl -> wrappedJavaObject(cl) );
     put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.java.create_jvm", cl -> Value.UNIT);
-    put("fuzion.java.string_to_java_object0", cl -> newFuzionJavaCall(cl));
+    put("fuzion.java.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
+    put("fuzion.java.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
   }
-  static Value newFuzionJavaCall(Call cl) {
+
+
+  /**
+   * create a generic fuzion java result
+   * that is wrapped in an outcome
+   *
+   * @param cl the call that this is the result of
+   */
+  static Value outcomeJavaResult(Call cl)
+  {
     var rc = fuir(cl).clazzResultClazz(cl._cc);
-    if (fuir(cl).clazzBaseName(rc).startsWith("outcome"))
-    // NYI: HACK: should properly check if rc is an outcome
-      {
-        var oc = fuir(cl).clazzChoice(rc, 0);
-        var res = switch (fuir(cl).getSpecialClazz(oc))
-          {
-            case c_i8, c_u16, c_i16, c_i32, c_i64,
-              c_f32, c_f64, c_bool, c_unit -> {
-              var v = switch (fuir(cl).getSpecialClazz(oc))
-                {
-                  case c_i8, c_u16, c_i16, c_i32, c_i64,
-                    c_f32, c_f64 -> NumericValue.create(cl._dfa, oc);
-                  case c_bool -> cl._dfa.bool();
-                  case c_unit -> Value.UNIT;
-                  default -> Value.UNIT; // to match all the cases, should not be reached
-                };
-              yield v;
-            }
-            default -> {
-              var jref = fuir(cl).lookupJavaRef(oc);
-              var jobj = cl._dfa.newInstance(oc, NO_SITE, cl._context);
-              jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-              yield jobj;
-            }
-          };
-        var okay = cl._dfa.newTaggedValue(rc, res, 0);
-        var error_cl = fuir(cl).clazzChoice(rc, 1);
-        var error = cl._dfa.newInstance(error_cl, NO_SITE, cl._context);
-        var msg = fuir(cl).lookup_error_msg(error_cl);
-        error.setField(cl._dfa, msg, cl._dfa.newConstString(null, cl));
-        var err = cl._dfa.newTaggedValue(rc, error, 1);
-        return okay.join(cl._dfa, err, fuir(cl).clazzResultClazz(cl._cc));
-      }
+    return outcome(cl._dfa, cl, rc, fuzionJavaResult(cl, fuir(cl).clazzChoice(rc, 0)));
+  }
+
+
+  /**
+   * create a generic Java_Object or primitive
+   * based on the type of result clazz rc.
+   *
+   * @param cl the call that this is the result of
+   *
+   * @param rc
+   */
+  private static Value fuzionJavaResult(Call cl, int rc)
+  {
     return switch (fuir(cl).getSpecialClazz(rc))
       {
-        case c_i8, c_u16, c_i16, c_i32, c_i64,
-          c_f32, c_f64 -> NumericValue.create(cl._dfa, rc);
-        case c_bool -> cl._dfa.bool();
+        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
+          cl._dfa.newInstance(rc, NO_SITE, cl._context);
         case c_unit -> Value.UNIT;
         default -> {
           var jref = fuir(cl).lookupJavaRef(rc);
-          var jobj = wrappedJavaObject(cl);
+          if (CHECKS) check
+            (jref != NO_CLAZZ);
+          var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
           jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
           yield jobj;
         }
@@ -2253,7 +2233,7 @@ public class DFA extends ANY
    */
   private static Value outcome(DFA dfa, Call cl, int rc, Value res)
   {
-    var okay = dfa.newTaggedValue(rc, Value.UNIT, 0);
+    var okay = dfa.newTaggedValue(rc, res, 0);
     var error_cl = dfa._fuir.clazzChoice(rc, 1);
     var error = dfa.newInstance(error_cl, NO_SITE, cl._context);
     var msg = dfa._fuir.lookup_error_msg(error_cl);
@@ -2270,7 +2250,7 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
         cl._dfa.readField(data);
-        return newFuzionJavaCall(cl);
+        return outcomeJavaResult(cl);
       });
     put("fuzion.java.call_s0"               , cl ->
       {
@@ -2278,7 +2258,7 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
         cl._dfa.readField(data);
-        return newFuzionJavaCall(cl);
+        return outcomeJavaResult(cl);
       });
     put("fuzion.java.call_v0"               , cl ->
       {
@@ -2286,9 +2266,9 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa.readField(data);
-        return newFuzionJavaCall(cl);
+        return outcomeJavaResult(cl);
       });
-    put("fuzion.java.cast0", cl -> newFuzionJavaCall(cl));
+    put("fuzion.java.cast0", cl -> outcomeJavaResult(cl));
     put("fuzion.java.get_static_field0"     , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl._cc);
@@ -2306,14 +2286,15 @@ public class DFA extends ANY
 
         return Value.UNIT;
       });
-    put("fuzion.java.u16_to_java_object"    , cl -> wrappedJavaObject(cl) );
 
     put("concur.sync.mtx_init"              , cl ->
       {
+        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
-                       fuir(cl).clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(fuir(cl).clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       rc,
+                       cl._dfa.newInstance(ag, NO_SITE, cl._context));
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
@@ -2338,10 +2319,12 @@ public class DFA extends ANY
     put("concur.sync.cnd_init"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
-                       fuir(cl).clazzResultClazz(cl._cc),
-                       cl._dfa.newInstance(fuir(cl).clazz(SpecialClazzes.c_sys_ptr), NO_SITE, cl._context));
+                       rc,
+                       cl._dfa.newInstance(ag, NO_SITE, cl._context));
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
@@ -2363,6 +2346,17 @@ public class DFA extends ANY
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
         return Value.UNIT;
+      });
+    put("native_string_length"              , cl ->
+      {
+        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
+      });
+    put("native_array"                      , cl ->
+      {
+        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 1));
+        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl._cc, 0));
       });
   }
 
@@ -2754,7 +2748,7 @@ public class DFA extends ANY
                               Value value)
   {
     if (PRECONDITIONS) require
-      (site != -1,
+      (site != NO_SITE,
        value != null);
 
     Val r;
@@ -2797,7 +2791,7 @@ public class DFA extends ANY
     if (PRECONDITIONS) require
       (instance != null,
        value != null,
-       value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
+       value._clazz == NO_CLAZZ || !instance._dfa._fuir.clazzIsRef(value._clazz));
 
     if (CHECKS) check
       (instance._id >= 0);
@@ -2819,7 +2813,7 @@ public class DFA extends ANY
         r = e.get(i);
         if (r == null)
           {
-            var ev = new EmbeddedValue(instance, -1, value);
+            var ev = new EmbeddedValue(instance, NO_SITE, value);
             e.put(i, ev);
             r = ev;
           }

@@ -2328,15 +2328,7 @@ Target feature: 'visibility_negative.visi8'
 In call: 'c'
 
 
---CURDIR--/visibility_negative.fz:530:9: error 292: Could not find called feature
-        c // 275. should flag an error: feature not visible
---------^
-Feature not found: 'c' (no arguments)
-Target feature: 'visibility_negative.visi8'
-In call: 'c'
-
-
---CURDIR--/visibility_negative.fz:533:9: error 293: Could not find called feature
+--CURDIR--/visibility_negative.fz:533:9: error 292: Could not find called feature
         c // 276. should flag an error: feature not visible
 --------^
 Feature not found: 'c' (no arguments)
@@ -2344,15 +2336,7 @@ Target feature: 'visibility_negative.visi8'
 In call: 'c'
 
 
---CURDIR--/visibility_negative.fz:536:9: error 294: Could not find called feature
-        b // 277. should flag an error: feature not visible
---------^
-Feature not found: 'b' (no arguments)
-Target feature: 'visibility_negative.visi8'
-In call: 'b'
-
-
---CURDIR--/visibility_negative.fz:539:9: error 295: Could not find called feature
+--CURDIR--/visibility_negative.fz:539:9: error 293: Could not find called feature
         b // 278. should flag an error: feature not visible
 --------^
 Feature not found: 'b' (no arguments)
@@ -2360,9 +2344,25 @@ Target feature: 'visibility_negative.visi8'
 In call: 'b'
 
 
---CURDIR--/visibility_negative.fz:541:5: error 296: Could not find called feature
+--CURDIR--/visibility_negative.fz:541:5: error 294: Could not find called feature
     b // 279. should flag an error: feature not visible
 ----^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:530:9: error 295: Could not find called feature
+        c // 275. should flag an error: feature not visible
+--------^
+Feature not found: 'c' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'c'
+
+
+--CURDIR--/visibility_negative.fz:536:9: error 296: Could not find called feature
+        b // 277. should flag an error: feature not visible
+--------^
 Feature not found: 'b' (no arguments)
 Target feature: 'visibility_negative.visi8'
 In call: 'b'

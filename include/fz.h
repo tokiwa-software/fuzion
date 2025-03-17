@@ -66,11 +66,11 @@ void * fzE_opendir(const char *pathname, int64_t * result);
 // NYI: UNDER DEVELOPMENT
 // returns -1 on error, 0 on end reached, length of result on success
 // result contains the bytes of the string, NYI: UNDER DEVELOPMENT (max 1024)
-int fzE_read_dir(intptr_t * dir, void * result);
+int fzE_dir_read(intptr_t * dir, void * result);
 
 // close the dir
 // return 0 if successful, -1 if not
-int fzE_close_dir(intptr_t * dir);
+int fzE_dir_close(intptr_t * dir);
 
 // 0 = blocking
 // 1 = none_blocking
@@ -114,12 +114,12 @@ unsigned short fzE_get_peer_port(int sockfd);
 // read up to count bytes bytes from sockfd
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
-int fzE_read(int sockfd, void * buf, size_t count);
+int fzE_socket_read(int sockfd, void * buf, size_t count);
 
 // write buf to sockfd
 // may block if socket is set to blocking.
 // return error code or zero on success
-int fzE_write(int sockfd, const void * buf, size_t count);
+int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
 
 /*
@@ -275,7 +275,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
  * @param size the size of buf in bytes
  * @return amounts of bytes read, or negative number on error
  */
-int64_t fzE_file_read(void * file, void * buf, int32_t size);
+int32_t fzE_file_read(void * file, void * buf, int32_t size);
 
 /**
  * @param file the pointer to the file
@@ -283,7 +283,7 @@ int64_t fzE_file_read(void * file, void * buf, int32_t size);
  * @param size the size of buf in bytes
  * @return amounts of bytes writter, or negative number on error
  */
-int64_t fzE_file_write(void * file, void * buf, int32_t size);
+int32_t fzE_file_write(void * file, void * buf, int32_t size);
 
 /**
  * @param oldpath

@@ -28,4 +28,4 @@ public stopwatch(f () -> unit) time.duration =>
   start := nano.read
   f()
   end := nano.read
-  duration.ns end-start
+  end - start

@@ -218,16 +218,6 @@ public numeric : property.hashable, property.orderable is
   public type.ten => from_u32 10
 
 
-  # equality
-  #
-  public redef type.equality(a, b numeric.this) bool => abstract
-
-
-  # total order
-  #
-  public redef type.lteq(a, b numeric.this) bool => abstract
-
-
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
   #

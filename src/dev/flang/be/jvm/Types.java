@@ -183,9 +183,8 @@ public class Types extends ANY implements ClassFileConstants
           {
             cf.addImplements(Names.MAIN_INTERFACE);
             var maincl = _fuir.mainClazz();
-            var bc_run =
-              Expr.UNIT
-              .andThen(invokeStatic(maincl, -1)).drop()
+            var bc_run = invokeStatic(maincl, -1)
+              .drop()
               .andThen(Expr.RETURN);
             var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
@@ -253,7 +252,7 @@ public class Types extends ANY implements ClassFileConstants
             };
       case Routine   -> true; // NYI: UNDER DEVELOPMENT: clazzNeedsCode(cl);
       case Intrinsic -> true;
-      case Native    -> true; // contains a static field methodHandler
+      case Native    -> true; // contains a static field methodHandle
       default        -> false;
       };
   }
@@ -375,7 +374,14 @@ public class Types extends ANY implements ClassFileConstants
       case c_u64     -> PrimitiveType.type_long;
       case c_f32     -> PrimitiveType.type_float;
       case c_f64     -> PrimitiveType.type_double;
-      case c_sys_ptr -> JAVA_LANG_OBJECT;
+      case c_Array,
+           c_Mutex,
+           c_Condition,
+           c_File_Descriptor,
+           c_Directory_Descriptor,
+           c_Java_Ref,
+           c_Mapped_Memory,
+           c_Native_Ref -> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||

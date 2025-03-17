@@ -32,10 +32,10 @@ public option(public T type)
 is
 
 
-
   # Does this option contain no value of type T?
   #
   public is_nil => !exists
+
 
   # monadic operator
   #

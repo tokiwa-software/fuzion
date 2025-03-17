@@ -2150,7 +2150,7 @@ public class AstErrors extends ANY
     );
   }
 
-  public static void argTypeMoreRestrictiveVisbility(Feature f, AbstractFeature arg, Set<AbstractFeature> s)
+  public static void argTypeMoreRestrictiveVisibility(Feature f, AbstractFeature arg, Set<AbstractFeature> s)
   {
     error(f.pos(), "Argument types or any of its generics have more restrictive visibility than feature.",
       "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
@@ -2169,7 +2169,7 @@ public class AstErrors extends ANY
   public static void redefMoreRestrictiveVisibility(Feature f, AbstractFeature redefined)
   {
     error(f.pos(), "Redefinition must not have more restrictive visibility.",
-      "To solve this, increase the visibility of " + s(f) + " to at least " + s(redefined.visibility()));
+      "To solve this, increase the visibility of " + s(f) + " to " + (redefined.visibility() == Visi.PUB ? "" : "at least ") + s(redefined.visibility()));
   }
 
   public static void illegalVisibilityModifier(Feature f)
@@ -2220,7 +2220,8 @@ public class AstErrors extends ANY
   public static void abstractFeaturesVisibilityMoreRestrictiveThanOuter(Feature f)
   {
     error(f.pos(), "Abstract features visibility must not be more restrictive than outer features visibility.",
-      "To solve this, increase the visibility of " + s(f) + " to at least " + s(f.outer().visibility().eraseTypeVisibility()));
+      "To solve this, increase the visibility of " + s(f) + " to "
+      + ((f.outer().visibility().eraseTypeVisibility()) == Visi.PUB ? "" : "at least ") + s(f.outer().visibility().eraseTypeVisibility()));
   }
 
   public static void ambiguousCall(Call c, AbstractFeature f, AbstractFeature tf)
@@ -2365,6 +2366,13 @@ public class AstErrors extends ANY
     error(pos,
           "Select clause is not a valid type",
           "To solve, this specify a valid type.");
+  }
+
+  public static void illegalNativeType(SourcePosition pos, String string, AbstractType at)
+  {
+    error(pos,
+          "Implementation restriction: "+ string + " " + s(at) + " is not (yet) allowed in native features.",
+          "To solve, this specify a legal type.");
   }
 
 }

@@ -180,13 +180,13 @@ public float : numeric is
 
   public asinh float.this =>
     # ln(x+sqrt(x^2+1))
-    (float.this + (float.this ** float.this.type.two + float.this.type.one).sqrt).log
+    (float.this + (float.this ** float.this.two + float.this.one).sqrt).log
   public acosh float.this =>
     # ln(x+sqrt(x^2-1))
-    (float.this + (float.this ** float.this.type.two - float.this.type.one).sqrt).log
+    (float.this + (float.this ** float.this.two - float.this.one).sqrt).log
   public atanh float.this =>
     # 1/2*ln((1+x)/(1-x))
-    ((float.this.type.one + float.this)/(float.this.type.one - float.this)).log / float.this.type.two
+    ((float.this.one + float.this)/(float.this.one - float.this)).log / float.this.two
 
 
 
@@ -255,7 +255,7 @@ public float : numeric is
   # logarithm with base `base`
   #
   public log (base float.this) float.this
-  pre safety: base > float.this.type.zero
+  pre safety: base > float.this.zero
   =>
     log / base.log
 

@@ -221,7 +221,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
               true
 
     ref : String
-      redef utf8 Sequence u8 := res.as_array
+      public redef utf8 Sequence u8 := res.as_array
 
 
 # use the currently installed byte reader effect

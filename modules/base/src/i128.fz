@@ -267,7 +267,7 @@ public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => i128 -1 u64.max
+  public fixed redef type.all_bits_set => i128 -1 u64.max
 
 
   # minimum

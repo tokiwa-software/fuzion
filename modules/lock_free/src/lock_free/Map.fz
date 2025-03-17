@@ -57,7 +57,7 @@
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
 tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) is
-  redef as_string => "tomb_node($sn)"
+  public redef as_string => "tomb_node($sn)"
 
   as_list => sn.as_list
 
@@ -66,7 +66,7 @@ tomb_node(CTK type : property.hashable, CTV type, sn singleton_node CTK CTV) is
 # a singleton node
 # the node type containing actual data
 singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) is
-  redef as_string => "singleton_node($k, $v)"
+  public redef as_string => "singleton_node($k, $v)"
 
   as_list => [(k,v)].as_list
 
@@ -75,7 +75,7 @@ singleton_node(CTK type : property.hashable, CTV type, k CTK, v CTV) is
 # an indirection or a singleton node
 # these are put into a container node
 branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (singleton_node CTK CTV) is
-  redef as_string =>
+  public redef as_string =>
     match branch.this
       indirection_node Indirection_Node => "$indirection_node"
       singleton_node singleton_node => "$singleton_node"
@@ -113,7 +113,7 @@ is
   index [] (pos i32) branch CTK CTV =>
     array[pos]
 
-  redef as_string => "container_node[gen=$gen]({array.as_string ", "})"
+  public redef as_string => "container_node[gen=$gen]({array.as_string ", "})"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     array.flat_map (tuple CTK CTV) (b -> b.as_list f)
@@ -129,7 +129,7 @@ is
 #
 prev_node(CTK type : property.hashable, CTV type) : choice (failed_node CTK CTV) (Main_Node CTK CTV) nil is
 
-  redef as_string =>
+  public redef as_string =>
     match prev_node.this
       f lock_free.failed_node => f.as_string
       m lock_free.Main_Node => m.as_string
@@ -151,14 +151,14 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
   # a previous node that gets set during a generational aware compare and set
   prev := concur.atomic (prev_node CTK CTV) p
 
-  fixed redef type.equality(a, b Main_Node.this) bool =>
+  public fixed redef type.equality(a, b Main_Node.this) bool =>
     a.id = b.id
 
   # compare and update `prev`
   cas_prev(o,n prev_node CTK CTV) =>
     prev.compare_and_set o n
 
-  redef as_string =>
+  public redef as_string =>
     s := match data
       container_node container_node => "$container_node"
       tomb_node tomb_node => "$tomb_node"
@@ -179,7 +179,7 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
 # a failed node where the previous indirection node contains a main node
 failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
-  redef as_string =>
+  public redef as_string =>
     "failed_node($prev)"
 
 
@@ -193,14 +193,14 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 
   id := unique_id
 
-  fixed redef type.equality(a, b Indirection_Node.this) =>
+  public fixed redef type.equality(a, b Indirection_Node.this) =>
     a.id = b.id
 
   # compare and update
   cas(old_n, new_n Main_Node CTK CTV) =>
     data.compare_and_set old_n new_n
 
-  redef as_string => "Indirection_Node[gen=$gen]({data.read})"
+  public redef as_string => "Indirection_Node[gen=$gen]({data.read})"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     (f Indirection_Node.this).as_list f
@@ -211,16 +211,16 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (tuple CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
-  redef as_list => from
+  public redef as_list => from
     .map sn->(sn.k, sn.v)
     .as_list
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  redef finite => trit.yes
+  public redef finite => trit.yes
 
-  redef as_string => "list_node({from.as_string ", "})"
+  public redef as_string => "list_node({from.as_string ", "})"
 
   # find k in linked nodes
   find_key(k CTK) choice restart not_found CTV =>
@@ -250,7 +250,7 @@ is
   # but it probably does not hurt either.
   committed := concur.atomic false
 
-  redef as_string =>
+  public redef as_string =>
     "Rdcss_Descriptor($ov, $exp, $nv)"
 
 
@@ -258,7 +258,7 @@ is
 # in case the root node is currently replaced it is a Rdcss_Descriptor temporarily.
 root_node(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CTV) (Rdcss_Descriptor CTK CTV) is
 
-  redef as_string =>
+  public redef as_string =>
     s => match root_node.this
       i lock_free.Indirection_Node => i.as_string
       r lock_free.Rdcss_Descriptor => r.as_string

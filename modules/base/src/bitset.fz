@@ -113,5 +113,5 @@ is
   #
   public type.union =>
     ref : Monoid bitset
-      redef infix ∙ (a, b bitset) => a ∪ b
-      redef e bitset => bitset.empty
+      public redef infix ∙ (a, b bitset) => a ∪ b
+      public redef e bitset => bitset.empty

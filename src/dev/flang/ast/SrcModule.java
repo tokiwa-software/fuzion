@@ -72,9 +72,9 @@ public interface SrcModule extends AbstractModule
                              boolean ignoreNotFound);
 
   void addCotype(AbstractFeature outerType,
-                      Feature         innerType);
+                 Feature         innerType);
   void addTypeParameter(AbstractFeature outerType,
-                      Feature         innerType);
+                        Feature         innerType);
 
   /*----------------------  methods needed by AIR  ----------------------*/
 

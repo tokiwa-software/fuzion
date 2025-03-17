@@ -235,7 +235,7 @@ public class This extends ExprWithPos
       }
     else if (f.isUniverse())
       {
-        getOuter = new Universe();
+        getOuter = Universe.instance;
       }
     else
       {
@@ -259,7 +259,7 @@ public class This extends ExprWithPos
                     @Override
                     AbstractType typeForInferencing()
                     {
-                      return isAdr ? t : _type;
+                      return isAdr ? t : super.typeForInferencing();
                     }
                   }.resolveTypes(res, context);
 

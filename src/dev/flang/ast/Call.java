@@ -77,7 +77,7 @@ public class Call extends AbstractCall
    * For a call a.b.4 with a select clause ".4" to pick a variant from a field
    * of an open generic type, this is the chosen variant.
    */
-  protected int _select;
+  private final int _select;
   public int select() { return _select; }
 
 
@@ -149,7 +149,7 @@ public class Call extends AbstractCall
   /**
    * Static type of this call. Set during resolveTypes().
    */
-  AbstractType _type;
+  private AbstractType _type;
 
 
   /**
@@ -249,7 +249,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, String n, List<Expr> la)
   {
-    this(pos, t, n, -1, NO_GENERICS, la, null, null);
+    this(pos, t, n, FuzionConstants.NO_SELECT, NO_GENERICS, la, null);
 
     if (PRECONDITIONS) require
       (la != null);
@@ -302,17 +302,14 @@ public class Call extends AbstractCall
    * @param actuals
    *
    * @param calledFeature
-   *
-   * @param type
    */
   Call(SourcePosition pos,
        Expr target,
        List<AbstractType> generics,
        List<Expr> actuals,
-       AbstractFeature calledFeature,
-       AbstractType type)
+       AbstractFeature calledFeature)
   {
-    this(pos, target, calledFeature.featureName().baseName(), -1, generics, actuals, calledFeature, type);
+    this(pos, target, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, generics, actuals, calledFeature);
     if (PRECONDITIONS) check
       (calledFeature.generics().sizeMatches(generics) || generics.contains(Types.t_ERROR));
   }
@@ -329,7 +326,7 @@ public class Call extends AbstractCall
    * @param name the name of the called feature
    *
    * @param select for selecting a open type parameter field, this gives the
-   * index '.0', '.1', etc. -1 for none.
+   * index '.0', '.1', etc. NO_SELECT for none.
    *
    * @param generics
    *
@@ -345,8 +342,7 @@ public class Call extends AbstractCall
        int select,
        List<AbstractType> generics,
        List<Expr> actuals,
-       AbstractFeature calledFeature,
-       AbstractType type)
+       AbstractFeature calledFeature)
   {
     if (PRECONDITIONS) require
       (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
@@ -365,7 +361,6 @@ public class Call extends AbstractCall
       }
     this._originalTarget = _target;
     this._calledFeature = calledFeature;
-    this._type = type;
   }
 
 
@@ -1734,7 +1729,7 @@ public class Call extends AbstractCall
         // the types of the actuals:
         if (!missing.isEmpty() &&
             (!Errors.any() ||
-            !_actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR)))
+            _actuals.stream().allMatch(x -> x.type() != Types.t_ERROR)))
           {
             AstErrors.failedToInferActualGeneric(pos(),cf, missing);
           }
@@ -2421,11 +2416,10 @@ public class Call extends AbstractCall
         // `Expr`. Solution: we wrap `_target` into a call `universe.id void
         // _target`.
         result = new Call(pos(),
-                          new Universe(),
+                          Universe.instance,
                           new List<>(Types.resolved.t_void),
                           new List<>(_target),
-                          Types.resolved.f_id,
-                          Types.resolved.t_void);
+                          Types.resolved.f_id);
         result.resolveTypes(res, context);
       }
 
@@ -2666,7 +2660,7 @@ public class Call extends AbstractCall
                 var rft = _resolvedFormalArgumentTypes[count];
                 if (actl != null && rft != Types.t_ERROR)
                   {
-                    var a = actl.box(rft, context);
+                    var a = actl.boxAndTag(rft, context);
                     if (CHECKS) check
                       (a != null);
                     i.set(a);
@@ -2878,11 +2872,12 @@ public class Call extends AbstractCall
     ERROR = new Call(SourcePosition.builtIn, Errors.ERROR_STRING)
     {
       {
-        _type = Types.t_ERROR;
         _calledFeature = Types.f_ERROR;
       }
+      @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+      @Override public AbstractType type() { return Types.t_ERROR; }
       @Override
-      Expr box(AbstractType frmlT, Context context)
+      Expr boxAndTag(AbstractType frmlT, Context context)
       {
         return this;
       }

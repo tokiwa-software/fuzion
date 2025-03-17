@@ -104,20 +104,20 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * true to load base library (false if we are creating it)
+   * true to load base module (false if we are creating it)
    */
-  final boolean _loadBaseLib;
+  final boolean _loadBaseMod;
 
 
   /**
    * When saving to a .fum module file, erase internal names of features since
    * they should not be needed. This can be disabled for debugging.
    */
-  final boolean _eraseInternalNamesInLib;
+  final boolean _eraseInternalNamesInMod;
 
 
   /**
-   * Should we load any source files after we loaded the base library?
+   * Should we load any source files after we loaded the base module?
    */
   final boolean _loadSources;
 
@@ -149,8 +149,8 @@ public class FrontEndOptions extends FuzionOptions
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,
-                         boolean loadBaseLib,
-                         boolean eraseInternalNamesInLib,
+                         boolean loadBaseMod,
+                         boolean eraseInternalNamesInMod,
                          List<String> modules,
                          List<String> moduleDirs,
                          List<String> dumpModules,
@@ -185,8 +185,8 @@ public class FrontEndOptions extends FuzionOptions
        modules != null,
        moduleDirs != null);
 
-    _loadBaseLib = loadBaseLib;
-    _eraseInternalNamesInLib = eraseInternalNamesInLib;
+    _loadBaseMod = loadBaseMod;
+    _eraseInternalNamesInMod = eraseInternalNamesInMod;
     _readStdin = readStdin;
     _executeCode = executeCode;
     Path inputFile = null;

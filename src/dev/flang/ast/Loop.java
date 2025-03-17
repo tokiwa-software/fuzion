@@ -287,8 +287,8 @@ public class Loop extends ANY
       }
 
     var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
-    // if there are no iteratees then else block may access every loop var.
-    // if there are iteratees we move else block to feature and
+    // if there are no iterates then else block may access every loop var.
+    // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
     if (_elseBlock0 != null && iterates())
       {

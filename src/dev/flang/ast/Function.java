@@ -430,7 +430,10 @@ public class Function extends AbstractLambda
   {
     if (_type == null)
       {
-        AstErrors.noTypeInferenceFromLambda(pos());
+        if (_expr.type() != Types.t_ERROR || !Errors.any())
+          {
+            AstErrors.noTypeInferenceFromLambda(pos());
+          }
         _type = Types.t_ERROR;
       }
     return _type;

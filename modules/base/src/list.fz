@@ -160,7 +160,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef as_array =>
     lm : mutate is
-      redef mpanic(msg String) => fuzion.std.panic msg
+      module redef mpanic(msg String) => fuzion.std.panic msg
     lm ! ()->
       e := lm.env.new list.this
       array A count _->
@@ -179,8 +179,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil    => nil
       c Cons =>
         ref : Cons B (list B)
-          redef head => f c.head
-          redef tail => c.tail.map_to_list f
+          public redef head => f c.head
+          public redef tail => c.tail.map_to_list f
 
 
   # map the list to a new list applying function f to all elements
@@ -197,8 +197,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
             ref : Cons B (list B)
-              redef head => c2.head
-              redef tail => (c2.tail ++ c.tail.flat_map_to_list f).as_list
+              public redef head => c2.head
+              public redef tail => (c2.tail ++ c.tail.flat_map_to_list f).as_list
 
 
   # fold the elements of this list using the given monoid.
@@ -301,6 +301,19 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       x A => (a : (tail.scan T f (f a x)).as_list)
 
 
+  # scan1 works like its counterpart with an initial value, except
+  # that the initial value is taken to be the first element of the given
+  # list.
+  #
+  # for example, (1::id).scan (+) would create [1, 2, 3, 4, ...], while
+  # (1..).scan (+) would create [1, 3, 6, 10, ...].
+  #
+  public redef scan1 (f Binary A A A) Sequence A =>
+    match head
+      nil => (list A).empty
+      x A => (tail.scan A f x).as_list
+
+
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
@@ -321,8 +334,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
         nil    => nil
         c Cons =>
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
-            redef head => c.head
-            redef tail => if n = 1 then nil else c.tail.take_list n-1
+            public redef head => c.head
+            public redef tail => if n = 1 then nil else c.tail.take_list n-1
 
 
   # reverse the order of the elements in this list
@@ -449,8 +462,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       c Cons =>
         if p c.head
           ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
-            redef head => c.head
-            redef tail => c.tail.take_while_list p
+            public redef head => c.head
+            public redef tail => c.tail.take_while_list p
         else
           nil
 
@@ -492,8 +505,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     match drop_while_list (a -> !(p a))
       nil    => nil
       c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
-                  redef head => c.head
-                  redef tail => c.tail.filter_list p
+                  public redef head => c.head
+                  public redef tail => c.tail.filter_list p
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'
@@ -511,8 +524,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil    => nil
       c Cons =>
         cycle_cons (h Cons A (list A)) : Cons A (list A) is
-          redef head => h.head
-          redef tail list A =>
+          public redef head => h.head
+          public redef tail list A =>
             cycle_cons (h.tail ? nil    => c
                                | d Cons => d)
         cycle_cons c
@@ -523,8 +536,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef tails list (list A) =>
     ref : Cons (list A) (list (list A))
-      redef head => list.this
-      redef tail =>
+      public redef head => list.this
+      public redef tail =>
         list.this ? nil    => nil
                   | c Cons => c.tail.tails
 
@@ -544,8 +557,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       c1 Cons =>
         b.as_list ? c2 Cons =>
                       zip_cons : Cons V (list V) is
-                        redef head => f c1.head c2.head
-                        redef tail => c1.tail.zip_list c2.tail f
+                        public redef head => f c1.head c2.head
+                        public redef tail => c1.tail.zip_list c2.tail f
                       zip_cons
                   | nil    => nil
       nil => nil
@@ -679,11 +692,11 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
       # associative operation
       #
-      redef infix ∙ (a, b list A) list A => a.concat_list b
+      public redef infix ∙ (a, b list A) list A => a.concat_list b
 
       # identity element
       #
-      redef e list A =>
+      public redef e list A =>
         nil
 
 
@@ -692,8 +705,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 #
 public list(T type, h T, t Lazy (list T)) list T =>
   ref : Cons T (list T)
-    redef head => h
-    redef tail => t
+    public redef head => h
+    public redef tail => t
 
 
 # infix operator to create a list from head h and lazy tail t.

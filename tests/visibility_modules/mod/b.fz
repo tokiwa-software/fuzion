@@ -40,7 +40,7 @@ public b : a is
     say "hello_a from b"
 
   priv is
-    redef as_string => "priv"
+    public redef as_string => "priv"
 
   public get_any Any =>
     priv
