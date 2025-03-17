@@ -267,7 +267,7 @@ public effect is
   # replace existing effect for type `effect.this` by the new effect value `e`.
   #
   # For effects that model the outside world (e.g., i/o, time, sensors and actuators, etc.),
-  # the effect might be a unit type, so the replace is effectively a no-operation.  However,
+  # the effect might be a unit type, so the replace is effectively a no-operation. However,
   # the call to `replace` is used ot model the change of the outside world and must be
   # included for analysis tools to appreciate this.
   #
@@ -278,8 +278,11 @@ public effect is
   # of an operation of a currently instated effect of the same effect type.
   #
   public type.replace(e effect.this)
-  pre
-    safety: effect.this.is_instated
+  # NYI: BUG: It is currently not enforced that replace is only called during the execution
+  # of an operation of a currently instated effect of the same effect type.
+  #
+  # pre
+  #   safety: effect.this.is_instated
   =>
     replace0 e
 
@@ -287,7 +290,7 @@ public effect is
   # replace existing effect of type `effect.this` by the new effect value `effect.this`.
   #
   # This is a convenience feature for value type effects for which the type of
-  # the effect instance equals the effect type.  `ref` type effects typically have
+  # the effect instance equals the effect type. `ref` type effects typically have
   # values that may be children of the effect type that are of a different type, so
   # `effect_type.replace new_value` must be used.
   #
@@ -295,8 +298,11 @@ public effect is
   # effect of the same effect type.
   #
   public replace
-  pre
-    safety: effect.this.is_instated
+  # NYI: BUG: It is currently not enforced that replace is only called during the execution
+  # of an operation of a currently instated effect of the same effect type.
+  #
+  # pre
+  #   safety: effect.this.is_instated
   =>
     effect.this.type.replace effect.this
 
