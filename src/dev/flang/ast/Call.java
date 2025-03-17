@@ -1184,7 +1184,7 @@ public class Call extends AbstractCall
   private void resolveFormalArg(Resolution res, int argnum, AbstractFeature frml, Context context)
   {
     int cnt = 1;
-    var frmlT = frml.resultTypeIfPresent(res);
+    var frmlT = frml.resultTypeIfPresentUrgent(res, true);
 
     var declF = _calledFeature.outer();
     var heir = _target.type();
@@ -2496,7 +2496,7 @@ public class Call extends AbstractCall
     var t = getActualResultType(res, context, false);
 
     if (CHECKS) check
-      (_type == null || t.compareTo(_type) == 0);
+      (_type == null || t == null || t.compareTo(_type) == 0);
 
     _type = t;
 

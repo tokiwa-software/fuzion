@@ -2375,13 +2375,6 @@ A ((Choice)) declaration must not contain a result type.
         result = result.resolve(res, outer().context());
       }
 
-    // NYI: CLEANUP: result != Types.resolved.t_void is currently necessary
-    // to enable cyclic type inference e.g. in reg_issue2182
-    if (result != null && result != Types.resolved.t_void)
-      {
-        _resultType = result;
-      }
-
     return result;
   }
 
@@ -2400,17 +2393,13 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(null, true) : null;
-    if (result == null)
-      {
-        if (CHECKS) check
-          (Errors.any());
-
-        result = Types.t_ERROR;
-      }
+    var result = _state.atLeast(State.RESOLVED_TYPES)
+      ? resultTypeIfPresentUrgent(null, true)
+      : Types.t_ERROR;
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (Errors.any() || result != Types.t_ERROR,
+       result != null);
 
     return result;
   }
