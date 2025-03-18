@@ -29,3 +29,18 @@ fixed_alongside_abstract =>
     public redef as_string => $"a"
 
   say a.me
+
+  ex_issue1507 is
+
+    A is
+      me A.this => abstract
+      fixed me => A
+      public redef as_string => "A "
+
+    B(s String) : A is
+      redef fixed me => (B "new")
+      public redef as_string => "B$s"
+
+    say A.me
+    say (B "orig").me
+  ex_issue1507
