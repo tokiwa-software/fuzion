@@ -308,7 +308,7 @@ public class AstErrors extends ANY
            ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
               "ensure that the code results in a value of type " + st(FuzionConstants.UNIT_NAME) + " " +
               "in the declaration of " + sqn(f._qname) + ".\n")
-           : ("To solve this, you may remove the return type " + s(f._returnType) + " " +
+           : ("To solve this, you may remove the return type " + s(f.returnType()) + " " +
               "from the declaration of " + sqn(f._qname) + ".\n")));
   }
 
@@ -1352,7 +1352,7 @@ public class AstErrors extends ANY
     for (var f : nontypes_found)
       {
         hasAbstract = f.isAbstract();
-        hasReturnType =  (!(f instanceof Feature ff) || ff._returnType != NoType.INSTANCE) && !f.isConstructor();
+        hasReturnType =  (!(f instanceof Feature ff) || ff.returnType() != NoType.INSTANCE) && !f.isConstructor();
       }
     error(pos,
           "Type not found",

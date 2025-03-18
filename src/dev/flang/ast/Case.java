@@ -59,7 +59,7 @@ public class Case extends AbstractCase
   /**
    * Field with type from this.type created in case fieldName != null.
    */
-  final Feature _field;
+  private final Feature _field;
   public AbstractFeature field() { return _field; }
 
 
@@ -67,7 +67,7 @@ public class Case extends AbstractCase
    * List of types to be matched against. null if we match against type or match
    * everything.
    */
-  List<AbstractType> _types;
+  private List<AbstractType> _types;
   public List<AbstractType> types() { return _types; }
 
 
