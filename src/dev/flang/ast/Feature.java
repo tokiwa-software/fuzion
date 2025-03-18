@@ -844,6 +844,15 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Helper method to check if one of the features is fixed and the other is abstract
+   */
+  public static boolean isAbstractAndFixedPair(AbstractFeature f1, AbstractFeature f2)
+  {
+    return f1.isAbstract() && f2.isFixed() || f1.isFixed() && f2.isAbstract();
+  }
+
+
+  /**
    * Return the state of this feature.
    */
   public State state()
@@ -2304,7 +2313,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     var existing = res._module.lookupFeature(_outer, newFeatureName, null);
-    if (existing != null && !(existing.isAbstract() && isFixed()) && !(existing.isFixed() && isAbstract()))
+    if (existing != null && !isAbstractAndFixedPair(existing, this))
       {
         AstErrors.duplicateFeatureDeclaration(existing, this);
       }
