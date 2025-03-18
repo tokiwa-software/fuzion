@@ -770,9 +770,9 @@ name        : IDENT                            // all parts of name must be in s
   /**
    * Parse opName
    *
-opName      : "infix"   op
-            | "prefix"  op
-            | "postfix" op
+opName      : "infix"   OPERATOR
+            | "prefix"  OPERATOR
+            | "postfix" OPERATOR
             ;
    *
    * @param ignoreError to not report an error but just return
@@ -1941,7 +1941,7 @@ operatorExpr  : opExpr
    *
 opExpr      :     opTail
             | ops opTail
-            | op
+            | OPERATOR
             | callTail
             ;
    */
