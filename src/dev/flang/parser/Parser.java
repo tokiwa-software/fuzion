@@ -1940,30 +1940,30 @@ operatorExpr  : opExpr
 opExpr      :     opTail
             | ops opTail
             | op
-            | dot call
+            | callTail
             ;
    */
   Expr opExpr(boolean mayUseCommas)
   {
-     if (!skipDot())
-       {
-         var oe = new OpExpr();
-         skipOps(oe);
-         if (oe.size() != 1 || isTermPrefix())
-           {
-             opTail(oe, mayUseCommas);
-             return oe.toExpr();
-           }
-         else
-           {
-             return new Partial(oe.op(0)._pos,
-                                oe.op(0)._text);
-           }
-       }
-     else
-       {
-         return Partial.dotCall(tokenSourcePos(), a->pureCall(a));
-       }
+    if (!skipDot())
+      {
+        var oe = new OpExpr();
+        skipOps(oe);
+        if (oe.size() != 1 || isTermPrefix())
+          {
+            opTail(oe, mayUseCommas);
+            return oe.toExpr();
+          }
+        else
+          {
+            return new Partial(oe.op(0)._pos,
+                               oe.op(0)._text);
+          }
+      }
+    else
+      {
+        return Partial.dotCall(tokenSourcePos(), a -> callTail(true, a));
+      }
   }
 
 

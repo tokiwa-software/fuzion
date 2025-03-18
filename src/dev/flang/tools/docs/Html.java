@@ -558,7 +558,7 @@ public class Html extends ANY
   /**
    * the link [src] to the source file
    */
-  private static String source(AbstractFeature feature)
+  private String source(AbstractFeature feature)
   {
     return "<div class='pl-5'><a href='$1'>[src]</a></div>"
       .replace("$1", featureURL(feature));
@@ -733,11 +733,11 @@ public class Html extends ANY
    * @param f
    * @return
    */
-  private static String featureURL(AbstractFeature f)
+  private String featureURL(AbstractFeature f)
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replaceFirst("\\{(.*?)\\.fum\\}", DocsOptions.baseApiDir + "/$1")
+      .replaceFirst("\\{(.*?)\\.fum\\}", config.apiSrcDir() + "/$1")
       + "#l" + f.pos().line();
   }
 

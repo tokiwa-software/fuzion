@@ -2392,9 +2392,8 @@ A ((Choice)) declaration must not contain a result type.
    * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
-   * @return the result type, t_ERROR in case of an error.  Never
-   * null. Types.t_UNDEFINED in case type inference for this type is cyclic and
-   * hence impossible.
+   * @return the result type, t_ERROR in case of an error.
+   * Never null.
    */
   @Override
   public AbstractType resultType()
@@ -2402,17 +2401,13 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(null, true) : null;
-    if (result == null)
-      {
-        if (CHECKS) check
-          (Errors.any());
-
-        result = Types.t_ERROR;
-      }
+    var result = _state.atLeast(State.RESOLVED_TYPES)
+      ? resultTypeIfPresentUrgent(null, true)
+      : Types.t_ERROR;
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (Errors.any() || result != Types.t_ERROR,
+       Errors.any() || !result.containsUndefined(false));
 
     return result;
   }
