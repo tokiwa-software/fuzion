@@ -2977,8 +2977,8 @@ ifexpr      : "if" exprInLine thenPart elseBlock
             var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : _then;
 
             Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
-              "When it is not in the same line as " + Errors.skw("if") + ", " + Errors.skw("else")
-              + " must be aligned with " + Errors.skw("if") + ", " + Errors.skw("then")
+              "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
+              + ", it must be aligned with " + Errors.skw("if") + ", " + Errors.skw("then")
               + " or " + Errors.skw("else if") + ".") ;
           }
 

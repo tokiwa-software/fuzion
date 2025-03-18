@@ -5,7 +5,7 @@
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:134:14:
         else if c1 then "-false::true-"
 -------------^
-When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then' or 'else if'.
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
 
 
 --CURDIR--/else_indentation_reference.fz:141:3: error 2: Inconsistent indentation
@@ -14,7 +14,7 @@ When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:140:13:
        else if c2       "-false::false::true-"
 ------------^
-When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then' or 'else if'.
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
 
 
 --CURDIR--/else_indentation_reference.fz:148:9: error 3: Inconsistent indentation
@@ -23,7 +23,7 @@ When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:146:3:
   else if c1
 --^
-When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then' or 'else if'.
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
 
 
 --CURDIR--/else_indentation_reference.fz:153:5: error 4: Inconsistent indentation
@@ -32,7 +32,7 @@ When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:151:3:
   if c0
 --^
-When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then' or 'else if'.
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
 
 
 --CURDIR--/else_indentation_reference.fz:162:9: error 5: Inconsistent indentation
@@ -41,7 +41,7 @@ When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:160:3:
   else if c1
 --^
-When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then' or 'else if'.
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
 
 
 --CURDIR--/else_indentation_reference.fz:168:9: error 6: Inconsistent indentation
@@ -50,7 +50,7 @@ When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:167:5:
     if c1 then "-false::true-"
 ----^
-When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then' or 'else if'.
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
 
 
 --CURDIR--/else_indentation_reference.fz:174:13: error 7: Inconsistent indentation
@@ -59,7 +59,7 @@ When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:173:5:
     if c1 then "-false::true-"
 ----^
-When it is not in the same line as 'if', 'else' must be aligned with 'if', 'then' or 'else if'.
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
 
 
 --CURDIR--/else_indentation_reference.fz:178:3: error 8: Inconsistent indentation
