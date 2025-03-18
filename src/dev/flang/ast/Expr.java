@@ -191,7 +191,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param exprs the expression to unionize
    *
-   * @return the union of exprs result type, defaulting to Types.resolved.t_void if
+   * @return the union of exprs result type, null if
    * no expression can be inferred yet.
    */
   static AbstractType union(List<Expr> exprs, Context context)
