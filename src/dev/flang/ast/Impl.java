@@ -532,12 +532,12 @@ public class Impl extends ANY
    *
    * @param formalArg the features whose Impl this is.
    *
-   * @param reportError true to produce an error message, false to suppress
+   * @param urgent true to produce an error message, false to suppress
    * this. Error messages are first suppressed until all initial values were
    * found such that we can report all occurrences of actuals and all actual
    * types that were found.
    */
-  private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
+  private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean urgent)
   {
     var exprs = new List<Expr>();
     for (var i = 0; i < _initialCalls.size(); i++)
@@ -549,7 +549,7 @@ public class Impl extends ANY
     // NYI: CLEANUP: the following line is currently necessary
     // to enable cyclic type inference e.g. in reg_issue2182
     result = result == null ? Types.resolved.t_void : result;
-    if (reportError)
+    if (urgent)
       {
         if (_initialCalls.size() == 0)
           {
@@ -641,9 +641,12 @@ public class Impl extends ANY
             }
           yield t;
         }
-      case FieldActual -> typeFromInitialValues(res, f, false);
-      default -> null;
+      case FieldActual -> typeFromInitialValues(res, f, urgent);
+      default -> { check(false); yield null; }
       };
+
+    if (CHECKS) check
+      (!urgent || result != null);
 
     return result;
   }
