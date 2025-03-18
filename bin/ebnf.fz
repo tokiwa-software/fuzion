@@ -39,9 +39,13 @@ main =>
       match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing {Sequence.this}, error is $e"
         p os.process =>
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          res := match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
-            s String => s
+            s String => s.trim_end
+          ec := p.wait.get 1
+          if ec != 0
+            panic "error $ec when executing $seq"
+          res
 
 
   # feed this string to a new process
