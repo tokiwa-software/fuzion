@@ -86,6 +86,8 @@ public class Parser extends Lexer
   private boolean _nestedIf = false;
   private int _lastIfLine = -1;
   private boolean _elif = false;
+  private SourcePosition _outerElse = null;
+  private SourcePosition _then = null;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -768,9 +770,9 @@ name        : IDENT                            // all parts of name must be in s
   /**
    * Parse opName
    *
-opName      : "infix"   op
-            | "prefix"  op
-            | "postfix" op
+opName      : "infix"   OPERATOR
+            | "prefix"  OPERATOR
+            | "postfix" OPERATOR
             ;
    *
    * @param ignoreError to not report an error but just return
@@ -1939,7 +1941,7 @@ operatorExpr  : opExpr
    *
 opExpr      :     opTail
             | ops opTail
-            | op
+            | OPERATOR
             | callTail
             ;
    */
@@ -2942,6 +2944,7 @@ ifexpr      : "if" exprInLine thenPart elseBlock
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
+        SourcePosition ifPos = pos;
 
         var oldMinIdent = _elif ? null : setMinIndent(tokenPos());
         _elif = false;
@@ -2958,6 +2961,27 @@ ifexpr      : "if" exprInLine thenPart elseBlock
 
         // reset if new line
         if (_nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+
+        var elPos = tokenSourcePos();
+
+        // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
+        ifPos = _then != null && ifPos.column() > _then.column() ? null : ifPos;
+
+        // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
+        if (currentAtMinIndent() == Token.t_else && !(
+            (_then != null      && (_then.line()      == elPos.line() || _then.column()      == elPos.column())) ||
+            (_outerElse != null && (_outerElse.line() == elPos.line() || _outerElse.column() == elPos.column())) ||
+            (ifPos != null      && (ifPos.line()      == elPos.line() || ifPos.column()      == elPos.column())))
+           )
+          {
+            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : _then;
+
+            Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
+              "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
+              + ", it must be aligned with " + Errors.skw("if") + ", " + Errors.skw("then")
+              + " or " + Errors.skw("else if") + ".") ;
+          }
+
         var els = elseBlock();
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
@@ -2981,7 +3005,12 @@ thenPart    : "then" block
   Block thenPart(boolean emptyBlockIfNoBlockPresent)
   {
     var p = tokenPos();
-    skip(true, Token.t_then);
+    _then = tokenSourcePos();
+    var hasThen = skip(true, Token.t_then);
+    if (!hasThen)
+      {
+        _then = null;
+      }
     var result = block();
     return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
   }
@@ -2997,6 +3026,8 @@ elseBlock   : "else" block
   Block elseBlock()
   {
     Block result = null;
+    SourcePosition oldOuterElse = _outerElse;
+    _outerElse = tokenSourcePos();
 
     if (skip(true, Token.t_else))
       {
@@ -3004,8 +3035,18 @@ elseBlock   : "else" block
           {
             _elif = true;
           }
+        else
+          {
+            _outerElse = null;
+          }
         result = block();
       }
+    else
+      {
+        _outerElse = null;
+      }
+
+    _outerElse = oldOuterElse;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
