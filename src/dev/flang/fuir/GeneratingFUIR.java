@@ -2856,6 +2856,26 @@ public class GeneratingFUIR extends FUIR
   }
 
 
+  /**
+   * Get the source code position of the declaration of the underlying feature
+   * of a given clazz.
+   *
+   * @param cl index of the clazz
+   *
+   * @return the source code position or null if not available.
+   */
+  @Override
+  public SourcePosition clazzDeclarationPos(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= CLAZZ_BASE,
+       cl < CLAZZ_BASE + _clazzes.size());
+
+    var c = id2clazz(cl);
+    return c.feature().pos();
+  }
+
+
   /*---------------------------------------------------------------------
    *
    * handling of abstract missing errors.

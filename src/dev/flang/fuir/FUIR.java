@@ -1602,8 +1602,22 @@ public abstract class FUIR extends IR
    * Get the source file the clazz originates from.
    *
    * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
+   *
+   * NYI: CLEANUP: Remove, redundant with
+   * clazzDeclaratiaonPos(cl)._sourceFile._fileName.toString().
    */
   public abstract String clazzSrcFile(int cl);
+
+
+  /**
+   * Get the source code position of the declaration of the underlying feature
+   * of a given clazz.
+   *
+   * @param cl index of the clazz
+   *
+   * @return the source code position or null if not available.
+   */
+  public abstract SourcePosition clazzDeclarationPos(int cl);
 
 
   /*----------------------  Interpreter  ----------------------*/
