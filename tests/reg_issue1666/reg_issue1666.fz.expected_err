@@ -12,7 +12,7 @@ To solve this, create a helper feature 'lazy_value' that calculates the value as
 
   lazy_value => {
   private loop void : Any is Routine
-  f.this.#loop0
+  f.this.loop
 }
 
 and then use 'lazy_value' as instead of the original expression.

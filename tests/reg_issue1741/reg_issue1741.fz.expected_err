@@ -4,10 +4,10 @@
 --^^^
 Feature 'reg_issue1741.two.type' instantiated at <source position not available>:
 
-inherits or declares abstract feature 'numeric.type.zero' declared at {base.fum}/numeric.fz:200:15:
+inherits or declares abstract feature 'numeric.type.zero' declared at {base.fum}/numeric.fz:196:15:
   public type.zero numeric.this => abstract
 --------------^^^^
-which is called at {base.fum}/numeric.fz:212:14:
+which is called at {base.fum}/numeric.fz:208:14:
     if v = 0 zero else (from_u32 v-1) +^ one
 -------------^^^^
 without providing an implementation
