@@ -64,6 +64,8 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   int _uniqueCallId = -1;
 
+  final boolean _real;
+
 
   /**
    * The DFA instance we are working with.
@@ -156,6 +158,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public Call(CallGroup group,  List<Val> args, Env env, Context context)
   {
+    _real = group._dfa._real;
     _group = group;
     _dfa = group._dfa;
     _cc = group._cc;
@@ -203,7 +206,20 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         if (DFA.COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED)
           {
-            res = Env.compare(_group._effects, env(), other.env());
+            if (false)
+              {
+                var which = new TreeSet<Integer>();
+                which.addAll(_group._usedEffects);
+                which.addAll(other._group._usedEffects);
+                res = Env.compare(which, env(), other.env());
+              }
+            else
+              {
+                res = Env.compare(_real
+                                  ? _dfa._effectsRequiredByClazz.get(_cc)
+                                  : _group._usedEffects,
+                                  env(), other.env());
+              }
           }
         else
           {
@@ -223,7 +239,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       _cc         != other._cc            ? "cc different" :
       _target._id != other._target._id    ? "target different" :
       _site       != other._site          ? "site different" :
-      Env.compare(_group._effects, env(), other.env())!= 0 ? "env different" : "not different";
+      Env.compare(_group._usedEffects, env(), other.env())!= 0 ? "env different" : "not different";
   }
 
 
@@ -430,6 +446,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectTypeFromIntrinsic(_cc))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(env())) +
+       // " required " + _group._usedEffects.stream().map(e -> Errors.effe(_dfa._fuir.clazzAsStringHuman(e))).collect(java.util.stream.Collectors.joining(", ")) +
          " for call to "
        : "call ")+
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
@@ -521,6 +538,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value getEffectForce(int s, int ecl)
   {
+    _group.needsEffect(ecl);
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_from_env"))
       {
@@ -547,6 +565,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
+        //        if (_dfa._real)
         Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
                + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
       }

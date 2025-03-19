@@ -26,7 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import dev.flang.fuir.FUIR;
+
 import dev.flang.util.ANY;
+import dev.flang.util.SourcePosition;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -193,6 +196,7 @@ public class Env extends ANY implements Comparable<Env>
   static int compare(Set<Integer> which, Env a, Env b)
   {
     var res = 0;
+    if (which != null)
     for (var e : which)
       {
         if (a != b)
@@ -217,6 +221,56 @@ public class Env extends ANY implements Comparable<Env>
     return res;
   }
 
+
+
+  Env filterPos(SourcePosition pos, SourcePosition pos_new)
+  {
+    var res = _outer == null ? null : _outer.filterPos(pos, pos_new);
+    var cd =_dfa._fuir.clazzCode(_effectType);
+    var p = cd == FUIR.NO_SITE || !_dfa._fuir.withinCode(cd)
+      ? _dfa._fuir.clazzDeclarationPos(_effectType)
+      : _dfa._fuir.sitePos(cd);
+    var p_new = _dfa.effectTypePosition(_effectType);
+    var cmp1 = (p != pos && (p == null || p.compareTo(pos) != 0));
+    var cmp2 = p_new.compareTo(pos_new) != 0;
+    if (cmp1 != cmp2)
+      {
+        dev.flang.util.Debug.uprintln("Difference for "+_dfa._fuir.clazzAsString(_effectType)+
+                           "\n  pos: "+(pos == null ? "--": pos.show()) +
+                           "\n  p: "+(p == null ? "--": p.show()) +
+                           "\n  pos_new: "+(pos_new == null ? "--": pos_new.show()) +
+                           "\n  p_new: "+(p_new == null ? "--": p_new.show())
+                                   );
+      }
+    // if (p != pos && (p == null || p.compareTo(pos) != 0))
+    if (cmp2)
+      {
+        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+      }
+    else
+      {
+        // System.out.println("FILTER "+_dfa._fuir.clazzAsString(_effectType)+" pos is "+p.show()+"\n filtering pos "+pos.show());
+      }
+    return res;
+  }
+  Env filterX(Set<Integer> which)
+  {
+    var res = _outer == null ? null : _outer.filterX(which);
+    if (which.contains(_effectType))
+      {
+        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+      }
+    return res;
+  }
+  Env filter(CallGroup which)
+  {
+    var res = _outer == null ? null : _outer.filter(which);
+    if (which.requiredEffect(_effectType))
+      {
+        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+      }
+    return res;
+  }
 
   /**
    * Check the environment if it contains an effect of clazz `cl` instantiated at

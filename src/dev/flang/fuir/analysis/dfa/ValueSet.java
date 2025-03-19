@@ -379,7 +379,8 @@ public class ValueSet extends Value
   public String toString()
   {
     var sb = new StringBuilder();
-    forAll(x -> sb.append(sb.isEmpty() ? "{" : ",").append(x));
+    int[] i = new int[] { 0 };
+    forAll(x -> sb.append(sb.isEmpty() ? "{\n§" : ",\n§").append(i[0]++).append(" #").append(x._id).append(" ").append(x.toString().replace("§","  §")));
     sb.append("}");
     return sb.toString();
   }
