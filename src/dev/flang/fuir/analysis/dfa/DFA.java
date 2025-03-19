@@ -2186,24 +2186,7 @@ public class DFA extends ANY
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl._cc);
-      Value result;
-      if (cl._dfa._real)
-        {
-          result = cl.getEffectCheck(ecl);
-          if (result == null && cl._dfa._reportResults)
-            {
-              DfaErrors.usedEffectNotInstalled(fuir(cl).sitePos(cl._site),
-                                               fuir(cl).clazzAsString(ecl),
-                                               cl);
-              cl._dfa._missingEffects.put(ecl, ecl);
-            }
-        }
-      else
-        {
-          result = cl.getEffectCheck(ecl);
-          result = cl._dfa._preEffectValues.get(ecl);
-        }
-      return result;
+      return cl.getEffectCheck2(ecl);
     });
     put("effect.type.unsafe_from_env"    , cl ->
     {
@@ -2381,13 +2364,13 @@ public class DFA extends ANY
     put("effect.type.abort0"                , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
+          var ev = cl.getEffectCheck2(ecl);
           if (cl._dfa._real)
             {
-              var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
-              if (ev != null)
+              if (ev != null      /* NYI: needed? */ &&
+                  cl._env != null /* NYI: needed? */ )
                 {
-                  if (cl._env != null)
-                    cl._env.aborted(ecl);
+                  cl._env.aborted(ecl);
                 }
               cl._dfa._preEffectsAborted.add(ecl);  // NYI: why here as well ?
             }

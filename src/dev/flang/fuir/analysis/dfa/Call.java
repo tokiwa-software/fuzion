@@ -450,7 +450,7 @@ public class Call extends ANY implements Comparable<Call>, Context
          " for call to "
        : "call ")+
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
-      " used " + _group.clazzesAsString(_group._usedEffects) +
+      // " used " + _group.clazzesAsString(_group._usedEffects) +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 
@@ -522,6 +522,28 @@ public class Call extends ANY implements Comparable<Call>, Context
       _env != null ? _env.getActualEffectValues(ecl)
                    : _dfa._defaultEffects.get(ecl);
   }
+  Value getEffectCheck2(int ecl)
+  {
+    Value result;
+    if (_dfa._real)
+      {
+        result = getEffectCheck(ecl);
+        if (result == null && _dfa._reportResults)
+          {
+            DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(_site),
+                                             _dfa._fuir.clazzAsString(ecl),
+                                             this);
+            _dfa._missingEffects.put(ecl, ecl);
+          }
+      }
+    else
+      {
+        result = getEffectCheck(ecl); // NYI: needed only for the side-effect
+        result = _dfa._preEffectValues.get(ecl);
+      }
+    return result;
+  }
+
 
 
   /**
