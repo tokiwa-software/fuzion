@@ -1612,10 +1612,8 @@ public class DFA extends ANY
    */
   void analyze(Call c)
   {
-    if (!false) _cnt_++;
-    if (!false && (_cnt_&(_cnt_-1))==0)
+    if (false && (_cnt_ & ++_cnt_)==0)
       {
-        //System.out.println("Analyse "+c);
         _options.verbosePrintln(2,
                                 "XDFA iteration: --------------------------------------------------" +
                                 (_options.verbose(3) ? "calls:"   + _calls.size()       +
@@ -2189,7 +2187,7 @@ public class DFA extends ANY
     {
       var ecl = fuir(cl).clazzResultClazz(cl._cc);
       Value result;
-      if (cl._dfa._real || true)
+      if (cl._dfa._real)
         {
           result = cl.getEffectCheck(ecl);
           if (result == null && cl._dfa._reportResults)
@@ -2202,6 +2200,7 @@ public class DFA extends ANY
         }
       else
         {
+          result = cl.getEffectCheck(ecl);
           result = cl._dfa._preEffectValues.get(ecl);
         }
       return result;
@@ -2210,7 +2209,7 @@ public class DFA extends ANY
     {
       var ecl = fuir(cl).clazzResultClazz(cl._cc);
       Value result;
-      if (cl._dfa._real || true)
+      if (cl._dfa._real)
         {
           result = cl.getEffectForce(cl._site, ecl);
         }
@@ -2289,7 +2288,7 @@ public class DFA extends ANY
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
-          if (cl._dfa._real || true)
+          if (cl._dfa._real)
             {
               var old_e = cl._dfa._defaultEffects.get(ecl);
               if (old_e == null)
@@ -2323,7 +2322,7 @@ public class DFA extends ANY
           var a1 = cl._args.get(1).value();  // code
           var a2 = cl._args.get(2).value();  // default code
 
-          var newEnv = (cl._dfa._real || true) ? cl._dfa.newEnv(cl._env, ecl, a0) : null;
+          var newEnv = (cl._dfa._real) ? cl._dfa.newEnv(cl._env, ecl, a0) : null;
           var cll = cl._dfa.newCall(cl,
                                     call,
                                     NO_SITE,
@@ -2346,7 +2345,7 @@ public class DFA extends ANY
 
           var result = cll.result();
           Value ev;
-          if (cl._dfa._real || true)
+          if (cl._dfa._real)
             {
               ev = newEnv.getActualEffectValues(ecl);
             }
@@ -2362,9 +2361,9 @@ public class DFA extends ANY
             }
           var aborted =
             // NYI: Why check both, newEnv.isAborted and _preEffectsAborted?
-            newEnv.isAborted(ecl) ||
+            newEnv != null && newEnv.isAborted(ecl) ||
             cl._dfa._preEffectsAborted.contains(ecl) ||
-            ((cl._dfa._real || true) ? newEnv.isAborted(ecl) : cl._dfa._preEffectsAborted.contains(ecl));
+            (cl._dfa._real ? newEnv.isAborted(ecl) : cl._dfa._preEffectsAborted.contains(ecl));
           var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1), aborted);
           // System.out.println("ABORTED IS "+aborted+" for "+cl._dfa._fuir.clazzAsString(ecl));
           if (aborted)
@@ -2382,7 +2381,7 @@ public class DFA extends ANY
     put("effect.type.abort0"                , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
-          if (cl._dfa._real || true)
+          if (cl._dfa._real)
             {
               var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
               if (ev != null)
@@ -2755,13 +2754,6 @@ public class DFA extends ANY
                 _instancesForSite.force(sci, clazzm);
               }
             var env = _real ? context.env() : null;
-            if (env != null) //  && context instanceof Call cc)
-              {
-                if (false && /* _real && */ context instanceof Call cc)
-                  env = env.filter(cc._group);
-                // env = env.filter(instanceNeedsEffects(cl));
-                //env = null;
-              }
             var k1 = _fuir.clazzId2num(cl);
             var k2 = (env == null ? 0 : env._id + 1);
             var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
@@ -3499,7 +3491,6 @@ sys	0m1,247s
    */
   Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    //if (!_real) env = null;
     CallGroup g;
     var kg = CallGroup.quickHash(this, cl, site, tvalue);
     if (kg != -1)
@@ -3517,6 +3508,8 @@ sys	0m1,247s
         g = _callGroups.putIfAbsent(ng, ng);
         g = g != null ? g : ng;
       }
+
+    env = env == null ? null : env.filterCallGroup(g);
 
     Call e, r;
     r = _unitCalls.get(cl);
@@ -3554,8 +3547,6 @@ sys	0m1,247s
           }
         else
           {
-            if (false && env != null)
-              env = env.filter(g);
             if (env != null && !true)
               {
                 var fe = _effectsRequiredByClazz.get(cl);
@@ -3620,15 +3611,7 @@ sys	0m1,247s
       }
     if (from != null)
       {
-        try {
         e._group.calledFrom(from._group);
-        } catch (Error er) {
-          System.out.println("NEW CALL "+e);
-          System.out.println("FROM CALL "+from);
-          System.out.println("NEW CALL GROUP "+e._group);
-          System.out.println("FROM CALL GROUP "+from._group);
-          throw er;
-        }
       }
     return e;
   }
@@ -3821,36 +3804,16 @@ sys	0m1,247s
   {
     if (env != null)
       {
-        var cd = _fuir.clazzCode(ecl);
-        var p = cd == FUIR.NO_SITE || !_fuir.withinCode(cd)
-          ? _fuir.clazzDeclarationPos(ecl)
-          : _fuir.sitePos(cd);
-        if (p != null)
-          {
-            env = env.filterPos(p, effectTypePosition(ecl));
-          }
+        env = env.filterPos(effectTypePosition(ecl));
       }
     var newEnv = new Env(this, env, ecl, ev);
     var e = _envs.get(newEnv);
     if (e == null)
       {
-        System.out.println("ENV#"+_envs.size()+": "+_fuir.clazzAsString(ecl)+" val: "+ev._id+" "+ev+"\n  IS: "+newEnv);
-        var o = ecl;
-        var in = "  ";
-        while (_fuir.clazzOuterRef(o) != FUIR.NO_CLAZZ)
-          {
-            o = _fuir.clazzOuterClazz(o);
-            System.out.println(in + "outer: "+_fuir.clazzAsString(o));
-            in = in + "  ";
-          }
-        //System.out.println("ENV#"+_envs.size()+": "+newEnv);
         _envs.put(newEnv, newEnv);
         e = newEnv;
         e._id = _envs.size()+1;
         wasChanged(() -> "DFA.newEnv for " + newEnv);
-        //var p = _fuir.sitePos(_fuir.clazzCode(ecl));
-        //System.out.println("NEW ENV: "+(p == null ? "--null--" : p.show()));
-        //System.out.println("NEW ENV: #"+_envs.size()+" for "+_fuir.clazzAsString(ecl)+": "+newEnv);
       }
     return e;
   }

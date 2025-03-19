@@ -154,7 +154,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    */
   public CallGroup(DFA dfa, int cc, int site, Value target)
   {
-    if (!(!dfa._real || dfa._calledClazzesDuringPrePhase.contains(cc)))
+    if (dfa._real && !dfa._calledClazzesDuringPrePhase.contains(cc))
       {
         System.out.println("PROBLE FOR "+dfa._fuir.clazzAsString(cc));
       }
@@ -206,7 +206,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
       }
     if (_mayHaveEffects.add(ecl))
       {
-        usedAndMayHave(ecl);
+        usedAndMayHaveXXX(ecl);
         if (false) if (_dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm") ||
             _dfa._fuir.clazzAsString(_cc).equals("array#3 u8"))
             {
@@ -241,6 +241,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
       }
   }
 
+
   boolean requiredEffect(int ecl)
   {
     if (PRECONDITIONS) require
@@ -249,7 +250,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
     var s = _dfa._clazzesThatRequireEffect.get(_cc);
     return s != null && s.contains(ecl);
   }
-  void usedAndMayHave(int ecl)
+  void usedAndMayHaveXXX(int ecl)
   {
     if (false) if (_usedEffects.contains(ecl) &&
         _mayHaveEffects.contains(ecl))
@@ -278,7 +279,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
     if (_usedEffects.add(ecl))
       {
-        usedAndMayHave(ecl);
+        usedAndMayHaveXXX(ecl);
         //        _dfa.instanceNeedsEffects(_cc).add(ecl);
 
         if (false)
@@ -418,7 +419,10 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
   public String toString()
   {
-    return "CALLGROUP to "+_dfa._fuir.clazzAsString(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+_usedEffects.stream().map(i->_dfa._fuir.clazzAsString(i)).reduce("", (a,b)->a+","+b);
+    return "CALLGROUP to "+_dfa._fuir.clazzAsString(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+
+      clazzesAsString(_dfa._real
+                      ? _usedEffects
+                      : _dfa._effectsRequiredByClazz.get(_cc));
   }
 
 

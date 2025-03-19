@@ -222,6 +222,26 @@ public class Env extends ANY implements Comparable<Env>
   }
 
 
+  Env filterCallGroup(CallGroup cg)
+  {
+    var o = _outer;
+    var res = o == null ? null : o.filterCallGroup(cg);
+    var ce = _dfa._effectsRequiredByClazz.get(cg._cc);
+    if (ce != null && ce.contains(_effectType) ||
+        cg._usedEffects.contains(_effectType))
+      {
+        if (o != _outer)
+          {
+            res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+          }
+        else
+          {
+            res = this;
+          }
+      }
+    return res;
+  }
+
 
   Env filterPos(SourcePosition pos, SourcePosition pos_new)
   {
@@ -253,6 +273,17 @@ public class Env extends ANY implements Comparable<Env>
       }
     return res;
   }
+  Env filterPos(SourcePosition pos)
+  {
+    var res = _outer == null ? null : _outer.filterPos(pos);
+    var p = _dfa.effectTypePosition(_effectType);
+    var cmp = p.compareTo(pos) != 0;
+    if (cmp)
+      {
+        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+      }
+    return res;
+  }
   Env filterX(Set<Integer> which)
   {
     var res = _outer == null ? null : _outer.filterX(which);
@@ -262,9 +293,9 @@ public class Env extends ANY implements Comparable<Env>
       }
     return res;
   }
-  Env filter(CallGroup which)
+  Env filterXYZ(CallGroup which)
   {
-    var res = _outer == null ? null : _outer.filter(which);
+    var res = _outer == null ? null : _outer.filterXYZ(which);
     if (which.requiredEffect(_effectType))
       {
         res = _dfa.newEnv(res, _effectType, _actualEffectValues);

@@ -422,7 +422,7 @@ public class Call extends ANY implements Comparable<Call>, Context
               .append("=")
               .append(a);
           }
-        var r = result();
+        var r = ""; // result();
         sb.append(" => ")
           .append(r == null ? "*** VOID ***" : r)
           .append(" ENV: ")
@@ -450,6 +450,7 @@ public class Call extends ANY implements Comparable<Call>, Context
          " for call to "
        : "call ")+
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
+      " used " + _group.clazzesAsString(_group._usedEffects) +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 
@@ -565,9 +566,9 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
-        //        if (_dfa._real)
-        Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
-               + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+        if (_dfa._reportResults)
+          Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
+                       + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
       }
     if (_env != null)
       {
