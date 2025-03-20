@@ -2646,6 +2646,33 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
+  /**
+   * This is used in Function.java to
+   * refine a result type.
+   * e.g.:
+   *
+   * 1) result needs tagging:
+   * String => outcome String
+   *
+   * 2) result needs boxing:
+   * array i32 => Sequence i32
+   *
+   * @param res the current Resolution instance
+   *
+   * @param refinedResultType the refined result type
+   */
+  void setRefinedResultType(Resolution res, AbstractType refinedResultType)
+  {
+    if (CHECKS) check
+      // we must not patch result type later, because then
+      // result type of result field etc. is also already set.
+      (!state().atLeast(State.RESOLVING_SUGAR1),
+      _resultType == null || refinedResultType.isAssignableFrom(_resultType) || refinedResultType.isAssignableFrom(_resultType.asRef()));
+
+    _resultType = refinedResultType;
+  }
+
+
 }
 
 /* end of file */

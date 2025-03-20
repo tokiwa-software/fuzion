@@ -30,7 +30,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   # start a process with name, arguments and environment variables
   #
   module start(name String, args Sequence String, env_vars container.Map String String) =>
-    (ph.start name args env_vars).bind os.process p->
+    (ph.start name args env_vars).bind p->
       (os.processes ph (running_processes ∪ (container.set_of_ordered [p]))).replace
       p
 

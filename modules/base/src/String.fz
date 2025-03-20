@@ -247,7 +247,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       else if (String.cap_a_char ≤ c ≤ String.cap_z_char) c - String.cap_a_char + 10
       else parse_error "non-digit found"
 
-    d.bind T b->
+    d.bind b->
       t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
       if t ≥ base
         parse_error "invalid integer digit for base $base"
@@ -835,7 +835,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     ref : String
 
       public redef utf8 Sequence u8 =>
-        a.as_list.flat_map ai->ai.as_string.utf8
+        a.as_list.flat_map (.as_string.utf8)
 
 
       public redef infix + (other Any) String =>
@@ -856,7 +856,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     ref : String
       public redef utf8 Sequence u8 =>
         codepoints
-          .flat_map x->x.utf8
+          .flat_map (.utf8)
           .as_array_backed
 
 
