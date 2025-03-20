@@ -782,6 +782,8 @@ public class Call extends AbstractCall
           {
             _movedTo.setToErrorState();
           }
+        if (CHECKS) check
+          (Errors.any());
       }
   }
 
@@ -1068,8 +1070,6 @@ public class Call extends AbstractCall
    * still unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_UNDEFINED in case Expr depends on the inferred result type of a feature
-   * that is not available yet (or never will due to circular inference).
    */
   @Override
   public AbstractType type()
@@ -1077,12 +1077,21 @@ public class Call extends AbstractCall
     // type() will only be called when we really need the type, so we can report
     // an error in case there is one pending.
     reportPendingError();
-    var result = typeForInferencing();
-    if (result == null)
+    var tfi = typeForInferencing();
+    if (tfi == null)
       {
-        result = Types.t_UNDEFINED;
+        var tt = target() != null
+          ? target().type()
+          : null;
+        if (!new List<AbstractType>(tt, _actuals.stream().map(a -> a.type()).collect(List.collector())).contains(Types.t_ERROR))
+          {
+            AstErrors.forwardTypeInference(_pos, _calledFeature, _calledFeature.pos());
+          }
+        if (CHECKS) check
+          (Errors.any());
+        setToErrorState();
       }
-    return result;
+    return typeForInferencing();
   }
 
 
@@ -1379,7 +1388,10 @@ public class Call extends AbstractCall
         result = _calledFeature.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
-        if (urgent && (result == Types.t_UNDEFINED || result == null))
+        if (CHECKS)
+          check(Errors.any() || result != Types.t_ERROR);
+
+        if (urgent && result == null)
           {
             // Handling of cyclic type inference. It might be
             // better if this was done in `Feature.resultType`, but
@@ -1407,7 +1419,9 @@ public class Call extends AbstractCall
             result = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
           }
       }
-    return result;
+    return result == Types.t_UNDEFINED
+      ? null
+      : result;
   }
 
 
@@ -1696,15 +1710,7 @@ public class Call extends AbstractCall
     while (last < next);
 
 
-    List<Generic> missing = new List<Generic>();
-    for (Generic g : _calledFeature.generics().list)
-      {
-        int i = g.index();
-        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
-          {
-            missing.add(g);
-          }
-      }
+    List<Generic> missing = missingGenerics();
 
     if (!missing.isEmpty())
       { // we failed inferring all type parameters, so report errors
@@ -1754,6 +1760,24 @@ public class Call extends AbstractCall
               }
           }
       }
+  }
+
+
+  /**
+   * @return list of missing generics of the called feature
+   */
+  private List<Generic> missingGenerics()
+  {
+    List<Generic> missing = new List<Generic>();
+    for (Generic g : _calledFeature.generics().list)
+      {
+        int i = g.index();
+        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
+          {
+            missing.add(g);
+          }
+      }
+    return missing;
   }
 
 
@@ -2433,6 +2457,8 @@ public class Call extends AbstractCall
     var cf = _calledFeature;
     if (cf == Types.f_ERROR)
       {
+        if (CHECKS) check
+          (Errors.any() || target().type().isVoid());
         _type = Types.t_ERROR;
       }
     else if (cf != null)
@@ -2496,14 +2522,21 @@ public class Call extends AbstractCall
     var t = getActualResultType(res, context, false);
 
     if (CHECKS) check
-      (_type == null || t.compareTo(_type) == 0);
+      (_type == null || t.compareTo(_type) == 0,
+       Errors.any() || t != Types.t_ERROR);
 
     _type = t;
 
     if (_type == null || isTailRecursive(context.outerFeature()))
       {
-        _calledFeature.whenResolvedTypes
-          (() -> _type = getActualResultType(res, context, true));
+        _calledFeature.whenResolvedTypes(() ->
+          {
+            var t2 = getActualResultType(res, context, true);
+            if (CHECKS) check
+              (_type == null || t2.compareTo(_type) == 0,
+              Errors.any() || t2 != Types.t_ERROR);
+            _type = t2;
+          });
       }
   }
 
