@@ -2393,6 +2393,10 @@ A ((Choice)) declaration must not contain a result type.
         _resultType = result;
       }
 
+    if (POSTCONDITIONS) ensure
+      (result != Types.t_UNDEFINED,
+       Errors.any() || result != Types.t_ERROR);
+
     return result;
   }
 
