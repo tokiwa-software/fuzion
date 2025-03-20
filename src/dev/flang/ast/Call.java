@@ -1407,10 +1407,6 @@ public class Call extends AbstractCall
         result = result == null
           ? result
           : adjustResultType(res, context, result);
-        // NYI: UNDER DEVELOPMENT:
-        // result = result == Types.t_UNDEFINED
-        //   ? null
-        //   : result;
       }
     return result;
   }
@@ -1432,8 +1428,10 @@ public class Call extends AbstractCall
     var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
     var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
     var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
-    return
-             t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
+    var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
+    return t6 == Types.t_UNDEFINED
+      ? null
+      : t6;
   }
 
 
@@ -1730,15 +1728,25 @@ public class Call extends AbstractCall
 
     var rt = _calledFeature.resultTypeIfPresentUrgent(res, false);
 
-    // We may be able to infer generics later
-    // via result type propagation, do not emit errors yet.
-    if ((rt == null ||
-        !rt.isGenericArgument() ||
-         rt.genericArgument().feature().outer() != _calledFeature.outer()))
+    if (mustReportMissingImmediately(rt))
       {
         reportConflicts(conflict, foundAt);
         reportMissingInferred(missing);
       }
+  }
+
+
+  /**
+   * Do we want to report missing generics now
+   * or do we wait for result type propagation
+   * which may allow inference later.
+   */
+  private boolean mustReportMissingImmediately(AbstractType rt)
+  {
+    return (rt == null ||
+        !rt.isGenericArgument() ||
+         rt.genericArgument().feature().outer() != _calledFeature.outer()) ||
+         _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
   }
 
 
