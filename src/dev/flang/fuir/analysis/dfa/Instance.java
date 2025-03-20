@@ -62,7 +62,7 @@ public class Instance extends Value
   /**
    * Map from fields to the values that have been assigned to the fields.
    */
-  private final TreeMap<Integer, Value> _fields;
+  final TreeMap<Integer, Value> _fields;
 
 
   /**

@@ -218,6 +218,12 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
           {
             t.mayHaveEffect(ecl);
           }
+        var s = _dfa._fuir.clazzAsString(_cc);
+        if (s.startsWith("instate_helper ") ||
+            s.startsWith("(instate_helper ")    )
+          {
+            needsEffect(ecl);
+          }
       }
   }
 

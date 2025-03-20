@@ -2617,18 +2617,17 @@ public class DFA extends ANY
    */
   void replaceDefaultEffect(int ecl, Value e)
   {
-    //    if (_real)
+    if (_real)
       {
         var old_e = _defaultEffects.get(ecl);
-
-        if (CHECKS) check
-          (!_real || old_e != null);
-
-        var new_e = old_e == null ? e : old_e.join(this, e, ecl);
-        if (old_e == null || Value.compare(old_e, new_e) != 0)
+        if (old_e != null)
           {
-            _defaultEffects.put(ecl, new_e);
-            wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
+            var new_e = old_e == null ? e : old_e.join(this, e, ecl);
+            if (old_e == null || Value.compare(old_e, new_e) != 0)
+              {
+                _defaultEffects.put(ecl, new_e);
+                wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
+              }
           }
       }
   }
@@ -3474,6 +3473,7 @@ sys	0m1,247s
    */
   Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
+    var oenv = env;
     CallGroup g;
     var kg = CallGroup.quickHash(this, cl, site, tvalue);
     if (kg != -1)
@@ -3492,7 +3492,11 @@ sys	0m1,247s
         g = g != null ? g : ng;
       }
 
-    env = env == null ? null : env.filterCallGroup(g);
+    var s = _fuir.clazzAsString(cl);
+    if (!s.startsWith("instate_helper ") && !s.startsWith("(instate_helper "))
+      {
+        env = env == null ? null : env.filterCallGroup(g);
+      }
 
     Call e, r;
     r = _unitCalls.get(cl);
@@ -3567,6 +3571,54 @@ sys	0m1,247s
           {
             DfaErrors.fatal("DFA: Exceeded maximum number of calls " + Integer.MAX_VALUE);
           }
+
+        /*
+        if (_real && _fuir.clazzAsString(cl).startsWith("uf.call"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "  FROM "+from + dev.flang.util.Terminal.RESET);
+            if (from instanceof Call fc)
+              for (var k : ((Instance) fc._instance)._fields.keySet())
+                {
+                  System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "  FIELDS "+
+                                     _fuir.clazzAsString(k)+" => "+
+                                     ((Instance) fc._instance)._fields.get(k)+ dev.flang.util.Terminal.RESET);
+                  var i2 = (Instance) ((Instance) fc._instance)._fields.get(k);
+                  for (var k2 : i2._fields.keySet())
+                    {
+                      System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "    FIELDS "+
+                                         _fuir.clazzAsString(k2)+" => "+
+                                         i2._fields.get(k2)+ dev.flang.util.Terminal.RESET);
+                      var i3 = (Instance) i2._fields.get(k2);
+                      for (var k3 : i3._fields.keySet())
+                        {
+                          System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "    FIELDS "+
+                                             _fuir.clazzAsString(k3)+" => "+
+                                             i3._fields.get(k3)+ dev.flang.util.Terminal.RESET);
+                        }
+                    }
+                }
+
+            System.out.println(dev.flang.util.Terminal.BOLD_PURPLE + "GROUP "+g + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        if (_real && _fuir.clazzAsString(cl).startsWith("instate_helper unit e"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_PURPLE + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_PURPLE + "GROUP "+g + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        if (_real && _fuir.clazzAsString(cl).equals("(instate_helper unit e).call_code.call"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_GREEN + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        if (_real && _fuir.clazzAsString(cl).equals("e.type.instate#4 unit"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_RED + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        */
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
         e = r;
@@ -3591,6 +3643,11 @@ sys	0m1,247s
                                dev.flang.util.Terminal.RESET);
           }
         e.mergeWith(args);
+        if (false && _real && _fuir.clazzAsString(cl).equals("instate_helper unit e"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_YELLOW + "MERGEED CALL "+e + "ENV "+env+" ENV2 "+oenv+dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
       }
     if (from != null)
       {

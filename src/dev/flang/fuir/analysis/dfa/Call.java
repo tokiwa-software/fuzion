@@ -449,6 +449,7 @@ public class Call extends ANY implements Comparable<Call>, Context
        // " required " + _group._usedEffects.stream().map(e -> Errors.effe(_dfa._fuir.clazzAsStringHuman(e))).collect(java.util.stream.Collectors.joining(", ")) +
          " for call to "
        : "call ")+
+      // "[" + Errors.sqn(_dfa._fuir.clazzAsString(_cc)) + "]" +
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
       // " used " + _group.clazzesAsString(_group._usedEffects) +
       (pos != null ? " at " + pos.pos().show() : "");
@@ -586,11 +587,21 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void replaceEffect(int ecl, Value e)
   {
+    if (!_dfa._reportResults)
+      {
+        // make sure it is known that effect ecl is required here, but do not
+        // report an error if it is not since we have our own error below:
+        var ignore = getEffectCheck2(ecl);
+      }
+
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
         if (_dfa._reportResults)
-          Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
-                       + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+          {
+            // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
+            Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
+                         + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+          }
       }
     if (_env != null)
       {
