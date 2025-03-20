@@ -220,7 +220,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
               reader.discard_all
               true
 
-    ref : String
+    ref : String is
       public redef utf8 Sequence u8 := res.as_array
 
 

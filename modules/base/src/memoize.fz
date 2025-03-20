@@ -44,7 +44,7 @@
 #
 #
 public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
-  ref : Unary R T
+  ref : Unary R T is
 
     # the memory
     store := MM.empty

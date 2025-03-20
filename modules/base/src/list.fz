@@ -178,7 +178,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     match list.this
       nil    => nil
       c Cons =>
-        ref : Cons B (list B)
+        ref : Cons B (list B) is
           public redef head => f c.head
           public redef tail => c.tail.map_to_list f
 
@@ -196,7 +196,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
         match (f c.head).as_list
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
-            ref : Cons B (list B)
+            ref : Cons B (list B) is
               public redef head => c2.head
               public redef tail => (c2.tail ++ c.tail.flat_map_to_list f).as_list
 
@@ -333,7 +333,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       match list.this
         nil    => nil
         c Cons =>
-          ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
+          ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
             public redef head => c.head
             public redef tail => if n = 1 then nil else c.tail.take_list n-1
 
@@ -461,7 +461,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil    => nil
       c Cons =>
         if p c.head
-          ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
+          ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
             public redef head => c.head
             public redef tail => c.tail.take_while_list p
         else
@@ -504,7 +504,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   filter_list (p A -> bool) list A =>
     match drop_while_list (a -> !(p a))
       nil    => nil
-      c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
+      c Cons => ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
                   public redef head => c.head
                   public redef tail => c.tail.filter_list p
 
@@ -535,7 +535,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # 'list.this' and the empty list 'nil'.
   #
   public redef tails list (list A) =>
-    ref : Cons (list A) (list (list A))
+    ref : Cons (list A) (list (list A)) is
       public redef head => list.this
       public redef tail =>
         list.this ? nil    => nil
@@ -688,7 +688,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public type.list_concat_monoid =>
 
-    ref : Monoid (list A)
+    ref : Monoid (list A) is
 
       # associative operation
       #
@@ -704,7 +704,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>
-  ref : Cons T (list T)
+  ref : Cons T (list T) is
     public redef head => h
     public redef tail => t
 

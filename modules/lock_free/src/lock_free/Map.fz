@@ -689,7 +689,7 @@ is
   # NYI: BUG: #3646 make public when snapshots work
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
-    ref : container.Persistent_Map CTK CTV
+    ref : container.Persistent_Map CTK CTV is
       public redef size => s.size
       public redef index [] (k CTK) => s[k]
       public redef items => s.items

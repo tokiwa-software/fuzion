@@ -44,7 +44,7 @@ public ffi is
   public from_native_string(x Native_Ref) String =>
     len := native_string_length x
     arr := native_array u8 x len
-    ref : String
+    ref : String is
       public redef utf8 Sequence u8 =>
         array (fuzion.sys.internal_array u8 arr len) unit unit unit
 
