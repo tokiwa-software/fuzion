@@ -104,6 +104,13 @@ public class Types extends ANY
 
 
   /**
+   * Dummy name used for type t_FORWARD_CYCLIC which is used to
+   * indicate a forward or cylic type inference.
+   */
+  public static final String FORWARD_CYCLIC = "FORWARD_CYCLIC";
+
+
+  /**
    * Names of internal types that are not backed by physical feature definitions.
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
@@ -122,7 +129,7 @@ public class Types extends ANY
   public static ResolvedType t_ERROR;
 
   /* artificial type for Expr with unknown type due to compilation error */
-  public static final AbstractType t_FORWARD_CYCLIC = new ArtificialBuiltInType("FORWARD_CYCLIC");
+  public static final AbstractType t_FORWARD_CYCLIC = new ArtificialBuiltInType(FORWARD_CYCLIC_NAME);
 
   /* artificial feature used when feature is not known due to compilation error */
   public static final Feature f_ERROR = new Feature(true)

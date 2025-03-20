@@ -1393,7 +1393,7 @@ public class Call extends AbstractCall
         result = _calledFeature.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
-        if (urgent && result == Types.t_FORWARD_CYCLIC)
+        if (result == Types.t_FORWARD_CYCLIC)
           {
             // Handling of cyclic type inference. It might be
             // better if this was done in `Feature.resultType`, but
