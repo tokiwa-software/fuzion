@@ -27,7 +27,7 @@ reg_issue1777 =>
     r(x Curry) i32 => abstract
 
   my_loop i32 =>
-    c := (ref : Curry
+    c := (ref : Curry is
       redef r(x Curry) => x.r x
     )
     c.r c

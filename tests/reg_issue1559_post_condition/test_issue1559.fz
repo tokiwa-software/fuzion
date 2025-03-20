@@ -23,5 +23,5 @@
 
 a option String =>
   mutate ! ()->
-    ref : String
+    ref : String is
       public redef utf8 => (list u8).empty
