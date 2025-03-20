@@ -1890,16 +1890,7 @@ A ((Choice)) declaration must not contain a result type.
             o.typeInference(res);
           }
 
-        if (_resultType == null)
-          {
-            _resultType = resultTypeIfPresentUrgent(res, true);
-          }
-
-        if (_resultType == null)
-          {
-            AstErrors.failedToInferResultType(this);
-            _resultType = Types.t_ERROR;
-          }
+        _resultType = resultTypeIfPresentUrgent(res, true);
 
         if (_resultType.isThisType() && _resultType.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
@@ -2346,7 +2337,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     AbstractType result;
 
-    if (res != null && !res.state(this).atLeast(State.RESOLVING_TYPES))
+    if (res != null && this != Types.f_ERROR && !res.state(this).atLeast(State.RESOLVING_TYPES))
       {
         res.resolveTypes(this);
       }
@@ -2371,11 +2362,16 @@ A ((Choice)) declaration must not contain a result type.
       }
     else if (_returnType == NoType.INSTANCE)
       {
-        result = null;
+        if (urgent)
+          {
+            AstErrors.failedToInferResultType(this);
+          }
+        result = urgent ? Types.t_ERROR : null;
       }
     else
       {
         result = _returnType.functionReturnType();
+        result = urgent && result == null ? Types.t_ERROR : result;
       }
     if (isOuterRef() && !outer().isFixed())
       {
@@ -2390,8 +2386,13 @@ A ((Choice)) declaration must not contain a result type.
     // to enable cyclic type inference e.g. in reg_issue2182
     if (result != null && result != Types.resolved.t_void)
       {
-        _resultType = result;
+        // FORWARD_CYCLIC should be returned only once.
+        // We then want to return t_ERROR.
+        _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
       }
+
+    if (POSTCONDITIONS) ensure
+      (!urgent || result != null);
 
     return result;
   }

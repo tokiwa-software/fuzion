@@ -121,6 +121,9 @@ public class Types extends ANY
   /* artificial type for Expr with unknown type due to compilation error */
   public static ResolvedType t_ERROR;
 
+  /* artificial type for Expr with unknown type due to compilation error */
+  public static final AbstractType t_FORWARD_CYCLIC = new ArtificialBuiltInType("FORWARD_CYCLIC");
+
   /* artificial feature used when feature is not known due to compilation error */
   public static final Feature f_ERROR = new Feature(true)
   {
