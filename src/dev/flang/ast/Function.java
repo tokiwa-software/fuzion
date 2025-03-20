@@ -366,17 +366,23 @@ public class Function extends AbstractLambda
     var result = lmbdRt;
     if (!frmlRt.isGenericArgument())
       {
-        if (frmlRt.isChoice())
+        if (frmlRt.isChoice()
+            // NYI: UNDER DEVELOPMENT: We may want to go further here and support more than
+            // one missing undefined
+            && frmlRt.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 1)
           {
             if (frmlRt.feature() != lmbdRt.selfOrConstraint(res, context).feature())
               {
                 result = frmlRt.applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
-                _feature.setRefinedResultType(res, result);
+                if (result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
+                  {
+                    _feature.setRefinedResultType(res, result);
+                  }
               }
           }
-        else if ((frmlRt.isChoice() || !lmbdRt.isGenericArgument())
-           && lmbdRt.feature() != frmlRt.feature()
-           && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
+        else if (!lmbdRt.isGenericArgument()
+                 && lmbdRt.feature() != frmlRt.feature()
+                 && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {
             result = ResolvedNormalType.create(lmbdRt.generics(), Call.NO_GENERICS, frmlRt.outer(), frmlRt.feature());
             _feature.setRefinedResultType(res, result);
