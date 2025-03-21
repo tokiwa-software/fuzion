@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue4959.fz:26:8: error 1: Use of selector requires call to feature whose type is an open type parameter
+  say .1
+-------^
+Selected variant: '1'
+Type of called feature: '**error**'
+
+one error.

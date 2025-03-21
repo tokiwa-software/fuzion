@@ -142,7 +142,7 @@ public class Select extends Call {
           }
         else
           {
-            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target.type());
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target != null ? _target.type() : Types.t_ERROR);
           }
       }
     if (_currentlyResolving != null)
