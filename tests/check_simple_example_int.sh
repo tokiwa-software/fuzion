@@ -64,6 +64,7 @@ else
 
     EXIT_CODE=$(FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -interpreter "$2" >tmp_out.txt 2>tmp_err.txt; echo $?)
 
+    # 152 - 128 = 24 -> signal SIGXCPU
     if [ "$EXIT_CODE" -eq 152 ]; then
         echo  -e "\033[31;1m*** CANCELLED:\033[0m test $2 exceeded cpu time limit of $cpu_time_limit s"
         exit 1
