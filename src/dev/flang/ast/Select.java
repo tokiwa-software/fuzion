@@ -97,7 +97,7 @@ public class Select extends Call {
   @Override
   public String toString()
   {
-    return _target.toStringWrapped() + "." + (_name == null ? "<not yet known>" : _name) + "." + select();
+    return (_target == null ? "<no target>" : _target.toStringWrapped()) + "." + (_name == null ? "<not yet known>" : _name) + "." + select();
   }
 
 
