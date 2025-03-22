@@ -231,15 +231,18 @@ public class Impl extends ANY
         //   f type := ?;
         //
         // requires a type
-        if (rt == NoType.INSTANCE)
+        if (!f.isResultField())
           {
-            AstErrors.missingResultTypeForField(f);
-            rt = new FunctionReturnType(Types.t_ERROR);
-          }
-        else if (!(rt instanceof FunctionReturnType))
-          {
-            AstErrors.illegalResultTypeNoInit(f, rt);
-            rt = new FunctionReturnType(Types.t_ERROR);
+            if (rt == NoType.INSTANCE)
+              {
+                AstErrors.missingResultTypeForField(f);
+                rt = new FunctionReturnType(Types.t_ERROR);
+              }
+            else if (!(rt instanceof FunctionReturnType))
+              {
+                AstErrors.illegalResultTypeNoInit(f, rt);
+                rt = new FunctionReturnType(Types.t_ERROR);
+              }
           }
         break;
 

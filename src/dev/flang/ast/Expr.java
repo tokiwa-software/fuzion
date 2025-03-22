@@ -628,7 +628,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0
+      (Errors.any()
         || type().isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
