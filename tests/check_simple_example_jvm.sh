@@ -58,12 +58,17 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*)$" && export OPT=-Dfuzion.debugLevel=0
 
     # limit cpu time for executing test
-    ulimit -S -t 120 || echo "failed setting limit via ulimit"
+    cpu_time_limit=120
+    ulimit -S -t $cpu_time_limit || echo "failed setting limit via ulimit"
 
     EXIT_CODE=$(FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -jvm ${FUZION_JVM_BACKEND_OPTIONS:+ $FUZION_JVM_BACKEND_OPTIONS} "$2" >tmp_out.txt 2>tmp_err.txt; echo $?)
 
-    if [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ]; then
-        echo "unexpected exit code"
+    # 152 - 128 = 24 -> signal SIGXCPU
+    if [ "$EXIT_CODE" -eq 152 ]; then
+        echo  -e "\033[31;1m*** CANCELLED:\033[0m test $2 exceeded cpu time limit of $cpu_time_limit s"
+        exit 1
+    elif [ "$EXIT_CODE" -ne 0 ] && [ "$EXIT_CODE" -ne 1 ]; then
+        echo "unexpected exit code $EXIT_CODE"
         exit "$EXIT_CODE"
     fi
 
