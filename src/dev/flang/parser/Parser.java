@@ -3312,6 +3312,7 @@ universePureCall  : universe dot pureCall
    *
 anonymous   : "ref"
               inherit
+              "is"
               block
             ;
    */
@@ -3323,6 +3324,7 @@ anonymous   : "ref"
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
     var        i = inherit();
+    match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
     var ca = new Call(pos, f);

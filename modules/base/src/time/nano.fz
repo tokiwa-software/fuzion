@@ -59,7 +59,7 @@ public nano (p Nano_Time_Handler) : effect is
 
   type.default_nano_time =>
 
-    ref : time.Nano_Time_Handler
+    ref : time.Nano_Time_Handler is
 
       # no guarantee can be given for precision nor resolution
       redef read => fzE_nanotime

@@ -62,7 +62,7 @@ is
   #
   type.default_exit_handler =>
 
-    ref : Exit_Handler
+    ref : Exit_Handler is
 
       # mutable value of the current exit code set
       #

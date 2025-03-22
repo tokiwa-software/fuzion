@@ -39,7 +39,7 @@ public make(fwh Make_Dir_Handler, _ unit) : effect is
   # the default handler
   #
   type.default_handler =>
-    ref : io.dir.Make_Dir_Handler
+    ref : io.dir.Make_Dir_Handler is
       public redef mkdir(path String) =>
         fuzion.sys.fileio.create_dir path
 

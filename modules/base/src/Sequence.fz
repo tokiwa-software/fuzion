@@ -1110,7 +1110,7 @@ public Sequence(public T type) ref : property.countable is
       match (find s)
         nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
         idx i32 =>
-          ref : Cons (Sequence T) (list (Sequence T))
+          ref : Cons (Sequence T) (list (Sequence T)) is
             public redef head Sequence T := take (if split_after then idx + s.count else idx)
             public redef tail =>
               rest := drop (idx + s.count)
@@ -1449,7 +1449,7 @@ public Sequence(public T type) ref : property.countable is
   #
   public type.concat_monoid =>
 
-    ref : Monoid (Sequence T)
+    ref : Monoid (Sequence T) is
 
       # associative operation
       #

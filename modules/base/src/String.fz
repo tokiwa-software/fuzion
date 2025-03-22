@@ -311,7 +311,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       c1 Cons =>
         # return list of c and rest
         ret(c outcome codepoint, rest list u8) list (outcome codepoint) =>
-          ref : Cons (outcome codepoint) (list (outcome codepoint))
+          ref : Cons (outcome codepoint) (list (outcome codepoint)) is
             public redef head => c
             public redef tail => codepoints_and_errors rest
 
@@ -515,7 +515,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     else
       h :=  String.from_bytes (l.take_while (c -> !c.is_ascii_white_space)).as_array
       t := (String.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
-      ref : Cons String (list String)
+      ref : Cons String (list String) is
         public redef head => h
         public redef tail => t
 
@@ -780,7 +780,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # monoid of strings with infix + operation.
   #
   public type.concat =>
-    ref : Monoid String
+    ref : Monoid String is
       public redef infix ∙ (a, b String) => a + b
       public redef e => ""
 
@@ -789,7 +789,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # given separator
   #
   public type.concat(sep String) =>
-    ref : Monoid String
+    ref : Monoid String is
       public redef infix ∙ (a, b String) String => if (a.is_empty || b.is_empty) a + b else a + sep + b
       public redef e => ""
 
@@ -798,7 +798,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # concatenating their byte sequences.
   #
   public type.concat(a, b String) String =>
-    ref : String
+    ref : String is
       public redef utf8 Sequence u8 => a.utf8 ++ b.utf8
 
 
@@ -832,7 +832,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.from_mutable_array(E type : mutate, a container.Mutable_Array Any E) =>  // NYI: Remove?
 
-    ref : String
+    ref : String is
 
       public redef utf8 Sequence u8 =>
         a.as_list.flat_map (.as_string.utf8)
@@ -846,14 +846,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # create string from the given utf8 bytes
   #
   public type.from_bytes(utf8_bytes Sequence u8) String =>
-    ref : String
+    ref : String is
       public redef utf8 := utf8_bytes.as_array_backed
 
 
   # create string from the given codepoints
   #
   public type.from_codepoints(codepoints Sequence codepoint) String =>
-    ref : String
+    ref : String is
       public redef utf8 Sequence u8 =>
         codepoints
           .flat_map (.utf8)

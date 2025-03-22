@@ -112,7 +112,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # true.
   #
   public type.all =>
-    ref : Monoid bool
+    ref : Monoid bool is
       public redef infix ∙ (a, b bool) => a & b
       public redef e => true
 
@@ -121,7 +121,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # false.
   #
   public type.any =>
-    ref : Monoid bool
+    ref : Monoid bool is
       public redef infix ∙ (a, b bool) => a | b
       public redef e => false
 
@@ -130,7 +130,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # elements is true. This gives the even parity.
   #
   public type.parity =>
-    ref: Monoid bool
+    ref: Monoid bool is
       public redef infix ∙ (a, b bool) => a ^ b
       public redef e => false
 

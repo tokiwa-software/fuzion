@@ -222,7 +222,7 @@ public numeric : property.hashable, property.orderable is
   # is applied to.
   #
   public type.sum =>
-    ref : Monoid numeric.this
+    ref : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) => a + b
       public redef e => zero
 
@@ -231,7 +231,7 @@ public numeric : property.hashable, property.orderable is
   # it is applied to.
   #
   public type.product =>
-    ref : Monoid numeric.this
+    ref : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) => a * b
       public redef e => one
 
@@ -240,7 +240,7 @@ public numeric : property.hashable, property.orderable is
   # is applied to, stopping at max/min value in case of overflow.
   #
   public type.sum_saturating =>
-    ref : Monoid numeric.this
+    ref : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) => a +^ b
       public redef e => zero
 
@@ -249,6 +249,6 @@ public numeric : property.hashable, property.orderable is
   # it is applied to, stopping at max/min value in case of overflow.
   #
   public type.product_saturating =>
-    ref : Monoid numeric.this
+    ref : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) => a *^ b
       public redef e => one
