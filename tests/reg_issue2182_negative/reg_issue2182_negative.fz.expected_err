@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue2182_negative.fz:24:5: error 1: Type inference from actual arguments failed since no actual call was found
+fib(a) => list a (fib a)
+----^
+For the formal argument 'fib.a' the type can only be derived if there is a call to 'fib'.
+
+one error.

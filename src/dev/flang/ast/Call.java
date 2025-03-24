@@ -380,7 +380,7 @@ public class Call extends AbstractCall
    * Get the type of the target.  In case the target's type is a generic type
    * parameter, return its constraint.
    *
-   * @return the type of the target or Types.t_UNDEFINED if unknown.
+   * @return the type of the target or null if unknown.
    */
   private AbstractType targetTypeOrConstraint(Resolution res, Context context)
   {
@@ -388,15 +388,12 @@ public class Call extends AbstractCall
       (_target != null);
 
     var result = _target.typeForInferencing();
-    if (result == null)
-      {
-        result = Types.t_UNDEFINED;
-      }
-
-    result = result.selfOrConstraint(res, context);
+    result = result == null
+      ? null
+      : result.selfOrConstraint(res, context);
 
     if (POSTCONDITIONS) ensure
-      (!result.isGenericArgument());
+      (result == null || !result.isGenericArgument());
     return result;
   }
 
@@ -524,7 +521,26 @@ public class Call extends AbstractCall
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
         var tt = targetTypeOrConstraint(res, context);
-        result = tt == Types.t_UNDEFINED ? null : tt.feature();
+        if (tt == null)
+          {
+            if (context.outerFeature().resultTypeIfPresent(res) != null)
+              {
+                AstErrors.failedToInferType(_target);
+              }
+            else
+              {
+                // example where this is relevant:
+                // (fails when trying to resolve `zip` but does not know fibs result type yet)
+                // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
+                AstErrors.forwardTypeInference(_pos, context.outerFeature(), context.outerFeature().pos());
+              }
+            setToErrorState();
+            result = Types.f_ERROR;
+          }
+        else
+          {
+            result = tt.feature();
+          }
       }
     else
       { // search for feature in outer
@@ -689,14 +705,6 @@ public class Call extends AbstractCall
     if (_calledFeature == Types.f_ERROR)
       {
         _actuals = new List<>();
-      }
-
-    // example where this is relevant:
-    // (fails when trying to resolve `zip` but does not know fibs result type yet)
-    // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
-    if (_calledFeature == null && _target instanceof Call c && c.calledFeatureKnown() && targetFeature(res, context) == null)
-      {
-        AstErrors.failedToInferType(c);
       }
 
     resolveTypesOfActuals(res, context);
