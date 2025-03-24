@@ -16,12 +16,4 @@ Type: container.expanding
 expected one generic argument for 'T'
 found none.
 
-
---CURDIR--/reg_issue4694.fz:26:5: error 3: Failed to infer actual type parameters
-  0 |> x,y->container.expanding.env.put
-----^^
-In call to 'infix |>', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'A, R'
-Type inference failed for one type parameter 'R'
-
-3 errors.
+2 errors.

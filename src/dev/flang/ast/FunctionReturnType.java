@@ -89,7 +89,9 @@ public class FunctionReturnType extends ReturnType
    */
   public AbstractType functionReturnType()
   {
-    return type;
+    return type == Types.t_UNDEFINED
+      ? null
+      : type;
   }
 
 
