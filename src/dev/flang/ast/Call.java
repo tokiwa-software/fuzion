@@ -1078,8 +1078,7 @@ public class Call extends AbstractCall
    * still unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or t_ERROR in case it is not known yet.
-   * t_UNDEFINED in case Expr depends on the inferred result type of a feature
-   * that is not available yet (or never will due to circular inference).
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
    */
   @Override
   public AbstractType type()
@@ -2588,14 +2587,21 @@ public class Call extends AbstractCall
     var t = getActualResultType(res, context, false);
 
     if (CHECKS) check
-      (_type == null || t.compareTo(_type) == 0);
+      (_type == null || t.compareTo(_type) == 0,
+       Errors.any() || t != Types.t_ERROR);
 
     _type = t;
 
     if (_type == null || isTailRecursive(context.outerFeature()))
       {
-        _calledFeature.whenResolvedTypes
-          (() -> _type = getActualResultType(res, context, true));
+        _calledFeature.whenResolvedTypes(() ->
+          {
+            var t2 = getActualResultType(res, context, true);
+            if (CHECKS) check
+              (_type == null || t2.compareTo(_type) == 0,
+              Errors.any() || t2 != Types.t_ERROR);
+            _type = t2;
+          });
       }
   }
 
