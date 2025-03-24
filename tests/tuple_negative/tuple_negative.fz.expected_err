@@ -56,7 +56,7 @@ Found no visible argument fields ''
 while there is one destructuring variable: 'one12b'.
 
 
---CURDIR--/tuple_negative.fz:72:60: error 7: Use of selector requires call to feature whose type is an open type parameter
+--CURDIR--/tuple_negative.fz:72:60: error 7: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
   one9           :=          (42); p "one9 is {one9.values.0}" //  8. should flag an error, (expr) is not a tuple, one9 is an i32
 -----------------------------------------------------------^
 Selected variant: '0'
