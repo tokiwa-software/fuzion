@@ -2457,13 +2457,13 @@ A ((Choice)) declaration must not contain a result type.
    *
    *   x := 42
    *   x := x + 1
+   *
+   * or when distinguishing features with same name from different modules.
    */
   public void setFeatureName(FeatureName newFeatureName)
   {
     if (PRECONDITIONS) require
-      (_featureName.baseName() == newFeatureName.baseName(),
-       _featureName.argCount() == 0,
-       newFeatureName.argCount() == 0);
+      (_featureName.baseName() == newFeatureName.baseName());
 
     _featureName = newFeatureName;
   }
