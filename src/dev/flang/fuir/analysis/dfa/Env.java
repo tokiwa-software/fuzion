@@ -251,8 +251,9 @@ public class Env extends ANY implements Comparable<Env>
       ? _dfa._fuir.clazzDeclarationPos(_effectType)
       : _dfa._fuir.sitePos(cd);
     var p_new = _dfa.effectTypePosition(_effectType);
-    var cmp1 = (p != pos && (p == null || p.compareTo(pos) != 0));
     var cmp2 = p_new.compareTo(pos_new) != 0;
+    /*
+    var cmp1 = (p != pos && (p == null || p.compareTo(pos) != 0));
     if (cmp1 != cmp2)
       {
         dev.flang.util.Debug.uprintln("Difference for "+_dfa._fuir.clazzAsString(_effectType)+
@@ -262,6 +263,7 @@ public class Env extends ANY implements Comparable<Env>
                            "\n  p_new: "+(p_new == null ? "--": p_new.show())
                                    );
       }
+    */
     // if (p != pos && (p == null || p.compareTo(pos) != 0))
     if (cmp2)
       {
