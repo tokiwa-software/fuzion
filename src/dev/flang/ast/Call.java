@@ -521,19 +521,24 @@ public class Call extends AbstractCall
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
         var tt = targetTypeOrConstraint(res, context);
-        if (tt == null)
+
+        // this is handeled in findOperatorOnOuter
+        if (tt == null && isOperatorCall())
           {
-            if (context.outerFeature().resultTypeIfPresent(res) != null)
-              {
-                AstErrors.failedToInferType(_target);
-              }
-            else
-              {
-                // example where this is relevant:
-                // (fails when trying to resolve `zip` but does not know fibs result type yet)
-                // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
-                AstErrors.forwardTypeInference(_pos, context.outerFeature(), context.outerFeature().pos());
-              }
+            result = null;
+          }
+        else if (tt == null && context.outerFeature().resultTypeIfPresent(res) != null)
+          {
+            AstErrors.failedToInferType(_target);
+            setToErrorState();
+            result = Types.f_ERROR;
+          }
+        else if (tt ==  null)
+          {
+            // example where this is relevant:
+            // (fails when trying to resolve `zip` but does not know fibs result type yet)
+            // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
+            AstErrors.forwardTypeInference(_pos, context.outerFeature(), context.outerFeature().pos());
             setToErrorState();
             result = Types.f_ERROR;
           }
@@ -944,9 +949,7 @@ public class Call extends AbstractCall
    */
   private void findOperatorOnOuter(Resolution res, Context context)
   {
-    if (_name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX  ) ||
-        _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
-        _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX)    )
+    if (isOperatorCall())
       {
         var calledName = FeatureName.get(_name, _actuals.size()+1);
         var fo = res._module.lookup(context.outerFeature(), _name, this, true, false);
@@ -962,6 +965,18 @@ public class Call extends AbstractCall
             _target = foa.target(pos(), res, context);
           }
       }
+  }
+
+
+  /**
+   * Is this an operator call?
+   */
+  private boolean isOperatorCall()
+  {
+    return
+      _name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) ||
+      _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX) ||
+      _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX);
   }
 
 
