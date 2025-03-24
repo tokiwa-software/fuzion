@@ -2392,7 +2392,9 @@ A ((Choice)) declaration must not contain a result type.
       }
 
     if (POSTCONDITIONS) ensure
-      (!urgent || result != null);
+      (!urgent || result != null,
+       result != Types.t_UNDEFINED,
+       Errors.any() || result != Types.t_ERROR);
 
     return result;
   }

@@ -473,6 +473,9 @@ public class Function extends AbstractLambda
    */
   public AbstractType type()
   {
+    if (CHECKS) check
+      (_type != Types.t_UNDEFINED);
+
     if (_type == null)
       {
         if (_expr.type() != Types.t_ERROR || !Errors.any())
@@ -481,6 +484,9 @@ public class Function extends AbstractLambda
           }
         _type = Types.t_ERROR;
       }
+    if (POSTCONDITIONS) ensure
+      (_type != null,
+       _type != Types.t_UNDEFINED);
     return _type;
   }
 
