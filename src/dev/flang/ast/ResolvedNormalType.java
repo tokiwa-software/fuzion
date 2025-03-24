@@ -239,6 +239,11 @@ public class ResolvedNormalType extends ResolvedType
     this._outer = o;
     this._feature = f;
     this._refOrVal = refOrVal;
+
+    if (POSTCONDITIONS) ensure
+      (_feature == null /* artificial built in type */
+       || feature().generics().sizeMatches(generics())
+       || generics().isEmpty() /* e.g. an incomplete type in a match case */);
   }
 
   /**
@@ -330,6 +335,9 @@ public class ResolvedNormalType extends ResolvedType
     this._unresolvedGenerics = original._unresolvedGenerics;
     this._outer             = (original._outer instanceof ResolvedNormalType ot) ? ot.clone(originalOuterFeature) : original._outer;
     this._feature           = original._feature;
+
+    if (POSTCONDITIONS) ensure
+      (feature().generics().sizeMatches(generics()));
   }
 
   /**
