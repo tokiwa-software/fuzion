@@ -548,7 +548,7 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs, Context.NONE);
+    var result = Expr.union(exprs, urgent);
     if (urgent)
       {
         if (_initialCalls.size() == 0)
