@@ -1411,6 +1411,21 @@ public class Call extends AbstractCall
   }
 
 
+  /**
+   * Adjust the _raw_ result type of the
+   * called feature for the call.
+   *
+   * 1) resolve select
+   * 2) apply type parameters of the target of the call
+   * 3) apply type parameters of the called feature
+   * 4) adjust this-types for the target of the call
+   * 5) handle special cases: calling a type parameters, type_as_value, outer refs, constructors
+   * 6) replace type parameters of cotype origin: e.g. equatable_sequence.T -> equatable_sequence.type.T
+   *
+   * @param rt the raw result type
+   *
+   * @return The actual result type of the call
+   */
   private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
   {
     var tt = targetIsTypeParameter() && rt.isThisTypeInCotype()
@@ -1569,7 +1584,7 @@ public class Call extends AbstractCall
    * kind of feature that is called.
    *
    * In particular, this contains special handling for calling type parameters,
-   * for Types.get, for outer refs and for constructors.
+   * for type_as_value, for outer refs and for constructors.
    *
    * @param res the resolution instance.
    *

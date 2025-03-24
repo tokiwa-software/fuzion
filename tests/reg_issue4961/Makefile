@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue373
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue373 =>
-
-  str(U type) ref is
-
-    a U => abstract
-
-    b(V type, c V) str V =>
-      ref : str V is
-        redef a V =>
-          c
-
-  say ((str String).b "hello").a
+override NAME = reg_issue4961
+include ../simple.mk

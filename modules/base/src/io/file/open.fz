@@ -33,7 +33,7 @@ module:public open(fd File_Descriptor,
   public seek(R type, code ()->R) outcome R =>
 
     hndlr :=
-      ref : Seek_Handler
+      ref : Seek_Handler is
         public redef seek(offset i64) =>
           fuzion.sys.fileio.seek fd offset
 

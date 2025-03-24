@@ -69,7 +69,7 @@ functions is
     x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last expression
 
     say "here 1c---------------"
-    x (ref : Binary i32 Any i32 {
+    x (ref : Binary i32 Any i32 is {
         public redef call(o Any, i i32) i32 =>
           say "in anonymous function: $o"
           o.hash_code + i

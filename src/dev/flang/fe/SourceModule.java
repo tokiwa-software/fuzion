@@ -272,9 +272,9 @@ public class SourceModule extends Module implements SrcModule
     var d = _main == null
       ? _universe
       : lookupFeature(_universe, FeatureName.get(_main, 0), null);
-    if (d != null)
+    if (d instanceof Feature f)
       {
-        ((Feature) d)
+        f
           .impl()
           .addInitialCall(plainCall("fuzion_runtime_init"));
       }

@@ -714,7 +714,7 @@ catch_postcondition.anonymous: --CURDIR--/catch_postcondition.fz:105:15:
     res := lm ! ()->
 --------------^
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:132:8:
-  say (ref : handle_post String
+  say (ref : handle_post String is
 -------^
 catch_postcondition.y.try: --CURDIR--/catch_postcondition.fz:121:30:
     redef try             => test i32
