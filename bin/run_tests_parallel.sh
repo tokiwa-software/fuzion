@@ -141,6 +141,12 @@ printf ' %s skipped,' "$SKIPPED"
 echo    " $FAILED failed in $((END_TIME_TOTAL-START_TIME_TOTAL))ms."
 grep failed$ "$BUILD_DIR"/run_tests.results || true
 
+NUM_SLOWEST=5
+echo ""
+echo "Slowest $NUM_SLOWEST tests using $TARGET backend:"
+sed -E 's|\./build/tests/([^\]+)\sin\s(.*):\sok|\2 \1|g' "$BUILD_DIR"/run_tests.results | sort -t 'm' -k1,1nr | head -n $NUM_SLOWEST
+echo ""
+
 if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
 
