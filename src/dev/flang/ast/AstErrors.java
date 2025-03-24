@@ -1731,7 +1731,8 @@ public class AstErrors extends ANY
     if (!any() || t != Types.t_ERROR)
       {
         error(pos,
-              "Use of selector requires call to feature whose type is an open type parameter",
+              "Use of selector requires call to either a feature whose type is an open type parameter"
+              + " or a feature with an inner feature whose type is an open type parameter",
               ((f == null || name == null)
                 ? "Selected variant: " + ss(Integer.toString(select)) + "\n"
                 : "In call to " + s(f) + "\n" +
