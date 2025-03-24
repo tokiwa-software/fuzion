@@ -2264,7 +2264,23 @@ public class DFA extends ANY
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
-          cl.replaceEffect(ecl, new_e);
+
+          if (cl._dfa._real)
+            {
+              cl.replaceEffect(ecl, new_e);
+            }
+          else
+            {
+              cl.replaceEffect(ecl, new_e); // NYI: Why here as well? base16_test.fz needs this??!!??
+              var oev = cl._dfa._preEffectValues.get(ecl);
+              var ev = oev == null ? new_e : oev.join(cl._dfa, new_e, ecl);
+              if (oev != ev)
+                {
+                  cl._dfa._preEffectValues.put(ecl, ev);
+                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzAsString(cl._cc));
+                }
+            }
+
           return Value.UNIT;
         });
     put("effect.type.default0"              , cl ->

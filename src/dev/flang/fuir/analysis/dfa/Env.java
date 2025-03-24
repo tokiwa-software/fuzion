@@ -434,10 +434,20 @@ public class Env extends ANY implements Comparable<Env>
    */
   Value getActualEffectValues(int ecl)
   {
-    return
-      _effectType == ecl  ? _actualEffectValues :
-      _outer      != null ? _outer.getActualEffectValues(ecl)
-                          : _dfa._defaultEffects.get(ecl);
+    if (_dfa._real)
+      return
+        _effectType == ecl  ? _actualEffectValues :
+        _outer      != null ? _outer.getActualEffectValues(ecl)
+                            : _dfa._defaultEffects.get(ecl);
+    else
+      {
+        var e1 = _dfa._preEffectValues.get(ecl);
+        var e2 = _dfa._defaultEffects.get(ecl);
+        return
+          e1 == null ? e2 :
+          e2 == null ? e1 : e1.join(_dfa,e2,ecl);
+      }
+
   }
 
 

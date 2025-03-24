@@ -1,9 +1,9 @@
 
 error 1: Trying to replace effect 'reg_issue4592.My_Eff2' that is not yet installed: 
-call 'reg_issue4592.type.My_Eff2.type.replace0#1' at {base.fum}/effect.fz:281:5:
+call 'reg_issue4592.type.My_Eff2.type.replace0#1' at {base.fum}/effect.fz:279:5:
     replace0 e
 ----^^^^^^^^^^
-effect environment 'reg_issue4592.My_Eff' for call to 'reg_issue4592.type.My_Eff2.type.replace0#1' at {base.fum}/effect.fz:281:5:
+effect environment '--empty--' for call to 'reg_issue4592.type.My_Eff2.type.replace0#1' at {base.fum}/effect.fz:279:5:
     replace0 e
 ----^^^^^^^^^^
 

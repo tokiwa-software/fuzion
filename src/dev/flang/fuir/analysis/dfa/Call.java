@@ -202,7 +202,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   public int compareTo(Call other)
   {
     var res = _group.compareTo(other._group);
-    if (res == 0)
+    if (res == 0 && _dfa._real)
       {
         if (DFA.COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED)
           {
