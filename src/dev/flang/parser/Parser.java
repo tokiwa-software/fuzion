@@ -3318,6 +3318,7 @@ anonymous   : "ref"
    */
   Expr anonymous()
   {
+    var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
     SourcePosition pos = tokenSourcePos();
     if (CHECKS) check
@@ -3329,6 +3330,7 @@ anonymous   : "ref"
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
     var ca = new Call(pos, f);
     sameLine(sl);
+    setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));
   }
 
