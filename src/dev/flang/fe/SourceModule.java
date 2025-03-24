@@ -1002,7 +1002,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
            || visibilityPreventsConflict(f, existing) || Feature.isAbstractAndFixedPair(f, existing))
           {
             var existingFeatures = FeatureName.getAll(df, fn.baseName(), 0);
-            fn = FeatureName.get(fn.baseName(), 0, existingFeatures.size());
+            fn = FeatureName.get(fn.baseName(), fn.argCount(), existingFeatures.size());
             f.setFeatureName(fn);
           }
         else
