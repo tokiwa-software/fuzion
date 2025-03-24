@@ -60,7 +60,7 @@ base32_test is
   # ENCODING
 
   say """
-      Testing base32 encoding..."""
+      Testing base32 encoding:"""
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
     for results := (Sequence (outcome String)).empty, results.concat (out:nil)
@@ -97,7 +97,7 @@ base32_test is
 
   say """
       \n
-      Testing base32 decoding..."""
+      Testing base32 decoding:"""
   dec_test(test_vectors array (tuple my_c String), name String) =>
     for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
@@ -137,7 +137,7 @@ base32_test is
 
   say """
       \n
-      Test error messages when decoding broken base32...
+      Test error messages when decoding broken base32:
       """
 
   broken_enc := ["""

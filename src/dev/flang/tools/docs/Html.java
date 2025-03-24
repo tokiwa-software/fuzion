@@ -106,7 +106,7 @@ public class Html extends ANY
 
 
   /*
-   * html containing the inherited features of af
+   * html containing the inherited features of af or constraint in case of a type parameter
    */
   private String inherited(AbstractFeature af)
   {
@@ -114,16 +114,28 @@ public class Html extends ANY
       {
         return "";
       }
-    return "<div class='fd-keyword mx-5'>:</div>" + af.inherits()
-      .stream()
-      .<String>map(c -> {
-        var f = c.calledFeature();
-        return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
-          + htmlEncodedBasename(f)
-          + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
-          + c.actualTypeParameters().stream().map(at -> htmlEncodeNbsp(at.asString(false, af))).collect(Collectors.joining(", ")) + "</a>";
-      })
-      .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
+    else if (af.kind() == AbstractFeature.Kind.TypeParameter || af.kind() == AbstractFeature.Kind.OpenTypeParameter)
+      {
+        var constraint = af.resultType().feature();
+        return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
+          .replace("$1", featureAbsoluteURL(constraint))
+          .replace("$2", htmlEncodedQualifiedName(constraint));
+      }
+    else
+      {
+        return "<div class='fd-keyword mx-5'>:</div>" + af.inherits()
+          .stream()
+          .<String>map(c -> {
+            var f = c.calledFeature();
+            return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
+              + htmlEncodedBasename(f)
+              + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
+              + c.actualTypeParameters().stream()
+                 .map(at -> htmlEncodeNbsp(at.asString(false, af)))
+                 .collect(Collectors.joining(", ")) + "</a>";
+          })
+          .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
+      }
   }
 
 
@@ -493,8 +505,7 @@ public class Html extends ANY
       + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
         // NYI rename fd-private?
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-        .replace("$1",
-          summary(af, outer))
+        .replace("$1", summary(af, outer))
         .replace("$2", Util.commentOf(af))
         .replace("$3", redefines(af))
     )
@@ -547,7 +558,7 @@ public class Html extends ANY
   /**
    * the link [src] to the source file
    */
-  private static String source(AbstractFeature feature)
+  private String source(AbstractFeature feature)
   {
     return "<div class='pl-5'><a href='$1'>[src]</a></div>"
       .replace("$1", featureURL(feature));
@@ -722,11 +733,11 @@ public class Html extends ANY
    * @param f
    * @return
    */
-  private static String featureURL(AbstractFeature f)
+  private String featureURL(AbstractFeature f)
   {
     return f.pos()._sourceFile._fileName
       .toString()
-      .replaceFirst("\\{(.*?)\\.fum\\}", DocsOptions.baseApiDir + "/$1")
+      .replaceFirst("\\{(.*?)\\.fum\\}", config.apiSrcDir() + "/$1")
       + "#l" + f.pos().line();
   }
 
@@ -803,8 +814,17 @@ public class Html extends ANY
                + (f.isOpenTypeParameter() ? "..." : "")
                + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
       }
-    return "<div class='fd-keyword'>type</div>"
-            + (f.isOpenTypeParameter() ? "..." : "");
+    else
+      {
+        var constraint = f.resultType().feature();
+
+        return "<div class='fd-keyword'>type</div>"
+                + (f.isOpenTypeParameter() ? "..." : "")
+                + (f.resultType().compareTo(Types.resolved.t_Any) == 0 ? "" :
+                    "<div class='mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
+                    .replace("$1", featureAbsoluteURL(constraint))
+                    .replace("$2", htmlEncodedQualifiedName(constraint)));
+      }
   }
 
 

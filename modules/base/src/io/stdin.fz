@@ -83,7 +83,7 @@ stdin_read_handler : Read_Handler is
 
   # implementation of read for reading from stdin
   #
-  redef read(count i32) choice (array u8) io.end_of_file error =>
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
     arr := fuzion.sys.internal_array_init u8 count
     v := fzE_file_read fzE_file_stdin arr.data count
     if v < -1

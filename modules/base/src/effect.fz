@@ -136,7 +136,7 @@ public effect is
   #
   public default unit
   =>
-    effect.this.type.default effect.this
+    effect.this.default effect.this
 
 
   # --------------------  effect instation  --------------------
@@ -162,6 +162,7 @@ public effect is
                       def effect.this -> R
                       ) R
   =>
+    e.check_depletion
     x := instate_helper R effect.this e code def
     instate0 e x.call_code x.call_def
     x.res.get
@@ -272,9 +273,11 @@ public effect is
   # effect of the same effect type.
   #
   # NYI: BUG: It is currently not enforced that replace is only called during the execution
-  # of an operation of a currenlty instated effect of the same effect type.
+  # of an operation of a currently instated effect of the same effect type.
   #
   public type.replace(e effect.this)
+  pre
+    safety: effect.this.is_instated
   =>
     replace0 e
 
@@ -290,8 +293,10 @@ public effect is
   # effect of the same effect type.
   #
   public replace
+  pre
+    safety: effect.this.is_instated
   =>
-    effect.this.type.replace effect.this
+    effect.this.replace effect.this
 
 
   # --------------------  aborting code execution  --------------------
@@ -322,7 +327,7 @@ public effect is
 
   # does this effect support abort?
   #
-  # Redefining this to return `false` helps to detect unexptected calls to
+  # Redefining this to return `false` helps to detect unexpected calls to
   # `abort` at runtime and ensure that the static analysis finds that the
   # code executed with this effect will always return normally and produce
   # a result. This is used, e.g, in `mutate` to avoid static analysis
@@ -376,6 +381,12 @@ public effect is
   static_finally => finally
 
 
+  # trigger runtime check if effect is
+  # already depleted and may not be used any more
+  #
+  module check_depletion =>
+
+
 # instante helper to hold the result of the effect
 #
 instate_helper(# result type
@@ -400,12 +411,12 @@ instate_helper(# result type
 
   # wrapper to call `code` and store result in 'res`
   call_code : Function unit is
-    redef call =>
+    public redef call =>
       set res := code()
 
   # wrapper to call `def` on final effect value and store result in 'res`
   call_def : Function unit ET is
-    redef call(cur_e ET) =>
+    public redef call(cur_e ET) =>
       set res := def cur_e
 
 
@@ -431,3 +442,19 @@ public effect0(E type : effect, e E) is
   ) R
   =>
     E.instate R e code
+
+
+# linear variant of an effect
+# that may only be instated/used once.
+#
+public linear_effect : effect is
+  depleted := Depleted_Wrapper
+
+  module redef check_depletion =>
+    if !depleted.depleted.compare_and_set0 false true
+      fuzion.std.panic "effect already depleted. effect may only be instated once."
+
+
+Depleted_Wrapper ref is
+
+  depleted := concur.atomic false

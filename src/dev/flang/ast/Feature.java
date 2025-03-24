@@ -113,7 +113,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is visiblity explicitly specified in source code (or already set)?
+   * Is visibility explicitly specified in source code (or already set)?
    */
   public boolean isVisibilitySpecified()
   {
@@ -127,7 +127,7 @@ public class Feature extends AbstractFeature
    *
    * @param v
    */
-  public void setVisbility(Visi v)
+  public void setVisibility(Visi v)
   {
     if (PRECONDITIONS) require
       (_visibility == Visi.UNSPECIFIED);
@@ -354,18 +354,6 @@ public class Feature extends AbstractFeature
       }
     return _redefines;
   }
-
-
-  /**
-   * Flag used by dev.flang.fe.SourceModule to mark Features that were added to
-   * their outer feature late.  Features that were added late will not be seen
-   * via heirs.
-   *
-   * This is used for adding internal features like wrappers for lambdas.
-   *
-   * This is a fix for #978 but it might need to be removed when fixing #932.
-   */
-  public boolean _addedLate = false;
 
 
   /*
@@ -714,6 +702,18 @@ public class Feature extends AbstractFeature
   {
     this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
 
+    // arguments of function features must not have visibility modifier
+    if (!isConstructor())
+      {
+        for (var arg : a)
+          {
+            if (arg instanceof Feature f && f.isVisibilitySpecified())
+              {
+                AstErrors.illegalVisibilityArgument(f);
+              }
+          }
+      }
+
     _effects = effects;
 
     if (PRECONDITIONS) require
@@ -841,6 +841,15 @@ public class Feature extends AbstractFeature
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Helper method to check if one of the features is fixed and the other is abstract
+   */
+  public static boolean isAbstractAndFixedPair(AbstractFeature f1, AbstractFeature f2)
+  {
+    return f1.isAbstract() && f2.isFixed() || f1.isFixed() && f2.isAbstract();
+  }
 
 
   /**
@@ -1485,7 +1494,7 @@ public class Feature extends AbstractFeature
    */
   private boolean isExtensionFeature()
   {
-    return _qname.size() > 1;
+    return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
   }
 
 
@@ -1966,7 +1975,7 @@ A ((Choice)) declaration must not contain a result type.
         _state = State.BOXING;
 
         visit(new ContextVisitor(context()) {
-            @Override public void  action(AbstractAssign a) { a.boxVal     (_context);           }
+            @Override public void  action(AbstractAssign a) { a.boxAndTagVal     (_context);           }
             @Override public Call  action(Call           c) { c.boxArgs    (_context); return c; }
             @Override public Expr  action(InlineArray    i) { i.boxElements(_context); return i; }
             public void  action(AbstractCall c)
@@ -2037,7 +2046,89 @@ A ((Choice)) declaration must not contain a result type.
       @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
     });
 
+    checkNative(res);
+
     _state = State.RESOLVED;
+  }
+
+
+  /**
+   * Check native features result and argument
+   * types for legality.
+   */
+  private void checkNative(Resolution res)
+  {
+    if (kind() == Kind.Native)
+      {
+        for (var arg : arguments())
+          {
+            checkLegalNativeArg(res, arg.pos(), arg.resultType());
+          }
+
+        checkLegalNativeResultType(res, resultTypePos(), resultType());
+      }
+  }
+
+
+  private void checkLegalNativeArg(Resolution res, SourcePosition pos, AbstractType at)
+  {
+    ensureTypeSetsInitialized(res);
+    if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
+          || at.isFunctionTypeExcludingLazy()
+          || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()
+          // NYI: BUG: check if array element type is valid
+          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array))
+      {
+        AstErrors.illegalNativeType(pos, "Argument type", at);
+      }
+  }
+
+
+  private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
+  {
+    ensureTypeSetsInitialized(res);
+    if (!Types.resolved.legalNativeResultTypes.contains(rt))
+      {
+        AstErrors.illegalNativeType(pos, "Result type", rt);
+      }
+  }
+
+
+  /**
+   * Ensures that
+   *  Types.legalNativeArgumentTypes
+   * and
+   *  Types.resolved.legalNativeResultTypes
+   * are initialized.
+   * Initializes them if they are not yet initialized.
+   */
+  private void ensureTypeSetsInitialized(Resolution res)
+  {
+    // We can not do this in constructor of
+    // Resolved since not everything we need
+    // might be fully resolved yet.
+    if (Types.resolved.legalNativeArgumentTypes.isEmpty())
+      {
+        var ptr = Types.resolved.f_fuzion_sys_array_data.resultType();
+        var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0), null).selfType();
+        var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
+        var mm = res._module.lookupFeature(res.universe, FeatureName.get("Mapped_Memory", 0), null).selfType();
+        var nr = res._module.lookupFeature(res.universe, FeatureName.get("Native_Ref", 0), null).selfType();
+        Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
+        Types.resolved.legalNativeResultTypes.add(ptr);
+        Types.resolved.legalNativeResultTypes.add(fd);
+        Types.resolved.legalNativeResultTypes.add(dd);
+        Types.resolved.legalNativeResultTypes.add(mm);
+        Types.resolved.legalNativeResultTypes.add(nr);
+        Types.resolved.legalNativeResultTypes.add(Types.resolved.t_unit);
+        Types.resolved.legalNativeResultTypes.add(Types.resolved.t_bool);
+        Types.resolved.legalNativeArgumentTypes.addAll(Types.resolved.numericTypes);
+        Types.resolved.legalNativeArgumentTypes.add(ptr);
+        Types.resolved.legalNativeArgumentTypes.add(fd);
+        Types.resolved.legalNativeArgumentTypes.add(dd);
+        Types.resolved.legalNativeArgumentTypes.add(mm);
+        Types.resolved.legalNativeArgumentTypes.add(nr);
+      }
   }
 
 
@@ -2224,7 +2315,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     var existing = res._module.lookupFeature(_outer, newFeatureName, null);
-    if (existing != null)
+    if (existing != null && !isAbstractAndFixedPair(existing, this))
       {
         AstErrors.duplicateFeatureDeclaration(existing, this);
       }
@@ -2310,9 +2401,8 @@ A ((Choice)) declaration must not contain a result type.
    * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
-   * @return the result type, t_ERROR in case of an error.  Never
-   * null. Types.t_UNDEFINED in case type inference for this type is cyclic and
-   * hence impossible.
+   * @return the result type, t_ERROR in case of an error.
+   * Never null.
    */
   @Override
   public AbstractType resultType()
@@ -2320,17 +2410,13 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(null, true) : null;
-    if (result == null)
-      {
-        if (CHECKS) check
-          (Errors.any());
-
-        result = Types.t_ERROR;
-      }
+    var result = _state.atLeast(State.RESOLVED_TYPES)
+      ? resultTypeIfPresentUrgent(null, true)
+      : Types.t_ERROR;
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (Errors.any() || result != Types.t_ERROR,
+       Errors.any() || !result.containsUndefined(false));
 
     return result;
   }
@@ -2557,6 +2643,33 @@ A ((Choice)) declaration must not contain a result type.
           && !featureName().isNameless()                     // don't warn for nameless features
           && !isArgument()                                   // don't warn for arguments
           && redefines().isEmpty();                          // don't warn for unused redefinitions
+  }
+
+
+  /**
+   * This is used in Function.java to
+   * refine a result type.
+   * e.g.:
+   *
+   * 1) result needs tagging:
+   * String => outcome String
+   *
+   * 2) result needs boxing:
+   * array i32 => Sequence i32
+   *
+   * @param res the current Resolution instance
+   *
+   * @param refinedResultType the refined result type
+   */
+  void setRefinedResultType(Resolution res, AbstractType refinedResultType)
+  {
+    if (CHECKS) check
+      // we must not patch result type later, because then
+      // result type of result field etc. is also already set.
+      (!state().atLeast(State.RESOLVING_SUGAR1),
+      _resultType == null || refinedResultType.isAssignableFrom(_resultType) || refinedResultType.isAssignableFrom(_resultType.asRef()));
+
+    _resultType = refinedResultType;
   }
 
 

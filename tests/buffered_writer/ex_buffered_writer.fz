@@ -1,7 +1,7 @@
 ex_buffered_writer =>
 
   wh :=
-    ref : io.Write_Handler
+    ref : io.Write_Handler is
       public redef write(b Sequence u8) outcome unit =>
         io.out.write b
 

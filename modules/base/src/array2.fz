@@ -33,10 +33,10 @@
 private:public array2(
        public T type,
        public length0, length1 i32,
-       redef internal_array fuzion.sys.internal_array T,
+       module redef internal_array fuzion.sys.internal_array T,
        _ unit,
        _ unit)
- : array T /* NYI: BUG: when removing T Failed to infer actual type parameters */ internal_array unit unit unit
+ : array internal_array unit unit unit
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
@@ -96,8 +96,8 @@ is
       debug: 0 ≤ i < length0
       debug: 0 ≤ j < length1
   is
-    redef head => (i, j, index[] i j)
-    redef tail list (tuple i32 i32 T) =>
+    public redef head => (i, j, index[] i j)
+    public redef tail list (tuple i32 i32 T) =>
       if      j < length1-1 then enumerate_cons i j+1
       else if i < length0-1 then enumerate_cons i+1 0
       else                       nil

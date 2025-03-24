@@ -24,21 +24,23 @@
 
 # effect for manipulating open files
 #
-module:public open(fd fuzion.sys.Pointer,
+module:public open(fd File_Descriptor,
                    public file_name String) : effect is
 
-  # seek in file
-  #
-  public seek(
-       # the offset to seek from the beginning of the stream pointer
-       offset i64) =>
-    seek.seek fd offset
 
-
-  # get the current byte position in the file
+  # install seek effect an run code
   #
-  public file_position =>
-    seek.file_position fd
+  public seek(R type, code ()->R) outcome R =>
+
+    hndlr :=
+      ref : Seek_Handler is
+        public redef seek(offset i64) =>
+          fuzion.sys.fileio.seek fd offset
+
+        public redef file_position =>
+          fuzion.sys.fileio.file_position fd
+
+    file.this.seek hndlr ! code
 
 
   # install mmap effect an run code
@@ -62,6 +64,14 @@ module:public open(fd fuzion.sys.Pointer,
       error "mmap failed"
     else
       (mapped_buffer mapped_memory size) ! code
+
+
+  # close file when de-instating effect
+  #
+  public redef finally =>
+    _ := fuzion.sys.fileio.close fd
+
+
 
 # short hand to get the currently
 # installed open effect

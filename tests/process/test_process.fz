@@ -29,8 +29,8 @@ test_process =>
 
   # create string of given byte size
   get_str(byte_size i32) =>
-    ref : String
-      redef utf8 Sequence u8 =>
+    ref : String is
+      public redef utf8 Sequence u8 =>
         (1..byte_size)
           .map u8 (x -> codepoint.type.zero_char)
 
@@ -44,7 +44,7 @@ test_process =>
 
 
   test "write to stdin of process" ()->
-    (os.process.start "cat").bind unit p->
+    (os.process.start "cat").bind p->
       _ := p.write_string "Hello from the other side."
       say p.wait
       _ := lm ! ()->
@@ -54,7 +54,7 @@ test_process =>
 
 
   test "read stdout of process" ()->
-    (os.process.start "echo" ["eecchhoo"]).bind unit p->
+    (os.process.start "echo" ["eecchhoo"]).bind p->
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val
@@ -62,7 +62,7 @@ test_process =>
 
 
   test "pass environment variable" ()->
-    (os.process.start "printenv" ["MYENVVAR"] (container.map_of [("MYENVVAR", "content")])).bind unit p->
+    (os.process.start "printenv" ["MYENVVAR"] (container.map_of [("MYENVVAR", "content")])).bind p->
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val
@@ -70,8 +70,8 @@ test_process =>
 
 
   test "feed output of process 1 to process 2" ()->
-    (os.process.start "echo" ["'feed me to cat'"]).bind unit p->
-      (p | ["cat"]).bind unit p2->
+    (os.process.start "echo" ["'feed me to cat'"]).bind p->
+      (p | ["cat"]).bind p2->
         _ := lm ! ()->
           _ := p2.with_out unit lm ()->
             say ((io.buffered lm).read_string 1E9).val
@@ -79,8 +79,8 @@ test_process =>
 
 
   test "1kb argument, piped to another process" ()->
-    (os.process.start "echo" ["-n", (get_str 1E3)]).bind unit p->
-      (p | ["cat"]).bind unit p2->
+    (os.process.start "echo" ["-n", (get_str 1E3)]).bind p->
+      (p | ["cat"]).bind p2->
         _ := lm ! ()->
           _ := p2.with_out unit lm ()->
             say ((io.buffered lm).read_string 1E9).val.byte_length
@@ -90,8 +90,8 @@ test_process =>
 /* NYI Too slow
 
   test "100kb argument, piped to another process" ()->
-    (os.process.start "echo" ["-n", (get_str 1E5)]).bind unit p->
-      (p | ["cat"]).bind unit p2->
+    (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
+      (p | ["cat"]).bind p2->
         say p2.read_string.val.byte_length
         say "exit code: {p2.wait}"
         # execute wait twice:
@@ -118,4 +118,4 @@ test_process =>
 
 
   test "start process that does not exist" ()->
-    (os.process.start "ohQue1AheiPu4aaw").bind unit _->
+    (os.process.start "ohQue1AheiPu4aaw").bind _->

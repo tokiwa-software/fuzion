@@ -58,7 +58,7 @@ public mod is
     =>
       4711
 
-    redef g
+    public redef g
       post then
         ok "redef g $result"
         { io.Out.env.println "ho"; true }
@@ -74,7 +74,7 @@ public mod is
     =>
       4716
 
-    redef g
+    public redef g
       post then
         ok "redef g $result"
         { io.Out.env.println "he"; true }
@@ -82,12 +82,12 @@ public mod is
     => 42069
 
   public post_accessing_result_child3 : post_accessing_result is
-    redef f
+    public redef f
       post then
     =>
       32168
 
   public post_accessing_result_child4 : post_accessing_result is
-    redef f
+    public redef f
     =>
       112

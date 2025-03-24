@@ -460,25 +460,18 @@ public class CFG extends ANY
     put("fuzion.java.array_get"             , (cfg, cl) -> { } );
     put("fuzion.java.array_length"          , (cfg, cl) -> { } );
     put("fuzion.java.array_to_java_object0" , (cfg, cl) -> { } );
-    put("fuzion.java.bool_to_java_object"   , (cfg, cl) -> { } );
     put("fuzion.java.call_c0"               , (cfg, cl) -> { } );
     put("fuzion.java.call_s0"               , (cfg, cl) -> { } );
     put("fuzion.java.call_v0"               , (cfg, cl) -> { } );
     put("fuzion.java.cast0"                 , (cfg, cl) -> { } );
-    put("fuzion.java.f32_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.f64_to_java_object"    , (cfg, cl) -> { } );
     put("fuzion.java.get_field0"            , (cfg, cl) -> { } );
     put("fuzion.java.get_static_field0"     , (cfg, cl) -> { } );
     put("fuzion.java.set_field0"            , (cfg, cl) -> { } );
     put("fuzion.java.set_static_field0"     , (cfg, cl) -> { } );
-    put("fuzion.java.i16_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.i32_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.i64_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.i8_to_java_object"     , (cfg, cl) -> { } );
     put("fuzion.java.java_string_to_string" , (cfg, cl) -> { } );
     put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
+    put("fuzion.java.primitive_to_java_object", (cfg, cl) -> { } );
     put("fuzion.java.create_jvm"            , (cfg, cl) -> { } );
-    put("fuzion.java.u16_to_java_object"    , (cfg, cl) -> { } );
 
     put("concur.sync.mtx_init"              , (cfg, cl) -> { } );
     put("concur.sync.mtx_lock"              , (cfg, cl) -> { } );
@@ -490,6 +483,9 @@ public class CFG extends ANY
     put("concur.sync.cnd_broadcast"         , (cfg, cl) -> { } );
     put("concur.sync.cnd_wait"              , (cfg, cl) -> { } );
     put("concur.sync.cnd_destroy"           , (cfg, cl) -> { } );
+
+    put("native_string_length"              , (cfg, cl) -> { } );
+    put("native_array"                      , (cfg, cl) -> { } );
   }
 
 

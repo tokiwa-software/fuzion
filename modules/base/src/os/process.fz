@@ -23,7 +23,7 @@
 
 # type denoting a started process
 #
-module:public process(module id, std_in, std_out, std_err i64) : property.equatable, property.orderable is
+module:public process(module id, std_in, std_out, std_err i64) : property.orderable is
 
   # how many bytes are read at a time
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
@@ -52,7 +52,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   # read bytes from standard out
   #
   read_handler(desc i64) : io.Read_Handler is
-    redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
       arr := array u8 pipe_buffer_size i->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
@@ -68,7 +68,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
   # write bytes to standard in
   #
   write_handler (desc i64) : io.Write_Handler is
-    redef write (bytes Sequence u8) outcome unit =>
+    public redef write (bytes Sequence u8) outcome unit =>
       if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
         error "error while writing"
       else
@@ -127,7 +127,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
     process_and_args ∀ .is_ascii
     !process_and_args[0].contains_whitespace
   =>
-    (os.process.start process_and_args.first.val (process_and_args.drop 1)).bind os.process p->
+    (os.process.start process_and_args.first.val (process_and_args.drop 1)).bind p->
 
       # NYI should wire pipe directly to process
       # NYI this works only when pipes buffer is large enough for
@@ -176,10 +176,10 @@ module:public process(module id, std_in, std_out, std_err i64) : property.equata
 
   # equality
   #
-  public redef fixed type.equality(a, b process.this) => a.id = b.id
+  public fixed redef type.equality(a, b process.this) => a.id = b.id
 
 
   # lteq
   #
-  public redef fixed type.lteq(a, b process.this) bool =>
+  public fixed redef type.lteq(a, b process.this) bool =>
     a.id <= b.id

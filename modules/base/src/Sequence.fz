@@ -501,6 +501,16 @@ public Sequence(public T type) ref : property.countable is
   public scan (R type, f Binary R R T, a R) Sequence R => as_list.scan R f a
 
 
+  # scan1 works like its counterpart with an initial value, except
+  # that the initial value is taken to be the first element of the given
+  # Sequence.
+  #
+  # for example, (1::id).scan (+) would create [1, 2, 3, 4, ...], while
+  # (1..).scan (+) would create [1, 3, 6, 10, ...].
+  #
+  public scan1 (f Binary T T T) Sequence T => as_list.scan1 f
+
+
   # reduce this Sequence to R with an initial value init
   # and a reducing function f.
   # the reduction is finished once f yields abort or
@@ -674,12 +684,6 @@ public Sequence(public T type) ref : property.countable is
   #
   public indexed(I type : has_interval, start_idx I) Sequence (tuple I T) =>
     zip (start_idx..) (a,b -> (b, a))
-
-
-  # convenience feature to work around type inference issues
-  # NYI remove when type inference gets better
-  public as_seq Sequence T =>
-    Sequence.this
 
 
   # chop this Sequence into chunks of `chunk_size`.
@@ -1106,9 +1110,9 @@ public Sequence(public T type) ref : property.countable is
       match (find s)
         nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
         idx i32 =>
-          ref : Cons (Sequence T) (list (Sequence T))
-            redef head Sequence T := take (if split_after then idx + s.count else idx)
-            redef tail =>
+          ref : Cons (Sequence T) (list (Sequence T)) is
+            public redef head Sequence T := take (if split_after then idx + s.count else idx)
+            public redef tail =>
               rest := drop (idx + s.count)
 
               match limit
@@ -1155,7 +1159,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # Keep the order of elements unchanged.
   #
-  # Other languages call this 'distinct', (eg., Java, C# or Kotlin)
+  # Other languages call this 'distinct' (eg., Java, C# or Kotlin)
   # or `nub` (Haskell).
   #
   # ex.
@@ -1187,7 +1191,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : numeric
   =>
-    average.bind T avg->
+    average.bind avg->
       cnt := (map (_ -> T.one           )).sum
       ssd := (map (x -> (x - avg)**T.two)).sum # sum of squared deviations
       ssd / cnt
@@ -1236,7 +1240,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : float
   =>
-    variance.and_then x->x.sqrt
+    variance.and_then (.sqrt)
 
 
   # the euclidean norm of this sequence
@@ -1445,15 +1449,15 @@ public Sequence(public T type) ref : property.countable is
   #
   public type.concat_monoid =>
 
-    ref : Monoid (Sequence T)
+    ref : Monoid (Sequence T) is
 
       # associative operation
       #
-      redef infix ∙ (a, b Sequence T) Sequence T => a.concat b
+      public redef infix ∙ (a, b Sequence T) Sequence T => a.concat b
 
       # identity element
       #
-      redef e Sequence T =>
+      public redef e Sequence T =>
         (list T).empty
 
 
@@ -1517,8 +1521,8 @@ is
 
   # equality
   #
-  public fixed redef type.equality(a, b equatable_sequence T) =>
-    equality0(a1, b1 equatable_sequence (T2 : property.equatable)) =>
+  public redef type.equality(a, b equatable_sequence.this) =>
+    equality0(a1, b1 equatable_sequence.this) =>
       (a1.unwrap.zip b1.unwrap x,y->x=y) ∀ id
 
     au := a.unwrap

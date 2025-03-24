@@ -4,10 +4,10 @@
 --^^^^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
 --CURDIR--/issue698.fz:38:13:
-      ref : Node A (tree A) (tree A)
+      ref : Node A (tree A) (tree A) is
 ------------^^^^
 --CURDIR--/issue698.fz:38:7:
-      ref : Node A (tree A) (tree A)
+      ref : Node A (tree A) (tree A) is
 ------^
 
 To solve this, you might move the accessed features outside of the common outer feature.

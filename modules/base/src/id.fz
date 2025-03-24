@@ -52,7 +52,7 @@ public id(T type, x T) T => x
 #   all_true(s Sequence bool) => { f (bool)->bool := (x -> id x);      s ∀ f }
 #   all_true(s Sequence bool) => { f (bool)->bool := identity bool;    s ∀ f }
 #
-public identity(T type) T->T => x->x
+public identity(T type) T->T => id
 
 
 # ignore -- function mapping any value to unit

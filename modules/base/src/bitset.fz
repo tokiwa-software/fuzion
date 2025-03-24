@@ -112,6 +112,6 @@ is
   # monoid of bitset with infix ∪ operation.
   #
   public type.union =>
-    ref : Monoid bitset
-      redef infix ∙ (a, b bitset) => a ∪ b
-      redef e bitset => bitset.empty
+    ref : Monoid bitset is
+      public redef infix ∙ (a, b bitset) => a ∪ b
+      public redef e bitset => bitset.empty

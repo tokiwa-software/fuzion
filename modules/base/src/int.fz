@@ -25,7 +25,7 @@
 
 # int -- signed integer values of arbitrary size
 #
-module:public int (public s num.sign, public n uint) : has_interval
+public int (public s num.sign, public n uint) : has_interval
 is
 
   # normalize the sign => no minus zero
@@ -34,7 +34,7 @@ is
   # the actually relevant data of this uint.
   # irrelevant zeros at start are dropped.
   # zero is represented by the empty list.
-  data := n.b.drop_while x->x=0
+  data := n.b.drop_while (=0)
 
   name String =>
     "int"
@@ -46,7 +46,7 @@ is
     int num.plus uint.one
 
 
-  fixed redef prefix - int =>
+  public fixed redef prefix - int =>
     match ns
       num.plus => int num.minus n
       num.minus => int num.plus n
@@ -157,23 +157,29 @@ is
     n.as_i64
 
 
+  # does this numeric value fit into an u8? This is redefined by children
+  # of numeric that support `as_u8`.
+  #
+  public redef fits_in_u8 =>
+    int.zero ≤ (int s n) ≤ u8.max.as_int
+
+
   # this int as an u8
   public redef as_u8 u8
-  # NYI pre debug: int.this >= 0
   =>
       n.as_u8
 
 
   # this int as an u32
   public as_u32 u32
-  # NYI pre debug: int.this >= 0
+  pre debug: (int s n) >= int.zero
   =>
       n.as_u32
 
 
   # this int as an u64
   public as_u64 u64
-  # NYI pre debug: int.this >= 0
+  pre debug: (int s n) >= int.zero
   =>
     n.as_u64
 
@@ -209,7 +215,7 @@ is
 
   # this int as an uint
   public as_uint uint
-  # NYI pre debug: int.this >= 0
+  pre debug: (int s n) >= int.zero
   =>
     n
 

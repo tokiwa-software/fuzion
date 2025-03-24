@@ -84,12 +84,12 @@ Blocking_Queue(T type, cnd concur.sync.condition) ref is
 #
 public thread_pool(R type, size i32, code ()->R) outcome R =>
   (concur.sync.mutex.new.bind mtx->
-    mtx.condition.bind R cnd->
+    mtx.condition.bind cnd->
       (thread_pool cnd size) ! ()->
         res := code.call
         thread_pool.env.await
         res)
-    .bind R x->x
+    .bind id
 
 
 
@@ -139,9 +139,9 @@ is
           compute_result.write cr
           check fut_cnd.broadcast
 
-      redef is_done => compute_result.read.exists
+      public redef is_done => compute_result.read.exists
 
-      redef get T =>
+      public redef get T =>
         if !is_done
           fut_cnd.synchronized ()->
             if !is_done
@@ -149,7 +149,7 @@ is
 
         compute_result.read.val
 
-      redef and_then(T2 type, new_task T->T2) =>
+      public redef and_then(T2 type, new_task T->T2) =>
         submit T2 ()->(new_task get)
 
     res := fut

@@ -30,7 +30,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   # start a process with name, arguments and environment variables
   #
   module start(name String, args Sequence String, env_vars container.Map String String) =>
-    (ph.start name args env_vars).bind os.process p->
+    (ph.start name args env_vars).bind p->
       (os.processes ph (running_processes ∪ (container.set_of_ordered [p]))).replace
       p
 
@@ -38,7 +38,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
 
   # cleanup effect
   #
-  redef finally =>
+  public redef finally =>
     running_processes.for_each p->
       _ := wait p
 
@@ -92,7 +92,7 @@ install_default =>
       NULL := [u8 0].internal_array.data
 
       # posix_spawn needs last arg to be NULL
-      arg_data := array fuzion.sys.Pointer args.count+2 i->
+      arg_data := array Array args.count+2 i->
         if i=0 then sys.c_string n else if i<=args.count then sys.c_string args[i-1] else NULL
 
       env_var_strings := env_vars
@@ -103,7 +103,7 @@ install_default =>
         .as_array
 
       # posix_spawn needs last arg to be NULL
-      env_data := array fuzion.sys.Pointer env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
+      env_data := array Array env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
 
       # args as string for windows to avoid malloc in backend
       args_str := sys.c_string (String.type.join (([n]++args).map (x -> "\"" + x + "\"")) " ")
@@ -136,4 +136,3 @@ public processes =>
 public Process_Handler ref is
 
   public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process => abstract
-

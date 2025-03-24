@@ -33,7 +33,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
       vss Sequence => (lock_free.Map K unit).from_entries (vss.map (k -> tuple k unit))
       vsc lock_free.Map => vsc
 
-  ref : Set K
+  ref : Set K is
 
     # does this set contain the given value?
     #

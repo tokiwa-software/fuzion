@@ -53,7 +53,7 @@ is
   # resulting 'outcome'.
   #
   public type.on(R type, f ()->R) outcome R =>
-    try.this.type.try (outcome R) ()->
+    try.this.try (outcome R) ()->
         f()
       .catch e->
         e

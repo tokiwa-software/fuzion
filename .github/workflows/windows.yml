@@ -60,6 +60,7 @@ jobs:
             mingw-w64-ucrt-x86_64-clang
             diffutils
             patch
+            sqlite
 
 
       - name: install choco packages

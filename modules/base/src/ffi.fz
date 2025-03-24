@@ -31,10 +31,29 @@ public ffi is
   public null =>
     fzE_null
 
+
   # test if p is the NULL pointer
   #
-  public is_null(p fuzion.sys.Pointer) =>
+  public is_null(p Native_Ref) =>
     fzE_is_null p = 0
 
 
-  # NYI: what else do we need? strlen, from_c_string, from_c_struct, from_c_array
+  # create a fuzion string from a pointer
+  # to a NULL terminated string.
+  #
+  public from_native_string(x Native_Ref) String =>
+    len := native_string_length x
+    arr := native_array u8 x len
+    ref : String is
+      public redef utf8 Sequence u8 =>
+        array (fuzion.sys.internal_array u8 arr len) unit unit unit
+
+
+  # create an array from a Pointer and a length
+  #
+  public from_native_array(T type, x Native_Ref, len i32) array T =>
+    array (fuzion.sys.internal_array T (native_array T x len) len) unit unit unit
+
+
+native_string_length(x Native_Ref) i32 => intrinsic
+native_array(T type, x Native_Ref, len i32) Array /* NYI: T */ => intrinsic

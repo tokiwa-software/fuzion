@@ -33,6 +33,8 @@ import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -173,7 +175,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
         _dfa.escapes(_cc);
         var or = _dfa._fuir.clazzOuterRef(_cc);
-        while (or != -1)
+        while (or != NO_CLAZZ)
           {
             var orr = _dfa._fuir.clazzResultClazz(or);
             _dfa.escapes(orr);
@@ -316,6 +318,9 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Native)
       {
         markSysArrayArgsAsInitialized();
+        markFunctionArgsAsCalled();
+        markArrayArgsAsRead();
+
         result = genericResult();
         if (result == null)
           {
@@ -347,6 +352,51 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
 
+  /**
+   * call all args that are Function
+   */
+  private void markArrayArgsAsRead()
+  {
+    for (int i = 0; i < _dfa._fuir.clazzArgCount(_cc); i++)
+      {
+        _dfa.readField(_dfa._fuir.clazzArg(_cc, i));
+
+        var at = _dfa._fuir.clazzArgClazz(_cc, i);
+        if (_dfa._fuir.clazzIsArray(at))
+          {
+            var ia = _dfa._fuir.lookup_array_internal_array(at);
+            _dfa.readField(ia);
+            _dfa.readField(_dfa._fuir.lookup_fuzion_sys_internal_array_data(_dfa._fuir.clazzResultClazz(ia)));
+          }
+      }
+  }
+
+
+  /**
+   * call all args that are Function
+   */
+  private void markFunctionArgsAsCalled()
+  {
+    for (int i = 0; i < _dfa._fuir.clazzArgCount(_cc); i++)
+      {
+        _dfa.readField(_dfa._fuir.clazzArg(_cc, i));
+
+        var call = _dfa._fuir.lookupCall(_dfa._fuir.clazzArgClazz(_cc, i));
+        if (call != NO_CLAZZ)
+          {
+            var args = new List<Val>();
+            for (int j = 0; j < _dfa._fuir.clazzArgCount(call); j++)
+              {
+                args.add(_dfa.newInstance(_dfa._fuir.clazzArgClazz(call, j), FUIR.NO_SITE, _context));
+              }
+            var ignore = _dfa
+              .newCall(this, call, FUIR.NO_SITE, this._args.get(i).value(), args, null /* env */, _context)
+              .result();
+          }
+      }
+  }
+
+
   /*
    * sys array arguments might be written
    * to in the native features
@@ -356,7 +406,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   {
     for (var arg : _args)
       {
-        if (arg instanceof SysArray sa && sa._elements == null)
+        if (arg.value() instanceof SysArray sa && sa._elements == null)
           {
             sa.setel(NumericValue.create(_dfa, _dfa._fuir.clazz(SpecialClazzes.c_i32)),
                      _dfa.newInstance(sa._elementClazz, _site, _context));
@@ -372,19 +422,9 @@ public class Call extends ANY implements Comparable<Call>, Context
   private Val genericResult()
   {
     var rc = _dfa._fuir.clazzResultClazz(_cc);
-    return switch (_dfa._fuir.getSpecialClazz(rc))
-      {
-        case c_i8, c_i16, c_i32, c_i64,
-             c_u8, c_u16, c_u32, c_u64,
-             c_f32, c_f64              -> NumericValue.create(_dfa, rc);
-        case c_bool                    -> _dfa.bool();
-        case c_String                  -> _dfa.newConstString(null, this);
-        case c_sys_ptr                 -> _dfa.newInstance(_dfa._fuir.clazz(SpecialClazzes.c_sys_ptr), _site, _context);
-        default                        ->
-          _dfa._fuir.clazzIsUnitType(rc)
-            ? Value.UNIT
-            : null;
-      };
+    return _dfa._fuir.clazzIsVoidType(rc)
+      ? null
+      : _dfa.newInstance(rc, _site, _context);
   }
 
 
@@ -422,9 +462,8 @@ public class Call extends ANY implements Comparable<Call>, Context
               .append("=")
               .append(a);
           }
-        var r = ""; // result();
         sb.append(" => ")
-          .append(r == null ? "*** VOID ***" : r)
+          .append(_returns ? "returns" : "*** VOID ***")
           .append(" ENV: ")
           .append(Errors.effe(Env.envAsString(env())));
         _toStringRecursion_.remove(this);

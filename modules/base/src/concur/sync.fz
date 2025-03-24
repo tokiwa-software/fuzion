@@ -26,37 +26,37 @@
 #
 public sync is
 
-  mtx_init outcome fuzion.sys.Pointer => intrinsic
-  mtx_lock(mtx fuzion.sys.Pointer) bool => intrinsic
+  mtx_init outcome Mutex => intrinsic
+  mtx_lock(mtx Mutex) bool => intrinsic
   # NYI: mtx_timedlock
-  mtx_trylock(mtx fuzion.sys.Pointer) bool => intrinsic
-  mtx_unlock(mtx fuzion.sys.Pointer) bool => intrinsic
-  mtx_destroy(mtx fuzion.sys.Pointer) unit => intrinsic
+  mtx_trylock(mtx Mutex) bool => intrinsic
+  mtx_unlock(mtx Mutex) bool => intrinsic
+  mtx_destroy(mtx Mutex) unit => intrinsic
 
-  cnd_init(mtx fuzion.sys.Pointer) outcome fuzion.sys.Pointer => intrinsic
-  cnd_signal(cnd fuzion.sys.Pointer) bool => intrinsic
-  cnd_broadcast(cnd fuzion.sys.Pointer) bool => intrinsic
-  cnd_wait(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) bool => intrinsic
+  cnd_init(mtx Mutex) outcome Condition => intrinsic
+  cnd_signal(cnd Condition) bool => intrinsic
+  cnd_broadcast(cnd Condition) bool => intrinsic
+  cnd_wait(cnd Condition, mtx Mutex) bool => intrinsic
   # NYI: cnd_timedwait
-  cnd_destroy(cnd fuzion.sys.Pointer) unit => intrinsic
+  cnd_destroy(cnd Condition) unit => intrinsic
 
 
   # NYI: documentation missing, waiting for JVM backend impl
 
-  private:public mutex(module mtx fuzion.sys.Pointer) is
+  private:public mutex(module mtx Mutex) is
 
     public type.new outcome concur.sync.mutex =>
-      concur.sync.mtx_init.bind concur.sync.mutex mtx->
+      concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
 
     public condition outcome concur.sync.condition =>
-      (concur.sync.cnd_init mtx).bind concur.sync.condition cnd->
+      (concur.sync.cnd_init mtx).bind cnd->
         concur.sync.condition mtx cnd
 
     # NYI destroy
 
 
-  private:public condition(mtx fuzion.sys.Pointer, cnd fuzion.sys.Pointer) is
+  private:public condition(mtx Mutex, cnd Condition) is
 
     public is_locked := concur.atomic false
 

@@ -217,7 +217,7 @@ test_postcondition is
     =>
       4711
 
-    redef g
+    public redef g
       post then
         ok "redef g $result"
         { io.Out.env.println "ho"; true }
@@ -233,7 +233,7 @@ test_postcondition is
     =>
       4716
 
-    redef g
+    public redef g
       post then
         ok "redef g $result"
         { io.Out.env.println "he"; true }
@@ -273,7 +273,7 @@ test_postcondition is
   _ := mod.post_accessing_result_child4.f
 
   inh_module1 : mod.post_accessing_result is
-    redef f
+    public redef f
       post then
         ok "redef $result"
     =>
@@ -283,9 +283,9 @@ test_postcondition is
     # redefining non-argument field is not allowed
     # redef n := 64
     # redefining a routine as a field is allowed
-    redef m := 64
-    redef r => 128
-    redef f
+    public redef m := 64
+    public redef r => 128
+    public redef f
       post then
         ok "redef $result"
     =>

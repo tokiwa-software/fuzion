@@ -44,14 +44,14 @@
 #
 #
 public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
-  ref : Unary R T
+  ref : Unary R T is
 
     # the memory
     store := MM.empty
 
     # implementation of abstract feature Unary.call
     #
-    redef call(a T) R =>
+    public redef call(a T) R =>
       # compute if not yet computed
       if store[a].is_nil
         store.put a (f a)
@@ -160,7 +160,7 @@ public memoize is
 
     private update(k,v) =>
       set store := store.add k v
-      memoized.this.type.replace memoized.this
+      memoized.this.replace memoized.this
 
 
   # use golabal memoized effect to retrieve the value for a given key or,

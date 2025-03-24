@@ -59,7 +59,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * Dummy Expr value. Used e.g. in 'Actual' to represent non-existing value version
    * of the actual.
    */
-  public static Call NO_VALUE;
+  public static final Expr NO_VALUE = new Expr()
+  {
+    @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
+    @Override public AbstractType type() { return Types.t_ERROR; }
+    @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+    @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
+  };
 
 
   /*-------------------------  static variables -------------------------*/
@@ -185,7 +191,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param exprs the expression to unionize
    *
-   * @return the union of exprs result type, defaulting to Types.resolved.t_void if
+   * @return the union of exprs result type, null if
    * no expression can be inferred yet.
    */
   static AbstractType union(List<Expr> exprs, Context context)
@@ -589,16 +595,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Check if this value might need boxing, unboxing or tagging and wrap this
-   * into Box()/Tag() if this is the case.
+   * Check if this value might need boxing or tagging and wrap this
+   * into Box()/Tag()/Tag(Box()) if this is the case.
    *
    * @param frmlT the formal type this value is assigned to
    *
    * @param context the source code context where this Expr is used
    *
-   * @return this or an instance of Box wrapping this.
+   * @return this or an instance of Box/Tag wrapping this.
    */
-  Expr box(AbstractType frmlT, Context context)
+  Expr boxAndTag(AbstractType frmlT, Context context)
   {
     if (PRECONDITIONS) require
       (frmlT != null);
@@ -814,23 +820,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public boolean producesResult()
   {
     return true;
-  }
-
-
-  /**
-   * Reset static fields
-   */
-  public static void reset()
-  {
-    NO_VALUE = new Call(SourcePosition.builtIn, FuzionConstants.NO_VALUE_STRING)
-    {
-      { _type = Types.t_ERROR; }
-      @Override
-      Expr box(AbstractType frmlT, Context context)
-      {
-        return this;
-      }
-    };
   }
 
 

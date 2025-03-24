@@ -39,7 +39,7 @@ module:public sys is
 
   # intrinsic to stop execution signalling a fault of given kind with given message.
   #
-  fatal_fault0(kind, msg fuzion.sys.Pointer) void => intrinsic
+  fatal_fault0(kind, msg Array) void => intrinsic
 
   # stop execution signalling a fault of given kind with given message.
   #

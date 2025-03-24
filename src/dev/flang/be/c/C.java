@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -128,8 +130,6 @@ public class C extends ANY
      *
      * @param f clazz id of the assigned field
      *
-     * @param rt clazz is of the field type
-     *
      * @param tvalue the target instance
      *
      * @param val the new value to be assigned to the field.
@@ -137,9 +137,9 @@ public class C extends ANY
      * @return statement to perform the given access
      */
     @Override
-    public CStmnt assignStatic(int s, int tc, int f, int rt, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int s, int tc, int f, CExpr tvalue, CExpr val)
     {
-      return assignField(tvalue, tc, tc, f, val, rt);
+      return assignField(tvalue, tc, tc, f, val, _fuir.clazzResultClazz(f));
     }
 
 
@@ -775,7 +775,10 @@ public class C extends ANY
           // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
           "-Wno-missing-include-dirs",
           // allow infinite recursion
-          "-Wno-infinite-recursion");
+          "-Wno-infinite-recursion",
+          // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
+          "-Wno-incompatible-function-pointer-types"
+          );
 
         if (_options._cCompiler == null && clangVersion >= 13)
           {
@@ -846,7 +849,7 @@ public class C extends ANY
           "-I" + JAVA_HOME + "/include/darwin",
           "-L" + JAVA_HOME + "/lib/server");
 
-       if (!isWindows())
+        if (!isWindows())
           {
             command.add("-ljvm");
           }
@@ -875,7 +878,6 @@ public class C extends ANY
       {
         command.addAll("-lgc");
       }
-
 
     if (_options._cLink != null)
       {
@@ -985,14 +987,7 @@ public class C extends ANY
                     "fuzion.java.call_c0",
                     "fuzion.java.call_s0",
                     "fuzion.java.call_v0",
-                    "fuzion.java.bool_to_java_object",
-                    "fuzion.java.f32_to_java_object",
-                    "fuzion.java.f64_to_java_object",
-                    "fuzion.java.i8_to_java_object",
-                    "fuzion.java.i16_to_java_object",
-                    "fuzion.java.i32_to_java_object",
-                    "fuzion.java.i64_to_java_object",
-                    "fuzion.java.u16_to_java_object",
+                    "fuzion.java.primitive_to_java_object",
                     "fuzion.java.java_string_to_string",
                     "fuzion.java.string_to_java_object0",
                     "fuzion.java.fuzion.java.create_jvm")
@@ -1121,8 +1116,6 @@ public class C extends ANY
 
     cf.println("int main(int argc, char **argv) { ");
 
-    cf.println("fzE_init();");
-
     cf.print(initializeEffectsEnvironment());
 
     var cl = _fuir.mainClazz();
@@ -1212,6 +1205,11 @@ public class C extends ANY
     var o = new CIdent("of");
     var s = new CIdent("sz");
     var r = new CIdent("r");
+
+    // NYI: UNDER DEVELOPMENT: use libffi instead of storing the outer
+    // reference in a thread local variable?
+    cf.println("_Thread_local void * fzW_native_outer = NULL;");
+
     cf.print
       (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
     cf.print
@@ -1849,8 +1847,7 @@ public class C extends ANY
   private CStmnt cFunctionDecl(int cl, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
-    var resultType = _fuir.hasData(res) ? _types.clazz(res)
-                                        : "void";
+    var resultType = _types.resultClazz(res);
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
@@ -1913,7 +1910,11 @@ public class C extends ANY
           {
             case Routine -> codeForRoutine(cl);
             case Intrinsic -> _intrinsics.code(this, cl);
-            case Native -> codeForNative(cl);
+            case Native ->
+              {
+                l.add(functionWrapperForNative(cl));
+                yield codeForNative(cl);
+              }
             default -> null;
           };
         if (o != null)
@@ -1961,6 +1962,86 @@ public class C extends ANY
   }
 
 
+  /*
+   * Generates code for a wrapper function in native
+   * functions that take callback arguments.
+   * Example:
+   *
+   *     fzT_1i32 fzW_268437765(fzT_fuzion__sys_RPointer* arg0, fzT_1i32 arg1, fzT_fuzion__sys_RPointer* arg2, fzT_fuzion__sys_RPointer* arg3)
+   *     {
+   *       return fzC__L23151sqlite_u___b2__4call(fzW_native_outer,arg0,arg1,arg2,arg3);
+   *     }
+   *
+   * The function pointer is then passed to the native function
+   *
+   *     fzT_1i32 fzC__L23095sqlite3_u___H2_o_cb2(fzT_fuzion__sys_RPointer* arg0, fzT_fuzion__sys_RPointer* arg1, fzT__L23051sqlite_u___uery__cb2 arg2, fzT_fuzion__sys_RPointer* arg3, fzT_fuzion__sys_RPointer* arg4)
+   *     {
+   *       fzW_native_outer = (void *)&arg2;
+   *       return sqlite3_exec((void *)arg0,(void *)arg1,&fzW_268437765,(void *)arg3,(void *)arg4);
+   *     }
+   */
+  private CStmnt functionWrapperForNative(int cl)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Native);
+
+    var l = new List<CStmnt>();
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
+          {
+            var call = _fuir.lookupCall(_fuir.clazzArgClazz(cl, i));
+            var rc = _fuir.clazzResultClazz(call);
+            l.add(
+              new CStmnt() {
+                @Override
+                void code(CString sb)
+                {
+                  sb.append(_types.resultClazz(rc));
+                  sb.append(" ");
+                  CIdent.funWrapper(cl).code(sb);
+                  sb.append("(");
+                  var args = new List<CExpr>(new CIdent("fzW_native_outer"));
+                  var argCountWrapper = _fuir.clazzArgCount(call);
+                  for (int j = 0; j < argCountWrapper; j++)
+                    {
+                      sb.append(_types.clazz(_fuir.clazzArgClazz(call, j)));
+                      sb.append(" ");
+                      sb.append("arg" + j);
+                      if (argCountWrapper-1 != j)
+                        {
+                          sb.append(", ");
+                        }
+                      args.add(new CIdent("arg" + j));
+                    }
+                  sb.append(")\n{\n");
+                  CExpr
+                    .iff(
+                      new CIdent("fzW_native_outer").eq(CNames.NULL),
+                      reportErrorInCode0("Misuse of native callback detected, outer reference is NULL.")
+                    )
+                    .code(sb.indent());
+                  var c = CExpr.call(_names.function(call), args);
+                  if (_fuir.hasData(rc))
+                    {
+                      c.ret().code(sb.indent());
+                    }
+                  else
+                    {
+                      c.code(sb.indent());
+                    }
+                  sb.append(";\n}\n");
+                }
+                @Override boolean needsSemi() { return false; }
+              });
+          }
+      }
+
+    return CStmnt.seq(l);
+  }
+
+
   /**
    * Create code for a given native clazz cl.
    *
@@ -1973,36 +2054,146 @@ public class C extends ANY
 
     var args = new List<CExpr>();
 
+    /*
+      fzW_native_outer = &arg3;
+      int wrapper(void *, int, void * void *)
+      {
+        return fzC_...(fzW_native_outer, arg1, arg2, arg3, arg4);
+      }
+    */
+
+    var res = new List<CStmnt>();
+
+    checkNumCallsMaxOne(cl);
+
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
-        args.add(_fuir.clazzIsRef(_fuir.clazzArgClazz(cl, i))
-                    ? CIdent.arg(i).castTo("void *")
-                    : CIdent.arg(i));
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
+          {
+            res.add(
+              new CIdent("fzW_native_outer").assign(CIdent.arg(i).adrOf().castTo("void *"))
+            );
+          }
+      }
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var at = _fuir.clazzArgClazz(cl, i);
+        var c = _fuir.lookupCall(at);
+        var arg = c != NO_CLAZZ
+          // 1. pass as function pointer
+          ? (_fuir.clazzOuterRef(c) != NO_CLAZZ
+              // 1.1 needs outer ref
+              ? CIdent.funWrapper(cl).adrOf()
+              // 1.2 does not need outer ref
+              : new CIdent(_names.function(c)).adrOf())
+          : _fuir.clazzIsRef(at)
+          // 2. pass as ref
+          ? CIdent.arg(i).castTo("void *")
+          // 3. pass as value
+          : (_fuir.clazzIsArray(at)
+              // 3.1 array, we need to get field internal_array.data
+              ? getFieldInternalArrayData(i, at)
+              // 3.2 plain value
+              : CIdent.arg(i));
+        args.add(arg);
       }
 
     var rc = _fuir.clazzResultClazz(cl);
-    var call = CExpr.call(_fuir.clazzBaseName(cl), args);
-    return switch (_fuir.getSpecialClazz(rc))
+    var call = CExpr.call(_fuir.clazzNativeName(cl), args);
+
+    var tmp = _names.newTemp();
+    var resultsInUnit = _fuir.clazzIsUnitType(rc);
+
+    if (!resultsInUnit)
+      {
+        res.add(CExpr.decl(_types.clazz(rc), tmp));
+      }
+
+    switch (_fuir.getSpecialClazz(rc))
       {
         case
           c_i8, c_i16, c_i32, c_i64, c_u8,
-          c_u16, c_u32, c_u64, c_f32, c_f64 -> call.ret();
-        case c_String ->
+          c_u16, c_u32, c_u64, c_f32, c_f64: { res.add(tmp.assign(call)); break; }
+        case c_String:
           {
             var str = new CIdent("str");
-            yield CStmnt.seq(
+            res.add(CStmnt.seq(
               CExpr.decl("char*", str, call),
-              boxedConstString(str, CExpr.call("strlen", new List<>(str)))
-                .ret());
+              tmp.assign(boxedConstString(str, CExpr.call("strlen", new List<>(str))))
+                ));
+            break;
           }
-        case c_bool -> call.cond(_names.FZ_TRUE, _names.FZ_FALSE).ret();
-        default ->
-          _fuir.clazzIsUnitType(rc)
-            ? call
-            : _fuir.clazzIsRef(rc)
-            ? call.castTo("void *").ret()
-            : call.ret();
+        case c_bool: { res.add(tmp.assign(call.cond(_names.FZ_TRUE, _names.FZ_FALSE))); break; }
+        default:
+          {
+            var x = _fuir.clazzIsRef(rc)
+              ? call.castTo("void *")
+              : call;
+            res.add(resultsInUnit ? x : tmp.assign(x));
+            break;
+          }
       };
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        if (isLambdaWithOuterRef(_fuir.clazzArgClazz(cl, i)))
+          {
+            res.add(new CIdent("fzW_native_outer").assign(CNames.NULL));
+          }
+      }
+
+    if (!resultsInUnit)
+      {
+        res.add(tmp.ret());
+      }
+
+    return CStmnt.seq(res);
+  }
+
+
+  private CExpr getFieldInternalArrayData(int i, int at)
+  {
+    var ia = _fuir.lookup_array_internal_array(at);
+
+    return CIdent
+      .arg(i)
+      .field(_names.fieldName(ia))
+      .field(_names.fieldName(_fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia))))
+      .castTo("void *");
+  }
+
+
+  /**
+   * Is cl a lambda - inheriting from Function -
+   * and {@code call} needs and outer reference
+   * passed in?
+   */
+  private boolean isLambdaWithOuterRef(int cl)
+  {
+    var c = _fuir.lookupCall(cl);
+    return c != NO_CLAZZ && _fuir.clazzOuterRef(c) != NO_CLAZZ;
+  }
+
+
+  /**
+   * NYI: UNDER DEVELOPMENT: remove this implementation restriction
+   */
+  @Deprecated
+  private void checkNumCallsMaxOne(int cl)
+  {
+    var numCalls = 0;
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        if (_fuir.lookupCall(_fuir.clazzArgClazz(cl, i)) != NO_CLAZZ)
+          {
+            numCalls++;
+          }
+      }
+    if (numCalls > 1)
+      {
+        Errors.fatal("Implementation restriction: maximum number of callbacks in native is currently one.");
+      }
   }
 
 
@@ -2172,7 +2363,7 @@ public class C extends ANY
       case c_String :
       case c_false_ :
       case c_true_ :
-      case c_sys_ptr :
+      case c_Array :
       case c_u32 :
       case c_u64 :
       case c_u8 :

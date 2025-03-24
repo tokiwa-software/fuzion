@@ -129,7 +129,7 @@ catch_postcondition is
 
   say "using anonymous instance of convenience feature with `try` and `catch`"
 
-  say (ref : handle_post String
+  say (ref : handle_post String is
     redef try =>
       test i32
     redef catch(s String) =>
@@ -197,7 +197,7 @@ catch_postcondition is
     # alternative implementation of catch using anonymous feature
     #
     catch1(code_catch String->T) =>
-      (ref : handle_post T
+      (ref : handle_post T is
         redef try             => code_try()
         redef catch(s String) => code_catch s).res
 

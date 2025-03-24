@@ -63,8 +63,8 @@ public class Docs extends ANY
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
     /* fuzionHome              */ new FuzionHome()._fuzionHome,
-    /* loadBaseLib             */ true,
-    /* eraseInternalNamesInLib */ false,
+    /* loadBaseMod             */ true,
+    /* eraseInternalNamesInMod */ false,
     /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
@@ -189,14 +189,28 @@ public class Docs extends ANY
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
       {
-        return new DocsOptions(null, false, true, false);
+        return new DocsOptions(null, null, false, true, false);
+      }
+
+    String apiSrcDir = null;
+    var apiSrcDirArg = Stream.of(args).filter(s->s.startsWith("-api-src=")).collect(Collectors.toList());
+    if (apiSrcDirArg.size() >= 1)
+      {
+        if (apiSrcDirArg.size() == 1)
+          {
+            apiSrcDir = apiSrcDirArg.getFirst().replace("-api-src=", "");
+          }
+        else
+          {
+            Errors.fatal("option '-api-src' specified multiple times");
+          }
       }
 
     var destination = parseDestination(args);
 
     var bare = Stream.of(args).anyMatch(arg -> arg.equals("-bare"));
     var ignoreVisibility = Stream.of(args).anyMatch(arg -> arg.equals("-ignoreVisibility"));
-    return new DocsOptions(destination, bare, false, ignoreVisibility);
+    return new DocsOptions(destination, apiSrcDir, bare, false, ignoreVisibility);
   }
 
 
@@ -239,7 +253,7 @@ public class Docs extends ANY
   private static String usage()
   {
     return """
-      Usage: fzdoc [-bare] <destination>
+      Usage: fzdoc [-bare] [-api-src=<path>] <destination>
       or     fzdoc -styles
       """;
   }

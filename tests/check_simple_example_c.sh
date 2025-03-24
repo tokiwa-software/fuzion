@@ -61,13 +61,22 @@ else
     rm -f testbin
 
     # limit cpu time and stack size for executing test
-    ulimit -S -t 120  || echo "failed setting limit via ulimit"
-    ulimit -S -s 1024 || echo "failed setting limit via ulimit"
+    cpu_time_limit=120
+    stack_size_limit=1024
+    ulimit -S -t $cpu_time_limit  || echo "failed setting limit via ulimit"
 
-    EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
+    EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -c ${FUZION_C_BACKEND_OPTIONS:+$FUZION_C_BACKEND_OPTIONS} "$2" -o=testbin                && (ulimit -S -s $stack_size_limit || echo "failed setting limit via ulimit") && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
 
+    # 152 - 128 = 24 -> signal SIGXCPU
+    if [ "$EXIT_CODE" -eq 152 ]; then
+        echo  -e "\033[31;1m*** CANCELLED:\033[0m test $2 exceeded cpu time limit of $cpu_time_limit s"
+        exit 1
+    # 139 - 128 = 11 -> signal SIGSEGV
+    elif [ "$EXIT_CODE" -eq 139 ]; then
+        echo  -e "\033[31;1m*** CANCELLED:\033[0m test $2 exceeded stack size limit of $stack_size_limit KB"
+        exit 1
     # pipe to head may result in exit code 141 -- broken pipe.
-    if [ "$EXIT_CODE" -ne 0   ] &&
+    elif [ "$EXIT_CODE" -ne 0   ] &&
        [ "$EXIT_CODE" -ne 1   ] &&
        [ "$EXIT_CODE" -ne 141 ]; then
         echo "unexpected exit code $EXIT_CODE"
