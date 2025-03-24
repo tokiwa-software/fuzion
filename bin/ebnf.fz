@@ -27,6 +27,8 @@
 
 main =>
 
+  /* NYI: Disabled for now, DFA performce kills this
+
   ########### Extensions ###############
 
   # execute this Sequence of process+args
@@ -124,3 +126,5 @@ main =>
   # NYI add option -Werror
   _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
   !!"rm -rf $tmp"
+
+  */
