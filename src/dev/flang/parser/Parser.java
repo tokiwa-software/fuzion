@@ -857,18 +857,12 @@ modifier    : "redef"
   /**
    * Parse featNames
    *
-featNames   : qual (COMMA featNames
-                   |
-                   )
+featNames   : qual
             ;
    */
   List<List<ParsedName>> featNames()
   {
     var result = new List<List<ParsedName>>(qual(true));
-    while (skipComma())
-      {
-        result.add(qual(true));
-      }
     return result;
   }
 
