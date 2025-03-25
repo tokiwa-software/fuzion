@@ -38,7 +38,7 @@ test_this1 =>
         y := x.m
       while false
 
-  i : n.
+  i : n is
 
   _ := i.l
 
@@ -57,7 +57,7 @@ test_this2 =>
         y := x.m
       while false
 
-  i : n.
+  i : n is
 
   _ := n.l
 

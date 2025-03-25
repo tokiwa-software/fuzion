@@ -104,7 +104,7 @@ test_equals_types is
 
   # define a color choice type:
   #
-  color : choice of red, blue.
+  color : choice of red, blue is
 
   # Has_color provides an equality relation for instances that provide
   # a 'col' feature

@@ -25,7 +25,7 @@ test(T type : property.equatable, a T) =>
   a1 := concur.atomic a
   _ := a1.read = a
 
-  on, off.
+  on, off is
   my_switch : choice on off is
     type.equality(a, b my_switch.this) => true
   test my_switch on

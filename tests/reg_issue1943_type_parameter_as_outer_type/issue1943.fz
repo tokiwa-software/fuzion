@@ -48,7 +48,7 @@ test_outer_as_type_parameter is
       n <- n.get + 1
     n
 
-  mm : mutate.
+  mm : mutate is
   mm ! ()->
     {
       cnt := mm.env.new 100

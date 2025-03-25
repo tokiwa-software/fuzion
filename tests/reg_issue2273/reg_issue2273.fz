@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-open, closed.
+open, closed is
 door : choice open closed is
   toggle door => match door.this
     open   => closed

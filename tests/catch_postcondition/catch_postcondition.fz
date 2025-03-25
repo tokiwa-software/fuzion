@@ -100,7 +100,7 @@ catch_postcondition is
     catch(msg String) T => abstract
 
     # use local mutate to store msg passed to `cause`
-    lm : mutate.
+    lm : mutate is
 
     res := lm ! ()->
         m := lm.env.new (option String nil)
