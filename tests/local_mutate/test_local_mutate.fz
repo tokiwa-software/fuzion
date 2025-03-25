@@ -241,7 +241,8 @@ test_local_mutate is
     # abstract type for 'ring'
     #
     Ring(T type) ref is
-      next, prev Ring T => abstract
+      next Ring T => abstract
+      prev Ring T => abstract
       data T => abstract
 
       public redef as_string =>
