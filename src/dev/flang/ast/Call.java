@@ -713,7 +713,8 @@ public class Call extends AbstractCall
 
   private void triggerFeatureNotFoundError(Resolution res, Context context)
   {
-    triggerFeatureNotFoundError(res, new List<>(), targetFeature(res, context));
+    var tf = targetFeature(res, context);
+    triggerFeatureNotFoundError(res, findOnTarget(res, tf, true).v0(), tf);
   }
 
 

@@ -344,7 +344,7 @@ public Sequence(public T type) ref : property.countable is
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
-      (zip 0..max0 (v,n -> if n < max0 then $v else "…")).as_string_all
+      (zip 0..max0 (v,n -> if n < max0 then $v else "…".as_string)).as_string_all
 
 
   # create a string representation of this Sequence including all the string
