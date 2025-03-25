@@ -496,7 +496,7 @@ public class Call extends AbstractCall
    */
   protected AbstractFeature targetFeature(Resolution res, Context context)
   {
-    AbstractFeature result;
+    AbstractFeature result = null;
 
     // are we searching for features called via outer's inheritance calls?
     if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
@@ -536,9 +536,8 @@ public class Call extends AbstractCall
                   }
                 setToErrorState();
               };
-            result = null;
           }
-        else
+        else if (tt != null)
           {
             result = tt.feature();
           }
