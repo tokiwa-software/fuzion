@@ -97,6 +97,18 @@ public class RefValue extends Value
 
 
   /**
+   * Is this ValueSet a superset of other?
+   */
+  @Override
+  boolean contains(Value other)
+  {
+    return super.contains(other)
+      || DFA.NEW && (other instanceof RefValue or     &&
+          _original.contains(or._original)    ) ;
+  }
+
+
+  /**
    * Add v to the set of values of given field within this instance.
    */
   public void setField(DFA dfa, int field, Value v)
@@ -132,7 +144,7 @@ public class RefValue extends Value
    */
   public String toString()
   {
-    return "boxed("+_dfa._fuir.clazzAsString(_clazz)+"):" + _original;
+    return "boxed["+_id+","+_original._id+"]("+_dfa._fuir.clazzAsString(_clazz)+"):" + _original;
   }
 
 }
