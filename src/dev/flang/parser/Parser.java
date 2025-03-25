@@ -242,11 +242,11 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : modAndNames routOrField
+feature     : modAndName routOrField
             ;
-modAndNames : visibility
+modAndName  : visibility
               modifiers
-              featNames
+              qual
             ;
    */
   FList feature()
@@ -254,7 +254,7 @@ modAndNames : visibility
     var pos = tokenSourcePos();
     var v = visibility();
     var m = modifiers();
-    var n = featNames();
+    var n = qual(true);
     return routOrField(pos, new List<Feature>(), v, m, n, 0);
   }
 
@@ -281,10 +281,8 @@ field       : returnType
               implFldOrRout
             ;
    */
-  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<ParsedName>> n, int i)
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<ParsedName> n, int i)
   {
-    var name = n.get(i);
-    var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt(false);
     var r = returnType();
@@ -298,10 +296,8 @@ field       : returnType
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout(hasType);
     p = handleImplKindOf(pos, p, i == 0, l, inh, v);
-    l.add(new Feature(v,m,r,name,a,inh,c,p,eff));
-    return p2 == null
-      ? new FList(l)
-      : p2.routOrField(pos, l, v, m, n, i+1);
+    l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
+    return new FList(l);
   }
 
 
@@ -851,19 +847,6 @@ modifier    : "redef"
       case t_fixed       : return true;
       default            : return false;
       }
-  }
-
-
-  /**
-   * Parse featNames
-   *
-featNames   : qual
-            ;
-   */
-  List<List<ParsedName>> featNames()
-  {
-    var result = new List<List<ParsedName>>(qual(true));
-    return result;
   }
 
 
