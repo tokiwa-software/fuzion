@@ -17,22 +17,31 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test select_clause_negative
+#  Source code of Fuzion test reg_issue4959
 #
 # -----------------------------------------------------------------------
 
-select_clause_negative =>
+reg_issue4959 =>
 
-  a := (1,2)
+  # POSITIVE
 
-  say a.-1      # should flag an error:
+  hay1 => { (42,unit) }; say (hay1 .0)
 
-  say (a. -1)   # should flag an error:
+  hay2 => (42,unit)
+  say (hay2 .0)
 
-  say (a . -1)  # should flag an error:
+  hay3 := (42,unit); say (hay3 .0)
 
-  say a.5       # should flag an error: Selector must be in the range ...
+  hay4 := (42,unit); hay4 .1
 
-  say a.1.1     # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
+  hay5 := (42,unit); hay5.1
 
-  say a.1.1.1   # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
+
+  
+  # NEGATIVE
+
+  hay6 => (42,unit); say (hay6 .0)  # 1. should flag an error
+
+  hay7 => (42,unit); hay7 .1        # 2. should flag an error
+
+  hay8 => (42,unit); hay8.1         # 3. should flag an error

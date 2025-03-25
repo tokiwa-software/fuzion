@@ -17,22 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test select_clause_negative
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-select_clause_negative =>
-
-  a := (1,2)
-
-  say a.-1      # should flag an error:
-
-  say (a. -1)   # should flag an error:
-
-  say (a . -1)  # should flag an error:
-
-  say a.5       # should flag an error: Selector must be in the range ...
-
-  say a.1.1     # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
-
-  say a.1.1.1   # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
+override NAME = reg_issue4959
+include ../simple.mk
