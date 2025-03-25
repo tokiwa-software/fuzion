@@ -107,8 +107,7 @@ public abstract class Constant extends Expr
   @Override
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.action(this);
-    return this;
+    return v.action(this);
   }
 
 
@@ -172,6 +171,12 @@ public abstract class Constant extends Expr
     return expectedType.isFunctionType() && expectedType.arity() == 0
       ? new Function(_pos, NO_EXPRS, this)
       : this;
+  }
+
+
+  protected Expr resolveSyntacticSugar2(Resolution res, Context _context)
+  {
+     return this;
   }
 
 }
