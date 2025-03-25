@@ -496,7 +496,7 @@ public class Call extends AbstractCall
    */
   protected AbstractFeature targetFeature(Resolution res, Context context)
   {
-    AbstractFeature result;
+    AbstractFeature result = null;
 
     // are we searching for features called via outer's inheritance calls?
     if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
@@ -522,27 +522,22 @@ public class Call extends AbstractCall
         _target = res.resolveType(_target, context);
         var tt = targetTypeOrConstraint(res, context);
 
-        // this is handeled in findOperatorOnOuter
-        if (tt == null && isOperatorCall())
+        if (tt == null && _target instanceof Call c)
           {
-            result = null;
+            c._pendingError = ()->
+              {
+                if (c._calledFeature == null)
+                  {
+                    c.triggerFeatureNotFoundError(res, context);
+                  }
+                else
+                  {
+                    AstErrors.forwardTypeInference(c.pos(), c._calledFeature, c._calledFeature.pos());
+                  }
+                setToErrorState();
+              };
           }
-        else if (tt == null && context.outerFeature().resultTypeIfPresent(res) != null)
-          {
-            AstErrors.failedToInferType(_target);
-            setToErrorState();
-            result = Types.f_ERROR;
-          }
-        else if (tt ==  null)
-          {
-            // example where this is relevant:
-            // (fails when trying to resolve `zip` but does not know fibs result type yet)
-            // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
-            AstErrors.forwardTypeInference(_pos, context.outerFeature(), context.outerFeature().pos());
-            setToErrorState();
-            result = Types.f_ERROR;
-          }
-        else
+        else if (tt != null)
           {
             result = tt.feature();
           }
@@ -683,15 +678,7 @@ public class Call extends AbstractCall
                   }
                 else
                   {
-                    var calledName = FeatureName.get(_name, _actuals.size());
-                    AstErrors.calledFeatureNotFound(this,
-                                                    calledName,
-                                                    tf,
-                                                    _target,
-                                                    FeatureAndOuter.findExactOrCandidate(fos,
-                                                                                        (FeatureName fn) -> false,
-                                                                                        (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
-                                                    hiddenCandidates(res, tf, calledName));
+                    triggerFeatureNotFoundError(res, fos, tf);
                   }
               };
           }
@@ -721,6 +708,27 @@ public class Call extends AbstractCall
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
+  }
+
+
+  private void triggerFeatureNotFoundError(Resolution res, Context context)
+  {
+    var tf = targetFeature(res, context);
+    triggerFeatureNotFoundError(res, findOnTarget(res, tf, true).v0(), tf);
+  }
+
+
+  private void triggerFeatureNotFoundError(Resolution res, List<FeatureAndOuter> fos, AbstractFeature tf)
+  {
+    var calledName = FeatureName.get(_name, _actuals.size());
+    AstErrors.calledFeatureNotFound(this,
+                                    calledName,
+                                    tf,
+                                    _target,
+                                    FeatureAndOuter.findExactOrCandidate(fos,
+                                                                        (FeatureName fn) -> false,
+                                                                        (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                    hiddenCandidates(res, tf, calledName));
   }
 
 
@@ -2499,6 +2507,7 @@ public class Call extends AbstractCall
                 {
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
+                  _pendingError = null;
                   _resolvedFormalArgumentTypes = null;
                   _target = new DotType(_pos, _target).resolveTypes(res, context);
                 }

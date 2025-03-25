@@ -513,7 +513,11 @@ public class Function extends AbstractLambda
   {
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
-    return _type;
+    // NYI: UNDER DEVELOPMENT: ugly in case result type is error
+    // we should probably have replaced Function already...
+    return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
+      ? Types.t_ERROR
+      : _type;
   }
 
 
