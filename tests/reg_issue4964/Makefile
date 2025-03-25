@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue1777
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue1777 =>
-
-  Curry ref is
-    r(x Curry) i32 => abstract
-
-  my_loop i32 =>
-    c := (ref : Curry is
-            redef r(x Curry) => x.r x
-         )
-    c.r c
-
-  _ := my_loop
+override NAME = reg_issue4964
+include ../simple.mk
