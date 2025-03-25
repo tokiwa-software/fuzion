@@ -522,25 +522,20 @@ public class Call extends AbstractCall
         _target = res.resolveType(_target, context);
         var tt = targetTypeOrConstraint(res, context);
 
-        // this is handeled in findOperatorOnOuter
-        if (tt == null && isOperatorCall())
+        if (tt == null)
           {
             result = null;
-          }
-        else if (tt == null && context.outerFeature().resultTypeIfPresent(res) != null)
-          {
-            AstErrors.failedToInferType(_target);
-            setToErrorState();
-            result = Types.f_ERROR;
-          }
-        else if (tt ==  null)
-          {
-            // example where this is relevant:
-            // (fails when trying to resolve `zip` but does not know fibs result type yet)
-            // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
-            AstErrors.forwardTypeInference(_pos, context.outerFeature(), context.outerFeature().pos());
-            setToErrorState();
-            result = Types.f_ERROR;
+            _pendingError = ()->
+              {
+                if (_target.type() == Types.t_FORWARD_CYCLIC)
+                  {
+                    // example where this is relevant:
+                    // (fails when trying to resolve `zip` but does not know fibs result type yet)
+                    // fz -e "fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs"
+                    AstErrors.forwardTypeInference(_pos, context.outerFeature(), context.outerFeature().pos());
+                  }
+                setToErrorState();
+              };
           }
         else
           {
