@@ -711,6 +711,9 @@ public class Call extends AbstractCall
   }
 
 
+  /**
+   * helper for triggering a feature not found error.
+   */
   private void triggerFeatureNotFoundError(Resolution res, Context context)
   {
     var tf = targetFeature(res, context);
@@ -718,6 +721,9 @@ public class Call extends AbstractCall
   }
 
 
+  /**
+   * helper for triggering a feature not found error.
+   */
   private void triggerFeatureNotFoundError(Resolution res, List<FeatureAndOuter> fos, AbstractFeature tf)
   {
     var calledName = FeatureName.get(_name, _actuals.size());
