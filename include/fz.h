@@ -490,5 +490,6 @@ void * fzE_null(void);
 // returns 0 if p is NULL
 int fzE_is_null(void * p);
 
+void * fzE_to_native(void * p);
 
 #endif /* fz.h  */

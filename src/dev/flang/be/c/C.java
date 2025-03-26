@@ -2095,7 +2095,11 @@ public class C extends ANY
               // 3.1 array, we need to get field internal_array.data
               ? getFieldInternalArrayData(i, at)
               // 3.2 plain value
-              : CIdent.arg(i));
+              : _fuir.getSpecialClazz(at) != SpecialClazzes.c_NOT_FOUND
+                ? CIdent.arg(i)
+                // NYI: better memcpy?
+                : CIdent.arg(i).adrOf().castTo(_fuir.clazzNativeName(at) + " *").deref()
+              );
         args.add(arg);
       }
 
@@ -2104,10 +2108,11 @@ public class C extends ANY
 
     var tmp = _names.newTemp();
     var resultsInUnit = _fuir.clazzIsUnitType(rc);
+    var isNativeValue = _fuir.getSpecialClazz(rc) == SpecialClazzes.c_NOT_FOUND && !_fuir.clazzIsRef(rc);
 
     if (!resultsInUnit)
       {
-        res.add(CExpr.decl(_types.clazz(rc), tmp));
+        res.add(CExpr.decl(isNativeValue ? _fuir.clazzNativeName(rc) : _types.clazz(rc), tmp));
       }
 
     switch (_fuir.getSpecialClazz(rc))
@@ -2145,7 +2150,9 @@ public class C extends ANY
 
     if (!resultsInUnit)
       {
-        res.add(tmp.ret());
+        res.add(isNativeValue
+                  ? tmp.adrOf().castTo(_types.clazz(rc) + " *").deref().ret()
+                  : tmp.ret());
       }
 
     return CStmnt.seq(res);
