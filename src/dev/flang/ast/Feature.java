@@ -844,6 +844,15 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * Helper method to check if one of the features is fixed and the other is abstract
+   */
+  public static boolean isAbstractAndFixedPair(AbstractFeature f1, AbstractFeature f2)
+  {
+    return f1.isAbstract() && f2.isFixed() || f1.isFixed() && f2.isAbstract();
+  }
+
+
+  /**
    * Return the state of this feature.
    */
   public State state()
@@ -1881,16 +1890,7 @@ A ((Choice)) declaration must not contain a result type.
             o.typeInference(res);
           }
 
-        if (_resultType == null)
-          {
-            _resultType = resultTypeIfPresentUrgent(res, true);
-          }
-
-        if (_resultType == null)
-          {
-            AstErrors.failedToInferResultType(this);
-            _resultType = Types.t_ERROR;
-          }
+        _resultType = resultTypeIfPresentUrgent(res, true);
 
         if (_resultType.isThisType() && _resultType.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
@@ -2309,7 +2309,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
     var existing = res._module.lookupFeature(_outer, newFeatureName, null);
-    if (existing != null)
+    if (existing != null && !isAbstractAndFixedPair(existing, this))
       {
         AstErrors.duplicateFeatureDeclaration(existing, this);
       }
@@ -2340,7 +2340,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     AbstractType result;
 
-    if (res != null && !res.state(this).atLeast(State.RESOLVING_TYPES))
+    if (res != null && this != Types.f_ERROR && !res.state(this).atLeast(State.RESOLVING_TYPES))
       {
         res.resolveTypes(this);
       }
@@ -2365,11 +2365,16 @@ A ((Choice)) declaration must not contain a result type.
       }
     else if (_returnType == NoType.INSTANCE)
       {
-        result = null;
+        if (urgent)
+          {
+            AstErrors.failedToInferResultType(this);
+          }
+        result = urgent ? Types.t_ERROR : null;
       }
     else
       {
         result = _returnType.functionReturnType();
+        result = urgent && result == null ? Types.t_ERROR : result;
       }
     if (isOuterRef() && !outer().isFixed())
       {
@@ -2384,8 +2389,15 @@ A ((Choice)) declaration must not contain a result type.
     // to enable cyclic type inference e.g. in reg_issue2182
     if (result != null && result != Types.resolved.t_void)
       {
-        _resultType = result;
+        // FORWARD_CYCLIC should be returned only once.
+        // We then want to return t_ERROR.
+        _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
       }
+
+    if (POSTCONDITIONS) ensure
+      (!urgent || result != null,
+       result != Types.t_UNDEFINED,
+       Errors.any() || result != Types.t_ERROR);
 
     return result;
   }
@@ -2395,9 +2407,8 @@ A ((Choice)) declaration must not contain a result type.
    * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
-   * @return the result type, t_ERROR in case of an error.  Never
-   * null. Types.t_UNDEFINED in case type inference for this type is cyclic and
-   * hence impossible.
+   * @return the result type, t_ERROR in case of an error.
+   * Never null.
    */
   @Override
   public AbstractType resultType()
@@ -2405,17 +2416,13 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (Errors.any() || _state.atLeast(State.RESOLVED_TYPES));
 
-    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeIfPresentUrgent(null, true) : null;
-    if (result == null)
-      {
-        if (CHECKS) check
-          (Errors.any());
-
-        result = Types.t_ERROR;
-      }
+    var result = _state.atLeast(State.RESOLVED_TYPES)
+      ? resultTypeIfPresentUrgent(null, true)
+      : Types.t_ERROR;
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (Errors.any() || result != Types.t_ERROR,
+       Errors.any() || !result.containsUndefined(false));
 
     return result;
   }
@@ -2453,13 +2460,13 @@ A ((Choice)) declaration must not contain a result type.
    *
    *   x := 42
    *   x := x + 1
+   *
+   * or when distinguishing features with same name from different modules.
    */
   public void setFeatureName(FeatureName newFeatureName)
   {
     if (PRECONDITIONS) require
-      (_featureName.baseName() == newFeatureName.baseName(),
-       _featureName.argCount() == 0,
-       newFeatureName.argCount() == 0);
+      (_featureName.baseName() == newFeatureName.baseName());
 
     _featureName = newFeatureName;
   }
@@ -2642,6 +2649,33 @@ A ((Choice)) declaration must not contain a result type.
           && !featureName().isNameless()                     // don't warn for nameless features
           && !isArgument()                                   // don't warn for arguments
           && redefines().isEmpty();                          // don't warn for unused redefinitions
+  }
+
+
+  /**
+   * This is used in Function.java to
+   * refine a result type.
+   * e.g.:
+   *
+   * 1) result needs tagging:
+   * String => outcome String
+   *
+   * 2) result needs boxing:
+   * array i32 => Sequence i32
+   *
+   * @param res the current Resolution instance
+   *
+   * @param refinedResultType the refined result type
+   */
+  void setRefinedResultType(Resolution res, AbstractType refinedResultType)
+  {
+    if (CHECKS) check
+      // we must not patch result type later, because then
+      // result type of result field etc. is also already set.
+      (!state().atLeast(State.RESOLVING_SUGAR1),
+      _resultType == null || refinedResultType.isAssignableFrom(_resultType) || refinedResultType.isAssignableFrom(_resultType.asRef()));
+
+    _resultType = refinedResultType;
   }
 
 

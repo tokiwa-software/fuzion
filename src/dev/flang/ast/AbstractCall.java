@@ -177,6 +177,8 @@ public abstract class AbstractCall extends Expr
           }
         cpc.whenInferredTypeParameters(() ->
           {
+            if (CHECKS) check
+              (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined(false)));
             int i = 0;
             for (var atp : cpc.actualTypeParameters())
               {

@@ -52,7 +52,7 @@ webserver_native is
   #
   for n in 1..
   while net.server.is_active
-    _ := net.server.accept.bind unit c->
+    _ := net.server.accept.bind c->
       _ := c.with unit mutate ()->
         say "accepted connection:"
 

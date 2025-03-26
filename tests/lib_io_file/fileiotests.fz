@@ -39,7 +39,7 @@ fileiotests =>
   f : io.file is
 
   say "$dir exists: {f.exists dir}"
-  _ := (io.dir.make dir).bind unit _->
+  _ := (io.dir.make dir).bind _->
     say "$dir was created"
   say "$dir exists: {f.exists dir}"
 
@@ -47,7 +47,7 @@ fileiotests =>
 
   _ := f
     .use unit lm file f.mode.write ()->((io.buffered lm).writer.env.write content.utf8).error
-    .bind unit (_ -> say "$file was created")
+    .bind (_ -> say "$file was created")
   say "$file exists: {f.exists file}"
 
   say "stat resolve=true : $file size is {(f.stat file true).val.size}"
@@ -62,22 +62,22 @@ fileiotests =>
 
 
   _ := f.use (array u8) lm file f.mode.read ()->(io.buffered lm).read_fully
-    .bind unit bytes->
+    .bind bytes->
       filecontent := String.from_bytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
 
   _ := f.delete file
-    .bind unit (_-> say "$file was deleted")
+    .bind (_-> say "$file was deleted")
   say "$file exists: {f.exists file}"
 
   say "$dir exists: {f.exists dir}"
   say "$newdir exists: {f.exists newdir}"
   _ := f.move dir newdir
-    .bind unit (_ -> say "$dir is now: $newdir")
+    .bind (_ -> say "$dir is now: $newdir")
   say "$newdir exists: {f.exists newdir}"
   say "$dir exists: {f.exists dir}"
 
   _ := f.delete newdir
-    .bind unit (_ -> say "$newdir was deleted")
+    .bind (_ -> say "$newdir was deleted")
   say "$newdir exists: {f.exists newdir}"

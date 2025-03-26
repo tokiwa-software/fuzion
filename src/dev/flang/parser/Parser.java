@@ -86,6 +86,8 @@ public class Parser extends Lexer
   private boolean _nestedIf = false;
   private int _lastIfLine = -1;
   private boolean _elif = false;
+  private SourcePosition _outerElse = null;
+  private SourcePosition _then = null;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -240,11 +242,11 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : modAndNames routOrField
+feature     : modAndName routOrField
             ;
-modAndNames : visibility
+modAndName  : visibility
               modifiers
-              featNames
+              qual
             ;
    */
   FList feature()
@@ -252,7 +254,7 @@ modAndNames : visibility
     var pos = tokenSourcePos();
     var v = visibility();
     var m = modifiers();
-    var n = featNames();
+    var n = qual(true);
     return routOrField(pos, new List<Feature>(), v, m, n, 0);
   }
 
@@ -279,10 +281,8 @@ field       : returnType
               implFldOrRout
             ;
    */
-  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<ParsedName>> n, int i)
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<ParsedName> n, int i)
   {
-    var name = n.get(i);
-    var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt(false);
     var r = returnType();
@@ -296,10 +296,8 @@ field       : returnType
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout(hasType);
     p = handleImplKindOf(pos, p, i == 0, l, inh, v);
-    l.add(new Feature(v,m,r,name,a,inh,c,p,eff));
-    return p2 == null
-      ? new FList(l)
-      : p2.routOrField(pos, l, v, m, n, i+1);
+    l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
+    return new FList(l);
   }
 
 
@@ -768,9 +766,9 @@ name        : IDENT                            // all parts of name must be in s
   /**
    * Parse opName
    *
-opName      : "infix"   op
-            | "prefix"  op
-            | "postfix" op
+opName      : "infix"   OPERATOR
+            | "prefix"  OPERATOR
+            | "postfix" OPERATOR
             ;
    *
    * @param ignoreError to not report an error but just return
@@ -849,25 +847,6 @@ modifier    : "redef"
       case t_fixed       : return true;
       default            : return false;
       }
-  }
-
-
-  /**
-   * Parse featNames
-   *
-featNames   : qual (COMMA featNames
-                   |
-                   )
-            ;
-   */
-  List<List<ParsedName>> featNames()
-  {
-    var result = new List<List<ParsedName>>(qual(true));
-    while (skipComma())
-      {
-        result.add(qual(true));
-      }
-    return result;
   }
 
 
@@ -1939,7 +1918,7 @@ operatorExpr  : opExpr
    *
 opExpr      :     opTail
             | ops opTail
-            | op
+            | OPERATOR
             | callTail
             ;
    */
@@ -2942,6 +2921,7 @@ ifexpr      : "if" exprInLine thenPart elseBlock
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
+        SourcePosition ifPos = pos;
 
         var oldMinIdent = _elif ? null : setMinIndent(tokenPos());
         _elif = false;
@@ -2958,6 +2938,27 @@ ifexpr      : "if" exprInLine thenPart elseBlock
 
         // reset if new line
         if (_nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+
+        var elPos = tokenSourcePos();
+
+        // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
+        ifPos = _then != null && ifPos.column() > _then.column() ? null : ifPos;
+
+        // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
+        if (currentAtMinIndent() == Token.t_else && !(
+            (_then != null      && (_then.line()      == elPos.line() || _then.column()      == elPos.column())) ||
+            (_outerElse != null && (_outerElse.line() == elPos.line() || _outerElse.column() == elPos.column())) ||
+            (ifPos != null      && (ifPos.line()      == elPos.line() || ifPos.column()      == elPos.column())))
+           )
+          {
+            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : _then;
+
+            Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
+              "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
+              + ", it must be aligned with " + Errors.skw("if") + ", " + Errors.skw("then")
+              + " or " + Errors.skw("else if") + ".") ;
+          }
+
         var els = elseBlock();
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
@@ -2981,7 +2982,12 @@ thenPart    : "then" block
   Block thenPart(boolean emptyBlockIfNoBlockPresent)
   {
     var p = tokenPos();
-    skip(true, Token.t_then);
+    _then = tokenSourcePos();
+    var hasThen = skip(true, Token.t_then);
+    if (!hasThen)
+      {
+        _then = null;
+      }
     var result = block();
     return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
   }
@@ -2997,6 +3003,8 @@ elseBlock   : "else" block
   Block elseBlock()
   {
     Block result = null;
+    SourcePosition oldOuterElse = _outerElse;
+    _outerElse = tokenSourcePos();
 
     if (skip(true, Token.t_else))
       {
@@ -3004,8 +3012,18 @@ elseBlock   : "else" block
           {
             _elif = true;
           }
+        else
+          {
+            _outerElse = null;
+          }
         result = block();
       }
+    else
+      {
+        _outerElse = null;
+      }
+
+    _outerElse = oldOuterElse;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
@@ -3271,21 +3289,25 @@ universePureCall  : universe dot pureCall
    *
 anonymous   : "ref"
               inherit
+              "is"
               block
             ;
    */
   Expr anonymous()
   {
+    var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
     SourcePosition pos = tokenSourcePos();
     if (CHECKS) check
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
     var        i = inherit();
+    match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
     var ca = new Call(pos, f);
     sameLine(sl);
+    setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));
   }
 

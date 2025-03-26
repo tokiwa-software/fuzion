@@ -54,7 +54,7 @@ visibility_scoping is
     _ := for ar := outcome unit
          while false
 
-    ref : Function unit
+    ref : Function unit is
       public redef call =>
         say ar  # should flag an error: feature not found
 

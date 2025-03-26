@@ -14,15 +14,15 @@ Number of actual type parameters: 2
 Actual type parameters: 'i32, i32'
 
 
---CURDIR--/select_clause_negative.fz:36:9: error 3: Use of selector requires call to feature whose type is an open type parameter
-  say a.1.1     # should flag an error: Use of selector requires call to feature whose type is an open type parameter
+--CURDIR--/select_clause_negative.fz:36:9: error 3: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
+  say a.1.1     # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
 --------^^^
 Selected variant: '1'
 Type of called feature: 'i32'
 
 
---CURDIR--/select_clause_negative.fz:38:9: error 4: Use of selector requires call to feature whose type is an open type parameter
-  say a.1.1.1   # should flag an error: Use of selector requires call to feature whose type is an open type parameter
+--CURDIR--/select_clause_negative.fz:38:9: error 4: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
+  say a.1.1.1   # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
 --------^^^
 Selected variant: '1'
 Type of called feature: 'i32'

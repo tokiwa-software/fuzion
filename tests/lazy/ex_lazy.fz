@@ -42,7 +42,7 @@ ex_lazy is
   mtrue => {say "eval mtrue!"; true}
 
   lst(T type, h T, t Lazy (list T)) list T =>
-    ref : Cons T (list T)
+    ref : Cons T (list T) is
       public redef head => h
       public redef tail => t
 

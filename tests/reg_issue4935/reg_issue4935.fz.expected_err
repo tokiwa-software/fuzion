@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue4935.fz:25:10: error 1: Could not find called feature
+af => ay xxx
+---------^^^
+Feature not found: 'xxx' (no arguments)
+Target feature: 'af'
+In call: 'xxx'
+
+one error.

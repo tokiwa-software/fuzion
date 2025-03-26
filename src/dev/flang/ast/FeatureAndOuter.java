@@ -248,6 +248,11 @@ public class FeatureAndOuter extends ANY
                                      (FeatureName fn) -> fn.equalsExceptId(name),
                                      isCandidate);
 
+    if (found.stream().anyMatch(fao->fao._feature.isFixed()))
+      {
+        found.removeIf(fao->fao._feature.isAbstract());
+      }
+
     return switch (found.size())
       {
       case 0 -> null;

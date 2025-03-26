@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -97,21 +98,15 @@ public class Select extends Call {
   @Override
   public String toString()
   {
-    return _target.toStringWrapped() + "." + (_name == null ? "<not yet known>" : _name) + "." + select();
+    return (_target == null ? "<no target>" : _target.toStringWrapped()) + "." + (_name == null ? "<not yet known>" : _name) + "." + select();
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
   @Override
-  AbstractType typeForInferencing()
+  public AbstractType type()
   {
-    throw new UnsupportedOperationException();
+    Errors.error(pos(), "Implementation restriction, cyclic type inference with select not supported yet.", "");
+    return Types.t_ERROR;
   }
 
 

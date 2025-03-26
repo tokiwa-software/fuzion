@@ -90,10 +90,10 @@ webserver_java is
 
         accept outcome unit =>
           # accept and handle connection
-          ss.accept.bind unit sock->
-            sock.getInputStream.bind unit i->
+          ss.accept.bind sock->
+            sock.getInputStream.bind i->
               input  := jio.BufferedReader.new (jio.InputStreamReader.new i)
-              sock.getOutputStream.bind unit o->
+              sock.getOutputStream.bind o->
                 # helper to read request
                 #
                 read String =>

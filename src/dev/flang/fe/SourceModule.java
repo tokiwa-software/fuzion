@@ -272,9 +272,9 @@ public class SourceModule extends Module implements SrcModule
     var d = _main == null
       ? _universe
       : lookupFeature(_universe, FeatureName.get(_main, 0), null);
-    if (d != null)
+    if (d instanceof Feature f)
       {
-        ((Feature) d)
+        f
           .impl()
           .addInitialCall(plainCall("fuzion_runtime_init"));
       }
@@ -999,10 +999,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
       {
         // NYI: need to check that the scopes are disjunct
         if (existing instanceof Feature ef && ef._scoped && f._scoped
-           || visibilityPreventsConflict(f, existing))
+           || visibilityPreventsConflict(f, existing) || Feature.isAbstractAndFixedPair(f, existing))
           {
             var existingFeatures = FeatureName.getAll(df, fn.baseName(), 0);
-            fn = FeatureName.get(fn.baseName(), 0, existingFeatures.size());
+            fn = FeatureName.get(fn.baseName(), fn.argCount(), existingFeatures.size());
             f.setFeatureName(fn);
           }
         else
@@ -2005,7 +2005,10 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                 else
                   {
                     // NYI: if (!isInherited && !sameModule(f, outer))
-                    AstErrors.duplicateFeatureDeclaration(f1, f2);
+                    if (!Feature.isAbstractAndFixedPair(f1, f2))
+                      {
+                        AstErrors.duplicateFeatureDeclaration(f1, f2);
+                      }
                   }
               }
           }

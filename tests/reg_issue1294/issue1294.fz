@@ -64,7 +64,7 @@ scenario2 is
     type.zero T => abstract
 
     type.sum =>
-      ref : scenario2.M T
+      ref : scenario2.M T is
         fixed redef e => zero
 
   b : a scenario2.b is
@@ -331,7 +331,7 @@ scenario8 is
     valueString String => abstract
 
     type.sum =>
-      ref : Monoid num0.this
+      ref : Monoid num0.this is
         public redef infix ∙ (a, b num0.this) => a.plus b
         public redef e => zero
 

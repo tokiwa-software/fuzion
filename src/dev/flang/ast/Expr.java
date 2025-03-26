@@ -141,14 +141,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or t_ERROR in case it is not known
-   * yet. t_UNDEFINED in case Expr depends on the inferred result type of a
-   * feature that is not available yet (or never will due to circular
-   * inference).
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
    */
   public AbstractType type()
   {
     var result = typeForInferencing();
+    if (CHECKS) check
+      (result != Types.t_UNDEFINED);
     if (result == null)
       {
         result = Types.t_ERROR;
@@ -156,6 +156,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
         // print the problem
         AstErrors.failedToInferType(this);
       }
+    if (POSTCONDITIONS) ensure
+      (result != null,
+       result != Types.t_UNDEFINED);
     return result;
   }
 
@@ -191,7 +194,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param exprs the expression to unionize
    *
-   * @return the union of exprs result type, defaulting to Types.resolved.t_void if
+   * @return the union of exprs result type, null if
    * no expression can be inferred yet.
    */
   static AbstractType union(List<Expr> exprs, Context context)
@@ -628,7 +631,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0
+      (Errors.any()
         || type().isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()

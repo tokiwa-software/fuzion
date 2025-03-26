@@ -268,9 +268,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * resultType returns the result type of this feature using.
    *
-   * @return the result type, t_ERROR in case of an error.  Never
-   * null. Types.t_UNDEFINED in case type inference for this type is cyclic and
-   * hence impossible.
+   * @return the result type, t_ERROR in case of an error.
+   * Never null.
    */
   public abstract AbstractType resultType();
 
@@ -919,7 +918,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               {
                 var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
                                                 : Impl.TYPE_PARAMETER;
-                var constraint0 = t instanceof Feature tf ? tf._returnType.functionReturnType() : t.resultType();
+                var constraint0 = t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType();
                 var constraint = rebaseTypeForCotype(constraint0);
                 var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
                                      Contract.EMPTY_CONTRACT,

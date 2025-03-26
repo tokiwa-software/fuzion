@@ -29,7 +29,7 @@ process_utf8 =>
 
   # create string of given byte size
   get_str(byte_size i32) =>
-    ref : String
+    ref : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
           .map u8 (x -> codepoint.type.zero_char)
@@ -42,21 +42,21 @@ process_utf8 =>
       * =>
 
   test "unicode argument" ()->
-    (os.process.start "echo" ["👋🌏️‼️"]).bind unit p->
+    (os.process.start "echo" ["👋🌏️‼️"]).bind p->
       say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val
 
   test "unicode environment variable" ()->
-    (os.process.start "printenv" ["職場🏢"] (container.ordered_map ["職場🏢"] ["👨‍💻☯️"])).bind unit p->
+    (os.process.start "printenv" ["職場🏢"] (container.ordered_map ["職場🏢"] ["👨‍💻☯️"])).bind p->
       say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val
 
   test "unicode in executable name" ()->
-    (os.process.start "ｉｆ" []).bind unit p->
+    (os.process.start "ｉｆ" []).bind p->
       say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->

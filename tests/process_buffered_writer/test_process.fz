@@ -32,7 +32,7 @@ test_process =>
 
 
   test "write to stdin of process (new)" ()->
-    (os.process.start "cat").bind unit p->
+    (os.process.start "cat").bind p->
       lm : mutate is
       _ := lm ! ()->
         _ := p.with_in unit lm ()->

@@ -1,0 +1,108 @@
+
+--CURDIR--/else_indentation_reference.fz:135:3: error 1: Inconsistent indentation
+  else       "-false::false-"    # 1. should flag an error: inconsistent indentation
+--^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:134:14:
+        else if c1 then "-false::true-"
+-------------^
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
+
+
+--CURDIR--/else_indentation_reference.fz:141:3: error 2: Inconsistent indentation
+  else             "-false::false::false-" # 2. should flag an error: inconsistent indentation
+--^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:140:13:
+       else if c2       "-false::false::true-"
+------------^
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
+
+
+--CURDIR--/else_indentation_reference.fz:148:9: error 3: Inconsistent indentation
+        else "-false::false-"     # 3. should flag an error: inconsistent indentation
+--------^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:146:3:
+  else if c1
+--^
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
+
+
+--CURDIR--/else_indentation_reference.fz:153:5: error 4: Inconsistent indentation
+    else if c1                    # 4. should flag an error: inconsistent indentation
+----^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:151:3:
+  if c0
+--^
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
+
+
+--CURDIR--/else_indentation_reference.fz:162:9: error 5: Inconsistent indentation
+        else  "-false::false-"    # 5. should flag an error: inconsistent indentation
+--------^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:160:3:
+  else if c1
+--^
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
+
+
+--CURDIR--/else_indentation_reference.fz:168:9: error 6: Inconsistent indentation
+        else "-false::false-"     # 6. should flag an error: inconsistent indentation
+--------^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:167:5:
+    if c1 then "-false::true-"
+----^
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
+
+
+--CURDIR--/else_indentation_reference.fz:174:13: error 7: Inconsistent indentation
+            else "-false::false-" # 7. should flag an error: inconsistent indentation
+------------^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:173:5:
+    if c1 then "-false::true-"
+----^
+When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then' or 'else if'.
+
+
+--CURDIR--/else_indentation_reference.fz:178:3: error 8: Inconsistent indentation
+  c0 then "-true-" # 8. should flag an error: inconsistent indentation
+--^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:177:3:
+  if
+--^
+While parsing: term, parse stack: term, opTail, opExpr, operatorExpr (twice), exprInLine, ifexpr, term, opTail, opExpr, operatorExpr (twice), expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:138:3: error 9: Incompatible types in branches of if expression
+  if c0 then "-true-"
+--^^^^^^^^^^^^^^^^^^^
+  else if c1 then "-false::true-"
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+       else if c2       "-false::false::true-"
+-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  else             "-false::false::false-" # 2. should flag an error: inconsistent indentation
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Incompatible result types in different branches:
+blocks return values of type 'String' at --CURDIR--/else_indentation_reference.fz:138:14:
+  if c0 then "-true-"
+-------------^^^^^^^^
+and at --CURDIR--/else_indentation_reference.fz:139:19:
+  else if c1 then "-false::true-"
+------------------^^^^^^^^^^^^^^^
+and at --CURDIR--/else_indentation_reference.fz:141:20:
+  else             "-false::false::false-" # 2. should flag an error: inconsistent indentation
+-------------------^^^^^^^^^^^^^^^^^^^^^^^
+block returns value of type 'unit' at --CURDIR--/else_indentation_reference.fz:140:47:
+       else if c2       "-false::false::true-"
+----------------------------------------------^
+
+
+--CURDIR--/else_indentation_reference.fz:140:16: error 10: Wrong number of actual arguments in call
+       else if c2       "-false::false::true-"
+---------------^^
+Number of actual arguments is 1, while call expects no arguments.
+Called feature: 'c2'
+Formal arguments: 
+Declared at --CURDIR--/else_indentation_reference.fz:26:1:
+c2 := false
+^^
+
+10 errors.

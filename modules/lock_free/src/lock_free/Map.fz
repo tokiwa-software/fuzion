@@ -116,7 +116,7 @@ is
   public redef as_string => "container_node[gen=$gen]({array.as_string ", "})"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
-    array.flat_map (tuple CTK CTV) (b -> b.as_list f)
+    array.flat_map /* NYI: UNDER DEVELOPMENT: type inference */ (tuple CTK CTV) (.as_list f)
          .as_list
 
 
@@ -455,7 +455,7 @@ is
   # clean an indirection node:
   # compress contained container node
   clean(nd option (Indirection_Node CTK CTV), lev u32) =>
-    _ := nd.bind unit i->
+    _ := nd.bind i->
       m := gcas_read i
       _ := match m.data
         c container_node =>
@@ -689,7 +689,7 @@ is
   # NYI: BUG: #3646 make public when snapshots work
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
-    ref : container.Persistent_Map CTK CTV
+    ref : container.Persistent_Map CTK CTV is
       public redef size => s.size
       public redef index [] (k CTK) => s[k]
       public redef items => s.items

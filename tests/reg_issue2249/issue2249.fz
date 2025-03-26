@@ -25,14 +25,14 @@ issue2249 =>
 
   refs =>
     a =>
-      ref : String
+      ref : String is
         public redef utf8 Sequence u8 => []
 
     say (type_of a)
     say a.dynamic_type
 
     b :=
-      ref : String
+      ref : String is
         public redef utf8 Sequence u8 => []
 
     say (type_of b)
@@ -40,13 +40,13 @@ issue2249 =>
 
   vals =>
     a =>
-      ref : unit
+      ref : unit is
 
     say (type_of a)
     say a.dynamic_type
 
     b :=
-      ref : unit
+      ref : unit is
 
     say (type_of b)
     say b.dynamic_type

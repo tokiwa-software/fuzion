@@ -123,7 +123,7 @@ is
       "∅"
     else
       ("\{"
-       + (as_list.map x->x.as_string).fold(String.concat ";")
+       + (as_list.map (.as_string)).fold(String.concat ";")
        + "}")
 
 
@@ -144,6 +144,6 @@ is
   # monoid of Set with infix ∪ operation.
   #
   public type.union =>
-    ref : Monoid (container.Set E)
+    ref : Monoid (container.Set E) is
       public redef infix ∙ (a, b container.Set E) => a ∪ b
       public redef e => (container.Set E).new []
