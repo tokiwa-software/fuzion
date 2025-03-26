@@ -208,7 +208,6 @@ public class Lexer extends SourceFile
     t_private("private"),
     t_module("module"),
     t_public("public"),
-    t_of("of"),
     t_type("type"),
     t_universe("universe"),
     t_eof,               // end of file

@@ -1703,7 +1703,6 @@ actualArgs  : actualSpaces
            t_lbrace          ,
            t_rbrace          ,
            t_is              ,
-           t_of              ,
            t_pre             ,
            t_post            ,
            t_inv             ,
@@ -3427,7 +3426,6 @@ implRout    : ARROW "abstract"
             | ARROW "native"
             | "is" block
             | ARROW block
-            | "of" block
             | fullStop
             ;
    */
@@ -3467,7 +3465,6 @@ implRout    : ARROW "abstract"
                                              }
                                          };
                                        semiState(oldSemiSt); }
-    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
     else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
@@ -3490,7 +3487,6 @@ implFldOrRout   : implRout           // may start at min indent
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
-        currentAtMinIndent() == Token.t_of     ||
         isOperator(true, "=>")                 ||
         isFullStop()                              )
       {
@@ -3539,7 +3535,6 @@ implFldInit : ":=" operatorExpr      // may start at min indent
     return
       currentAtMinIndent() == Token.t_lbrace ||
       currentAtMinIndent() == Token.t_is ||
-      currentAtMinIndent() == Token.t_of ||
       isOperator(true, ":=") ||
       isOperator(true, "=>") ||
       isFullStop();
