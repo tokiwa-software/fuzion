@@ -30,10 +30,10 @@ test_effect_neg is
 
   maybe => envir.args.count > 3
 
-  a : mutate.
-  b : mutate.
-  c : mutate.
-  d : mutate.
+  a : mutate is
+  b : mutate is
+  c : mutate is
+  d : mutate is
   use_a => _ := a.env
   use_b => _ := b.env
   use_c => _ := c.env

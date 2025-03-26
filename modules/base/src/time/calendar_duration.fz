@@ -90,7 +90,7 @@ is
   # create a string representation of this duration.
   #
   public redef as_string String =>
-    lm : mutate.
+    lm : mutate is
     lm ! ()->
       is_positive := lm.env.new bool false
       time_prefix := lm.env.new bool false

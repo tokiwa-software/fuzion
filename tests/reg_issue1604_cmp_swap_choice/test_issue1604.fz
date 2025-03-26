@@ -4,8 +4,8 @@ test_issue1604 is
 
     c : choice large small is
 
-    large(a,b,c,d u64).
-    small(x u8).
+    large(a,b,c,d u64) is
+    small(x u8) is
 
     s := small 0x11
     l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
@@ -25,8 +25,8 @@ test_issue1604 is
 
     c : choice large small is
 
-    large(a,b,c,d u64).
-    small(x u8).
+    large(a,b,c,d u64) is
+    small(x u8) is
 
 
     fill(a,b,c,d,e,f u64, n i32) unit =>

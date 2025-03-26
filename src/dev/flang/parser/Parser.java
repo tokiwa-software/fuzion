@@ -3428,7 +3428,6 @@ implRout    : ARROW "abstract"
             | "is" block
             | ARROW block
             | "of" block
-            | fullStop
             ;
    */
   Impl implRout(boolean hasType)
@@ -3468,7 +3467,6 @@ implRout    : ARROW "abstract"
                                          };
                                        semiState(oldSemiSt); }
     else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', or '=>' in routine declaration", "implRout");
@@ -3491,8 +3489,7 @@ implFldOrRout   : implRout           // may start at min indent
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
         currentAtMinIndent() == Token.t_of     ||
-        isOperator(true, "=>")                 ||
-        isFullStop()                              )
+        isOperator(true, "=>"))
       {
         return implRout(hasType);
       }
@@ -3541,8 +3538,7 @@ implFldInit : ":=" operatorExpr      // may start at min indent
       currentAtMinIndent() == Token.t_is ||
       currentAtMinIndent() == Token.t_of ||
       isOperator(true, ":=") ||
-      isOperator(true, "=>") ||
-      isFullStop();
+      isOperator(true, "=>");
   }
 
 
@@ -4084,57 +4080,26 @@ dot         : "."      // either preceded by white space or not followed by whit
    */
   boolean skipDot()
   {
-    var result = !isFullStop();
-    if (result)
-      {
+    var result = skip('.');
+    if (!result)
+      { // allow dot to appear in new line
+        var oldLine = sameLine(-1);
         result = skip('.');
-        if (!result)
-          { // allow dot to appear in new line
-            var oldLine = sameLine(-1);
-            result = skip('.');
-            sameLine(result ? line() : oldLine);
-          }
+        sameLine(result ? line() : oldLine);
       }
     return result;
   }
 
 
   /**
-   * Check if current is "." but not a fullStop.
+   * Check if current is ".".
    */
   boolean isDot()
   {
-    var result = false;
-    if (!isFullStop())
-      {
-        var oldLine = sameLine(-1);
-        result = isOperator('.');
-        sameLine(oldLine);
-      }
+    var oldLine = sameLine(-1);
+    var result = isOperator('.');
+    sameLine(oldLine);
     return result;
-  }
-
-
-  /**
-   * Check if current is "." followed by white space.
-   */
-  boolean isFullStop()
-  {
-    return isOperator(true, '.') && !ignoredTokenBefore() && ignoredTokenAfter();
-  }
-
-
-  /**
-   * Parse "." followed by white space if it is found
-   *
-fullStop    : "."        // not following white space but followed by white space
-            ;
-   *
-   * @return true iff a "." followed by white space was found and skipped.
-   */
-  boolean skipFullStop()
-  {
-    return isFullStop() && skip('.');
   }
 
 }
