@@ -88,7 +88,8 @@ test_atomic is
   test0 unit_like2 unit unit unit unit ((a,b)-> a.ord=b.ord)
 
   # test bool-like choice
-  on, off is
+  on is
+  off is
   my_switch : choice on off is
     ord => match my_switch.this
       on => 0
@@ -100,7 +101,9 @@ test_atomic is
   test0 my_switch on on off off ((a,b)-> a.ord=b.ord)
 
   # test int-like choice
-  red, yellow, green is
+  red is
+  yellow is
+  green is
   lights : choice red yellow green is
     ord => match lights.this
       red => 0
