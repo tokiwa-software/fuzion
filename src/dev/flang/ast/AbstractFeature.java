@@ -1869,7 +1869,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       && !hasOuterRef()
       && typeArguments().isEmpty()
       && inherits().size() == 1
-      && contract() == Contract.EMPTY_CONTRACT
+      && !Contract.hasPreConditionsFeature(this)
+      && !Contract.hasPostConditionsFeature(this)
       && (code() instanceof Block b && b._expressions.isEmpty())
       && valueArguments()
         .stream()
