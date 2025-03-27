@@ -1012,8 +1012,3 @@ int fzE_is_null(void * p)
     ? 0
     : -1;
 }
-
-void * fzE_to_native(void * p)
-{
-  return p;
-}
