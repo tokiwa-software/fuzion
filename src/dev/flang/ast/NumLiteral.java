@@ -919,11 +919,31 @@ public class NumLiteral extends Constant
   {
     if (_propagatedType != null && _propagatedType.isGenericArgument())
       {
-        var result = new ParsedCall(
-                  new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
-                  new ParsedName(pos(), "from_u32"),
-                  new List<>(this))
-              .resolveTypes(res, _context);
+        Call result;
+
+        if (_originalString.equals("0") || _originalString.equals("0E0"))
+          {
+            result = new ParsedCall(
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedName(pos(), "zero"))
+                  .resolveTypes(res, _context);
+          }
+        else if (_originalString.equals("1") || _originalString.equals("1E0"))
+          {
+            result = new ParsedCall(
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedName(pos(), "one"))
+                  .resolveTypes(res, _context);
+          }
+        else
+          {
+            result = new ParsedCall(
+                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                      new ParsedName(pos(), "from_u32"),
+                      new List<>(this))
+                  .resolveTypes(res, _context);
+          }
+
         _propagatedType = Types.resolved.t_u32;
         return result;
       }
