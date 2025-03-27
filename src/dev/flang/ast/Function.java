@@ -478,11 +478,21 @@ public class Function extends AbstractLambda
 
     if (_type == null)
       {
-        if (_expr.type() != Types.t_ERROR || !Errors.any())
+        var rt = _expr.type();
+        if (CHECKS) check
+          (rt != Types.t_FORWARD_CYCLIC);
+        if (_names.isEmpty() && rt != Types.t_ERROR)
           {
-            AstErrors.noTypeInferenceFromLambda(pos());
+            _type = ResolvedNormalType.create(new List<>(rt), null, null, Types.resolved.f_Nullary);
           }
-        _type = Types.t_ERROR;
+        else
+          {
+            if (rt != Types.t_ERROR || !Errors.any())
+              {
+                AstErrors.noTypeInferenceFromLambda(pos());
+              }
+            _type = Types.t_ERROR;
+          }
       }
     if (POSTCONDITIONS) ensure
       (_type != null,

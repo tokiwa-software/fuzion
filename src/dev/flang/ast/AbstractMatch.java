@@ -141,7 +141,7 @@ public abstract class AbstractMatch extends Expr
   {
     if (_type == null)
       {
-        var t = Expr.union(cases().map2(x -> x.code()), Context.NONE);
+        var t = Expr.union(cases().map2(x -> x.code()), false);
         _type = t != Types.t_ERROR ? t : null;
       }
     return _type;

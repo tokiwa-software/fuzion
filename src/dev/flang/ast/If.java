@@ -162,7 +162,7 @@ public class If extends ExprWithPos
    */
   private AbstractType typeFromBranches()
   {
-    return Expr.union(new List<>(branches()), Context.NONE);
+    return Expr.union(new List<>(branches()));
   }
 
 
