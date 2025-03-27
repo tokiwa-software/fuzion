@@ -2017,7 +2017,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public boolean visitActualsLate() { return true; }
         @Override public void         action(AbstractAssign a) {        a.checkTypes(res,  _context);           }
         @Override public Call         action(Call           c) {        c.checkTypes(res,  _context); return c; }
-        @Override public void         action(Constant       c) {        c.checkRange();                         }
+        @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
         @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
@@ -2169,6 +2169,11 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr  action(If          i) { return i.resolveSyntacticSugar2(res); }
+        @Override
+        public Expr action(Constant c)
+        {
+          return c.resolveSyntacticSugar2(res, _context);
+        }
       });
 
     _state = State.RESOLVED_SUGAR2;
