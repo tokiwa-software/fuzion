@@ -2382,9 +2382,7 @@ A ((Choice)) declaration must not contain a result type.
         result = result.resolve(res, outer().context());
       }
 
-    // NYI: CLEANUP: result != Types.resolved.t_void is currently necessary
-    // to enable cyclic type inference e.g. in reg_issue2182
-    if (result != null && result != Types.resolved.t_void)
+    if (result != null)
       {
         // FORWARD_CYCLIC should be returned only once.
         // We then want to return t_ERROR.

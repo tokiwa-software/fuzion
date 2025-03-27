@@ -47,3 +47,46 @@ typeinference_for_args_negative is
   say (a4 "1.0"       " world!".byte_length)
   say (a4 "10.as_f64" 3.14)
   say (a4 "1.1"       " world!"=" monde!")
+
+
+  # access the type before a call is made:
+  #
+  scenario4 =>
+
+    f(fa option m2) =>
+      _ := [1,2,3].map x->(m1 $x)
+      q => fa.get.y
+      t(p Sequence T) => test "scenario4: type of m2.y is " $T "Type of 'void'"
+      t ((1..0).map x->q)
+
+    m1(x) is
+      #  _ := inner     # -- this is commented out, so there is no call to `m2` at all...
+      inner => m2 x
+
+    m2(y) is
+
+    f nil
+
+  scenario4
+
+
+  # access the type before a call is made:
+  #
+  scenario5 =>
+
+    f(fa option m2) =>
+      q => fa.get.y
+      t(p Sequence T) =>
+        test "scenario4: type of m2.y is " $T "Type of 'void'"
+        _ := [1,2,3].map x->(m1 $x)
+      t ((1..0).map x->q)
+
+    m1(x) is
+      _ := inner
+      inner => m2 x
+
+    m2(y) is
+
+    f nil
+
+  scenario5

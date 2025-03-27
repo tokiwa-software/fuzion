@@ -17,36 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test issue_2182
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# the example from issue #2182:
-#
-# This is not called, the error was in the front end that did not need
-# a call
-#
-test_fib1 =>
-
-  # this example was moved to reg_issue2182_negative
-  # fib(a) => list a (fib a)
-
-# a more useful fibonacci number generator that showed the same problem:
-#
-test_fib2 =>
-
-  # `fib a b` produces a list of fibonacci numbers starting with a and b
-  fib(a,b) => list a (fib b a+b)
-
-  # create an instance of this list starting with 1 1
-  fib0 := fib (u64 1) (u64 1)
-
-  # create fibonacci as a Unary function
-  fib := fib0[]
-
-  # use `fib`
-  for i in 0..50 do
-    say "$i:{fib i}"
-
-test_fib1
-test_fib2
+override NAME = reg_issue3914
+include ../simple.mk
