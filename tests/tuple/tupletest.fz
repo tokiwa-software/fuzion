@@ -95,7 +95,9 @@ tupletest is
 # (one13 i32)    := tuple i32 (42); p "one13 is $one13" // one-tuple using destructure and explicit type
 # (one14 i32)    := tuple i32 (42); p "one14 is $one14" // one-tuple using destructure and inferring generic
 # (one15 i32)    :=           (42); p "one15 is $one15" // one-tuple using destructure and tuple syntax sugar
-  public one16, one17, one18 i32 := 42
+  public one16 i32 := 42
+  public one17 i32 := 42
+  public one18 i32 := 42
 # chck one1.values.0=42 "one1"
   chck one2.values.0=42 "one2"
 # chck one7.values.0=42 "one7"
@@ -119,7 +121,12 @@ tupletest is
 # (two10a, two10b)     := tuple i32 i32  4 2 ; p "two10 is $two10a, $two10b" // two-tuple using destructure and explicit types
   (two11a, two11b)     := tuple          4 2 ; p "two11 is $two11a, $two11b" // two-tuple using destructure and inferring generic
   (two12a, two12b)     :=               (4,2); p "two12 is $two12a, $two12b" // two-tuple using destructure and tuple syntax sugar
-  public two16a, two16b, two17a, two17b, two18a, two18b i32 := 42
+  public two16a i32 := 42
+  public two16b i32 := 42
+  public two17a i32 := 42
+  public two17b i32 := 42
+  public two18a i32 := 42
+  public two18b i32 := 42
 # chck (two1.values.0=4 && two1.values.1=2) "two1"
   chck (two2.values.0=4 && two2.values.1=2) "two2"
   chck (two3.values.0=4 && two3.values.1=2) "two3"
@@ -185,7 +192,9 @@ tupletest is
   chck t11a.values.1=25  "second must be 25"
   chck t11a.values.2=125 "third must be 125"
 
-  t12a1,t12a2,t12a3 i32 := 42
+  t12a1 i32 := 42
+  t12a2 i32 := 42
+  t12a3 i32 := 42
   chck t12a1=42   "first must be 42"
   chck t12a2=42  "second must be 42"
   chck t12a3=42  "third must be 42"
@@ -203,7 +212,9 @@ tupletest is
   chck t12g2=49  "second must be 49"
   chck t12g3=343 "third must be 343"
 
-  public t12h1, t12h2, t12h3 i32 := 42
+  public t12h1 i32 := 42
+  public t12h2 i32 := 42
+  public t12h3 i32 := 42
 
   (_,_,t12i3) := t11 9; chck t12i3=729 "t12i3 must be 729"
   (_,t12i2,_) := t11 9; chck t12i2=81  "t12i2 must be 81"
@@ -212,19 +223,22 @@ tupletest is
   (_,_) := (12, 23)
   (_,_) := (true, 23)
 
-  public t13a1, t13a3 i32 := 42
+  public t13a1 i32 := 42
+  public t13a3 i32 := 42
   public t13a2 bool := false
   (t13d1,_,_) := (01, 12, 23); chck t13d1=01 "t13d1 must be 01"
   (_,t13d2,_) := (01, 12, 23); chck t13d2=12 "t13d2 must be 12"
   (_,_,t13d3) := (01, 12, 23); chck t13d3=23 "t13d3 must be 23"
 
-  public t14a1, t14a3 i32 := 42
+  public t14a1 i32 := 42
+  public t14a3 i32 := 42
   public t14a2 bool := false
   (t14d1,_,_) := (01, true, 23); chck t14d1=01 "t14d1 must be 01"
   (_,t14d2,_) := (01, true, 23); chck t14d2    "t14d2 must be true"
   (_,_,t14d3) := (01, true, 23); chck t14d3=23 "t14d3 must be 23"
 
-  public t15a1, t15a3 i32 := 42
+  public t15a1 i32 := 42
+  public t15a3 i32 := 42
   public t15a2 bool := false
 # (t15a1,_,_) := (01, true, 23); // 28. should flag an error, duplicate declaration
 # (_,t15a2,_) := (01, true, 23); // 28. should flag an error, duplicate declaration

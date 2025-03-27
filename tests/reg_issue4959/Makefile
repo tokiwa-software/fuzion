@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue2111
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-test(T type : property.equatable, a T) =>
-  a1 := concur.atomic a
-  _ := a1.read = a
-
-  on is
-  off is
-  my_switch : choice on off is
-    type.equality(a, b my_switch.this) => true
-  test my_switch on
+override NAME = reg_issue4959
+include ../simple.mk

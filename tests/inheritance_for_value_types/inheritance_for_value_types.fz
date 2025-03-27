@@ -43,7 +43,9 @@ inheritance_for_value_types is
       _ := set_exit_code 1
 
   ra ref is
-    x, y, z (msg String, expected i32) unit => abstract
+    x (msg String, expected i32) unit => abstract
+    y (msg String, expected i32) unit => abstract
+    z (msg String, expected i32) unit => abstract
 
   a : ra is
     redef x (msg String, expected i32) unit => chck msg expected=1
