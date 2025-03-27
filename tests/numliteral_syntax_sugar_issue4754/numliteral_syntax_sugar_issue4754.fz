@@ -24,7 +24,14 @@
 numliteral_syntax_sugar_issue4754 =>
 
   my_data(T type : numeric) is
-    foo(x T) => x + 1
+    foo0(x T) => x + 0 + 0E0
+    foo1(x T) => x * 1 + 1E0
+    foo10(x T) => x + 1E1
+    foo13(x T) => x + 13
 
   d := my_data u64
-  say (d.foo 42)
+
+  say (d.foo0 42)
+  say (d.foo1 41)
+  say (d.foo10 32)
+  say (d.foo13 29)
