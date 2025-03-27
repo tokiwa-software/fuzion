@@ -520,13 +520,9 @@ public class Function extends AbstractLambda
    */
   public Expr resolveSyntacticSugar2(Resolution res)
   {
-    Expr result = this;
-    var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
-    if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
-      {
-        result = _call;
-      }
-    return result;
+    return _call != null
+      ? _call
+      : this;
   }
 
 
@@ -538,6 +534,13 @@ public class Function extends AbstractLambda
   public String toString()
   {
     return _names + " -> " + _expr;
+  }
+
+
+  public Expr checkTypes()
+  {
+    type(); // just for triggering error messages
+    return this;
   }
 
 }

@@ -2842,6 +2842,7 @@ public class Call extends AbstractCall
         if (_actuals.size() !=  fsz)
           {
             AstErrors.wrongNumberOfActualArguments(this);
+            setToErrorState();
           }
         else
           {
