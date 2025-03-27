@@ -2537,40 +2537,43 @@ public class Call extends AbstractCall
    */
   Call resolveTypes(Resolution res, Context context)
   {
-    Call result = this;
     if (_resolvedFor == context)
       {
         return this;
       }
     _resolvedFor = context;
-    if (_calledFeature == null && !loadCalledFeatureUnlessTargetVoid(res, context))
-      { // target of this call results in `void`, so we replace this call by the
-        // target. However, we have to return a `Call` and `_target` is
-        // `Expr`. Solution: we wrap `_target` into a call `universe.id void
-        // _target`.
-        result = new Call(pos(),
-                          Universe.instance,
-                          new List<>(Types.resolved.t_void),
-                          new List<>(_target),
-                          Types.resolved.f_id);
-        result.resolveTypes(res, context);
-      }
 
+    return loadCalledFeatureUnlessTargetVoid(res, context)
+      ? resolveTypes0(res, context)
+      // target of this call results in `void`, so we replace this call by the
+      // target. However, we have to return a `Call` and `_target` is
+      // `Expr`. Solution: we wrap `_target` into a call `universe.id void
+      // _target`.
+      : idVoidCall(res, context);
+  }
+
+
+  /**
+   * resolve types of this call for non void target.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   */
+  private Call resolveTypes0(Resolution res, Context context)
+  {
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
-    if (CHECKS) check
+    if (PRECONDITIONS) require
       (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
 
-    var cf = _calledFeature;
-    if (cf == Types.f_ERROR)
+    if (_calledFeature == Types.f_ERROR)
       {
         _type = Types.t_ERROR;
       }
-    else if (cf != null)
+    else if (_calledFeature != null)
       {
-        _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
-        _generics = _generics.map(g -> g.resolve(res, cf.outer().context()));
-
+        resolveGenerics(res, context);
         propagateForPartial(res, context);
         if (needsToInferTypeParametersFromArgs())
           {
@@ -2586,20 +2589,33 @@ public class Call extends AbstractCall
       }
     resolveTypesOfActuals(res, context);
 
-    if (!res._options.isLanguageServer() &&
-        (targetTypeUndefined() || _pendingError == null && result.typeForInferencing() == Types.t_ERROR))
-      {
-        if (_target instanceof Call tc)
-          {
-            tc.reportPendingError();
-          }
-        else if (_target != null)
-          {
-            var ignore = _target.type();
-          }
-        result = Call.ERROR; // short circuit this call
-      }
+    return isErroneous(res)
+      ? resolveTypesErrorResult()
+      : resolveTypesSuccessResult(res, context);
+  }
 
+
+  /**
+   * create a resolved Call {@code id void}
+   */
+  private Call idVoidCall(Resolution res, Context context)
+  {
+    return new Call(pos(),
+                    Universe.instance,
+                    new List<>(Types.resolved.t_void),
+                    new List<>(_target),
+                    Types.resolved.f_id)
+             .resolveTypes(res, context);
+  }
+
+
+  /**
+   * Try to resolve an immediate function call
+   * or return the call itself.
+   */
+  private Call resolveTypesSuccessResult(Resolution res, Context context)
+  {
+    Call result = this;
     // NYI: Separate pass? This currently does not work if type was inferred
     if (_type != null && _type != Types.t_ERROR)
       {
@@ -2612,6 +2628,43 @@ public class Call extends AbstractCall
       (targetTypeUndefined() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
 
     return  result;
+  }
+
+
+  /**
+   * Is this call in an erroneous state?
+   */
+  private boolean isErroneous(Resolution res)
+  {
+    return !res._options.isLanguageServer() &&
+      (targetTypeUndefined() || _pendingError == null && typeForInferencing() == Types.t_ERROR);
+  }
+
+
+  /**
+   * Report errors of the target and return Call.ERROR
+   */
+  private Call resolveTypesErrorResult()
+  {
+    if (_target instanceof Call tc)
+      {
+        tc.reportPendingError();
+      }
+    else if (_target != null)
+      {
+        var ignore = _target.type();
+      }
+    return Call.ERROR; // short circuit this call
+  }
+
+
+  /**
+   * Resolve the generics of this call.
+   */
+  private void resolveGenerics(Resolution res, Context context)
+  {
+    _generics = FormalGenerics.resolve(res, _generics, context.outerFeature());
+    _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer().context()));
   }
 
 
