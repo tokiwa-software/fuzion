@@ -537,6 +537,10 @@ public class Function extends AbstractLambda
   }
 
 
+  /**
+   * Check whether this Function has a valid type, i.e. is not an error
+   * @return this Function
+   */
   public Expr checkTypes()
   {
     type(); // just for triggering error messages
