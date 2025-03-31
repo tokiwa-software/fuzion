@@ -110,7 +110,7 @@ public wrap_around : integer is
 
 
   # saturating  operations
-  public redef prefix -^ wrap_around.this => if wrapped_on_neg if wrap_around.this > wrap_around.this.zero then wrap_around.this.min else wrap_around.this.max else - wrap_around.this
+  public redef prefix -^ wrap_around.this => if wrapped_on_neg {if wrap_around.this > wrap_around.this.zero then wrap_around.this.min else wrap_around.this.max} else - wrap_around.this
   public redef infix +^ (other wrap_around.this) wrap_around.this => if overflow_on_add other then wrap_around.this.max else if underflow_on_add other then wrap_around.this.min else wrap_around.this + other
   public redef infix -^ (other wrap_around.this) wrap_around.this => if overflow_on_sub other then wrap_around.this.max else if underflow_on_sub other then wrap_around.this.min else wrap_around.this - other
   public redef infix *^ (other wrap_around.this) wrap_around.this => if overflow_on_mul other then wrap_around.this.max else if underflow_on_mul other then wrap_around.this.min else wrap_around.this * other
