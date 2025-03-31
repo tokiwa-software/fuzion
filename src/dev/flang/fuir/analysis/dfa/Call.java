@@ -241,7 +241,11 @@ public class Call extends ANY implements Comparable<Call>, Context
       _cc         != other._cc            ? "cc different" :
       _target._id != other._target._id    ? "target different" :
       _site       != other._site          ? "site different" :
-      Env.compare(_group._usedEffects, env(), other.env())!= 0 ? "env different" : "not different";
+      Env.compare(_real
+                  ? _dfa._effectsRequiredByClazz.get(_cc)
+                  : _group._usedEffects,
+                  env(), other.env())!= 0 ? "env different" + " env1: "+env()+ " env2: "+other.env() + " used "+_group.usedEffectsAsString() +" req "+_group.requiredEffectsAsString()
+                                          : "not different";
   }
 
 
