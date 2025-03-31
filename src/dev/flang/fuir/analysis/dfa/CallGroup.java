@@ -219,11 +219,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
             t.mayHaveEffect(ecl);
           }
         var s = _dfa._fuir.clazzAsString(_cc);
-        if (s.startsWith("instate_helper ") ||
-            s.startsWith("(instate_helper ")    )
-          {
-            needsEffect(ecl);
-          }
       }
   }
 
@@ -273,6 +268,10 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   {
     return s == null ? "{}" : s.stream().map(i->_dfa._fuir.clazzAsString(i)).collect(java.util.stream.Collectors.joining(","));
   }
+  String usedEffectsAsString() { return clazzesAsString(_usedEffects); }
+  String mayHaveEffectsAsString() { return clazzesAsString(_mayHaveEffects); }
+  String requiredEffectsAsString() { return System.identityHashCode(this)+" cc:"+Integer.toHexString(_cc)+" "+clazzesAsString(_dfa._effectsRequiredByClazz.get(_cc)); }
+
 
   void needsEffect(int ecl)
   {
