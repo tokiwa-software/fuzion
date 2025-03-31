@@ -17,21 +17,15 @@ It is unclear whether this semicolon terminates the inner block or not. To solve
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 
 
---CURDIR--/semicolon_ambiguity.fz:35:45: error 4: Ambiguous semicolon in nested blocks.
-  if true then if true then else say "inner"; say "ambiguous"
---------------------------------------------^
-It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
-
-
---CURDIR--/semicolon_ambiguity.fz:39:34: error 5: Ambiguous semicolon in nested blocks.
+--CURDIR--/semicolon_ambiguity.fz:37:34: error 4: Ambiguous semicolon in nested blocks.
       i32       => ()->yak "'$i'"; say " is a number"
 ---------------------------------^
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 
 
---CURDIR--/semicolon_ambiguity.fz:40:34: error 6: Ambiguous semicolon in nested blocks.
+--CURDIR--/semicolon_ambiguity.fz:38:34: error 5: Ambiguous semicolon in nested blocks.
       codepoint => ()->yak "'$c'"; say " is a codepoint"
 ---------------------------------^
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 
-6 errors.
+5 errors.
