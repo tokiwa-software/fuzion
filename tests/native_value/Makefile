@@ -23,7 +23,8 @@
 
 override NAME = native_value
 CLANG_VERSION = $(shell clang --version | head -n 1 | awk '{print $$4}' | cut -d. -f1)
-export C_INCLUDE_PATH = /usr/lib/llvm-$(CLANG_VERSION)/include:/opt/homebrew/include
+# NYI: CLEANUP: use generic include paths
+export C_INCLUDE_PATH = /usr/lib/llvm-$(CLANG_VERSION)/include:/opt/homebrew/opt/llvm/include:opt/homebrew/Cellar/llvm/19.1.7_1/include/:/opt/homebrew/Cellar/llvm@15/15.0.7/include/
 override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=clang-$(CLANG_VERSION)
 override FUZION_C_BACKEND_OPTIONS = "-CLink=clang-$(CLANG_VERSION)" "-CInclude=clang-c/Index.h"
 include ../simple.mk
