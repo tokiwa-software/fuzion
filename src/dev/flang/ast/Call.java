@@ -1568,7 +1568,7 @@ public class Call extends AbstractCall
    * @return a type derived from t where {@code this.type} is replaced by actual types
    * from the call's target where this is possible.
    */
-  private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
+  AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
   {
     /**
      * For a call {@code T.f} on a type parameter whose result type contains
@@ -2884,7 +2884,7 @@ public class Call extends AbstractCall
         if ( !(Errors.any() && _actuals.stream().anyMatch(a->a.typeForInferencing() == Types.t_ERROR)) )
           {
             // Check that generics match formal generic constraints
-            AbstractType.checkActualTypePars(context, _calledFeature, _generics, _unresolvedGenerics, pos());
+            AbstractType.checkActualTypePars(context, this, _calledFeature, _generics, _unresolvedGenerics, pos());
           }
       }
   }
