@@ -783,7 +783,7 @@ public class NumLiteral extends Constant
     else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
     else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
     else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
-    else                                             { return t.isGenericArgument() ? ConstantType.ct_numeric : null;                }
+    else                                             { return t.isGenericArgument() ? ConstantType.ct_numeric : null; }
   }
 
 
@@ -921,14 +921,14 @@ public class NumLiteral extends Constant
       {
         Call result;
 
-        if (_originalString.equals("0") || _originalString.equals("0E0"))
+        if (_originalString.equals("0"))
           {
             result = new ParsedCall(
                           new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
                           new ParsedName(pos(), "zero"))
                   .resolveTypes(res, _context);
           }
-        else if (_originalString.equals("1") || _originalString.equals("1E0"))
+        else if (_originalString.equals("1"))
           {
             result = new ParsedCall(
                           new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),

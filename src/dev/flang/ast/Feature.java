@@ -2169,11 +2169,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr  action(If          i) { return i.resolveSyntacticSugar2(res); }
-        @Override
-        public Expr action(Constant c)
-        {
-          return c.resolveSyntacticSugar2(res, _context);
-        }
+        @Override public Expr action(Constant c)     { return c.resolveSyntacticSugar2(res, _context); }
       });
 
     _state = State.RESOLVED_SUGAR2;
