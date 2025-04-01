@@ -182,7 +182,7 @@ public abstract class Constant extends Expr
    *
    * @param context the source code context where this Expr is used
    */
-  protected Expr resolveSyntacticSugar2(Resolution res, Context _context)
+  protected Expr resolveSyntacticSugar2(Resolution res, Context context)
   {
      return this;
   }
