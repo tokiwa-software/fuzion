@@ -107,8 +107,7 @@ public abstract class Constant extends Expr
   @Override
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.action(this);
-    return this;
+    return v.action(this);
   }
 
 
@@ -172,6 +171,20 @@ public abstract class Constant extends Expr
     return expectedType.isFunctionType() && expectedType.arity() == 0
       ? new Function(_pos, NO_EXPRS, this)
       : this;
+  }
+
+  /**
+   * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
+   * features to be searched for runtime types to be layouted.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Expr is used
+   */
+  protected Expr resolveSyntacticSugar2(Resolution res, Context context)
+  {
+     return this;
   }
 
 }
