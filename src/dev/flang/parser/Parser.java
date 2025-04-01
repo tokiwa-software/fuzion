@@ -83,11 +83,23 @@ public class Parser extends Lexer
    */
   public static boolean ENABLE_SET_KEYWORD = false;
 
-  private boolean _nestedIf = false;
-  private int _lastIfLine = -1;
-  private boolean _elif = false;
-  private SourcePosition _outerElse = null;
-  private SourcePosition _then = null;
+  /**
+   * contains the last line number in which an `if` was found,
+   * required to set the semicolon state for the ambiguous semicolon error
+   */
+  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
+
+  /**
+   * SourcePosition of the outer `else`, null if not in `else` block
+   * required for proper alignment of `if`, `then`, `else` and `else if`
+   */
+  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
+
+  /**
+   * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
+   * required for proper alignment of `if`, `then`, `else` and `else if`
+   */
+  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -2912,31 +2924,40 @@ nextValue   : COMMA exprInLine
 
   /**
    * Parse ifexpr
+   */
+  If ifexpr()
+  {
+    return ifexpr(false);
+  }
+
+  /**
+   * Parse ifexpr
+   *
+   * @param elif is this part of an `else if`
    *
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  If ifexpr()
+  If ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
         SourcePosition ifPos = pos;
 
-        var oldMinIdent = _elif ? null : setMinIndent(tokenPos());
-        _elif = false;
+        var oldMinIdent = elif ? null : setMinIndent(tokenPos());
 
         match(Token.t_if, "ifexpr");
 
-        _nestedIf = _lastIfLine == line();
+        boolean nestedIf = _lastIfLine == line();
         _lastIfLine = line();
         Expr e = exprInLine();
 
         // semi error if in same line
-        if (_nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
+        if (nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
         Block b = thenPart(false);
 
         // reset if new line
-        if (_nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+        if (nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
 
         var elPos = tokenSourcePos();
 
@@ -3009,13 +3030,13 @@ elseBlock   : "else" block
       {
         if (current() == Token.t_if)
           {
-            _elif = true;
+            result = new Block(false, new List<Expr>(ifexpr(true)));
           }
         else
           {
             _outerElse = null;
+            result = block();
           }
-        result = block();
       }
     else
       {
