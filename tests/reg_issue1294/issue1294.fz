@@ -67,7 +67,8 @@ scenario2 is
       ref : scenario2.M T is
         fixed redef e => zero
 
-  b : a scenario2.b is
+#  b : a scenario2.b is    # NYI: unqualified `a` does not work, need to check why
+  b : scenario2.a scenario2.b is
 
     fixed redef type.zero scenario2.b => scenario2.b
 
