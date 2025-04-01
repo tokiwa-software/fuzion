@@ -2405,6 +2405,14 @@ public class AstErrors extends ANY
     error(call.pos(), "Must not call " + ss("<effect>.finally") + ".",
       ss("<effect>.finally") + " is called automatically.");
   }
+  
+  public static void danglingElse(SourcePosition pos)
+  {
+    error(pos,
+          "Ambiguous dangling else",
+          "It is unclear to which " + skw("if") + " the " + skw("else") + " block belongs to."
+          + "\nTo solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
 
 }
 
