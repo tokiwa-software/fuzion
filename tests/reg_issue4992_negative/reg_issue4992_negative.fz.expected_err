@@ -1,0 +1,23 @@
+
+--CURDIR--/reg_issue4992_negative.fz:82:9: error 1: Incompatible type parameter
+      X.i (tuple i32 bool)  # 2. should flag an error: wrong number of type parameters
+--------^
+formal type parameter 'U' with constraint 'tuple i32'
+actual type parameter 'tuple i32 bool'
+
+
+--CURDIR--/reg_issue4992_negative.fz:97:9: error 2: Incompatible type parameter
+      X.i (tuple unit true_) # 3. should flag an error: wrong type parameter `true_` instead of `X`
+--------^
+formal type parameter 'U' with constraint 'tuple unit (reg_issue4992.case5.x.this.type (in type feature))'
+actual type parameter 'tuple unit true_'
+
+
+--CURDIR--/reg_issue4992_negative.fz:64:14: error 3: Constraint for type parameter must not be a type parameter
+      type.i(U type : x.this) =>  # 1. should flag an error: .this-type not allowed directly
+-------------^
+Affected type parameter: 'reg_issue4992.case3.x.type.i.U'
+constraint: 'reg_issue4992.case3.x.this.type (in type feature)'
+To solve this, change the type provided, e.g. to the unconstrained 'type'.
+
+3 errors.

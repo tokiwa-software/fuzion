@@ -1,0 +1,6 @@
+case1 Type of 'tuple unit reg_issue4992.case1.x'
+case1 Type of 'tuple unit reg_issue4992.case1.z'
+case2 Type of 'tuple reg_issue4992.case2.x'
+case2 Type of 'tuple reg_issue4992.case2.z'
+case1b Type of 'tuple unit reg_issue4992.case1b.x'
+case1b Type of 'tuple unit reg_issue4992.case1b.z'
