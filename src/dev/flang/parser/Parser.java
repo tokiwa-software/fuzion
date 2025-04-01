@@ -87,19 +87,19 @@ public class Parser extends Lexer
    * contains the last line number in which an `if` was found,
    * required to set the semicolon state for the ambiguous semicolon error
    */
-  private int _lastIfLine = -1;             // NYI: state in parser should be avoided see #4991
+  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /**
    * SourcePosition of the outer `else`, null if not in `else` block
    * required for proper alignment of `if`, `then`, `else` and `else if`
    */
-  private SourcePosition _outerElse = null; // NYI: state in parser should be avoided see #4991
+  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /**
    * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
    * required for proper alignment of `if`, `then`, `else` and `else if`
    */
-  private SourcePosition _then = null;      // NYI: state in parser should be avoided see #4991
+  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -2924,16 +2924,20 @@ nextValue   : COMMA exprInLine
 
   /**
    * Parse ifexpr
+   */
+  If ifexpr()
+  {
+    return ifexpr(false);
+  }
+
+  /**
+   * Parse ifexpr
    *
    * @param elif is this part of an `else if`
    *
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  If ifexpr()
-  {
-    return ifexpr(false);
-  }
   If ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
