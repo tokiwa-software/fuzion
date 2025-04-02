@@ -223,16 +223,16 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef fold1 (f (A,A)->A) =>
     list.this ? nil    => panic "list.fold1 called on empty list"
-              | c Cons => c.tail.foldf f c.head
+              | c Cons => c.tail.foldf c.head f
 
 
   # fold the elements of this list using the given function
   #
   # e.g., to find the product of a list of i32, use `s.foldf (*) 1`
   #
-  public redef foldf (B type, f (B,A)->B, e B) =>
+  public redef foldf (B type, e B, f (B,A)->B) =>
     list.this ? nil    => e
-              | c Cons => c.tail.foldf f (f e c.head)
+              | c Cons => c.tail.foldf (f e c.head) f
 
 
   # fold the elements of this list using the given monoid right-to-left.
@@ -264,9 +264,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to concat the elements of a list of lists, use foldrf (++) []
   #
-  public redef foldrf (B type, f (A,B)->B, e B) =>
+  public redef foldrf (B type, e B, f (A,B)->B) =>
     list.this ? nil    => e
-              | c Cons => f c.head (c.tail.foldrf f e)
+              | c Cons => f c.head (c.tail.foldrf e f)
 
 
   # map this Sequence to a list that contains the result of folding
@@ -295,10 +295,10 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # e.g., for a list s of i32, s.scan (+) 0 creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public redef scan (T type, f Binary T T A, a T) Sequence T =>
+  public redef scan (T type, a T, f (T,A)->T) Sequence T =>
     match head
       nil => a : nil
-      x A => (a : (tail.scan T f (f a x)).as_list)
+      x A => (a : (tail.scan T (f a x) f).as_list)
 
 
   # scan1 works like its counterpart with an initial value, except
@@ -311,7 +311,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public redef scan1 (f Binary A A A) Sequence A =>
     match head
       nil => (list A).empty
-      x A => (tail.scan A f x).as_list
+      x A => (tail.scan A x f).as_list
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
