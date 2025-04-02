@@ -2163,7 +2163,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = this;
     if (result != Types.t_ERROR && !isGenericArgument())
       {
-        if (!checkActualTypePars(context, null, feature(), generics(), unresolvedGenerics(), null))
+        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null))
           {
             result = Types.t_ERROR;
           }
@@ -2178,10 +2178,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    *
-   * @param call if this is a formal type constraint in a call, this is the
-   * call, otherwise null. This call is used to replace `.this`-types that
-   * depend on the call's target.
-   *
    * @param called the feature that has formal type parameters
    *
    * @param actuals the actual type parameters
@@ -2195,7 +2191,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  static boolean checkActualTypePars(Context context, Call call, AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition callPos)
+  static boolean checkActualTypePars(Context context, AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition callPos)
   {
     var result = true;
     var fi = called.generics().list.iterator();
