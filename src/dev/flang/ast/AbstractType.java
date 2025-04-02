@@ -552,13 +552,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    *
-   * @param call if this is a formal type constraint in a call, this is the
-   * call, otherwise null. This call is used to replace `.this`-types that
-   * depend on the call's target.
-   *
    * @param actual the actual type.
    */
-  boolean constraintAssignableFrom(Context context, Call call, AbstractType actual)
+  boolean constraintAssignableFrom(Context context, AbstractType actual)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -574,16 +570,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual.isGenericArgument())
           {
-            result = constraintAssignableFrom(context, call, actual.genericArgument().constraint(context));
-          }
-        else if (call != null)
-          {
-            // fix for #4992: type constraint `tuple unit x.this` results in error...
-            result = call.adjustThisTypeForTarget(this,
-                                                  true /* is argument (type parameter), used for error msgs only */,
-                                                  call.calledFeature(),
-                                                  context)
-                         .constraintAssignableFrom(context, null, actual);
+            result = constraintAssignableFrom(context, actual.genericArgument().constraint(context));
           }
         else
           {
@@ -596,7 +583,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 for (var p: actual.feature().inherits())
                   {
                     result |= !p.calledFeature().isChoice() &&
-                      constraintAssignableFrom(context, null, p.type().applyTypePars(actual));
+                      constraintAssignableFrom(context, p.type().applyTypePars(actual));
                   }
               }
           }
@@ -613,7 +600,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean constraintAssignableFrom(AbstractType actual)
   {
-    return constraintAssignableFrom(Context.NONE, null, actual);
+    return constraintAssignableFrom(Context.NONE, actual);
   }
 
 
@@ -640,14 +627,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         var g = i1.next();
         var og = i2.next();
-        if (
-          // NYI check recursive type, e.g.:
-          // this  = monad monad.A monad.MA
-          // other = monad option.T (option option.T)
-          // for now just prevent infinite recursion
-            !(g.isGenericArgument() && (g.genericArgument().constraint(context) == this ||
-                                        g.genericArgument().constraint(context).constraintAssignableFrom(context, null, og))))
-          // NYI what if g is not a generic argument?
+        var gt = g.isGenericArgument() ? g.genericArgument().constraint(context) : g;
+        if (// NYI check recursive type, e.g.:
+            // this  = monad monad.A monad.MA
+            // other = monad option.T (option option.T)
+            // for now just prevent infinite recursion
+            gt.compareTo(this) != 0 &&
+
+            !gt.constraintAssignableFrom(context, og))
           {
             return false;
           }
@@ -2238,7 +2225,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             a.checkChoice(pos, context);
             if (!c.isGenericArgument() && // See AstErrors.constraintMustNotBeGenericArgument,
                                           // will be checked in SourceModule.checkTypes(Feature)
-                !c.constraintAssignableFrom(context, call, a))
+                !c.constraintAssignableFrom(context, a))
               {
                 if (!f.typeParameter().isCoTypesThisType())  // NYI: CLEANUP: #706: remove special handling for 'THIS_TYPE'
                   {

@@ -2883,8 +2883,13 @@ public class Call extends AbstractCall
 
         if ( !(Errors.any() && _actuals.stream().anyMatch(a->a.typeForInferencing() == Types.t_ERROR)) )
           {
+            try {
             // Check that generics match formal generic constraints
             AbstractType.checkActualTypePars(context, this, _calledFeature, _generics, _unresolvedGenerics, pos());
+            } catch (Error e) {
+              System.out.println("FOR CALL " + this+" at "+pos().show());
+              //throw e;
+            }
           }
       }
   }
