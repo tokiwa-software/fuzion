@@ -2256,9 +2256,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var subject = feature();
         var found = false;
         AbstractFeature o = context.outerFeature();
-        o = o.isCotype() ? o.cotypeOrigin() : o;
-        while(o != null)
+        while (o != null)
           {
+            o = o.isCotype() ? o.cotypeOrigin() : o;
             if (subject == o)
               {
                 found = true;

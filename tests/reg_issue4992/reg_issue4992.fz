@@ -75,8 +75,6 @@ reg_issue4992 =>
   #
   case2b =>
 
-/* NYI: does not work yet
-
     x is
       i(U type : tuple x.this) =>
         say "case2b $U"
@@ -88,7 +86,6 @@ reg_issue4992 =>
 
     y x
     y z
-*/
 
   case1
   case2
