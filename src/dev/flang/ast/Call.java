@@ -1568,7 +1568,7 @@ public class Call extends AbstractCall
    * @return a type derived from t where {@code this.type} is replaced by actual types
    * from the call's target where this is possible.
    */
-  AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
+  private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
   {
     /**
      * For a call {@code T.f} on a type parameter whose result type contains
