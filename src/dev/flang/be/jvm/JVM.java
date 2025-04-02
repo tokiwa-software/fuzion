@@ -54,6 +54,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -1093,7 +1097,7 @@ should be avoided as much as possible.
       {
         result = result.andThen(layout(_fuir.clazzResultClazz(cc)));
       }
-    var jt = new ClassType(Names.JAVA_LANG_FOREIGN_VALUELAYOUT);
+    var jt = Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT;
     result = result
       .andThen(Expr.iconst(_fuir.clazzArgCount(cc)))
       .andThen(jt.newArray());
@@ -1138,8 +1142,52 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      default -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT);
+      default ->
+        isAddressLike(c)
+          ? Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT)
+          : structLayout(c);
       };
+  }
+
+
+  /**
+   * Build structlayout for clazz c
+   */
+  private Expr structLayout(int c)
+  {
+    var argCount = _fuir.clazzArgCount(c);
+    var result = Expr
+      .iconst(argCount)
+      .andThen(Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.newArray());
+
+    for (int i = 0; i < argCount; i++)
+      {
+        result = result
+          .andThen(Expr.DUP)                             // T[], T[]
+          .andThen(Expr.iconst(i))                       // T[], T[], idx
+          .andThen(layout(_fuir.clazzArgClazz(c, i)))    // T[], T[], idx, data
+          .andThen(Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.xastore()); // T[]
+      }
+
+    return result
+      .andThen(Expr
+      .invokeStatic(
+        Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.className(),
+        "structLayout",
+        "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")"
+            + Names.CT_JAVA_LANG_FOREIGN_STRUCT_LAYOUT.descriptor(),
+        Names.CT_JAVA_LANG_FOREIGN_STRUCT_LAYOUT,
+        -1,
+        true));
+  }
+
+
+  /**
+   * Is the class c effectively an address in native world?
+   */
+  boolean isAddressLike(int c)
+  {
+    return _fuir.clazzIsRef(c) || _fuir.clazzIsArray(c) || _fuir.lookupCall(c) != NO_CLAZZ;
   }
 
 
@@ -1162,6 +1210,10 @@ should be avoided as much as possible.
     return l;
   }
 
+
+  /**
+   * Call constructor (<init>) for class c with zero arguments.
+   */
   Expr new0(int cl)
   {
     var n = _names.javaClass(cl);
@@ -2305,6 +2357,12 @@ should be avoided as much as possible.
       (ecl != FUIR.NO_CLAZZ);
 
     return _effectIds.add(ecl);
+  }
+
+
+  public boolean isValueType(int rt)
+  {
+    return !isAddressLike(rt) && !_types.javaType(rt).isPrimitive();
   }
 
 

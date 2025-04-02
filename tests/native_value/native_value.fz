@@ -24,8 +24,8 @@
 # value types / structs
 
 CXCursor(kind i32 /*cursor_kind*/, xdata i32, data1, data2, data3 Native_Ref) is
-CXString(data Native_Ref, private_flags u32) is
-CXType(kind i32 /*type_kind*/, data1, data2 Native_Ref) is
+CXString(data Native_Ref, private_flags u32, padding i32 /* NYI: padding set manually */) is
+CXType(kind i32 /*type_kind*/, padding i32 /* NYI: padding set manually */, data1, data2 Native_Ref) is
 
 # clang native api definitions
 
@@ -147,6 +147,25 @@ ex =>
     (String.this + codepoint 0).utf8.as_array
 
   header_file := "./fz.h"
+
+
+  # NYI: DFA mark value arg fields as read/written
+  cxc := CXCursor 0 0 ffi.null ffi.null ffi.null
+  cxs := CXString ffi.null 0 0
+  cxt := CXType 0 0 ffi.null ffi.null
+  _ := cxc.kind
+  _ := cxc.xdata
+  _ := cxc.data1
+  _ := cxc.data2
+  _ := cxc.data3
+  _ := cxs.data
+  _ := cxs.private_flags
+  _ := cxs.padding
+  _ := cxt.kind
+  _ := cxt.padding
+  _ := cxt.data1
+  _ := cxt.data2
+
 
   # fzE_to_native(arr array u8) Native_Ref => native
   # args := ["-I/usr/include"]
