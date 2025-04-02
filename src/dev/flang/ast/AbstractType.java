@@ -659,7 +659,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 if (CHECKS) check
                   (call != null && call.calledFeature().isCotype());
               }
-            else // adjust type depnding on all target, required to fix #5001:
+            else // adjust type depending on all target, required to fix #5001:
               {
                 // NYI: CLEANUP: This code is part of what is done in Call.adjustResultType, see comment there.
                 g = tt.actualType(g, context);

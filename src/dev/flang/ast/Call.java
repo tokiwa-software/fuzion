@@ -1489,7 +1489,7 @@ public class Call extends AbstractCall
 
     // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
     // Call.actualArgType and AbstractType.genericsAssignable, might be nice to
-    // consoludate this (i.e., bring the calls to applyTypePars / adjustThisType
+    // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(rt, tt);
     var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
