@@ -70,9 +70,6 @@ jobs:
       - name: make version
         run: make --version
 
-      - name: find clang
-        run: find / -name "libclang*" && exit 1
-
       - name: check shell scripts
         run: make shellcheck
 
