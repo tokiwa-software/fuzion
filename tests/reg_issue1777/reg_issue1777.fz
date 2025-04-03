@@ -28,8 +28,8 @@ reg_issue1777 =>
 
   my_loop i32 =>
     c := (ref : Curry is
-      redef r(x Curry) => x.r x
-    )
+            redef r(x Curry) => x.r x
+         )
     c.r c
 
   _ := my_loop

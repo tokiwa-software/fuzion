@@ -242,11 +242,11 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : modAndNames routOrField
+feature     : modAndName routOrField
             ;
-modAndNames : visibility
+modAndName  : visibility
               modifiers
-              featNames
+              qual
             ;
    */
   FList feature()
@@ -254,7 +254,7 @@ modAndNames : visibility
     var pos = tokenSourcePos();
     var v = visibility();
     var m = modifiers();
-    var n = featNames();
+    var n = qual(true);
     return routOrField(pos, new List<Feature>(), v, m, n, 0);
   }
 
@@ -281,10 +281,8 @@ field       : returnType
               implFldOrRout
             ;
    */
-  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<ParsedName>> n, int i)
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<ParsedName> n, int i)
   {
-    var name = n.get(i);
-    var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt(false);
     var r = returnType();
@@ -298,10 +296,8 @@ field       : returnType
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout(hasType);
     p = handleImplKindOf(pos, p, i == 0, l, inh, v);
-    l.add(new Feature(v,m,r,name,a,inh,c,p,eff));
-    return p2 == null
-      ? new FList(l)
-      : p2.routOrField(pos, l, v, m, n, i+1);
+    l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
+    return new FList(l);
   }
 
 
@@ -851,25 +847,6 @@ modifier    : "redef"
       case t_fixed       : return true;
       default            : return false;
       }
-  }
-
-
-  /**
-   * Parse featNames
-   *
-featNames   : qual (COMMA featNames
-                   |
-                   )
-            ;
-   */
-  List<List<ParsedName>> featNames()
-  {
-    var result = new List<List<ParsedName>>(qual(true));
-    while (skipComma())
-      {
-        result.add(qual(true));
-      }
-    return result;
   }
 
 
@@ -1726,7 +1703,6 @@ actualArgs  : actualSpaces
            t_lbrace          ,
            t_rbrace          ,
            t_is              ,
-           t_of              ,
            t_pre             ,
            t_post            ,
            t_inv             ,
@@ -3318,6 +3294,7 @@ anonymous   : "ref"
    */
   Expr anonymous()
   {
+    var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
     SourcePosition pos = tokenSourcePos();
     if (CHECKS) check
@@ -3329,6 +3306,7 @@ anonymous   : "ref"
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
     var ca = new Call(pos, f);
     sameLine(sl);
+    setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));
   }
 
@@ -3448,8 +3426,6 @@ implRout    : ARROW "abstract"
             | ARROW "native"
             | "is" block
             | ARROW block
-            | "of" block
-            | fullStop
             ;
    */
   Impl implRout(boolean hasType)
@@ -3488,8 +3464,6 @@ implRout    : ARROW "abstract"
                                              }
                                          };
                                        semiState(oldSemiSt); }
-    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', or '=>' in routine declaration", "implRout");
@@ -3511,9 +3485,7 @@ implFldOrRout   : implRout           // may start at min indent
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
-        currentAtMinIndent() == Token.t_of     ||
-        isOperator(true, "=>")                 ||
-        isFullStop()                              )
+        isOperator(true, "=>"))
       {
         return implRout(hasType);
       }
@@ -3560,10 +3532,8 @@ implFldInit : ":=" operatorExpr      // may start at min indent
     return
       currentAtMinIndent() == Token.t_lbrace ||
       currentAtMinIndent() == Token.t_is ||
-      currentAtMinIndent() == Token.t_of ||
       isOperator(true, ":=") ||
-      isOperator(true, "=>") ||
-      isFullStop();
+      isOperator(true, "=>");
   }
 
 
@@ -4105,57 +4075,26 @@ dot         : "."      // either preceded by white space or not followed by whit
    */
   boolean skipDot()
   {
-    var result = !isFullStop();
-    if (result)
-      {
+    var result = skip('.');
+    if (!result)
+      { // allow dot to appear in new line
+        var oldLine = sameLine(-1);
         result = skip('.');
-        if (!result)
-          { // allow dot to appear in new line
-            var oldLine = sameLine(-1);
-            result = skip('.');
-            sameLine(result ? line() : oldLine);
-          }
+        sameLine(result ? line() : oldLine);
       }
     return result;
   }
 
 
   /**
-   * Check if current is "." but not a fullStop.
+   * Check if current is ".".
    */
   boolean isDot()
   {
-    var result = false;
-    if (!isFullStop())
-      {
-        var oldLine = sameLine(-1);
-        result = isOperator('.');
-        sameLine(oldLine);
-      }
+    var oldLine = sameLine(-1);
+    var result = isOperator('.');
+    sameLine(oldLine);
     return result;
-  }
-
-
-  /**
-   * Check if current is "." followed by white space.
-   */
-  boolean isFullStop()
-  {
-    return isOperator(true, '.') && !ignoredTokenBefore() && ignoredTokenAfter();
-  }
-
-
-  /**
-   * Parse "." followed by white space if it is found
-   *
-fullStop    : "."        // not following white space but followed by white space
-            ;
-   *
-   * @return true iff a "." followed by white space was found and skipped.
-   */
-  boolean skipFullStop()
-  {
-    return isFullStop() && skip('.');
   }
 
 }

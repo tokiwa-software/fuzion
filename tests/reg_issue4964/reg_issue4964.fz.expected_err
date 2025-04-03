@@ -1,0 +1,52 @@
+
+--CURDIR--/reg_issue4964.fz:37:7: error 1: Inconsistent indentation
+      public redef utf8 Sequence u8 => "foo".utf8 ++ bar2.utf8  # should flag an error: inconsistent indentation
+------^
+Indentation reference point is --CURDIR--/reg_issue4964.fz:29:5:
+    bar1 := "bar"
+----^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue4964.fz:42:5: error 2: Inconsistent indentation
+    say addfoo2       # NYI: does flag "inconsistent indentation" and "not found" errors that should be avoided
+----^
+Indentation reference point is --CURDIR--/reg_issue4964.fz:26:3:
+  some_local_feature => say "local feature in the test"
+--^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue4964.fz:44:3: error 3: Inconsistent indentation
+  some_local_feature  # NYI: does flag "inconsistent indentation" and "not found" errors that should be avoided
+--^
+Indentation reference point is --CURDIR--/reg_issue4964.fz:24:1:
+reg_issue4964 =>
+^
+While parsing: exprs, parse stack: exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue4964.fz:37:20: error 4: Feature declared using modifier 'redef' does not redefine another feature
+      public redef utf8 Sequence u8 => "foo".utf8 ++ bar2.utf8  # should flag an error: inconsistent indentation
+-------------------^^^^
+Redefining feature: 'reg_issue4964.ex.utf8'
+To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'reg_issue4964.ex.utf8'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'reg_issue4964.ex.utf8' that could be made public to allow redefinition in 'reg_issue4964.ex'.
+
+
+--CURDIR--/reg_issue4964.fz:42:9: error 5: Could not find called feature
+    say addfoo2       # NYI: does flag "inconsistent indentation" and "not found" errors that should be avoided
+--------^^^^^^^
+Feature not found: 'addfoo2' (no arguments)
+Target feature: 'reg_issue4964'
+In call: 'addfoo2'
+
+
+--CURDIR--/reg_issue4964.fz:44:3: error 6: Could not find called feature
+  some_local_feature  # NYI: does flag "inconsistent indentation" and "not found" errors that should be avoided
+--^^^^^^^^^^^^^^^^^^
+Feature not found: 'some_local_feature' (no arguments)
+Target feature: 'universe'
+In call: 'some_local_feature'
+
+6 errors.

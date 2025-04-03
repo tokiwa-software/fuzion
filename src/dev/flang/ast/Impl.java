@@ -231,15 +231,18 @@ public class Impl extends ANY
         //   f type := ?;
         //
         // requires a type
-        if (rt == NoType.INSTANCE)
+        if (!f.isResultField())
           {
-            AstErrors.missingResultTypeForField(f);
-            rt = new FunctionReturnType(Types.t_ERROR);
-          }
-        else if (!(rt instanceof FunctionReturnType))
-          {
-            AstErrors.illegalResultTypeNoInit(f, rt);
-            rt = new FunctionReturnType(Types.t_ERROR);
+            if (rt == NoType.INSTANCE)
+              {
+                AstErrors.missingResultTypeForField(f);
+                rt = new FunctionReturnType(Types.t_ERROR);
+              }
+            else if (!(rt instanceof FunctionReturnType))
+              {
+                AstErrors.illegalResultTypeNoInit(f, rt);
+                rt = new FunctionReturnType(Types.t_ERROR);
+              }
           }
         break;
 
@@ -546,9 +549,6 @@ public class Impl extends ANY
         exprs.add(iv);
       }
     var result = Expr.union(exprs, Context.NONE);
-    // NYI: CLEANUP: the following line is currently necessary
-    // to enable cyclic type inference e.g. in reg_issue2182
-    result = result == null ? Types.resolved.t_void : result;
     if (urgent)
       {
         if (_initialCalls.size() == 0)

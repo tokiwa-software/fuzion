@@ -1,17 +1,9 @@
 
---CURDIR--/reg_issue4251.fz:26:2: error 1: Failed to infer actual type parameters
+--CURDIR--/reg_issue4251.fz:26:6: error 1: Failed to infer actual type parameters
 (say <| (.map **2)) <| (2..10:2)
--^^^
-In call to 'Unary', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T, U'
-Type inference failed for 2 type parameters 'T', 'U'
-
-
---CURDIR--/reg_issue4251.fz:26:21: error 2: Failed to infer actual type parameters
-(say <| (.map **2)) <| (2..10:2)
---------------------^^
+-----^^
 In call to 'infix <|', no actual type parameters are given and inference of the type parameters failed.
 Expected type parameters: 'A, R'
-Type inference failed for one type parameter 'R'
+Type inference failed for 2 type parameters 'A', 'R'
 
-2 errors.
+one error.

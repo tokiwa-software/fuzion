@@ -183,14 +183,46 @@ choice_mix is
     is
       redef rgb => alpha * 256*256*256
 
-    p, q, r, s, t choice red
-                         green
-                         blue
-                         yellow
-                         magenta
-                         black
-                         white
-                         transparent := red
+    p choice red
+             green
+             blue
+             yellow
+             magenta
+             black
+             white
+             transparent := red
+    q choice red
+             green
+             blue
+             yellow
+             magenta
+             black
+             white
+             transparent := red
+    r choice red
+             green
+             blue
+             yellow
+             magenta
+             black
+             white
+             transparent := red
+    s choice red
+             green
+             blue
+             yellow
+             magenta
+             black
+             white
+             transparent := red
+    t choice red
+             green
+             blue
+             yellow
+             magenta
+             black
+             white
+             transparent := red
 
     print(c1 choice red
                    green
@@ -237,14 +269,46 @@ choice_mix is
     is
       redef rgb => alpha * 256*256*256
 
-    p, q, r, s, t red
-                | green
-                | blue
-                | yellow
-                | magenta
-                | black
-                | white
-                | transparent := red
+    p red
+      | green
+      | blue
+      | yellow
+      | magenta
+      | black
+      | white
+      | transparent := red
+    q red
+      | green
+      | blue
+      | yellow
+      | magenta
+      | black
+      | white
+      | transparent := red
+    r red
+      | green
+      | blue
+      | yellow
+      | magenta
+      | black
+      | white
+      | transparent := red
+    s red
+      | green
+      | blue
+      | yellow
+      | magenta
+      | black
+      | white
+      | transparent := red
+    t red
+      | green
+      | blue
+      | yellow
+      | magenta
+      | black
+      | white
+      | transparent := red
 
     print(c1 red
           | green
