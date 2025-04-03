@@ -64,6 +64,9 @@ jobs:
           brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils sqlite shellcheck llvm
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
+      - name: xcode-select # to have libclang available
+        run: sudo xcode-select -s /Library/Developer/CommandLineTools
+
       - name: sed version
         run: sed --version
 
