@@ -52,6 +52,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install sqlite3 libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf pcregrep antlr4 libclang1 libclang-dev
 
+      - name: link libclang
+        # NYI: UNDER DEVELOPMENT: 18 will change when ubuntu-latest changes...
+        run: test -f /usr/lib/llvm-18/lib/libclang.so && sudo ln -s /usr/lib/llvm-18/lib/libclang.so /usr/lib/
+
       - name: check shell scripts
         run: make shellcheck
 
