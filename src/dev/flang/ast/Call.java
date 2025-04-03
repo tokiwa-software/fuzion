@@ -121,6 +121,18 @@ public class Call extends AbstractCall
 
 
   /**
+   * Result of `targetType(Resolution, Context)` to be used after resolution.
+   */
+  protected AbstractType _targetType;
+
+  /**
+   * Type of the target of this call, set during type resolution. `null` if not
+   * set yet.
+   */
+  AbstractType targetType() { return _targetType; }
+
+
+  /**
    * Since _target will be replaced during phases RESOLVING_DECLARATIONS or
    * RESOLVING_TYPES we keep a copy of the original.  We will need the original
    * later to check if there is an ambiguity between the found called feature
@@ -429,6 +441,7 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
+    // NYI: CLEANUP: This is part of what is done in Call.adjustResultType, see comment there.
     AbstractType result = adjustThisTypeForTarget(frmlT, true, arg, context);
     result = targetTypeOrConstraint(res, context)
       .actualType(result, context)
@@ -468,7 +481,7 @@ public class Call extends AbstractCall
   private AbstractType targetType(Resolution res, Context context)
   {
     _target = res.resolveType(_target, context);
-    return
+    _targetType =
       // NYI: CLEANUP: For a type parameter, the feature result type is abused
       // and holds the type parameter constraint.  As a consequence, we have to
       // fix this here and set the type of the target explicitly here.
@@ -478,6 +491,7 @@ public class Call extends AbstractCall
       targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.type()
                                        : targetTypeOrConstraint(res, context);
+    return _targetType;
   }
 
 
@@ -1473,6 +1487,10 @@ public class Call extends AbstractCall
       _target.type().feature().selfType()
       : targetType(res, context);
 
+    // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
+    // Call.actualArgType and AbstractType.genericsAssignable, might be nice to
+    // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
+    // / etc. in the same order and move them to a dedicated function).
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(rt, tt);
     var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
@@ -2885,7 +2903,7 @@ public class Call extends AbstractCall
         if ( !(Errors.any() && _actuals.stream().anyMatch(a->a.typeForInferencing() == Types.t_ERROR)) )
           {
             // Check that generics match formal generic constraints
-            AbstractType.checkActualTypePars(context, _calledFeature, _generics, _unresolvedGenerics, pos());
+            AbstractType.checkActualTypePars(context, _calledFeature, _generics, _unresolvedGenerics, this);
           }
       }
   }
