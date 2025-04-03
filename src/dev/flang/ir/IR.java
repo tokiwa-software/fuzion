@@ -112,7 +112,7 @@ public abstract class IR extends ANY
     /**
      * Can a feature of this kind have an outer ref?
      */
-    boolean mayHaveOuterRef()
+    public boolean mayHaveOuterRef()
     {
       return this == Routine || this == Intrinsic;
     }
