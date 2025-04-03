@@ -83,11 +83,23 @@ public class Parser extends Lexer
    */
   public static boolean ENABLE_SET_KEYWORD = false;
 
-  private boolean _nestedIf = false;
-  private int _lastIfLine = -1;
-  private boolean _elif = false;
-  private SourcePosition _outerElse = null;
-  private SourcePosition _then = null;
+  /**
+   * contains the last line number in which an `if` was found,
+   * required to set the semicolon state for the ambiguous semicolon error
+   */
+  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
+
+  /**
+   * SourcePosition of the outer `else`, null if not in `else` block
+   * required for proper alignment of `if`, `then`, `else` and `else if`
+   */
+  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
+
+  /**
+   * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
+   * required for proper alignment of `if`, `then`, `else` and `else if`
+   */
+  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -1703,7 +1715,6 @@ actualArgs  : actualSpaces
            t_lbrace          ,
            t_rbrace          ,
            t_is              ,
-           t_of              ,
            t_pre             ,
            t_post            ,
            t_inv             ,
@@ -2913,31 +2924,40 @@ nextValue   : COMMA exprInLine
 
   /**
    * Parse ifexpr
+   */
+  If ifexpr()
+  {
+    return ifexpr(false);
+  }
+
+  /**
+   * Parse ifexpr
+   *
+   * @param elif is this part of an `else if`
    *
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  If ifexpr()
+  If ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
         SourcePosition ifPos = pos;
 
-        var oldMinIdent = _elif ? null : setMinIndent(tokenPos());
-        _elif = false;
+        var oldMinIdent = elif ? null : setMinIndent(tokenPos());
 
         match(Token.t_if, "ifexpr");
 
-        _nestedIf = _lastIfLine == line();
+        boolean nestedIf = _lastIfLine == line();
         _lastIfLine = line();
         Expr e = exprInLine();
 
         // semi error if in same line
-        if (_nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
+        if (nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
         Block b = thenPart(false);
 
         // reset if new line
-        if (_nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+        if (nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
 
         var elPos = tokenSourcePos();
 
@@ -3010,13 +3030,13 @@ elseBlock   : "else" block
       {
         if (current() == Token.t_if)
           {
-            _elif = true;
+            result = new Block(false, new List<Expr>(ifexpr(true)));
           }
         else
           {
             _outerElse = null;
+            result = block();
           }
-        result = block();
       }
     else
       {
@@ -3427,8 +3447,6 @@ implRout    : ARROW "abstract"
             | ARROW "native"
             | "is" block
             | ARROW block
-            | "of" block
-            | fullStop
             ;
    */
   Impl implRout(boolean hasType)
@@ -3467,8 +3485,6 @@ implRout    : ARROW "abstract"
                                              }
                                          };
                                        semiState(oldSemiSt); }
-    else if (skip(true, Token.t_of)) { result = new Impl(pos, block()    , Impl.Kind.Of        ); }
-    else if (skipFullStop()        ) { result = new Impl(pos, emptyBlock(),Impl.Kind.Routine   ); }
     else
       {
         syntaxError(tokenPos(), "'is', or '=>' in routine declaration", "implRout");
@@ -3490,9 +3506,7 @@ implFldOrRout   : implRout           // may start at min indent
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
-        currentAtMinIndent() == Token.t_of     ||
-        isOperator(true, "=>")                 ||
-        isFullStop()                              )
+        isOperator(true, "=>"))
       {
         return implRout(hasType);
       }
@@ -3539,10 +3553,8 @@ implFldInit : ":=" operatorExpr      // may start at min indent
     return
       currentAtMinIndent() == Token.t_lbrace ||
       currentAtMinIndent() == Token.t_is ||
-      currentAtMinIndent() == Token.t_of ||
       isOperator(true, ":=") ||
-      isOperator(true, "=>") ||
-      isFullStop();
+      isOperator(true, "=>");
   }
 
 
@@ -4084,57 +4096,26 @@ dot         : "."      // either preceded by white space or not followed by whit
    */
   boolean skipDot()
   {
-    var result = !isFullStop();
-    if (result)
-      {
+    var result = skip('.');
+    if (!result)
+      { // allow dot to appear in new line
+        var oldLine = sameLine(-1);
         result = skip('.');
-        if (!result)
-          { // allow dot to appear in new line
-            var oldLine = sameLine(-1);
-            result = skip('.');
-            sameLine(result ? line() : oldLine);
-          }
+        sameLine(result ? line() : oldLine);
       }
     return result;
   }
 
 
   /**
-   * Check if current is "." but not a fullStop.
+   * Check if current is ".".
    */
   boolean isDot()
   {
-    var result = false;
-    if (!isFullStop())
-      {
-        var oldLine = sameLine(-1);
-        result = isOperator('.');
-        sameLine(oldLine);
-      }
+    var oldLine = sameLine(-1);
+    var result = isOperator('.');
+    sameLine(oldLine);
     return result;
-  }
-
-
-  /**
-   * Check if current is "." followed by white space.
-   */
-  boolean isFullStop()
-  {
-    return isOperator(true, '.') && !ignoredTokenBefore() && ignoredTokenAfter();
-  }
-
-
-  /**
-   * Parse "." followed by white space if it is found
-   *
-fullStop    : "."        // not following white space but followed by white space
-            ;
-   *
-   * @return true iff a "." followed by white space was found and skipped.
-   */
-  boolean skipFullStop()
-  {
-    return isFullStop() && skip('.');
   }
 
 }

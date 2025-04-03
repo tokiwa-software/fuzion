@@ -28,7 +28,8 @@
 #
 test_fib1 =>
 
-  fib(a) => list a (fib a)
+  # this example was moved to reg_issue2182_negative
+  # fib(a) => list a (fib a)
 
 # a more useful fibonacci number generator that showed the same problem:
 #

@@ -503,7 +503,11 @@ public class Function extends AbstractLambda
   {
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
-    return _type;
+    // NYI: UNDER DEVELOPMENT: ugly in case result type is error
+    // we should probably have replaced Function already...
+    return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
+      ? Types.t_ERROR
+      : _type;
   }
 
 
@@ -516,13 +520,9 @@ public class Function extends AbstractLambda
    */
   public Expr resolveSyntacticSugar2(Resolution res)
   {
-    Expr result = this;
-    var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
-    if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
-      {
-        result = _call;
-      }
-    return result;
+    return _call != null
+      ? _call
+      : this;
   }
 
 
@@ -534,6 +534,17 @@ public class Function extends AbstractLambda
   public String toString()
   {
     return _names + " -> " + _expr;
+  }
+
+
+  /**
+   * Check whether this Function has a valid type, i.e. is not an error
+   * @return this Function
+   */
+  public Expr checkTypes()
+  {
+    type(); // just for triggering error messages
+    return this;
   }
 
 }

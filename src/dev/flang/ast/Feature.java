@@ -2017,12 +2017,13 @@ A ((Choice)) declaration must not contain a result type.
         @Override public boolean visitActualsLate() { return true; }
         @Override public void         action(AbstractAssign a) {        a.checkTypes(res,  _context);           }
         @Override public Call         action(Call           c) {        c.checkTypes(res,  _context); return c; }
-        @Override public void         action(Constant       c) {        c.checkRange();                         }
+        @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
         @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         action(Cond           c) {        c.checkTypes();                         }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
+        @Override public Expr         action(Function       f) { return f.checkTypes();                         }
       });
 
     res._module.checkTypes(this);
@@ -2172,6 +2173,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr  action(If          i) { return i.resolveSyntacticSugar2(res); }
+        @Override public Expr action(Constant c)     { return c.resolveSyntacticSugar2(res, _context); }
       });
 
     _state = State.RESOLVED_SUGAR2;
@@ -2385,9 +2387,7 @@ A ((Choice)) declaration must not contain a result type.
         result = result.resolve(res, outer().context());
       }
 
-    // NYI: CLEANUP: result != Types.resolved.t_void is currently necessary
-    // to enable cyclic type inference e.g. in reg_issue2182
-    if (result != null && result != Types.resolved.t_void)
+    if (result != null)
       {
         // FORWARD_CYCLIC should be returned only once.
         // We then want to return t_ERROR.

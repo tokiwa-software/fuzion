@@ -1675,7 +1675,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         var cod = f.code();
         var rt = cod.type();
-        if (!Types.resolved.t_unit.isAssignableFrom(rt) && !(Errors.any() && (rt == Types.t_UNDEFINED || rt == Types.t_ERROR)))
+
+        if (CHECKS) check
+          (Errors.any() || rt != Types.t_ERROR);
+
+        if (!Types.resolved.t_unit.isAssignableFrom(rt) && rt != Types.t_ERROR)
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }

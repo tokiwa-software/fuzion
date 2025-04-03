@@ -1,7 +1,11 @@
 
---CURDIR--/reg_issue2715.fz:24:20: error 1: Failed to infer type of expression.
+--CURDIR--/reg_issue2715.fz:24:20: error 1: Illegal forward or cyclic type inference
 fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs
 -------------------^^^^
-Expression with unknown type: 'fibs'
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'fibs' at --CURDIR--/reg_issue2715.fz:24:1:
+fibs => { 0 : (1 : fibs.zip (fibs.drop 1) (+))}; say fibs
+^^^^
 
 one error.

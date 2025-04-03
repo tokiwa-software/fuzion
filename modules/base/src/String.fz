@@ -738,7 +738,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # helper type for the result of the cut feature
   #
-  private:public cut_result (public before String, public after String, public found bool).
+  private:public cut_result (public before String, public after String, public found bool) is
 
 
   # Cuts out the first appearance of the string sep from this string, in other words,

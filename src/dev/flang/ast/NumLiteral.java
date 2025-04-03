@@ -61,7 +61,8 @@ public class NumLiteral extends Constant
     ct_u64 (false, 8),
     // ct_f16 (11, 5),   -- NYI: support for f16
     ct_f32 (24, 8),
-    ct_f64 (53, 11);
+    ct_f64 (53, 11),
+    ct_numeric(false, 4);
     // ct_f128 (113, 15),   -- NYI: support for f128
     // ct_f256 (237, 19),   -- NYI: support for f256
 
@@ -438,9 +439,7 @@ public class NumLiteral extends Constant
   @Override
   AbstractType typeForUnion()
   {
-    // NYI: UNDER DEVELOPMENT: This seems to work even if we always return null
-    // here.  Need to check if we can just always return null for a union.
-    return _propagatedType;
+    return null;
   }
 
 
@@ -784,7 +783,7 @@ public class NumLiteral extends Constant
     else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
     else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
     else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
-    else                                             { return null;                }
+    else                                             { return t.isGenericArgument() ? ConstantType.ct_numeric : null; }
   }
 
 
@@ -912,6 +911,46 @@ public class NumLiteral extends Constant
     bb.putInt(ct._bytes);
     bb.put(result);
     return bb.array();
+  }
+
+
+  @Override
+  protected Expr resolveSyntacticSugar2(Resolution res, Context _context)
+  {
+    if (_propagatedType != null && _propagatedType.isGenericArgument())
+      {
+        Call result;
+
+        if (_originalString.equals("0"))
+          {
+            result = new ParsedCall(
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedName(pos(), "zero"))
+                  .resolveTypes(res, _context);
+          }
+        else if (_originalString.equals("1"))
+          {
+            result = new ParsedCall(
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedName(pos(), "one"))
+                  .resolveTypes(res, _context);
+          }
+        else
+          {
+            result = new ParsedCall(
+                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                      new ParsedName(pos(), "from_u32"),
+                      new List<>(this))
+                  .resolveTypes(res, _context);
+          }
+
+        _propagatedType = Types.resolved.t_u32;
+        return result;
+      }
+    else
+      {
+        return this;
+      }
   }
 
 
