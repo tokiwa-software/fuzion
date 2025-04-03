@@ -665,10 +665,13 @@ class CodeGen
    */
   private Pair<Expr, Expr> callNative(int si, List<Expr> args, int cc, int rt)
   {
+    if (PRECONDITIONS) require
+      (_fuir.clazzOuterRef(cc) == NO_CLAZZ);
+
     Pair<Expr, Expr> res;
-    check(_fuir.clazzOuterRef(cc) == NO_CLAZZ);
-    var invokeDescr = "("
-      + nativeArgDescriptor(cc)
+    var invokeDescr =
+      "("
+        + nativeArgDescriptor(cc)
       + ")"
       + nativeResultTypeDescriptor(rt).descriptor();
 

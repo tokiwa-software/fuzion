@@ -106,7 +106,16 @@ public abstract class IR extends ANY
     Intrinsic,
     Abstract,
     Choice,
-    Native
+    Native;
+
+
+    /**
+     * Can a feature of this kind have an outer ref?
+     */
+    boolean mayHaveOuterRef()
+    {
+      return this == Routine || this == Intrinsic;
+    }
   }
 
 

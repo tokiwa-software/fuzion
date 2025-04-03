@@ -1862,7 +1862,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  protected boolean isRecordLike()
+  /**
+   * Check if this feature qualifies to be a
+   * native value, i.e. a struct.
+   */
+  protected boolean mightBeNativeValue()
   {
     return isConstructor()
       && !isRef()
@@ -1877,8 +1881,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         .map(va -> va.resultType())
         .allMatch(rt ->
              Types.resolved.numericTypes.contains(rt)
-             || true
-             || !rt.isGenericArgument() && rt.feature().isRecordLike());
+             || Types.resolved.legalNativeResultTypes.contains(rt)
+             || !rt.isGenericArgument() && rt.feature().mightBeNativeValue());
   }
 
 

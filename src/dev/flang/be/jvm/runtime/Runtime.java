@@ -85,6 +85,9 @@ import dev.flang.util.StringHelpers;
 public class Runtime extends ANY
 {
 
+  /* NYI: UNDER DEVELOPMENT: memory leak */
+  private static Arena arena = Arena.global();
+
   /*-----------------------------  classes  -----------------------------*/
 
 
@@ -1396,14 +1399,16 @@ public class Runtime extends ANY
    *
    * @param desc the FunctionDescriptor of the function
    *
+   * NYI: CLEANUP: remove param libraries. do init of library lookup once at program start.
+   *
    * @return
    */
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto());
+    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), arena);
     for (String library : libraries)
       {
-        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), Arena.ofAuto()));
+        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), arena));
       }
 
     var memSeg = llu
@@ -1419,7 +1424,7 @@ public class Runtime extends ANY
     // if first argument is a segment allocator
     // the native method returns a value type (struct)
     return params.size() > 0 && params.getFirst() == SegmentAllocator.class
-      ? result.bindTo(Arena.ofAuto())
+      ? result.bindTo(arena)
       : result;
   }
 
@@ -1455,17 +1460,17 @@ public class Runtime extends ANY
    */
   public static MemorySegment obj2MemorySegment(Object obj)
   {
-    if      (obj instanceof byte   [] arr) { return Arena.ofAuto().allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof short  [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof char   [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof int    [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof long   [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof float  [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof double [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    if      (obj instanceof byte   [] arr) { return arena.allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof short  [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof char   [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof int    [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof long   [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof float  [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof double [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
     else if (obj instanceof MemorySegment memSeg) { return memSeg; }
     else if (obj instanceof Object [] arr)
       {
-        var argsArray = Arena.ofAuto().allocate(arr.length * 8);
+        var argsArray = arena.allocate(arr.length * 8);
         for (int i = 0; i < arr.length; i++)
           {
             argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
@@ -1491,7 +1496,7 @@ public class Runtime extends ANY
   {
     var cl = obj.getClass();
     var df = cl.getDeclaredFields();
-    var result = Arena.ofAuto().allocate(byteSize(df));
+    var result = arena.allocate(byteSize(df));
     long offset = 0;
     for (int i = 0; i < df.length; i++)
       {
@@ -1756,7 +1761,7 @@ public class Runtime extends ANY
 
         return Linker
           .nativeLinker()
-          .upcallStub(handle, desc, Arena.ofAuto());
+          .upcallStub(handle, desc, arena);
       }
     catch (IllegalAccessException e)
       {
