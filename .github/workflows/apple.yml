@@ -57,6 +57,7 @@ jobs:
       - name: Set environment variables
         run: |
           echo "CPATH=/opt/homebrew/include:$CPATH" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=/usr/lib:/opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/:$LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: install dependencies
         run: |

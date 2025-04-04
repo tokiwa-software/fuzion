@@ -24,8 +24,6 @@
 
 override PATH := $(PATH):$(shell pwd)
 
-export LIBRARY_PATH := /usr/lib:/opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/:$(LIBRARY_PATH)
-
 all: jvm c int
 
 compile_unicode_feature:
