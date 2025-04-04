@@ -32,8 +32,6 @@ semicolon_ambiguity =>
 
   if true then if true then say "inner"; say "ambiguous"
 
-  if true then if true then else say "inner"; say "ambiguous"
-
   match_test_2(val choice i32 codepoint) ()->unit =>
     match val
       i32       => ()->yak "'$i'"; say " is a number"
