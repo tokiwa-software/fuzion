@@ -668,7 +668,6 @@ class CodeGen
     if (PRECONDITIONS) require
       (_fuir.clazzOuterRef(cc) == NO_CLAZZ);
 
-    Pair<Expr, Expr> res;
     var invokeDescr =
       "("
         + nativeArgDescriptor(cc)
@@ -689,8 +688,7 @@ class CodeGen
           ))                                                                                    // rt
           .andThen(copyValueResultToFuzion(rt))                                                 // rt
           .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments));           // rt
-    res = makePair(memoryHandlerInvoke, rt);
-    return res;
+    return makePair(memoryHandlerInvoke, rt);
   }
 
 
@@ -739,16 +737,16 @@ class CodeGen
   private Expr copyValueResultToFuzion(int rt)
   {
     return _jvm.isAddressLike(rt) || _types.javaType(rt).isPrimitive()
-      ? Expr.NOP
+      ? Expr.UNIT
       : Expr
-        .classconst((ClassType)_types.javaType(rt))
-        .andThen(Expr.SWAP)
-        .andThen(Expr.invokeStatic
+        .classconst((ClassType)_types.javaType(rt))     // memSeg, class
+        .andThen(Expr.SWAP)                             // class, memSeg
+        .andThen(Expr.invokeStatic                      // Object
             (Names.RUNTIME_CLASS,
             "memorySegment2Value",
             "(" + Types.JAVA_LANG_CLASS.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")" + Names.JAVA_LANG_OBJECT.descriptor(),
             Names.JAVA_LANG_OBJECT))
-        .andThen(Expr.checkcast(_types.javaType(rt)));
+        .andThen(Expr.checkcast(_types.javaType(rt)));  // rt
   }
 
 

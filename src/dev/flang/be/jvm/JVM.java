@@ -1163,15 +1163,14 @@ should be avoided as much as possible.
     for (int i = 0; i < argCount; i++)
       {
         result = result
-          .andThen(Expr.DUP)                             // T[], T[]
-          .andThen(Expr.iconst(i))                       // T[], T[], idx
-          .andThen(layout(_fuir.clazzArgClazz(c, i)))    // T[], T[], idx, data
+          .andThen(Expr.DUP)                                           // T[], T[]
+          .andThen(Expr.iconst(i))                                     // T[], T[], idx
+          .andThen(layout(_fuir.clazzArgClazz(c, i)))                  // T[], T[], idx, data
           .andThen(Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.xastore()); // T[]
       }
 
-    return result
-      .andThen(Expr
-      .invokeStatic(
+    return result                                                      // T[]
+      .andThen(Expr.invokeStatic(                                      // StructLayout
         Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.className(),
         "structLayout",
         "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")"
