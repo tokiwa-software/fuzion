@@ -20,43 +20,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionWorkspaceService
+ * Source of class ComputationPerformance
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp;
 
-import java.util.concurrent.CompletableFuture;
+package dev.flang.shared.records;
 
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
-import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.WorkspaceService;
-
-import dev.flang.lsp.feature.Commands;
-import dev.flang.shared.Context;
-
-public class FuzionWorkspaceService implements WorkspaceService
-{
-
-  @Override
-  public void didChangeConfiguration(DidChangeConfigurationParams params)
-  {
-    Context.Logger.Log("[Workspace] received config change.");
-    FuzionLanguageServer.RefetchClientConfig();
-  }
-
-  @Override
-  public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
-  {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
-  {
-    return Commands.Execute(params);
-  }
-
-
-}
+/**
+ * wraps the result of a computation and the time it took to compute the result.
+ */
+public record ComputationPerformance<T> (T result, long nanoSeconds){}
