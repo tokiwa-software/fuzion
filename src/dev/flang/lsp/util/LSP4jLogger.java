@@ -20,43 +20,52 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionWorkspaceService
+ * Source of class LSP4jLogger
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp;
+package dev.flang.lsp.util;
 
-import java.util.concurrent.CompletableFuture;
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
 
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
-import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.WorkspaceService;
+import dev.flang.lsp.Config;
+import dev.flang.shared.Logger;
+import dev.flang.util.ANY;
 
-import dev.flang.lsp.feature.Commands;
-import dev.flang.shared.Context;
-
-public class FuzionWorkspaceService implements WorkspaceService
+public class LSP4jLogger extends ANY implements Logger
 {
-
-  @Override
-  public void didChangeConfiguration(DidChangeConfigurationParams params)
+  private void message(String str, MessageType messageType)
   {
-    Context.Logger.Log("[Workspace] received config change.");
-    FuzionLanguageServer.RefetchClientConfig();
+    if (Config.languageClient() == null)
+      {
+        return;
+      }
+    Config.languageClient().logMessage(new MessageParams(messageType, str));
   }
 
   @Override
-  public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
+  public void Error(String str)
   {
-    // TODO Auto-generated method stub
+    message(str, MessageType.Error);
   }
 
   @Override
-  public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
+  public void Warning(String str)
   {
-    return Commands.Execute(params);
+    message(str, MessageType.Warning);
   }
 
+  @Override
+  public void Info(String str)
+  {
+    message(str, MessageType.Info);
+  }
+
+  @Override
+  public void Log(String str)
+  {
+    message(str, MessageType.Log);
+  }
 
 }

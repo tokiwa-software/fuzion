@@ -56,27 +56,199 @@ import org.eclipse.lsp4j.services.NotebookDocumentService;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import dev.flang.lsp.feature.Commands;
+import dev.flang.lsp.feature.Completion;
+import dev.flang.lsp.feature.SemanticToken;
+import dev.flang.lsp.feature.SignatureHelper;
+import dev.flang.shared.Concurrency;
+import dev.flang.shared.Context;
+
 /**
  * Implementation of the language server
  */
 public class FuzionLanguageServer implements LanguageServer
 {
+
   @Override
-  public WorkspaceService getWorkspaceService()
+  public CompletableFuture<InitializeResult> initialize(InitializeParams params)
   {
-    return new FuzionWorkspaceService();
+    Config.setClientCapabilities(params.getCapabilities());
+
+    Context.Logger.Log("[client capabilites] " + Config.getClientCapabilities().toString());
+
+    final InitializeResult res = new InitializeResult(getServerCapabilities());
+
+    return CompletableFuture.supplyAsync(() -> res);
   }
 
   @Override
-  public TextDocumentService getTextDocumentService()
+  public void cancelProgress(WorkDoneProgressCancelParams params)
   {
-    return new FuzionTextDocumentService();
+    // TODO Auto-generated method stub
+    LanguageServer.super.cancelProgress(params);
+  }
+
+  private static ConfigurationParams configurationRequestParams()
+  {
+    var configItem = new ConfigurationItem();
+    configItem.setSection("fuzion");
+    var configParams = new ConfigurationParams(List.of(configItem));
+    return configParams;
   }
 
   @Override
-  public void exit()
+  public void initialized(InitializedParams params)
   {
-    System.exit(0);
+    Context.Logger.Log("[Client] initialized");
+    RefetchClientConfig();
+    RegisterChangeConfiguration();
+  }
+
+  private void RegisterChangeConfiguration()
+  {
+    Concurrency.MainExecutor.submit(() -> {
+      if (!Config.getClientCapabilities().getWorkspace().getDidChangeConfiguration().getDynamicRegistration())
+        {
+          Context.Logger.Log("[Config] Client does not support dynamic registration of `did change configuration`.");
+          return;
+        }
+      try
+        {
+          Config.languageClient()
+            .registerCapability(new RegistrationParams(
+              List.of(new Registration("698a8988-ecb4-46bc-a910-a78c60fdfadb", "workspace/didChangeConfiguration"))))
+            .get(10, TimeUnit.SECONDS);
+        }
+      catch (Exception e)
+        {
+          Context.Logger.Error("[Config] failed registering workspace/didChangeConfiguration.");
+        }
+        Context.Logger.Log("[Config] registered workspace/didChangeConfiguration.");
+    });
+  }
+
+  public static void RefetchClientConfig()
+  {
+    Concurrency.MainExecutor.submit(() -> {
+      try
+        {
+          if (Config.getClientCapabilities().getWorkspace().getConfiguration())
+            {
+              var config =
+                Config.languageClient().configuration(configurationRequestParams()).get(10, TimeUnit.SECONDS);
+              Config.setConfiguration(config);
+            }
+        }
+      catch (Exception e)
+        {
+          Context.Logger.Warning("failed getting configuration from client");
+        }
+    });
+  }
+
+  private ServerCapabilities getServerCapabilities()
+  {
+    var capabilities = new ServerCapabilities();
+    initializeInlayHints(capabilities);
+    initializeCompletion(capabilities);
+    initializeHover(capabilities);
+    initializeDefinition(capabilities);
+    initializeReferences(capabilities);
+    initializeHighlights(capabilities);
+    initializeRename(capabilities);
+    initializeCodeActions(capabilities);
+    initializeCommandExecutions(capabilities);
+    initializeDocumentSymbol(capabilities);
+    initializeCodeLens(capabilities);
+    initializeSignatureHelp(capabilities);
+    initializeSemanticTokens(capabilities);
+    capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
+    return capabilities;
+  }
+
+  private void initializeSemanticTokens(ServerCapabilities capabilities)
+  {
+    // NYI support delta
+    // NYI support range
+    capabilities.setSemanticTokensProvider(
+      new SemanticTokensWithRegistrationOptions(SemanticToken.Legend, new SemanticTokensServerFull(false), false));
+  }
+
+  private void initializeCommandExecutions(ServerCapabilities capabilities)
+  {
+    var commands = Arrays.stream(Commands.values())
+      .map(c -> c.name())
+      .collect(Collectors.toList());
+    capabilities.setExecuteCommandProvider(new ExecuteCommandOptions(commands));
+  }
+
+  private void initializeInlayHints(ServerCapabilities capabilities)
+  {
+    capabilities.setInlayHintProvider(false /* NYI: BUG inlay hints broken */);
+  }
+
+  private void initializeSignatureHelp(ServerCapabilities capabilities)
+  {
+    capabilities
+      .setSignatureHelpProvider(new SignatureHelpOptions(Arrays.asList(SignatureHelper.TriggerCharacters.values())
+        .stream()
+        .map(x -> x.toString())
+        .collect(Collectors.toList())));
+  }
+
+  private void initializeCodeLens(ServerCapabilities capabilities)
+  {
+    // NYI implement code lens resolve
+    capabilities.setCodeLensProvider(new CodeLensOptions(false));
+  }
+
+  private void initializeDocumentSymbol(ServerCapabilities capabilities)
+  {
+    capabilities.setDocumentSymbolProvider(true);
+  }
+
+  private void initializeCodeActions(ServerCapabilities capabilities)
+  {
+    capabilities.setCodeActionProvider(true);
+  }
+
+  private void initializeRename(ServerCapabilities capabilities)
+  {
+    capabilities.setRenameProvider(new RenameOptions(true));
+  }
+
+  private void initializeReferences(ServerCapabilities capabilities)
+  {
+    capabilities.setReferencesProvider(true);
+  }
+
+  private void initializeHighlights(ServerCapabilities capabilities)
+  {
+    capabilities.setDocumentHighlightProvider(true);
+  }
+
+  private void initializeDefinition(ServerCapabilities serverCapabilities)
+  {
+    serverCapabilities.setDefinitionProvider(true);
+  }
+
+  private void initializeHover(ServerCapabilities serverCapabilities)
+  {
+    var hoverOptions = new HoverOptions();
+    hoverOptions.setWorkDoneProgress(Boolean.FALSE);
+    serverCapabilities.setHoverProvider(hoverOptions);
+  }
+
+  private void initializeCompletion(ServerCapabilities serverCapabilities)
+  {
+    CompletionOptions completionOptions = new CompletionOptions();
+    completionOptions.setResolveProvider(Boolean.FALSE);
+    completionOptions.setTriggerCharacters(
+      Arrays.asList(Completion.TriggerCharacters.values())
+        .stream()
+        .map(x -> x.toString())
+        .collect(Collectors.toList()));
+    serverCapabilities.setCompletionProvider(completionOptions);
   }
 
   @Override
@@ -86,12 +258,32 @@ public class FuzionLanguageServer implements LanguageServer
   }
 
   @Override
-  public CompletableFuture<InitializeResult> initialize(InitializeParams params)
+  public void exit()
   {
-    var capabilities = new ServerCapabilities();
-    var res = new InitializeResult(capabilities);
-    return CompletableFuture.supplyAsync(() -> res);
+    System.exit(0);
   }
 
+  @Override
+  public TextDocumentService getTextDocumentService()
+  {
+    return new FuzionTextDocumentService();
+  }
 
+  @Override
+  public WorkspaceService getWorkspaceService()
+  {
+    return new FuzionWorkspaceService();
+  }
+
+  @Override
+  public NotebookDocumentService getNotebookDocumentService()
+  {
+    return new FuzionNotebookService();
+  }
+
+  @Override
+  public void setTrace(SetTraceParams params)
+  {
+    Config.setTrace(params.getValue());
+  }
 }
