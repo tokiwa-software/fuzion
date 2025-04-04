@@ -1093,7 +1093,7 @@ should be avoided as much as possible.
       {
         result = result.andThen(layout(_fuir.clazzResultClazz(cc)));
       }
-    var jt = new ClassType(Names.JAVA_LANG_FOREIGN_VALUELAYOUT);
+    var jt = Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT;
     result = result
       .andThen(Expr.iconst(_fuir.clazzArgCount(cc)))
       .andThen(jt.newArray());
@@ -1162,6 +1162,10 @@ should be avoided as much as possible.
     return l;
   }
 
+
+  /**
+   * Byte code to call constructor with zero arguments of class c.
+   */
   Expr new0(int cl)
   {
     var n = _names.javaClass(cl);
