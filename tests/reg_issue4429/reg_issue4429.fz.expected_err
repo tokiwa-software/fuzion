@@ -1,0 +1,15 @@
+
+--CURDIR--/reg_issue4429.fz:26:17: error 1: Failed to infer type of expression.
+  for x in true ? [0] : 1..2 do
+----------------^
+Expression with unknown type: ''
+
+
+--CURDIR--/reg_issue4429.fz:26:17: error 2: Failed to infer actual type parameters
+  for x in true ? [0] : 1..2 do
+----------------^
+In call to 'bool.ternary ? :', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+2 errors.
