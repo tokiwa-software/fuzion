@@ -490,5 +490,4 @@ void * fzE_null(void);
 // returns 0 if p is NULL
 int fzE_is_null(void * p);
 
-
 #endif /* fz.h  */
