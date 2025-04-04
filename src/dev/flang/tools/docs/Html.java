@@ -762,7 +762,7 @@ public class Html extends ANY
    */
   private String featureAbsoluteURL(AbstractFeature f)
   {
-    return config.docsRoot() + "/" + lm.name() + featureAbsoluteURL0(f) + "/";
+    return config.docsRoot() + "/" + lf(f)._libModule.name() + featureAbsoluteURL0(f) + "/";
   }
 
   private static String featureAbsoluteURL0(AbstractFeature f)
