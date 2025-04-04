@@ -40,7 +40,13 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
+import dev.flang.be.jvm.runtime.Any;
 import dev.flang.lsp.enums.Transport;
+import dev.flang.lsp.util.LSP4jLogger;
+import dev.flang.shared.Concurrency;
+import dev.flang.shared.Context;
+import dev.flang.shared.ErrorHandling;
+import dev.flang.shared.IO;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
@@ -50,8 +56,79 @@ import dev.flang.util.Errors;
 public class Main extends ANY
 {
 
+  public static void main(String[] args) throws Exception
+  {
+    IO.Init(line -> {
+      if (Config.languageClient() != null)
+        Config.languageClient().logMessage(new MessageParams(MessageType.Log, "out: " + line));
+    }, line -> {
+      if (Config.languageClient() != null)
+        Config.languageClient().logMessage(new MessageParams(MessageType.Error, "err: " + line));
+    });
 
-  /**
+    Context.Logger = new LSP4jLogger();
+
+    System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
+    Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
+
+    /*
+    Servers usually support different communication channels (e.g. stdio, pipes, …).
+    To ease the usage of servers in different clients it is highly recommended that a server implementation
+    supports the following command line arguments to pick the communication channel:
+
+    stdio: uses stdio as the communication channel.
+    pipe: use pipes (Windows) or socket files (Linux, Mac) as the communication channel.
+          The pipe / socket file name is passed as the next arg or with --pipe=.
+    socket: uses a socket as the communication channel. The port is passed as next arg or with --port=.
+    node-ipc: use node IPC communication between the client and the server. This is only support if both client and server run under node.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#implementationConsiderations
+     */
+
+    if (hasArg(args, "-stdio"))
+      {
+        Config.setTransport(Transport.stdio);
+      }
+    else if (hasArg(args, "-pipe"))
+      {
+        // NYI
+        printUsageAndExit();
+      }
+    else if (hasArg(args, "-socket"))
+      {
+        Config.setTransport(Transport.socket);
+        var port = getArg(args, "--port");
+        if (port.isEmpty())
+          {
+            printUsageAndExit();
+            return;
+          }
+        Config.setServerPort(Integer.parseInt(port.get()));
+      }
+    else
+      {
+        printUsageAndExit();
+      }
+
+
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+      @Override
+      public void uncaughtException(Thread arg0, Throwable arg1)
+      {
+        ErrorHandling.WriteStackTrace(arg1);
+      }
+    });
+
+    var launcher = launcher();
+    launcher.startListening();
+    var languageClient = launcher.getRemoteProxy();
+
+    Config.setLanguageClient(languageClient);
+
+  }
+
+
+    /**
    * In case of wrong arguments this is called to
    * print usage information and exit with a none zero
    * exit code.
@@ -70,7 +147,7 @@ public class Main extends ANY
   {
     return Arrays.stream(args).map(arg -> arg.trim()).anyMatch(arg -> arg.startsWith(str));
   }
-
+  
 
   /**
    * For an arg like -socket=8080 extract the value (8080)
@@ -87,15 +164,15 @@ public class Main extends ANY
   /**
    * get launcher for language server for given parameters
    */
-  private static Launcher<LanguageClient> launcher(Transport t, int port) throws InterruptedException, ExecutionException, IOException
+  private static Launcher<LanguageClient> launcher() throws InterruptedException, ExecutionException, IOException
   {
     var server = new FuzionLanguageServer();
-    switch (t)
+    switch (Config.transport())
       {
       case stdio :
         return buildLauncher(server, IO.SYS_IN, IO.SYS_OUT);
       case socket :
-        try (var serverSocket = new ServerSocket(port))
+        try (var serverSocket = new ServerSocket(Config.getServerPort()))
           {
             IO.SYS_OUT.println("Property os.name: " + System.getProperty("os.name"));
             IO.SYS_OUT.println("socket opened on port: " + serverSocket.getLocalPort());
@@ -103,7 +180,8 @@ public class Main extends ANY
             return buildLauncher(server, socket.getInputStream(), socket.getOutputStream());
           }
       default:
-        Errors.fatal("Language server transport not yet implemented.");
+        IO.SYS_OUT.print("NYI: " + Config.transport());
+        ErrorHandling.WriteStackTrace();
         return null;
       }
   }
@@ -119,62 +197,8 @@ public class Main extends ANY
       .setRemoteInterface(LanguageClient.class)
       .setInput(in)
       .setOutput(out)
-      // NYI: .setExecutorService(Concurrency.MainExecutor)
+      .setExecutorService(Concurrency.MainExecutor)
       .create();
   }
-
-
-  public static void main(String[] args) throws Exception
-  {
-    System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
-    Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
-
-    /*
-    Servers usually support different communication channels (e.g. stdio, pipes, …).
-    To ease the usage of servers in different clients it is highly recommended that a server implementation
-    supports the following command line arguments to pick the communication channel:
-
-    stdio: uses stdio as the communication channel.
-    pipe: use pipes (Windows) or socket files (Linux, Mac) as the communication channel.
-          The pipe / socket file name is passed as the next arg or with --pipe=.
-    socket: uses a socket as the communication channel. The port is passed as next arg or with --port=.
-    node-ipc: use node IPC communication between the client and the server. This is only support if both client and server run under node.
-
-    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#implementationConsiderations
-     */
-
-    Transport transport = Transport.stdio;
-    int port = -1;
-
-    if (hasArg(args, "-stdio"))
-      {
-        transport = Transport.stdio;
-      }
-    else if (hasArg(args, "-pipe"))
-      {
-        // NYI: UNDER DEVELOPMENT:
-        printUsageAndExit();
-      }
-    else if (hasArg(args, "-socket="))
-      {
-        transport = Transport.socket;
-        var p = getArg(args, "-socket");
-        if (p.isEmpty())
-          {
-            printUsageAndExit();
-            return;
-          }
-        port = Integer.parseInt(p.get());
-      }
-    else
-      {
-        printUsageAndExit();
-      }
-
-    var launcher = launcher(transport, port);
-    launcher.startListening();
-    var languageClient = launcher.getRemoteProxy();
-  }
-
 
 }
