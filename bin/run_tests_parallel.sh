@@ -61,7 +61,7 @@ portable_nproc() {
     if [ "$OS" = "Linux" ]; then
         NPROCS="$(nproc --all)"
     elif [ "$OS" = "Darwin" ] || \
-         [ "$(echo "$OS" | grep -q BSD)" = "BSD" ]; then
+         [ "$(echo "$OS" | grep --quiet BSD)" = "BSD" ]; then
         NPROCS="$(sysctl -n hw.ncpu)"
     else
         NPROCS="$(getconf _NPROCESSORS_ONLN || echo 4)"  # glibc/coreutils fallback
@@ -84,7 +84,7 @@ renice -n 19 $$ > /dev/null
 
 BUILD_DIR=$1
 TARGET=$2
-TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname | sort)
+TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs --null --max-args=1 dirname | sort)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
@@ -110,7 +110,7 @@ for test in $TESTS; do
       echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
     else
       START_TIME="$(nanosec)"
-      if timeout --kill-after=600s 600s make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
+      if timeout --kill-after=600s 600s make "$TARGET" --environment-overrides --directory="$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
          TEST_RESULT=true
       else
          TEST_RESULT=false
@@ -144,7 +144,7 @@ grep failed$ "$BUILD_DIR"/run_tests.results || true
 NUM_SLOWEST=5
 echo ""
 echo "Slowest $NUM_SLOWEST tests using $TARGET backend:"
-sed -E 's|\./build/tests/([^\]+)\sin\s(.*):\sok|\2 \1|g' "$BUILD_DIR"/run_tests.results | sort -t 'm' -k1,1nr | head -n $NUM_SLOWEST
+sed --regexp-extended 's|\./build/tests/([^\]+)\sin\s(.*):\sok|\2 \1|g' "$BUILD_DIR"/run_tests.results | sort --field-separator='m' -k1,1nr --buffer-size=100M | head --lines=$NUM_SLOWEST
 echo ""
 
 if [ "$FAILED" -ge 1 ]; then

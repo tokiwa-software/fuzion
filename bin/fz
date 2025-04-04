@@ -68,7 +68,7 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
   $FUZION_JAVA \
   $FUZION_JAVA_OPTIONS \
   $FUZION_JAVA_ADDITIONAL_OPTIONS \
-  -cp "$FUZION_JAVA_CLASSPATH" \
+  --class-path "$FUZION_JAVA_CLASSPATH" \
   -Dline.separator="$LINE_SEPARATOR" \
   -Dfile.encoding=UTF-8 \
   -Dfuzion.home="$FUZION_HOME" \
