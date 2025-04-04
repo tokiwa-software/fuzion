@@ -105,7 +105,7 @@ is
   #
   #     (open "example.txt").bind (fd->read fd 42)
   #
-  public bind(B type, f T -> outcome B) outcome B =>
+  public fixed bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
                  | e error => e
 
