@@ -197,7 +197,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * @return the union of exprs result type, null if
    * no expression can be inferred yet.
    */
-  static AbstractType union(List<Expr> exprs, Context context)
+  static AbstractType union(List<Expr> exprs) { return union(exprs, false); }
+  static AbstractType union(List<Expr> exprs, boolean urgent)
   {
     AbstractType t = Types.resolved.t_void;
 
@@ -211,7 +212,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
         if (et != null)
           {
             foundType = true;
-            t = t.union(et, context);
+            t = t.union(et, Context.NONE);
           }
       }
 
@@ -230,11 +231,11 @@ public abstract class Expr extends ANY implements HasSourcePosition
     foundType = false;
     for (var e : exprs)
       {
-        var et = e.typeForInferencing();
+        var et = urgent ? e.type() : e.typeForInferencing();
         if (et != null)
           {
             foundType = true;
-            result = result.union(et, context);
+            result = result.union(et, Context.NONE);
           }
       }
 
