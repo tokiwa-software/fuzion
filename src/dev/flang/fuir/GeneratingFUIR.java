@@ -1097,9 +1097,22 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     var or = c.outerRef();
-    return or == null || c._outer.isUnitType() || !c.clazzKind().mayHaveOuterRef()
-        ? NO_CLAZZ
-        : or._id;
+    return hasOuterRef(c, or)
+      ? or._id
+      : NO_CLAZZ;
+  }
+
+
+  /**
+   * check if c needs and has an outer ref
+   *
+   * @param c the clazz that
+   *
+   * @param or the outer ref clazz, may be null
+   */
+  private boolean hasOuterRef(Clazz c, Clazz or)
+  {
+    return c.clazzKind().mayHaveOuterRef() && outerRefNeeded(or);
   }
 
 
@@ -1189,7 +1202,7 @@ public class GeneratingFUIR extends FUIR
             var pf = (LibraryFeature) p.calledFeature();
             var of = pf.outerRef();
             Clazz or = (of == null) ? null : c.lookup(of);
-            var needsOuterRef = (or != null && (!or.resultClazz().isUnitType()));
+            var needsOuterRef = outerRefNeeded(or);
             toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
             while (inhe.size() < code.size()) { inhe.add(inh); }
             while (_inh.size() < _allCode.size()) { _inh.add(inh); }
@@ -1237,6 +1250,17 @@ public class GeneratingFUIR extends FUIR
         while (inhe.size() < code.size()) { inhe.add(inh); }
         while (_inh.size() < _allCode.size()) { _inh.add(inh); }
       }
+  }
+
+
+  /**
+   * checks if the outer reference clazz is needed.
+   *
+   * @param or the outer reference clazz, may be null
+   */
+  private boolean outerRefNeeded(Clazz or)
+  {
+    return or != null && !or.resultClazz().isUnitType();
   }
 
 

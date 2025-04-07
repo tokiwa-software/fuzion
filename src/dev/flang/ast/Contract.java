@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -758,6 +759,11 @@ public class Contract extends ANY
     // add precondition feature
     if (requiresPreConditionsFeature(f) && f._preBoolFeature == null)
       {
+        // NYI: UNDER DEVELOPMENT:
+        if (f.kind() != Kind.Routine && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract)
+          {
+            Errors.error(fc._hasPre, "Implementation restriction: pre-condition for " + f.kind() + " not supported yet.", "");
+          }
 
         /*
     // tag::fuzion_rule_SEMANTIC_CONTRACT_PRE_ORDER[]
@@ -1021,6 +1027,13 @@ all of their redefinition to `true`. +
     // add postcondition feature
     if (requiresPostConditionsFeature(f) && f._postFeature == null)
       {
+        // NYI: UNDER DEVELOPMENT:
+        if (f.kind() != Kind.Routine && f.kind() != Kind.Abstract)
+          {
+            Errors.error(fc._hasPost, "Implementation restriction: post-condition for " + f.kind() + " not supported yet.", "");
+          }
+
+
         // TRICKY: if f is constructor, post condition is an inner feature of f
         //         otherwise it is defined alongside of f.
         var name = postConditionsFeatureName(f);

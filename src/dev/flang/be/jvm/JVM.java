@@ -1211,7 +1211,7 @@ should be avoided as much as possible.
 
 
   /**
-   * Call constructor (<init>) for class c with zero arguments.
+   * Byte code to call constructor with zero arguments of class c.
    */
   Expr new0(int cl)
   {

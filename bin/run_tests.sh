@@ -32,7 +32,7 @@ set -eu
 
 BUILD_DIR=$1
 TARGET=$2
-TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname | sort)
+TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs --null --max-args=1 dirname | sort)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
@@ -64,7 +64,7 @@ for test in $TESTS; do
     echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
   else
     START_TIME="$(nanosec)"
-    if timeout --kill-after=600s 600s make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
+    if timeout --kill-after=600s 600s make "$TARGET" --environment-overrides --directory="$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
        TEST_RESULT=true
     else
        TEST_RESULT=false
