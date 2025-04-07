@@ -1141,7 +1141,7 @@ public class Call extends AbstractCall
     var result = typeForInferencing();
     if (result == null)
       {
-        result = hasPendingError || _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR)
+        result = hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR)
           ? Types.t_ERROR
           : Types.t_FORWARD_CYCLIC;
         setToErrorState0();

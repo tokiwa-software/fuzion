@@ -459,8 +459,8 @@ public class Function extends AbstractLambda
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
-          (Errors.any() || _inheritsCall == inheritsCall2);
-        _type = _call.type();
+          (Errors.any() || _inheritsCall == inheritsCall2,
+           _type == null || _type.isAssignableFrom(_call.type()));
       }
   }
 
@@ -507,6 +507,9 @@ public class Function extends AbstractLambda
     // we should probably have replaced Function already...
     return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
       ? Types.t_ERROR
+      // we have a lambda with no args and the expr type is inferrable
+      : _type == null && _names.isEmpty() && _expr.typeForInferencing() != null
+      ? ResolvedNormalType.create(Types.resolved.f_Lazy, new List<>(_expr.typeForInferencing()))
       : _type;
   }
 
