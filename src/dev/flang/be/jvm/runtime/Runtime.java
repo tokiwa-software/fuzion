@@ -1441,7 +1441,7 @@ public class Runtime extends ANY
     else if (obj instanceof long   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof MemorySegment) {}
+    else if (obj instanceof MemorySegment) { /* NYI: UNDER DEVELOPMENT */ }
     else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
       {
         for (int i = 0; i < arr.length; i++)

@@ -577,7 +577,12 @@ class CodeGen
         break;
       case Native   :
         {
-          res = callNative(si, args, cc, rt);
+          if (CHECKS) check
+            (_types.clazzNeedsCode(cc),
+             !(cc == _fuir.clazzAt(si) && // calling myself
+             _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
+
+          res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
       case Intrinsic:
@@ -663,7 +668,7 @@ class CodeGen
    * @param rt
    * @return
    */
-  private Pair<Expr, Expr> callNative(int si, List<Expr> args, int cc, int rt)
+  private Expr callNative(int si, List<Expr> args, int cc, int rt)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzOuterRef(cc) == NO_CLAZZ);
@@ -675,20 +680,34 @@ class CodeGen
       + nativeResultTypeDescriptor(rt).descriptor();
 
     var localSlotsOfMemorySegments = new List<Integer>();
-    Expr memoryHandlerInvoke =
-      Expr.getstatic(_names.javaClass(cc),
+    return Expr
+          .getstatic(_names.javaClass(cc),
                      Names.METHOD_HANDLE_FIELD_NAME,
                      Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                                   // MethodHandle
           .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
-          .andThen(Expr.invokeVirtual(
-            Names.JAVA_LANG_INVOKE_METHODHANDLE,
-            "invokeExact",
-            invokeDescr,
-            nativeResultTypeDescriptor(rt)
-          ))                                                                                    // rt
-          .andThen(copyValueResultToFuzion(rt))                                                 // rt
-          .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments));           // rt
-    return makePair(memoryHandlerInvoke, rt);
+          .andThen(invokeMethodHandle(rt, invokeDescr))                                        // rt
+          .andThen(copyValueResultToFuzion(rt))                                                // rt
+          .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments))           // rt
+          .is(_types.javaType(rt));
+  }
+
+
+  /**
+   * Invoke the methodHandle on the stack
+   * with given descriptor and return type.
+   *
+   * @param rt
+   * @param invokeDescr
+   * @return
+   */
+  private Expr invokeMethodHandle(int rt, String invokeDescr)
+  {
+    return Expr.invokeVirtual(
+      Names.JAVA_LANG_INVOKE_METHODHANDLE,
+      "invokeExact",
+      invokeDescr,
+      nativeResultTypeDescriptor(rt)
+    );
   }
 
 
@@ -760,18 +779,13 @@ class CodeGen
     for (int i = 0; i < args.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
-        var isCall = _fuir.lookupCall(at) != NO_CLAZZ;
-        if (!args.get(i).type().isPrimitive() && !isCall)
+        if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at))
           {
             result = result
                 .andThen(args.get(i))
                 .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
-                .andThen(Expr.invokeStatic(
-                  Names.RUNTIME_CLASS,
-                  "memorySegment2Obj",
-                  "(" + Names.JAVA_LANG_OBJECT.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")V",
-                  PrimitiveType.type_void));
+                .andThen(invokeMemorySegment2Obj());
             slot++;
           }
       }
@@ -779,6 +793,19 @@ class CodeGen
     if (CHECKS) check
       (slot == slotsOfMemorySegments.size());
     return result;
+  }
+
+
+  /**
+   * byte code to invoke memorySegment2Obj
+   */
+  private Expr invokeMemorySegment2Obj()
+  {
+    return Expr.invokeStatic(
+      Names.RUNTIME_CLASS,
+      "memorySegment2Obj",
+      "(" + Names.JAVA_LANG_OBJECT.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")V",
+      PrimitiveType.type_void);
   }
 
 
@@ -804,7 +831,7 @@ class CodeGen
             result = result
               .andThen(args.get(i));
           }
-        else
+        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
           {
             var slot = _jvm.allocLocal(si, 1);
             slots.addLast(slot);
@@ -814,6 +841,12 @@ class CodeGen
                 .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
                 .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+          }
+        else
+          {
+            result = result
+                .andThen(args.get(i))
+                .andThen(invokeObj2MemorySegment());
           }
       }
     return result;

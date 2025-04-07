@@ -1007,6 +1007,10 @@ should be avoided as much as possible.
              Names.METHOD_HANDLE_FIELD_NAME,
              Names.CT_JAVA_LANG_INVOKE_METHODHANDLE.descriptor());
     var rt = _fuir.clazzResultClazz(cl);
+
+    if (CHECKS) check
+      (!fieldExists(_fuir.clazzResultField(cl)));
+
     cf.addToClInit(
       Expr
         .stringconst(_fuir.clazzNativeName(cl))                                        // String
