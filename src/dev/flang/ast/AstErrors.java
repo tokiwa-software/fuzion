@@ -2376,6 +2376,14 @@ public class AstErrors extends ANY
           "To solve, this specify a legal type.");
   }
 
+  public static void danglingElse(SourcePosition pos)
+  {
+    error(pos,
+          "Ambiguous dangling else",
+          "It is unclear to which " + skw("if") + " the " + skw("else") + " block belongs to."
+          + "\nTo solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
 }
 
 /* end of file */
