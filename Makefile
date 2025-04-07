@@ -126,6 +126,7 @@ MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
+MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -448,7 +449,8 @@ FZ_MODULES = \
 			$(MOD_BASE) \
 			$(MOD_TERMINAL) \
 			$(MOD_LOCK_FREE) \
-			$(MOD_NOM)
+			$(MOD_NOM) \
+			$(MOD_CLANG)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -678,6 +680,12 @@ $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -save-module=$@
+
+$(MOD_CLANG): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/clang/src -name "*.fz")
+	rm -rf $(@D)/clang
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/clang $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/clang/src -save-module=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
@@ -1331,8 +1339,8 @@ spellcheck:
 # currently only examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=clang,java.base,java.datatransfer,java.xml,java.desktop -no-backend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=clang,java.base,java.datatransfer,java.xml,java.desktop -no-backend
 
 .PHONY: add_simple_test
 add_simple_test: no-java

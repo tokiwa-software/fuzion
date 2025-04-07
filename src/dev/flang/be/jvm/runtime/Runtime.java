@@ -36,6 +36,8 @@ import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
+import java.lang.foreign.StructLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.ValueLayout.OfBoolean;
@@ -55,9 +57,11 @@ import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
@@ -80,6 +84,9 @@ import dev.flang.util.StringHelpers;
 @SuppressWarnings({"rawtypes"})
 public class Runtime extends ANY
 {
+
+  /* NYI: UNDER DEVELOPMENT: memory leak */
+  private static Arena arena = Arena.global();
 
   /*-----------------------------  classes  -----------------------------*/
 
@@ -1385,7 +1392,6 @@ public class Runtime extends ANY
   }
 
 
-
   /**
    * Find the method handle of a native function
    *
@@ -1393,23 +1399,35 @@ public class Runtime extends ANY
    *
    * @param desc the FunctionDescriptor of the function
    *
+   * NYI: CLEANUP: remove param libraries. do init of library lookup once at program start.
+   *
    * @return
    */
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto());
+    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), arena);
     for (String library : libraries)
       {
-        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), Arena.ofAuto()));
+        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), arena));
       }
+
     var memSeg = llu
       .find(str)
       .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str));
 
-    return Linker
+    var result = Linker
       .nativeLinker()
       .downcallHandle(memSeg, desc);
+
+    var params = result.type().parameterList();
+
+    // if first argument is a segment allocator
+    // the native method returns a value type (struct)
+    return params.size() > 0 && params.getFirst() == SegmentAllocator.class
+      ? result.bindTo(arena)
+      : result;
   }
+
 
   /**
    * copy the contents of memSeg to obj
@@ -1423,7 +1441,7 @@ public class Runtime extends ANY
     else if (obj instanceof long   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
     else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof MemorySegment) {}
+    else if (obj instanceof MemorySegment) { /* NYI: UNDER DEVELOPMENT */ }
     else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
       {
         for (int i = 0; i < arr.length; i++)
@@ -1432,7 +1450,7 @@ public class Runtime extends ANY
           }
       }
     else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
-    else { throw new Error("NYI memorySegment2Obj: " + obj.getClass()); }
+    else { /* NYI: check if value type */ }
   }
 
 
@@ -1442,24 +1460,134 @@ public class Runtime extends ANY
    */
   public static MemorySegment obj2MemorySegment(Object obj)
   {
-    if      (obj instanceof byte   [] arr) { return Arena.ofAuto().allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof short  [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof char   [] arr) { return Arena.ofAuto().allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof int    [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof long   [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof float  [] arr) { return Arena.ofAuto().allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof double [] arr) { return Arena.ofAuto().allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    if      (obj instanceof byte   [] arr) { return arena.allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof short  [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof char   [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof int    [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof long   [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof float  [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof double [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
     else if (obj instanceof MemorySegment memSeg) { return memSeg; }
     else if (obj instanceof Object [] arr)
       {
-        var argsArray = Arena.ofAuto().allocate(arr.length * 8);
+        var argsArray = arena.allocate(arr.length * 8);
         for (int i = 0; i < arr.length; i++)
           {
             argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
           }
         return argsArray;
       }
-    else { throw new Error("NYI obj2MemorySegment: " + obj.getClass()); }
+    else
+      {
+        return value2MemorySegment(obj);
+      }
+  }
+
+
+  /**
+   * copy fuzion value to a memory segment
+   *
+   * @param obj, e.g. point(a,b i32) is
+   *
+   * @return the memory segment that has been filled with
+   * the data of the obj.
+   */
+  private static MemorySegment value2MemorySegment(Object obj)
+  {
+    var cl = obj.getClass();
+    var df = cl.getDeclaredFields();
+    var result = arena.allocate(byteSize(df));
+    long offset = 0;
+    for (int i = 0; i < df.length; i++)
+      {
+        var ft = df[i].getType();
+        setMemSeg(result, df[i], offset, obj);
+        offset += byteCount(ft);
+      }
+    return result;
+  }
+
+
+  /**
+   * copy data of field f from source to target at given offset.
+   */
+  private static void setMemSeg(MemorySegment target, Field f, long offset, Object source)
+  {
+    try
+      {
+        if (f.getType() == int.class)
+          {
+            target.set(ValueLayout.JAVA_INT, offset, f.getInt(source));
+          }
+        if (f.getType() == Object.class)
+          {
+            target.set(ValueLayout.ADDRESS, offset, (MemorySegment)f.get(source));
+          }
+      }
+    catch (Exception e)
+      {
+        Errors.fatal(e);
+      }
+  }
+
+
+  /**
+   * the sizeof the struct that has the given fields
+   */
+  private static int byteSize(Field[] fields)
+  {
+    var result = 0;
+    for (int i = 0; i < fields.length; i++)
+      {
+        result += byteCount(fields[i].getType());
+      }
+    return result;
+  }
+
+
+  /**
+   * create a new fuzion value, an fill
+   * it with the data in memSeg.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T memorySegment2Value(Class<T> cl, MemorySegment memSeg)
+    throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+  {
+    var constructor = cl.getConstructors()[0];
+    var result = constructor.newInstance();
+    var fields = cl.getDeclaredFields();
+
+    if (memSeg.byteSize() == 0)
+      {
+        memSeg = memSeg.reinterpret(byteSize(fields));
+      }
+
+    long offset = 0;
+    for (int i = 0; i < fields.length; i++)
+      {
+        var ft = fields[i].getType();
+        fields[i].set(result, extractFromMemSegment(memSeg, ft, offset));
+        offset += byteCount(ft);
+      }
+
+    return (T)result;
+  }
+
+
+  /**
+   * count of bytes need for class c
+   */
+  private static int byteCount(Class<?> c)
+  {
+    if (c == int.class)
+      {
+        return 4;
+      }
+    if (c == Object.class)
+      {
+        return 8;
+      }
+    throw new Error("byteCount missing impl. for: " + c);
   }
 
 
@@ -1584,6 +1712,35 @@ public class Runtime extends ANY
           {
             handle = handle.bindTo(outerRef);
           }
+        var pl = handle
+          .type()
+          .parameterList();
+        for (int i = 0; i < pl.size(); i++)
+          {
+            var p = pl.get(i);
+            if (!p.isPrimitive() && p != Object.class)
+              {
+                try
+                  {
+                    var mh = MethodHandles
+                      .lookup()
+                      .findStatic(
+                        Runtime.class,
+                        "memorySegment2Value",
+                        MethodType.methodType(Object.class, new Class[]{ Class.class, MemorySegment.class}));
+                    handle = MethodHandles.filterArguments(
+                      handle,
+                      i,
+                      mh
+                        .bindTo(p)
+                        .asType(MethodType.methodType(p, new Class[]{ MemorySegment.class})));
+                  }
+                catch (NoSuchMethodException e)
+                  {
+                    Errors.fatal(e);
+                  }
+              }
+          }
         handle = MethodHandles
           .explicitCastArguments(
             handle,
@@ -1600,12 +1757,12 @@ public class Runtime extends ANY
             ));
 
         var desc = method.getReturnType() == void.class
-          ? FunctionDescriptor.ofVoid(layout(handle.type().parameterArray()))
-          : FunctionDescriptor.of(layout(method.getReturnType()), layout(handle.type().parameterArray()));
+          ? FunctionDescriptor.ofVoid(layout(pl))
+          : FunctionDescriptor.of(layout(method.getReturnType()), layout(pl));
 
         return Linker
           .nativeLinker()
-          .upcallStub(handle, desc, Arena.ofAuto());
+          .upcallStub(handle, desc, arena);
       }
     catch (IllegalAccessException e)
       {
@@ -1634,6 +1791,26 @@ public class Runtime extends ANY
       }
 
     return length;
+  }
+
+
+  /**
+   * extract data from memory segment at offset of type ct
+   */
+  private static Object extractFromMemSegment(MemorySegment memSeg, Class ct, long offset)
+  {
+    if (PRECONDITIONS) require
+      (ct != void.class);
+
+    if (ct == int.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_INT, offset);
+      }
+    if (ct == Object.class)
+      {
+        return memSeg.get(ValueLayout.ADDRESS, offset);
+      }
+    throw new Error("extract : " + ct);
   }
 
 
@@ -1680,7 +1857,15 @@ public class Runtime extends ANY
       {
         return ValueLayout.JAVA_DOUBLE;
       }
-    return ValueLayout.ADDRESS;
+    if (ct == Object.class)
+      {
+        return ValueLayout.ADDRESS;
+      }
+    return MemoryLayout.structLayout(
+      Arrays
+        .stream(ct.getDeclaredFields())
+        .map(f -> layout(f.getType()))
+        .toArray(MemoryLayout[]::new));
   }
 
 
@@ -1690,12 +1875,12 @@ public class Runtime extends ANY
    * @param types
    * @return
    */
-  private static MemoryLayout[] layout(Class<?>[] types)
+  private static MemoryLayout[] layout(List<Class<?>> types)
   {
-    var result = new MemoryLayout[types.length];
+    var result = new MemoryLayout[types.size()];
     for (int i = 0; i < result.length; i++)
       {
-        result[i] = layout(types[i]);
+        result[i] = layout(types.get(i));
       }
     return result;
   }
