@@ -846,6 +846,10 @@ part of the (((inner features))) declarations of the corresponding
     for (var e : s.entrySet())
       {
         var f = e.getValue();
+        if (_options._compilingModule && outer.isUniverse() && f.isField())
+          {
+            AstErrors.mustNotDeclareFieldInModulesUniverse(f);
+          }
         addToDeclaredOrInheritedFeatures(outer, f);
         if (f instanceof Feature ff)
           {

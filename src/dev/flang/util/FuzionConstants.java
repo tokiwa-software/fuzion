@@ -63,6 +63,7 @@ public class FuzionConstants extends ANY
 
 
   public static final String BASE_MODULE_NAME = "base";
+  public static final String MAIN_MODULE_NAME = "main";
 
 
   /**

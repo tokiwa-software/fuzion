@@ -138,6 +138,12 @@ public class FrontEndOptions extends FuzionOptions
   final boolean _serializeFuir;
 
 
+  /**
+   * Are we compiling to a module?
+   */
+  final boolean _compilingModule;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -229,6 +235,7 @@ public class FrontEndOptions extends FuzionOptions
       }
     _sourceDirs = sourceDirs;
     _serializeFuir = serializeFuir;
+    _compilingModule = !_readStdin && _executeCode == null && _inputFile == null;
   }
 
 

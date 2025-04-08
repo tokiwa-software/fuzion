@@ -340,7 +340,7 @@ public class Docs extends ANY
     var all_modules = allInnerAndInheritedFeatures(universe)
               .map(af->lf(af)._libModule)
               .distinct()
-              .filter(m->!m.name().equals("main")) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
+              .filter(m->!m.name().equals(FuzionConstants.MAIN_MODULE_NAME)) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
               .collect(Collectors.toCollection(List::new));
 
     // collect all features for all modules
