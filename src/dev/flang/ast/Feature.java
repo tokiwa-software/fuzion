@@ -967,7 +967,7 @@ public class Feature extends AbstractFeature
               case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
               case TypeParameter                                      -> Kind.TypeParameter;
               case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
-              case Routine, RoutineDef, Of                            -> Kind.Routine;
+              case Routine, RoutineDef                                -> Kind.Routine;
               case Abstract                                           -> Kind.Abstract;
               case Intrinsic                                          -> Kind.Intrinsic;
               case Native                                             -> Kind.Native;

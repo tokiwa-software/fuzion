@@ -105,7 +105,6 @@ public class Impl extends ANY
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
     Intrinsic,    // an intrinsic feature
-    Of,           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
     Native;       // a native feature
 
     public String toString()
@@ -124,7 +123,6 @@ public class Impl extends ANY
           case Abstract          : yield "abstract";
           case Intrinsic         : yield "intrinsic";
           case Native            : yield "native";
-          case Of                : yield "choice of";
         };
     }
   };
@@ -693,7 +691,6 @@ public class Impl extends ANY
         case Routine    : result = " is " + _expr.toString();                               break;
         case Abstract   : result = "is abstract";                                           break;
         case Intrinsic  : result = "is intrinsic";                                          break;
-        case Of         : result = "of " + _expr.toString();                                break;
         default: throw new Error("Unexpected Kind: "+_kind);
         }
     }
