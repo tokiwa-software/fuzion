@@ -2376,6 +2376,13 @@ public class AstErrors extends ANY
           "To solve, this specify a legal type.");
   }
 
+  public static void mustNotDeclareFieldInModulesUniverse(AbstractFeature f)
+  {
+    error(f.pos(),
+          "In modules, declaring fields without a parent feature is forbidden.",
+          "To solve this, remove the field or move its declaration into a parent feature.");
+  }
+
 }
 
 /* end of file */
