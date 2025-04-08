@@ -2069,7 +2069,10 @@ A ((Choice)) declaration must not contain a result type.
           || at.isFunctionTypeExcludingLazy()
           || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()
           // NYI: BUG: check if array element type is valid
-          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array))
+          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
+          || !at.isGenericArgument() && at.feature().mayBeNativeValue()
+          )
+        )
       {
         AstErrors.illegalNativeType(pos, "Argument type", at);
       }
@@ -2079,7 +2082,7 @@ A ((Choice)) declaration must not contain a result type.
   private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
   {
     ensureTypeSetsInitialized(res);
-    if (!Types.resolved.legalNativeResultTypes.contains(rt))
+    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue()))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);
       }

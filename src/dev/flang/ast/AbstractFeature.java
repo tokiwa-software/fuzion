@@ -1862,6 +1862,30 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
+  /**
+   * Check if this feature qualifies to be a
+   * native value, i.e. a struct.
+   */
+  protected boolean mayBeNativeValue()
+  {
+    return isConstructor()
+      && !isRef()
+      && !hasOuterRef()
+      && typeArguments().isEmpty()
+      && inherits().size() == 1
+      && !Contract.hasPreConditionsFeature(this)
+      && !Contract.hasPostConditionsFeature(this)
+      && (code() instanceof Block b && b._expressions.isEmpty())
+      && valueArguments()
+        .stream()
+        .map(va -> va.resultType())
+        .allMatch(rt ->
+             Types.resolved.numericTypes.contains(rt)
+             || Types.resolved.legalNativeResultTypes.contains(rt)
+             || !rt.isGenericArgument() && rt.feature().mayBeNativeValue());
+  }
+
+
 }
 
 /* end of file */
