@@ -1579,15 +1579,46 @@ public class Runtime extends ANY
    */
   private static int byteCount(Class<?> c)
   {
-    if (c == int.class)
+    if (PRECONDITIONS) require
+      (c != void.class);
+
+    if (c == boolean.class)
       {
         return 4;
       }
-    if (c == Object.class)
+    else if (c == byte.class)
+      {
+        return 1;
+      }
+    else if (c == char.class)
+      {
+        return 2;
+      }
+    else if (c == short.class)
+      {
+        return 2;
+      }
+    else if (c == int.class)
+      {
+        return 4;
+      }
+    else if (c == long.class)
       {
         return 8;
       }
-    throw new Error("byteCount missing impl. for: " + c);
+    else if (c == float.class)
+      {
+        return 4;
+      }
+    else if (c == double.class)
+      {
+        return 8;
+      }
+    else if (c == Object.class)
+      {
+        return 8;
+      }
+    throw new Error("Implementation restriction: byteCount missing impl. for: " + c);
   }
 
 
@@ -1802,15 +1833,43 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (ct != void.class);
 
-    if (ct == int.class)
+    if (ct == boolean.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_BOOLEAN, offset);
+      }
+    else if (ct == byte.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_BYTE, offset);
+      }
+    else if (ct == char.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_CHAR, offset);
+      }
+    else if (ct == short.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_SHORT, offset);
+      }
+    else if (ct == int.class)
       {
         return memSeg.get(ValueLayout.JAVA_INT, offset);
       }
-    if (ct == Object.class)
+    else if (ct == long.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_LONG, offset);
+      }
+    else if (ct == float.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_FLOAT, offset);
+      }
+    else if (ct == double.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_DOUBLE, offset);
+      }
+    else if (ct == Object.class)
       {
         return memSeg.get(ValueLayout.ADDRESS, offset);
       }
-    throw new Error("extract : " + ct);
+    throw new Error("Implementation restriction Runtime.extract: " + ct);
   }
 
 
@@ -1829,35 +1888,35 @@ public class Runtime extends ANY
       {
         return ValueLayout.JAVA_BOOLEAN;
       }
-    if (ct == byte.class)
+    else if (ct == byte.class)
       {
         return ValueLayout.JAVA_BYTE;
       }
-    if (ct == char.class)
+    else if (ct == char.class)
       {
         return ValueLayout.JAVA_CHAR;
       }
-    if (ct == short.class)
+    else if (ct == short.class)
       {
         return ValueLayout.JAVA_SHORT;
       }
-    if (ct == int.class)
+    else if (ct == int.class)
       {
         return ValueLayout.JAVA_INT;
       }
-    if (ct == long.class)
+    else if (ct == long.class)
       {
         return ValueLayout.JAVA_LONG;
       }
-    if (ct == float.class)
+    else if (ct == float.class)
       {
         return ValueLayout.JAVA_FLOAT;
       }
-    if (ct == double.class)
+    else if (ct == double.class)
       {
         return ValueLayout.JAVA_DOUBLE;
       }
-    if (ct == Object.class)
+    else if (ct == Object.class)
       {
         return ValueLayout.ADDRESS;
       }
