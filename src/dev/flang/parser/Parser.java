@@ -307,64 +307,8 @@ field       : returnType
       eff == UnresolvedType.NONE &&
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout(hasType);
-    p = handleImplKindOf(pos, p, i == 0, l, inh, v);
     l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
     return new FList(l);
-  }
-
-
-  /**
-   * When parsing feature Implementation, convert 'of' syntax sugar as follows:
-   *
-   *   a,b,c : choice of
-   *     x is p
-   *     y is q
-   *     z is r
-    *
-   * into
-   *
-   *   x is p
-   *   y is q
-   *   z is r
-   *   a : choice x y z is
-   *   b : choice x y z is
-   *   c : choice x y z is
-   *
-   *
-   * @param pos position of this feature (of 'a')
-   *
-   * @param p the Impl that was parsed
-   *
-   * @param first true if this was called for the first name ('a'), false for
-   * later ones ('b', 'c').
-   *
-   * @param l list of features declared. Inner features ('x', 'y', 'z') will be
-   * added to l if first is true.
-   *
-   * @param inh the inheritance call list.
-   *
-   * @param v the visibility to be used for the features defined in of {@code <block>}
-   *
-   */
-  Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh, Visi v)
-  {
-    if (p._kind == Impl.Kind.Of)
-      {
-        if (inh.isEmpty())
-          {
-            AstErrors.featureOfMustInherit(pos, p.pos);
-          }
-        else
-          {
-            var c = (Call) inh.getLast();
-            var ng = new List<AbstractType>();
-            ng.addAll(c.actualTypeParameters());
-            addFeaturesFromBlock(first, l, p.expr(), ng, p, v);
-            c._generics = ng;
-          }
-        p = new Impl(p.pos, emptyBlock(), Impl.Kind.Routine);
-      }
-    return p;
   }
 
 
