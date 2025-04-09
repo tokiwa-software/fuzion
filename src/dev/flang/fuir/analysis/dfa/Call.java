@@ -494,8 +494,8 @@ public class Call extends ANY implements Comparable<Call>, Context
        : "call ")+
       // "[" + Errors.sqn(_dfa._fuir.clazzAsString(_cc)) + "]" +
       Errors.sqn(_dfa._fuir.clazzAsStringHuman(_cc)) +
-      " used " + _group.usedEffectsAsString() +
-      " may have " + _group.mayHaveEffectsAsString() +
+      // " used " + _group.usedEffectsAsString() +
+      // " may have " + _group.mayHaveEffectsAsString() +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 
