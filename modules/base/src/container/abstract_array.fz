@@ -129,7 +129,7 @@ public abstract_array
         if to ≤ from
           nil
         else
-          array_cons from to
+          container.array_cons abstract_array.this from to
 
       # get the contents of this slice at the given index
       #
@@ -176,12 +176,12 @@ public abstract_array
   # create a cons cell for a list of this array starting at the given
   # index `i` and up to `to`
   #
-  array_cons (i, to i32) : Cons T (list T)
+  array_consX (i, to i32) : Cons T (list T)
     pre
       debug: 0 ≤ i < to ≤ length
   is
-    public redef head => abstract_array.this[i]
-    public redef tail => (slice i+1 to).as_list
+    public redef head := abstract_array.this[i]
+    public redef tail := (slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
@@ -262,3 +262,14 @@ public abstract_array
       data[x] := abstract_array.this[x]
 
     LM.env.array length.as_i64 data unit
+
+
+  # create a cons cell for a list of this array starting at the given
+  # index `i` and up to `to`
+  #
+array_cons(a A : abstract_array T, i, to i32) : Cons T (list T)
+    pre
+      debug: 0 ≤ i < to ≤ a.length
+  is
+    public redef head := a[i]
+    public redef tail := (a.slice i+1 to).as_list
