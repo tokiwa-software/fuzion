@@ -61,6 +61,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include "fz.h"
 
 
+/**
+ * convert utf-8 string to wide string
+ * NOTE: caller is responsible for freeing the memory
+ */
+wchar_t* utf8_to_wide_str(const char* str)
+{
+  int wideCharLen = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+  assert(wideCharLen != 0);
+  wchar_t* wideStr = (wchar_t*)fzE_malloc_safe(wideCharLen * sizeof(wchar_t));
+  MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wideCharLen);
+  return wideStr;
+}
+
+
 // returns the latest error number of
 // the current thread
 int fzE_last_error(void){
@@ -71,9 +85,12 @@ int fzE_last_error(void){
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
-  return CreateDirectory(pathname, NULL)
+  wchar_t* wideStr = utf8_to_wide_str(pathname);
+  int result = CreateDirectoryW(wideStr, NULL)
     ? 0
     : -1;
+  free(wideStr);
+  return result;
 }
 
 
@@ -92,7 +109,7 @@ int fzE_unsetenv(const char *name){
 
 typedef struct {
     HANDLE handle;
-    WIN32_FIND_DATA findData;
+    WIN32_FIND_DATAW findData;
 } fzE_dir_struct;
 
 void * fzE_opendir(const char *pathname, int64_t * result) {
@@ -110,7 +127,10 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   char searchPath[MAX_PATH];
   snprintf(searchPath, MAX_PATH, "%s\\*", pathname);
 
-  dir->handle = FindFirstFile(searchPath, &dir->findData);
+  wchar_t* wideStr = utf8_to_wide_str(searchPath);
+  dir->handle = FindFirstFileW(wideStr, &dir->findData);
+  free(wideStr);
+
   if (dir->handle == INVALID_HANDLE_VALUE) {
     // NYI: BUG: free(dir);
     result[0] = GetLastError();
@@ -124,18 +144,23 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
 int fzE_dir_read(intptr_t * dir, void * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
-  while ((res = FindNextFile(d->handle, &d->findData)) &&
+  while ((res = FindNextFileW(d->handle, &d->findData)) &&
         // skip dot and dot-dot paths.
-        (strcmp(d->findData.cFileName, ".") == 0 || strcmp(d->findData.cFileName, "..") == 0));
+        (wcscmp(d->findData.cFileName, L".") == 0 || wcscmp(d->findData.cFileName, L"..") == 0));
 
   if (!res) {
     return GetLastError() == ERROR_NO_MORE_FILES ? 0 : -1;
   }
   else {
-    int len = (int)strlen(d->findData.cFileName);
-    assert(len >= 0 && len<1024); // NYI:
-    fzE_memcpy(result, d->findData.cFileName, len + 1);
-    return len;
+    int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, NULL, 0, NULL, NULL);
+    assert (sizeNeeded != 0);
+    assert(sizeNeeded >= 0 && sizeNeeded<1024); // NYI:
+
+    int len = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, result, sizeNeeded, NULL, NULL);
+
+    return len == 0
+      ? -1
+      : len;
   }
 }
 
@@ -461,6 +486,7 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
 int fzE_munmap(void * mapped_address, const int file_size){
+  // NYI: CloseHandle(file_mapping_handle);
   return UnmapViewOfFile(mapped_address)
     ? 0
     : -1;
@@ -514,15 +540,20 @@ void fzE_nanosleep(uint64_t n)
  */
 int fzE_rm(char * path)
 {
-  if (DeleteFileA(path)) {
-    return 0;
+  int result = -1;
+
+  wchar_t* wideStr = utf8_to_wide_str(path);
+
+  if (DeleteFileW(wideStr)) {
+    result = 0;
+  }
+  else if (RemoveDirectoryW(wideStr)) {
+    result = 0;
   }
 
-  if (RemoveDirectoryA(path)) {
-    return 0;
-  }
+  free(wideStr);
 
-  return -1;
+  return result;
 }
 
 
@@ -531,9 +562,13 @@ int fzE_rm(char * path)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
+  int result = -1;
+
   WIN32_FILE_ATTRIBUTE_DATA fileInfo;
 
-  if (GetFileAttributesExA(pathname, GetFileExInfoStandard, &fileInfo)) {
+  wchar_t* wideStr = utf8_to_wide_str(pathname);
+
+  if (GetFileAttributesExW(wideStr, GetFileExInfoStandard, &fileInfo)) {
     LARGE_INTEGER fileSize;
     fileSize.HighPart = fileInfo.nFileSizeHigh;
     fileSize.LowPart = fileInfo.nFileSizeLow;
@@ -548,15 +583,19 @@ int fzE_stat(const char *pathname, int64_t * metadata)
     metadata[2] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
     metadata[3] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
 
-    return 0;
+    result = 0;
+  }
+  else {
+    metadata[0] = (int64_t)GetLastError();
+    metadata[1] = 0LL;
+    metadata[2] = 0LL;
+    metadata[3] = 0LL;
+    result = -1;
   }
 
-  metadata[0] = (int64_t)GetLastError();
-  metadata[1] = 0LL;
-  metadata[2] = 0LL;
-  metadata[3] = 0LL;
+  free(wideStr);
 
-  return -1;
+  return result;
 }
 
 
@@ -690,12 +729,13 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   // prepare create process args
   PROCESS_INFORMATION processInfo;
   ZeroMemory( &processInfo, sizeof(PROCESS_INFORMATION) );
-  STARTUPINFO startupInfo;
-  ZeroMemory( &startupInfo, sizeof(STARTUPINFO) );
+  STARTUPINFOW startupInfo;
+  ZeroMemory( &startupInfo, sizeof(STARTUPINFOW) );
   startupInfo.hStdInput = stdIn[0];
   startupInfo.hStdOutput = stdOut[1];
   startupInfo.hStdError = stdErr[1];
   startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+  startupInfo.cb = sizeof(STARTUPINFOW);
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
@@ -725,12 +765,6 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
     return -1;
   }
 
-  STARTUPINFOEX startupInfoEx;
-  ZeroMemory( &startupInfoEx, sizeof(startupInfoEx) );
-  startupInfoEx.StartupInfo = startupInfo;
-  startupInfoEx.StartupInfo.cb = sizeof(startupInfoEx);
-  startupInfoEx.lpAttributeList = lpAttributeList;
-
   // NYI use unicode?
   // int wchars_num = MultiByteToWideChar(CP_UTF8, 0, &str, -1, NULL, 0);
   // wchar_t* wstr = new wchar_t[wchars_num];
@@ -739,15 +773,19 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   // A Unicode environment block is terminated by four zero bytes: two for the last string, two more to terminate the block.
 
 
-  if( !CreateProcess(NULL,
-      TEXT(args_str),                // command line
+  int res = -1;
+  wchar_t* args_wide = utf8_to_wide_str(args_str);
+  wchar_t* env_wide = utf8_to_wide_str(env_str);
+
+  if(!CreateProcessW(NULL,
+      args_wide,                     // command line
       NULL,                          // process security attributes
       NULL,                          // primary thread security attributes
       TRUE,                          // inherit handles listed in startupInfo
       EXTENDED_STARTUPINFO_PRESENT,  // creation flags
-      env_str,                       // environment
+      env_wide,                      // environment
       NULL,                          // use parent's current directory
-      &startupInfoEx.StartupInfo,    // STARTUPINFOEX pointer
+      &startupInfo,                  // STARTUPINFO pointer
       &processInfo))                 // receives PROCESS_INFORMATION
   {
     // cleanup all pipes
@@ -757,25 +795,31 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
     CloseHandle(stdOut[1]);
     CloseHandle(stdErr[0]);
     CloseHandle(stdErr[1]);
-    return -1;
+    res = -1;
+  }
+  else{
+    DeleteProcThreadAttributeList(lpAttributeList);
+    HeapFree(GetProcessHeap(), 0, lpAttributeList);
+
+    // no need for this handle, closing
+    CloseHandle(processInfo.hThread);
+
+    // close the handles given to child process.
+    CloseHandle(stdIn[0]);
+    CloseHandle(stdOut[1]);
+    CloseHandle(stdErr[1]);
+
+    result[0] = (int64_t) processInfo.hProcess;
+    result[1] = (int64_t) stdIn[1];
+    result[2] = (int64_t) stdOut[0];
+    result[3] = (int64_t) stdErr[0];
+    res = 0;
   }
 
-   DeleteProcThreadAttributeList(lpAttributeList);
-   HeapFree(GetProcessHeap(), 0, lpAttributeList);
+  free(args_wide);
+  free(env_wide);
 
-  // no need for this handle, closing
-  CloseHandle(processInfo.hThread);
-
-  // close the handles given to child process.
-  CloseHandle(stdIn[0]);
-  CloseHandle(stdOut[1]);
-  CloseHandle(stdErr[1]);
-
-  result[0] = (int64_t) processInfo.hProcess;
-  result[1] = (int64_t) stdIn[1];
-  result[2] = (int64_t) stdOut[0];
-  result[3] = (int64_t) stdErr[0];
-  return 0;
+  return res;
 }
 
 
