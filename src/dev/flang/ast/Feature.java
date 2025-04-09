@@ -561,6 +561,8 @@ public class Feature extends AbstractFeature
          new List<>(),
          null,
          impl);
+    if (PRECONDITIONS) require
+      (t != Types.t_UNDEFINED);
   }
 
 
@@ -598,6 +600,8 @@ public class Feature extends AbstractFeature
          new List<>(),
          c,
          i);
+    if (PRECONDITIONS) require
+      (t != Types.t_UNDEFINED || n == FuzionConstants.INTERNAL_RESULT_NAME);
   }
 
 
@@ -930,7 +934,7 @@ public class Feature extends AbstractFeature
   public boolean outerSet()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state() == State.LOADING);
+      (Errors.any() || isUniverse() || state() == State.LOADING);
 
     return _outer != null;
   }

@@ -281,14 +281,23 @@ public class Function extends AbstractLambda
         int i = 1;
         for (var n : _names)
           {
-            var arg = new Feature(n._pos,
-                                  Visi.PRIV,
-                                  0,
-                                  i < gs.size() ? gs.get(i) : Types.t_ERROR,
-                                  n._name,
-                                  Contract.EMPTY_CONTRACT);
-            a.add(arg);
-            i++;
+            if (i < gs.size() && gs.get(i) == Types.t_UNDEFINED)
+              {
+                AstErrors.noTypeInferenceFromLambda(_expr.pos());
+                result = Types.t_ERROR;
+                t = Types.t_ERROR;
+              }
+            else
+              {
+                var arg = new Feature(n._pos,
+                                      Visi.PRIV,
+                                      0,
+                                      i < gs.size() ? gs.get(i) : Types.t_ERROR,
+                                      n._name,
+                                      Contract.EMPTY_CONTRACT);
+                a.add(arg);
+                i++;
+              }
           }
         if (t != Types.t_ERROR && i != gs.size())
           {

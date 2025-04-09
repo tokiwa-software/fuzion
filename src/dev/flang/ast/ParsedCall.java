@@ -554,7 +554,10 @@ public class ParsedCall extends Call
             AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
             {
               var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType);
-              updateTarget(res);
+              if (rs != Types.t_ERROR)
+                {
+                  updateTarget(res);
+                }
               return rs;
             }
           };

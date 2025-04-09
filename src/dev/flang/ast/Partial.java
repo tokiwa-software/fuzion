@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -257,6 +258,28 @@ public class Partial extends AbstractLambda
     // everything might eventually turn out fine in this case.
     return _function == null ? null
                              : _function.typeForInferencing();
+  }
+
+
+  /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
+   */
+  @Override
+  public AbstractType type()
+  {
+    var result = typeForInferencing();
+    if (result  == null)
+      {
+        if (CHECKS) check
+          (Errors.any());
+      }
+    return result == null
+      ? Types.t_ERROR
+      : result;
   }
 
 
