@@ -283,7 +283,6 @@ public class Function extends AbstractLambda
           {
             if (i < gs.size() && gs.get(i) == Types.t_UNDEFINED)
               {
-                AstErrors.noTypeInferenceFromLambda(_expr.pos());
                 result = Types.t_ERROR;
                 t = Types.t_ERROR;
               }

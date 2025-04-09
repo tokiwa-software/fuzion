@@ -274,8 +274,7 @@ public class Partial extends AbstractLambda
     var result = typeForInferencing();
     if (result  == null)
       {
-        if (CHECKS) check
-          (Errors.any());
+        AstErrors.noTypeInferenceFromLambda(_range);
       }
     return result == null
       ? Types.t_ERROR
