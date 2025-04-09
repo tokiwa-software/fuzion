@@ -1335,7 +1335,7 @@ public class DFA extends ANY
       }
 
     _cachedValues = new TreeMap<>(Value.COMPARATOR);
-    _numUniqueValues = 0;
+    // _numUniqueValues = 0;    -- NYI: Somewhere, the old unique ids are still in use, need to check why! See reg_issue2478 to check this.
     _uniqueValues = new List<Value>();
     _instancesForSite = new List<>();
     _tagged = new LongMap<>();
