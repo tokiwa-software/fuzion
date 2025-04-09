@@ -42,8 +42,8 @@ public class FuzionWorkspaceService implements WorkspaceService
   @Override
   public void didChangeConfiguration(DidChangeConfigurationParams params)
   {
-    Context.Logger.Log("[Workspace] received config change.");
-    FuzionLanguageServer.RefetchClientConfig();
+    Context.Logger.log("[Workspace] received config change.");
+    FuzionLanguageServer.refetchClientConfig();
   }
 
   @Override
@@ -55,7 +55,7 @@ public class FuzionWorkspaceService implements WorkspaceService
   @Override
   public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
   {
-    return Commands.Execute(params);
+    return Commands.execute(params);
   }
 
 

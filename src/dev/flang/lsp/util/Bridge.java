@@ -55,49 +55,49 @@ import dev.flang.util.SourcePosition;
 public class Bridge extends ANY
 {
 
-  public static Position ToPosition(SourcePosition sourcePosition)
+  public static Position toPosition(SourcePosition sourcePosition)
   {
     if (PRECONDITIONS)
       require(!sourcePosition.isBuiltIn());
     return new Position(sourcePosition.line() - 1, sourcePosition.column() - 1);
   }
 
-  public static Location ToLocation(SourcePosition start, SourcePosition end)
+  public static Location toLocation(SourcePosition start, SourcePosition end)
   {
     if (PRECONDITIONS)
       require(!start.isBuiltIn());
-    return new Location(ParserTool.getUri(start).toString(), new Range(ToPosition(start), ToPosition(end)));
+    return new Location(ParserTool.getUri(start).toString(), new Range(toPosition(start), toPosition(end)));
   }
 
-  public static Range ToRange(AbstractFeature feature)
+  public static Range toRange(AbstractFeature feature)
   {
     if (PRECONDITIONS)
       require(!feature.pos().isBuiltIn());
 
-    return new Range(ToPosition(feature.pos()), ToPosition(ParserTool.endOfFeature(feature)));
+    return new Range(toPosition(feature.pos()), toPosition(ParserTool.endOfFeature(feature)));
   }
 
-  public static Range ToRange(SourcePosition pos)
+  public static Range toRange(SourcePosition pos)
   {
-    return new Range(ToPosition(pos), ToPosition(new SourcePosition(pos._sourceFile, pos.byteEndPos())));
+    return new Range(toPosition(pos), toPosition(new SourcePosition(pos._sourceFile, pos.byteEndPos())));
   }
 
-  public static Range ToRangeBaseName(AbstractFeature feature)
+  public static Range toRangeBaseName(AbstractFeature feature)
   {
     var bareNamePosition = FeatureTool.BareNamePosition(feature);
     return new Range(
-      ToPosition(bareNamePosition),
-      ToPosition(SourcePositionTool.ByLineColumn(bareNamePosition._sourceFile,
+      toPosition(bareNamePosition),
+      toPosition(SourcePositionTool.ByLineColumn(bareNamePosition._sourceFile,
         bareNamePosition.line(),
         bareNamePosition.column() + Util.CharCount(FeatureTool.BareName(feature)))));
   }
 
-  public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
+  public static DocumentSymbol toDocumentSymbol(AbstractFeature feature)
   {
-    return new DocumentSymbol(FeatureTool.Label(feature, false), SymbolKind(feature), ToRange(feature), ToRange(feature));
+    return new DocumentSymbol(FeatureTool.Label(feature, false), symbolKind(feature), toRange(feature), toRange(feature));
   }
 
-  private static SymbolKind SymbolKind(AbstractFeature feature)
+  private static SymbolKind symbolKind(AbstractFeature feature)
   {
     if (feature.isChoice())
       {
@@ -126,54 +126,54 @@ public class Bridge extends ANY
     return SymbolKind.Class;
   }
 
-  public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
+  public static TextDocumentPositionParams toTextDocumentPosition(SourcePosition sourcePosition)
   {
-    return LSP4jUtils.TextDocumentPositionParams(ParserTool.getUri(sourcePosition), ToPosition(sourcePosition));
+    return LSP4jUtils.textDocumentPositionParams(ParserTool.getUri(sourcePosition), toPosition(sourcePosition));
   }
 
-  public static SourcePosition ToSourcePosition(TextDocumentPositionParams params)
+  public static SourcePosition toSourcePosition(TextDocumentPositionParams params)
   {
-    return SourcePositionTool.ByLineColumn(ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
+    return SourcePositionTool.ByLineColumn(toSourceFile(Util.toURI(params.getTextDocument().getUri())),
       params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
 
-  public static Location ToLocation(AbstractCall call)
+  public static Location toLocation(AbstractCall call)
   {
     if (PRECONDITIONS)
       require(!call.pos().isBuiltIn());
     return new Location(ParserTool.getUri(call.pos()).toString(),
-      ToRange(call));
+      toRange(call));
   }
 
-  private static Range ToRange(AbstractCall call)
+  private static Range toRange(AbstractCall call)
   {
-    var start = ToPosition(call.pos());
+    var start = toPosition(call.pos());
     var nameLength = Util.CharCount(FeatureTool.BareName(call.calledFeature()));
     return new Range(start, new Position(start.getLine(), start.getCharacter() + nameLength));
   }
 
-  public static Location ToLocation(AbstractFeature af)
+  public static Location toLocation(AbstractFeature af)
   {
     if (PRECONDITIONS)
       require(!af.pos().isBuiltIn());
     return new Location(ParserTool.getUri(af.pos()).toString(),
-      new Range(ToPosition(af.pos()), ToPosition(ParserTool.endOfFeature(af))));
+      new Range(toPosition(af.pos()), toPosition(ParserTool.endOfFeature(af))));
   }
 
-  public static DocumentHighlight ToHighlight(AbstractCall c)
+  public static DocumentHighlight toHighlight(AbstractCall c)
   {
-    return new DocumentHighlight(ToRange(c), DocumentHighlightKind.Read);
+    return new DocumentHighlight(toRange(c), DocumentHighlightKind.Read);
   }
 
-  public static DocumentHighlight ToHighlight(AbstractFeature af)
+  public static DocumentHighlight toHighlight(AbstractFeature af)
   {
-    return new DocumentHighlight(ToRangeBaseName(af), DocumentHighlightKind.Text);
+    return new DocumentHighlight(toRangeBaseName(af), DocumentHighlightKind.Text);
   }
 
   /**
    * The source file of an URI
    */
-  private static SourceFile ToSourceFile(URI uri)
+  private static SourceFile toSourceFile(URI uri)
   {
     if (PRECONDITIONS)
       require(!uri.equals(SourceFile.STDIN.toUri()));

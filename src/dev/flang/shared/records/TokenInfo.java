@@ -262,7 +262,7 @@ public class TokenInfo extends ANY
                   }
               }
           });
-        return TokenModifier.DataOf(modifiers);
+        return TokenModifier.dataOf(modifiers);
       default:
         return 0;
       }

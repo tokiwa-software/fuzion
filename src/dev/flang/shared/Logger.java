@@ -28,11 +28,11 @@ package dev.flang.shared;
 
 public interface Logger
 {
-  public void Error(String str);
+  public void error(String str);
 
-  public void Warning(String str);
+  public void warning(String str);
 
-  public void Info(String str);
+  public void info(String str);
 
-  public void Log(String str);
+  public void log(String str);
 }

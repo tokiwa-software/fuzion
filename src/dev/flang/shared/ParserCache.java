@@ -64,7 +64,7 @@ public class ParserCache extends ANY
 
       long stopTime = System.nanoTime();
       var elapsedTime = (int) ((stopTime - startTime) / 1E6);
-      Context.Logger.Log("[Parsing] finished in " + elapsedTime + "ms: " + uri);
+      Context.Logger.log("[Parsing] finished in " + elapsedTime + "ms: " + uri);
 
       return parserCacheItem;
     });

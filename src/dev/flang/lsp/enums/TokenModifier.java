@@ -57,7 +57,7 @@ public enum TokenModifier
     this.str = str;
   }
 
-  public static Integer DataOf(Set<TokenModifier> modifiers)
+  public static Integer dataOf(Set<TokenModifier> modifiers)
   {
     var result = new BitSet();
     for(TokenModifier modifier : modifiers)

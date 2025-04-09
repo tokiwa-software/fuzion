@@ -107,41 +107,41 @@ public class Config
   {
     var json = (JsonObject) configuration.get(0);
 
-    Context.Logger.Info("[Config] received: " + json);
+    Context.Logger.info("[Config] received: " + json);
 
-    SetJavaModules(json);
-    SetFuzionOptions(json);
-    SetCodeLensOptions(json);
-    SetInlayHint(json);
-    SetFuirEnabled(json);
+    setJavaModules(json);
+    setFuzionOptions(json);
+    setCodeLensOptions(json);
+    setInlayHint(json);
+    setFuirEnabled(json);
   }
 
-  private static void SetFuirEnabled(JsonObject json)
+  private static void setFuirEnabled(JsonObject json)
   {
     Context.MiddleEndEnabled = ErrorHandling.ResultOrDefault(() -> json.get("middle_end_enabled").getAsBoolean(), false);
   }
 
-  private static void SetInlayHint(JsonObject json)
+  private static void setInlayHint(JsonObject json)
   {
     try
       {
         if (ErrorHandling.ResultOrDefault(() -> json.get("inlay_hints").getAsBoolean(),
           true))
           {
-            InlayHints.Enable();
+            InlayHints.enable();
           }
         else
           {
-            InlayHints.Disable();
+            InlayHints.disable();
           }
       }
     catch (Exception e)
       {
-        Context.Logger.Error("[Config] parsing of inlay hint options failed.");
+        Context.Logger.error("[Config] parsing of inlay hint options failed.");
       }
   }
 
-  private static void SetCodeLensOptions(JsonObject json)
+  private static void setCodeLensOptions(JsonObject json)
   {
     try
       {
@@ -157,11 +157,11 @@ public class Config
       }
     catch (Exception e)
       {
-        Context.Logger.Error("[Config] parsing of code lens options failed.");
+        Context.Logger.error("[Config] parsing of code lens options failed.");
       }
   }
 
-  private static void SetFuzionOptions(JsonObject json)
+  private static void setFuzionOptions(JsonObject json)
   {
     try
       {
@@ -182,16 +182,16 @@ public class Config
             }
           };
 
-        Context.Logger.Log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
+        Context.Logger.log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
           + Context.FuzionOptions.fuzionDebugLevel() + "), safety(" + Context.FuzionOptions.fuzionSafety() + ").");
       }
     catch (Exception e)
       {
-        Context.Logger.Error("[Config] parsing of fuzion options failed.");
+        Context.Logger.error("[Config] parsing of fuzion options failed.");
       }
   }
 
-  private static void SetJavaModules(JsonObject json)
+  private static void setJavaModules(JsonObject json)
   {
     try
       {
@@ -203,12 +203,12 @@ public class Config
           .map(x -> x.getAsString())
           .collect(Collectors.toUnmodifiableList());
 
-        Context.Logger.Log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
+        Context.Logger.log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
         ParserTool.SetJavaModules(result);
       }
     catch (Exception e)
       {
-        Context.Logger.Error("[Config] parsing of java modules failed.");
+        Context.Logger.error("[Config] parsing of java modules failed.");
       }
   }
 

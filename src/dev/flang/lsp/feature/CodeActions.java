@@ -53,14 +53,14 @@ public class CodeActions
   public static List<Either<Command, CodeAction>> getCodeActions(CodeActionParams params)
   {
     return Util.ConcatStreams(
-      NameingFixes(params, Diagnostics.nameingFeatures, oldName -> CaseConverter.ToSnakeCase(oldName)),
-      NameingFixes(params, Diagnostics.nameingRefs, oldName -> CaseConverter.ToSnakePascalCase(oldName)),
-      NameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()),
-      GenerateMatchCases(params))
+      nameingFixes(params, Diagnostics.nameingFeatures, oldName -> CaseConverter.ToSnakeCase(oldName)),
+      nameingFixes(params, Diagnostics.nameingRefs, oldName -> CaseConverter.ToSnakePascalCase(oldName)),
+      nameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()),
+      generateMatchCases(params))
       .collect(Collectors.toList());
   }
 
-  private static Stream<Either<Command, CodeAction>> GenerateMatchCases(CodeActionParams params)
+  private static Stream<Either<Command, CodeAction>> generateMatchCases(CodeActionParams params)
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
     return params
@@ -76,7 +76,7 @@ public class CodeActions
         res.setKind(CodeActionKind.QuickFix);
         res.setDiagnostics(List.of(x));
         res.setCommand(
-          Commands.Create(Commands.codeActionGenerateMatchCases, uri,
+          Commands.create(Commands.codeActionGenerateMatchCases, uri,
             List.of(x.getRange().getStart().getLine(), x.getRange().getStart().getCharacter())));
         return Either.forRight(res);
       });
@@ -91,11 +91,11 @@ public class CodeActions
       .filter(x -> x.getCode().isRight() && x.getCode().getRight().equals(diag.ordinal()));
   }
 
-  private static Stream<Either<Command, CodeAction>> NameingFixes(CodeActionParams params, Diagnostics diag,
+  private static Stream<Either<Command, CodeAction>> nameingFixes(CodeActionParams params, Diagnostics diag,
     Function<String, String> fix)
   {
     return getDiagnostics(params, diag)
-      .flatMap(d -> CodeActionForNameingIssue(params.getTextDocument(), d, fix).stream())
+      .flatMap(d -> codeActionForNameingIssue(params.getTextDocument(), d, fix).stream())
       .<Either<Command, CodeAction>>map(
         ca -> Either.forRight(ca));
   }
@@ -109,12 +109,12 @@ public class CodeActions
    * @param convertIdentifier
    * @return
    */
-  private static Optional<CodeAction> CodeActionForNameingIssue(TextDocumentIdentifier tdi, Diagnostic d,
+  private static Optional<CodeAction> codeActionForNameingIssue(TextDocumentIdentifier tdi, Diagnostic d,
     Function<String, String> convertIdentifier)
   {
     var uri = LSP4jUtils.getUri(tdi);
     return QueryAST
-      .FeatureAt(Bridge.ToSourcePosition(new TextDocumentPositionParams(tdi, d.getRange().getStart())))
+      .FeatureAt(Bridge.toSourcePosition(new TextDocumentPositionParams(tdi, d.getRange().getStart())))
       .map(f -> {
         var oldName = f.featureName()
           .baseName();
@@ -128,7 +128,7 @@ public class CodeActions
         res.setTitle(Commands.codeActionFixIdentifier.toString());
         res.setKind(CodeActionKind.QuickFix);
         res.setDiagnostics(List.of(d));
-        res.setCommand(Commands.Create(Commands.codeActionFixIdentifier, uri,
+        res.setCommand(Commands.create(Commands.codeActionFixIdentifier, uri,
           List.of(d.getRange().getStart().getLine(), d.getRange().getStart().getCharacter(),
             convertIdentifier.apply(oldName))));
         return res;

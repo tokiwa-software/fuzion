@@ -65,12 +65,12 @@ public class InlayHints extends ANY
   private static final int MIN_PARAM_NAME_LENGTH = 2;
   private static boolean isEnabled = true;
 
-  public static void Disable()
+  public static void disable()
   {
     isEnabled = false;
   }
 
-  public static void Enable()
+  public static void enable()
   {
     isEnabled = true;
   }
@@ -86,7 +86,7 @@ public class InlayHints extends ANY
     var inlayHintsActuals = ASTWalker.Traverse(uri)
       .filter(e -> e.getKey() instanceof AbstractCall)
       .map(e -> (AbstractCall) e.getKey())
-      .filter(c -> IsInRange(params.getRange(), c.pos()))
+      .filter(c -> isInRange(params.getRange(), c.pos()))
       .filter(c -> !CallTool.IsFixLikeCall(c))
       .filter(CallTool.CalledFeatureNotInternal)
       .flatMap(c -> {
@@ -105,7 +105,7 @@ public class InlayHints extends ANY
               // for array initialization via [] syntax, don't show inlay hint
               .filter(idx -> !c.calledFeature().valueArguments().get(idx).qualifiedName().equals("array.internal_array"))
               .mapToObj(idx -> {
-                var inlayHint = new InlayHint(Bridge.ToPosition(CallTool.StartOfExpr(c.actuals().get(idx))),
+                var inlayHint = new InlayHint(Bridge.toPosition(CallTool.StartOfExpr(c.actuals().get(idx))),
                   Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));
                 inlayHint.setKind(InlayHintKind.Parameter);
                 inlayHint.setPaddingLeft(true);
@@ -126,8 +126,8 @@ public class InlayHints extends ANY
       .filter(af -> !FeatureTool.IsInternal(af))
       .filter(af -> !FeatureTool.IsArgument(af))
       // NYI filter constants like numbers, strings etc.
-      .filter(af -> !(af.isField() && TypeIsExplicitlyStated(af)))
-      .flatMap(af -> PositionOfOperator(af)
+      .filter(af -> !(af.isField() && typeIsExplicitlyStated(af)))
+      .flatMap(af -> positionOfOperator(af)
         .map(pos -> {
           var ih = new InlayHint(pos, Either.forLeft(TypeTool.Label(af.resultType())));
           ih.setKind(InlayHintKind.Type);
@@ -159,7 +159,7 @@ public class InlayHints extends ANY
     return Util.ConcatStreams(inlayHintsActuals, inlayHintsResultTypes).collect(Collectors.toList());
   }
 
-  private static boolean IsConstant(Expr code)
+  private static boolean isConstant(Expr code)
   {
     return code instanceof Constant;
   }
@@ -192,7 +192,7 @@ public class InlayHints extends ANY
     Token.t_type));
 
 
-  private static boolean TypeIsExplicitlyStated(AbstractFeature af)
+  private static boolean typeIsExplicitlyStated(AbstractFeature af)
   {
     return LexerTool
       .TokensFrom(af.pos())
@@ -204,19 +204,19 @@ public class InlayHints extends ANY
   /*
    * Position of `=>` or `:=` belonging to this feature
    */
-  private static Optional<Position> PositionOfOperator(AbstractFeature af)
+  private static Optional<Position> positionOfOperator(AbstractFeature af)
   {
     return LexerTool
       .TokensFrom(af.pos())
       .takeWhile(x -> AllowedTokensBeforeOp.contains(x.token()))
       .dropWhile(x -> !(x.text().equals("=>") || x.text().equals(":=")))
-      .map(x -> Bridge.ToPosition(x.start()))
+      .map(x -> Bridge.toPosition(x.start()))
       .findFirst();
   }
 
-  private static boolean IsInRange(Range range, SourcePosition pos)
+  private static boolean isInRange(Range range, SourcePosition pos)
   {
-    var p = Bridge.ToPosition(pos);
+    var p = Bridge.toPosition(pos);
     return range.getStart().getLine() <= p.getLine() && range.getEnd().getLine() >= p.getLine();
   }
 }

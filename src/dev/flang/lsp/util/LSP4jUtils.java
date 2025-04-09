@@ -38,19 +38,19 @@ import dev.flang.shared.records.TokenInfo;
 
 public final class LSP4jUtils
 {
-  public static TextDocumentIdentifier TextDocumentIdentifier(URI uri)
+  public static TextDocumentIdentifier textDocumentIdentifier(URI uri)
   {
     return new TextDocumentIdentifier(uri.toString());
   }
 
-  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, Position position)
+  public static TextDocumentPositionParams textDocumentPositionParams(URI uri, Position position)
   {
-    return new TextDocumentPositionParams(TextDocumentIdentifier(uri), position);
+    return new TextDocumentPositionParams(textDocumentIdentifier(uri), position);
   }
 
-  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, int line, int character)
+  public static TextDocumentPositionParams textDocumentPositionParams(URI uri, int line, int character)
   {
-    return TextDocumentPositionParams(uri, new Position(line, character));
+    return textDocumentPositionParams(uri, new Position(line, character));
   }
 
   public static Position getPosition(TextDocumentPositionParams params)
@@ -68,7 +68,7 @@ public final class LSP4jUtils
     return getUri(params.getTextDocument());
   }
 
-  public static int ComparePosition(Position position1, Position position2)
+  public static int comparePosition(Position position1, Position position2)
   {
     var result = position1.getLine() < position2.getLine() ? -1: position1.getLine() > position2.getLine() ? +1: 0;
     if (result == 0)
@@ -79,10 +79,10 @@ public final class LSP4jUtils
     return result;
   }
 
-  public static Range Range(TokenInfo tokenInfo)
+  public static Range range(TokenInfo tokenInfo)
   {
-    var start = Bridge.ToPosition(tokenInfo.start());
-    var end = Bridge.ToPosition(tokenInfo.end());
+    var start = Bridge.toPosition(tokenInfo.start());
+    var end = Bridge.toPosition(tokenInfo.end());
     return new Range(start, end);
   }
 

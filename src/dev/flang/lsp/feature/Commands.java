@@ -91,7 +91,7 @@ public enum Commands
 
   private final static CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
 
-  public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
+  public static CompletableFuture<Object> execute(ExecuteCommandParams params)
   {
     var uri = getArgAsString(params, 0);
 
@@ -121,7 +121,7 @@ public enum Commands
 
   private static CompletableFuture<Object> codeActionGenerateMatchCases(ExecuteCommandParams params, String uri)
   {
-    return Computation.CancellableComputation(() -> {
+    return Computation.cancellableComputation(() -> {
 
       var matchPos = new Position(getArgAsInt(params, 1), getArgAsInt(params, 2));
 
@@ -146,7 +146,7 @@ public enum Commands
               .map(t -> indent + CaseConverter.ToSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.Label(t) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 
-          var endOfSubPos = Bridge.ToPosition(ExprTool.EndOfExpr(m.subject()));
+          var endOfSubPos = Bridge.toPosition(ExprTool.EndOfExpr(m.subject()));
 
           var edit = new WorkspaceEdit(Map.of(
             uri,
@@ -167,7 +167,7 @@ public enum Commands
   private static CompletableFuture<Object> callGraph(ExecuteCommandParams params, String uri)
   {
     var arg1 = getArgAsString(params, 1);
-    Concurrency.MainExecutor.submit(() -> CallGraph(uri, arg1));
+    Concurrency.MainExecutor.submit(() -> callGraph(uri, arg1));
     return completedFuture;
   }
 
@@ -201,7 +201,7 @@ public enum Commands
     return ((JsonPrimitive) params.getArguments().get(index)).getAsInt();
   }
 
-  public static Command Create(Commands c, URI uri, List<Object> args)
+  public static Command create(Commands c, URI uri, List<Object> args)
   {
     var arguments = new ArrayList<Object>();
     arguments.add(uri.toString());
@@ -209,7 +209,7 @@ public enum Commands
     return new Command(c.toString(), c.name(), arguments);
   }
 
-  private static void CallGraph(String arg0, String arg1)
+  private static void callGraph(String arg0, String arg1)
   {
     // NYI go to correct feature via more direct way
     var feature = FeatureTool.SelfAndDescendants(ParserTool.Universe(Util.toURI(arg0)))

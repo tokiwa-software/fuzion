@@ -45,25 +45,25 @@ public class LSP4jLogger extends ANY implements Logger
   }
 
   @Override
-  public void Error(String str)
+  public void error(String str)
   {
     message(str, MessageType.Error);
   }
 
   @Override
-  public void Warning(String str)
+  public void warning(String str)
   {
     message(str, MessageType.Warning);
   }
 
   @Override
-  public void Info(String str)
+  public void info(String str)
   {
     message(str, MessageType.Info);
   }
 
   @Override
-  public void Log(String str)
+  public void log(String str)
   {
     message(str, MessageType.Log);
   }

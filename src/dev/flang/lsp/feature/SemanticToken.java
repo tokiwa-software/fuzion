@@ -56,14 +56,14 @@ public class SemanticToken extends ANY
 
   public static SemanticTokens getSemanticTokens(SemanticTokensParams params)
   {
-    return new SemanticTokens(SemanticTokenData(LexerTokens(params)));
+    return new SemanticTokens(semanticTokenData(lexerTokens(params)));
   }
 
-  private static List<TokenInfo> LexerTokens(SemanticTokensParams params)
+  private static List<TokenInfo> lexerTokens(SemanticTokensParams params)
   {
     return LexerTool
       .TokensFrom(
-        Bridge.ToSourcePosition(
+        Bridge.toSourcePosition(
           new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))))
       // - map all special strings to normal strings plus operator(s)
       .flatMap(t -> {
@@ -158,7 +158,7 @@ public class SemanticToken extends ANY
       });
   }
 
-  private static List<Integer> SemanticTokenData(List<TokenInfo> lexerTokens)
+  private static List<Integer> semanticTokenData(List<TokenInfo> lexerTokens)
   {
     return IntStream
       .range(0, lexerTokens.size())

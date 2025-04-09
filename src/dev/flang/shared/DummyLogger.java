@@ -30,28 +30,28 @@ class DummyLogger implements Logger
 {
 
   @Override
-  public void Error(String str)
+  public void error(String str)
   {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void Warning(String str)
+  public void warning(String str)
   {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void Info(String str)
+  public void info(String str)
   {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void Log(String str)
+  public void log(String str)
   {
     // TODO Auto-generated method stub
 

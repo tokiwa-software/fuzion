@@ -47,7 +47,7 @@ public class DocumentHighlights
 {
   public static List<? extends DocumentHighlight> getHightlights(DocumentHighlightParams params)
   {
-    var pos = Bridge.ToSourcePosition(params);
+    var pos = Bridge.toSourcePosition(params);
     var feature = QueryAST.FeatureAt(pos);
     return feature
       .map(f -> {
@@ -55,12 +55,12 @@ public class DocumentHighlights
           // the feature itself
           Stream.of(f)
             .filter(HasSourcePositionTool.IsItemInFile(LSP4jUtils.getUri(params)))
-            .map(af -> Bridge.ToHighlight(af)),
+            .map(af -> Bridge.toHighlight(af)),
           // the calls to the feature
           FeatureTool.CallsTo(f)
             .map(entry -> entry.getKey())
             .filter(HasSourcePositionTool.IsItemInFile(LSP4jUtils.getUri(params)))
-            .map(c -> Bridge.ToHighlight(c)))
+            .map(c -> Bridge.toHighlight(c)))
           .collect(Collectors.toList());
       })
       .orElse(List.of());

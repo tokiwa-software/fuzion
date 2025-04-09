@@ -85,7 +85,7 @@ public class Rename extends ANY
         return Either.forRight(new ResponseErrorException(responseError));
       }
 
-    var pos = Bridge.ToSourcePosition(params);
+    var pos = Bridge.toSourcePosition(params);
 
     var feature = QueryAST.FeatureAt(pos);
     if (feature.isEmpty())
@@ -99,8 +99,8 @@ public class Rename extends ANY
     var changes = renamePositions
       .map(start -> {
         var end =
-          SourcePositionTool.ByLineColumn(start._sourceFile, start.line(), start.column() + LengthOfFeatureIdentifier(feature.get()));
-        return Bridge.ToLocation(start, end);
+          SourcePositionTool.ByLineColumn(start._sourceFile, start.line(), start.column() + lengthOfFeatureIdentifier(feature.get()));
+        return Bridge.toLocation(start, end);
       })
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
         new TextEdit(location.getRange(), newName)))
@@ -174,7 +174,7 @@ public class Rename extends ANY
           return TypeTool.baseName(t).equals(featureToRename.featureName().baseName());
         });
       })
-      .map(f -> PositionOfChoiceGeneric(featureToRename.featureName().baseName(), f));
+      .map(f -> positionOfChoiceGeneric(featureToRename.featureName().baseName(), f));
 
     return Util.ConcatStreams(
       callsSourcePositions,
@@ -184,7 +184,7 @@ public class Rename extends ANY
       choiceGenerics);
   }
 
-  private static SourcePosition PositionOfChoiceGeneric(String name, AbstractFeature f)
+  private static SourcePosition positionOfChoiceGeneric(String name, AbstractFeature f)
   {
     return LexerTool
       .TokensFrom(new SourcePosition(f.pos()._sourceFile, 0))
@@ -198,7 +198,7 @@ public class Rename extends ANY
       .start();
   }
 
-  private static int LengthOfFeatureIdentifier(AbstractFeature feature)
+  private static int lengthOfFeatureIdentifier(AbstractFeature feature)
   {
     return Arrays.stream(feature.featureName().baseName().split(" "))
       .map(str -> Util.CharCount(str))
@@ -208,7 +208,7 @@ public class Rename extends ANY
   // NYI disallow renaming of stdlib
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
-    var pos = Bridge.ToSourcePosition(params);
+    var pos = Bridge.toSourcePosition(params);
     var featureAt = QueryAST.FeatureAt(pos);
     if (featureAt.isEmpty())
       {
@@ -217,7 +217,7 @@ public class Rename extends ANY
 
     return LexerTool.IdentOrOperatorTokenAt(pos)
       .map(token -> {
-        return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
+        return new PrepareRenameResult(LSP4jUtils.range(token), token.text());
       })
       .orElse(new PrepareRenameResult());
   }

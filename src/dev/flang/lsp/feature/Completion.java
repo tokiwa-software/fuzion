@@ -96,7 +96,7 @@ public class Completion
 
   public static Stream<CompletionItem> getCompletions(CompletionParams params)
   {
-    var pos = Bridge.ToSourcePosition(params);
+    var pos = Bridge.toSourcePosition(params);
     if (QueryAST.InString(pos))
       {
         return Stream.empty();
@@ -125,8 +125,8 @@ public class Completion
         return Stream.of(
             completions(QueryAST
               .DotCallCompletionsAt(pos)),
-            CompletionItemThis(),
-            CompletionItemType())
+            completionItemThis(),
+            completionItemType())
           .flatMap(x -> x);
       }
     if (" ".equals(triggerCharacter))
@@ -138,7 +138,7 @@ public class Completion
             .token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
           {
-            return ForLoopCompletions();
+            return forLoopCompletions();
           }
 
 
@@ -201,7 +201,7 @@ public class Completion
    * completion item for keyword `type`
    * @return
    */
-  private static Stream<CompletionItem> CompletionItemType()
+  private static Stream<CompletionItem> completionItemType()
   {
     return Stream.of(buildCompletionItem("type", "type", CompletionItemKind.Keyword));
   }
@@ -210,13 +210,13 @@ public class Completion
    * completion item for keyword `this`
    * @return
    */
-  private static Stream<CompletionItem> CompletionItemThis()
+  private static Stream<CompletionItem> completionItemThis()
   {
     return Stream.of(buildCompletionItem("this", "this", CompletionItemKind.Keyword));
   }
 
 
-  private static Stream<CompletionItem> ForLoopCompletions()
+  private static Stream<CompletionItem> forLoopCompletions()
   {
     return Arrays.asList(
       buildCompletionItem("for in", "${1:i} in ${2:1}..${3:10} do", CompletionItemKind.Keyword),
