@@ -200,12 +200,18 @@ int fzE_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  // NYI use lock to make this _atomic_.
+
+  // make sure no fork is done while we open socket
+  fzE_lock();
+
   int sockfd = set_last_error(socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol)));
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
   }
+
+  fzE_unlock();
+
   return sockfd;
 }
 
@@ -589,7 +595,8 @@ void fzE_unlock()
 // NYI make this thread safe
 // NYI option to pass stdin,stdout,stderr
 // zero on success, -1 error
-int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str) {
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str)
+{
 
   // Describes the how and why
   // of making file descriptors, handlers, sockets
@@ -601,6 +608,9 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
   // how it is done in jdk:
   // https://github.com/openjdk/jdk/blob/c2d9fa26ce903be7c86a47db5ff289cdb9de3a62/src/java.base/unix/native/libjava/ProcessImpl_md.c#L53
+
+  // make sure no files are opened while we start child process
+  fzE_lock();
 
   errno = 0;
 
@@ -685,6 +695,9 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
       result[3] = (int64_t) stdErr[0];
     }
   }
+
+  fzE_unlock();
+
   return ret;
 }
 
@@ -726,13 +739,16 @@ int fzE_pipe_close(int64_t desc){
 void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
   assert( mode >= 0 && mode <= 2 );
-  // NYI use lock to make fopen and fcntl _atomic_.
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
   // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
   // to a race condition that may unintentionally leak the file descriptor to the
   // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
   // for details and a remedy to the problem."
   errno = 0;
+
+  // make sure no fork is done while we open file
+  fzE_lock();
+
   FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
   if (fp!=NULL)
   {
@@ -742,6 +758,9 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   {
     open_results[0] = (int64_t)errno;
   }
+
+  fzE_unlock();
+
   return fp;
 }
 
