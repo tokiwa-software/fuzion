@@ -70,41 +70,41 @@ public enum Diagnostics
   {
     // NYI check names of type arguments
     return Util.ConcatStreams(
-      Errors(uri),
-      Warnings(uri),
-      NamingFeatures(uri),
-      NamingRefs(uri),
-      NamingTypeParams(uri));
+      errors(uri),
+      warnings(uri),
+      namingFeatures(uri),
+      namingRefs(uri),
+      namingTypeParams(uri));
   }
 
-  private static Stream<Diagnostic> Errors(URI uri)
+  private static Stream<Diagnostic> errors(URI uri)
   {
     var errorDiagnostics =
       ParserTool.Errors(uri)
         .filter(error -> ParserTool.getUri(error.pos).equals(uri))
         .map((error) -> {
             var message = error.msg + System.lineSeparator() + error.detail;
-            return Create(Bridge.ToRange(error.pos), message,
+            return create(Bridge.toRange(error.pos), message,
               DiagnosticSeverity.Error,
               errors);
           });
     return errorDiagnostics;
   }
 
-  private static Stream<Diagnostic> Warnings(URI uri)
+  private static Stream<Diagnostic> warnings(URI uri)
   {
     var warningDiagnostics =
       ParserTool.Warnings(uri)
         .filter(warning -> ParserTool.getUri(warning.pos).equals(uri))
         .map((warning) -> {
             var message = warning.msg + System.lineSeparator() + warning.detail;
-            return Create(Bridge.ToRange(warning.pos), message,
+            return create(Bridge.toRange(warning.pos), message,
               DiagnosticSeverity.Warning, warnings);
           });
     return warningDiagnostics;
   }
 
-  private static Stream<Diagnostic> NamingRefs(URI uri)
+  private static Stream<Diagnostic> namingRefs(URI uri)
   {
     return QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
@@ -121,13 +121,13 @@ public enum Diagnostics
               && str.substring(1).codePoints().anyMatch(c -> Character.isUpperCase(c)));
       })
       .map(f -> {
-        return Create(Bridge.ToRangeBaseName(f),
+        return create(Bridge.toRangeBaseName(f),
           "use Snake_Pascal_Case for refs, check: https://flang.dev/design/identifiers",
           DiagnosticSeverity.Information, nameingRefs);
       });
   }
 
-  private static Stream<Diagnostic> NamingFeatures(URI uri)
+  private static Stream<Diagnostic> namingFeatures(URI uri)
   {
     var snakeCase = QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
@@ -139,14 +139,14 @@ public enum Diagnostics
         basename.codePoints().anyMatch(c -> Character.isUpperCase(c));
       })
       .map(f -> {
-        return Create(Bridge.ToRangeBaseName(f),
+        return create(Bridge.toRangeBaseName(f),
           "use snake_case for features and value types, check: https://flang.dev/design/identifiers",
           DiagnosticSeverity.Information, nameingFeatures);
       });
     return snakeCase;
   }
 
-  private static Stream<Diagnostic> NamingTypeParams(URI uri)
+  private static Stream<Diagnostic> namingTypeParams(URI uri)
   {
     var uppercase = QueryAST.SelfAndDescendants(uri)
       .filter(f -> f.isTypeParameter())
@@ -155,7 +155,7 @@ public enum Diagnostics
         return basename.codePoints().anyMatch(c -> Character.isLowerCase(c));
       })
       .map(f -> {
-        return Create(Bridge.ToRangeBaseName(f),
+        return create(Bridge.toRangeBaseName(f),
           "use UPPERCASE for type parameters, check: https://flang.dev/design/identifiers",
           DiagnosticSeverity.Information, Diagnostics.nameingTypeParams);
       });
@@ -163,7 +163,7 @@ public enum Diagnostics
   }
 
 
-  private static Diagnostic Create(Range range, String msg, DiagnosticSeverity diagnosticSeverity, Diagnostics d)
+  private static Diagnostic create(Range range, String msg, DiagnosticSeverity diagnosticSeverity, Diagnostics d)
   {
     var diagnostic = new Diagnostic(range, msg,
       diagnosticSeverity, "fuzion language server");

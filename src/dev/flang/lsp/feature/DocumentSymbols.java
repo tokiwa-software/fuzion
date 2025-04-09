@@ -44,17 +44,17 @@ public class DocumentSymbols
   public static List<Either<SymbolInformation, DocumentSymbol>> getDocumentSymbols(DocumentSymbolParams params)
   {
     return ParserTool.TopLevelFeatures(LSP4jUtils.getUri(params.getTextDocument()))
-      .map(f -> DocumentSymbols.DocumentSymbolTree(f))
+      .map(f -> DocumentSymbols.documentSymbolTree(f))
       .<Either<SymbolInformation, DocumentSymbol>>map(x -> Either.forRight(x))
       .collect(Collectors.toList());
   }
 
-  public static DocumentSymbol DocumentSymbolTree(AbstractFeature feature)
+  public static DocumentSymbol documentSymbolTree(AbstractFeature feature)
   {
-    var documentSymbol = Bridge.ToDocumentSymbol(feature);
+    var documentSymbol = Bridge.toDocumentSymbol(feature);
     var children = ParserTool.DeclaredFeatures(feature)
       .map(f -> {
-        return DocumentSymbolTree(f);
+        return documentSymbolTree(f);
       })
       .collect(Collectors.toList());
     documentSymbol.setChildren(children);

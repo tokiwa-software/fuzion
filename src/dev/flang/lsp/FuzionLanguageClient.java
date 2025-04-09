@@ -36,7 +36,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 public class FuzionLanguageClient
 {
-  public static String StartProgress(String title, String message)
+  public static String startProgress(String title, String message)
   {
     var token = UUID.randomUUID().toString();
     Config.languageClient().createProgress(new WorkDoneProgressCreateParams(Either.forLeft(token)));
@@ -50,7 +50,7 @@ public class FuzionLanguageClient
     return token;
   }
 
-  public static void EndProgress(String token)
+  public static void endProgress(String token)
   {
     Config.languageClient()
       .notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(new WorkDoneProgressEnd())));

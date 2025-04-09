@@ -45,13 +45,13 @@ public class References
 
   public static List<? extends Location> getReferences(ReferenceParams params)
   {
-    var feature = QueryAST.FeatureAt(Bridge.ToSourcePosition(params));
+    var feature = QueryAST.FeatureAt(Bridge.toSourcePosition(params));
     if (feature.isEmpty())
       {
         return List.of();
       }
     return FeatureTool.CallsTo(feature.get())
-      .map(entry -> Bridge.ToLocation(entry.getKey()))
+      .map(entry -> Bridge.toLocation(entry.getKey()))
       .collect(Collectors.toList());
   }
 

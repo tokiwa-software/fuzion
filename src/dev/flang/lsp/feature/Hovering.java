@@ -46,10 +46,10 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var pos = Bridge.ToSourcePosition(params);
+    var pos = Bridge.toSourcePosition(params);
     return LexerTool.IdentTokenAt(pos)
       .flatMap(identToken -> {
-        var range = LSP4jUtils.Range(identToken);
+        var range = LSP4jUtils.range(identToken);
         return QueryAST
           .FeatureAt(pos)
           .map(f -> {

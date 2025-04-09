@@ -49,7 +49,7 @@ public class Definition
     DefinitionParams params)
   {
 
-    var feature = QueryAST.FeatureAt(Bridge.ToSourcePosition(params));
+    var feature = QueryAST.FeatureAt(Bridge.toSourcePosition(params));
     if (feature.isEmpty())
       {
         return null;
@@ -66,7 +66,7 @@ public class Definition
       .forLeft(
         fl
           .stream()
-          .map(f -> Bridge.ToLocation(f))
+          .map(f -> Bridge.toLocation(f))
           .collect(Collectors.toList()));
   }
 

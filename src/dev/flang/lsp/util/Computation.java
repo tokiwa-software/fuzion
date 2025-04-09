@@ -46,9 +46,9 @@ public class Computation
   private static final int INTERVALL_CHECK_CANCELLED_MS = 250;
   private static LocalDateTime lastErrorMessageSent = LocalDateTime.MIN;
 
-  public static <T> CompletableFuture<T> CancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
+  public static <T> CompletableFuture<T> cancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
   {
-    Context.Logger.Log("[" + callee + "] started computing.");
+    Context.Logger.log("[" + callee + "] started computing.");
 
     var result = new CompletableFuture<T>();
     return result.completeAsync(() -> {
@@ -64,7 +64,7 @@ public class Computation
             maxTimeInMs);
 
           var ms = res.nanoSeconds() / 1_000_000;
-          Context.Logger.Log("[" + callee + "] finished in " + ms + "ms");
+          Context.Logger.log("[" + callee + "] finished in " + ms + "ms");
 
           return res.result();
         }
@@ -75,23 +75,23 @@ public class Computation
         }
       catch (MaxExecutionTimeExceededException e)
         {
-          Context.Logger.Warning("[" + callee + "] Max execution time exceeded: " + e);
+          Context.Logger.warning("[" + callee + "] Max execution time exceeded: " + e);
         }
       catch (CancellationException e)
         {
-          Context.Logger.Info("[" + callee + "] was cancelled.");
+          Context.Logger.info("[" + callee + "] was cancelled.");
         }
       catch (Throwable th)
         {
-          Context.Logger.Error("[" + callee + "] An unexpected error occurred: " + th + ":");
-          Context.Logger.Error(ErrorHandling.toString(th));
-          NotifyUser();
+          Context.Logger.error("[" + callee + "] An unexpected error occurred: " + th + ":");
+          Context.Logger.error(ErrorHandling.toString(th));
+          notifyUser();
         }
       return null;
     });
   }
 
-  private static void NotifyUser()
+  private static void notifyUser()
   {
     if (lastErrorMessageSent.plusMinutes(1).isBefore(LocalDateTime.now()))
       {

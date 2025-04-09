@@ -122,13 +122,13 @@ public class FuzionTextDocumentService implements TextDocumentService
   public void didChange(DidChangeTextDocumentParams params)
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
-    var text = SyncKindFull(params);
+    var text = syncKindFull(params);
     SourceText.setText(uri, text);
     afterSetText(uri);
 
   }
 
-  private String SyncKindFull(DidChangeTextDocumentParams params)
+  private String syncKindFull(DidChangeTextDocumentParams params)
   {
     var contentChanges = params.getContentChanges();
     var text = contentChanges.get(0).getText();
@@ -153,64 +153,64 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
   {
-    return Computation.CancellableComputation(() -> Either.forLeft(Completion.getCompletions(position).collect(Collectors.toList())), "completion", 5000);
+    return Computation.cancellableComputation(() -> Either.forLeft(Completion.getCompletions(position).collect(Collectors.toList())), "completion", 5000);
   }
 
   @Override
   public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
   {
-    return Computation.CancellableComputation(() -> unresolved, "resolve completion", MAX_COMPUTATION_TIME_MS);
+    return Computation.cancellableComputation(() -> unresolved, "resolve completion", MAX_COMPUTATION_TIME_MS);
   }
 
   @Override
   public CompletableFuture<Hover> hover(HoverParams params)
   {
-    return Computation.CancellableComputation(() -> Hovering.getHover(params), "hover", 5000);
+    return Computation.cancellableComputation(() -> Hovering.getHover(params), "hover", 5000);
   }
 
   @Override
   public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
     DefinitionParams params)
   {
-    return Computation.CancellableComputation(() -> Definition.getDefinitionLocation(params), "definition", 5000);
+    return Computation.cancellableComputation(() -> Definition.getDefinitionLocation(params), "definition", 5000);
   }
 
   @Override
   public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params)
   {
-    return Computation.CancellableComputation(() -> DocumentHighlights.getHightlights(params), "document highlight", 5000);
+    return Computation.cancellableComputation(() -> DocumentHighlights.getHightlights(params), "document highlight", 5000);
   }
 
   @Override
   public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
   {
-    return Computation.CancellableComputation(() -> References.getReferences(params), "references", 5000);
+    return Computation.cancellableComputation(() -> References.getReferences(params), "references", 5000);
   }
 
   @Override
   public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
   {
-    return Computation.CancellableComputation(() -> Rename.getWorkspaceEdit(params), "rename", 5000);
+    return Computation.cancellableComputation(() -> Rename.getWorkspaceEdit(params), "rename", 5000);
   }
 
   @Override
   public CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> prepareRename(
     PrepareRenameParams params)
   {
-    return Computation.CancellableComputation(() -> Either3.forSecond(Rename.getPrepareRenameResult(params)),
+    return Computation.cancellableComputation(() -> Either3.forSecond(Rename.getPrepareRenameResult(params)),
          "prepare rename", 5000);
   }
 
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
-    return Computation.CancellableComputation(() -> CodeActions.getCodeActions(params), "code action", 5000);
+    return Computation.cancellableComputation(() -> CodeActions.getCodeActions(params), "code action", 5000);
   }
 
   @Override
   public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
   {
-    return Computation.CancellableComputation(() -> DocumentSymbols.getDocumentSymbols(params), "document symbol",
+    return Computation.cancellableComputation(() -> DocumentSymbols.getDocumentSymbols(params), "document symbol",
       5000);
   }
 
@@ -225,19 +225,19 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
   {
-    return Computation.CancellableComputation(() -> CodeLenses.getCodeLenses(params), "code lens", 5000);
+    return Computation.cancellableComputation(() -> CodeLenses.getCodeLenses(params), "code lens", 5000);
   }
 
   @Override
   public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
   {
-    return Computation.CancellableComputation(() -> SignatureHelper.getSignatureHelp(params), "signature help", 5000);
+    return Computation.cancellableComputation(() -> SignatureHelper.getSignatureHelp(params), "signature help", 5000);
   }
 
   @Override
   public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params)
   {
-    return Computation.CancellableComputation(() -> SemanticToken.getSemanticTokens(params), "semantic tokens full",
+    return Computation.cancellableComputation(() -> SemanticToken.getSemanticTokens(params), "semantic tokens full",
       5000);
   }
 

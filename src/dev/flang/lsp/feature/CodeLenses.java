@@ -65,20 +65,20 @@ public class CodeLenses
       .filter(f -> !(f.isField() || FeatureTool.IsArgument(f)))
       .map(f -> {
         var command =
-          Commands.Create(Commands.callGraph, uri, List.of(FeatureTool.UniqueIdentifier(f)));
-        return new CodeLens(Bridge.ToRange(f), command, null);
+          Commands.create(Commands.callGraph, uri, List.of(FeatureTool.UniqueIdentifier(f)));
+        return new CodeLens(Bridge.toRange(f), command, null);
       });
   }
 
   private static CodeLens codeLensShowSyntaxTree(URI uri)
   {
-    var command = Commands.Create(Commands.showSyntaxTree, uri, List.of());
+    var command = Commands.create(Commands.showSyntaxTree, uri, List.of());
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)), command, null);
   }
 
   private static CodeLens codeLensRun(URI uri)
   {
-    Command command = Commands.Create(Commands.run, uri, List.of());
+    Command command = Commands.create(Commands.run, uri, List.of());
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)),
       command,
       null);

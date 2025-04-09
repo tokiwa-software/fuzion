@@ -76,7 +76,7 @@ public class SignatureHelper extends ANY
     if (PRECONDITIONS)
       require(params.getPosition().getCharacter() > 0);
 
-    var pos = Bridge.ToSourcePosition(params);
+    var pos = Bridge.toSourcePosition(params);
 
     Optional<AbstractCall> call = QueryAST.callAt(pos);
 
@@ -111,14 +111,14 @@ public class SignatureHelper extends ANY
       .filter(f -> featureNameMatchesCallName(f, call));
 
     // NYI how to "intelligently" sort the signatureinfos?
-    return new SignatureHelp(calledFeatures.map(f -> SignatureInformation(f)).collect(Collectors.toList()), 0, 0);
+    return new SignatureHelp(calledFeatures.map(f -> signatureInformation(f)).collect(Collectors.toList()), 0, 0);
   }
 
-  private static SignatureInformation SignatureInformation(AbstractFeature feature)
+  private static SignatureInformation signatureInformation(AbstractFeature feature)
   {
     var description = new MarkupContent(MarkupKind.MARKDOWN, FeatureTool.CommentOfInMarkdown(feature));
     return new SignatureInformation(FeatureTool.Label(feature, false), description,
-      ParameterInfo(feature));
+      parameterInfo(feature));
   }
 
   private static boolean featureNameMatchesCallName(AbstractFeature f, AbstractCall ac)
@@ -134,7 +134,7 @@ public class SignatureHelper extends ANY
     throw new RuntimeException("not implemented");
   }
 
-  private static List<ParameterInformation> ParameterInfo(AbstractFeature calledFeature)
+  private static List<ParameterInformation> parameterInfo(AbstractFeature calledFeature)
   {
     return calledFeature.arguments()
       .stream()

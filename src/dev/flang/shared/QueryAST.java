@@ -325,7 +325,7 @@ public class QueryAST extends ANY
       // the AST currently
       .or(() -> FeatureAtFuzzy(params))
       .or(() -> {
-        dev.flang.shared.Context.Logger.Warning("No feature found at: " + params);
+        dev.flang.shared.Context.Logger.warning("No feature found at: " + params);
         return Optional.empty();
       });
   }
