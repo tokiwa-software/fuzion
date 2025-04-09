@@ -136,7 +136,7 @@ public class ValueSet extends Value
         }
       else if (v instanceof TaggedValue tv)
         {
-          if (_components != null)
+          if (false && _componentsArray != null)
             {
               System.out.println("ADDING TAGGED "+tv+" to "+_dfa._fuir.clazzAsString(_clazz));
               for (var c : _componentsArray)
