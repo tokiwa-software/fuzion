@@ -982,7 +982,7 @@ public Sequence(public T type) ref : property.countable is
       T : property.equatable
   =>
 
-    find_lm ! ()->
+    afind_lm ! ()->
 
       make(t Sequence T, r option (Node T)) =>
         n option (Node T) =>
@@ -1471,6 +1471,7 @@ public Sequence(public T type) ref : property.countable is
 # helper features for knuth morris pratt algorithm
 #
 find_lm : mutate is
+afind_lm => find_lm
 Node(T type, top Sequence T, next once find_lm (option (Node T)), rest option (Node T)) ref is
 
 
