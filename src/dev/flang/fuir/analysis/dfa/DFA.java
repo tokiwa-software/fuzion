@@ -1334,6 +1334,14 @@ public class DFA extends ANY
           }
       }
 
+    _cachedValues = new TreeMap<>(Value.COMPARATOR);
+    _numUniqueValues = 0;
+    _uniqueValues = new List<Value>();
+    _instancesForSite = new List<>();
+    _tagged = new LongMap<>();
+    _joined = new LongMap<>();
+    _uninitializedSysArray = new IntMap<>();
+
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
     _callGroupsQuick = new LongMap<>();
@@ -2336,7 +2344,6 @@ public class DFA extends ANY
                 }
             }
 
-
           var result = cll.result();
           Value ev;
           if (cl._dfa._real)
@@ -2362,7 +2369,8 @@ public class DFA extends ANY
           // System.out.println("ABORTED IS "+aborted+" for "+cl._dfa._fuir.clazzAsString(ecl));
           if (aborted)
             { // default result, only if abort is ever called
-              var res = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
+              var def = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl);
+              var res = def.result();
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl._cc)) :
                 result != null                ? result
@@ -3647,17 +3655,7 @@ sys	0m1,247s
       }
     else
       {
-        if (false && _fuir.clazzAsString(e._cc).equals("a#1") && e._env != env)
-          {
-            System.out.println(dev.flang.util.Terminal.BOLD_GREEN + "NOT_NEW: "+e +"\n ENV: "+env+
-                               dev.flang.util.Terminal.RESET);
-          }
         e.mergeWith(args);
-        if (false && _real && _fuir.clazzAsString(cl).equals("instate_helper unit e"))
-          {
-            System.out.println(dev.flang.util.Terminal.BOLD_YELLOW + "MERGEED CALL "+e + "ENV "+env+" ENV2 "+oenv+dev.flang.util.Terminal.RESET);
-            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
-          }
       }
     if (from != null)
       {
