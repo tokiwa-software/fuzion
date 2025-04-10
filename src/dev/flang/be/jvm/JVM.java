@@ -910,7 +910,7 @@ should be avoided as much as possible.
                                   args));
         out.close();
         f.setExecutable(true);
-        for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
+        for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
           {
             var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
             if (file.toFile().exists())
