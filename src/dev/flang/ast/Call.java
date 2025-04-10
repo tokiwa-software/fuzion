@@ -281,8 +281,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
   {
-    this(pos, t, calledFeature.featureName().baseName(), Expr.NO_EXPRS);
-    this._calledFeature = calledFeature;
+    this(pos, t, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
   }
 
 
