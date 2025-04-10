@@ -1902,27 +1902,25 @@ public class C extends ANY
    */
   public CStmnt code(int cl)
   {
-    var l = new List<CStmnt>();
+    var res = CStmnt.EMPTY;
     if (_fuir.clazzNeedsCode(cl))
       {
-        l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
-        var o = switch (_fuir.clazzKind(cl))
+        var decl = switch (_fuir.clazzKind(cl))
           {
-            case Routine -> codeForRoutine(cl);
-            case Intrinsic -> _intrinsics.code(this, cl);
-            case Native ->
-              {
-                l.add(functionWrapperForNative(cl));
-                yield codeForNative(cl);
-              }
-            default -> null;
+          case Routine   -> cFunctionDecl(cl, codeForRoutine(cl));
+          case Intrinsic -> cFunctionDecl(cl, _intrinsics.code(this, cl));
+          case Native    -> CStmnt.seq(functionWrapperForNative(cl),
+                                       cFunctionDecl(cl, codeForNative(cl)));
+          default -> null;
           };
-        if (o != null)
+        if (decl != null)
           {
-            l.add(cFunctionDecl(cl, o));
+            res = CStmnt.seq
+              (CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"),
+               decl);
           }
       }
-    return CStmnt.seq(l);
+    return res;
   }
 
 
