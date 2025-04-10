@@ -90,6 +90,8 @@ public class ParsedOperatorCall extends ParsedCall
   public ParsedOperatorCall(Expr target, ParsedName name, Expr rhs)
   {
     super(target, name, new List<>(rhs));
+    if (PRECONDITIONS) require
+      (rhs != Universe.instance);
   }
 
 

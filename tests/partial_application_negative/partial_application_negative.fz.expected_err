@@ -59,12 +59,16 @@ Target feature: 'i32'
 In call: '3.prefix*'
 
 
---CURDIR--/partial_application_negative.fz:43:38: error 7: Failed to infer actual type parameters
+--CURDIR--/partial_application_negative.fz:43:47: error 7: Incompatible types when passing argument in a call
   test "data.map 3.prefix-   " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    // 2. should flag an error, do not change named prefix call to infix call
--------------------------------------^^^
-In call to 'Sequence.map', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'B'
-Type inference failed for one type parameter 'B'
+----------------------------------------------^^^^^^^
+Actual type for argument #1 'f' does not match expected type.
+In call to          : 'Sequence.map'
+expected formal type: 'Unary Sequence.map.B Sequence.T'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '3.prefix-'
+To solve this, you could change the type of the target 'f' to 'i32' or convert the type of the assigned value to 'Unary Sequence.map.B Sequence.T'.
 
 
 --CURDIR--/partial_application_negative.fz:44:47: error 8: Could not find called feature
