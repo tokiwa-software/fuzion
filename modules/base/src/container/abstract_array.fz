@@ -131,6 +131,7 @@ public abstract_array
         else
           container.array_cons abstract_array.this from to
 
+
       # get the contents of this slice at the given index
       #
       public redef index [ ] (i i32) T
@@ -171,17 +172,6 @@ public abstract_array
         abstract_array.this.slice from+(max 0 n) to
 
     arrayslice
-
-
-  # create a cons cell for a list of this array starting at the given
-  # index `i` and up to `to`
-  #
-  array_consX (i, to i32) : Cons T (list T)
-    pre
-      debug: 0 ≤ i < to ≤ length
-  is
-    public redef head := abstract_array.this[i]
-    public redef tail := (slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
@@ -271,5 +261,34 @@ array_cons(a A : abstract_array T, i, to i32) : Cons T (list T)
     pre
       debug: 0 ≤ i < to ≤ a.length
   is
-    public redef head := a[i]
-    public redef tail := (a.slice i+1 to).as_list
+    # NYI: BUG: #5045: this code
+    #
+    #    public redef head := a[i]
+    #    public redef tail := (a.slice i+1 to).as_list
+    #
+    # causes tests/base16 and others to fail in the C backend due to
+    # escape analysis not working correctly such that `heapClone` will not be done on
+    # this a list in `list.reduce`. As small example to illustrate this is
+    #
+    #   a := [u8 55,48,49,5]
+    #   a.reduce unit (r,k ->
+    #       say "x"
+    #       _ := $1
+    #       say "y"
+    #       unit)
+    #
+    # which print `x` and `y` only twice while
+    #
+    #   a := [u8 55,48,49,5]
+    #   a.reduce unit (r,k ->
+    #       say "x"
+    #       say "y"
+    #       unit)
+    #
+    # is correct and prints `x` and `y` four times.
+    #
+    # Note that use of `=>` should not be changed to `:=` since the latter would
+    # result in eager creation of the whole list even if it is not needed.
+    #
+    public redef head => a[i]
+    public redef tail => (a.slice i+1 to).as_list
