@@ -74,6 +74,13 @@ wchar_t* utf8_to_wide_str(const char* str)
   return wideStr;
 }
 
+// zero memory
+void fzE_mem_zero(void *dest, size_t sz)
+{
+  SecureZeroMemory(dest, sz);
+}
+
+
 
 // returns the latest error number of
 // the current thread
@@ -621,7 +628,7 @@ void fzE_init()
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
+  fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             // NYI #1646 setprotocol returns EINVAL on windows.
             // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&

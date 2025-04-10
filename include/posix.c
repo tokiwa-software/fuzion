@@ -78,6 +78,19 @@ inline int set_last_error(int ret_val)
   return ret_val;
 }
 
+// zero memory
+void fzE_mem_zero(void *dest, size_t sz)
+{
+#ifdef __STDC_LIB_EXT1__
+  memset_s(dest, sz, 0, sz);
+#else
+  volatile unsigned char *p = dest;
+  while (sz--) {
+      *p++ = 0;
+  }
+#endif
+}
+
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -219,7 +232,7 @@ int fzE_socket(int family, int type, int protocol){
 int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * host, char * port, struct addrinfo ** result){
   struct addrinfo hints;
 
-  fzE_memset(&hints, 0, sizeof hints);
+  fzE_mem_zero(&hints, sizeof hints);
 
   hints.ai_family = fzE_get_family(family);
   hints.ai_socktype = fzE_get_socket_type(socktype);
@@ -313,7 +326,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_mem_zero(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -335,7 +348,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_mem_zero(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -508,7 +521,7 @@ void fzE_init()
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
+  fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
