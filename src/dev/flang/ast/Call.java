@@ -1144,9 +1144,19 @@ public class Call extends AbstractCall
     var result = typeForInferencing();
     if (result == null)
       {
-        result = hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR)
-          ? Types.t_ERROR
-          : Types.t_FORWARD_CYCLIC;
+        if (hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR))
+          {
+            result = Types.t_ERROR;
+          }
+        else if (calledFeatureKnown() && calledFeature().state().atLeast(State.RESOLVED_TYPES))
+          {
+            AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics());
+            result = Types.t_ERROR;
+          }
+        else
+          {
+            result = Types.t_FORWARD_CYCLIC;
+          }
         setToErrorState0();
       }
     return result;
