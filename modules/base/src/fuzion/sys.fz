@@ -34,7 +34,10 @@ module:public sys is
   # This is used to pass strings down to intrinsics
   #
   module c_string (s String) =>
-    (s + codepoint 0).utf8.as_array.internal_array.data
+    a0 := s.utf8.as_array
+    a1 := array a0.length+1 (i -> id u8 (i < a0.length ? a0[i] : u8 0))
+    a1.internal_array.data
+#    (s + codepoint 0).utf8.as_array.internal_array.data
 
 
   # intrinsic to stop execution signalling a fault of given kind with given message.

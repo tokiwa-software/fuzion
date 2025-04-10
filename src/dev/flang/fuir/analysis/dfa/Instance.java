@@ -62,7 +62,7 @@ public class Instance extends Value
   /**
    * Map from fields to the values that have been assigned to the fields.
    */
-  private final TreeMap<Integer, Value> _fields;
+  final TreeMap<Integer, Value> _fields;
 
 
   /**
@@ -119,6 +119,31 @@ public class Instance extends Value
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Does this Value cover the values in other?
+  boolean contains(Value other)
+  {
+    if (this == other)
+      {
+        return true;
+      }
+    if (_dfa._fuir.clazzAsString(_clazz).equals("array u8") &&
+        _dfa._fuir.clazzAsString(other._clazz).equals("array u8"))
+      {
+        dev.flang.util.Debug.uprintln("EQUALS "+this+" <=> "+other);
+        if (false) if (toString().equals(other.toString()))
+          {
+            _t.printStackTrace();
+            ((Instance)other)._t.printStackTrace();
+          }
+      }
+
+    return false;
+  }
+  Throwable _t = new Throwable();
+   */
 
 
   /**
