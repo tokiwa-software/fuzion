@@ -302,11 +302,11 @@ MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
 MOD_FZ_CMD = $(MOD_FZ_CMD_DIR).fum
 
 ifeq ($(OS),Windows_NT)
-	FUZION_RT = $(BUILD_DIR)/lib/fuzion.dll
+	FUZION_RT = $(BUILD_DIR)/lib/fuzion_rt.dll
 else ifeq ($(shell uname),Darwin)
-	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.dylib
+	FUZION_RT = $(BUILD_DIR)/lib/libfuzion_rt.dylib
 else
-	FUZION_RT = $(BUILD_DIR)/lib/libfuzion.so
+	FUZION_RT = $(BUILD_DIR)/lib/libfuzion_rt.so
 endif
 
 VERSION = $(shell cat $(FZ_SRC)/version.txt)
@@ -1302,7 +1302,7 @@ run_tests_jar: run_tests_jar_build
 		echo "Outputs are different $$output1, $$output2!"; \
 		exit 1; \
 	fi
-	rm -f HelloWorld HelloWorld.jar libfuzion.so libfuzion.dylib fuzion.dll
+	rm -f HelloWorld HelloWorld.jar libfuzion_rt.so libfuzion_rt.dylib fuzion_rt.dll
 
 .PHONY: clean
 clean:
@@ -1466,9 +1466,9 @@ endif
 # else
 # 	clang -Wall -Werror -O3 -shared \
 # 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
-# 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion.so \
+# 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $(BUILD_DIR)/lib/libfuzion_rt.so \
 # 	-lgc
-# 	cp $(BUILD_DIR)/lib/libfuzion.so $(BUILD_DIR)/lib/libfuzion.dylib
+# 	cp $(BUILD_DIR)/lib/libfuzion_rt.so $(BUILD_DIR)/lib/libfuzion_rt.dylib
 # endif
 
 
