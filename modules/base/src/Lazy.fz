@@ -39,7 +39,9 @@ public Lazy(public T type) ref : Nullary T, monad T (Lazy T) is
   # Apply f to elements of type A and re-wrap them in this monad.
   #
   public redef infix >>= (f T -> Lazy T) Lazy T =>
-    f call
+    ref : Lazy T is
+      public redef call =>
+        (f Lazy.this.call).call
 
 
   # return function
