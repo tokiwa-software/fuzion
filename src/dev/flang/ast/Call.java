@@ -1849,7 +1849,7 @@ public class Call extends AbstractCall
     for (Generic g : _calledFeature.generics().list)
       {
         int i = g.index();
-        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED || conflict[i])
+        if (!g.isOpen() && (_generics.size() <= i || _generics.get(i) == Types.t_UNDEFINED) || conflict[i])
           {
             if (CHECKS) check
               (Errors.any() || i < _generics.size());
@@ -2009,7 +2009,6 @@ public class Call extends AbstractCall
                   }
                 else if (aargs.hasNext())
                   {
-                    count++;
                     var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, context);
                     /*
                       without this if, type inference in this example would not work:
@@ -2033,9 +2032,9 @@ public class Call extends AbstractCall
                               {
                                 var tp = t.genericArgument().typeParameter();
                                 res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt);
+                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt, count-1);
                               }
-                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt);
+                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, count-1);
                             checked[vai] = true;
                           }
                         else if (resultExpression(actual) instanceof AbstractLambda al)
@@ -2043,6 +2042,7 @@ public class Call extends AbstractCall
                             checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
+                    count++;
                   }
               }
             else if (aargs.hasNext())
@@ -2169,6 +2169,39 @@ public class Call extends AbstractCall
                             boolean[] conflict,
                             List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
+    inferGeneric(res, context, formalType, actualType, pos, conflict, foundAt, -1);
+  }
+
+
+  /**
+   * Perform type inference for generics used in formalType that are instantiated by actualType.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param formalType the (possibly generic) formal type
+   *
+   * @param actualType the actual type
+   *
+   * @param pos source code position of the expression actualType was derived from
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
+   *
+   * @param actualArgIndex the index of the actual or -1 if actualType not directly from actual
+   */
+  private void inferGeneric(Resolution res,
+                            Context context,
+                            AbstractType formalType,
+                            AbstractType actualType,
+                            SourcePosition pos,
+                            boolean[] conflict,
+                            List<List<Pair<SourcePosition, AbstractType>>> foundAt,
+                            int actualArgIndex)
+  {
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
@@ -2264,6 +2297,11 @@ public class Call extends AbstractCall
                   }
               }
           }
+        else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.generics().list.isEmpty())
+          {
+            AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
+            setToErrorState();
+          }
         else if (aft != null)
           {
             for (var p: aft.inherits())
@@ -2276,7 +2314,10 @@ public class Call extends AbstractCall
                 if (pt != Types.t_ERROR)
                   {
                     var apt = actualType.actualType(pt, context);
-                    inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
+                    if (apt.feature().inheritsFrom(formalType.feature()))
+                      {
+                        inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
+                      }
                   }
               }
           }
