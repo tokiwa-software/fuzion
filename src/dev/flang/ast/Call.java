@@ -2959,7 +2959,7 @@ public class Call extends AbstractCall
   private Expr newIf(Expr cc, Expr block, Expr elseBlock)
   {
     return !(cc instanceof BoolConst bc)
-      ? Match.If(pos(), cc, block, elseBlock, false)
+      ? Match.createIf(pos(), cc, block, elseBlock, false)
       : bc.getCompileTimeConstBool()
       ? block
       : elseBlock;

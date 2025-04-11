@@ -369,7 +369,15 @@ block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:223:2
 
 --CURDIR--/typeinference_negative.fz:250:7: error 40: Incompatible types in cases of match expression
       match x          // 48. should flag an error: incompatible types in cases of match expression
-------^
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        A   => 3
+--------^^^^^^^^
+        B,C => "String"
+--------^^^^^^^^^^^^^^^
+        D   => false
+--------^^^^^^^^^^^^
+        e E => e
+--------^^^^^^^^
 Incompatible result types in different branches:
 block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:251:16:
         A   => 3
@@ -387,7 +395,15 @@ block returns value of type 'typeinference_negative.this.typeInferencingFromMatc
 
 --CURDIR--/typeinference_negative.fz:266:9: error 41: Incompatible types in cases of match expression
         match x          // 49. should flag an error: incompatible types in cases of match expression
---------^
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          A   => 3
+----------^^^^^^^^
+          B,C => "String"
+----------^^^^^^^^^^^^^^^
+          D   => false
+----------^^^^^^^^^^^^
+          e E => e
+----------^^^^^^^^
 Incompatible result types in different branches:
 block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:267:18:
           A   => 3

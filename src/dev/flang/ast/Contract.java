@@ -626,7 +626,7 @@ public class Contract extends ANY
                 cond = new ParsedCall(pc(pos, "true"),
                                       new ParsedName(pos, "infix ||"), new List<>(cond));
               }
-            l.add(Match.If(p,
+            l.add(Match.createIf(p,
                          cond,
                          new Block(),
                          pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
@@ -720,7 +720,7 @@ public class Contract extends ANY
       }
     else if (cc != null)
       {
-        new_code = new List<>(Match.If(pos,
+        new_code = new List<>(Match.createIf(pos,
                                        cc,
                                        new Block(),
                                        new Block(new_code),
@@ -1050,7 +1050,7 @@ all of their redefinition to `true`. +
         for (var c : fc._declared_postconditions)
           {
             var p = c.cond().sourceRange();
-            l.add(Match.If(p,
+            l.add(Match.createIf(p,
                            c.cond(),
                            new Block(),
                            pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),

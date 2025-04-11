@@ -313,7 +313,7 @@ public class Loop extends ANY
 
     Expr nextIteration = untilCond == null
       ? new Block(nextItBlock, hasImplicitResult)
-      : Match.If(untilCond.pos(),
+      : Match.createIf(untilCond.pos(),
                untilCond,
                Block.newIfNull(_successBlock),
                new Block(nextItBlock, hasImplicitResult), false);
@@ -321,7 +321,7 @@ public class Loop extends ANY
     block._expressions.add(nextIteration);
     if (whileCond != null)
       {
-        block = Block.fromExpr(Match.If(whileCond.pos(), whileCond, block, _elseBlock0, false));
+        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, false));
       }
     var p = block.pos();
     Feature loop = new Feature(p,
