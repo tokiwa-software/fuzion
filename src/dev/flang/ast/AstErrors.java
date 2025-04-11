@@ -202,9 +202,28 @@ public class AstErrors extends ANY
    */
   static String sc(List<FeatureAndOuter> candidates)
   {
-    return candidates.stream().map(c -> sbnf(c._feature.featureName()) + " at " + c._feature.pos().show() + "\n")
+    return candidates.stream().map(c -> sbnf(c._feature.featureName()) + callableArgCountMsg(c._feature)
+                                        + " at " + c._feature.pos().show() + "\n")
       .collect(List.collector())
       .toString(candidates.size() > 1 ? "one of the features " : "the feature ", ", or\n", "");
+  }
+
+  private static String callableArgCountMsg(AbstractFeature f)
+  {
+    int typeCount  = f.typeArguments().size();
+    int valueCount = f.valueArguments().size();
+    String typeArgStr = StringHelpers.singularOrPlural(typeCount, "type argument");
+    String valArgStr  = StringHelpers.singularOrPlural(valueCount, "value argument");
+
+    return
+      typeCount == 0
+        ? valueCount == 0
+            ? ""
+            : "(callable with " + valArgStr + ")"
+        : valueCount == 0
+            ? "(callable with either no arguments or " + typeArgStr + ")"
+            : " (callable with either "+ valArgStr
+                + " or " + (typeCount == 1 ? "one" : typeCount) + " type" + " and " + valArgStr + ")";
   }
 
 
