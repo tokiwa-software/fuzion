@@ -277,7 +277,11 @@ public class Match extends AbstractMatch
     if (_type == null)
       {
         _type = typeFromCases();
-        if (_type == Types.t_ERROR)
+        if (_type == null)
+          {
+            _type = Types.t_ERROR;
+          }
+        else if (_type == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(
               pos(),
