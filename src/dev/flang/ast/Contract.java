@@ -609,7 +609,7 @@ public class Contract extends ANY
 
     for (var c : dc)
       {
-        var cond = c.cond;
+        var cond = c.cond();
         var p = cond.sourceRange();
         if (preBool)
           {
@@ -1052,9 +1052,9 @@ all of their redefinition to `true`. +
         var l = new List<Expr>();
         for (var c : fc._declared_postconditions)
           {
-            var p = c.cond.sourceRange();
+            var p = c.cond().sourceRange();
             l.add(new If(p,
-                         c.cond,
+                         c.cond(),
                          new Block(),
                          pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText())))
                          )

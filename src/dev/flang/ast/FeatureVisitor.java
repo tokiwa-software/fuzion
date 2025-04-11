@@ -66,7 +66,6 @@ public abstract class FeatureVisitor extends ANY
   public void         actionBefore(AbstractCase     c                       ) { }
   public void         actionAfter (AbstractCase     c, AbstractMatch m      ) { actionAfter(c); }
   public void         actionAfter (AbstractCase     c                       ) { }
-  public void         action      (Cond             c                       ) { }
   public Expr         action      (AbstractCurrent  c                       ) { return c; }
   public Expr         action      (Destructure      d                       ) { return d; }
   public Expr         action      (Feature          f, AbstractFeature outer) { return f; }
