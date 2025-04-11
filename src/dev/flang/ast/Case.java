@@ -299,7 +299,7 @@ public class Case extends AbstractCase
    * that have already been found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+  private AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Context context, SourcePosition[] matched)
   {
     var original_t = t;
     List<AbstractType> matches = new List<>();

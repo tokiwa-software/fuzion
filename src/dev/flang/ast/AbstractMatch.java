@@ -26,10 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
-
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -41,7 +40,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractMatch extends Expr
+public abstract class AbstractMatch extends ExprWithPos
 {
 
   /**
@@ -66,8 +65,9 @@ public abstract class AbstractMatch extends Expr
   /**
    * Constructor for a AbstractMatch
    */
-  public AbstractMatch()
+  public AbstractMatch(SourcePosition pos)
   {
+    super(pos);
   }
 
 
@@ -130,25 +130,6 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  @Override
-  AbstractType typeForInferencing()
-  {
-    if (_type == null)
-      {
-        var t = Expr.union(cases().map2(x -> x.code()), Context.NONE);
-        _type = t != Types.t_ERROR ? t : null;
-      }
-    return _type;
-  }
-
-
-  /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *
@@ -164,22 +145,9 @@ public abstract class AbstractMatch extends Expr
           .map2(x -> x.code().type())
           .stream()
           .reduce(Types.resolved.t_void, (a,b) -> a.union(b, Context.NONE));
-        if (_type == Types.t_ERROR)
-          {
-            new IncompatibleResultsOnBranches(
-              pos(),
-              "Incompatible types in cases of match expression",
-              new Iterator<Expr>()
-              {
-                Iterator<AbstractCase> it = cases().iterator();
-                public boolean hasNext() { return it.hasNext(); }
-                public Expr next() { return it.next().code(); }
-              });
-          }
+        if (CHECKS) require
+          (_type.isVoid() || _type.compareTo(Types.resolved.t_unit) == 0);
       }
-    if (POSTCONDITIONS) ensure
-      (_type != null,
-       _type != Types.t_UNDEFINED);
     return _type;
   }
 

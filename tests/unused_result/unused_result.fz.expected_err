@@ -19,7 +19,11 @@ To solve this, use the result, explicitly ignore the result '_ := <expression>' 
 
 --CURDIR--/unused_result.fz:34:3: error 4: Incompatible types in cases of match expression
   match true # should flag an error: incompatible branches
---^
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    f false_ => f
+----^^^^^^^^^^^^^
+    t true_  => t
+----^^^^^^^^^^^^^
 Incompatible result types in different branches:
 block returns value of type 'false_' at --CURDIR--/unused_result.fz:35:17:
     f false_ => f
@@ -31,7 +35,11 @@ block returns value of type 'true_' at --CURDIR--/unused_result.fz:36:17:
 
 --CURDIR--/unused_result.fz:38:3: error 5: Expression produces result of type 'bool' but result is not used.
   match true # should flag an error
---^
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    false_ => true
+----^^^^^^^^^^^^^^
+    true_  => true
+----^^^^^^^^^^^^^^
 To solve this, use the result or explicitly ignore the result '_ := <expression>'.
 
 5 errors.

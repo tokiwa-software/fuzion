@@ -1922,7 +1922,6 @@ A ((Choice)) declaration must not contain a result type.
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
             @Override public Call  action(Call           c) { c.propagateExpectedType(res, _context); return c; }
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
-            @Override public Expr  action(If             i) { i.propagateExpectedType(res, _context); return i; }
           });
 
         /*
@@ -2174,8 +2173,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr  action(Function    f) { return f.resolveSyntacticSugar2(res); }
         @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
-        @Override public Expr  action(If          i) { return i.resolveSyntacticSugar2(res); }
-        @Override public Expr action(Constant c)     { return c.resolveSyntacticSugar2(res, _context); }
+        @Override public Expr  action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
       });
 
     _state = State.RESOLVED_SUGAR2;

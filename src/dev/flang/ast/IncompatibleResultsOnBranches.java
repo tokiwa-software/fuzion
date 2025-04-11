@@ -98,13 +98,16 @@ public class IncompatibleResultsOnBranches extends ANY
   {
     var t = e.type();
     List<SourcePosition> l = _positions.get(t);
-    if (l == null)
+    if (!t.isVoid())
       {
-        _types.add(t);
-        l = new List<>();
-        _positions.put(t, l);
+        if (l == null)
+          {
+            _types.add(t);
+            l = new List<>();
+            _positions.put(t, l);
+          }
+        l.add(e.posOfLast());
       }
-    l.add(e.posOfLast());
   }
 
 }

@@ -90,7 +90,7 @@ public class Check extends ANY
         var f = new Call(p, "fuzion");
         var r = new Call(p, f, "runtime");
         var e = new Call(p, r, "checkcondition_fault", new List<>(new StrConst(p, p.sourceText())));
-        l.add(new If(p, c.cond(), new Block(), e));
+        l.add(Match.createIf(p, c.cond(), new Block(), e, false));
       }
     return new Block(l);
   }
