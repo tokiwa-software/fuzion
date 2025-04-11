@@ -1921,7 +1921,6 @@ A ((Choice)) declaration must not contain a result type.
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
             @Override public Call  action(Call           c) { c.propagateExpectedType(res, _context); return c; }
-            @Override public void  action(Cond           c) { c.propagateExpectedType(res, _context); }
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
             @Override public Expr  action(If             i) { i.propagateExpectedType(res, _context); return i; }
           });
@@ -2025,7 +2024,6 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
-        @Override public void         action(Cond           c) {        c.checkTypes();                         }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
         @Override public Expr         action(Function       f) { return f.checkTypes();                         }
       });

@@ -122,7 +122,7 @@ abstract class Context extends ANY
             {
               for (var c : ff.originalContract()._declared_preconditions)
                 {
-                  if (c.cond instanceof Call cc &&
+                  if (c.cond() instanceof Call cc &&
                       cc.calledFeatureKnown() &&
                       cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
                       cc.target() instanceof Call tc &&
