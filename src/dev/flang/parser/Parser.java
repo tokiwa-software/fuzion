@@ -2869,7 +2869,7 @@ nextValue   : COMMA exprInLine
   /**
    * Parse ifexpr
    */
-  If ifexpr()
+  Match ifexpr()
   {
     return ifexpr(false);
   }
@@ -2882,7 +2882,7 @@ nextValue   : COMMA exprInLine
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  If ifexpr(boolean elif)
+  Match ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
@@ -2927,10 +2927,11 @@ ifexpr      : "if" exprInLine thenPart elseBlock
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
-        return new If(pos, e, b,
+        return Match.If(pos, e, b,
           // do no use empty blocks as else blocks since the source position
           // of those block might be somewhere unexpected.
-          els != null && els._expressions.size() > 0 ? els : null
+          els != null && els._expressions.size() > 0 ? els : null,
+          false
         );
       });
   }

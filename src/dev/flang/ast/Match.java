@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -255,6 +256,65 @@ public class Match extends AbstractMatch
   public boolean producesResult()
   {
     return !_assignedToField;
+  }
+
+
+  /**
+   * create an if expr,
+   *
+   * @param pos the source position of the if
+   *
+   * @param c then condition
+   *
+   * @param b the "true"-block, must not be null
+   *
+   * @param elseB else block, may be null
+   *
+   * @param fromContract is this an if generated from a contract? (for error messages)
+   */
+  public static Match If(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
+  {
+    if (PRECONDITIONS) require
+      (c != null,
+       b != null);
+
+    /**
+     * If there is no else / elseif, create a default else
+     * branch returning unit.
+     */
+    if (elseB == null)
+      {
+        var unit = new Call(pos, FuzionConstants.UNIT_NAME);
+        elseB = new Block(new List<>(unit));
+      }
+
+    // Types.resolved may still be null, so we have to
+    // create these cases in a lazy fashion.
+    var cases = new List<AbstractCase>(
+          new Case(b.pos(), null, b)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[1] = SourcePosition.notAvailable;
+              return true;
+            }
+          },
+          new Case(elseB.pos(), null, elseB)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[0] = SourcePosition.notAvailable;
+              return true;
+            }
+          });
+
+    return new Match(pos, c, new List<>())
+      {
+        @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
+        @Override public List<AbstractCase> cases() { return cases; }
+      };
   }
 
 

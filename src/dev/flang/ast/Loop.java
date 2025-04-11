@@ -269,7 +269,7 @@ public class Loop extends ANY
        nv != null,
        iv.size() == nv.size(),
        sb == null || untilCond != null,
-       eb0 == null || eb0 instanceof Block || eb0 instanceof If);
+       eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
 
     _elsePos   = pos;  // NYI: if present, use position of "else" keyword
     _indexVars = iv;
@@ -313,15 +313,15 @@ public class Loop extends ANY
 
     Expr nextIteration = untilCond == null
       ? new Block(nextItBlock, hasImplicitResult)
-      : new If(untilCond.pos(),
+      : Match.If(untilCond.pos(),
                untilCond,
                Block.newIfNull(_successBlock),
-               new Block(nextItBlock, hasImplicitResult));
+               new Block(nextItBlock, hasImplicitResult), false);
 
     block._expressions.add(nextIteration);
     if (whileCond != null)
       {
-        block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
+        block = Block.fromExpr(Match.If(whileCond.pos(), whileCond, block, _elseBlock0, false));
       }
     var p = block.pos();
     Feature loop = new Feature(p,

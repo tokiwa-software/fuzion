@@ -168,7 +168,9 @@ public abstract class AbstractMatch extends Expr
           {
             new IncompatibleResultsOnBranches(
               pos(),
-              "Incompatible types in cases of match expression",
+              "Incompatible types in cases of " +
+                (kind() == Kind.Plain ? "match" : "if") +
+                " expression",
               new Iterator<Expr>()
               {
                 Iterator<AbstractCase> it = cases().iterator();
