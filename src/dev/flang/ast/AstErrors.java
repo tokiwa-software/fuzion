@@ -198,17 +198,18 @@ public class AstErrors extends ANY
 
   /**
    * Produce a String from a list of candidates of the form "one of the features
-   * x at x.fz:23, or y at y.fz:42
+   * • x at x.fz:23
+   * • y at y.fz:42
    */
   static String sc(List<FeatureAndOuter> candidates)
   {
-    return candidates.stream().map(c -> sbnf(c._feature.featureName()) + callableArgCountMsg(c._feature)
-                                        + " at " + c._feature.pos().show() + "\n")
+    return candidates.stream().map(c -> "• " + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
+                                        + " at " + c._feature.pos().show() + callableArgCountMsg(c._feature) + "\n\n")
       .collect(List.collector())
-      .toString(candidates.size() > 1 ? "one of the features " : "the feature ", ", or\n", "");
+      .toString(candidates.size() > 1 ? "one of the features\n" : "the feature ", "", "");
   }
 
-  private static String callableArgCountMsg(AbstractFeature f)
+  private static String argCountStr(AbstractFeature f)
   {
     int typeCount  = f.typeArguments().size();
     int valueCount = f.valueArguments().size();
@@ -218,12 +219,20 @@ public class AstErrors extends ANY
     return
       typeCount == 0
         ? valueCount == 0
-            ? ""
-            : "(callable with " + valArgStr + ")"
+            ? "(no arguments)"
+            : "(" + valArgStr + ")"
         : valueCount == 0
-            ? "(callable with either no arguments or " + typeArgStr + ")"
-            : " (callable with either "+ valArgStr
-                + " or " + (typeCount == 1 ? "one" : typeCount) + " type" + " and " + valArgStr + ")";
+            ? "(" + typeArgStr + ")"
+            : " (" + typeArgStr + ", " + valArgStr + ")";
+  }
+
+  private static String callableArgCountMsg(AbstractFeature f)
+  {
+    return "To call " + f.featureName().baseName() + " you must provide "
+           + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
+           + (f.typeArguments().size() > 0
+                ? " The type arguments may be omitted or `_` may be used in place of a type argument."
+                : "");
   }
 
 
