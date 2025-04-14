@@ -1,0 +1,156 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion clang module
+#
+# -----------------------------------------------------------------------
+
+# value types / structs
+
+CXCursor(kind i32 /*cursor_kind*/, xdata i32, data1, data2, data3 Native_Ref) is
+CXString(data Native_Ref, private_flags u32, padding i32 /* NYI: padding set manually */) is
+CXType(kind i32 /*type_kind*/, padding i32 /* NYI: padding set manually */, data1, data2 Native_Ref) is
+
+# clang native api definitions
+
+clang_createIndex(excludeDeclarationsFromPCH, displayDiagnostics i32) Native_Ref => native
+clang_disposeIndex(idx Native_Ref) unit => native
+clang_parseTranslationUnit(
+  idx Native_Ref,
+  source_filename array u8,
+  command_line_args array Native_Ref,
+  num_command_line_args i32,
+  unsaved_files Native_Ref,
+  num_unsaved_files u32,
+  options u32
+) Native_Ref => native
+clang_getTranslationUnitCursor(translation_unit Native_Ref) CXCursor => native
+clang_visitChildren(CX_CURSOR_VISITOR type : Function i32 CXCursor Native_Ref Native_Ref,
+                    cursor CXCursor,
+                    visitor CX_CURSOR_VISITOR,
+                    client_data Native_Ref) u32 => native
+clang_getCursorKind(cursor CXCursor) i32 => native
+clang_getCursorSpelling(cursor CXCursor) CXString => native
+clang_getCursorResultType(cursor CXCursor) CXType => native
+clang_getTypeSpelling(t CXType) CXString => native
+clang_disposeString(str CXString) unit => native
+clang_Cursor_getNumArguments(cursor CXCursor) i32 => native
+clang_Cursor_getArgument(cursor CXCursor, idx i32) CXCursor => native
+clang_getCursorType(cursor CXCursor) CXType => native
+clang_disposeTranslationUnit(tu Native_Ref) unit => native
+clang_getCString(string CXString) Native_Ref => native
+clang_equalCursors(cx1, cx2 CXCursor) bool => native
+clang_getNullCursor CXCursor => native
+clang_Cursor_isNull(crsr CXCursor) i32 => native
+
+# helpers
+
+cx_string_to_string(cx_str CXString) =>
+  utf8_bytes := (ffi.from_native_string (clang_getCString cx_str)).utf8
+  # force copying the bytes to make sure String is valid
+  # even after clang_disposeString
+  String.from_bytes ((array u8).new utf8_bytes.count (i -> utf8_bytes[i]))
+
+
+public clang is
+
+  # clang constants definitions
+
+  # CXChildVisit_Recurse i32 := 2
+  CXChildVisit_Continue i32 := 1
+  CXCursor_FunctionDecl i32 := 8
+
+  public arg(public name, arg_type String) is
+  public function_decl(public name String, public args array arg, public return_type String) is
+
+  public parse_header(header_file String, cb (function_decl)->unit) outcome unit =>
+
+    visitor : Function i32 CXCursor Native_Ref Native_Ref is
+      public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) =>
+
+        check !(clang_equalCursors crsr clang_getNullCursor)
+
+        if clang_getCursorKind crsr = CXCursor_FunctionDecl
+
+          func_name := clang_getCursorSpelling crsr
+          fn := "{cx_string_to_string func_name}"
+          clang_disposeString func_name
+
+          return_type := clang_getCursorResultType crsr
+          return_type_spelling := clang_getTypeSpelling return_type
+          rt := "{cx_string_to_string return_type_spelling}"
+          clang_disposeString return_type_spelling
+
+          num_args := clang_Cursor_getNumArguments crsr
+
+          args := (0..num_args-1)
+            .map i->
+              arg := clang_Cursor_getArgument crsr i
+              arg_name := clang_getCursorSpelling arg
+              arg_type := clang_getCursorType arg
+              arg_type_spelling := clang_getTypeSpelling arg_type
+
+              res := arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling)
+
+              clang_disposeString arg_name
+              clang_disposeString arg_type_spelling
+
+              res
+
+          cb (function_decl fn args.as_array rt)
+
+
+        CXChildVisit_Continue
+
+
+    idx := clang_createIndex 0 0
+
+    check !(ffi.is_null idx)
+
+    String.as_c_string =>
+      (String.this + codepoint 0).utf8.as_array
+
+    # NYI: DFA mark value arg fields as read/written
+    cxc := CXCursor 0 0 ffi.null ffi.null ffi.null
+    cxs := CXString ffi.null 0 0
+    cxt := CXType 0 0 ffi.null ffi.null
+    _ := cxc.kind
+    _ := cxc.xdata
+    _ := cxc.data1
+    _ := cxc.data2
+    _ := cxc.data3
+    _ := cxs.data
+    _ := cxs.private_flags
+    _ := cxs.padding
+    _ := cxt.kind
+    _ := cxt.padding
+    _ := cxt.data1
+    _ := cxt.data2
+
+    tu := clang_parseTranslationUnit idx header_file.as_c_string (array Native_Ref).empty 0 ffi.null 0 0
+
+    if ffi.is_null tu
+      error "failed to open header file: $header_file"
+    else
+      cursor := clang_getTranslationUnitCursor tu
+
+      _ := clang_visitChildren cursor visitor ffi.null
+
+      clang_disposeTranslationUnit tu
+      clang_disposeIndex idx

@@ -1218,7 +1218,7 @@ public class Fuzion extends Tool
    */
   private String moduleName()
   {
-    var n = "main";
+    var n = FuzionConstants.MAIN_MODULE_NAME;
     if (_saveMod != null)
        {
          var p = _saveMod;

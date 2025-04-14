@@ -23,7 +23,7 @@
 
 test_callany is
 
-  Any.f => say "called {type_of Any.this}.f"
+  Any.f => say "called {type_as_value Any.this}.f"
 
   unit.f
   "hi".f

@@ -70,6 +70,10 @@ jobs:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v2.6.0
 
+      - name: create clang.dll link
+        run: |
+          ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
+
       - name: echo versions
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
@@ -79,6 +83,7 @@ jobs:
           javac --version
           whereis jvm.dll
           whereis sqlite3.dll
+          whereis clang.dll
 
       - name: build libgc
         run: |

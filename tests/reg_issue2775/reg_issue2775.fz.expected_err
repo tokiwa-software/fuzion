@@ -1,7 +1,7 @@
 
---CURDIR--/reg_issue2775.fz:28:4: error 1: Incompatible types when passing argument in a call
+--CURDIR--/reg_issue2775.fz:28:3: error 1: Incompatible types when passing argument in a call
 a (match (v) unit => 4711)
----^
+--^^^^^^^^^^^^^^^^^^^^^^^^
 Actual type for argument #1 'v' does not match expected type.
 In call to          : 'a'
 expected formal type: 'void'

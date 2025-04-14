@@ -30,9 +30,9 @@ _ := lm ! ()->fileiotests
 
 fileiotests =>
 
-  dir := "testdir"
-  newdir := "newdir"
-  file := dir + "/" + "testfile"
+  dir := "testdir_😀"
+  newdir := "newdir_😀"
+  file := dir + "/" + "testfile_😀"
 
   content := "Hello world 🌍"
 

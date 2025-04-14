@@ -57,14 +57,14 @@ reg_issue197 =>
     b(U type) a U => do
     v a T => (a u8).b T
 
-  say "a.v: {type_of_lazy (a f32 .v)} (expecting a f32)"
+  say "a.v: {type_of (a f32 .v)} (expecting a f32)"
 
   # smallest example that I found:
   a0(T type) is
     b(U type) U => do
     v T => (a0 u8).b T
 
-  say "a0.v: {type_of_lazy (a0 i16 .v)} expecting (i16)"
+  say "a0.v: {type_of (a0 i16 .v)} expecting (i16)"
 
   a1(T type) is
     b(U type) (T,U,option T,Sequence U) => do
@@ -73,7 +73,7 @@ reg_issue197 =>
   q : a1 unit is
 
   x() (unit, i64, option unit, Sequence i64) => q.b i64
-  say "q.b: {type_of_lazy (q.b u128)} (expecting (unit, u128, option unit, Sequence u128)"
+  say "q.b: {type_of (q.b u128)} (expecting (unit, u128, option unit, Sequence u128)"
 
 
   # same example as `a1`, but using the type `T` and `U` as an argument

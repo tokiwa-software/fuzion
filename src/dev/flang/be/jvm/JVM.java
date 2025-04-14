@@ -54,6 +54,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -906,7 +910,7 @@ should be avoided as much as possible.
                                   args));
         out.close();
         f.setExecutable(true);
-        for (String str : new List<>("libfuzion.so", "libfuzion.dylib", "fuzion.dll"))
+        for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
           {
             var file = Path.of(System.getProperty(FuzionConstants.FUZION_HOME_PROPERTY)).resolve("lib/" + str);
             if (file.toFile().exists())
@@ -1003,6 +1007,10 @@ should be avoided as much as possible.
              Names.METHOD_HANDLE_FIELD_NAME,
              Names.CT_JAVA_LANG_INVOKE_METHODHANDLE.descriptor());
     var rt = _fuir.clazzResultClazz(cl);
+
+    if (CHECKS) check
+      (!fieldExists(_fuir.clazzResultField(cl)));
+
     cf.addToClInit(
       Expr
         .stringconst(_fuir.clazzNativeName(cl))                                        // String
@@ -1138,8 +1146,51 @@ should be avoided as much as possible.
         new ClassType("java/lang/foreign/ValueLayout$OfDouble"));
       case c_u64 -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "JAVA_LONG",
         new ClassType("java/lang/foreign/ValueLayout$OfLong"));
-      default -> Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT);
+      default ->
+        isAddressLike(c)
+          ? Expr.getstatic(Names.JAVA_LANG_FOREIGN_VALUELAYOUT, "ADDRESS", Names.CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT)
+          : structLayout(c);
       };
+  }
+
+
+  /**
+   * Build structlayout for clazz c
+   */
+  private Expr structLayout(int c)
+  {
+    var argCount = _fuir.clazzArgCount(c);
+    var result = Expr
+      .iconst(argCount)
+      .andThen(Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.newArray());
+
+    for (int i = 0; i < argCount; i++)
+      {
+        result = result
+          .andThen(Expr.DUP)                                           // T[], T[]
+          .andThen(Expr.iconst(i))                                     // T[], T[], idx
+          .andThen(layout(_fuir.clazzArgClazz(c, i)))                  // T[], T[], idx, data
+          .andThen(Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.xastore()); // T[]
+      }
+
+    return result                                                      // T[]
+      .andThen(Expr.invokeStatic(                                      // StructLayout
+        Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.className(),
+        "structLayout",
+        "(" + Names.CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT.array().descriptor() + ")"
+            + Names.CT_JAVA_LANG_FOREIGN_STRUCT_LAYOUT.descriptor(),
+        Names.CT_JAVA_LANG_FOREIGN_STRUCT_LAYOUT,
+        -1,
+        true));
+  }
+
+
+  /**
+   * Is the class c effectively an address in native world?
+   */
+  boolean isAddressLike(int c)
+  {
+    return _fuir.clazzIsRef(c) || _fuir.clazzIsArray(c) || _fuir.lookupCall(c) != NO_CLAZZ;
   }
 
 
@@ -2309,6 +2360,12 @@ should be avoided as much as possible.
       (ecl != FUIR.NO_CLAZZ);
 
     return _effectIds.add(ecl);
+  }
+
+
+  public boolean isValueType(int rt)
+  {
+    return !isAddressLike(rt) && !_types.javaType(rt).isPrimitive();
   }
 
 

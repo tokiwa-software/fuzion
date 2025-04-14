@@ -524,7 +524,9 @@ public class ParsedCall extends Call
           { // -v ==> x->x-v   -- swap target and first actual:
             if (CHECKS) check
               (Errors.any() || n == 1,
-               Errors.any() || _actuals.size() == 0);
+               Errors.any() || _actuals.size() == 0,
+               _target != Universe.instance);
+
             _actuals.add(_target);
             _target = pns.get(0);
           }
@@ -533,6 +535,8 @@ public class ParsedCall extends Call
             for (var i = 0; i < n; i++)
               {
                 var c = pns.get(i);
+                if (CHECKS) check
+                  (c != Universe.instance);
                 _actuals.add(c);
               }
           }
@@ -554,7 +558,10 @@ public class ParsedCall extends Call
             AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
             {
               var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType);
-              updateTarget(res);
+              if (rs != Types.t_ERROR)
+                {
+                  updateTarget(res);
+                }
               return rs;
             }
           };

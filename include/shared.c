@@ -97,10 +97,6 @@ void * fzE_malloc_safe(size_t size) {
   return p;
 }
 
-void fzE_memset(void *dest, int ch, size_t sz){
-  // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memset_s
-  memset(dest, ch, sz);
-}
 
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
   // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memcpy_s

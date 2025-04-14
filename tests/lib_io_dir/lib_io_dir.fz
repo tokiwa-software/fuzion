@@ -27,15 +27,19 @@ _ := lm ! ()->lib_io_dir
 
 lib_io_dir =>
 
-  _ := io.file.delete "test_path/file1"
-  _ := io.file.delete "test_path/file2"
-  _ := io.file.delete "test_path"
-  say (io.dir.make "test_path")
-  say (io.dir.make "test_path")
-  _ := io.file.use unit lm "test_path/file1" io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
-  _ := io.file.use unit lm "test_path/file2" io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
+  path := "test_path_😀"
+  file1 := "$path/file1_😀"
+  file2 := "$path/file2_😀"
 
-  res := io.dir.use (Sequence String) "test_path" ()->
+  _ := io.file.delete file1
+  _ := io.file.delete file2
+  _ := io.file.delete path
+  say (io.dir.make path)
+  say (io.dir.make path)
+  _ := io.file.use unit lm file1 io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
+  _ := io.file.use unit lm file2 io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
+
+  res := io.dir.use (Sequence String) path ()->
     array 3 _->io.dir.open.read.as_string
 
   res.val.sort.for_each say
