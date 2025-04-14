@@ -10,8 +10,10 @@ say 4abc
 Feature not found: 'say' (2 arguments)
 Target feature: 'universe'
 In call: 'say 4abc'
-To solve this, you might change the actual number of arguments to match the feature 'say' (one argument)(callable with one value argument) at {base.fum}/say.fz:31:8:
+To solve this, you might change the actual number of arguments to match the feature 'say' (one value argument) at {base.fum}/say.fz:31:8:
 public say(s Any) => io.out.println s
 -------^^^
+To call 'say' you must provide one argument.
+
 
 2 errors.

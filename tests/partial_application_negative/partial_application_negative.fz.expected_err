@@ -81,9 +81,11 @@ In call: '3.postfix*'
 Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (2 arguments) (callable with either one value argument or one type and one value argument) at {base.fum}/Sequence.fz:379:10:
+To solve this, you might change the actual number of arguments to match the feature 'map'  (one type argument, one value argument) at {base.fum}/Sequence.fz:379:10:
   public map(B type, f T->B) Sequence B =>
 ---------^^^
+To call 'map' you must provide 2 arguments. The type arguments may be omitted or `_` may be used in place of a type argument.
+
 
 
 --CURDIR--/partial_application_negative.fz:72:20: error 10: Ambiguity between direct and partially applied call target
