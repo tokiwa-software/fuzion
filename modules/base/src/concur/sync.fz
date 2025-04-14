@@ -33,12 +33,12 @@ public sync is
   mtx_unlock(mtx Mutex) bool => intrinsic
   mtx_destroy(mtx Mutex) unit => intrinsic
 
-  cnd_init(mtx Mutex) outcome Condition => intrinsic
-  cnd_signal(cnd Condition) bool => intrinsic
-  cnd_broadcast(cnd Condition) bool => intrinsic
-  cnd_wait(cnd Condition, mtx Mutex) bool => intrinsic
+  cnd_init(mtx Mutex) outcome Condition0 => intrinsic
+  cnd_signal(cnd Condition0) bool => intrinsic
+  cnd_broadcast(cnd Condition0) bool => intrinsic
+  cnd_wait(cnd Condition0, mtx Mutex) bool => intrinsic
   # NYI: cnd_timedwait
-  cnd_destroy(cnd Condition) unit => intrinsic
+  cnd_destroy(cnd Condition0) unit => intrinsic
 
 
   # NYI: documentation missing, waiting for JVM backend impl
@@ -49,14 +49,14 @@ public sync is
       concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
 
-    public condition outcome concur.sync.condition =>
+    public condition outcome concur.sync.Condition =>
       (concur.sync.cnd_init mtx).bind cnd->
-        concur.sync.condition mtx cnd
+        concur.sync.Condition mtx cnd
 
     # NYI destroy
 
 
-  private:public condition(mtx Mutex, cnd Condition) is
+  private:public Condition(mtx Mutex, cnd Condition0) ref is
 
     public is_locked := concur.atomic false
 

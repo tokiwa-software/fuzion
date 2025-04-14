@@ -23,7 +23,7 @@
 
 
 # NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229
-Blocking_Queue(T type, cnd concur.sync.condition) ref is
+Blocking_Queue(T type, cnd concur.sync.Condition) ref is
 
   # is closed for taking any new elements?
   #
@@ -95,7 +95,7 @@ public thread_pool(R type, size i32, code ()->R) outcome R =>
 
 # simple, fixed size thread pool
 #
-private:public thread_pool(cnd concur.sync.condition, size i32) : effect
+private:public thread_pool(cnd concur.sync.Condition, size i32) : effect
 pre debug: size > 0
 is
 

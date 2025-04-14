@@ -2042,7 +2042,31 @@ A ((Choice)) declaration must not contain a result type.
 
     checkNative(res);
 
+    checkOuterOfAtomicIsRef();
+
     _state = State.RESOLVED;
+  }
+
+  /**
+   * Check if the outer feature feature of an atomic is a reference.
+   */
+  private void checkOuterOfAtomicIsRef()
+  {
+    if(!isRef() && !isCotype())
+      {
+        arguments().stream().forEach(arg ->
+          {
+            if (arg.resultType().selfOrConstraint(context()).feature() == Types.resolved.f_concur_atomic)
+              {
+                AstErrors.outerFeatureOfAtomicMustBeRef(pos());
+              }
+          }
+        );
+      }
+    if (isField() && !outer().isRef() && resultType().selfOrConstraint(context()).feature() == Types.resolved.f_concur_atomic)
+      {
+        AstErrors.outerFeatureOfAtomicMustBeRef(pos());
+      }
   }
 
 

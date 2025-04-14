@@ -1,6 +1,6 @@
 test =>
 
-  s := lock_free.stack i32
+  s := lock_free.Stack i32
 
   cnt := concur.atomic 0
   count(n i32) =>

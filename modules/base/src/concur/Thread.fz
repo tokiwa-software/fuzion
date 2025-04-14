@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.thread
+#  Source code of Fuzion standard library feature concur.Thread
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -25,7 +25,7 @@
 
 # type for a spawned thread
 #
-module:public thread(id i64) : property.equatable is
+module:public Thread(id i64) ref : property.equatable is
 
   joined := concur.atomic trit.no
 
@@ -47,6 +47,6 @@ module:public thread(id i64) : property.equatable is
 
   # equality
   #
-  public fixed redef type.equality(a, b thread.this) bool
+  public fixed redef type.equality(a, b Thread.this) bool
   =>
     a.id = b.id

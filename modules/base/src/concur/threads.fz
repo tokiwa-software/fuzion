@@ -33,7 +33,7 @@ public threads (
   # the handler this effect uses to spawn threads
   p Thread_Handler,
   # NYI: UNDER DEVELOPMENT: use more suitable data structure
-  public running array concur.thread
+  public running array concur.Thread
   ) : effect
 is
 
@@ -47,7 +47,7 @@ is
 
   # detach a running thread
   #
-  public detach(thrd concur.thread)
+  public detach(thrd concur.Thread)
   pre debug: running.contains thrd
   =>
     (threads p (running.filter (t->t!=thrd)).as_array).replace
@@ -67,7 +67,7 @@ default_thread_handler : Thread_Handler is
 
   # spawn a new thread using given code
   #
-  redef spawn(code ()->unit) => concur.thread (fuzion.sys.thread.spawn code)
+  redef spawn(code ()->unit) => concur.Thread (fuzion.sys.thread.spawn code)
 
 
 
@@ -86,4 +86,4 @@ private:public Thread_Handler ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) concur.thread => abstract
+  spawn(code ()->unit) concur.Thread => abstract
