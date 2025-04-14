@@ -1,10 +1,10 @@
 
 --CURDIR--/issue662.fz:30:3: error 1: 'match' expression requires at least one case
   match a.b
---^
+--^^^^^^^^^
 Match expression at --CURDIR--/issue662.fz:30:3:
   match a.b
---^
+--^^^^^^^^^
 To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding 'match' expression
 
 one error.

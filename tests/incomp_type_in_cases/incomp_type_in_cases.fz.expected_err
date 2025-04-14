@@ -1,0 +1,19 @@
+
+--CURDIR--/incomp_type_in_cases.fz:28:5: error 1: Incompatible types in branches of if expression
+    if true     // 1. should flag an error: incompatible types
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      "hello"
+------^^^^^^^
+    else
+----^^^^
+      4
+------^
+Incompatible result types in different branches:
+block returns value of type 'String' at --CURDIR--/incomp_type_in_cases.fz:29:7:
+      "hello"
+------^^^^^^^
+block returns value of type 'i32' at --CURDIR--/incomp_type_in_cases.fz:31:7:
+      4
+------^
+
+one error.

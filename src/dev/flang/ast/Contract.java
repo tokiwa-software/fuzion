@@ -626,15 +626,11 @@ public class Contract extends ANY
                 cond = new ParsedCall(pc(pos, "true"),
                                       new ParsedName(pos, "infix ||"), new List<>(cond));
               }
-            l.add(new If(p,
+            l.add(Match.createIf(p,
                          cond,
                          new Block(),
-                         pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText())))
-                         )
-              {
-                @Override boolean fromContract() { return true; }
-              }
-                  );
+                         pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
+                         true));
           }
       }
     if (cc != null)
@@ -724,10 +720,11 @@ public class Contract extends ANY
       }
     else if (cc != null)
       {
-        new_code = new List<>(new If(pos,
-                                     cc,
-                                     new Block(),
-                                     new Block(new_code)));
+        new_code = new List<>(Match.createIf(pos,
+                                       cc,
+                                       new Block(),
+                                       new Block(new_code),
+                                       false));
       }
     code._expressions = new_code;
     var e = res.resolveType(code, pF.context());
@@ -1053,15 +1050,11 @@ all of their redefinition to `true`. +
         for (var c : fc._declared_postconditions)
           {
             var p = c.cond().sourceRange();
-            l.add(new If(p,
-                         c.cond(),
-                         new Block(),
-                         pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText())))
-                         )
-              {
-                @Override boolean fromContract() { return true; }
-              }
-                  );
+            l.add(Match.createIf(p,
+                           c.cond(),
+                           new Block(),
+                           pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
+                           false));
           }
         var code = new Block(l);
         var pF = new Feature(pos,

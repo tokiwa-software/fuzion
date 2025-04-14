@@ -2463,18 +2463,7 @@ public class Call extends AbstractCall
    */
   private boolean returnsThis(Expr e)
   {
-    if (e instanceof If i)
-      {
-        var it = i.branches();
-        while (it.hasNext())
-          {
-            if (returnsThis(it.next()))
-              {
-                return true;
-              }
-          }
-      }
-    else if (e instanceof Match m)
+    if (e instanceof Match m)
       {
         for (var c : m.cases())
           {
@@ -2969,9 +2958,11 @@ public class Call extends AbstractCall
    */
   private Expr newIf(Expr cc, Expr block, Expr elseBlock)
   {
-    return
-      !(cc instanceof BoolConst bc)   ? new If(pos(), cc, block, elseBlock) :
-      bc.getCompileTimeConstBool() ? block : elseBlock;
+    return !(cc instanceof BoolConst bc)
+      ? Match.createIf(pos(), cc, block, elseBlock, false)
+      : bc.getCompileTimeConstBool()
+      ? block
+      : elseBlock;
   }
 
 

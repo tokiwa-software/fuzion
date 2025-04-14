@@ -107,7 +107,7 @@ is
 
     # bind to port
     (fuzion.sys.net.bind f.as_num s.as_num p.as_num addr port)
-      .bind sd->
+      .bind i32 sd->
         match p
           net.protocol.tcp =>
             # listen
