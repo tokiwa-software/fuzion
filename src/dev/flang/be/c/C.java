@@ -1251,7 +1251,7 @@ public class C extends ANY
     var tmp = new CIdent("tmp0");
     return CStmnt.seq(
       CStmnt.decl("struct " + CNames.fzThreadEffectsEnvironment.code(), tmp),
-      CExpr.call("fzE_memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
+      CExpr.call("fzE_mem_zero", new List<>(tmp.adrOf(), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
       CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf()),
       CStmnt.seq(
         new List<CStmnt>(
@@ -1902,27 +1902,25 @@ public class C extends ANY
    */
   public CStmnt code(int cl)
   {
-    var l = new List<CStmnt>();
+    var res = CStmnt.EMPTY;
     if (_fuir.clazzNeedsCode(cl))
       {
-        l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
-        var o = switch (_fuir.clazzKind(cl))
+        var decl = switch (_fuir.clazzKind(cl))
           {
-            case Routine -> codeForRoutine(cl);
-            case Intrinsic -> _intrinsics.code(this, cl);
-            case Native ->
-              {
-                l.add(functionWrapperForNative(cl));
-                yield codeForNative(cl);
-              }
-            default -> null;
+          case Routine   -> cFunctionDecl(cl, codeForRoutine(cl));
+          case Intrinsic -> cFunctionDecl(cl, _intrinsics.code(this, cl));
+          case Native    -> CStmnt.seq(functionWrapperForNative(cl),
+                                       cFunctionDecl(cl, codeForNative(cl)));
+          default -> null;
           };
-        if (o != null)
+        if (decl != null)
           {
-            l.add(cFunctionDecl(cl, o));
+            res = CStmnt.seq
+              (CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"),
+               decl);
           }
       }
-    return CStmnt.seq(l);
+    return res;
   }
 
 
@@ -1953,7 +1951,7 @@ public class C extends ANY
           CStmnt.lineComment("cur does not escape, alloc on stack"),
           CStmnt.decl(_names.struct(cl), CNames.CURRENT),
           // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
-          CExpr.call("fzE_memset", new List<>(CNames.CURRENT.adrOf(), CExpr.int32const(0), CNames.CURRENT.sizeOfExpr())));
+          CExpr.call("fzE_mem_zero", new List<>(CNames.CURRENT.adrOf(), CNames.CURRENT.sizeOfExpr())));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
@@ -2095,7 +2093,10 @@ public class C extends ANY
               // 3.1 array, we need to get field internal_array.data
               ? getFieldInternalArrayData(i, at)
               // 3.2 plain value
-              : CIdent.arg(i));
+              : _fuir.getSpecialClazz(at) != SpecialClazzes.c_NOT_FOUND
+                ? CIdent.arg(i)
+                : CIdent.arg(i).adrOf().castTo(_fuir.clazzNativeName(at) + " *").deref()
+              );
         args.add(arg);
       }
 
@@ -2104,10 +2105,11 @@ public class C extends ANY
 
     var tmp = _names.newTemp();
     var resultsInUnit = _fuir.clazzIsUnitType(rc);
+    var isNativeValue = _fuir.getSpecialClazz(rc) == SpecialClazzes.c_NOT_FOUND && !_fuir.clazzIsRef(rc);
 
     if (!resultsInUnit)
       {
-        res.add(CExpr.decl(_types.clazz(rc), tmp));
+        res.add(CExpr.decl(isNativeValue ? _fuir.clazzNativeName(rc) : _types.clazz(rc), tmp));
       }
 
     switch (_fuir.getSpecialClazz(rc))
@@ -2145,7 +2147,9 @@ public class C extends ANY
 
     if (!resultsInUnit)
       {
-        res.add(tmp.ret());
+        res.add(isNativeValue
+                  ? tmp.adrOf().castTo(_types.clazz(rc) + " *").deref().ret()
+                  : tmp.ret());
       }
 
     return CStmnt.seq(res);

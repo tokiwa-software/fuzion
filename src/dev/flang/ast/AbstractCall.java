@@ -151,9 +151,8 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * For a type feature, create the inheritance call for a parent type feature.
-   *
-   * @param p the source position
+   * For a type feature, create the inheritance call for a parent type feature
+   * from this original inheritance call.
    *
    * @param res Resolution instance used to resolve types in this call.
    *
@@ -161,7 +160,7 @@ public abstract class AbstractCall extends Expr
    *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call typeCall(SourcePosition p, Resolution res, AbstractFeature that)
+  Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
   {
     var selfType = new ParsedType(pos(),
                                   FuzionConstants.COTYPE_THIS_TYPE,
@@ -203,7 +202,7 @@ public abstract class AbstractCall extends Expr
           }
       }
 
-    return calledFeature().typeCall(p, typeParameters, res, that, target());
+    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
   }
 
 

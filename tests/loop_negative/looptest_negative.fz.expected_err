@@ -69,9 +69,9 @@ Was defined as loop index variable at --CURDIR--/looptest_negative.fz:102:7:
     while ix < data.length
 -------------^
 Incompatible result types in different branches:
-block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:44:11:
-    until isWhatWeWant(data[ix])     //  1.a should flag an error: incompatible result types i32 vs. String
-----------^^^^^^^^^^^^
+block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:45:7:
+      3333              //  1.a should flag an error: incompatible result types i32 vs. String
+------^^^^
 block returns value of type 'String' at --CURDIR--/looptest_negative.fz:47:7:
       "4444"            //  1.b should flag an error: incompatible result types i32 vs. String
 ------^^^^^^
@@ -81,9 +81,9 @@ block returns value of type 'String' at --CURDIR--/looptest_negative.fz:47:7:
     while ix < data.length
 -------------^
 Incompatible result types in different branches:
-block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:55:11:
-    until isWhatWeWant(data[ix])    //  2.a should flag an error: incompatible result types i32 vs. String
-----------^^^^^^^^^^^^
+block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:56:7:
+      ix                //  2.a should flag an error: incompatible result types i32 vs. String
+------^^
 block returns value of type 'String' at --CURDIR--/looptest_negative.fz:58:7:
       "4444"            //  2.b should flag an error: incompatible result types i32 vs. String
 ------^^^^^^

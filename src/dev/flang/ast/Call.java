@@ -281,8 +281,7 @@ public class Call extends AbstractCall
    */
   Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
   {
-    this(pos, t, calledFeature.featureName().baseName(), Expr.NO_EXPRS);
-    this._calledFeature = calledFeature;
+    this(pos, t, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
   }
 
 
@@ -358,7 +357,8 @@ public class Call extends AbstractCall
   {
     if (PRECONDITIONS) require
       (Errors.any() || generics.stream().allMatch(g -> !g.containsError()),
-       name != FuzionConstants.UNIVERSE_NAME);
+       name != FuzionConstants.UNIVERSE_NAME,
+       _actuals == null || _actuals.stream().allMatch(a -> a != Universe.instance));
 
     this._pos = pos;
     this._name = name;
@@ -942,7 +942,8 @@ public class Call extends AbstractCall
                  var a = i.next();
                  var a1 = res.resolveType(a, context);
                  if (CHECKS) check
-                   (a1 != null);
+                   (a1 != null,
+                    a1 != Universe.instance);
                  i.set(a1);
                }
            });
@@ -982,13 +983,15 @@ public class Call extends AbstractCall
         var calledName = FeatureName.get(_name, _actuals.size()+1);
         var fo = res._module.lookup(context.outerFeature(), _name, this, true, false);
         var foa = FeatureAndOuter.filter(fo, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> mayMatchArgList(ff, true));
-        if (foa != null)
+        if (foa != null && _target != Universe.instance)
           {
             _calledFeature = foa._feature;
             _resolvedFormalArgumentTypes = null;
             _pendingError = null;
             var newActuals = new List<>(_target);
             newActuals.addAll(_actuals);
+            if (CHECKS) check
+              (newActuals == null || newActuals.stream().allMatch(a -> a != Universe.instance));
             _actuals = newActuals;
             _target = foa.target(pos(), res, context);
           }
@@ -1141,7 +1144,7 @@ public class Call extends AbstractCall
     var result = typeForInferencing();
     if (result == null)
       {
-        result = hasPendingError || _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR)
+        result = hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR)
           ? Types.t_ERROR
           : Types.t_FORWARD_CYCLIC;
         setToErrorState0();
@@ -1198,7 +1201,10 @@ public class Call extends AbstractCall
         var a = i.next();
         if (a != null)
           {
-            i.set(a.visit(v, outer));
+            var na = a.visit(v, outer);
+            if (CHECKS) check
+              (na != Universe.instance);
+            i.set(na);
           }
       }
   }
@@ -1739,7 +1745,8 @@ public class Call extends AbstractCall
       {
         actual = res.resolveType(actual, context);
         if (CHECKS) check
-          (actual != null);
+          (actual != null,
+           actual != Universe.instance);
         aargs.set(actual);
       }
     else
@@ -1849,7 +1856,7 @@ public class Call extends AbstractCall
     for (Generic g : _calledFeature.generics().list)
       {
         int i = g.index();
-        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED || conflict[i])
+        if (!g.isOpen() && (_generics.size() <= i || _generics.get(i) == Types.t_UNDEFINED) || conflict[i])
           {
             if (CHECKS) check
               (Errors.any() || i < _generics.size());
@@ -1935,6 +1942,8 @@ public class Call extends AbstractCall
                 Expr l = a.propagateExpectedTypeForPartial(res, context, t);
                 if (l != a)
                   {
+                    if (CHECKS) check
+                      (l != Universe.instance);
                     _actuals = _actuals.setOrClone(vai, l);
                   }
               }
@@ -2009,7 +2018,6 @@ public class Call extends AbstractCall
                   }
                 else if (aargs.hasNext())
                   {
-                    count++;
                     var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, context);
                     /*
                       without this if, type inference in this example would not work:
@@ -2033,9 +2041,9 @@ public class Call extends AbstractCall
                               {
                                 var tp = t.genericArgument().typeParameter();
                                 res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt);
+                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt, count-1);
                               }
-                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt);
+                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, count-1);
                             checked[vai] = true;
                           }
                         else if (resultExpression(actual) instanceof AbstractLambda al)
@@ -2043,6 +2051,7 @@ public class Call extends AbstractCall
                             checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
+                    count++;
                   }
               }
             else if (aargs.hasNext())
@@ -2169,6 +2178,39 @@ public class Call extends AbstractCall
                             boolean[] conflict,
                             List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
+    inferGeneric(res, context, formalType, actualType, pos, conflict, foundAt, -1);
+  }
+
+
+  /**
+   * Perform type inference for generics used in formalType that are instantiated by actualType.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param formalType the (possibly generic) formal type
+   *
+   * @param actualType the actual type
+   *
+   * @param pos source code position of the expression actualType was derived from
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
+   *
+   * @param actualArgIndex the index of the actual or -1 if actualType not directly from actual
+   */
+  private void inferGeneric(Resolution res,
+                            Context context,
+                            AbstractType formalType,
+                            AbstractType actualType,
+                            SourcePosition pos,
+                            boolean[] conflict,
+                            List<List<Pair<SourcePosition, AbstractType>>> foundAt,
+                            int actualArgIndex)
+  {
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
@@ -2264,6 +2306,11 @@ public class Call extends AbstractCall
                   }
               }
           }
+        else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.generics().list.isEmpty())
+          {
+            AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
+            setToErrorState();
+          }
         else if (aft != null)
           {
             for (var p: aft.inherits())
@@ -2276,7 +2323,10 @@ public class Call extends AbstractCall
                 if (pt != Types.t_ERROR)
                   {
                     var apt = actualType.actualType(pt, context);
-                    inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
+                    if (apt.feature().inheritsFrom(formalType.feature()))
+                      {
+                        inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
+                      }
                   }
               }
           }
@@ -2413,18 +2463,7 @@ public class Call extends AbstractCall
    */
   private boolean returnsThis(Expr e)
   {
-    if (e instanceof If i)
-      {
-        var it = i.branches();
-        while (it.hasNext())
-          {
-            if (returnsThis(it.next()))
-              {
-                return true;
-              }
-          }
-      }
-    else if (e instanceof Match m)
+    if (e instanceof Match m)
       {
         for (var c : m.cases())
           {
@@ -2784,7 +2823,8 @@ public class Call extends AbstractCall
               {
                 var a = f.apply(actl, frmlT);
                 if (CHECKS) check
-                  (a != null);
+                  (a != null,
+                   a != Universe.instance);
                 i.set(a);
               }
             count++;
@@ -2816,7 +2856,8 @@ public class Call extends AbstractCall
                   {
                     var a = actl.boxAndTag(rft, context);
                     if (CHECKS) check
-                      (a != null);
+                      (a != null,
+                       a != Universe.instance);
                     i.set(a);
                   }
                 count++;
@@ -2858,6 +2899,7 @@ public class Call extends AbstractCall
         if (_actuals.size() !=  fsz)
           {
             AstErrors.wrongNumberOfActualArguments(this);
+            setToErrorState();
           }
         else
           {
@@ -2916,9 +2958,11 @@ public class Call extends AbstractCall
    */
   private Expr newIf(Expr cc, Expr block, Expr elseBlock)
   {
-    return
-      !(cc instanceof BoolConst bc)   ? new If(pos(), cc, block, elseBlock) :
-      bc.getCompileTimeConstBool() ? block : elseBlock;
+    return !(cc instanceof BoolConst bc)
+      ? Match.createIf(pos(), cc, block, elseBlock, false)
+      : bc.getCompileTimeConstBool()
+      ? block
+      : elseBlock;
   }
 
 

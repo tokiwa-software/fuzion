@@ -78,6 +78,19 @@ inline int set_last_error(int ret_val)
   return ret_val;
 }
 
+// zero memory
+void fzE_mem_zero(void *dest, size_t sz)
+{
+#ifdef __STDC_LIB_EXT1__
+  memset_s(dest, sz, 0, sz);
+#else
+  volatile unsigned char *p = dest;
+  while (sz--) {
+      *p++ = 0;
+  }
+#endif
+}
+
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -200,12 +213,18 @@ int fzE_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  // NYI use lock to make this _atomic_.
+
+  // make sure no fork is done while we open socket
+  fzE_lock();
+
   int sockfd = set_last_error(socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol)));
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
   }
+
+  fzE_unlock();
+
   return sockfd;
 }
 
@@ -213,7 +232,7 @@ int fzE_socket(int family, int type, int protocol){
 int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * host, char * port, struct addrinfo ** result){
   struct addrinfo hints;
 
-  fzE_memset(&hints, 0, sizeof hints);
+  fzE_mem_zero(&hints, sizeof hints);
 
   hints.ai_family = fzE_get_family(family);
   hints.ai_socktype = fzE_get_socket_type(socktype);
@@ -307,7 +326,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_mem_zero(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -329,7 +348,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_mem_zero(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -502,7 +521,7 @@ void fzE_init()
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
+  fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
@@ -589,7 +608,8 @@ void fzE_unlock()
 // NYI make this thread safe
 // NYI option to pass stdin,stdout,stderr
 // zero on success, -1 error
-int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str) {
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str)
+{
 
   // Describes the how and why
   // of making file descriptors, handlers, sockets
@@ -601,6 +621,9 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
   // how it is done in jdk:
   // https://github.com/openjdk/jdk/blob/c2d9fa26ce903be7c86a47db5ff289cdb9de3a62/src/java.base/unix/native/libjava/ProcessImpl_md.c#L53
+
+  // make sure no files are opened while we start child process
+  fzE_lock();
 
   errno = 0;
 
@@ -685,6 +708,9 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
       result[3] = (int64_t) stdErr[0];
     }
   }
+
+  fzE_unlock();
+
   return ret;
 }
 
@@ -726,13 +752,16 @@ int fzE_pipe_close(int64_t desc){
 void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
   assert( mode >= 0 && mode <= 2 );
-  // NYI use lock to make fopen and fcntl _atomic_.
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
   // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
   // to a race condition that may unintentionally leak the file descriptor to the
   // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
   // for details and a remedy to the problem."
   errno = 0;
+
+  // make sure no fork is done while we open file
+  fzE_lock();
+
   FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
   if (fp!=NULL)
   {
@@ -742,6 +771,9 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   {
     open_results[0] = (int64_t)errno;
   }
+
+  fzE_unlock();
+
   return fp;
 }
 

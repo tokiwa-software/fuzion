@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue5003.fz:38:7: error 1: Incompatible type parameter
+  z : x C is  # incompatible type parameter `C` should create error here
+------^
+formal type parameter 'T' with constraint 'reg_issue5003.this.A'
+actual type parameter 'reg_issue5003.this.C'
+
+one error.

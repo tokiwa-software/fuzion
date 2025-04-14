@@ -13,6 +13,8 @@
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
 
+  "onCreateCommand": "sudo apt-get install -y clang-16 libgc1 libgc-dev && sudo ln -fs /usr/bin/clang-16 /usr/bin/clang && make base-only && make c -C build/tests/hello",
+
   // Use 'postCreateCommand' to run commands after the container is created.
   // "postCreateCommand": "java -version",
 

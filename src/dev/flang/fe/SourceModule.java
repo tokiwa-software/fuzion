@@ -846,6 +846,10 @@ part of the (((inner features))) declarations of the corresponding
     for (var e : s.entrySet())
       {
         var f = e.getValue();
+        if (_options._compilingModule && outer.isUniverse() && f.isField())
+          {
+            AstErrors.mustNotDeclareFieldInModulesUniverse(f);
+          }
         addToDeclaredOrInheritedFeatures(outer, f);
         if (f instanceof Feature ff)
           {
@@ -1862,7 +1866,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     f
       .contract()
       ._declared_preconditions
-      .forEach(r -> r.visit(new FeatureVisitor() {
+      .forEach(r -> r.cond().visit(new FeatureVisitor() {
         @Override
         public void action(AbstractCall c)
         {

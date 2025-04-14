@@ -31,4 +31,21 @@
 # `4+5>10` will never be executed:
 #     true || 4+5>10
 #
-public Lazy(public T type) ref : Nullary T is
+public Lazy(public T type) ref : Nullary T, monad T (Lazy T) is
+
+
+  # monadic operator within the same monad
+  #
+  # Apply f to elements of type A and re-wrap them in this monad.
+  #
+  public redef infix >>= (f T -> Lazy T) Lazy T =>
+    ref : Lazy T is
+      public redef call =>
+        (f Lazy.this.call).call
+
+
+  # return function
+  #
+  public redef type.return (a T) Lazy T =>
+    ref : Lazy T is
+      public redef call => a

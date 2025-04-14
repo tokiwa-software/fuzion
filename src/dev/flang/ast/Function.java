@@ -281,14 +281,22 @@ public class Function extends AbstractLambda
         int i = 1;
         for (var n : _names)
           {
-            var arg = new Feature(n._pos,
-                                  Visi.PRIV,
-                                  0,
-                                  i < gs.size() ? gs.get(i) : Types.t_ERROR,
-                                  n._name,
-                                  Contract.EMPTY_CONTRACT);
-            a.add(arg);
-            i++;
+            if (i < gs.size() && gs.get(i) == Types.t_UNDEFINED)
+              {
+                result = Types.t_ERROR;
+                t = Types.t_ERROR;
+              }
+            else
+              {
+                var arg = new Feature(n._pos,
+                                      Visi.PRIV,
+                                      0,
+                                      i < gs.size() ? gs.get(i) : Types.t_ERROR,
+                                      n._name,
+                                      Contract.EMPTY_CONTRACT);
+                a.add(arg);
+                i++;
+              }
           }
         if (t != Types.t_ERROR && i != gs.size())
           {
@@ -459,8 +467,8 @@ public class Function extends AbstractLambda
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
-          (Errors.any() || _inheritsCall == inheritsCall2);
-        _type = _call.type();
+          (Errors.any() || _inheritsCall == inheritsCall2,
+           _type == null || _type.isAssignableFrom(_call.type()));
       }
   }
 
@@ -507,6 +515,9 @@ public class Function extends AbstractLambda
     // we should probably have replaced Function already...
     return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
       ? Types.t_ERROR
+      // we have a lambda with no args and the expr type is inferrable
+      : _type == null && _names.isEmpty() && _expr.typeForInferencing() != null
+      ? ResolvedNormalType.create(Types.resolved.f_Lazy, new List<>(_expr.typeForInferencing()))
       : _type;
   }
 
@@ -520,13 +531,9 @@ public class Function extends AbstractLambda
    */
   public Expr resolveSyntacticSugar2(Resolution res)
   {
-    Expr result = this;
-    var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
-    if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
-      {
-        result = _call;
-      }
-    return result;
+    return _call != null
+      ? _call
+      : this;
   }
 
 
@@ -538,6 +545,17 @@ public class Function extends AbstractLambda
   public String toString()
   {
     return _names + " -> " + _expr;
+  }
+
+
+  /**
+   * Check whether this Function has a valid type, i.e. is not an error
+   * @return this Function
+   */
+  public Expr checkTypes()
+  {
+    type(); // just for triggering error messages
+    return this;
   }
 
 }

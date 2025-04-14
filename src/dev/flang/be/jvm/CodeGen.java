@@ -577,26 +577,12 @@ class CodeGen
         break;
       case Native   :
         {
-          var invokeDescr = "("
-            + args.stream()
-                .map(arg -> nativeArgDescriptor(arg))
-                .collect(Collectors.joining())
-            + ")"
-            + _types.javaType(rt).descriptor();
+          if (CHECKS) check
+            (_types.clazzNeedsCode(cc),
+             !(cc == _fuir.clazzAt(si) && // calling myself
+             _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
 
-          var localSlotsOfMemorySegments = new List<Integer>();
-          Expr memoryHandlerInvoke =
-            Expr.getstatic(_names.javaClass(cc),
-                           Names.METHOD_HANDLE_FIELD_NAME,
-                           Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                               // MethodHandle
-                .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
-                .andThen(Expr.invokeVirtual(
-                  Names.JAVA_LANG_INVOKE_METHODHANDLE,
-                  "invoke",
-                  invokeDescr,
-                  _types.javaType(rt)))                                                           // rt
-                .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments));           // rt
-          res = makePair(memoryHandlerInvoke, rt);
+          res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
       case Intrinsic:
@@ -672,20 +658,114 @@ class CodeGen
 
 
   /**
-   * @return the descriptor of this expression
-   * when passed as an arg to a native function
+   * Build java byte code code for calling a native function
+   * by using the method handle that is stored in a field
+   * in the class of the native feature.
+   *
+   * @param si
+   * @param args
+   * @param cc
+   * @param rt
+   * @return
    */
-  private String nativeArgDescriptor(Expr arg)
+  private Expr callNative(int si, List<Expr> args, int cc, int rt)
   {
-    return
-      arg.type() == PrimitiveType.type_void
-        // case 1: a function callback
-        ? Names.JAVA_LANG_OBJECT.descriptor()
-        : arg.type().isPrimitive()
-        // case 2: a primitive
-        ? arg.type().descriptor()
-        // case 3: a "pointer" to a memory segment
-        : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor();
+    if (PRECONDITIONS) require
+      (_fuir.clazzOuterRef(cc) == NO_CLAZZ);
+
+    var invokeDescr =
+      "("
+        + nativeArgDescriptor(cc)
+      + ")"
+      + nativeResultTypeDescriptor(rt).descriptor();
+
+    var localSlotsOfMemorySegments = new List<Integer>();
+    return Expr
+          .getstatic(_names.javaClass(cc),
+                     Names.METHOD_HANDLE_FIELD_NAME,
+                     Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                                   // MethodHandle
+          .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
+          .andThen(invokeMethodHandle(rt, invokeDescr))                                        // rt
+          .andThen(copyValueResultToFuzion(rt))                                                // rt
+          .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments))           // rt
+          .is(_types.javaType(rt));
+  }
+
+
+  /**
+   * Invoke the methodHandle on the stack
+   * with given descriptor and return type.
+   *
+   * @param rt
+   * @param invokeDescr
+   * @return
+   */
+  private Expr invokeMethodHandle(int rt, String invokeDescr)
+  {
+    return Expr.invokeVirtual(
+      Names.JAVA_LANG_INVOKE_METHODHANDLE,
+      "invokeExact",
+      invokeDescr,
+      nativeResultTypeDescriptor(rt)
+    );
+  }
+
+
+  /**
+   * Build the native descriptor for the arguments of cc.
+   *
+   * @return e.g. ILjava/lang/foreign/MemorySegment;
+   */
+  private String nativeArgDescriptor(int cc)
+  {
+    var argCount = _fuir.clazzArgCount(cc);
+    var result = new StringBuilder();
+    for (int i = 0; i < argCount; i++)
+      {
+        var at = _fuir.clazzArgClazz(cc, i);
+        var jt = _types.javaType(at);
+
+        result.append(
+        jt.isPrimitive() && jt != PrimitiveType.type_void
+        ? jt.descriptor()
+        : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor()
+        );
+      }
+    return result.toString();
+  }
+
+
+  /**
+   * Build the native descriptor for the result type of cc.
+   *
+   * @return e.g. Ljava/lang/foreign/MemorySegment;
+   */
+  private JavaType nativeResultTypeDescriptor(int rt)
+  {
+    return _types.javaType(rt).isPrimitive()
+      ? _types.javaType(rt)
+      : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT;
+  }
+
+
+  /**
+   * create java byte code that copies
+   * native results, essentially structs to
+   * its fuzion value type.
+   */
+  private Expr copyValueResultToFuzion(int rt)
+  {
+    return _jvm.isAddressLike(rt) || _types.javaType(rt).isPrimitive()
+      ? Expr.UNIT
+      : Expr
+        .classconst((ClassType)_types.javaType(rt))     // memSeg, class
+        .andThen(Expr.SWAP)                             // class, memSeg
+        .andThen(Expr.invokeStatic                      // Object
+            (Names.RUNTIME_CLASS,
+            "memorySegment2Value",
+            "(" + Types.JAVA_LANG_CLASS.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")" + Names.JAVA_LANG_OBJECT.descriptor(),
+            Names.JAVA_LANG_OBJECT))
+        .andThen(Expr.checkcast(_types.javaType(rt)));  // rt
   }
 
 
@@ -699,18 +779,13 @@ class CodeGen
     for (int i = 0; i < args.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
-        var isCall = _fuir.lookupCall(at) != NO_CLAZZ;
-        if (!args.get(i).type().isPrimitive() && !isCall)
+        if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at))
           {
             result = result
                 .andThen(args.get(i))
                 .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
-                .andThen(Expr.invokeStatic(
-                  Names.RUNTIME_CLASS,
-                  "memorySegment2Obj",
-                  "(" + Names.JAVA_LANG_OBJECT.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")V",
-                  PrimitiveType.type_void));
+                .andThen(invokeMemorySegment2Obj());
             slot++;
           }
       }
@@ -718,6 +793,19 @@ class CodeGen
     if (CHECKS) check
       (slot == slotsOfMemorySegments.size());
     return result;
+  }
+
+
+  /**
+   * byte code to invoke memorySegment2Obj
+   */
+  private Expr invokeMemorySegment2Obj()
+  {
+    return Expr.invokeStatic(
+      Names.RUNTIME_CLASS,
+      "memorySegment2Obj",
+      "(" + Names.JAVA_LANG_OBJECT.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")V",
+      PrimitiveType.type_void);
   }
 
 
@@ -743,7 +831,7 @@ class CodeGen
             result = result
               .andThen(args.get(i));
           }
-        else
+        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
           {
             var slot = _jvm.allocLocal(si, 1);
             slots.addLast(slot);
@@ -753,6 +841,12 @@ class CodeGen
                 .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
                 .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+          }
+        else
+          {
+            result = result
+                .andThen(args.get(i))
+                .andThen(invokeObj2MemorySegment());
           }
       }
     return result;

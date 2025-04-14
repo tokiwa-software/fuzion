@@ -40,7 +40,7 @@ static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8
 
 void * fzE_malloc_safe(size_t size);
 
-void fzE_memset(void *dest, int ch, size_t sz);
+void fzE_mem_zero(void *dest, size_t sz);
 
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
 

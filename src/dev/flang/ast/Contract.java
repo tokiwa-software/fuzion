@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -608,7 +609,7 @@ public class Contract extends ANY
 
     for (var c : dc)
       {
-        var cond = c.cond;
+        var cond = c.cond();
         var p = cond.sourceRange();
         if (preBool)
           {
@@ -625,15 +626,11 @@ public class Contract extends ANY
                 cond = new ParsedCall(pc(pos, "true"),
                                       new ParsedName(pos, "infix ||"), new List<>(cond));
               }
-            l.add(new If(p,
+            l.add(Match.createIf(p,
                          cond,
                          new Block(),
-                         pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText())))
-                         )
-              {
-                @Override boolean fromContract() { return true; }
-              }
-                  );
+                         pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
+                         true));
           }
       }
     if (cc != null)
@@ -723,10 +720,11 @@ public class Contract extends ANY
       }
     else if (cc != null)
       {
-        new_code = new List<>(new If(pos,
-                                     cc,
-                                     new Block(),
-                                     new Block(new_code)));
+        new_code = new List<>(Match.createIf(pos,
+                                       cc,
+                                       new Block(),
+                                       new Block(new_code),
+                                       false));
       }
     code._expressions = new_code;
     var e = res.resolveType(code, pF.context());
@@ -758,6 +756,11 @@ public class Contract extends ANY
     // add precondition feature
     if (requiresPreConditionsFeature(f) && f._preBoolFeature == null)
       {
+        // NYI: UNDER DEVELOPMENT:
+        if (f.kind() != Kind.Routine && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract)
+          {
+            Errors.error(fc._hasPre, "Implementation restriction: pre-condition for " + f.kind() + " not supported yet.", "");
+          }
 
         /*
     // tag::fuzion_rule_SEMANTIC_CONTRACT_PRE_ORDER[]
@@ -1021,6 +1024,13 @@ all of their redefinition to `true`. +
     // add postcondition feature
     if (requiresPostConditionsFeature(f) && f._postFeature == null)
       {
+        // NYI: UNDER DEVELOPMENT:
+        if (f.kind() != Kind.Routine && f.kind() != Kind.Abstract)
+          {
+            Errors.error(fc._hasPost, "Implementation restriction: post-condition for " + f.kind() + " not supported yet.", "");
+          }
+
+
         // TRICKY: if f is constructor, post condition is an inner feature of f
         //         otherwise it is defined alongside of f.
         var name = postConditionsFeatureName(f);
@@ -1039,16 +1049,12 @@ all of their redefinition to `true`. +
         var l = new List<Expr>();
         for (var c : fc._declared_postconditions)
           {
-            var p = c.cond.sourceRange();
-            l.add(new If(p,
-                         c.cond,
-                         new Block(),
-                         pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText())))
-                         )
-              {
-                @Override boolean fromContract() { return true; }
-              }
-                  );
+            var p = c.cond().sourceRange();
+            l.add(Match.createIf(p,
+                           c.cond(),
+                           new Block(),
+                           pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
+                           false));
           }
         var code = new Block(l);
         var pF = new Feature(pos,

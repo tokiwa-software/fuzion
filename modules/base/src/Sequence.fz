@@ -376,7 +376,7 @@ public Sequence(public T type) ref : property.countable is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f Unary B T) Sequence B =>
+  public map(B type, f T->B) Sequence B =>
     as_list.map_to_list f
 
 
@@ -398,7 +398,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # will print the elements since `for_each` is not lazy.
   #
-  public infix | (B type, f Unary B T) Sequence B => map f
+  public infix | (B type, f T->B) Sequence B => map f
 
 
   # map each element of this Sequence to Sequence
@@ -450,9 +450,9 @@ public Sequence(public T type) ref : property.countable is
   #
   # e.g., to find the product of a Sequence of i32, use `s.foldf (*) 1`
   #
-  public foldf (B type, f (B,T)->B, e B) B
+  public foldf (B type, e B, f (B,T)->B) B
   =>
-    as_list.foldf f e
+    as_list.foldf e f
 
 
   # fold the elements of this list using the given monoid right-to-left.
@@ -480,7 +480,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # e.g., to concat the elements of a list of lists, use foldrf (++) []
   #
-  public foldrf (B type, f (T,B)->B, e B) => as_list.foldrf f e
+  public foldrf (B type, e B, f (T,B)->B) => as_list.foldrf e f
 
 
   # map this Sequence to a list that contains the result of folding
@@ -498,7 +498,7 @@ public Sequence(public T type) ref : property.countable is
   # e.g., for a Sequence s of i32, s.scan (+) 0 creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public scan (R type, f Binary R R T, a R) Sequence R => as_list.scan R f a
+  public scan (R type, a R, f (R,T)->R) Sequence R => as_list.scan R a f
 
 
   # scan1 works like its counterpart with an initial value, except
@@ -508,7 +508,7 @@ public Sequence(public T type) ref : property.countable is
   # for example, (1::id).scan (+) would create [1, 2, 3, 4, ...], while
   # (1..).scan (+) would create [1, 3, 6, 10, ...].
   #
-  public scan1 (f Binary T T T) Sequence T => as_list.scan1 f
+  public scan1 (f (T,T)->T) Sequence T => as_list.scan1 f
 
 
   # reduce this Sequence to R with an initial value init
@@ -1296,10 +1296,10 @@ public Sequence(public T type) ref : property.countable is
     K type : property.orderable,
 
     # function to generate the key
-    key_f Unary K T,
+    key_f T->K,
 
     # function to reduce the elements
-    reduce_f Binary T T T) container.Map K T
+    reduce_f (T,T)->T) container.Map K T
   =>
     group_map_reduce K T key_f id reduce_f
 
@@ -1325,13 +1325,13 @@ public Sequence(public T type) ref : property.countable is
     B type,
 
     # function to generate the keys
-    key_f Unary K T,
+    key_f T->K,
 
     # function applied to elements before they are reduce
-    f Unary B T,
+    f T->B,
 
     # function to reduce elements
-    reduce_f Binary B B B) container.Map K B
+    reduce_f (B,B)->B) container.Map K B
   =>
     M : mutate is
     M ! ()->
@@ -1366,10 +1366,10 @@ public Sequence(public T type) ref : property.countable is
     B type,
 
     # function to generate the keys
-    key_f Unary K T,
+    key_f T->K,
 
     # function applied to each element
-    f Unary B T) container.Map K (Sequence B)
+    f T->B) container.Map K (Sequence B)
   =>
     M : mutate is
     M ! ()->

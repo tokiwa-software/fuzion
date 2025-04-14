@@ -161,7 +161,7 @@ is
       bits := if is_err then 0
               else quintets.map (.val)
                            .zip (((u64 35) :: -5).take 8) (<<)
-                           .foldf (|) (u64 0)
+                           .foldf (u64 0) (|)
       bytes := [(u64 32), 24, 16, 8, 0].map (i->(bits >> i).low8bits)
 
     else
