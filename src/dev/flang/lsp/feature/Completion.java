@@ -186,7 +186,7 @@ public class Completion
           }
       }
 
-    // // Invoked: ctrl+space
+    // NYI: UNDER DEVELOPMENT: // Invoked: ctrl+space
     // if
     // (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
     // && params.getContext().getTriggerCharacter() == null)
