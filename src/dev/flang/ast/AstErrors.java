@@ -203,7 +203,7 @@ public class AstErrors extends ANY
    */
   static String sc(List<FeatureAndOuter> candidates)
   {
-    return candidates.stream().map(c -> "• " + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
+    return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
                                         + " at " + c._feature.pos().show() + callableArgCountMsg(c._feature) + "\n\n")
       .collect(List.collector())
       .toString(candidates.size() > 1 ? "one of the features\n" : "the feature ", "", "");
@@ -228,7 +228,7 @@ public class AstErrors extends ANY
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
-    return "To call " + f.featureName().baseName() + " you must provide "
+    return "To call " + sbn(f.featureName().baseName()) + " you must provide "
            + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
            + (f.typeArguments().size() > 0
                 ? " The type arguments may be omitted or `_` may be used in place of a type argument."
