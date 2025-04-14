@@ -41,6 +41,7 @@ import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.Terminal;
 
 
 /**
@@ -204,7 +205,7 @@ public class AstErrors extends ANY
   static String sc(List<FeatureAndOuter> candidates)
   {
     return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
-                                        + " at " + c._feature.pos().show() + callableArgCountMsg(c._feature) + "\n\n")
+                                        + " at " + c._feature.pos().show() + (Terminal.ENABLED ? "" : "\n") + callableArgCountMsg(c._feature) + "\n\n")
       .collect(List.collector())
       .toString(candidates.size() > 1 ? "one of the features\n" : "the feature ", "", "");
   }
