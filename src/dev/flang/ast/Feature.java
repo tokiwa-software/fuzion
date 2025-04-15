@@ -2052,7 +2052,7 @@ A ((Choice)) declaration must not contain a result type.
    */
   private void checkOuterOfAtomicIsNotValueConstructor()
   {
-    if(isConstructor() && !isRef() && !isCotype())
+    if(isIllegalOuterForAtomicField(this))
       {
         arguments().stream().forEach(arg ->
           {
@@ -2063,10 +2063,19 @@ A ((Choice)) declaration must not contain a result type.
           }
         );
       }
-    if (isField() && outer().isConstructor() && !outer().isRef() && resultType().selfOrConstraint(context()).feature() == Types.resolved.f_concur_atomic)
+    if (isField() && isIllegalOuterForAtomicField(outer()) && resultType().selfOrConstraint(context()).feature() == Types.resolved.f_concur_atomic)
       {
         AstErrors.outerFeatureOfAtomicMustNotBeValueConstructor(pos());
       }
+  }
+
+
+  /**
+   * check if outer is illegal as an outer of an atomic field
+   */
+  private boolean isIllegalOuterForAtomicField(AbstractFeature outer)
+  {
+    return outer.isConstructor() && !outer.isRef() && !outer.isUniverse() && !outer.isCotype();
   }
 
 
