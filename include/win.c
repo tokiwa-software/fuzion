@@ -44,9 +44,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <time.h>
 
-// NYI remove POSIX imports
-#include <fcntl.h>      // fcntl
-
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
@@ -55,6 +52,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <namedpipeapi.h>
 
 #ifdef FUZION_ENABLE_THREADS
+// NYI remove POSIX imports
 #include <pthread.h>
 #endif
 
@@ -69,7 +67,7 @@ wchar_t* utf8_to_wide_str(const char* str)
 {
   int wideCharLen = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
   assert(wideCharLen != 0);
-  wchar_t* wideStr = (wchar_t*)fzE_malloc_safe(wideCharLen * sizeof(wchar_t));
+  wchar_t* wideStr = (wchar_t*)malloc(wideCharLen * sizeof(wchar_t));
   MultiByteToWideChar(CP_UTF8, 0, str, -1, wideStr, wideCharLen);
   return wideStr;
 }
@@ -434,18 +432,11 @@ DWORD low_word(off_t value) {
 
 // returns -1 on error, size of file in bytes otherwise
 long fzE_get_file_size(void * file) {
-  // store current pos
-  long cur_pos = ftell((FILE *)file);
-  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
-    return -1;
+  LARGE_INTEGER size;
+  if (!GetFileSizeEx((HANDLE)file, &size) || size.QuadPart > LONG_MAX) {
+      return -1;
   }
-
-  long size = ftell((FILE *)file);
-
-  // reset seek position
-  fseek((FILE *)file, cur_pos, SEEK_SET);
-
-  return size;
+  return (long)size.QuadPart;
 }
 
 
@@ -461,19 +452,17 @@ long fzE_get_file_size(void * file) {
  */
 void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 
-  if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
+  if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
     result[0] = -1;
     return NULL;
   }
-
-  HANDLE file_handle = (HANDLE)_get_osfhandle(fileno((FILE *)file));
 
   /* "If dwMaximumSizeLow and dwMaximumSizeHigh are 0 (zero), the maximum size of the file mapping
       object is equal to the current size of the file that hFile identifies.
       An attempt to map a file with a length of 0 (zero) fails with an error code
       of ERROR_FILE_INVALID. Applications should test for files with a length of 0 (zero) and reject those files."
   */
-  HANDLE file_mapping_handle = CreateFileMapping(file_handle, NULL, PAGE_READWRITE, 0, 0, NULL);
+  HANDLE file_mapping_handle = CreateFileMapping(file, NULL, PAGE_READWRITE, 0, 0, NULL);
   if (file_mapping_handle == NULL) {
     result[0] = -1;
     return NULL;
@@ -623,9 +612,6 @@ pthread_mutex_t fzE_global_mutex;
  */
 void fzE_init()
 {
-  _setmode( _fileno( stdout ), _O_BINARY ); // reopen stdout in binary mode
-  _setmode( _fileno( stderr ), _O_BINARY ); // reopen stderr in binary mode
-
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
@@ -878,21 +864,29 @@ int fzE_pipe_close(int64_t desc){
 // open_results[0] the error number
 void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
-  assert( mode >= 0 && mode <= 2 );
-  // NYI use lock to make fopen and fcntl _atomic_.
-  //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
-  // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
-  // to a race condition that may unintentionally leak the file descriptor to the
-  // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
-  // for details and a remedy to the problem."
-  errno = 0;
-  FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
-  if (fp!=NULL)
-  {
-    open_results[0] = (int64_t)errno;
-  }
-  // NYI: UNDER DEVELOPMENT: not available on windows: fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
-  return fp;
+  assert(mode >= 0 && mode <= 2);
+
+  SECURITY_ATTRIBUTES sa = {0};
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sa.bInheritHandle = FALSE;
+  sa.lpSecurityDescriptor = NULL;
+
+  wchar_t* file_name_w = utf8_to_wide_str(file_name);
+
+  HANDLE hFile = CreateFileW(
+      file_name_w,
+      GENERIC_READ | GENERIC_WRITE,
+      FILE_SHARE_READ,
+      &sa,
+      OPEN_ALWAYS,
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
+      NULL
+  );
+
+  open_results[0] = hFile == INVALID_HANDLE_VALUE
+    ? (int64_t)GetLastError()
+    : 0;
+  return (void *)hFile;
 }
 
 
@@ -981,23 +975,14 @@ void fzE_cnd_destroy(void *cnd) {
 
 int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
-  HANDLE hFile = (HANDLE)_get_osfhandle(_fileno((FILE *)file));
-  if (hFile == INVALID_HANDLE_VALUE) {
-    return -2; // ERROR
-  }
+  DWORD bytesRead = 0;
+  BOOL success = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
 
-  DWORD bytesRead;
-  BOOL success = ReadFile(hFile, buf, size, &bytesRead, NULL);
-
-  if (!success) {
-    return -2; // ERROR
-  }
-
-  if (bytesRead == 0) {
-    return -1; // EOF
-  }
-
-  return (int32_t)bytesRead;
+  return !success
+    ? -2 // ERROR
+    : bytesRead == 0
+    ? -1 // EOF
+    : (int32_t)bytesRead;
 }
 
 
@@ -1029,38 +1014,57 @@ void fzE_date_time(void * result)
 
 int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
-  size_t result = fwrite(buf, 1, size, (FILE*)file);
-  return ferror((FILE*)file)!=0
-    ? -1
-    : result;
+  DWORD written = 0;
+  BOOL result = WriteFile((HANDLE)file, buf, (DWORD)size, &written, NULL);
+  return result
+    ? (int32_t)written
+    : -1;
 }
 
 int32_t fzE_file_move(const char *oldpath, const char *newpath)
 {
-  return rename(oldpath, newpath);
+  wchar_t* oldpath_w = utf8_to_wide_str(oldpath);
+  wchar_t* newpath_w = utf8_to_wide_str(newpath);
+  int32_t result = MoveFileW(oldpath_w, newpath_w) ? 0 : -1;
+  free(newpath_w);
+  free(oldpath_w);
+  return result;
 }
 
-int32_t fzE_file_close(void * file)
+
+
+int32_t fzE_file_close(void *file)
 {
-  return fclose((FILE*)file);
+  return CloseHandle((HANDLE)file)
+    ? 0
+    : -1;
 }
 
-int32_t fzE_file_seek(void * file, int64_t offset)
+int32_t fzE_file_seek(void *file, int64_t offset)
 {
-  return fseek((FILE*)file, offset, SEEK_SET);
+  LARGE_INTEGER li;
+  li.QuadPart = offset;
+  return SetFilePointerEx((HANDLE)file, li, NULL, FILE_BEGIN)
+    ? 0
+    : -1;
 }
 
-int64_t fzE_file_position(void * file)
+int64_t fzE_file_position(void *file)
 {
-  return ftell((FILE*)file);
+  LARGE_INTEGER pos;
+  LARGE_INTEGER zero = {0};
+  return (SetFilePointerEx((HANDLE)file, zero, &pos, FILE_CURRENT))
+    ? pos.QuadPart
+    : -1;
 }
 
-void * fzE_file_stdin(void) { return stdin; }
-void * fzE_file_stdout(void) { return stdout; }
-void * fzE_file_stderr(void) { return stderr; }
-
-int32_t fzE_file_flush(void * file)
+int32_t fzE_file_flush(void *file)
 {
-  return fflush(file) == 0 ? 0 : -1;
+  return FlushFileBuffers((HANDLE)file)
+    ? 0
+    : -1;
 }
 
+void * fzE_file_stdin (void) { return GetStdHandle(STD_INPUT_HANDLE); }
+void * fzE_file_stdout(void) { return GetStdHandle(STD_OUTPUT_HANDLE); }
+void * fzE_file_stderr(void) { return GetStdHandle(STD_ERROR_HANDLE); }
