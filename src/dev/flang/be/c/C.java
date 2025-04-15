@@ -1193,7 +1193,10 @@ public class C extends ANY
 
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"");
-    cf.println("#include \"" + _options.pathOf("include/fz_jni.h") + "\"");
+    if (linkJVM())
+      {
+        cf.println("#include \"" + _options.pathOf("include/fz_jni.h") + "\"");
+      }
     cf.println("#include \"" + hf.fileName() + "\"");
 
     if (_options._cLink != null)
