@@ -899,7 +899,9 @@ public class Html extends ANY
   private String navFeatHtml(AbstractFeature f, String prefix)
   {
     var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
-    var fHTML = "<a href='" + featureAbsoluteURL(f) + "'>" + fName + args(f) + "</a>";
+    var fHTML = "<a href='"
+                + (f.isUniverse() ? config.docsRoot() + "/" + lm.name() : featureAbsoluteURL(f))
+                + "'>" + fName + args(f) + "</a>";
     return "<div>" + prefix + fHTML + "</div>";
   }
 
