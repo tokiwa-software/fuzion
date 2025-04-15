@@ -201,11 +201,14 @@ public class AstErrors extends ANY
    * Produce a String from a list of candidates of the form "one of the features
    * • x at x.fz:23
    * • y at y.fz:42
+   *
+   * @param addArgCallHint whether to add a hint indicating how many arguments this feature accepts
    */
-  static String sc(List<FeatureAndOuter> candidates)
+  static String sc(List<FeatureAndOuter> candidates, boolean addArgCallHint)
   {
     return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
-                                        + " at " + c._feature.pos().show() + (Terminal.ENABLED ? "" : "\n") + callableArgCountMsg(c._feature) + "\n\n")
+                                        + " at " + c._feature.pos().show() + (Terminal.ENABLED ? "" : "\n")
+                                        + (addArgCallHint ? callableArgCountMsg(c._feature) + "\n\n" : ""))
       .collect(List.collector())
       .toString(candidates.size() > 1 ? "one of the features\n" : "the feature ", "", "");
   }
@@ -1244,7 +1247,7 @@ public class AstErrors extends ANY
 
     if (!candidates.isEmpty())
       {
-        solution = "To solve this, you might change the actual number of arguments to match " + sc(candidates);
+        solution = "To solve this, you might change the actual number of arguments to match " + sc(candidates, true);
       }
 
     return solution;
@@ -1262,7 +1265,7 @@ public class AstErrors extends ANY
 
     if (!candidates.isEmpty())
       {
-        solution = "To solve this, you might change the visibility of " + sc(candidates);
+        solution = "To solve this, you might change the visibility of " + sc(candidates, false);
       }
 
     return solution;
