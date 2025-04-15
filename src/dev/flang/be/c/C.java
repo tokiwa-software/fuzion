@@ -793,10 +793,6 @@ public class C extends ANY
         command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
 
-    if (linkJVM())
-      {
-        command.addAll("-DFUZION_LINK_JVM");
-      }
 
     if (usesThreads())
       {
@@ -836,6 +832,10 @@ public class C extends ANY
     else
       {
         command.addAll(_options.pathOf("include/posix.c"));
+      }
+    if (linkJVM())
+      {
+        command.addAll(_options.pathOf("include/fz_jni.c"));
       }
 
     command.addAll(cf.fileName());
@@ -1193,6 +1193,7 @@ public class C extends ANY
 
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"");
+    cf.println("#include \"" + _options.pathOf("include/fz_jni.h") + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
     if (_options._cLink != null)
