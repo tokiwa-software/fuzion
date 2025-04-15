@@ -42,27 +42,27 @@ public class TypeTool extends ANY
    * @param type
    * @return
    */
-  public static String Label(AbstractType type)
+  public static String label(AbstractType type)
   {
 
-    if (ContainsError(type)
+    if (containsError(type)
       || type.containsUndefined(false))
       {
         return baseName(type);
       }
     if (!type.isGenericArgument() && type.generics() != UnresolvedType.NONE)
       {
-        return LabelNoErrorOrUndefined(type) + " "
-          + type.generics().stream().map(g -> Util.AddParens(Label(g))).collect(Collectors.joining(" "));
+        return labelNoErrorOrUndefined(type) + " "
+          + type.generics().stream().map(g -> Util.addParens(label(g))).collect(Collectors.joining(" "));
       }
-    return LabelNoErrorOrUndefined(type);
+    return labelNoErrorOrUndefined(type);
   }
 
   // NYI DUCKTAPE! ensure condition sometimes fails on containsError()
   // unable to reproduce unfortunately
-  public static boolean ContainsError(AbstractType type)
+  public static boolean containsError(AbstractType type)
   {
-    return ErrorHandling.ResultOrDefault(() -> type.containsError(), true);
+    return ErrorHandling.resultOrDefault(() -> type.containsError(), true);
   }
 
   /**
@@ -71,7 +71,7 @@ public class TypeTool extends ANY
    * @param brief
    * @return
    */
-  public static String Label(FormalGenerics generics, boolean brief)
+  public static String label(FormalGenerics generics, boolean brief)
   {
     if (!generics.isOpen() && generics.list.isEmpty() || brief)
       {
@@ -80,10 +80,10 @@ public class TypeTool extends ANY
     return " " + generics.list + (generics.isOpen() ? "... ": "");
   }
 
-  private static String LabelNoErrorOrUndefined(AbstractType type)
+  private static String labelNoErrorOrUndefined(AbstractType type)
   {
     if (PRECONDITIONS)
-      require(!ContainsError(type), !type.containsUndefined(false));
+      require(!containsError(type), !type.containsUndefined(false));
 
     if (type.isGenericArgument())
       {

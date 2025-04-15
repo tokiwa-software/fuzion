@@ -83,20 +83,20 @@ public class InlayHints extends ANY
       }
     var uri = LSP4jUtils.getUri(params.getTextDocument());
 
-    var inlayHintsActuals = ASTWalker.Traverse(uri)
+    var inlayHintsActuals = ASTWalker.traverse(uri)
       .filter(e -> e.getKey() instanceof AbstractCall)
       .map(e -> (AbstractCall) e.getKey())
       .filter(c -> isInRange(params.getRange(), c.pos()))
-      .filter(c -> !CallTool.IsFixLikeCall(c))
-      .filter(CallTool.CalledFeatureNotInternal)
+      .filter(c -> !CallTool.isFixLikeCall(c))
+      .filter(CallTool.calledFeatureNotInternal)
       .flatMap(c -> {
         if (c.actuals().size() == c.calledFeature().valueArguments().size())
           {
             return IntStream.range(0, c.actuals().size())
-              .filter(idx -> Util.CharCount(
+              .filter(idx -> Util.charCount(
                 c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
               // this is the case e.g. for _ args
-              .filter(idx -> !FeatureTool.IsInternal(c.calledFeature().valueArguments().get(idx)))
+              .filter(idx -> !FeatureTool.isInternal(c.calledFeature().valueArguments().get(idx)))
               // omit inlay hint if actual is call of same name as arg
               .filter(idx -> !(c.actuals().get(idx) instanceof AbstractCall ac && ac.calledFeature()
                 .featureName()
@@ -105,7 +105,7 @@ public class InlayHints extends ANY
               // for array initialization via [] syntax, don't show inlay hint
               .filter(idx -> !c.calledFeature().valueArguments().get(idx).qualifiedName().equals("array.internal_array"))
               .mapToObj(idx -> {
-                var inlayHint = new InlayHint(Bridge.toPosition(CallTool.StartOfExpr(c.actuals().get(idx))),
+                var inlayHint = new InlayHint(Bridge.toPosition(CallTool.startOfExpr(c.actuals().get(idx))),
                   Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));
                 inlayHint.setKind(InlayHintKind.Parameter);
                 inlayHint.setPaddingLeft(true);
@@ -123,13 +123,13 @@ public class InlayHints extends ANY
     var inlayHintsResultTypes = ASTWalker
       .Features(LSP4jUtils.getUri(params.getTextDocument()))
       // NYI filter duplicate loop variable
-      .filter(af -> !FeatureTool.IsInternal(af))
-      .filter(af -> !FeatureTool.IsArgument(af))
+      .filter(af -> !FeatureTool.isInternal(af))
+      .filter(af -> !FeatureTool.isArgument(af))
       // NYI filter constants like numbers, strings etc.
       .filter(af -> !(af.isField() && typeIsExplicitlyStated(af)))
       .flatMap(af -> positionOfOperator(af)
         .map(pos -> {
-          var ih = new InlayHint(pos, Either.forLeft(TypeTool.Label(af.resultType())));
+          var ih = new InlayHint(pos, Either.forLeft(TypeTool.label(af.resultType())));
           ih.setKind(InlayHintKind.Type);
           ih.setPaddingLeft(true);
           ih.setPaddingRight(true);
@@ -156,7 +156,7 @@ public class InlayHints extends ANY
     //   })
     //   .flatMap(Optional::stream);
 
-    return Util.ConcatStreams(inlayHintsActuals, inlayHintsResultTypes).collect(Collectors.toList());
+    return Util.concatStreams(inlayHintsActuals, inlayHintsResultTypes).collect(Collectors.toList());
   }
 
   private static boolean isConstant(Expr code)
@@ -195,7 +195,7 @@ public class InlayHints extends ANY
   private static boolean typeIsExplicitlyStated(AbstractFeature af)
   {
     return LexerTool
-      .TokensFrom(af.pos())
+      .tokensFrom(af.pos())
       .takeWhile(x -> AllowedTokensBeforeOp.contains(x.token()) && !x.text().equals(":="))
       .filter(x -> x.token().equals(Token.t_ident))
       .count() > 1;
@@ -207,7 +207,7 @@ public class InlayHints extends ANY
   private static Optional<Position> positionOfOperator(AbstractFeature af)
   {
     return LexerTool
-      .TokensFrom(af.pos())
+      .tokensFrom(af.pos())
       .takeWhile(x -> AllowedTokensBeforeOp.contains(x.token()))
       .dropWhile(x -> !(x.text().equals("=>") || x.text().equals(":=")))
       .map(x -> Bridge.toPosition(x.start()))

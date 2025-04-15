@@ -57,21 +57,21 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  public static Optional<AbstractFeature> TargetFeature(SourcePosition params)
+  public static Optional<AbstractFeature> targetFeature(SourcePosition params)
   {
-    return FindTargetFeatureInAST(params)
+    return findTargetFeatureInAST(params)
       .or(() -> {
         // NYI this is a (bad) hack to handle incomplete source code
         // that contains something like `expr. ` where the parser than assumes
         // the dot to be a full stop but is actually just incomplete source code
-        var tokens = LexerTool.TokensAt(params);
+        var tokens = LexerTool.tokensAt(params);
         if (tokens.left().text().equals(".") && tokens.right().token().equals(Token.t_ws))
           {
-            return FindTargetFeatureInASTDefusedFullStop(params);
+            return findTargetFeatureInASTDefusedFullStop(params);
           }
         return Optional.empty();
       })
-      .or(() -> Constant(params));
+      .or(() -> constant(params));
   }
 
   /**
@@ -82,12 +82,12 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  private static Optional<? extends AbstractFeature> FindTargetFeatureInASTDefusedFullStop(SourcePosition params)
+  private static Optional<? extends AbstractFeature> findTargetFeatureInASTDefusedFullStop(SourcePosition params)
   {
-    var uri = SourceText.UriOf(params);
+    var uri = SourceText.uriOf(params);
     var text = SourceText.getText(params);
-    SourceText.setText(uri, InsertDummyCharacter(text, params));
-    var result = FindTargetFeatureInAST(params);
+    SourceText.setText(uri, insertDummyCharacter(text, params));
+    var result = findTargetFeatureInAST(params);
     SourceText.setText(uri, text);
     return result;
   }
@@ -95,7 +95,7 @@ public class QueryAST extends ANY
   /*
    * insert dummy character � at pos
    */
-  private static String InsertDummyCharacter(String text, SourcePosition pos)
+  private static String insertDummyCharacter(String text, SourcePosition pos)
   {
     var lines = text.lines().toList();
     return IntStream
@@ -112,26 +112,26 @@ public class QueryAST extends ANY
   }
 
   // NYI motivate/explain this heuristic
-  private static Optional<AbstractFeature> FindTargetFeatureInAST(SourcePosition params)
+  private static Optional<AbstractFeature> findTargetFeatureInAST(SourcePosition params)
   {
-    var leftToken = LexerTool.TokensAt(LexerTool.GoLeft(params)).left();
+    var leftToken = LexerTool.tokensAt(LexerTool.goLeft(params)).left();
     return ASTWalker
-      .Traverse(params)
+      .traverse(params)
       .filter(entry -> entry.getKey() instanceof AbstractCall)
       .filter(entry -> !entry.getValue().pos().isBuiltIn()
-        && SourcePositionTool.PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
-      .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
+        && SourcePositionTool.positionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
+      .filter(entry -> SourcePositionTool.positionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
       .map(entry -> (AbstractCall) entry.getKey())
-      .filter(ac -> SourcePositionTool.Compare(ExprTool.EndOfExpr(ac), params) <= 0)
-      .sorted(ExprTool.CompareByEndOfExpr.reversed())
+      .filter(ac -> SourcePositionTool.compare(ExprTool.endOfExpr(ac), params) <= 0)
+      .sorted(ExprTool.compareByEndOfExpr.reversed())
       .filter(ac -> ac.calledFeature() != null)
-      .filter(CallTool.CalledFeatureNotInternal)
+      .filter(CallTool.calledFeatureNotInternal)
       // if left token is identifier, filter none matching calls by name
       .filter(ac -> !leftToken.token().equals(Token.t_ident) || !(ac instanceof Call)
         || leftToken.text().equals(((Call) ac).name()))
       .map(ac -> {
         // try use inferred type
-        if (!TypeTool.ContainsError(ac.type()))
+        if (!TypeTool.containsError(ac.type()))
           {
             return ac.type();
           }
@@ -143,21 +143,21 @@ public class QueryAST extends ANY
       // NYI:
       // .map(at -> at.selfOrConstraint())
       .map(at -> at.feature())
-      .filter(f -> !FeatureTool.IsInternal(f) || f.featureName().baseName().endsWith("#type"))
+      .filter(f -> !FeatureTool.isInternal(f) || f.featureName().baseName().endsWith("#type"))
       .findFirst();
   }
 
   // NYI motivate/explain this heuristic
-  private static Optional<? extends AbstractFeature> Constant(SourcePosition params)
+  private static Optional<? extends AbstractFeature> constant(SourcePosition params)
   {
-    return ASTWalker.Traverse(params)
+    return ASTWalker.traverse(params)
       .filter(entry -> entry.getKey() instanceof Constant)
       .filter(entry -> !entry.getValue().pos().isBuiltIn()
-        && SourcePositionTool.PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
-      .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((Constant) entry.getKey()).pos()))
+        && SourcePositionTool.positionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
+      .filter(entry -> SourcePositionTool.positionIsBeforeCursor(params, ((Constant) entry.getKey()).pos()))
       .map(entry -> ((Constant) entry.getKey()))
-      .filter(HasSourcePositionTool.IsItemOnSameLineAsCursor(params))
-      .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
+      .filter(HasSourcePositionTool.isItemOnSameLineAsCursor(params))
+      .sorted(HasSourcePositionTool.compareBySourcePosition.reversed())
       .map(x -> x.type().feature())
       .findFirst();
   }
@@ -166,16 +166,16 @@ public class QueryAST extends ANY
   /**
    * get stream of possible features for dot-call at source position
    */
-  public static Stream<AbstractFeature> DotCallCompletionsAt(SourcePosition params)
+  public static Stream<AbstractFeature> dotCallCompletionsAt(SourcePosition params)
   {
     var tokenBeforeDot = LexerTool
-      .TokensAt(LexerTool.GoLeft(params))
+      .tokensAt(LexerTool.goLeft(params))
       .left()
       .token();
-    return TargetFeature(params)
+    return targetFeature(params)
       // NYI this should be simplified
       .map(tf -> tokenBeforeDot == Token.t_type && !tf.isCotype() ? tf.cotype() : tf)
-      .map(tf -> Candidates(tf)
+      .map(tf -> candidates(tf)
         // filter infix, prefix, postfix features
         .filter(x -> !x.featureName().baseName().contains(" ")))
       .orElse(Stream.empty());
@@ -187,13 +187,13 @@ public class QueryAST extends ANY
    * @param targetFeature
    * @return
    */
-  private static Stream<AbstractFeature> Candidates(AbstractFeature targetFeature)
+  private static Stream<AbstractFeature> candidates(AbstractFeature targetFeature)
   {
     var declaredFeaturesOfInheritedFeatures =
-      InheritedRecursive(targetFeature).flatMap(af -> ParserTool.DeclaredFeatures(af));
+      inheritedRecursive(targetFeature).flatMap(af -> ParserTool.declaredFeatures(af));
 
     var declaredFeatures = Stream.concat(ParserTool
-      .DeclaredFeatures(targetFeature), declaredFeaturesOfInheritedFeatures)
+      .declaredFeatures(targetFeature), declaredFeaturesOfInheritedFeatures)
       .collect(Collectors.toList());
 
     var redefinedFeatures =
@@ -212,15 +212,15 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  public static Stream<AbstractFeature> InfixPostfixCompletionsAt(SourcePosition params)
+  public static Stream<AbstractFeature> infixPostfixCompletionsAt(SourcePosition params)
   {
-    return TargetFeature(params)
+    return targetFeature(params)
       .map(feature -> {
         var declaredFeaturesOfInheritedFeatures =
-          InheritedRecursive(feature).flatMap(af -> ParserTool.DeclaredFeatures(af));
+          inheritedRecursive(feature).flatMap(af -> ParserTool.declaredFeatures(af));
 
         var declaredFeatures = Stream.concat(ParserTool
-          .DeclaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
+          .declaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
           .collect(Collectors.toList());
 
         var redefinedFeatures =
@@ -242,10 +242,10 @@ public class QueryAST extends ANY
    * @param af
    * @return
    */
-  private static Stream<AbstractFeature> InheritedRecursive(AbstractFeature af)
+  private static Stream<AbstractFeature> inheritedRecursive(AbstractFeature af)
   {
     return Stream.concat(af.inherits().stream().map(ac -> ac.calledFeature()),
-      af.inherits().stream().flatMap(c -> InheritedRecursive(c.calledFeature())));
+      af.inherits().stream().flatMap(c -> inheritedRecursive(c.calledFeature())));
   }
 
 
@@ -255,16 +255,16 @@ public class QueryAST extends ANY
    * NYI currently ununsed.
    * Can we use this without beeing annoying?
    */
-  public static Stream<AbstractFeature> CompletionsAt(SourcePosition params)
+  public static Stream<AbstractFeature> completionsAt(SourcePosition params)
   {
-    var tokens = LexerTool.TokensAt(params);
+    var tokens = LexerTool.tokensAt(params);
     if (tokens.left().token().equals(Token.t_ws))
       {
-        return QueryAST.FeaturesInScope(params);
+        return QueryAST.featuresInScope(params);
       }
     else if (tokens.left().token().equals(Token.t_ident))
       {
-        return QueryAST.FeaturesInScope(params)
+        return QueryAST.featuresInScope(params)
           .filter(f -> {
             return f.featureName().baseName().startsWith(tokens.left().text());
           });
@@ -280,14 +280,14 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  private static Stream<HasSourcePosition> ASTItemsBeforeOrAtCursor(SourcePosition params)
+  private static Stream<HasSourcePosition> astItemsBeforeOrAtCursor(SourcePosition params)
   {
-    return ASTWalker.Traverse(params)
-      .filter(HasSourcePositionTool.IsItemInScope(params))
+    return ASTWalker.traverse(params)
+      .filter(HasSourcePositionTool.isItemInScope(params))
       .map(entry -> entry.getKey())
-      .filter(HasSourcePositionTool.IsItemNotBuiltIn(params))
-      .filter(HasSourcePositionTool.IsItemOnSameLineAsCursor(params))
-      .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed());
+      .filter(HasSourcePositionTool.isItemNotBuiltIn(params))
+      .filter(HasSourcePositionTool.isItemOnSameLineAsCursor(params))
+      .sorted(HasSourcePositionTool.compareBySourcePosition.reversed());
   }
 
   /**
@@ -295,16 +295,16 @@ public class QueryAST extends ANY
    * @param uri
    * @return
    */
-  public static Stream<AbstractFeature> SelfAndDescendants(URI uri)
+  public static Stream<AbstractFeature> selfAndDescendants(URI uri)
   {
     return ParserTool
-      .TopLevelFeatures(uri)
-      .flatMap(f -> FeatureTool.SelfAndDescendants(f));
+      .topLevelFeatures(uri)
+      .flatMap(f -> FeatureTool.selfAndDescendants(f));
   }
 
   public static Optional<AbstractCall> callAt(SourcePosition params)
   {
-    Optional<AbstractCall> call = ASTItemsBeforeOrAtCursor(params)
+    Optional<AbstractCall> call = astItemsBeforeOrAtCursor(params)
       .filter(item -> item instanceof AbstractCall)
       .map(c -> (AbstractCall) c)
       .findFirst();
@@ -317,23 +317,23 @@ public class QueryAST extends ANY
    * position that is declared, called or used by a type
    * @param params
    */
-  public static Optional<AbstractFeature> FeatureAt(SourcePosition params)
+  public static Optional<AbstractFeature> featureAt(SourcePosition params)
   {
-    return FeatureDefinedAt(params)
-      .or(() -> FindFeatureInAST(params))
+    return featureDefinedAt(params)
+      .or(() -> findFeatureInAST(params))
       // NYI workaround for not having positions of all types in
       // the AST currently
-      .or(() -> FeatureAtFuzzy(params))
+      .or(() -> featureAtFuzzy(params))
       .or(() -> {
-        dev.flang.shared.Context.Logger.warning("No feature found at: " + params);
+        dev.flang.shared.Context.logger.warning("No feature found at: " + params);
         return Optional.empty();
       });
   }
 
-  private static Optional<? extends AbstractFeature> FindFeatureInAST(SourcePosition params)
+  private static Optional<? extends AbstractFeature> findFeatureInAST(SourcePosition params)
   {
-    var token = LexerTool.IdentOrOperatorTokenAt(params);
-    return ASTItemsBeforeOrAtCursor(params)
+    var token = LexerTool.identOrOperatorTokenAt(params);
+    return astItemsBeforeOrAtCursor(params)
       .map(astItem -> {
         if (astItem instanceof AbstractFeature f
           && token.<Boolean>map(x -> x.text().equals(f.featureName().baseName())).orElse(false))
@@ -342,8 +342,8 @@ public class QueryAST extends ANY
           }
         if (astItem instanceof AbstractCall c)
           {
-            return ErrorHandling.ResultOrDefault(() -> {
-              if (token.map(t -> c.pos().column() + Util.CodepointCount(t.text()) >= params.column())
+            return ErrorHandling.resultOrDefault(() -> {
+              if (token.map(t -> c.pos().column() + Util.codepointCount(t.text()) >= params.column())
                 .orElse(false)
                 && !c.calledFeature().equals(Types.f_ERROR))
                 {
@@ -371,17 +371,17 @@ public class QueryAST extends ANY
    *
    * return the matching feature
    */
-  private static Optional<AbstractFeature> FeatureDefinedAt(SourcePosition params)
+  private static Optional<AbstractFeature> featureDefinedAt(SourcePosition params)
   {
-    return ASTWalker.Features(SourceText.UriOf(params))
-      .filter(af -> !FeatureTool.IsArgument(af))
+    return ASTWalker.Features(SourceText.uriOf(params))
+      .filter(af -> !FeatureTool.isArgument(af))
       // line
       .filter(x -> params.line() == x.pos().line())
       .filter(x -> {
         var start = x.pos().column();
         // NYI should work most of the time but there might be additional
         // whitespace?
-        var end = start + Util.CodepointCount(x.featureName().baseName());
+        var end = start + Util.codepointCount(x.featureName().baseName());
         return start <= params.column() && params.column() <= end;
       })
       .findAny();
@@ -392,10 +392,10 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  private static Optional<AbstractFeature> FeatureAtFuzzy(SourcePosition params)
+  private static Optional<AbstractFeature> featureAtFuzzy(SourcePosition params)
   {
-    return LexerTool.IdentOrOperatorTokenAt(params)
-      .flatMap(token -> QueryAST.FeaturesInScope(params)
+    return LexerTool.identOrOperatorTokenAt(params)
+      .flatMap(token -> QueryAST.featuresInScope(params)
         .filter(f -> f.featureName().baseName().equals(token.text()))
         // NYI we could be better here if we considered approximate
         // argcount
@@ -406,17 +406,17 @@ public class QueryAST extends ANY
    * @param params
    * @return the most inner feature at the cursor position
    */
-  public static Optional<AbstractFeature> InFeature(SourcePosition params)
+  public static Optional<AbstractFeature> inFeature(SourcePosition params)
   {
-    return SelfAndDescendants(SourceText.UriOf(params))
+    return selfAndDescendants(SourceText.uriOf(params))
       .filter(f -> {
         var startOfFeature = f.pos();
         var endOfFeature = ParserTool.endOfFeature(f);
-        return SourcePositionTool.Compare(params, endOfFeature) <= 0 &&
-          SourcePositionTool.Compare(params, startOfFeature) > 0;
+        return SourcePositionTool.compare(params, endOfFeature) <= 0 &&
+          SourcePositionTool.compare(params, startOfFeature) > 0;
       })
       .filter(f -> f.pos().column() < params.column())
-      .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
+      .sorted(HasSourcePositionTool.compareBySourcePosition.reversed())
       .findFirst();
   }
 
@@ -424,9 +424,9 @@ public class QueryAST extends ANY
    * @param params
    * @return if text document position is inside of string
    */
-  public static boolean InString(SourcePosition params)
+  public static boolean fnString(SourcePosition params)
   {
-    return ASTWalker.Traverse(params)
+    return ASTWalker.traverse(params)
       .filter(x -> x.getKey() instanceof StrConst)
       .map(x -> (StrConst) x.getKey())
       .anyMatch(x -> {
@@ -436,8 +436,8 @@ public class QueryAST extends ANY
           }
         var start = x.pos().column();
         var d = x.data();
-        var end = x.pos().column() + Util.CharCount(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
-        if (SourceText.LineAt(x.pos()).charAt(x.pos().column() - 1) == '\"')
+        var end = x.pos().column() + Util.charCount(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
+        if (SourceText.lineAt(x.pos()).charAt(x.pos().column() - 1) == '\"')
           {
             return start < params.column()
               && params.column() - 1 <= end;
@@ -451,17 +451,17 @@ public class QueryAST extends ANY
    * @param feature
    * @return all features which are accessible (callable) at pos
    */
-  public static Stream<AbstractFeature> FeaturesInScope(SourcePosition pos)
+  public static Stream<AbstractFeature> featuresInScope(SourcePosition pos)
   {
-    return InFeature(pos)
+    return inFeature(pos)
       .map(feature -> {
-        return Util.ConcatStreams(
+        return Util.concatStreams(
           Stream.of(feature),
-          FeatureTool.OuterFeatures(feature),
+          FeatureTool.outerFeatures(feature),
           feature.inherits().stream().map(c -> c.calledFeature()))
-          .filter(f -> !TypeTool.ContainsError(f.selfType()))
+          .filter(f -> !TypeTool.containsError(f.selfType()))
           .flatMap(f -> {
-            return ParserTool.DeclaredFeatures(f);
+            return ParserTool.declaredFeatures(f);
           })
           .distinct();
       })

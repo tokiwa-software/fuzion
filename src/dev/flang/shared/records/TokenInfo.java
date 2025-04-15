@@ -130,7 +130,7 @@ public class TokenInfo extends ANY
         return 0;
       }
     return SourceText
-      .LineAt(_start)
+      .lineAt(_start)
       .codePoints()
       .limit(_start.column() - 1)
       .map(cp -> Character.charCount(cp))
@@ -144,7 +144,7 @@ public class TokenInfo extends ANY
    */
   public Integer charCount()
   {
-    return Util.CharCount(text());
+    return Util.charCount(text());
   }
 
 
@@ -177,10 +177,10 @@ public class TokenInfo extends ANY
    * remark: position is encoded by integer index via function TokenInfo.KeyOf()
    * this is used to map an ident token to the appropriate feature/call
    */
-  private static Map<Integer, HasSourcePosition> Pos2Items(SourcePosition pos)
+  private static Map<Integer, HasSourcePosition> pos2Items(SourcePosition pos)
   {
     return ASTWalker
-      .Traverse(pos)
+      .traverse(pos)
       .map(e -> e.getKey())
       .filter(x -> x instanceof AbstractFeature || x instanceof AbstractCall)
       // try to filter all generated features/calls
@@ -188,20 +188,20 @@ public class TokenInfo extends ANY
         if (x instanceof AbstractFeature af)
           {
             return LexerTool
-              .TokensAt(FeatureTool.BareNamePosition(af))
+              .tokensAt(FeatureTool.bareNamePosition(af))
               .right()
               .text()
-              .equals(FeatureTool.BareName(af));
+              .equals(FeatureTool.bareName(af));
           }
         var c = (AbstractCall) x;
         return LexerTool
-          .TokensAt(c.pos())
+          .tokensAt(c.pos())
           .right()
           .text()
-          .equals(FeatureTool.BareName(c.calledFeature()));
+          .equals(FeatureTool.bareName(c.calledFeature()));
       })
       .map(item -> new EntryEqualByKey<Integer, HasSourcePosition>(
-        TokenInfo.KeyOf(item instanceof AbstractFeature af ? FeatureTool.BareNamePosition(af): item.pos()), item))
+        TokenInfo.keyOf(item instanceof AbstractFeature af ? FeatureTool.bareNamePosition(af): item.pos()), item))
       // NYI which are the duplicates here? Can we do better in selecting the
       // 'right' ones?
       .distinct()
@@ -209,19 +209,19 @@ public class TokenInfo extends ANY
   }
 
 
-  private static final Map<String, Map<Integer, HasSourcePosition>> Pos2ItemsCache = Util.ThreadSafeLRUMap(1, null);
+  private static final Map<String, Map<Integer, HasSourcePosition>> Pos2ItemsCache = Util.threadSafeLRUMap(1, null);
 
 
-  private Map<Integer, HasSourcePosition> Pos2Items()
+  private Map<Integer, HasSourcePosition> pos2Items()
   {
-    return Pos2ItemsCache.computeIfAbsent(SourceText.getText(_start), (key) -> Pos2Items(_start));
+    return Pos2ItemsCache.computeIfAbsent(SourceText.getText(_start), (key) -> pos2Items(_start));
   }
 
-  public Stream<Integer> SemanticTokenData(TokenInfo previousToken)
+  public Stream<Integer> semanticTokenData(TokenInfo previousToken)
   {
-    var tokenType = TokenType();
+    var tokenType = tokenType();
     int relativeLine = line() - previousToken.line();
-    int relativeChar = startChar() - (IsSameLine(previousToken) ? previousToken.startChar(): 0);
+    int relativeChar = startChar() - (isSameLine(previousToken) ? previousToken.startChar(): 0);
     Integer tokenTypeNum = tokenType.get().num;
 
     if (ANY.CHECKS)
@@ -233,22 +233,22 @@ public class TokenInfo extends ANY
       relativeChar,
       charCount(),
       tokenTypeNum,
-      Modifiers());
+      modifiers());
   }
 
-  private boolean IsSameLine(TokenInfo previousToken)
+  private boolean isSameLine(TokenInfo previousToken)
   {
     return line().equals(previousToken.line());
   }
 
   // NYI
-  private Integer Modifiers()
+  private Integer modifiers()
   {
     switch (_token)
       {
       case t_ident :
         var modifiers = new HashSet<TokenModifier>();
-        GetItem()
+        getItem()
           .ifPresent(item -> {
             if (item instanceof AbstractFeature af)
               {
@@ -268,7 +268,7 @@ public class TokenInfo extends ANY
       }
   }
 
-  private Optional<TokenType> TokenType()
+  private Optional<TokenType> tokenType()
   {
     if (_token.isKeyword())
       {
@@ -318,8 +318,8 @@ public class TokenInfo extends ANY
           }
         return Optional.of(TokenType.Operator);
       case t_ident :
-        return GetItem()
-          .map(TokenInfo::TokenType)
+        return getItem()
+          .map(TokenInfo::tokenType)
           // NYI check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
       case t_error :
@@ -342,7 +342,7 @@ public class TokenInfo extends ANY
       }
   }
 
-  private static Optional<TokenType> TokenType(HasSourcePosition item)
+  private static Optional<TokenType> tokenType(HasSourcePosition item)
   {
     if (item instanceof AbstractFeature af)
       {
@@ -356,7 +356,7 @@ public class TokenInfo extends ANY
           case TypeParameter :
             return Optional.of(TokenType.TypeParameter);
           case Field :
-            if (FeatureTool.IsArgument(af))
+            if (FeatureTool.isArgument(af))
               {
                 return Optional.of(TokenType.Parameter);
               }
@@ -369,13 +369,13 @@ public class TokenInfo extends ANY
             if (af.isConstructor()
               && af.valueArguments().size() == 0
               && af.code().containsOnlyDeclarations()
-              && !FeatureTool.DoesInherit(af))
+              && !FeatureTool.doesInherit(af))
               {
-                if (ParserTool.DeclaredFeatures(af).count() > 0)
+                if (ParserTool.declaredFeatures(af).count() > 0)
                   {
                     return Optional.of(TokenType.Namespace);
                   }
-                if (FeatureTool.IsUsedInChoice(af))
+                if (FeatureTool.isUsedInChoice(af))
                   {
                     return Optional.of(TokenType.EnumMember);
                   }
@@ -385,7 +385,7 @@ public class TokenInfo extends ANY
               {
                 return Optional.of(TokenType.Class);
               }
-            if (FeatureTool.OuterFeatures(af).allMatch(x -> x.valueArguments().size() == 0))
+            if (FeatureTool.outerFeatures(af).allMatch(x -> x.valueArguments().size() == 0))
               {
                 return Optional.of(TokenType.Function);
               }
@@ -397,17 +397,17 @@ public class TokenInfo extends ANY
       {
         return Optional.of(TokenType.Interface);
       }
-    if (CallTool.IsFixLikeCall(ac))
+    if (CallTool.isFixLikeCall(ac))
       {
         return Optional.of(TokenType.Operator);
       }
     // "normal" call
-    return TokenType(ac.calledFeature());
+    return tokenType(ac.calledFeature());
   }
 
   // NYI this should be done differently
   // how can we find the feature/call of an ident token more quickly?
-  private Optional<HasSourcePosition> GetItem()
+  private Optional<HasSourcePosition> getItem()
   {
     return Optional.empty();
     // NYI Too slow!
@@ -421,13 +421,13 @@ public class TokenInfo extends ANY
   }
 
   // NYI move this somewhere better
-  public static Integer KeyOf(SourcePosition pos)
+  public static Integer keyOf(SourcePosition pos)
   {
     // NYI better key
     return pos.line() * 1000 + pos.column();
   }
 
-  public boolean IsWhitespace()
+  public boolean isWhitespace()
   {
     return token() == Token.t_ws;
   }
@@ -437,12 +437,12 @@ public class TokenInfo extends ANY
   private final static Set<Token> rightBrackets =
     List.of(Token.t_rbrace, Token.t_rbracket, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
 
-  public boolean IsLeftBracket()
+  public boolean isLeftBracket()
   {
     return leftBrackets.contains(token());
   }
 
-  public boolean IsRightBracket()
+  public boolean isRightBracket()
   {
     return rightBrackets.contains(token());
   }

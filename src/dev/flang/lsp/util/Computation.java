@@ -48,14 +48,14 @@ public class Computation
 
   public static <T> CompletableFuture<T> cancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
   {
-    Context.Logger.log("[" + callee + "] started computing.");
+    Context.logger.log("[" + callee + "] started computing.");
 
     var result = new CompletableFuture<T>();
     return result.completeAsync(() -> {
       try
         {
 
-          var res = Concurrency.RunWithPeriodicCancelCheck(callable, () -> {
+          var res = Concurrency.runWithPeriodicCancelCheck(callable, () -> {
             if (result.isCancelled())
               {
                 throw new CancellationException();
@@ -64,7 +64,7 @@ public class Computation
             maxTimeInMs);
 
           var ms = res.nanoSeconds() / 1_000_000;
-          Context.Logger.log("[" + callee + "] finished in " + ms + "ms");
+          Context.logger.log("[" + callee + "] finished in " + ms + "ms");
 
           return res.result();
         }
@@ -75,16 +75,16 @@ public class Computation
         }
       catch (MaxExecutionTimeExceededException e)
         {
-          Context.Logger.warning("[" + callee + "] Max execution time exceeded: " + e);
+          Context.logger.warning("[" + callee + "] Max execution time exceeded: " + e);
         }
       catch (CancellationException e)
         {
-          Context.Logger.info("[" + callee + "] was cancelled.");
+          Context.logger.info("[" + callee + "] was cancelled.");
         }
       catch (Throwable th)
         {
-          Context.Logger.error("[" + callee + "] An unexpected error occurred: " + th + ":");
-          Context.Logger.error(ErrorHandling.toString(th));
+          Context.logger.error("[" + callee + "] An unexpected error occurred: " + th + ":");
+          Context.logger.error(ErrorHandling.toString(th));
           notifyUser();
         }
       return null;

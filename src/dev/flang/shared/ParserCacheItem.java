@@ -65,9 +65,9 @@ public class ParserCacheItem
    * @param uri
    * @return top level feature in source text
    */
-  public Stream<AbstractFeature> TopLevelFeatures()
+  public Stream<AbstractFeature> topLevelFeatures()
   {
-    return ParserTool.DeclaredFeatures(resolved.universe)
+    return ParserTool.declaredFeatures(resolved.universe)
       // feature is in file
       .filter(f -> ParserTool.getUri(f.pos()).equals(uri));
   }

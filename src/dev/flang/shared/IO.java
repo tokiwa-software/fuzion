@@ -51,7 +51,7 @@ public class IO
   private static PrintStream CLIENT_ERR = System.err;
   // NYI "fuzion-lsp-server" should depend on usage
   private static File tempDir =
-    ErrorHandling.ResultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
+    ErrorHandling.resultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
 
   static byte[] getBytes(String text)
   {
@@ -62,7 +62,7 @@ public class IO
       }
     catch (UnsupportedEncodingException e)
       {
-        ErrorHandling.WriteStackTrace();
+        ErrorHandling.writeStackTrace();
       }
     return byteArray;
   }
@@ -94,7 +94,7 @@ public class IO
       }
     catch (IOException e)
       {
-        ErrorHandling.WriteStackTrace();
+        ErrorHandling.writeStackTrace();
         return null;
       }
   }
@@ -106,7 +106,7 @@ public class IO
    * @param callable
    * @return
    */
-  public synchronized static <T> T WithTextInputStream(String text, Callable<T> callable)
+  public synchronized static <T> T withTextInputStream(String text, Callable<T> callable)
   {
     byte[] byteArray = getBytes(text);
     try
@@ -116,11 +116,11 @@ public class IO
       }
     catch (Exception e)
       {
-        ErrorHandling.WriteStackTrace(e);
+        ErrorHandling.writeStackTrace(e);
         return null;
       } finally
       {
-        IO.RedirectErrOutToClientLog();
+        IO.redirectErrOutToClientLog();
       }
   }
 
@@ -129,7 +129,7 @@ public class IO
    * @return callable to be run on an executor.
    * The result of the callable is everything that is written to stdout/stderr by the runnable.
    */
-  public synchronized static Callable<String> WithCapturedStdOutErr(Runnable runnable)
+  public synchronized static Callable<String> withCapturedStdOutErr(Runnable runnable)
   {
     return () -> {
       var inputStream = new PipedInputStream();
@@ -147,12 +147,12 @@ public class IO
         {
           outputStream.close();
           inputStream.close();
-          IO.RedirectErrOutToClientLog();
+          IO.redirectErrOutToClientLog();
         }
     };
   }
 
-  public static void RedirectErrOutToClientLog()
+  public static void redirectErrOutToClientLog()
   {
     System.setOut(CLIENT_OUT);
     System.setErr(CLIENT_ERR);
@@ -189,11 +189,11 @@ public class IO
       }
   }
 
-  public static void Init(Consumer<String> out, Consumer<String> err)
+  public static void init(Consumer<String> out, Consumer<String> err)
   {
     CLIENT_OUT = IO.createCapturedStream(out);
     CLIENT_ERR = IO.createCapturedStream(err);
-    RedirectErrOutToClientLog();
+    redirectErrOutToClientLog();
   }
 
 }

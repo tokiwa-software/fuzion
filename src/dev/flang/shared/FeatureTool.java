@@ -54,13 +54,13 @@ public class FeatureTool extends ANY
    * @param feature
    * @return
    */
-  public static Stream<AbstractFeature> OuterFeatures(AbstractFeature feature)
+  public static Stream<AbstractFeature> outerFeatures(AbstractFeature feature)
   {
     if (feature.outer() == null)
       {
         return Stream.empty();
       }
-    return Stream.concat(Stream.of(feature.outer()), OuterFeatures(feature.outer()));
+    return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()));
   }
 
   /**
@@ -74,10 +74,10 @@ public class FeatureTool extends ANY
    * @param feature
    * @return
    */
-  public static Stream<AbstractFeature> SelfAndDescendants(AbstractFeature feature)
+  public static Stream<AbstractFeature> selfAndDescendants(AbstractFeature feature)
   {
     return Stream.concat(Stream.of(feature),
-      ParserTool.DeclaredFeatures(feature).flatMap(f -> SelfAndDescendants(f)));
+      ParserTool.declaredFeatures(feature).flatMap(f -> selfAndDescendants(f)));
   }
 
   /**
@@ -86,18 +86,18 @@ public class FeatureTool extends ANY
    * @param feature
    * @return
    */
-  public static String CommentOf(AbstractFeature feature)
+  public static String commentOf(AbstractFeature feature)
   {
     var line = feature.pos().line() - 1;
     var commentLines = new ArrayList<String>();
     while (true)
       {
-        var pos = SourcePositionTool.ByLine(feature.pos()._sourceFile, line);
+        var pos = SourcePositionTool.byLine(feature.pos()._sourceFile, line);
         if (line < 1 || !LexerTool.isCommentLine(pos))
           {
             break;
           }
-        commentLines.add(SourceText.LineAt(pos));
+        commentLines.add(SourceText.lineAt(pos));
         line = line - 1;
       }
     Collections.reverse(commentLines);
@@ -105,7 +105,7 @@ public class FeatureTool extends ANY
     var commentsOfRedefinedFeatures = feature
       .redefines()
       .stream()
-      .map(f -> System.lineSeparator() + "redefines " + f.qualifiedName() + ":" + System.lineSeparator() + CommentOf(f))
+      .map(f -> System.lineSeparator() + "redefines " + f.qualifiedName() + ":" + System.lineSeparator() + commentOf(f))
       .collect(Collectors.joining(System.lineSeparator()));
 
     return commentLines
@@ -123,11 +123,11 @@ public class FeatureTool extends ANY
    * @param uri
    * @return
    */
-  public static String AST(URI uri)
+  public static String ast(URI uri)
   {
-    var ast = ASTWalker.Traverse(uri)
+    var ast = ASTWalker.traverse(uri)
       .map(x -> x.getKey())
-      .sorted(HasSourcePositionTool.CompareByLineThenByColumn())
+      .sorted(HasSourcePositionTool.compareByLineThenByColumn())
       .reduce("", (a, item) -> {
         var position = item.pos();
         // NYI
@@ -138,7 +138,7 @@ public class FeatureTool extends ANY
           }
         return a + System.lineSeparator()
           + " ".repeat(indent * 2) + position.line() + ":" + position.column() + ":"
-          + Util.ShortName(item.getClass()) + ":" + HasSourcePositionTool.ToLabel(item);
+          + Util.shortName(item.getClass()) + ":" + HasSourcePositionTool.toLabel(item);
       }, String::concat);
     return ast;
   }
@@ -161,7 +161,7 @@ public class FeatureTool extends ANY
    */
   // NYI we should probably extend the parser to have save these position during
   // parsing
-  public static SourcePosition BareNamePosition(AbstractFeature feature)
+  public static SourcePosition bareNamePosition(AbstractFeature feature)
   {
     require(!feature.featureName().baseName().equals(Errors.ERROR_STRING));
 
@@ -169,25 +169,25 @@ public class FeatureTool extends ANY
       {
         var baseNameParts = feature.featureName().baseName().split(" ", 2);
         return LexerTool
-          .TokensFrom(feature.pos())
+          .tokensFrom(feature.pos())
           .dropWhile(tokenInfo -> !(baseNameParts[1].startsWith(tokenInfo.text())))
           .map(tokenInfo -> tokenInfo.start())
           .findFirst()
           .get();
       }
     var start = LexerTool
-      .TokensFrom(feature.pos())
+      .tokensFrom(feature.pos())
       .map(x -> x.text().equals("->") || x.text().equals(":="))
       .findFirst()
       .orElse(false) ?
     // NYI HACK start lexing at start of line since
     // pos of lambda arg is the pos of the lambda arrow (->).
     // and destructed pos is pos of caching operator :=
-                     SourcePositionTool.ByLine(feature.pos()._sourceFile, feature.pos().line())
+                     SourcePositionTool.byLine(feature.pos()._sourceFile, feature.pos().line())
                      : feature.pos();
 
     return LexerTool
-      .TokensFrom(start)
+      .tokensFrom(start)
       .dropWhile(tokenInfo -> !tokenInfo.text().equals(feature.featureName().baseName()))
       .map(tokenInfo -> tokenInfo.start())
       .findFirst()
@@ -199,7 +199,7 @@ public class FeatureTool extends ANY
    * @param f
    * @return
    */
-  public static String BareName(AbstractFeature f)
+  public static String bareName(AbstractFeature f)
   {
     if (f.featureName().baseName().contains(" "))
       {
@@ -213,7 +213,7 @@ public class FeatureTool extends ANY
    * @param feature
    * @return
    */
-  public static boolean IsArgument(AbstractFeature feature)
+  public static boolean isArgument(AbstractFeature feature)
   {
     if (feature.outer() == null)
       {
@@ -230,7 +230,7 @@ public class FeatureTool extends ANY
    * @param af
    * @return
    */
-  public static boolean IsInternal(AbstractFeature af)
+  public static boolean isInternal(AbstractFeature af)
   {
     // NYI this is a hack!
     return af.resultType().equals(Types.t_ADDRESS)
@@ -240,7 +240,7 @@ public class FeatureTool extends ANY
         .baseName()
         .contains(FuzionConstants.INTERNAL_NAME_PREFIX) // Confusingly # is not
                                                         // just used as prefix
-      || (af.featureName().baseName().equals("call") && IsInternal(af.outer())) // lambda
+      || (af.featureName().baseName().equals("call") && isInternal(af.outer())) // lambda
       // NYI hack
       || (af.featureName().baseName().matches("a\\d+")
         && af.outer().featureName().baseName().equals("call")) // autogenerated
@@ -254,20 +254,20 @@ public class FeatureTool extends ANY
    * @param f
    * @return
    */
-  static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)
+  static Optional<AbstractFeature> topLevelFeature(AbstractFeature f)
   {
     if (f.isUniverse() || f.outer() == Types.f_ERROR)
       {
         return Optional.empty();
       }
-    if (f.outer().isUniverse() || !InSameSourceFile(f, f.outer()))
+    if (f.outer().isUniverse() || !inSameSourceFile(f, f.outer()))
       {
         return Optional.of(f);
       }
-    return TopLevelFeature(f.outer());
+    return topLevelFeature(f.outer());
   }
 
-  private static boolean InSameSourceFile(AbstractFeature a, AbstractFeature b)
+  private static boolean inSameSourceFile(AbstractFeature a, AbstractFeature b)
   {
     return a.pos()._sourceFile.toString().equals(b.pos()._sourceFile.toString());
   }
@@ -276,7 +276,7 @@ public class FeatureTool extends ANY
    * @param feature
    * @return example: array(T type, length i32, init Function array.T i32) => array array.T
    */
-  public static String Label(AbstractFeature feature, boolean useMarkup)
+  public static String label(AbstractFeature feature, boolean useMarkup)
   {
     if (feature.isRoutine())
       {
@@ -284,9 +284,9 @@ public class FeatureTool extends ANY
           + feature.arguments()
             .stream()
             .map(a -> {
-              var type = a.isTypeParameter() ? "type": TypeTool.Label(a.resultType());
-              type = useMarkup ? MarkdownTool.Italic(type) : type;
-              if (IsInternal(a))
+              var type = a.isTypeParameter() ? "type": TypeTool.label(a.resultType());
+              type = useMarkup ? MarkdownTool.italic(type) : type;
+              if (isInternal(a))
                 {
                   return "_" + " " + type;
                 }
@@ -295,10 +295,10 @@ public class FeatureTool extends ANY
             .collect(Collectors.joining(", "))
           + (feature.arguments().isEmpty() ? "" : ")");
         return feature.featureName().baseName() + arguments
-          + (feature.isConstructor() ? "" : " " + (useMarkup ? MarkdownTool.Italic(TypeTool.Label(feature.resultType())) : TypeTool.Label(feature.resultType())))
-          + LabelInherited(feature);
+          + (feature.isConstructor() ? "" : " " + (useMarkup ? MarkdownTool.italic(TypeTool.label(feature.resultType())) : TypeTool.label(feature.resultType())))
+          + labelInherited(feature);
       }
-    return feature.featureName().baseName() + " " + TypeTool.Label(feature.resultType()) + LabelInherited(feature);
+    return feature.featureName().baseName() + " " + TypeTool.label(feature.resultType()) + labelInherited(feature);
   }
 
 
@@ -309,7 +309,7 @@ public class FeatureTool extends ANY
    * @param feature
    * @return
    */
-  public static String LabelInherited(AbstractFeature feature)
+  public static String labelInherited(AbstractFeature feature)
   {
     if (feature.inherits().isEmpty())
       {
@@ -318,13 +318,13 @@ public class FeatureTool extends ANY
     return " : " + feature.inherits()
       .stream()
       .map(c -> c.calledFeature())
-      .map(f -> f.featureName().baseName() + TypeTool.Label(f.generics(), true))
+      .map(f -> f.featureName().baseName() + TypeTool.label(f.generics(), true))
       .collect(Collectors.joining(", "));
   }
 
-  public static String CommentOfInMarkdown(AbstractFeature f)
+  public static String commentOfInMarkdown(AbstractFeature f)
   {
-    return MarkdownTool.Italic(CommentOf(f));
+    return MarkdownTool.italic(commentOf(f));
   }
 
   /**
@@ -332,26 +332,26 @@ public class FeatureTool extends ANY
    * @param feature
    * @return true iff there are no other features at same or lesser level after given feature
    */
-  static boolean IsOfLastFeature(AbstractFeature feature)
+  static boolean isOfLastFeature(AbstractFeature feature)
   {
-    return !IsFunctionCall(feature) && SelfAndDescendants(TopLevelFeature(feature).get())
+    return !isFunctionCall(feature) && selfAndDescendants(topLevelFeature(feature).get())
       .noneMatch(f -> f.pos().line() > feature.pos().line()
         && f.pos().column() <= feature.pos().column());
   }
 
-  private static boolean IsFunctionCall(AbstractFeature f)
+  private static boolean isFunctionCall(AbstractFeature f)
   {
     return f.redefines().contains(Types.resolved.f_Function_call);
   }
 
-  private static Set<AbstractFeature> Callers(AbstractFeature f)
+  private static Set<AbstractFeature> callers(AbstractFeature f)
   {
-    return CallsTo(f).map(x -> x.getValue()).collect(Collectors.toSet());
+    return callsTo(f).map(x -> x.getValue()).collect(Collectors.toSet());
   }
 
-  private static Set<AbstractFeature> Callees(AbstractFeature f)
+  private static Set<AbstractFeature> callees(AbstractFeature f)
   {
-    return ASTWalker.TraverseFeature(f, false)
+    return ASTWalker.traverseFeature(f, false)
       .map(e -> e.getKey())
       .filter(obj -> obj instanceof AbstractCall)
       .map(obj -> ((AbstractCall) obj).calledFeature())
@@ -359,29 +359,29 @@ public class FeatureTool extends ANY
   }
 
   // NYI use CFG
-  public static String CallGraph(AbstractFeature f)
+  public static String callGraph(AbstractFeature f)
   {
     var sb = new StringBuilder("digraph {" + System.lineSeparator());
-    for(AbstractFeature caller : Callers(f))
+    for(AbstractFeature caller : callers(f))
       {
         sb.append(
-          "  " + Quote(caller.qualifiedName()) + " -> " + Quote(f.qualifiedName()) + ";" + System.lineSeparator());
+          "  " + quote(caller.qualifiedName()) + " -> " + quote(f.qualifiedName()) + ";" + System.lineSeparator());
       }
-    for(AbstractFeature callee : Callees(f))
+    for(AbstractFeature callee : callees(f))
       {
         sb.append(
-          "  " + Quote(f.qualifiedName()) + " -> " + Quote(callee.qualifiedName()) + ";" + System.lineSeparator());
+          "  " + quote(f.qualifiedName()) + " -> " + quote(callee.qualifiedName()) + ";" + System.lineSeparator());
       }
     sb.append("}");
     return sb.toString();
   }
 
-  private static String Quote(String qualifiedName)
+  private static String quote(String qualifiedName)
   {
     return "\"" + qualifiedName + "\"";
   }
 
-  public static String UniqueIdentifier(AbstractFeature f)
+  public static String uniqueIdentifier(AbstractFeature f)
   {
     return f.qualifiedName() + f.arguments().size();
   }
@@ -390,15 +390,15 @@ public class FeatureTool extends ANY
    * @param feature
    * @return all calls to this feature and the feature those calls are happening in
    */
-  public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> CallsTo(AbstractFeature feature)
+  public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> callsTo(AbstractFeature feature)
   {
-    var universe = FeatureTool.Universe(feature);
-    return ASTWalker.Calls(universe)
+    var universe = FeatureTool.universe(feature);
+    return ASTWalker.calls(universe)
       .filter(entry -> entry.getKey().calledFeature() != null
         && entry.getKey().calledFeature().equals(feature));
   }
 
-  static AbstractFeature Universe(AbstractFeature feature)
+  static AbstractFeature universe(AbstractFeature feature)
   {
     var universe = feature;
     while (universe.outer() != null)
@@ -408,17 +408,17 @@ public class FeatureTool extends ANY
     return universe;
   }
 
-  public static boolean IsUsedInChoice(AbstractFeature af)
+  public static boolean isUsedInChoice(AbstractFeature af)
   {
     var uri = ParserTool.getUri(af.pos());
     var result = ASTWalker
       .Features(uri)
-      .anyMatch(f -> FeatureIsChoiceMember(f.selfType(), af)
-        || f.hasResultField() && FeatureIsChoiceMember(f.resultType(), af));
+      .anyMatch(f -> featureIsChoiceMember(f.selfType(), af)
+        || f.hasResultField() && featureIsChoiceMember(f.resultType(), af));
     return result;
   }
 
-  private static boolean FeatureIsChoiceMember(AbstractType at, AbstractFeature af)
+  private static boolean featureIsChoiceMember(AbstractType at, AbstractFeature af)
   {
     return at.isChoice()
       && at.choiceGenerics()
@@ -427,7 +427,7 @@ public class FeatureTool extends ANY
         .anyMatch(t -> t.equals(af.selfType()));
   }
 
-  public static boolean DoesInherit(AbstractFeature af)
+  public static boolean doesInherit(AbstractFeature af)
   {
     return af.inherits()
       .stream()

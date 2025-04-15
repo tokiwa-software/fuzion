@@ -48,7 +48,7 @@ public class HasSourcePositionTool
    * @param item
    * @return
    */
-  public static String ToLabel(HasSourcePosition item)
+  public static String toLabel(HasSourcePosition item)
   {
     try
       {
@@ -70,7 +70,7 @@ public class HasSourcePositionTool
           }
         if (item instanceof AbstractFeature af)
           {
-            return FeatureTool.Label(af, false);
+            return FeatureTool.label(af, false);
           }
         return item.toString();
       }
@@ -80,7 +80,7 @@ public class HasSourcePositionTool
       }
   }
 
-  public static Predicate<? super HasSourcePosition> IsItemInFile(URI uri)
+  public static Predicate<? super HasSourcePosition> isItemInFile(URI uri)
   {
     return (astItem) -> {
       var sourcePositionOption = astItem.pos();
@@ -92,7 +92,7 @@ public class HasSourcePositionTool
     };
   }
 
-  public static Comparator<? super HasSourcePosition> CompareByLineThenByColumn()
+  public static Comparator<? super HasSourcePosition> compareByLineThenByColumn()
   {
     return (a, b) -> {
       var position1 = a.pos();
@@ -113,7 +113,7 @@ public class HasSourcePositionTool
     };
   }
 
-  public static Predicate<HasSourcePosition> IsItemOnSameLineAsCursor(
+  public static Predicate<HasSourcePosition> isItemOnSameLineAsCursor(
     SourcePosition params)
   {
     return (astItem) -> {
@@ -121,7 +121,7 @@ public class HasSourcePositionTool
     };
   }
 
-  public static Predicate<HasSourcePosition> IsItemNotBuiltIn(SourcePosition params)
+  public static Predicate<HasSourcePosition> isItemNotBuiltIn(SourcePosition params)
   {
     return (astItem) -> {
       var sourcePositionOption = astItem.pos();
@@ -129,9 +129,9 @@ public class HasSourcePositionTool
     };
   }
 
-  public final static Comparator<? super HasSourcePosition> CompareBySourcePosition =
+  public final static Comparator<? super HasSourcePosition> compareBySourcePosition =
     Comparator.comparing(obj -> obj.pos(), (sourcePosition1, sourcePosition2) -> {
-      return SourcePositionTool.Compare(sourcePosition1, sourcePosition2);
+      return SourcePositionTool.compare(sourcePosition1, sourcePosition2);
     });
 
   /**
@@ -139,7 +139,7 @@ public class HasSourcePositionTool
    * @param params
    * @return
    */
-  public static Predicate<? super Entry<HasSourcePosition, AbstractFeature>> IsItemInScope(
+  public static Predicate<? super Entry<HasSourcePosition, AbstractFeature>> isItemInScope(
     SourcePosition params)
   {
     return (entry) -> {
@@ -152,9 +152,9 @@ public class HasSourcePositionTool
         }
 
       boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
-        || SourcePositionTool.Compare(params, ParserTool.endOfFeature(outer)) <= 0;
+        || SourcePositionTool.compare(params, ParserTool.endOfFeature(outer)) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
-        SourcePositionTool.Compare(params, sourcePositionOption) >= 0;
+        SourcePositionTool.compare(params, sourcePositionOption) >= 0;
 
       return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
     };

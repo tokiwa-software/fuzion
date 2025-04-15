@@ -79,7 +79,7 @@ public class Rename extends ANY
   public static Either<WorkspaceEdit, ResponseErrorException> getWorkspaceEditsOrError(
     TextDocumentPositionParams params, String newName)
   {
-    if (!LexerTool.IsValidIdentifier(newName))
+    if (!LexerTool.isValidIdentifier(newName))
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "new name no valid identifier.", null);
         return Either.forRight(new ResponseErrorException(responseError));
@@ -87,7 +87,7 @@ public class Rename extends ANY
 
     var pos = Bridge.toSourcePosition(params);
 
-    var feature = QueryAST.FeatureAt(pos);
+    var feature = QueryAST.featureAt(pos);
     if (feature.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
@@ -99,7 +99,7 @@ public class Rename extends ANY
     var changes = renamePositions
       .map(start -> {
         var end =
-          SourcePositionTool.ByLineColumn(start._sourceFile, start.line(), start.column() + lengthOfFeatureIdentifier(feature.get()));
+          SourcePositionTool.byLineColumn(start._sourceFile, start.line(), start.column() + lengthOfFeatureIdentifier(feature.get()));
         return Bridge.toLocation(start, end);
       })
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
@@ -121,44 +121,44 @@ public class Rename extends ANY
     AbstractFeature featureToRename)
   {
     var callsSourcePositions = FeatureTool
-      .CallsTo(featureToRename)
+      .callsTo(featureToRename)
       .map(entry -> entry.getKey().pos());
-    var pos = FeatureTool.BareNamePosition(featureToRename);
+    var pos = FeatureTool.bareNamePosition(featureToRename);
 
     // positions where feature is used as type
-    var typePositions = FeatureTool.SelfAndDescendants(ParserTool.Universe(Util.toURI(params.getTextDocument().getUri())))
+    var typePositions = FeatureTool.selfAndDescendants(ParserTool.universe(Util.toURI(params.getTextDocument().getUri())))
       .filter(f -> !f.equals(featureToRename) && !f.resultType().isGenericArgument()
         && f.resultType().feature().equals(featureToRename))
       .flatMap(f -> {
-        var tokens = LexerTool.TokensFrom(f.pos()).skip(1).collect(Collectors.toList());
+        var tokens = LexerTool.tokensFrom(f.pos()).skip(1).collect(Collectors.toList());
         var whitespace = tokens.get(0);
 
         if (CHECKS)
           check(whitespace.token() == Token.t_ws);
 
-        if (!tokens.get(1).text().equals(FeatureTool.BareName(featureToRename)))
+        if (!tokens.get(1).text().equals(FeatureTool.bareName(featureToRename)))
           {
             return Stream.empty();
           }
 
-        return Stream.of(SourcePositionTool.ByLineColumn(f.pos()._sourceFile, f.pos().line(),
-          f.pos().column() + Util.CharCount(f.featureName().baseName()) + Util.CodepointCount(whitespace.text())));
+        return Stream.of(SourcePositionTool.byLineColumn(f.pos()._sourceFile, f.pos().line(),
+          f.pos().column() + Util.charCount(f.featureName().baseName()) + Util.codepointCount(whitespace.text())));
       });
 
 
     var assignmentPositions = ASTWalker
-      .Assignments(featureToRename.outer(), featureToRename)
+      .assignments(featureToRename.outer(), featureToRename)
       .map(x -> x.getKey().pos())
       .filter(x -> !x.pos().equals(featureToRename.pos()))
       .flatMap(x -> {
         // NYI better if we had the needed and more correct info directly
         // in the AST
-        return LexerTool.NextTokenOfType(SourcePositionTool.ByLine(x._sourceFile, x.line()), Util.ArrayToSet(new Token[]
+        return LexerTool.nextTokenOfType(SourcePositionTool.byLine(x._sourceFile, x.line()), Util.arrayToSet(new Token[]
           {
               Token.t_set
           })).map(set -> {
             var whitespace =
-              LexerTool.TokensAt(new SourcePosition(x._sourceFile, set.end().bytePos())).right();
+              LexerTool.tokensAt(new SourcePosition(x._sourceFile, set.end().bytePos())).right();
             if (CHECKS)
               check(whitespace.token() == Token.t_ws);
             return whitespace.end();
@@ -176,7 +176,7 @@ public class Rename extends ANY
       })
       .map(f -> positionOfChoiceGeneric(featureToRename.featureName().baseName(), f));
 
-    return Util.ConcatStreams(
+    return Util.concatStreams(
       callsSourcePositions,
       typePositions,
       Stream.of(pos),
@@ -187,10 +187,10 @@ public class Rename extends ANY
   private static SourcePosition positionOfChoiceGeneric(String name, AbstractFeature f)
   {
     return LexerTool
-      .TokensFrom(new SourcePosition(f.pos()._sourceFile, 0))
+      .tokensFrom(new SourcePosition(f.pos()._sourceFile, 0))
       .filter(token -> name.equals(token.text()))
       .filter(token -> {
-        return SourcePositionTool.Compare(
+        return SourcePositionTool.compare(
           token.start(), new SourcePosition(token.start()._sourceFile, f.pos().bytePos())) > 0;
       })
       .findFirst()
@@ -201,7 +201,7 @@ public class Rename extends ANY
   private static int lengthOfFeatureIdentifier(AbstractFeature feature)
   {
     return Arrays.stream(feature.featureName().baseName().split(" "))
-      .map(str -> Util.CharCount(str))
+      .map(str -> Util.charCount(str))
       .reduce(0, (acc, item) -> item);
   }
 
@@ -209,13 +209,13 @@ public class Rename extends ANY
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
     var pos = Bridge.toSourcePosition(params);
-    var featureAt = QueryAST.FeatureAt(pos);
+    var featureAt = QueryAST.featureAt(pos);
     if (featureAt.isEmpty())
       {
         return new PrepareRenameResult();
       }
 
-    return LexerTool.IdentOrOperatorTokenAt(pos)
+    return LexerTool.identOrOperatorTokenAt(pos)
       .map(token -> {
         return new PrepareRenameResult(LSP4jUtils.range(token), token.text());
       })

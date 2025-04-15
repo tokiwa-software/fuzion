@@ -47,15 +47,15 @@ public class Hovering
   public static Hover getHover(HoverParams params)
   {
     var pos = Bridge.toSourcePosition(params);
-    return LexerTool.IdentTokenAt(pos)
+    return LexerTool.identTokenAt(pos)
       .flatMap(identToken -> {
         var range = LSP4jUtils.range(identToken);
         return QueryAST
-          .FeatureAt(pos)
+          .featureAt(pos)
           .map(f -> {
-            var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()
+            var hoverInfo = FeatureTool.commentOfInMarkdown(f) + System.lineSeparator()
               + System.lineSeparator()
-              + FeatureTool.Label(f, true);
+              + FeatureTool.label(f, true);
             var markupContent = new MarkupContent(MarkupKind.MARKDOWN, hoverInfo.trim());
             return new Hover(markupContent, range);
           });

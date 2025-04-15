@@ -52,7 +52,7 @@ public class CodeLenses
   public static List<CodeLens> getCodeLenses(CodeLensParams params)
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
-    return Util.ConcatStreams(
+    return Util.concatStreams(
       CallGraphEnabled ? codeLensesCallGraph(uri): Stream.empty(),
       SyntaxTreeEnabled ? Stream.of(codeLensShowSyntaxTree(uri)): Stream.empty(),
       RunEnabled ? Stream.of(codeLensRun(uri)): Stream.empty())
@@ -61,11 +61,11 @@ public class CodeLenses
 
   private static Stream<CodeLens> codeLensesCallGraph(URI uri)
   {
-    return QueryAST.SelfAndDescendants(uri)
-      .filter(f -> !(f.isField() || FeatureTool.IsArgument(f)))
+    return QueryAST.selfAndDescendants(uri)
+      .filter(f -> !(f.isField() || FeatureTool.isArgument(f)))
       .map(f -> {
         var command =
-          Commands.create(Commands.callGraph, uri, List.of(FeatureTool.UniqueIdentifier(f)));
+          Commands.create(Commands.callGraph, uri, List.of(FeatureTool.uniqueIdentifier(f)));
         return new CodeLens(Bridge.toRange(f), command, null);
       });
   }

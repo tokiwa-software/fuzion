@@ -62,7 +62,7 @@ public class SemanticToken extends ANY
   private static List<TokenInfo> lexerTokens(SemanticTokensParams params)
   {
     return LexerTool
-      .TokensFrom(
+      .tokensFrom(
         Bridge.toSourcePosition(
           new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))))
       // - map all special strings to normal strings plus operator(s)
@@ -72,9 +72,9 @@ public class SemanticToken extends ANY
           case t_stringBQ :    // '}+-*"' in "abc{x}+-*"
             return Stream.of(
               new TokenInfo(t.start(),
-                LexerTool.GoRight(t.start()),
+                LexerTool.goRight(t.start()),
                 t.text().substring(0, 1), Token.t_op),
-              new TokenInfo(LexerTool.GoRight(t.start()),
+              new TokenInfo(LexerTool.goRight(t.start()),
                 t.end(),
                 t.text().substring(1), Token.t_stringQQ));
           case t_stringQD :    // '"x is $' in "x is $x.".
@@ -83,28 +83,28 @@ public class SemanticToken extends ANY
           case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
             return Stream.of(
               new TokenInfo(t.start(),
-                SourcePositionTool.ByLineColumn(t.end()._sourceFile, t.end().line(),
+                SourcePositionTool.byLineColumn(t.end()._sourceFile, t.end().line(),
                   t.end().column() - 1),
-                t.text().substring(0, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
+                t.text().substring(0, Util.charCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
-                SourcePositionTool.ByLineColumn(t.end()._sourceFile, t.end().line(),
+                SourcePositionTool.byLineColumn(t.end()._sourceFile, t.end().line(),
                   t.end().column() - 1),
                 t.end(),
-                t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
+                t.text().substring(Util.charCount(t.text()) - 1, Util.charCount(t.text())), Token.t_op));
           case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
           case t_stringBB :    // '}+-*{' in "abc{x}+-*{a+b}."
             return Stream.of(
-              new TokenInfo(t.start(), LexerTool.GoRight(t.start()), "}",
+              new TokenInfo(t.start(), LexerTool.goRight(t.start()), "}",
                 Token.t_op),
-              new TokenInfo(LexerTool.GoRight(t.start()),
-                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
-                  t.start().column() + Util.CodepointCount(t.text()) - 1),
-                t.text().substring(1, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
+              new TokenInfo(LexerTool.goRight(t.start()),
+                SourcePositionTool.byLineColumn(t.start()._sourceFile, t.start().line(),
+                  t.start().column() + Util.codepointCount(t.text()) - 1),
+                t.text().substring(1, Util.charCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
-                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
-                  t.start().column() + Util.CodepointCount(t.text()) - 1),
+                SourcePositionTool.byLineColumn(t.start()._sourceFile, t.start().line(),
+                  t.start().column() + Util.codepointCount(t.text()) - 1),
                 t.end(),
-                t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
+                t.text().substring(Util.charCount(t.text()) - 1, Util.charCount(t.text())), Token.t_op));
           // discard these tokens
           case t_error :
           case t_ws :
@@ -151,8 +151,8 @@ public class SemanticToken extends ANY
         idx -> {
           var col = idx == 0 ? t.start().column() : 1;
           return new TokenInfo(
-            SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, col),
-            SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, col - 1 + Util.CharCount(lines[idx])),
+            SourcePositionTool.byLineColumn(t.start()._sourceFile, t.start().line() + idx, col),
+            SourcePositionTool.byLineColumn(t.start()._sourceFile, t.start().line() + idx, col - 1 + Util.charCount(lines[idx])),
             lines[idx],
             t.token());
       });
@@ -170,7 +170,7 @@ public class SemanticToken extends ANY
             "",
             Token.t_undefined);
         var previousToken = x == 0 ? beginningOfFileToken: lexerTokens.get(x - 1);
-        return lexerTokens.get(x).SemanticTokenData(previousToken);
+        return lexerTokens.get(x).semanticTokenData(previousToken);
       })
       .flatMap(x -> x)
       .collect(Collectors.toList());

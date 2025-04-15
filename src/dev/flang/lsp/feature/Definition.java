@@ -49,7 +49,7 @@ public class Definition
     DefinitionParams params)
   {
 
-    var feature = QueryAST.FeatureAt(Bridge.toSourcePosition(params));
+    var feature = QueryAST.featureAt(Bridge.toSourcePosition(params));
     if (feature.isEmpty())
       {
         return null;

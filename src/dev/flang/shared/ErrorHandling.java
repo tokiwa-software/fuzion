@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 public class ErrorHandling
 {
-  public static Throwable CurrentStacktrace()
+  public static Throwable currentStacktrace()
   {
     var throwable = new Throwable();
     throwable.fillInStackTrace();
@@ -59,12 +59,12 @@ public class ErrorHandling
     return stackTraceString;
   }
 
-  public static String WriteStackTrace()
+  public static String writeStackTrace()
   {
-    return WriteStackTrace(CurrentStacktrace());
+    return writeStackTrace(currentStacktrace());
   }
 
-  public static String WriteStackTrace(Throwable e)
+  public static String writeStackTrace(Throwable e)
   {
     var stackTrace = toString(e) + System.lineSeparator()
       + "======" + System.lineSeparator()
@@ -85,7 +85,7 @@ public class ErrorHandling
    * @param defaultValue
    * @return result of callable or in the case of an exception a default value
    */
-  public static <T> T ResultOrDefault(Callable<T> callable, T defaultValue)
+  public static <T> T resultOrDefault(Callable<T> callable, T defaultValue)
   {
     try
       {

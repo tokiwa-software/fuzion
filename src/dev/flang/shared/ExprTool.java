@@ -46,10 +46,10 @@ public class ExprTool extends ANY
    * @param expr
    * @return
    */
-  public static SourcePosition EndOfExpr(Expr expr)
+  public static SourcePosition endOfExpr(Expr expr)
   {
       return expr.sourceRange().bytePos() == expr.sourceRange().byteEndPos()
-        ? LexerTool.EndOfToken(expr.pos())
+        ? LexerTool.endOfToken(expr.pos())
         : new SourcePosition(expr.sourceRange()._sourceFile, expr.sourceRange().byteEndPos());
   }
 
@@ -59,19 +59,19 @@ public class ExprTool extends ANY
    * @param expr
    * @return
    */
-  public static boolean IsLambdaCall(Expr expr)
+  public static boolean isLambdaCall(Expr expr)
   {
-    return LexerTool.TokensAt(expr.pos()).right().text().equals("->");
+    return LexerTool.tokensAt(expr.pos()).right().text().equals("->");
   }
 
 
   // NYI parser should give us this info
-  static Optional<SourcePosition> LambdaOpeningBracePosition(Expr expr)
+  static Optional<SourcePosition> lambdaOpeningBracePosition(Expr expr)
   {
     if (PRECONDITIONS)
-      require(IsLambdaCall(expr));
+      require(isLambdaCall(expr));
 
-    var tokens = LexerTool.TokensFrom(SourcePositionTool.ByLine(expr.pos()._sourceFile, expr.pos().line()))
+    var tokens = LexerTool.tokensFrom(SourcePositionTool.byLine(expr.pos()._sourceFile, expr.pos().line()))
       .takeWhile(x -> x.start().compareTo(expr.pos()) <= 0)
       .collect(Collectors.toList());
 
@@ -80,11 +80,11 @@ public class ExprTool extends ANY
     return tokens
       .stream()
       .dropWhile(x -> {
-        if (x.IsLeftBracket())
+        if (x.isLeftBracket())
           {
             count.decrementAndGet();
           }
-        if (x.IsRightBracket())
+        if (x.isRightBracket())
           {
             count.incrementAndGet();
           }
@@ -98,9 +98,9 @@ public class ExprTool extends ANY
   /**
    * Compare expressions by evaluating their end positions and comparing those.
    */
-  public final static Comparator<? super Expr> CompareByEndOfExpr =
-    Comparator.comparing(expr -> EndOfExpr(expr), (sourcePosition1, sourcePosition2) -> {
-      return SourcePositionTool.Compare(sourcePosition1, sourcePosition2);
+  public final static Comparator<? super Expr> compareByEndOfExpr =
+    Comparator.comparing(expr -> endOfExpr(expr), (sourcePosition1, sourcePosition2) -> {
+      return SourcePositionTool.compare(sourcePosition1, sourcePosition2);
     });
 
 }

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -46,19 +45,19 @@ public class SourceText extends ANY
    */
   private static final TreeMap<URI, String> textDocuments = new TreeMap<URI, String>();
 
-  public static final Path FuzionHome = Path.of(System.getProperty("fuzion.home"));
+  public static final Path fuzionHome = Path.of(System.getProperty("fuzion.home"));
 
   public static void setText(URI uri, String text)
   {
     if (PRECONDITIONS)
       require(text != null);
 
-    textDocuments.put(uri, AddReplacementCharacterAfterNoneFullStopDots(text));
+    textDocuments.put(uri, addReplacementCharacterAfterNoneFullStopDots(text));
   }
 
   public static String getText(URI uri)
   {
-    return textDocuments.computeIfAbsent(uri, u -> ReadFromDisk(u));
+    return textDocuments.computeIfAbsent(uri, u -> readFromDisk(u));
   }
 
   public static void removeText(URI uri)
@@ -71,7 +70,7 @@ public class SourceText extends ANY
    */
   public static String getText(SourcePosition params)
   {
-    return getText(UriOf(params));
+    return getText(uriOf(params));
   }
 
   /**
@@ -93,7 +92,7 @@ public class SourceText extends ANY
    * @param uri
    * @return
    */
-  private static String ReadFromDisk(URI uri)
+  private static String readFromDisk(URI uri)
   {
     try
       {
@@ -101,12 +100,12 @@ public class SourceText extends ANY
       }
     catch (Exception e)
       {
-        ErrorHandling.WriteStackTrace(e);
+        ErrorHandling.writeStackTrace(e);
         return null;
       }
   }
 
-  private static final Pattern DotAtEOL = Pattern.compile("(^.+\\.)(\\s*$)", Pattern.MULTILINE);
+  private static final Pattern dotAtEOL = Pattern.compile("(^.+\\.)(\\s*$)", Pattern.MULTILINE);
 
   /**
    * The character `.` has two meanings in Fuzion.
@@ -120,9 +119,9 @@ public class SourceText extends ANY
    * @param text
    * @return
    */
-  private static String AddReplacementCharacterAfterNoneFullStopDots(String text)
+  private static String addReplacementCharacterAfterNoneFullStopDots(String text)
   {
-    return DotAtEOL
+    return dotAtEOL
       .matcher(text.replaceAll("\\$", "MAGIC_STRING_DOLLAR"))
       .replaceAll(x -> {
         String group1 = x.group(1);
@@ -146,7 +145,7 @@ public class SourceText extends ANY
    * @param pos
    * @return
    */
-  public static String LineAt(SourcePosition pos)
+  public static String lineAt(SourcePosition pos)
   {
     return pos.line() == 0
       ? ""
@@ -159,11 +158,11 @@ public class SourceText extends ANY
    * @param sourcePosition
    * @return
    */
-  public static URI UriOf(SourcePosition sourcePosition)
+  public static URI uriOf(SourcePosition sourcePosition)
   {
     return Path.of(
       sourcePosition._sourceFile._fileName.toString()
-        .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), FuzionHome.toString() + "/lib/"))
+        .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), fuzionHome.toString() + "/lib/"))
       .toUri();
   }
 
