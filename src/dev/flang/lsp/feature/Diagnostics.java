@@ -69,7 +69,7 @@ public enum Diagnostics
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     // NYI check names of type arguments
-    return Util.ConcatStreams(
+    return Util.concatStreams(
       errors(uri),
       warnings(uri),
       namingFeatures(uri),
@@ -80,7 +80,7 @@ public enum Diagnostics
   private static Stream<Diagnostic> errors(URI uri)
   {
     var errorDiagnostics =
-      ParserTool.Errors(uri)
+      ParserTool.errors(uri)
         .filter(error -> ParserTool.getUri(error.pos).equals(uri))
         .map((error) -> {
             var message = error.msg + System.lineSeparator() + error.detail;
@@ -94,7 +94,7 @@ public enum Diagnostics
   private static Stream<Diagnostic> warnings(URI uri)
   {
     var warningDiagnostics =
-      ParserTool.Warnings(uri)
+      ParserTool.warnings(uri)
         .filter(warning -> ParserTool.getUri(warning.pos).equals(uri))
         .map((warning) -> {
             var message = warning.msg + System.lineSeparator() + warning.detail;
@@ -106,7 +106,7 @@ public enum Diagnostics
 
   private static Stream<Diagnostic> namingRefs(URI uri)
   {
-    return QueryAST.SelfAndDescendants(uri)
+    return QueryAST.selfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
       .filter(f -> (f.isOuterRef() || f.isRef()) && !f.isField())
       .filter(f -> {
@@ -129,7 +129,7 @@ public enum Diagnostics
 
   private static Stream<Diagnostic> namingFeatures(URI uri)
   {
-    var snakeCase = QueryAST.SelfAndDescendants(uri)
+    var snakeCase = QueryAST.selfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
       .filter(f -> !(f.isOuterRef() || f.isRef()) || f.isField())
       .filter(f -> {
@@ -148,7 +148,7 @@ public enum Diagnostics
 
   private static Stream<Diagnostic> namingTypeParams(URI uri)
   {
-    var uppercase = QueryAST.SelfAndDescendants(uri)
+    var uppercase = QueryAST.selfAndDescendants(uri)
       .filter(f -> f.isTypeParameter())
       .filter(f -> {
         var basename = f.featureName().baseName();

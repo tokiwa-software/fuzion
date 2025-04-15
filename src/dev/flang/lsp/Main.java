@@ -58,7 +58,7 @@ public class Main extends ANY
 
   public static void main(String[] args) throws Exception
   {
-    IO.Init(line -> {
+    IO.init(line -> {
       if (Config.languageClient() != null)
         Config.languageClient().logMessage(new MessageParams(MessageType.Log, "out: " + line));
     }, line -> {
@@ -66,7 +66,7 @@ public class Main extends ANY
         Config.languageClient().logMessage(new MessageParams(MessageType.Error, "err: " + line));
     });
 
-    Context.Logger = new LSP4jLogger();
+    Context.logger = new LSP4jLogger();
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
@@ -115,7 +115,7 @@ public class Main extends ANY
       @Override
       public void uncaughtException(Thread arg0, Throwable arg1)
       {
-        ErrorHandling.WriteStackTrace(arg1);
+        ErrorHandling.writeStackTrace(arg1);
       }
     });
 
@@ -147,7 +147,7 @@ public class Main extends ANY
   {
     return Arrays.stream(args).map(arg -> arg.trim()).anyMatch(arg -> arg.startsWith(str));
   }
-  
+
 
   /**
    * For an arg like -socket=8080 extract the value (8080)
@@ -181,7 +181,7 @@ public class Main extends ANY
           }
       default:
         IO.SYS_OUT.print("NYI: " + Config.transport());
-        ErrorHandling.WriteStackTrace();
+        ErrorHandling.writeStackTrace();
         return null;
       }
   }

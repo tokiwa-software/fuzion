@@ -88,7 +88,7 @@ public class SignatureHelper extends ANY
     var featureOfCall =
       call.get().target() instanceof AbstractCall callTarget
                                                              ? Optional.of(callTarget.calledFeature())
-                                                             : QueryAST.FeatureAt(LexerTool.GoLeft(pos));
+                                                             : QueryAST.featureAt(LexerTool.goLeft(pos));
 
     if (featureOfCall.isEmpty())
       {
@@ -100,9 +100,9 @@ public class SignatureHelper extends ANY
 
   private static SignatureHelp getSignatureHelp(AbstractCall call, AbstractFeature featureOfCall)
   {
-    var consideredCallTargets_declaredOrInherited = ParserTool.DeclaredFeatures(featureOfCall); // NYI: what about inherited features?
+    var consideredCallTargets_declaredOrInherited = ParserTool.declaredFeatures(featureOfCall); // NYI: what about inherited features?
     var consideredCallTargets_outerFeatures =
-      FeatureTool.OuterFeatures(featureOfCall).flatMap(f -> ParserTool.DeclaredFeatures(f));
+      FeatureTool.outerFeatures(featureOfCall).flatMap(f -> ParserTool.declaredFeatures(f));
 
     var consideredFeatures =
       Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
@@ -116,14 +116,14 @@ public class SignatureHelper extends ANY
 
   private static SignatureInformation signatureInformation(AbstractFeature feature)
   {
-    var description = new MarkupContent(MarkupKind.MARKDOWN, FeatureTool.CommentOfInMarkdown(feature));
-    return new SignatureInformation(FeatureTool.Label(feature, false), description,
+    var description = new MarkupContent(MarkupKind.MARKDOWN, FeatureTool.commentOfInMarkdown(feature));
+    return new SignatureInformation(FeatureTool.label(feature, false), description,
       parameterInfo(feature));
   }
 
   private static boolean featureNameMatchesCallName(AbstractFeature f, AbstractCall ac)
   {
-    if (!TypeTool.ContainsError(ac.type()))
+    if (!TypeTool.containsError(ac.type()))
       {
         return f.featureName().baseName().equals(ac.calledFeature().featureName().baseName());
       }

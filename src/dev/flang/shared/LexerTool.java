@@ -49,10 +49,10 @@ public class LexerTool extends ANY
    * @param str
    * @return
    */
-  public static boolean IsValidIdentifier(String str)
+  public static boolean isValidIdentifier(String str)
   {
-    var isIdentifier = IO.WithTextInputStream(str, () -> {
-      var lexer = NewLexerStdIn();
+    var isIdentifier = IO.withTextInputStream(str, () -> {
+      var lexer = newLexerStdIn();
       var startsWithIdent = lexer.current() == Token.t_ident;
       lexer.nextRaw();
       return startsWithIdent && lexer.current().equals(Token.t_eof);
@@ -61,13 +61,13 @@ public class LexerTool extends ANY
   }
 
   private static Map<String, List<TokenInfo>> tokenCache =
-    Util.ThreadSafeLRUMap(1, (removed) -> {
+    Util.threadSafeLRUMap(1, (removed) -> {
     });
 
-  private static Stream<TokenInfo> Tokenize(SourcePosition pos)
+  private static Stream<TokenInfo> tokenize(SourcePosition pos)
   {
-    return IO.WithTextInputStream(SourceText.getText(pos), () -> {
-      var lexer = NewLexerStdIn();
+    return IO.withTextInputStream(SourceText.getText(pos), () -> {
+      var lexer = newLexerStdIn();
       return Stream.generate(() -> {
         // lexer has path stdin, so we pass sourcefile with original path
         // and the bytes of the current lexer.
@@ -83,13 +83,13 @@ public class LexerTool extends ANY
    * @return stream of tokens starting at start.
    * if start is in the middle of a token return this token as well.
    */
-  public static Stream<TokenInfo> TokensFrom(SourcePosition start)
+  public static Stream<TokenInfo> tokensFrom(SourcePosition start)
   {
     if (PRECONDITIONS)
       require(start.bytePos() <= SourceText.getText(start).getBytes().length);
 
     return tokenCache.computeIfAbsent(SourceText.getText(start),
-      (k) -> Tokenize(start).collect(Collectors.toUnmodifiableList()))
+      (k) -> tokenize(start).collect(Collectors.toUnmodifiableList()))
       .stream()
       .dropWhile(x -> start.bytePos() >= x.end().bytePos());
   }
@@ -112,9 +112,9 @@ public class LexerTool extends ANY
    * @param tokens
    * @return
    */
-  public static Optional<TokenInfo> NextTokenOfType(SourcePosition start, Set<Token> tokens)
+  public static Optional<TokenInfo> nextTokenOfType(SourcePosition start, Set<Token> tokens)
   {
-    return TokensFrom(start)
+    return tokensFrom(start)
       .filter(x -> tokens.contains(x.token()))
       .findFirst();
   }
@@ -123,10 +123,10 @@ public class LexerTool extends ANY
    * @param params the position of the cursor
    * @return token left and right of cursor
    */
-  public static Tokens TokensAt(SourcePosition params)
+  public static Tokens tokensAt(SourcePosition params)
   {
 
-    var tokens = TokensFrom(GoLeft(params))
+    var tokens = tokensFrom(goLeft(params))
       .limit(2)
       .collect(Collectors.toList());
 
@@ -150,7 +150,7 @@ public class LexerTool extends ANY
   /*
    * creates and initializes a lexer that reads from stdin
    */
-  private static Lexer NewLexerStdIn()
+  private static Lexer newLexerStdIn()
   {
     var lexer = new Lexer(SourceFile.STDIN, null);
     // HACK the following is necessary because currently on instantiation
@@ -186,7 +186,7 @@ public class LexerTool extends ANY
    */
   public static boolean isCommentLine(SourcePosition params)
   {
-    return TokensFrom(params)
+    return tokensFrom(params)
       .filter(x -> x.start().line() == params.line())
       .dropWhile(x -> x.token() == Token.t_ws)
       .findFirst()
@@ -197,12 +197,12 @@ public class LexerTool extends ANY
   /**
    * End of the token to the right of the given pos
    */
-  public static SourcePosition EndOfToken(SourcePosition pos)
+  public static SourcePosition endOfToken(SourcePosition pos)
   {
 
     return pos.isBuiltIn()
                            ? pos
-                           : TokensAt(pos)
+                           : tokensAt(pos)
                              .right()
                              .end();
   }
@@ -212,13 +212,13 @@ public class LexerTool extends ANY
    * @param p
    * @return
    */
-  public static SourcePosition GoLeft(SourcePosition p)
+  public static SourcePosition goLeft(SourcePosition p)
   {
     if (p.column() == 1)
       {
         return p;
       }
-    return SourcePositionTool.ByLineColumn(p._sourceFile, p.line(), p.column() - 1);
+    return SourcePositionTool.byLineColumn(p._sourceFile, p.line(), p.column() - 1);
   }
 
   /**
@@ -226,9 +226,9 @@ public class LexerTool extends ANY
    * @param p
    * @return
    */
-  public static SourcePosition GoRight(SourcePosition p)
+  public static SourcePosition goRight(SourcePosition p)
   {
-    return SourcePositionTool.ByLineColumn(p._sourceFile, p.line(), p.column() + 1);
+    return SourcePositionTool.byLineColumn(p._sourceFile, p.line(), p.column() + 1);
   }
 
   /**
@@ -239,11 +239,11 @@ public class LexerTool extends ANY
    * @param pos
    * @return
    */
-  public static Optional<TokenInfo> IdentOrOperatorTokenAt(SourcePosition pos)
+  public static Optional<TokenInfo> identOrOperatorTokenAt(SourcePosition pos)
   {
-    return IdentTokenAt(pos)
+    return identTokenAt(pos)
       .or(() -> {
-        var tokens = TokensAt(pos);
+        var tokens = tokensAt(pos);
         if (tokens.right().token() == Token.t_op)
           {
             return Optional.of(tokens.right());
@@ -261,9 +261,9 @@ public class LexerTool extends ANY
    * @param pos
    * @return
    */
-  public static Optional<TokenInfo> IdentTokenAt(SourcePosition pos)
+  public static Optional<TokenInfo> identTokenAt(SourcePosition pos)
   {
-    var tokens = TokensAt(pos);
+    var tokens = tokensAt(pos);
     if (tokens.right().token() == Token.t_ident)
       {
         return Optional.of(tokens.right());

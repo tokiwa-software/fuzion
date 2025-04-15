@@ -74,7 +74,7 @@ public class FuzionLanguageServer implements LanguageServer
   {
     Config.setClientCapabilities(params.getCapabilities());
 
-    Context.Logger.log("[client capabilites] " + Config.getClientCapabilities().toString());
+    Context.logger.log("[client capabilites] " + Config.getClientCapabilities().toString());
 
     final InitializeResult res = new InitializeResult(getServerCapabilities());
 
@@ -99,7 +99,7 @@ public class FuzionLanguageServer implements LanguageServer
   @Override
   public void initialized(InitializedParams params)
   {
-    Context.Logger.log("[Client] initialized");
+    Context.logger.log("[Client] initialized");
     refetchClientConfig();
     registerChangeConfiguration();
   }
@@ -109,7 +109,7 @@ public class FuzionLanguageServer implements LanguageServer
     Concurrency.MainExecutor.submit(() -> {
       if (!Config.getClientCapabilities().getWorkspace().getDidChangeConfiguration().getDynamicRegistration())
         {
-          Context.Logger.log("[Config] Client does not support dynamic registration of `did change configuration`.");
+          Context.logger.log("[Config] Client does not support dynamic registration of `did change configuration`.");
           return;
         }
       try
@@ -121,9 +121,9 @@ public class FuzionLanguageServer implements LanguageServer
         }
       catch (Exception e)
         {
-          Context.Logger.error("[Config] failed registering workspace/didChangeConfiguration.");
+          Context.logger.error("[Config] failed registering workspace/didChangeConfiguration.");
         }
-        Context.Logger.log("[Config] registered workspace/didChangeConfiguration.");
+        Context.logger.log("[Config] registered workspace/didChangeConfiguration.");
     });
   }
 
@@ -141,7 +141,7 @@ public class FuzionLanguageServer implements LanguageServer
         }
       catch (Exception e)
         {
-          Context.Logger.warning("failed getting configuration from client");
+          Context.logger.warning("failed getting configuration from client");
         }
     });
   }

@@ -32,20 +32,20 @@ import dev.flang.util.SourcePosition;
 
 public class SourcePositionTool extends ANY
 {
-  static boolean PositionIsAfterOrAtCursor(SourcePosition params, SourcePosition sourcePosition)
+  static boolean positionIsAfterOrAtCursor(SourcePosition params, SourcePosition sourcePosition)
   {
-    return Compare(params, sourcePosition) <= 0;
+    return compare(params, sourcePosition) <= 0;
   }
 
-  static boolean PositionIsBeforeCursor(SourcePosition params, SourcePosition sourcePosition)
+  static boolean positionIsBeforeCursor(SourcePosition params, SourcePosition sourcePosition)
   {
-    return Compare(params, sourcePosition) > 0;
+    return compare(params, sourcePosition) > 0;
   }
 
   /**
    * compare by line and column only. not the source file
    */
-  public static int Compare(SourcePosition a, SourcePosition b)
+  public static int compare(SourcePosition a, SourcePosition b)
   {
     var result = a.line() < b.line() ? -1: a.line() > b.line() ? +1: 0;
     if (result == 0)
@@ -55,7 +55,7 @@ public class SourcePositionTool extends ANY
     return result;
   }
 
-  public static SourcePosition ByLineColumn(SourceFile sf, int line, int column)
+  public static SourcePosition byLineColumn(SourceFile sf, int line, int column)
   {
     // lineStartPos throws in case of empty file
     if (line == 1 && column == 1)
@@ -76,7 +76,7 @@ public class SourcePositionTool extends ANY
     return new SourcePosition(sf, bytePos);
   }
 
-  public static SourcePosition ByLine(SourceFile sf, int line)
+  public static SourcePosition byLine(SourceFile sf, int line)
   {
     // lineStartPos throws in case of empty file
     if(line == 1)

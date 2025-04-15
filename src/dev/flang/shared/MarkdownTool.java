@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class MarkdownTool
 {
 
-  private static String Escape(String str)
+  private static String escape(String str)
   {
     return Arrays.stream(new String[]
       {
@@ -43,32 +43,32 @@ public class MarkdownTool
       });
   }
 
-  public static String Italic(String str)
+  public static String italic(String str)
   {
     if(str.isBlank()){
       return "";
     }
-    return Arrays.stream(Escape(str).split(System.lineSeparator()))
+    return Arrays.stream(escape(str).split(System.lineSeparator()))
       .map(l -> "*" + l + "*")
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
-  public static String Blockquote(String str)
+  public static String blockquote(String str)
   {
     if(str.isBlank()){
       return "";
     }
-    return Arrays.stream(Escape(str).split(System.lineSeparator()))
+    return Arrays.stream(escape(str).split(System.lineSeparator()))
       .map(l -> "> " + l)
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
-  public static String Bold(String str)
+  public static String bold(String str)
   {
     if(str.isBlank()){
       return "";
     }
-    return Arrays.stream(Escape(str).split(System.lineSeparator()))
+    return Arrays.stream(escape(str).split(System.lineSeparator()))
       .map(l -> "**" + l + "**")
       .collect(Collectors.joining(System.lineSeparator()));
   }

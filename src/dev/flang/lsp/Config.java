@@ -107,7 +107,7 @@ public class Config
   {
     var json = (JsonObject) configuration.get(0);
 
-    Context.Logger.info("[Config] received: " + json);
+    Context.logger.info("[Config] received: " + json);
 
     setJavaModules(json);
     setFuzionOptions(json);
@@ -118,14 +118,14 @@ public class Config
 
   private static void setFuirEnabled(JsonObject json)
   {
-    Context.MiddleEndEnabled = ErrorHandling.ResultOrDefault(() -> json.get("middle_end_enabled").getAsBoolean(), false);
+    Context.middleEndEnabled = ErrorHandling.resultOrDefault(() -> json.get("middle_end_enabled").getAsBoolean(), false);
   }
 
   private static void setInlayHint(JsonObject json)
   {
     try
       {
-        if (ErrorHandling.ResultOrDefault(() -> json.get("inlay_hints").getAsBoolean(),
+        if (ErrorHandling.resultOrDefault(() -> json.get("inlay_hints").getAsBoolean(),
           true))
           {
             InlayHints.enable();
@@ -137,7 +137,7 @@ public class Config
       }
     catch (Exception e)
       {
-        Context.Logger.error("[Config] parsing of inlay hint options failed.");
+        Context.logger.error("[Config] parsing of inlay hint options failed.");
       }
   }
 
@@ -149,15 +149,15 @@ public class Config
           .getAsJsonObject("code_lens");
 
         CodeLenses.CallGraphEnabled =
-          ErrorHandling.ResultOrDefault(() -> codeLens.get("call_graph").getAsBoolean(), true);
+          ErrorHandling.resultOrDefault(() -> codeLens.get("call_graph").getAsBoolean(), true);
         CodeLenses.SyntaxTreeEnabled =
-          ErrorHandling.ResultOrDefault(() -> codeLens.get("syntax_tree").getAsBoolean(), true);
-        CodeLenses.RunEnabled = ErrorHandling.ResultOrDefault(() -> codeLens.get("run").getAsBoolean(), true);
+          ErrorHandling.resultOrDefault(() -> codeLens.get("syntax_tree").getAsBoolean(), true);
+        CodeLenses.RunEnabled = ErrorHandling.resultOrDefault(() -> codeLens.get("run").getAsBoolean(), true);
 
       }
     catch (Exception e)
       {
-        Context.Logger.error("[Config] parsing of code lens options failed.");
+        Context.logger.error("[Config] parsing of code lens options failed.");
       }
   }
 
@@ -168,12 +168,12 @@ public class Config
         var options = json
           .getAsJsonObject("options");
 
-        Context.FuzionOptions = new FuzionOptions(
-          ErrorHandling.ResultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
-          ErrorHandling.ResultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
-          ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true),
-          ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true),
-          SourceText.FuzionHome, null)
+        Context.fuzionOptions = new FuzionOptions(
+          ErrorHandling.resultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
+          ErrorHandling.resultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
+          ErrorHandling.resultOrDefault(() -> options.get("safety").getAsBoolean(), true),
+          ErrorHandling.resultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true),
+          SourceText.fuzionHome, null)
           {
             @Override
             public boolean isLanguageServer()
@@ -182,12 +182,12 @@ public class Config
             }
           };
 
-        Context.Logger.log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
-          + Context.FuzionOptions.fuzionDebugLevel() + "), safety(" + Context.FuzionOptions.fuzionSafety() + ").");
+        Context.logger.log("[Config] FuzionOptions: verbosity(" + Context.fuzionOptions.verbose() + "), debugLevel("
+          + Context.fuzionOptions.fuzionDebugLevel() + "), safety(" + Context.fuzionOptions.fuzionSafety() + ").");
       }
     catch (Exception e)
       {
-        Context.Logger.error("[Config] parsing of fuzion options failed.");
+        Context.logger.error("[Config] parsing of fuzion options failed.");
       }
   }
 
@@ -199,16 +199,16 @@ public class Config
           .getAsJsonObject("java")
           .getAsJsonArray("modules");
 
-        var result = Util.StreamOf(modules.iterator())
+        var result = Util.streamOf(modules.iterator())
           .map(x -> x.getAsString())
           .collect(Collectors.toUnmodifiableList());
 
-        Context.Logger.log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
-        ParserTool.SetJavaModules(result);
+        Context.logger.log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
+        ParserTool.setJavaModules(result);
       }
     catch (Exception e)
       {
-        Context.Logger.error("[Config] parsing of java modules failed.");
+        Context.logger.error("[Config] parsing of java modules failed.");
       }
   }
 

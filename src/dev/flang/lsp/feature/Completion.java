@@ -97,7 +97,7 @@ public class Completion
   public static Stream<CompletionItem> getCompletions(CompletionParams params)
   {
     var pos = Bridge.toSourcePosition(params);
-    if (QueryAST.InString(pos))
+    if (QueryAST.fnString(pos))
       {
         return Stream.empty();
       }
@@ -108,7 +108,7 @@ public class Completion
     if (".".equals(triggerCharacter))
       {
         var tokenBeforeDot = LexerTool
-          .TokensAt(LexerTool.GoLeft(pos))
+          .tokensAt(LexerTool.goLeft(pos))
           .left()
           .token();
         // do not offer completion for number
@@ -120,11 +120,11 @@ public class Completion
         if (tokenBeforeDot == Token.t_type)
           {
             return completions(QueryAST
-              .DotCallCompletionsAt(pos));
+              .dotCallCompletionsAt(pos));
           }
         return Stream.of(
             completions(QueryAST
-              .DotCallCompletionsAt(pos)),
+              .dotCallCompletionsAt(pos)),
             completionItemThis(),
             completionItemType())
           .flatMap(x -> x);
@@ -132,8 +132,8 @@ public class Completion
     if (" ".equals(triggerCharacter))
       {
         var tokenBeforeTriggerCharacter =
-          LexerTool.TokensAt(LexerTool
-            .GoLeft(pos))
+          LexerTool.tokensAt(LexerTool
+            .goLeft(pos))
             .left()
             .token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
@@ -153,25 +153,25 @@ public class Completion
               Token.t_StringDQ,
               Token.t_stringBQ
           };
-        var set = Util.ArrayToSet(validTokens);
+        var set = Util.arrayToSet(validTokens);
         if (set.contains(tokenBeforeTriggerCharacter))
           {
             // NYI better heuristic to check if we should offer infix/postfix
             // completion or types or keywords or nothing
 
             // no errors in line before pos?
-            if (!ParserTool.Errors(ParserTool.getUri(pos))
+            if (!ParserTool.errors(ParserTool.getUri(pos))
               .anyMatch(x -> x.pos.line() == pos.line() && x.pos.column() <= pos.column())
-              && QueryAST.InfixPostfixCompletionsAt(pos).count() > 0)
+              && QueryAST.infixPostfixCompletionsAt(pos).count() > 0)
               {
                 return completions(
                   QueryAST
-                    .InfixPostfixCompletionsAt(pos));
+                    .infixPostfixCompletionsAt(pos));
               }
             if (tokenBeforeTriggerCharacter.equals(Token.t_ident))
               {
                 var types = QueryAST
-                  .FeaturesInScope(pos)
+                  .featuresInScope(pos)
                   .filter(af -> af.isConstructor() || af.isChoice())
                   .filter(af -> !af.featureName().baseName().contains(" "))
                   // NYI consider generics
@@ -258,7 +258,7 @@ public class Completion
         index -> {
           var feature = collectedFeatures.get(index);
           return buildCompletionItem(
-            FeatureTool.Label(feature, false),
+            FeatureTool.label(feature, false),
             getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
         });
 

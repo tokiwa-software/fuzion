@@ -60,7 +60,7 @@ public class Concurrency
    * @return
    * @throws Throwable
    */
-  public static <T> ComputationPerformance<T> RunWithPeriodicCancelCheck(
+  public static <T> ComputationPerformance<T> runWithPeriodicCancelCheck(
     Callable<T> callable, Runnable checkCancelled, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
     throws Throwable
   {

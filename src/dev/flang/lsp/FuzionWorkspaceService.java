@@ -42,7 +42,7 @@ public class FuzionWorkspaceService implements WorkspaceService
   @Override
   public void didChangeConfiguration(DidChangeConfigurationParams params)
   {
-    Context.Logger.log("[Workspace] received config change.");
+    Context.logger.log("[Workspace] received config change.");
     FuzionLanguageServer.refetchClientConfig();
   }
 

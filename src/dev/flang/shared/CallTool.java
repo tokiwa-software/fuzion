@@ -44,7 +44,7 @@ public class CallTool extends ANY
 {
 
   // NYI this info should be part of an AbstractCall
-  public static final Predicate<? super AbstractCall> CalledFeatureNotInternal = (c) -> {
+  public static final Predicate<? super AbstractCall> calledFeatureNotInternal = (c) -> {
     return !c.calledFeature().isUniverse()
       && !c.calledFeature().isBuiltInPrimitive()
       && !c.calledFeature().isTypeParameter()
@@ -52,7 +52,7 @@ public class CallTool extends ANY
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array_init")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array." + FuzionConstants.FEATURE_NAME_INDEX_ASSIGN)
       && !c.calledFeature().qualifiedName().equals("unit")
-      && !FeatureTool.IsInternal(c.calledFeature());
+      && !FeatureTool.isInternal(c.calledFeature());
   };
 
   /**
@@ -60,7 +60,7 @@ public class CallTool extends ANY
    * @param c
    * @return
    */
-  public static boolean IsFixLikeCall(AbstractCall c)
+  public static boolean isFixLikeCall(AbstractCall c)
   {
     return c.calledFeature().featureName().baseName().contains(" ");
   }
@@ -71,28 +71,28 @@ public class CallTool extends ANY
   * @param expr
   * @return
   */
-  public static SourcePosition StartOfExpr(Expr expr)
+  public static SourcePosition startOfExpr(Expr expr)
   {
-    if (ExprTool.IsLambdaCall(expr))
+    if (ExprTool.isLambdaCall(expr))
       {
-        return ExprTool.LambdaOpeningBracePosition(expr)
+        return ExprTool.lambdaOpeningBracePosition(expr)
           .orElse(expr.pos());
       }
-    return AdjustForOpeningParens(TraverseChainedCalls(expr).pos());
+    return adjustForOpeningParens(traverseChainedCalls(expr).pos());
   }
 
   /*
    * if pos is at opening parens, braces, brackets,
    * return the start of the parens, brackets
    */
-  private static SourcePosition AdjustForOpeningParens(SourcePosition pos)
+  private static SourcePosition adjustForOpeningParens(SourcePosition pos)
   {
-    var leftToken = LexerTool.TokensAt(pos).left().token();
+    var leftToken = LexerTool.tokensAt(pos).left().token();
     if (leftToken == Token.t_lparen
       || leftToken == Token.t_lbrace
       || leftToken == Token.t_lbracket)
       {
-        return AdjustForOpeningParens(LexerTool.GoLeft(pos));
+        return adjustForOpeningParens(LexerTool.goLeft(pos));
       }
     return pos;
   }
@@ -102,11 +102,11 @@ public class CallTool extends ANY
    * a.b.c and expr is to Call to c this should return a
    * as the origin of the chained calls
    */
-  private static Expr TraverseChainedCalls(Expr expr)
+  private static Expr traverseChainedCalls(Expr expr)
   {
     if (expr instanceof Box b)
       {
-        return TraverseChainedCalls(b._value);
+        return traverseChainedCalls(b._value);
       }
     if (expr instanceof AbstractCall ac
       && (ac.target() instanceof AbstractBlock
@@ -114,7 +114,7 @@ public class CallTool extends ANY
         || ac.target() instanceof Constant
         || ac.target() instanceof AbstractCall))
       {
-        return TraverseChainedCalls(ac.target());
+        return traverseChainedCalls(ac.target());
       }
     return expr;
   }

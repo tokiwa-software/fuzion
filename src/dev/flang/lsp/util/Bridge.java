@@ -84,17 +84,17 @@ public class Bridge extends ANY
 
   public static Range toRangeBaseName(AbstractFeature feature)
   {
-    var bareNamePosition = FeatureTool.BareNamePosition(feature);
+    var bareNamePosition = FeatureTool.bareNamePosition(feature);
     return new Range(
       toPosition(bareNamePosition),
-      toPosition(SourcePositionTool.ByLineColumn(bareNamePosition._sourceFile,
+      toPosition(SourcePositionTool.byLineColumn(bareNamePosition._sourceFile,
         bareNamePosition.line(),
-        bareNamePosition.column() + Util.CharCount(FeatureTool.BareName(feature)))));
+        bareNamePosition.column() + Util.charCount(FeatureTool.bareName(feature)))));
   }
 
   public static DocumentSymbol toDocumentSymbol(AbstractFeature feature)
   {
-    return new DocumentSymbol(FeatureTool.Label(feature, false), symbolKind(feature), toRange(feature), toRange(feature));
+    return new DocumentSymbol(FeatureTool.label(feature, false), symbolKind(feature), toRange(feature), toRange(feature));
   }
 
   private static SymbolKind symbolKind(AbstractFeature feature)
@@ -133,7 +133,7 @@ public class Bridge extends ANY
 
   public static SourcePosition toSourcePosition(TextDocumentPositionParams params)
   {
-    return SourcePositionTool.ByLineColumn(toSourceFile(Util.toURI(params.getTextDocument().getUri())),
+    return SourcePositionTool.byLineColumn(toSourceFile(Util.toURI(params.getTextDocument().getUri())),
       params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
 
@@ -148,7 +148,7 @@ public class Bridge extends ANY
   private static Range toRange(AbstractCall call)
   {
     var start = toPosition(call.pos());
-    var nameLength = Util.CharCount(FeatureTool.BareName(call.calledFeature()));
+    var nameLength = Util.charCount(FeatureTool.bareName(call.calledFeature()));
     return new Range(start, new Position(start.getLine(), start.getCharacter() + nameLength));
   }
 

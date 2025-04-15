@@ -114,7 +114,7 @@ public enum Commands
 
 
       default:
-        ErrorHandling.WriteStackTrace(new Exception("not implemented"));
+        ErrorHandling.writeStackTrace(new Exception("not implemented"));
         return completedFuture;
       }
   }
@@ -126,12 +126,12 @@ public enum Commands
       var matchPos = new Position(getArgAsInt(params, 1), getArgAsInt(params, 2));
 
       return ASTWalker
-        .Traverse(Util.toURI(uri))
+        .traverse(Util.toURI(uri))
         .filter(x -> x.getKey() instanceof AbstractMatch)
         .map(x -> (AbstractMatch) x.getKey())
         .filter(x -> x.pos().line() < (matchPos.getLine() + 1)
           || (x.pos().line() == (matchPos.getLine() + 1) && x.pos().column() <= (matchPos.getCharacter() + 1)))
-        .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
+        .sorted(HasSourcePositionTool.compareBySourcePosition.reversed())
         .findFirst()
         .map(m -> {
           // NYI support indent different from two spaces
@@ -143,10 +143,10 @@ public enum Commands
               .choiceGenerics()
               .stream()
               .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFrom(cg)))
-              .map(t -> indent + CaseConverter.ToSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.Label(t) + " =>")
+              .map(t -> indent + CaseConverter.toSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.label(t) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 
-          var endOfSubPos = Bridge.toPosition(ExprTool.EndOfExpr(m.subject()));
+          var endOfSubPos = Bridge.toPosition(ExprTool.endOfExpr(m.subject()));
 
           var edit = new WorkspaceEdit(Map.of(
             uri,
@@ -212,11 +212,11 @@ public enum Commands
   private static void callGraph(String arg0, String arg1)
   {
     // NYI go to correct feature via more direct way
-    var feature = FeatureTool.SelfAndDescendants(ParserTool.Universe(Util.toURI(arg0)))
-      .filter(f -> FeatureTool.UniqueIdentifier(f).equals(arg1))
+    var feature = FeatureTool.selfAndDescendants(ParserTool.universe(Util.toURI(arg0)))
+      .filter(f -> FeatureTool.uniqueIdentifier(f).equals(arg1))
       .findFirst()
       .get();
-    var callGraph = FeatureTool.CallGraph(feature);
+    var callGraph = FeatureTool.callGraph(feature);
     var file = IO.writeToTempFile(callGraph, String.valueOf(System.currentTimeMillis()), ".fuzion.dot");
     try
       {
@@ -251,7 +251,7 @@ public enum Commands
 
   private static void showSyntaxTree(URI uri)
   {
-    var ast = FeatureTool.AST(uri);
+    var ast = FeatureTool.ast(uri);
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }

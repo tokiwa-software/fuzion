@@ -56,27 +56,27 @@ public class Util
       }
     catch (Exception e)
       {
-        ErrorHandling.WriteStackTrace(e);
+        ErrorHandling.writeStackTrace(e);
         return null;
       }
   }
 
-  public static <T> Set<T> ArrayToSet(T[] arr)
+  public static <T> Set<T> arrayToSet(T[] arr)
   {
     return Arrays.stream(arr).collect(Collectors.toSet());
   }
 
-  public static <T> Stream<T> StreamOf(Iterator<T> iterator)
+  public static <T> Stream<T> streamOf(Iterator<T> iterator)
   {
     return StreamSupport.stream(Spliterators
       .spliteratorUnknownSize(iterator, 0), false);
   }
 
-  public static String ShortName(Class<?> clazz)
+  public static String shortName(Class<?> clazz)
   {
     if (clazz.isAnonymousClass())
       {
-        return ShortName(clazz.getSuperclass());
+        return shortName(clazz.getSuperclass());
       }
     return clazz.getSimpleName();
   }
@@ -85,7 +85,7 @@ public class Util
   * @param uri
   * @return
   */
-  public static boolean IsStdLib(URI uri)
+  public static boolean isStdLib(URI uri)
   {
     // NYI develop better heuristic to figure out if we are editing standard library.
     // return uri.toString().startsWith(SourceText.FuzionHome.toUri().toString());
@@ -101,7 +101,7 @@ public class Util
    * @param c called when an item is removed
    * @return
    */
-  public static <T, U> Map<T, U> ThreadSafeLRUMap(int maxSize, Consumer<Map.Entry<T, U>> c)
+  public static <T, U> Map<T, U> threadSafeLRUMap(int maxSize, Consumer<Map.Entry<T, U>> c)
   {
     return Collections
       .synchronizedMap(new LinkedHashMap<T, U>(maxSize + 1, .75F, true) {
@@ -117,14 +117,14 @@ public class Util
       });
   }
 
-  public static <T> Stream<T> ConcatStreams(Stream<T>... streams)
+  public static <T> Stream<T> concatStreams(Stream<T>... streams)
   {
     return Stream.of(streams)
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
   }
 
-  public static <T> T LastOrDefault(Stream<T> s, T t)
+  public static <T> T lastOrDefault(Stream<T> s, T t)
   {
     return s.reduce((a, b) -> b).orElse(t);
   }
@@ -133,7 +133,7 @@ public class Util
    * returns codepoint count of text
    * 😀 => 1
    */
-  public static int CodepointCount(String text)
+  public static int codepointCount(String text)
   {
     return Integer.valueOf((int) text.codePoints().count());
   }
@@ -142,12 +142,12 @@ public class Util
    * returns char count of text
    * 😀 => 2
    */
-  public static int CharCount(String text)
+  public static int charCount(String text)
   {
     return text.codePoints().map(cp -> Character.charCount(cp)).sum();
   }
 
-  public static String AddParens(String str)
+  public static String addParens(String str)
   {
     if (str.contains(" "))
       {

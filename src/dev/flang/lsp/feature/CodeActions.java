@@ -52,9 +52,9 @@ public class CodeActions
 
   public static List<Either<Command, CodeAction>> getCodeActions(CodeActionParams params)
   {
-    return Util.ConcatStreams(
-      nameingFixes(params, Diagnostics.nameingFeatures, oldName -> CaseConverter.ToSnakeCase(oldName)),
-      nameingFixes(params, Diagnostics.nameingRefs, oldName -> CaseConverter.ToSnakePascalCase(oldName)),
+    return Util.concatStreams(
+      nameingFixes(params, Diagnostics.nameingFeatures, oldName -> CaseConverter.toSnakeCase(oldName)),
+      nameingFixes(params, Diagnostics.nameingRefs, oldName -> CaseConverter.toSnakePascalCase(oldName)),
       nameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()),
       generateMatchCases(params))
       .collect(Collectors.toList());
@@ -114,7 +114,7 @@ public class CodeActions
   {
     var uri = LSP4jUtils.getUri(tdi);
     return QueryAST
-      .FeatureAt(Bridge.toSourcePosition(new TextDocumentPositionParams(tdi, d.getRange().getStart())))
+      .featureAt(Bridge.toSourcePosition(new TextDocumentPositionParams(tdi, d.getRange().getStart())))
       .map(f -> {
         var oldName = f.featureName()
           .baseName();

@@ -79,11 +79,11 @@ public class ParserTool extends ANY
 
   private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 1;
 
-  private static List<String> JavaModules = List.<String>of();
+  private static List<String> javaModules = List.<String>of();
 
-  public static void SetJavaModules(List<String> javaModules)
+  public static void setJavaModules(List<String> javaModules)
   {
-    JavaModules = javaModules;
+    javaModules = javaModules;
   }
 
   private static ParserCache parserCache = new ParserCache();
@@ -92,7 +92,7 @@ public class ParserTool extends ANY
    * LRU-Cache holding end of feature calculations
    */
   private static final Map<AbstractFeature, SourcePosition> EndOfFeatureCache =
-    Util.ThreadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
+    Util.threadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
 
   /**
    * NYI in the case of uri to stdlib  we need context
@@ -111,7 +111,7 @@ public class ParserTool extends ANY
 
   private static ParserCacheItem createParserCacheItem(URI uri)
   {
-    var frontEndOptions = FrontEndOptions(uri);
+    var frontEndOptions = frontEndOptions(uri);
     var frontEnd = new FrontEnd(frontEndOptions);
     var errors = Errors.errors();
     var warnings = Errors.warnings();
@@ -119,7 +119,7 @@ public class ParserTool extends ANY
     return new ParserCacheItem(uri, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
   }
 
-  private static FrontEndOptions FrontEndOptions(URI uri)
+  private static FrontEndOptions frontEndOptions(URI uri)
   {
     File tempFile = ParserTool.toTempFile(uri);
     // this is too slow
@@ -128,10 +128,10 @@ public class ParserTool extends ANY
     var frontEndOptions =
       new FrontEndOptions(
         /* verbose                 */ 0,
-        /* fuzionHome              */ SourceText.FuzionHome,
+        /* fuzionHome              */ SourceText.fuzionHome,
         /* loadBaseLib             */ !isStdLib,
         /* eraseInternalNamesInLib */ false,
-        /* modules                 */ isStdLib ? new dev.flang.util.List<String>() : new dev.flang.util.List<String>(JavaModules.iterator()),
+        /* modules                 */ isStdLib ? new dev.flang.util.List<String>() : new dev.flang.util.List<String>(javaModules.iterator()),
         /* moduleDirs              */ new dev.flang.util.List<String>(),
         /* dumpModules             */ new dev.flang.util.List<String>(),
         /* fuzionDebugLevel        */ 1,
@@ -169,12 +169,12 @@ public class ParserTool extends ANY
       {
         return result;
       }
-    return SourceText.UriOf(sourcePosition);
+    return SourceText.uriOf(sourcePosition);
   }
 
   private static File toTempFile(URI uri)
   {
-    var sourceText = Util.IsStdLib(uri) ? "dummyFeature is": SourceText.getText(uri);
+    var sourceText = Util.isStdLib(uri) ? "dummyFeature is": SourceText.getText(uri);
     File sourceFile = IO.writeToTempFile(sourceText);
     try
       {
@@ -182,28 +182,28 @@ public class ParserTool extends ANY
       }
     catch (Exception e)
       {
-        ErrorHandling.WriteStackTrace(e);
+        ErrorHandling.writeStackTrace(e);
       }
     return sourceFile;
   }
 
-  public static AbstractFeature Universe(URI uri)
+  public static AbstractFeature universe(URI uri)
   {
     return getParserCacheItem(uri).universe();
   }
 
-  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
+  public static Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
-    return DeclaredFeatures(f, false);
+    return declaredFeatures(f, false);
   }
 
-  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
+  public static Stream<AbstractFeature> declaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
-    if (TypeTool.ContainsError(f.selfType()))
+    if (TypeTool.containsError(f.selfType()))
       {
         return Stream.empty();
       }
-    return parserCache.SourceModule(f)
+    return parserCache.sourceModule(f)
       .declaredFeatures(f)
       .values()
       .stream()
@@ -212,7 +212,7 @@ public class ParserTool extends ANY
         return !isFromModule || af.visibility().eraseTypeVisibility() == Visi.PUB;
       })
       .filter(feat -> includeInternalFeatures
-        || !FeatureTool.IsInternal(feat));
+        || !FeatureTool.isInternal(feat));
   }
 
   /**
@@ -234,11 +234,11 @@ public class ParserTool extends ANY
     // NOTE: since this is a very expensive calculation and frequently used we
     // cache this
     return EndOfFeatureCache.computeIfAbsent(feature, af -> {
-      if (FeatureTool.IsArgument(af))
+      if (FeatureTool.isArgument(af))
         {
-          return LexerTool.EndOfToken(af.pos());
+          return LexerTool.endOfToken(af.pos());
         }
-      if (!af.isUniverse() && FeatureTool.IsOfLastFeature(af))
+      if (!af.isUniverse() && FeatureTool.isOfLastFeature(af))
         {
           return new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.byteLength());
         }
@@ -249,7 +249,7 @@ public class ParserTool extends ANY
         {
           if (visitedPos != null)
             {
-              lastPos = SourcePositionTool.Compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
+              lastPos = SourcePositionTool.compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
             }
         }
         @Override public void         action      (AbstractAssign a) { FoundPos(a.pos()); }
@@ -281,12 +281,12 @@ public class ParserTool extends ANY
       var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? af.pos() : visitor.lastPos;
 
       result = (SourcePosition) LexerTool
-          .TokensFrom(result)
+          .tokensFrom(result)
           .skip(1)
           // NYI do we need to sometimes consider right brackets as well?
-          .filter(t -> !(t.IsWhitespace()))
+          .filter(t -> !(t.isWhitespace()))
           // t is the first token not belonging to feature
-          .map(t -> LexerTool.GoLeft(t.start()))
+          .map(t -> LexerTool.goLeft(t.start()))
           .findFirst()
           .orElse(result);
 
@@ -297,19 +297,19 @@ public class ParserTool extends ANY
     });
   }
 
-  public static Stream<Errors.Error> Warnings(URI uri)
+  public static Stream<Errors.Error> warnings(URI uri)
   {
     return getParserCacheItem(uri).warnings().stream();
   }
 
-  public static Stream<Errors.Error> Errors(URI uri)
+  public static Stream<Errors.Error> errors(URI uri)
   {
     return getParserCacheItem(uri).errors().stream();
   }
 
-  public static Stream<AbstractFeature> TopLevelFeatures(URI uri)
+  public static Stream<AbstractFeature> topLevelFeatures(URI uri)
   {
-    return getParserCacheItem(uri).TopLevelFeatures();
+    return getParserCacheItem(uri).topLevelFeatures();
   }
 
 }

@@ -36,7 +36,7 @@ public class CaseConverter
    * @param oldName
    * @return
    */
-  public static String ToSnakeCase(String oldName)
+  public static String toSnakeCase(String oldName)
   {
     var result = oldName.codePoints().mapToObj(cp -> {
       if (Character.isUpperCase(cp))
@@ -60,13 +60,13 @@ public class CaseConverter
    * @param oldName
    * @return
    */
-  public static String ToSnakePascalCase(String oldName)
+  public static String toSnakePascalCase(String oldName)
   {
-    return ToSnakeCase(oldName)
+    return toSnakeCase(oldName)
       .codePoints()
       .mapToObj(cp -> Character.toString(cp))
       .reduce("", (res, c) -> {
-        if (res.isEmpty() || res.codePointAt(res.length() - 1) == CodepointOf('_'))
+        if (res.isEmpty() || res.codePointAt(res.length() - 1) == codepointOf('_'))
           {
             return res + c.toUpperCase();
           }
@@ -75,7 +75,7 @@ public class CaseConverter
   }
 
 
-  private static int CodepointOf(char c)
+  private static int codepointOf(char c)
   {
     return String.valueOf(c).codePointAt(0);
   }
