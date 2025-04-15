@@ -23,9 +23,9 @@
 
 reg_issue3527 =>
 
-  _ := sieve_cache String 3
+  _ := Sieve_Cache String 3
 
-  sieve_cache(T type : property.hashable, capacity u64) is
+  Sieve_Cache(T type : property.hashable, capacity u64) ref is
 
     Node(val T) ref is
       _ concur.atomic (option Node) := concur.atomic (option Node) nil

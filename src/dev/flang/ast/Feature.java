@@ -2042,30 +2042,30 @@ A ((Choice)) declaration must not contain a result type.
 
     checkNative(res);
 
-    checkOuterOfAtomicIsRef();
+    checkOuterOfAtomicIsNotValueConstructor();
 
     _state = State.RESOLVED;
   }
 
   /**
-   * Check if the outer feature feature of an atomic is a reference.
+   * Check if the outer feature feature of an atomic is not a value constructor.
    */
-  private void checkOuterOfAtomicIsRef()
+  private void checkOuterOfAtomicIsNotValueConstructor()
   {
-    if(!isRef() && !isCotype())
+    if(isConstructor() && !isRef() && !isCotype())
       {
         arguments().stream().forEach(arg ->
           {
             if (arg.resultType().selfOrConstraint(context()).feature() == Types.resolved.f_concur_atomic)
               {
-                AstErrors.outerFeatureOfAtomicMustBeRef(pos());
+                AstErrors.outerFeatureOfAtomicMustNotBeValueConstructor(pos());
               }
           }
         );
       }
-    if (isField() && !outer().isRef() && resultType().selfOrConstraint(context()).feature() == Types.resolved.f_concur_atomic)
+    if (isField() && outer().isConstructor() && !outer().isRef() && resultType().selfOrConstraint(context()).feature() == Types.resolved.f_concur_atomic)
       {
-        AstErrors.outerFeatureOfAtomicMustBeRef(pos());
+        AstErrors.outerFeatureOfAtomicMustNotBeValueConstructor(pos());
       }
   }
 

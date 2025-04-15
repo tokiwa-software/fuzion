@@ -21,14 +21,15 @@
 #
 # -----------------------------------------------------------------------
 
+Node(T type, data T, next option (Node T)) ref is
+
 # lock-free stack using compare_and_set
 # invented by R. Kent Treiber
 #
 public Stack(T type) ref : container.Stack T is
 
-  Node(data T, next option Node) ref is
 
-  top := concur.atomic (option Node) nil
+  top := concur.atomic (option (Node T)) nil
 
 
   # push an element to the stack
@@ -44,7 +45,7 @@ public Stack(T type) ref : container.Stack T is
   #
   public redef pop option T =>
 
-    next (x option Node) =>
+    next (x option (Node T)) =>
       x.bind n->n.next
 
     for o := top.read

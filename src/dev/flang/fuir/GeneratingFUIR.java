@@ -406,7 +406,7 @@ public class GeneratingFUIR extends FUIR
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
               case "error"                     -> SpecialClazzes.c_error       ;
               case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
-              case "Condition"                 -> SpecialClazzes.c_Condition   ;
+              case "Condition0"                -> SpecialClazzes.c_Condition   ;
               case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
               case "Directory_Descriptor"      -> SpecialClazzes.c_Directory_Descriptor;
               case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;

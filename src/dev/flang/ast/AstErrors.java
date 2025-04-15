@@ -2383,9 +2383,9 @@ public class AstErrors extends ANY
           "To solve this, remove the field or move its declaration into a parent feature.");
   }
 
-  public static void outerFeatureOfAtomicMustBeRef(SourcePosition pos)
+  public static void outerFeatureOfAtomicMustNotBeValueConstructor(SourcePosition pos)
   {
-    error(pos, "The outer feature of an atomic value must be reference.",
+    error(pos, "The outer feature of an atomic value must not be a value constructor.",
       "To solve this, mark the outer feature as a reference type.");
   }
 
