@@ -232,11 +232,14 @@ public class AstErrors extends ANY
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
-    return "To call " + sbn(f.featureName().baseName()) + " you must provide "
-           + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
-           + (f.typeArguments().size() > 0
+    return "To call " + sbn(f.featureName().baseName())
+      + (f.arguments().isEmpty()
+          ? " you must not provide arguments."
+          : " you must provide "
+            + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
+            + (f.typeArguments().size() > 0
                 ? " The type arguments may be omitted or `_` may be used in place of a type argument."
-                : "");
+                : ""));
   }
 
 
