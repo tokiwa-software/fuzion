@@ -225,7 +225,6 @@ public class Html extends ANY
       + annotateContainsAbstract(af)
       + annotatePrivateConstructor(af)
       + annotateModule(af)
-      //+ annotateInnerModules(af) // NYI: CLEANUP: for debugging only
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -349,13 +348,6 @@ public class Html extends ANY
 
     // don't add annotation for features of own module
     return afModule == lm ? "" : "&nbsp;<div class='fd-parent'>[Module " + afModule.name() + "]</div>";
-  }
-
-  // NYI: CLEANUP: for debugging only: show modules of inner features
-  private String annotateInnerModules(AbstractFeature af)
-  {
-    String modules = lf(af).modulesOfInnerFeatures().stream().map(m -> m.name()).collect(Collectors.joining(", "));
-    return "&nbsp;<div class='fd-parent'>[Inner modules: " + modules + "]</div>";
   }
 
   private boolean isVisible(AbstractFeature af)
