@@ -416,7 +416,7 @@ public class Feature extends AbstractFeature
     this(SourcePosition.builtIn,
          Visi.PUB,
          0,
-         ValueType.INSTANCE,
+         NoType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
          new List<>(),
          new List<>(),
