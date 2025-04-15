@@ -469,12 +469,11 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
   }
 
   void * mapped_address = MapViewOfFile(file_mapping_handle, FILE_MAP_ALL_ACCESS, high_word(offset), low_word(offset), size);
-  if (mapped_address == NULL) {
-    CloseHandle(file_mapping_handle);
-    result[0] = -1;
-    return NULL;
-  }
-  result[0] = 0;
+
+  CloseHandle(file_mapping_handle);
+
+  result[0] = mapped_address == NULL ? -1 : 0;
+
   return mapped_address;
 }
 
@@ -482,7 +481,6 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
 int fzE_munmap(void * mapped_address, const int file_size){
-  // NYI: CloseHandle(file_mapping_handle);
   return UnmapViewOfFile(mapped_address)
     ? 0
     : -1;
