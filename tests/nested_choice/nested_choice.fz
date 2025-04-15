@@ -190,8 +190,8 @@ nested_choice =>
               nil  => "inner nil"
               unit => "unit"
 
-    // the following flags an error, ambigous assignment to choice
-    // tested in choice_negative, nested_choice_negative
+    # the following flags an error, ambigous assignment to choice
+    # tested in choice_negative, nested_choice_negative
     # c my_choice2 := nil
     d my_choice2 := "st"
     e my_choice2 := unit
