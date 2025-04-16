@@ -1,6 +1,6 @@
 
 --CURDIR--/issue440.fz:26:5: error 1: Incompatible types in assignment
-    if true // 1. should flag an error, Incompatible types in assignment
+    if true # 1. should flag an error, Incompatible types in assignment
 ----^
 assignment to field : 'issue440.something.result'
 expected formal type: 'i32'

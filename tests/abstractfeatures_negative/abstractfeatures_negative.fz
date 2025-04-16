@@ -30,12 +30,12 @@ abstractfeatures_negative is
 
   opengenerics12 =>
     F(A type...) ref is
-      f(a A...) unit => abstract                           //  1. should flag an error: abstract feature not implemented
-      g(a A...) unit => abstract                           // ok, not called.
+      f(a A...) unit => abstract                           #  1. should flag an error: abstract feature not implemented
+      g(a A...) unit => abstract                           # ok, not called.
 
     G ref : F i32 bool i32 is
 
-    x G := G                                       //  2. should flag an error: abstract feature f not implemented
+    x G := G                                       #  2. should flag an error: abstract feature f not implemented
     y F i32 bool i32 := x
     if maybe then y.f 3 true 5
 
@@ -43,15 +43,15 @@ abstractfeatures_negative is
 
   opengenerics12a =>
     F(A type...) ref is
-      f1(a A...) unit => abstract                          //  3. should flag an error: abstract feature not implemented
-      f2(a A...) unit => abstract                          //  4. should flag an error: abstract feature not implemented
-      f3(a A...) unit => abstract                          //  5. should flag an error: abstract feature not implemented
-      f4(a A...) unit => abstract                          // ok, not called.
-      f5(a A...) unit => abstract                          // ok, not called.
+      f1(a A...) unit => abstract                          #  3. should flag an error: abstract feature not implemented
+      f2(a A...) unit => abstract                          #  4. should flag an error: abstract feature not implemented
+      f3(a A...) unit => abstract                          #  5. should flag an error: abstract feature not implemented
+      f4(a A...) unit => abstract                          # ok, not called.
+      f5(a A...) unit => abstract                          # ok, not called.
 
     G ref : F i32 bool i32 is
 
-    x G := G                                       //  6. should flag an error: abstract features f1, f2, f3 not implemented
+    x G := G                                       #  6. should flag an error: abstract features f1, f2, f3 not implemented
     y F i32 bool i32 := x
     if maybe then y.f1 3 true 5
     if maybe then y.f2 3 true 5
@@ -61,27 +61,27 @@ abstractfeatures_negative is
 
   opengenerics12b =>
     F(A type...) ref is
-      f(a A...) unit => abstract                           //  7. should flag an error: abstract feature not implemented
-      g(a A...) unit => abstract                           // ok, not called.
+      f(a A...) unit => abstract                           #  7. should flag an error: abstract feature not implemented
+      g(a A...) unit => abstract                           # ok, not called.
 
     G ref : F i32 bool i32 is
 
-    x G := G                                       //  8. should flag an error: abstract feature f not implemented
+    x G := G                                       #  8. should flag an error: abstract feature f not implemented
     if maybe then x.f 3 true 5
 
   opengenerics12b
 
   opengenerics12c =>
     F(A type...) ref is
-      f1(a A...) unit => abstract                          //  9. should flag an error: abstract feature not implemented
-      f2(a A...) unit => abstract                          // 10. should flag an error: abstract feature not implemented
-      f3(a A...) unit => abstract                          // 11. should flag an error: abstract feature not implemented
-      f4(a A...) unit => abstract                          // ok, not called.
-      f5(a A...) unit => abstract                          // ok, not called.
+      f1(a A...) unit => abstract                          #  9. should flag an error: abstract feature not implemented
+      f2(a A...) unit => abstract                          # 10. should flag an error: abstract feature not implemented
+      f3(a A...) unit => abstract                          # 11. should flag an error: abstract feature not implemented
+      f4(a A...) unit => abstract                          # ok, not called.
+      f5(a A...) unit => abstract                          # ok, not called.
 
     G ref : F i32 bool i32 is
 
-    x G := G                                       // 12. should flag an error: abstract features f1, f2, f3 not implemented
+    x G := G                                       # 12. should flag an error: abstract features f1, f2, f3 not implemented
     if maybe then x.f1 3 true 5
     if maybe then x.f2 3 true 5
     if maybe then x.f3 3 true 5

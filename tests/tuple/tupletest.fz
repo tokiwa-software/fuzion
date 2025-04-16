@@ -35,56 +35,56 @@ tupletest is
 
   p(s Any) => say s
 
-  // start with some generic type inference tests, which are a pre-requisite for tuples to work
+  # start with some generic type inference tests, which are a pre-requisite for tuples to work
   g1(A type, a A) is
-  _ := g1 "Hello" // should infer String
-  _ := g1 123 // should infer i32
+  _ := g1 "Hello" # should infer String
+  _ := g1 123 # should infer i32
   chck g1("Hello").a.codepoint_length=5 "g1 A infer A==string"
   chck g1(123).a=123 "g1 A infer A==i32"
 
   g1a(A type, a A) A => a
-  itaa := g1a "String"  // should infer String
-  itab := g1a 123  // should infer i32
+  itaa := g1a "String"  # should infer String
+  itab := g1a 123  # should infer i32
   chck itaa.codepoint_length=6 "g1a A infer A==string"
   chck itab=123 "g1a A infer A==i32"
 
   g1b(AAAA type, a,b,c AAAA) is
-  g1bv1 := g1b true true false  // should infer bool
-  g1bv2 := g1b "String" "A" "test"  // should infer String
+  g1bv1 := g1b true true false  # should infer bool
+  g1bv2 := g1b "String" "A" "test"  # should infer String
   chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b AAAA infer AAAA==bool"
   chck (g1bv2.a.codepoint_length + g1bv2.b.codepoint_length + g1bv2.c.codepoint_length)=11 "g1b AAAA infer AAAA==string"
 
-  nothing1 tuple := tuple  ; p "nothing1 is $nothing1" // empty tuple using explicit types
-  nothing2 tuple := tuple  ; p "nothing2 is $nothing2" // empty tuple using explicit type and inferring generic
-  nothing3 tuple :=      (); p "nothing3 is $nothing3" // empty tuple using explicit type and tuple syntax sugar
-  nothing4 tuple := tuple  ; p "nothing4 is $nothing4" // empty tuple inferring generics and explicit type
-  nothing5 tuple := tuple  ; p "nothing5 is $nothing5" // empty tuple inferring generics and inferring generic
-  nothing6 tuple :=      (); p "nothing6 is $nothing6" // empty tuple inferring generics and tuple syntax sugar
-  nothing7       := tuple  ; p "nothing7 is $nothing7" // empty tuple inferring type and explicit type
-  nothing8       := tuple  ; p "nothing8 is $nothing8" // empty tuple inferring type and inferring generic
-  nothing9       :=      (); p "nothing9 is $nothing9" // empty tuple inferring type and tuple syntax sugar
+  nothing1 tuple := tuple  ; p "nothing1 is $nothing1" # empty tuple using explicit types
+  nothing2 tuple := tuple  ; p "nothing2 is $nothing2" # empty tuple using explicit type and inferring generic
+  nothing3 tuple :=      (); p "nothing3 is $nothing3" # empty tuple using explicit type and tuple syntax sugar
+  nothing4 tuple := tuple  ; p "nothing4 is $nothing4" # empty tuple inferring generics and explicit type
+  nothing5 tuple := tuple  ; p "nothing5 is $nothing5" # empty tuple inferring generics and inferring generic
+  nothing6 tuple :=      (); p "nothing6 is $nothing6" # empty tuple inferring generics and tuple syntax sugar
+  nothing7       := tuple  ; p "nothing7 is $nothing7" # empty tuple inferring type and explicit type
+  nothing8       := tuple  ; p "nothing8 is $nothing8" # empty tuple inferring type and inferring generic
+  nothing9       :=      (); p "nothing9 is $nothing9" # empty tuple inferring type and tuple syntax sugar
 # ()             := tuple  ; p "nothing10 is ()"
 # ()             := tuple  ; p "nothing11 is ()"
 # ()             :=      (); p "nothing12 is ()"
-# ()             := tuple  ; p "nothing10 is ()"                   // should cause syntax error
-# ()             := tuple  ; p "nothing11 is ()"                   // should cause syntax error
-# ()             :=      (); p "nothing12 is ()"                   // should cause syntax error
-  // cant do any chck()s on empty tuples, let's hope everything is fine
+# ()             := tuple  ; p "nothing10 is ()"                   # should cause syntax error
+# ()             := tuple  ; p "nothing11 is ()"                   # should cause syntax error
+# ()             :=      (); p "nothing12 is ()"                   # should cause syntax error
+  # cant do any chck()s on empty tuples, let's hope everything is fine
 
-  one2 tuple i32 := tuple(     42); p "one2 is {one2.values.0}" // one-tuple using explicit type and inferring generic
-  (one10)        := tuple     (42); p "one10 is $one10" // one-tuple using destructure and explicit type
-  (one12)        :=           (42); p "one12 is $one12" // special case: Destructure i32, which works!
+  one2 tuple i32 := tuple(     42); p "one2 is {one2.values.0}" # one-tuple using explicit type and inferring generic
+  (one10)        := tuple     (42); p "one10 is $one10" # one-tuple using destructure and explicit type
+  (one12)        :=           (42); p "one12 is $one12" # special case: Destructure i32, which works!
   public one16 i32 := 42
   public one17 i32 := 42
   public one18 i32 := 42
   chck one2.values.0=42 "one2"
   chck one10=42 "one10"
 
-  two2 tuple i32 i32   := tuple          4 2 ; p "two2 is {two2.values.0}, {two2.values.1}" // one-tuple using explicit type and inferring generic
-  two3 tuple i32 i32   :=               (4,2); p "two3 is {two3.values.0}, {two3.values.1}" // one-tuple using explicit type and tuple syntax sugar
-  two9                 :=               (4,2); p "two9 is {two9.values.0}, {two9.values.1}" // one-tuple inferring type and tuple syntax sugar
-  (two11a, two11b)     := tuple          4 2 ; p "two11 is $two11a, $two11b" // two-tuple using destructure and inferring generic
-  (two12a, two12b)     :=               (4,2); p "two12 is $two12a, $two12b" // two-tuple using destructure and tuple syntax sugar
+  two2 tuple i32 i32   := tuple          4 2 ; p "two2 is {two2.values.0}, {two2.values.1}" # one-tuple using explicit type and inferring generic
+  two3 tuple i32 i32   :=               (4,2); p "two3 is {two3.values.0}, {two3.values.1}" # one-tuple using explicit type and tuple syntax sugar
+  two9                 :=               (4,2); p "two9 is {two9.values.0}, {two9.values.1}" # one-tuple inferring type and tuple syntax sugar
+  (two11a, two11b)     := tuple          4 2 ; p "two11 is $two11a, $two11b" # two-tuple using destructure and inferring generic
+  (two12a, two12b)     :=               (4,2); p "two12 is $two12a, $two12b" # two-tuple using destructure and tuple syntax sugar
   public two16a i32 := 42
   public two16b i32 := 42
   public two17a i32 := 42

@@ -250,7 +250,7 @@ public f32(public val f32) : float, java_primitive is
         -(f32 3.0)*π/4
       else if y > 0
         π
-      else // y < 0
+      else # y < 0
         -π
     else if y = f32.positive_infinity
       π/2

@@ -1407,9 +1407,9 @@ or single quote `'`.  This might, however, be used in the future.
           case K_SHARP   :   // '#'
             {
               /*
-    // tag::fuzion_rule_LEXR_COMMENT3[]
+    // tag::fuzion_rule_LEXR_COMMENT2[]
 A code point sharp 0x023 `#` that is not part of an operator starts a comment that extends until the end of the current line.
-    // end::fuzion_rule_LEXR_COMMENT3[]
+    // end::fuzion_rule_LEXR_COMMENT2[]
               */
               boolean SHARP_COMMENT_ONLY_IF_IN_COL_1 = false;
               token =
@@ -1490,17 +1490,11 @@ A Fuzion operator may start with a single slash 0x002F '/'.
               p = curCodePoint();
               /*
     // tag::fuzion_rule_LEXR_COMMENT1[]
-A sequence of two slash 0x002F '/' code points that are not part of an operator starts a comment that extends until the end of the current line.
+A sequence of code points slash 0x02f `/` followed by asterisk 0x002a `\*` starts a comment that extends until a corresponding sequence of `*` `/` is encountered.  These comments may be nested and each opening `/` `\*` must be matched by a corresponding `\*` `/`.
     // end::fuzion_rule_LEXR_COMMENT1[]
               */
-              token = kind(p) == K_SLASH ? skipUntilEOL() : // comment until end of line
-              /*
-    // tag::fuzion_rule_LEXR_COMMENT2[]
-A sequence of code points slash 0x02f `/` followed by asterisk 0x002a `\*` starts a comment that extends until a corresponding sequence of `*` `/` is encountered.  These comments may be nested and each opening `/` `\*` must be matched by a corresponding `\*` `/`.
-    // end::fuzion_rule_LEXR_COMMENT2[]
-              */
-                      p == '*'           ? skipComment()
-                                         : skipOp(Token.t_op);
+              token = p == '*' ? skipComment()
+                               : skipOp(Token.t_op);
               break;
             }
           /**

@@ -1,6 +1,6 @@
 
 ./doubledeclaration2.fz:26:43: error 1: Qualified declaration not allowed for field
-public doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
+public doubledeclaration_negative.cyclic1.a := 4   # 1. should flag an error, field not allowed in qualified declaration
 ------------------------------------------^
 All fields have to be declared textually within the source of their outer features.
 Field declared: 'doubledeclaration_negative.cyclic1.a'
@@ -12,13 +12,13 @@ To solve this, you could move the declaration into the implementation of feature
 -----------^
 Feature that was declared repeatedly: 'doubledeclaration_negative.cyclic1.a'
 originally declared at ./doubledeclaration2.fz:26:43:
-public doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
+public doubledeclaration_negative.cyclic1.a := 4   # 1. should flag an error, field not allowed in qualified declaration
 ------------------------------------------^
 To solve this, consider renaming one of these two features, e.g., as 'aʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
 ./doubledeclaration2.fz:26:43: error 3: Initial value not allowed for feature not embedded in outer feature
-public doubledeclaration_negative.cyclic1.a := 4   // 1. should flag an error, field not allowed in qualified declaration
+public doubledeclaration_negative.cyclic1.a := 4   # 1. should flag an error, field not allowed in qualified declaration
 ------------------------------------------^
 Fuzion currently does not know when to execute this initializer, so it is forbidden.
 To solve this, move the declaration inside another feature or ask the Fuzion team for help.
@@ -29,7 +29,7 @@ To solve this, move the declaration inside another feature or ask the Fuzion tea
 -----------^
 Feature that was declared repeatedly: 'doubledeclaration_negative.cyclic1.b'
 originally declared at ./doubledeclaration2.fz:27:49:
-public redef doubledeclaration_negative.cyclic1.b => 44  // 2. should flag an error, feature already declared in doubledeclaration_negative.fz
+public redef doubledeclaration_negative.cyclic1.b => 44  # 2. should flag an error, feature already declared in doubledeclaration_negative.fz
 ------------------------------------------------^
 To solve this, consider renaming one of these two features, e.g., as 'bʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 

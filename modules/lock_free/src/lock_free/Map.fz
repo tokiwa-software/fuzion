@@ -435,7 +435,7 @@ is
       match n
         i Indirection_Node =>
           match (gcas_read i).data
-            // resurrect
+            # resurrect
             tn tomb_node => tn.sn
             * => i
         sn singleton_node => sn
