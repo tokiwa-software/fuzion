@@ -17,9 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion test reg_issue5082
 #
 # -----------------------------------------------------------------------
 
-override NAME = visibility_scoping
-include ../simple_and_negative.mk
+reg_issue5082 =>
+
+  # code directly taken form #5082
+  if false
+    unit.lm : mutate is
+    unit.new_lm => lm
+
+    x := unit.new_lm ! ()->
+      say unit.lm
+    say x
+  else
+    say "hi"

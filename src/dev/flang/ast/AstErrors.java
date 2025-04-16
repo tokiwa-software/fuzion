@@ -2333,7 +2333,7 @@ public class AstErrors extends ANY
           To solve this, do either of the following
             - use the field
           """ +
-          ((f instanceof Feature && ((Feature)f)._scoped) ? "" : "  - set it to " + skw("public") + "\n") +
+          ((f instanceof Feature && ((Feature)f)._declaredInScope != null) ? "" : "  - set it to " + skw("public") + "\n") +
           "  - explicitly ignore the result by using " + sbn("_") + " instead of " + sbnf(f));
         Errors.unusedFieldErrCount++;
       }

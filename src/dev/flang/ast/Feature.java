@@ -357,10 +357,9 @@ public class Feature extends AbstractFeature
 
 
   /*
-   * true if this feature is found to be
-   * declared in a block with
-   * _newscope=true (e.g. if/else, loop)
-   * or in a case-block
+   * feature that contains the declaration of this feature if
+   * this.isExtensionFeature() or if this feature is found to be declared in a
+   * block with _newscope=true (e.g. if/else, loop) or in a case-block
    *
    * example:
    * ```
@@ -374,12 +373,12 @@ public class Feature extends AbstractFeature
    *        f4 =>
    *      }
    * ```
-   * f1, f3 and f4 are _scoped in this example.
-   * f2 is not _scoped, i.e. does not need to be checked if in scope.
+   * f1, f3 and f4 have _declaredInScope!=null in this example.
+   * f2 is has _declaredInScope==null, i.e. does not need to be checked if in scope.
    * This is because if f1 is accessible then f2 is also always accessible.
    *
    */
-  public boolean _scoped = false;
+  public AbstractFeature _declaredInScope = null;
 
 
   /**
@@ -1494,9 +1493,14 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this a fully qualified feature?
+   * Is this feature with a qualified feature name such as
+   *
+   *   String.danish => String.this.replace "a" "å"
+   *
+   * i.e., a feature declaration that is located syntactially outside of the
+   * outer feature's declaration.
    */
-  private boolean isExtensionFeature()
+  public boolean isExtensionFeature()
   {
     return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
   }
