@@ -227,7 +227,7 @@ void fzE_unlock(void);
  *
  * @return -1 error, 0 success
  */
-int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str);
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result);
 
 /**
  * wait for process `p` to exit
