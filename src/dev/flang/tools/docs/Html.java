@@ -225,7 +225,6 @@ public class Html extends ANY
       + annotateContainsAbstract(af)
       + annotatePrivateConstructor(af)
       + annotateModule(af)
-      //+ annotateInnerModules(af) // NYI: CLEANUP: for debugging only
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
@@ -345,17 +344,10 @@ public class Html extends ANY
    */
   private String annotateModule(AbstractFeature af)
   {
-    var afModule = lf(af)._libModule;
+    var afModule = libModule(af);
 
     // don't add annotation for features of own module
     return afModule == lm ? "" : "&nbsp;<div class='fd-parent'>[Module " + afModule.name() + "]</div>";
-  }
-
-  // NYI: CLEANUP: for debugging only: show modules of inner features
-  private String annotateInnerModules(AbstractFeature af)
-  {
-    String modules = lf(af).modulesOfInnerFeatures().stream().map(m -> m.name()).collect(Collectors.joining(", "));
-    return "&nbsp;<div class='fd-parent'>[Inner modules: " + modules + "]</div>";
   }
 
   private boolean isVisible(AbstractFeature af)
@@ -495,8 +487,10 @@ public class Html extends ANY
     // e.g. don't filter or sort type parameters and fields
     if (filterAndSort)
       {
-        features = features.filter(af -> lf(af).showInMod(lm))  // filter out features of other modules which do not need to be shown for this module
-                           .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()));
+        features = features
+                    // filter out features of other modules which do not need to be shown for this module
+                    .filter(af -> (af instanceof LibraryFeature lf ? lf.showInMod(lm) : false))
+                    .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()));
       }
 
     var content = features.map(af ->
@@ -762,7 +756,7 @@ public class Html extends ANY
    */
   private String featureAbsoluteURL(AbstractFeature f)
   {
-    return config.docsRoot() + "/" + lf(f)._libModule.name() + featureAbsoluteURL0(f) + "/";
+    return config.docsRoot() + "/" + libModule(f).name() + featureAbsoluteURL0(f) + "/";
   }
 
   private static String featureAbsoluteURL0(AbstractFeature f)
@@ -899,9 +893,7 @@ public class Html extends ANY
   private String navFeatHtml(AbstractFeature f, String prefix)
   {
     var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
-    var fHTML = "<a href='"
-                + (f.isUniverse() ? config.docsRoot() + "/" + lm.name() : featureAbsoluteURL(f))
-                + "'>" + fName + args(f) + "</a>";
+    var fHTML = "<a href='" + featureAbsoluteURL(f) + "'>" + fName + args(f) + "</a>";
     return "<div>" + prefix + fHTML + "</div>";
   }
 
@@ -943,13 +935,12 @@ public class Html extends ANY
 
 
   /**
-   * Cast an AbstractFeature to LibraryFeature
-   * @param af an AbstractFeature feature which must be of type LibraryFeature
-   * @return
+   * For LibraryFeatures return the features LibraryModule
+   * otherwise the LibraryModule of this HTML object 
    */
-  private static final LibraryFeature lf(AbstractFeature af)
+  private final LibraryModule libModule(AbstractFeature f)
   {
-    return (LibraryFeature) af;
+    return f instanceof LibraryFeature lf ? lf._libModule : lm;
   }
 
 
