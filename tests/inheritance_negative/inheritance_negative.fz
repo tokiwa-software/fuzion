@@ -25,32 +25,32 @@
 
 inheritance_negative is
 
-  // this is forbidden since the second u in strm2.u.u is a value type with the same value type as outer type
+  # this is forbidden since the second u in strm2.u.u is a value type with the same value type as outer type
   strm2.u.print
   strm2.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm2 ref is
 
-    u : strm2 is // 1. should flag an error, inheritance of outer feature not permitted for value type
+    u : strm2 is # 1. should flag an error, inheritance of outer feature not permitted for value type
 
     print unit =>
       say "strm2.print"
 
-  // this should not work since it uses value types
+  # this should not work since it uses value types
   strm3.u.print
   strm3.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm3 is
 
-    u : strm3 is // 2. should flag an error, inheritance of outer feature not permitted for value type
+    u : strm3 is # 2. should flag an error, inheritance of outer feature not permitted for value type
 
     print unit =>
       say "strm3.print"
 
-  // this should not work since it uses value types
+  # this should not work since it uses value types
   strm4.u.print
   strm4.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm4 ref is
 
-    u : strm4Z is // 3. should flag an error, inheritance of outer feature not permitted for value type
+    u : strm4Z is # 3. should flag an error, inheritance of outer feature not permitted for value type
 
     print unit =>
       say "strm4.print"

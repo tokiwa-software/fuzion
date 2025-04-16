@@ -39,7 +39,7 @@ functions is
       r1 i32 := f0.call "hallo" 3
       say "here 2x0---------------"
       r2 i32 := 42
-      //r2 := f0 "welt" 5
+      # r2 := f0 "welt" 5
       say "here 3x0---------------"
       say "$r1  $r2"
       say "here 1x0 done---------------"
@@ -49,9 +49,9 @@ functions is
       r1 i32 := f0.call "hallo" 3
       g (Any, i32) -> i32 := f0;
       r2 i32 := g.call "welt"  4
-      // i32 r3 := f0    ("hola",5);
-      // i32 r4 := g     ("mundo",5);
-      // r5 := f0("Konnichiwa sekai!",7);
+      # i32 r3 := f0    ("hola",5);
+      # i32 r4 := g     ("mundo",5);
+      # r5 := f0("Konnichiwa sekai!",7);
       say "$r1  $r2"
 
     say "here 1a---------------"
@@ -61,12 +61,12 @@ functions is
       )
 
     say "here 1b---------------"
-    // all of these are equivalent:
-//    x ((o, i) -> o.hash_code + i)
-//    x (fun (o, i) -> o.hash_code + i)
-//    x (fun (o, i) { o.hash_code + i})
+    # all of these are equivalent:
+#    x ((o, i) -> o.hash_code + i)
+#    x (fun (o, i) -> o.hash_code + i)
+#    x (fun (o, i) { o.hash_code + i})
     x ((o, i) -> { o.hash_code + i })
-    x ((o, i) -> { o.hash_code + i })  // implicit assignment to result from last expression
+    x ((o, i) -> { o.hash_code + i })  # implicit assignment to result from last expression
 
     say "here 1c---------------"
     x (ref : Binary i32 Any i32 is {

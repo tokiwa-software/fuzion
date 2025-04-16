@@ -1,6 +1,6 @@
 
 --CURDIR--/nested_choice_negative.fz:38:18: error 1: Ambiguous assignment to 'nested_choice_negative.this.my_choice' from 'nil'
-  c my_choice := nil // 1. should flag an error: ambiguous assignment
+  c my_choice := nil # 1. should flag an error: ambiguous assignment
 -----------------^^^
 'nil' is assignable to 'choice nil String', 'choice nil unit'
 

@@ -28,7 +28,7 @@ primes is
   mi : mutate is
   mi ! ()->
 
-    primes(n i64) => // sieve using loops
+    primes(n i64) => # sieve using loops
       _ :=
         for
           a := (mutate.array bool).new mi n+1 false, a
@@ -43,7 +43,7 @@ primes is
                 a[j] := true
     say "Primes using loop:"; primes 1000; say ""
 
-    primes2(n i64) =>   // sieve using streams
+    primes2(n i64) =>   # sieve using streams
       a := (mutate.array bool).new mi n+1 false
       ((i64 2)..n).for_each (i ->
           if !a[i]
@@ -55,7 +55,7 @@ primes is
         )
     say "Primes using streams:"; primes2 1000; say ""
 
-    primes3(n i64) =>   // sieve using streams and filters
+    primes3(n i64) =>   # sieve using streams and filters
       a := (mutate.array bool).new mi n+1 false
       ((i64 2)..n)
         .filter (i -> !a[i])
@@ -65,7 +65,7 @@ primes is
           )
     say "Primes using streams and filters:"; primes3 1000; say ""
 
-    primes4(n i64) =>  // sieve using pipes
+    primes4(n i64) =>  # sieve using pipes
       a := (mutate.array bool).new mi n+1 false
 
       (((i64 2)..n) |& (i -> !a[i])) ! i ->

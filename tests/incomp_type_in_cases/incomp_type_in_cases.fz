@@ -25,7 +25,7 @@ incomp_type_in_cases =>
 
 
   a =>
-    if true     // 1. should flag an error: incompatible types
+    if true     # 1. should flag an error: incompatible types
       "hello"
     else
       4

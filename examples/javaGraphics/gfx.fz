@@ -37,10 +37,10 @@ is
    * the appearance:
    */
 
-  // Width of black lines as percentage of main radius
+  # Width of black lines as percentage of main radius
   BLACK_LINE_WIDTH := 1.0/15
 
-  // size of three small circles relative to their surrounding circles
+  # size of three small circles relative to their surrounding circles
   SMALL_CIRCLE_PERCENTAGE := 0.25
 
 
@@ -48,46 +48,46 @@ is
    * changed:
    */
 
-  // total size
+  # total size
   SIZE := 512.0
 
-  // main radius
+  # main radius
   radius := SIZE / 2
 
-  // width of black lines
+  # width of black lines
   blw := radius * BLACK_LINE_WIDTH
 
-  // outer radius of three main wedges
+  # outer radius of three main wedges
   r1 := radius - blw
 
-  // side length of triangle of the centers of the three main circles with radius r2:
-  //
-  //  l = 2*r2 + b;
-  //
-  // distance from center to center of three main circles
-  //
-  //  h = r - r2 - b               -- using radius r
-  //
-  //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonometry
-  //
-  // so we get for r2
-  //
-  //  r - r2 - b = (2*r2+b)/ (2*(cos 30))
-  //
-  //  r - (b * (1 + 1/(2*(cos 30)))) = r2 * (1 + 1 / (cos 30))
-  //
-  //  r2 = (r - (b * (1 + 1/(2*(cos 30))))) / (1 + 1 / (cos 30))
-  //     = (r - (b * (1 + 1/(2*sqrt(3/4))))) / (1 + 1 / sqrt(3/4))
-  //     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
-  //
-  // radius of three main circles:
+  # side length of triangle of the centers of the three main circles with radius r2:
+  #
+  #  l = 2*r2 + b;
+  #
+  # distance from center to center of three main circles
+  #
+  #  h = r - r2 - b               -- using radius r
+  #
+  #  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonometry
+  #
+  # so we get for r2
+  #
+  #  r - r2 - b = (2*r2+b)/ (2*(cos 30))
+  #
+  #  r - (b * (1 + 1/(2*(cos 30)))) = r2 * (1 + 1 / (cos 30))
+  #
+  #  r2 = (r - (b * (1 + 1/(2*(cos 30))))) / (1 + 1 / (cos 30))
+  #     = (r - (b * (1 + 1/(2*sqrt(3/4))))) / (1 + 1 / sqrt(3/4))
+  #     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
+  #
+  # radius of three main circles:
   r2 := (radius - blw * (1.0 + (1.0/3).sqrt)) / (1.0 + 2.0*(1.0/3).sqrt)
 
-  // radius of three small circles
+  # radius of three small circles
   r3 := r2 * SMALL_CIRCLE_PERCENTAGE
 
 
-  // background and wedge colors:
+  # background and wedge colors:
   BACKGROUND := java.awt.Color.BLACK
   C1 := java.awt.Color.WHITE
   C2 := java.awt.Color.new_III 81 36 128     # NYI: Overloading of Java constructors
@@ -121,22 +121,22 @@ is
     # Draw the Fuzion logo
     #
     draw_logo is
-      // black background circle
+      # black background circle
       cir BACKGROUND 0 0 radius
 
-      // three arcs
+      # three arcs
       three_times (g, c -> g.arc c 0 0 r1 -30 120)
 
-      // black circle in the center, radius to touch the sides of the inner triangle
+      # black circle in the center, radius to touch the sides of the inner triangle
       cir BACKGROUND 0 0 (radius-r2-blw)/2
 
-      // black arcs around inner circles
+      # black arcs around inner circles
       three_times (g, c -> g.arc BACKGROUND 0 -radius+r2+blw r2+blw 90 210)
 
-      // inner circles
+      # inner circles
       three_times (g, c -> g.cir c 0 -radius+blw+r2 r2)
 
-      // small circles
+      # small circles
       _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -radius+blw+r2 r3)
 
 

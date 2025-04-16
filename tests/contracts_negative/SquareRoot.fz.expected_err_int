@@ -25,7 +25,7 @@ SquareRoot.precall sqrt: --CURDIR--/SquareRoot.fz:29:5:
       a ≥ 0
 ------^^^^^
 SquareRoot: --CURDIR--/SquareRoot.fz:44:21:
-  say "sqrt(-16) = {sqrt(-16)}" // 1. should flag an error, precondition failed
+  say "sqrt(-16) = {sqrt(-16)}" # 1. should flag an error, precondition failed
 --------------------^^^^^^^^^
 
 *** fatal errors encountered, stopping.

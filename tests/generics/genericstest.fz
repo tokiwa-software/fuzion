@@ -87,24 +87,24 @@ genericstest is
   lc0.print
   say "0: size: {lc0.size}"
 
-  // The parser uses some tricks to distinguish multiple ">" in a list of actual
-  // generics from an operator consisting of multiple ">". So we check if such an
-  // operator works here:
+  # The parser uses some tricks to distinguish multiple ">" in a list of actual
+  # generics from an operator consisting of multiple ">". So we check if such an
+  # operator works here:
   q(qa i32) is
     infix >    (b i32) bool => qa      > b
     infix >>   (b i32) bool => qa/10   > b
     infix >>>  (b i32) bool => qa/100  > b
     infix >>>> (b i32) bool => qa/1000 > b
 
-    prefix >    i32 => qa+1      // >q is 1 larger than q
-    prefix >>   i32 => qa+10     // >>q is 10 larger
-    prefix >>>  i32 => qa+100    // >>q is 100 larger
-    prefix >>>> i32 => qa+1000   // >>q is 1000 larger
+    prefix >    i32 => qa+1      # >q is 1 larger than q
+    prefix >>   i32 => qa+10     # >>q is 10 larger
+    prefix >>>  i32 => qa+100    # >>q is 100 larger
+    prefix >>>> i32 => qa+1000   # >>q is 1000 larger
 
-    postfix >    i32 => qa-1     // q> is 1 smaller than q
-    postfix >>   i32 => qa-10    // q>> is 10 smaller
-    postfix >>>  i32 => qa-100   // q>>> is 100 smaller
-    postfix >>>> i32 => qa-1000  // q>>>> is 1000 smaller
+    postfix >    i32 => qa-1     # q> is 1 smaller than q
+    postfix >>   i32 => qa-10    # q>> is 10 smaller
+    postfix >>>  i32 => qa-100   # q>>> is 100 smaller
+    postfix >>>> i32 => qa-1000  # q>>>> is 1000 smaller
 
   a q := q 1
   set a := q     2; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
@@ -133,7 +133,7 @@ genericstest is
   lc1.print
   say "1: size: {lc1.size}"
 
-  // lets see if we can derive actual generics automatically:
+  # lets see if we can derive actual generics automatically:
   lc2 := List (Complex i32)
   lc2.add (Complex i32 3 4)
   lc2.add (Complex i32 4 5)
@@ -160,7 +160,7 @@ genericstest is
     x1 (A i32 bool).B String bool := (A i32 bool).B String bool true
     x1.p
 
-  outerGenerics  // should print "y is true".
+  outerGenerics  # should print "y is true".
 
   opengenerics12 =>
 

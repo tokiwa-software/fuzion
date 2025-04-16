@@ -120,19 +120,19 @@ catch_precondition is
   _ := q.f 3
 
 
-  // we consider seven different preconditions:
-  //
-  //   1. none
-  //   2. x > 0
-  //   3. empty `pre`
-  //   4. true
-  //   5. false
-  //   6. x > 0; true
-  //   7. x > 0; false
-  //
-  // and then we define 7 parents p1..p7 that each define f1..f7 with these preconditions,
-  // but in rotating order:
-  //
+  # we consider seven different preconditions:
+  #
+  #   1. none
+  #   2. x > 0
+  #   3. empty `pre`
+  #   4. true
+  #   5. false
+  #   6. x > 0; true
+  #   7. x > 0; false
+  #
+  # and then we define 7 parents p1..p7 that each define f1..f7 with these preconditions,
+  # but in rotating order:
+  #
   p1 is
     f1(x i32)
     => x
@@ -378,11 +378,11 @@ catch_precondition is
       true
     => x
 
-  // now we inherit from all combinations and add a new precondition as follows:
-  //
-  // feature `c<n><m><k>` inherits from `p<n>` and `p<m>` and redefines `f1`..`f7`
-  // using variang `<k>`
-  //
+  # now we inherit from all combinations and add a new precondition as follows:
+  #
+  # feature `c<n><m><k>` inherits from `p<n>` and `p<m>` and redefines `f1`..`f7`
+  # using variang `<k>`
+  #
   c111 : p1, p1 is
     redef f1(x i32)
     => x
