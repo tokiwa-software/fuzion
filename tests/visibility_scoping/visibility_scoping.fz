@@ -37,7 +37,7 @@ visibility_scoping is
       x c => say x
       x d => say x
 
-    say x     # should flag an error: feature not found
+    say x     #  1. should flag an error: feature not found
 
 
 
@@ -46,7 +46,7 @@ visibility_scoping is
 
   #   A(b i32) ref is
   #   c(b i32) is
-  #     d : A b is  # should NOT flag an error
+  #     d : A b is  #  should NOT flag an error
 
 
 
@@ -56,7 +56,7 @@ visibility_scoping is
 
     ref : Function unit is
       public redef call =>
-        say ar  # should flag an error: feature not found
+        say ar  #  2. should flag an error: feature not found
 
 
 
@@ -67,7 +67,7 @@ visibility_scoping is
     else
       x := 2
       panic "P"
-    say ((0..1).map y->x)  # should flag an error: feature not found
+    say ((0..1).map y->x)  #  3. should flag an error: feature not found
 
 
 
@@ -78,7 +78,7 @@ visibility_scoping is
     do
     else
       say "in else     : q is $q"
-    say "outside else: q is $q"   # should flag an error: feature not found
+    say "outside else: q is $q"   #  4. should flag an error: feature not found
 
 
 
@@ -89,18 +89,18 @@ visibility_scoping is
         tt := t
         ttt => t
 
-    a => ttt # should flag an error: feature not found
-    b => tt   # should flag an error: feature not found
-    c => t   # should flag an error: feature not found
-    _ := ttt # should flag an error: feature not found
-    _ := tt   # should flag an error: feature not found
-    _ := t   # should flag an error: feature not found
+    a => ttt  #  5. should flag an error: feature not found
+    b => tt   #  6. should flag an error: feature not found
+    c => t    #  7. should flag an error: feature not found
+    _ := ttt  #  8. should flag an error: feature not found
+    _ := tt   #  9. should flag an error: feature not found
+    _ := t    # 10. should flag an error: feature not found
 
 
 
   # NYI: BUG:
   # test7 is
-  #   x i32 := (3..5).reduce -5 (a,b)->x # should flag an error: feature not found
+  #   x i32 := (3..5).reduce -5 (a,b)->x # should raise an error: feature not found
   #   say x
 
 
@@ -121,3 +121,68 @@ visibility_scoping is
       if true
         say x
       x := 3
+
+
+  # test of extension features like `unit.x`:
+  #
+  test10 is
+
+    # `unit.x` and `a` should be visible both in `f` and `g`
+    unit.x is
+    a is
+
+    # `f` declares and uses inner features in `unit` and in `f`
+    #
+    f =>
+
+      # `unit.y` and `b` should be visible in `f`
+      unit.y is
+      b is
+
+      if envir.args.count > 2
+
+        # `unit.z1`, `unit.z2`, `c1` and `c2` should be visible in this `if` clause only
+        unit.z1 is
+        c1 is
+
+        _ := unit.q   # 12. should flag en error: unit.q does not exist
+        _ := unit.x   # ok
+        _ := unit.y   # ok
+        _ := unit.z1  # ok
+        _ := unit.z2  # ok
+        _ := q        # 13. should flag en error: q does not exist
+        _ := a        # ok
+        _ := b        # ok
+        _ := c1       # ok
+        _ := c2       # ok
+
+        unit.z2 is
+        c2 is
+
+      else
+
+        _ := unit.q   # 14. should flag en error: unit.q does not exist
+        _ := unit.x   # ok
+        _ := unit.y   # ok
+        _ := unit.z1  # 15. should flag en error: unit.z1 not in scope
+        _ := unit.z2  # 16. should flag en error: unit.z2 not in scope
+        _ := q        # 17. should flag en error: q does not exist
+        _ := a        # ok
+        _ := b        # ok
+        _ := c1       # 18. should flag en error: c1 not in scope
+        _ := c2       # 19. should flag en error: c2 not in scope
+
+    # `g` attempts to access inner and scoped features in `f`
+    #
+    g =>
+
+      _ := unit.q   # 20. should flag en error: unit.q does not exist
+      _ := unit.x   # ok
+      _ := unit.y   # 21. should flag en error: unit.y not in scope
+      _ := unit.z1  # 22. should flag en error: unit.z1 not in scope
+      _ := unit.z2  # 23. should flag en error: unit.z2 not in scope
+      _ := q        # 24. should flag en error: q does not exist
+      _ := a        # ok
+      _ := b        # 25. should flag en error: b not in scope
+      _ := c1       # 26. should flag en error: c1 not in scope
+      _ := c2       # 27. should flag en error: c2 not in scope

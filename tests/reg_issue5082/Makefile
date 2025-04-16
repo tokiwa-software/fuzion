@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = visibility_scoping
-include ../simple_and_negative.mk
+override NAME = reg_issue5082
+include ../simple.mk
