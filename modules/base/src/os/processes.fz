@@ -79,10 +79,8 @@ install_default =>
     # helper feature for start and `infix |`
     #
     public redef start(n String, args Sequence String, env_vars container.Map String String) outcome os.process
-    pre else
-      # NYI: UNDER DEVELOPMENT: what about quotes(") ?
-      debug: env_vars.keys    ∀ (x -> x.as_codepoints ∀ .is_ascii)
     =>
+      # NYI: UNDER DEVELOPMENT: what about quotes(") ?
 
       sys => fuzion.sys
       NULL := [u8 0].internal_array.data
@@ -118,9 +116,3 @@ public processes =>
   install_default
   processes.env
 
-
-# Process_Handler
-#
-public Process_Handler ref is
-
-  public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process => abstract
