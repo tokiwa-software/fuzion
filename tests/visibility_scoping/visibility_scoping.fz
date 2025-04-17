@@ -119,7 +119,7 @@ visibility_scoping is
   test9 is
     if true
       if true
-        say x
+        say x   # 11. should flag an error: feature not found
       x := 3
 
 
@@ -145,12 +145,12 @@ visibility_scoping is
         unit.z1 is
         c1 is
 
-        _ := unit.q   # 12. should flag en error: unit.q does not exist
+        _ := unit.q   # 12. should flag an error: unit.q does not exist
         _ := unit.x   # ok
         _ := unit.y   # ok
         _ := unit.z1  # ok
         _ := unit.z2  # ok
-        _ := q        # 13. should flag en error: q does not exist
+        _ := q        # 13. should flag an error: q does not exist
         _ := a        # ok
         _ := b        # ok
         _ := c1       # ok
@@ -161,28 +161,28 @@ visibility_scoping is
 
       else
 
-        _ := unit.q   # 14. should flag en error: unit.q does not exist
+        _ := unit.q   # 14. should flag an error: unit.q does not exist
         _ := unit.x   # ok
         _ := unit.y   # ok
-        _ := unit.z1  # 15. should flag en error: unit.z1 not in scope
-        _ := unit.z2  # 16. should flag en error: unit.z2 not in scope
-        _ := q        # 17. should flag en error: q does not exist
+        _ := unit.z1  # 15. should flag an error: unit.z1 not in scope
+        _ := unit.z2  # 16. should flag an error: unit.z2 not in scope
+        _ := q        # 17. should flag an error: q does not exist
         _ := a        # ok
         _ := b        # ok
-        _ := c1       # 18. should flag en error: c1 not in scope
-        _ := c2       # 19. should flag en error: c2 not in scope
+        _ := c1       # 18. should flag an error: c1 not in scope
+        _ := c2       # 19. should flag an error: c2 not in scope
 
     # `g` attempts to access inner and scoped features in `f`
     #
     g =>
 
-      _ := unit.q   # 20. should flag en error: unit.q does not exist
+      _ := unit.q   # 20. should flag an error: unit.q does not exist
       _ := unit.x   # ok
-      _ := unit.y   # 21. should flag en error: unit.y not in scope
-      _ := unit.z1  # 22. should flag en error: unit.z1 not in scope
-      _ := unit.z2  # 23. should flag en error: unit.z2 not in scope
-      _ := q        # 24. should flag en error: q does not exist
+      _ := unit.y   # 21. should flag an error: unit.y not in scope
+      _ := unit.z1  # 22. should flag an error: unit.z1 not in scope
+      _ := unit.z2  # 23. should flag an error: unit.z2 not in scope
+      _ := q        # 24. should flag an error: q does not exist
       _ := a        # ok
-      _ := b        # 25. should flag en error: b not in scope
-      _ := c1       # 26. should flag en error: c1 not in scope
-      _ := c2       # 27. should flag en error: c2 not in scope
+      _ := b        # 25. should flag an error: b not in scope
+      _ := c1       # 26. should flag an error: c1 not in scope
+      _ := c2       # 27. should flag an error: c2 not in scope
