@@ -20,43 +20,41 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionWorkspaceService
+ * Source of class DummyLogger
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp;
+package dev.flang.lsp.shared;
 
-import java.util.concurrent.CompletableFuture;
-
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
-import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.WorkspaceService;
-
-import dev.flang.lsp.feature.Commands;
-import dev.flang.lsp.shared.Context;
-
-public class FuzionWorkspaceService implements WorkspaceService
+class DummyLogger implements Logger
 {
 
   @Override
-  public void didChangeConfiguration(DidChangeConfigurationParams params)
-  {
-    Context.logger.log("[Workspace] received config change.");
-    FuzionLanguageServer.refetchClientConfig();
-  }
-
-  @Override
-  public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
+  public void error(String str)
   {
     // TODO Auto-generated method stub
+
   }
 
   @Override
-  public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
+  public void warning(String str)
   {
-    return Commands.execute(params);
+    // TODO Auto-generated method stub
+
   }
 
+  @Override
+  public void info(String str)
+  {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void log(String str)
+  {
+    // TODO Auto-generated method stub
+
+  }
 
 }

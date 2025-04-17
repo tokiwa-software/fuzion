@@ -20,43 +20,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionWorkspaceService
+ * Source of class Context
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp;
 
-import java.util.concurrent.CompletableFuture;
+package dev.flang.lsp.shared;
 
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
-import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.WorkspaceService;
+import dev.flang.util.FuzionOptions;
 
-import dev.flang.lsp.feature.Commands;
-import dev.flang.lsp.shared.Context;
-
-public class FuzionWorkspaceService implements WorkspaceService
+public class Context
 {
-
-  @Override
-  public void didChangeConfiguration(DidChangeConfigurationParams params)
-  {
-    Context.logger.log("[Workspace] received config change.");
-    FuzionLanguageServer.refetchClientConfig();
-  }
-
-  @Override
-  public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
-  {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
-  {
-    return Commands.execute(params);
-  }
-
-
+  public static FuzionOptions fuzionOptions = new FuzionOptions(0, 0, false, true, SourceText.fuzionHome, null){
+    public boolean isLanguageServer() { return true; };
+  };
+  public static Logger logger = new DummyLogger();
+  public static boolean middleEndEnabled = false;
 }
