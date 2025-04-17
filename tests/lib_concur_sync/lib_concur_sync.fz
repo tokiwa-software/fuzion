@@ -44,8 +44,6 @@ lib_concur_sync =>
         b.join
 
       check cnd_res.ok
-      # NYI: BUG: without this, DFA reading uninitialized field
-      unit
     check mtx_res.ok
 
 
@@ -71,8 +69,6 @@ lib_concur_sync =>
         b.join
 
       check cnd_res.ok
-      # NYI: BUG: without this, DFA reading uninitialized field
-      unit
     check mtx_res.ok
 
 
