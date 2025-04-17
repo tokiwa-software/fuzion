@@ -80,12 +80,18 @@ void fzE_mem_zero(void *dest, size_t sz)
   SecureZeroMemory(dest, sz);
 }
 
+// thread local to hold the last
+// error that occurred in fuzion runtime.
+_Thread_local int last_error = 0;
 
 
 // returns the latest error number of
 // the current thread
 int fzE_last_error(void){
-  return (int)GetLastError();
+  // NYI: CLEANUP:
+  return last_error == 0
+    ? GetLastError()
+    : last_error;
 }
 
 // NYI missing set_last_error, see posix.c
@@ -799,7 +805,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   );
   free(app);
   if (spw == 0) {
-    SetLastError(2 /*NYI replace magic number*/);
+    last_error = ERROR_FILE_NOT_FOUND;
     return -1;
   }
 
@@ -807,7 +813,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   wchar_t *envBlock = build_unicode_environment_block(env, envLen);
 
   if (!args_w) {
-    SetLastError(3 /*NYI replace magic number*/);
+    last_error = ERROR_INVALID_NAME;
     return -1;
   }
 
@@ -840,6 +846,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   free(envBlock);
 
   if (!success) {
+    last_error = GetLastError();
     return -1;
   }
 
