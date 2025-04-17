@@ -717,7 +717,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
 // wait for process to finish
 // returns exit code or -1 on wait-failure.
-int32_t fzE_process_wait(int64_t p){
+int64_t fzE_process_wait(int64_t p){
   int status;
   return set_last_error(waitpid(p, &status, WUNTRACED | WCONTINUED)) == -1
     ? -1

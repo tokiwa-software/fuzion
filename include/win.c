@@ -618,6 +618,11 @@ pthread_mutex_t fzE_global_mutex;
  */
 void fzE_init()
 {
+  // NYI: UNDER DEVELOPMENT: what about none UTF8 terminals?
+  // set console output code page to UTF-8
+  SetConsoleOutputCP(CP_UTF8);
+  // also set input code page
+  SetConsoleCP(CP_UTF8);
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
@@ -863,14 +868,14 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 
 // wait for process to finish
 // returns exit code or -1 on wait-failure.
-int32_t fzE_process_wait(int64_t p){
+int64_t fzE_process_wait(int64_t p){
   DWORD status = 0;
   WaitForSingleObject((HANDLE)p, INFINITE);
   if (!GetExitCodeProcess((HANDLE)p, &status)){
     return -1;
   }
   CloseHandle((HANDLE)p);
-  return (int32_t)status;
+  return (int64_t)status;
 }
 
 
