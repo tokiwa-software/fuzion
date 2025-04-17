@@ -37,11 +37,11 @@ import com.google.gson.JsonObject;
 import dev.flang.lsp.enums.Transport;
 import dev.flang.lsp.feature.CodeLenses;
 import dev.flang.lsp.feature.InlayHints;
-import dev.flang.shared.Context;
-import dev.flang.shared.ErrorHandling;
-import dev.flang.shared.ParserTool;
-import dev.flang.shared.Util;
-import dev.flang.shared.SourceText;
+import dev.flang.lsp.shared.Context;
+import dev.flang.lsp.shared.ErrorHandling;
+import dev.flang.lsp.shared.ParserTool;
+import dev.flang.lsp.shared.SourceText;
+import dev.flang.lsp.shared.Util;
 import dev.flang.util.FuzionOptions;
 
 public class Config

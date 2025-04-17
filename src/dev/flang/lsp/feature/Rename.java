@@ -42,17 +42,17 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.lsp.shared.ASTWalker;
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.LexerTool;
+import dev.flang.lsp.shared.ParserTool;
+import dev.flang.lsp.shared.QueryAST;
+import dev.flang.lsp.shared.SourcePositionTool;
+import dev.flang.lsp.shared.TypeTool;
+import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.LSP4jUtils;
 import dev.flang.parser.Lexer.Token;
-import dev.flang.shared.ASTWalker;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.LexerTool;
-import dev.flang.shared.ParserTool;
-import dev.flang.shared.QueryAST;
-import dev.flang.shared.SourcePositionTool;
-import dev.flang.shared.TypeTool;
-import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 

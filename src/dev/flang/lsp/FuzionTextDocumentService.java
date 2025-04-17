@@ -84,11 +84,11 @@ import dev.flang.lsp.feature.References;
 import dev.flang.lsp.feature.Rename;
 import dev.flang.lsp.feature.SemanticToken;
 import dev.flang.lsp.feature.SignatureHelper;
+import dev.flang.lsp.shared.Debouncer;
+import dev.flang.lsp.shared.SourceText;
+import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Computation;
 import dev.flang.lsp.util.LSP4jUtils;
-import dev.flang.shared.Debouncer;
-import dev.flang.shared.SourceText;
-import dev.flang.shared.Util;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {

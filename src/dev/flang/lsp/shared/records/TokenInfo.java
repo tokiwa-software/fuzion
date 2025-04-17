@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.shared.records;
+package dev.flang.lsp.shared.records;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashSet;
@@ -41,14 +41,14 @@ import dev.flang.ast.State;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.enums.TokenModifier; // NYI remove dependency
 import dev.flang.lsp.enums.TokenType; // NYI remove dependency
+import dev.flang.lsp.shared.ASTWalker;
+import dev.flang.lsp.shared.CallTool;
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.LexerTool;
+import dev.flang.lsp.shared.ParserTool;
+import dev.flang.lsp.shared.SourceText;
+import dev.flang.lsp.shared.Util;
 import dev.flang.parser.Lexer.Token;
-import dev.flang.shared.ASTWalker;
-import dev.flang.shared.CallTool;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.LexerTool;
-import dev.flang.shared.ParserTool;
-import dev.flang.shared.SourceText;
-import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;

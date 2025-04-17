@@ -36,10 +36,10 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 
 import dev.flang.lsp.Config;
-import dev.flang.shared.Concurrency;
-import dev.flang.shared.Context;
-import dev.flang.shared.ErrorHandling;
-import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
+import dev.flang.lsp.shared.Concurrency;
+import dev.flang.lsp.shared.Context;
+import dev.flang.lsp.shared.ErrorHandling;
+import dev.flang.lsp.shared.concurrent.MaxExecutionTimeExceededException;
 
 public class Computation
 {

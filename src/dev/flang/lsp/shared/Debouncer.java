@@ -1,4 +1,4 @@
-package dev.flang.shared;
+package dev.flang.lsp.shared;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;

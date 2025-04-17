@@ -39,12 +39,12 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.lsp.enums.TokenModifier;
 import dev.flang.lsp.enums.TokenType;
+import dev.flang.lsp.shared.LexerTool;
+import dev.flang.lsp.shared.SourcePositionTool;
+import dev.flang.lsp.shared.Util;
+import dev.flang.lsp.shared.records.TokenInfo;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.parser.Lexer.Token;
-import dev.flang.shared.LexerTool;
-import dev.flang.shared.SourcePositionTool;
-import dev.flang.shared.Util;
-import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 

@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.shared;
+package dev.flang.lsp.shared;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -325,7 +325,7 @@ public class QueryAST extends ANY
       // the AST currently
       .or(() -> featureAtFuzzy(params))
       .or(() -> {
-        dev.flang.shared.Context.logger.warning("No feature found at: " + params);
+        dev.flang.lsp.shared.Context.logger.warning("No feature found at: " + params);
         return Optional.empty();
       });
   }

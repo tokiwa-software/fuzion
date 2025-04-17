@@ -33,11 +33,11 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.HasSourcePositionTool;
+import dev.flang.lsp.shared.QueryAST;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.LSP4jUtils;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.HasSourcePositionTool;
-import dev.flang.shared.QueryAST;
 
 /**
  * return document hightlights for calls to feature

@@ -31,11 +31,11 @@ import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.LexerTool;
+import dev.flang.lsp.shared.QueryAST;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.LSP4jUtils;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.LexerTool;
-import dev.flang.shared.QueryAST;
 
 /**
  * on hover returns signature of call

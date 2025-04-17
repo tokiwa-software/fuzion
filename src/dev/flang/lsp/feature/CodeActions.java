@@ -41,11 +41,11 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
+import dev.flang.lsp.shared.CaseConverter;
+import dev.flang.lsp.shared.QueryAST;
+import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.LSP4jUtils;
-import dev.flang.shared.CaseConverter;
-import dev.flang.shared.QueryAST;
-import dev.flang.shared.Util;
 
 public class CodeActions
 {

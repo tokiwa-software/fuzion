@@ -20,19 +20,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of interface Logger
+ * Source of class MaxExecutionTimeExceededException
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.shared;
+package dev.flang.lsp.shared.concurrent;
 
-public interface Logger
+public class MaxExecutionTimeExceededException extends Exception
 {
-  public void error(String str);
-
-  public void warning(String str);
-
-  public void info(String str);
-
-  public void log(String str);
+  public MaxExecutionTimeExceededException(String message, Throwable cause)
+  {
+    super(message, cause);
+  }
 }

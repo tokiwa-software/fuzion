@@ -36,8 +36,8 @@ import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.lsp.shared.QueryAST;
 import dev.flang.lsp.util.Bridge;
-import dev.flang.shared.QueryAST;
 
 /**
  * tries to provide the definition of a call
