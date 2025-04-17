@@ -27,7 +27,8 @@ override PATH := $(PATH):$(shell pwd)
 all: jvm c int
 
 compile_unicode_feature:
-	../../bin/fz -c unicode_feature.fz
+	../../bin/fz -c -o=smiley unicode_feature.fz
+	mv -f smiley.exe 😀.exe 2> /dev/null || mv -f smiley 😀 2> /dev/null || true
 
 jvm: compile_unicode_feature
 

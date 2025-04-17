@@ -63,12 +63,6 @@ if [ -f "$2".effect ]; then
 
     expout=$2.effect
 
-    # NYI: workaround for #2586
-    if [ "${OS-default}" = "Windows_NT" ]; then
-        iconv --unicode-subst="?"  --byte-subst="?" --widechar-subst="?" -f utf-8 -t ascii "$expout" > tmp_conv.txt || false && cp tmp_conv.txt "$expout"
-        iconv --unicode-subst="?"  --byte-subst="?" --widechar-subst="?" -f utf-8 -t ascii tmp_out.txt > tmp_conv.txt || false && cp tmp_conv.txt tmp_out.txt
-    fi
-
     FAILED="none" # "out" or "err" or "none"
     diff --strip-trailing-cr "$expout" tmp_out.txt || FAILED="out"; true
     rm tmp_out.txt

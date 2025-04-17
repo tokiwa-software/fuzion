@@ -234,7 +234,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
  *
  * @return -1 error, >=0 exit code
  */
-int32_t fzE_process_wait(int64_t p);
+int64_t fzE_process_wait(int64_t p);
 
 /**
  * read nbytes bytes into `buf` from pipe `desc`.
