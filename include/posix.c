@@ -608,7 +608,7 @@ void fzE_unlock()
 // NYI make this thread safe
 // NYI option to pass stdin,stdout,stderr
 // zero on success, -1 error
-int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str)
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result)
 {
 
   // Describes the how and why

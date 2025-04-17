@@ -58,6 +58,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "fz.h"
 
+static_assert(sizeof(L'\0') == 2, "wide char, unexpected bytes");
+
 
 /**
  * convert utf-8 string to wide string
@@ -697,120 +699,158 @@ void fzE_unlock()
 }
 
 
-// NYI make this thread safe
-// NYI option to pass stdin,stdout,stderr
-// zero on success, -1 error
-int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str) {
+// combine NULL-terminated UTF-8 string array into wide string
+wchar_t *build_unicode_args(char *args[], size_t argsLen) {
+  size_t totalLen = 2;
+  for (size_t i = 0; i < argsLen - 1; ++i) {
+    totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0)+1;
+  }
+  wchar_t *cmd = (wchar_t *)malloc(totalLen * sizeof(wchar_t));
+  assert(!!cmd);
 
-  // create stdIn, stdOut, stdErr pipes
-  HANDLE stdIn[2];
-  HANDLE stdOut[2];
-  HANDLE stdErr[2];
+  // wcscat requires the destination string to be null-terminated.
+  cmd[0] = L'\0';
 
-  SECURITY_ATTRIBUTES secAttr = { sizeof(SECURITY_ATTRIBUTES) , NULL, TRUE };
-
-  // NYI cleanup on error
-  if ( !CreatePipe(&stdIn[0], &stdIn[1], &secAttr, 0)
-    || !CreatePipe(&stdOut[0], &stdOut[1],&secAttr, 0)
-    || !CreatePipe(&stdErr[0], &stdErr[1], &secAttr, 0))
-  {
-    return -1;
+  for (size_t i = 0; i < argsLen - 1; ++i) {
+    wchar_t *warg = utf8_to_wide_str(args[i]);
+    if (!warg) {
+      free(cmd);
+      return NULL;
+    }
+    wcscat(cmd, L"\"");
+    wcscat(cmd, warg);
+    wcscat(cmd, L"\" ");
+    free(warg);
   }
 
-  // prepare create process args
-  PROCESS_INFORMATION processInfo;
-  ZeroMemory( &processInfo, sizeof(PROCESS_INFORMATION) );
-  STARTUPINFOW startupInfo;
-  ZeroMemory( &startupInfo, sizeof(STARTUPINFOW) );
-  startupInfo.hStdInput = stdIn[0];
-  startupInfo.hStdOutput = stdOut[1];
-  startupInfo.hStdError = stdErr[1];
-  startupInfo.dwFlags |= STARTF_USESTDHANDLES;
-  startupInfo.cb = sizeof(STARTUPINFOW);
+  return cmd;
+}
+
+
+
+wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
+  size_t totalLen = 2; // Final null terminators
+  for (size_t i = 0; i < envLen - 1; ++i) {
+    totalLen += MultiByteToWideChar(CP_UTF8, 0, env[i], -1, NULL, 0)+1;
+  }
+
+  wchar_t *envBlock = (wchar_t *)malloc(totalLen * sizeof(wchar_t));
+  assert(!!envBlock);
+
+  wchar_t *ptr = envBlock;
+  for (size_t i = 0; i < envLen - 1; ++i) {
+    wchar_t *wenv = utf8_to_wide_str(env[i]);
+    if (!wenv) {
+      free(envBlock);
+      return NULL;
+    }
+    size_t len = wcslen(wenv);
+    wcscpy(ptr, wenv);
+    ptr += len + 1;
+    free(wenv);
+  }
+  // A Unicode environment block is terminated by four zero bytes:
+  // two for the last string, two more to terminate the block.
+  ptr[0] = 0;
+  ptr[1] = 0;
+
+  return envBlock;
+}
+
+
+int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
 
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
 
-  SIZE_T size = 0;
-  LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList = NULL;
-  if(! (InitializeProcThreadAttributeList(NULL, 1, 0, &size) ||
-             GetLastError() == ERROR_INSUFFICIENT_BUFFER)){
+  HANDLE hStdinRead, hStdinWrite;
+  HANDLE hStdoutRead, hStdoutWrite;
+  HANDLE hStderrRead, hStderrWrite;
+
+  SECURITY_ATTRIBUTES saAttr = {
+      .nLength = sizeof(SECURITY_ATTRIBUTES),
+      .bInheritHandle = TRUE,
+      .lpSecurityDescriptor = NULL
+  };
+
+  if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
+      !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
+      !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+      return -1;
+  }
+
+  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
+  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
+
+  // we resolve app path manually, because we
+  // want to pass empty env where PATH is not set
+  // so app would not be found when passing
+  // via args
+  wchar_t *app = utf8_to_wide_str(args[0]);
+  WCHAR resolvedPath[MAX_PATH];
+  DWORD spw = SearchPathW(
+    NULL,
+    app,
+    L".exe",
+    MAX_PATH,
+    resolvedPath,
+    NULL
+  );
+  free(app);
+  if (spw == 0) {
+    SetLastError(2 /*NYI replace magic number*/);
     return -1;
   }
-  lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST) HeapAlloc(GetProcessHeap(), 0, size);
-  if(lpAttributeList == NULL){
-    return -1;
-  }
-  if(!InitializeProcThreadAttributeList(lpAttributeList,
-                      1, 0, &size)){
-    HeapFree(GetProcessHeap(), 0, lpAttributeList);
-    return -1;
-  }
-  HANDLE handlesToInherit[] =  { stdIn[0], stdOut[1], stdErr[1] };
-  if(!UpdateProcThreadAttribute(lpAttributeList,
-                      0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-                      handlesToInherit,
-                      3 * sizeof(HANDLE), NULL, NULL)){
-    DeleteProcThreadAttributeList(lpAttributeList);
-    HeapFree(GetProcessHeap(), 0, lpAttributeList);
+
+  wchar_t *args_w = build_unicode_args(args, argsLen);
+  wchar_t *envBlock = build_unicode_environment_block(env, envLen);
+
+  if (!args_w) {
+    SetLastError(3 /*NYI replace magic number*/);
     return -1;
   }
 
-  // NYI use unicode?
-  // int wchars_num = MultiByteToWideChar(CP_UTF8, 0, &str, -1, NULL, 0);
-  // wchar_t* wstr = new wchar_t[wchars_num];
-  // MultiByteToWideChar(CP_UTF8, 0, &str, -1, wstr, wchars_num);
-  // Note that an ANSI environment block is terminated by two zero bytes: one for the last string, one more to terminate the block.
-  // A Unicode environment block is terminated by four zero bytes: two for the last string, two more to terminate the block.
+  PROCESS_INFORMATION pi;
+  STARTUPINFOW si = {0};
+  si.cb = sizeof(STARTUPINFOW);
+  si.dwFlags |= STARTF_USESTDHANDLES;
+  si.hStdInput = hStdinRead;
+  si.hStdOutput = hStdoutWrite;
+  si.hStdError = hStderrWrite;
 
+  BOOL success = CreateProcessW(
+    resolvedPath,
+    args_w,
+    NULL,
+    NULL,
+    TRUE,
+    CREATE_UNICODE_ENVIRONMENT,
+    envBlock,
+    NULL,
+    &si,
+    &pi
+  );
 
-  int res = -1;
-  wchar_t* args_wide = utf8_to_wide_str(args_str);
-  wchar_t* env_wide = utf8_to_wide_str(env_str);
+  CloseHandle(hStdinRead);
+  CloseHandle(hStdoutWrite);
+  CloseHandle(hStderrWrite);
 
-  if(!CreateProcessW(NULL,
-      args_wide,                     // command line
-      NULL,                          // process security attributes
-      NULL,                          // primary thread security attributes
-      TRUE,                          // inherit handles listed in startupInfo
-      EXTENDED_STARTUPINFO_PRESENT,  // creation flags
-      env_wide,                      // environment
-      NULL,                          // use parent's current directory
-      &startupInfo,                  // STARTUPINFO pointer
-      &processInfo))                 // receives PROCESS_INFORMATION
-  {
-    // cleanup all pipes
-    CloseHandle(stdIn[0]);
-    CloseHandle(stdIn[1]);
-    CloseHandle(stdOut[0]);
-    CloseHandle(stdOut[1]);
-    CloseHandle(stdErr[0]);
-    CloseHandle(stdErr[1]);
-    res = -1;
-  }
-  else{
-    DeleteProcThreadAttributeList(lpAttributeList);
-    HeapFree(GetProcessHeap(), 0, lpAttributeList);
+  free(args_w);
+  free(envBlock);
 
-    // no need for this handle, closing
-    CloseHandle(processInfo.hThread);
-
-    // close the handles given to child process.
-    CloseHandle(stdIn[0]);
-    CloseHandle(stdOut[1]);
-    CloseHandle(stdErr[1]);
-
-    result[0] = (int64_t) processInfo.hProcess;
-    result[1] = (int64_t) stdIn[1];
-    result[2] = (int64_t) stdOut[0];
-    result[3] = (int64_t) stdErr[0];
-    res = 0;
+  if (!success) {
+    return -1;
   }
 
-  free(args_wide);
-  free(env_wide);
+  CloseHandle(pi.hThread);
 
-  return res;
+  result[0] = (int64_t)pi.hProcess;
+  result[1] = (int64_t)hStdinWrite;
+  result[2] = (int64_t)hStdoutRead;
+  result[3] = (int64_t)hStderrRead;
+
+  return 0;
 }
 
 
@@ -1006,7 +1046,7 @@ void fzE_date_time(void * result)
   ((int32_t *)result)[3] = ptm->tm_hour;
   ((int32_t *)result)[4] = ptm->tm_min;
   ((int32_t *)result)[5] = ptm->tm_sec;
-  ((int32_t *)result)[6] = 0;
+  ((int32_t *)result)[6] = 0; // NYI: nanosec missing
 }
 
 
