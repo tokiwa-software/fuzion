@@ -119,7 +119,6 @@ FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 FZ_SRC_TESTS         = $(FZ_SRC)/tests
 FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
 FZ_SRC_INCLUDE       = $(FZ_SRC)/include
-FUZION_FILES_INCLUDE = $(shell find $(FZ_SRC_INCLUDE) -name "*.h")
 FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE))
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
@@ -1117,7 +1116,7 @@ $(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
 	cp -rf $(FZ_SRC_TESTS) $@
 	chmod +x $@/*.sh
 
-$(BUILD_DIR)/include: $(FUZION_FILES_INCLUDE)
+$(BUILD_DIR)/include: $(FUZION_FILES_RT)
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_INCLUDE) $@
