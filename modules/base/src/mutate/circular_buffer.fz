@@ -169,7 +169,8 @@ is
   # create immutable array from this
   #
   public redef as_array =>
-    array buffered.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
+    s := start.get
+    array buffered.as_i32 (i -> data[(modded_mod (s + i.as_i64) length).as_i32])
 
 
   # create a list from this array

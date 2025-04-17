@@ -62,6 +62,7 @@ public record ClazzRecord(
   int inlineArrayElementClazz,
   String clazzAsStringHuman,
   String clazzSrcFile,
+  int clazzSrcBytePos,
   int lookupJavaRef
   ) implements Serializable
 {
