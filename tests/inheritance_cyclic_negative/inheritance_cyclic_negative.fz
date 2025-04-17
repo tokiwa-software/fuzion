@@ -25,39 +25,39 @@
 
 inheritance_cyclic_negative is
 
-  cyclic1 : cyclic1 is // 1. should flag an error, cyclic inheritance
+  cyclic1 : cyclic1 is # 1. should flag an error, cyclic inheritance
 
-  cyclic2a : cyclic2b is // 2. should flag an error, cyclic inheritance
-  cyclic2b : cyclic2a is // 2. should flag an error, cyclic inheritance
+  cyclic2a : cyclic2b is # 2. should flag an error, cyclic inheritance
+  cyclic2b : cyclic2a is # 2. should flag an error, cyclic inheritance
 
-  cyclic3a : cyclic3b is // 3. should flag an error, cyclic inheritance
-  cyclic3b : cyclic3c is // 3. should flag an error, cyclic inheritance
-  cyclic3c : cyclic3d is // 3. should flag an error, cyclic inheritance
-  cyclic3d : cyclic3e is // 3. should flag an error, cyclic inheritance
-  cyclic3e : cyclic3f is // 3. should flag an error, cyclic inheritance
-  cyclic3f : cyclic3g is // 3. should flag an error, cyclic inheritance
-  cyclic3g : cyclic3h is // 3. should flag an error, cyclic inheritance
-  cyclic3h : cyclic3i is // 3. should flag an error, cyclic inheritance
-  cyclic3i : cyclic3j is // 3. should flag an error, cyclic inheritance
-  cyclic3j : cyclic3k is // 3. should flag an error, cyclic inheritance
-  cyclic3k : cyclic3l is // 3. should flag an error, cyclic inheritance
-  cyclic3l : cyclic3m is // 3. should flag an error, cyclic inheritance
-  cyclic3m : cyclic3n is // 3. should flag an error, cyclic inheritance
-  cyclic3n : cyclic3o is // 3. should flag an error, cyclic inheritance
-  cyclic3o : cyclic3p is // 3. should flag an error, cyclic inheritance
-  cyclic3p : cyclic3q is // 3. should flag an error, cyclic inheritance
-  cyclic3q : cyclic3r is // 3. should flag an error, cyclic inheritance
-  cyclic3r : cyclic3s is // 3. should flag an error, cyclic inheritance
-  cyclic3s : cyclic3t is // 3. should flag an error, cyclic inheritance
-  cyclic3t : cyclic3u is // 3. should flag an error, cyclic inheritance
-  cyclic3u : cyclic3v is // 3. should flag an error, cyclic inheritance
-  cyclic3v : cyclic3w is // 3. should flag an error, cyclic inheritance
-  cyclic3w : cyclic3x is // 3. should flag an error, cyclic inheritance
-  cyclic3x : cyclic3y is // 3. should flag an error, cyclic inheritance
-  cyclic3y : cyclic3z is // 3. should flag an error, cyclic inheritance
-  cyclic3z : cyclic3a is // 3. should flag an error, cyclic inheritance
+  cyclic3a : cyclic3b is # 3. should flag an error, cyclic inheritance
+  cyclic3b : cyclic3c is # 3. should flag an error, cyclic inheritance
+  cyclic3c : cyclic3d is # 3. should flag an error, cyclic inheritance
+  cyclic3d : cyclic3e is # 3. should flag an error, cyclic inheritance
+  cyclic3e : cyclic3f is # 3. should flag an error, cyclic inheritance
+  cyclic3f : cyclic3g is # 3. should flag an error, cyclic inheritance
+  cyclic3g : cyclic3h is # 3. should flag an error, cyclic inheritance
+  cyclic3h : cyclic3i is # 3. should flag an error, cyclic inheritance
+  cyclic3i : cyclic3j is # 3. should flag an error, cyclic inheritance
+  cyclic3j : cyclic3k is # 3. should flag an error, cyclic inheritance
+  cyclic3k : cyclic3l is # 3. should flag an error, cyclic inheritance
+  cyclic3l : cyclic3m is # 3. should flag an error, cyclic inheritance
+  cyclic3m : cyclic3n is # 3. should flag an error, cyclic inheritance
+  cyclic3n : cyclic3o is # 3. should flag an error, cyclic inheritance
+  cyclic3o : cyclic3p is # 3. should flag an error, cyclic inheritance
+  cyclic3p : cyclic3q is # 3. should flag an error, cyclic inheritance
+  cyclic3q : cyclic3r is # 3. should flag an error, cyclic inheritance
+  cyclic3r : cyclic3s is # 3. should flag an error, cyclic inheritance
+  cyclic3s : cyclic3t is # 3. should flag an error, cyclic inheritance
+  cyclic3t : cyclic3u is # 3. should flag an error, cyclic inheritance
+  cyclic3u : cyclic3v is # 3. should flag an error, cyclic inheritance
+  cyclic3v : cyclic3w is # 3. should flag an error, cyclic inheritance
+  cyclic3w : cyclic3x is # 3. should flag an error, cyclic inheritance
+  cyclic3x : cyclic3y is # 3. should flag an error, cyclic inheritance
+  cyclic3y : cyclic3z is # 3. should flag an error, cyclic inheritance
+  cyclic3z : cyclic3a is # 3. should flag an error, cyclic inheritance
 
-  cycle4 : cycle4A, cycle4B, cycle4C, cycle4D.E.F, cycle4E is // 4. should flag an error, cyclic inheritance
+  cycle4 : cycle4A, cycle4B, cycle4C, cycle4D.E.F, cycle4E is # 4. should flag an error, cyclic inheritance
   cycle4A is
   cycle4B is
   cycle4C is

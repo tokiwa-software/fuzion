@@ -55,9 +55,9 @@ sqlite_database(db Native_Ref) : Database is
     cb2 : Function i32 Native_Ref i32 Native_Ref Native_Ref is
       public redef call(_ Native_Ref, len i32, column_text Native_Ref, column_name Native_Ref) i32 =>
 
-        // str is called via outer reference:
-        // this tests if the outerref is correctly
-        // passed through:
+        # str is called via outer reference:
+        # this tests if the outerref is correctly
+        # passed through:
         say str
 
         ct := ffi.from_native_array Native_Ref column_text len

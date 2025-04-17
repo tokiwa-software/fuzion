@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue4988_1.fz:25:14: error 1: Incompatible types found during type inference for type parameters
+_ := a (true ? 3 : true)
+-------------^
+Types inferred for first type parameter 'T':
+'bool' found at --CURDIR--/reg_issue4988_1.fz:25:20:
+_ := a (true ? 3 : true)
+-------------------^^^^
+'i32' found at --CURDIR--/reg_issue4988_1.fz:25:16:
+_ := a (true ? 3 : true)
+---------------^
+
+one error.

@@ -1,6 +1,6 @@
 
 --CURDIR--/indentation_negative.fz:47:8: error 1: Inconsistent indentation
-       say "1bc"  //  1. should flag an error: wrong indentation
+       say "1bc"  #  1. should flag an error: wrong indentation
 -------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:45:7:
       say "1ba"
@@ -9,7 +9,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:56:6: error 2: Inconsistent indentation
-     say "1cc"  //  2. should flag an error: wrong indentation
+     say "1cc"  #  2. should flag an error: wrong indentation
 -----^
 Indentation reference point is --CURDIR--/indentation_negative.fz:53:5:
     feature1 is
@@ -18,7 +18,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:72:18: error 3: Inconsistent indentation
-                 say "2bc"  //  3. should flag an error: wrong indentation
+                 say "2bc"  #  3. should flag an error: wrong indentation
 -----------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:70:17:
     feature2 is say "2ba"
@@ -27,7 +27,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:80:16: error 4: Inconsistent indentation
-               say "2cc"  //  4. should flag an error: wrong indentation
+               say "2cc"  #  4. should flag an error: wrong indentation
 ---------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:78:5:
     feature2 is say "2ca"
@@ -36,7 +36,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:87:18: error 5: Inconsistent indentation
-                 say "2db"  //  5. should flag an error: wrong indentation
+                 say "2db"  #  5. should flag an error: wrong indentation
 -----------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:86:17:
     feature2 is say "2da"
@@ -45,7 +45,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:88:18: error 6: Inconsistent indentation
-                 say "2dc"  //  6. should flag an error: wrong indentation
+                 say "2dc"  #  6. should flag an error: wrong indentation
 -----------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:86:17:
     feature2 is say "2da"
@@ -54,7 +54,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:95:16: error 7: Inconsistent indentation
-               say "2eb"  //  7. should flag an error: wrong indentation
+               say "2eb"  #  7. should flag an error: wrong indentation
 ---------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:94:5:
     feature2 is say "2ea"
@@ -63,7 +63,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:96:16: error 8: Inconsistent indentation
-               say "2ec"  //  8. should flag an error: wrong indentation
+               say "2ec"  #  8. should flag an error: wrong indentation
 ---------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:94:5:
     feature2 is say "2ea"
@@ -72,7 +72,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:110:17: error 9: Inconsistent indentation
-                say "3bc"}  //  9. should flag an error: wrong indentation
+                say "3bc"}  #  9. should flag an error: wrong indentation
 ----------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:109:18:
     feature3 is {say "3ba"; say "3bb"
@@ -81,7 +81,7 @@ While parsing: block, parse stack: block (twice), implRout, implFldOrRout, routO
 
 
 --CURDIR--/indentation_negative.fz:117:22: error 10: Inconsistent indentation
-                     say "3cc"}  // 10. should flag an error: wrong indentation
+                     say "3cc"}  # 10. should flag an error: wrong indentation
 ---------------------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:116:18:
     feature3 is {say "3ca"; say "3cb"
@@ -90,7 +90,7 @@ While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout
 
 
 --CURDIR--/indentation_negative.fz:170:7: error 11: Inconsistent indentation
-      say "ok"            // 11. should flag an error: wrong indentation
+      say "ok"            # 11. should flag an error: wrong indentation
 ------^
 Indentation reference point is --CURDIR--/indentation_negative.fz:168:5:
     if callWith2Args arg

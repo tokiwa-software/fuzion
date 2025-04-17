@@ -25,8 +25,13 @@
 # write String `s` to file `f`
 #
 public write(f String, s String) outcome unit =>
+
+  # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
+  # as outer feature for `lm` to reduce number of DFA values for
+  # `lm` (while `io.file` has many values).
   unit.lm : mutate is
-  unit.alm => lm
-  unit.alm ! ()->
+  unit.new_lm => lm
+
+  unit.new_lm ! ()->
     use unit unit.lm f mode.write ()->
       ((io.buffered unit.lm).writer.env.write s.utf8).error

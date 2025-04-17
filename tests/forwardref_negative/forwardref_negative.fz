@@ -26,7 +26,7 @@
 forwardref_negative is
 
   cyclic1 is
-    public a := z // 1. should flag an error, forward reference to uninitialized field
+    public a := z # 1. should flag an error, forward reference to uninitialized field
     public b := a
     public c := b
     public d := c
@@ -55,7 +55,7 @@ forwardref_negative is
   _ := cyclic1
 
   cyclic2 is
-    public a := z // 2. should flag an error, forward reference to uninitialized field
+    public a := z # 2. should flag an error, forward reference to uninitialized field
     public b := a
     public c := b
     public d := c

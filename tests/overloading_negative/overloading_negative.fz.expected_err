@@ -1,6 +1,6 @@
 
 --CURDIR--/overloading_negative.fz:45:15: error 1: Ambiguous type
-    public a1 a := a            // 1. should flag an error: ambiguous types
+    public a1 a := a            # 1. should flag an error: ambiguous types
 --------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
@@ -19,7 +19,7 @@ To solve this, rename these features such that each one has a unique name.
 
 
 --CURDIR--/overloading_negative.fz:46:15: error 2: Ambiguous type
-    public a2 a := a 42         // 2. should flag an error: ambiguous types
+    public a2 a := a 42         # 2. should flag an error: ambiguous types
 --------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
@@ -38,7 +38,7 @@ To solve this, rename these features such that each one has a unique name.
 
 
 --CURDIR--/overloading_negative.fz:47:15: error 3: Ambiguous type
-    public a3 a := a 47 11      // 3. should flag an error: ambiguous types
+    public a3 a := a 47 11      # 3. should flag an error: ambiguous types
 --------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
@@ -57,7 +57,7 @@ To solve this, rename these features such that each one has a unique name.
 
 
 --CURDIR--/overloading_negative.fz:62:15: error 4: Type not found
-    public a1 a := a            // 4. should flag an error: type not found
+    public a1 a := a            # 4. should flag an error: type not found
 --------------^
 Type 'a' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'a'
@@ -77,7 +77,7 @@ To solve this, remove the return type (or replace it by 'ref') of one of these f
 
 
 --CURDIR--/overloading_negative.fz:63:15: error 5: Type not found
-    public a2 a := a 42         // 5. should flag an error: type not found
+    public a2 a := a 42         # 5. should flag an error: type not found
 --------------^
 Type 'a' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'a'
@@ -97,7 +97,7 @@ To solve this, remove the return type (or replace it by 'ref') of one of these f
 
 
 --CURDIR--/overloading_negative.fz:64:15: error 6: Type not found
-    public a3 a := a 47 11      // 6. should flag an error: type not found
+    public a3 a := a 47 11      # 6. should flag an error: type not found
 --------------^
 Type 'a' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'a'

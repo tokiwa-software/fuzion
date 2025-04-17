@@ -190,12 +190,12 @@ nested_choice =>
               nil  => "inner nil"
               unit => "unit"
 
-    // NYI this should flag an error
+    # the following flags an error, ambigous assignment to choice
+    # tested in choice_negative, nested_choice_negative
     # c my_choice2 := nil
     d my_choice2 := "st"
     e my_choice2 := unit
 
-    # say c
     say d
     say e
 

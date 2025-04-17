@@ -41,7 +41,7 @@ is
   # checks if a character is valid in the encoding
   #
   module is_valid(c u8) =>
-    (65 <= c <= 90) || (50 <= c <= 55) // A-Z or 2-7
+    (65 <= c <= 90) || (50 <= c <= 55) # A-Z or 2-7
 
 
   # Encodes a given byte sequence in base32, output is padded to multiple of 8

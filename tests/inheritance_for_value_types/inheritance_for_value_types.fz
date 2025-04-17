@@ -88,7 +88,7 @@ inheritance_for_value_types is
   rz b "rz b" 2
   rz c "rz c" 3
   v (a.q "v a.q" 1)
-  // v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
-  // v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
+  # v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
+  # v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
 
   exit

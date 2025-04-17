@@ -439,7 +439,8 @@ DOCUMENTATION = \
 	$(DOC_DESIGN_JVM)    \
 	$(REF_MANUAL_PDF)    \
 	$(REF_MANUAL_HTML)   \
-	$(DOC_JAVA)
+	$(DOC_JAVA)          \
+	$(BUILD_DIR)/apidocs/index.html
 
 SHELL_SCRIPTS = \
 	bin/fz \

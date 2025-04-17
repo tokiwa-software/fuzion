@@ -85,7 +85,7 @@ public terminal is
     public purple                            => "35"
     public cyan                              => "36"
     public white                             => "37"
-    public set_foreground_color              => "38"  // next arguments are 5;n or 2;r;g;b
+    public set_foreground_color              => "38"  # next arguments are 5;n or 2;r;g;b
     public regular_color                     => "39"
     public background_black                  => "40"
     public background_red                    => "41"
@@ -95,7 +95,7 @@ public terminal is
     public background_purple                 => "45"
     public background_cyan                   => "46"
     public background_white                  => "47"
-    public set_background_set_color          => "48"  // next arguments are 5;n or 2;r;g;b
+    public set_background_set_color          => "48"  # next arguments are 5;n or 2;r;g;b
     public background_regular_color          => "49"
     public disable_proportional_spacing      => "50"
     public framed                            => "51"
@@ -105,7 +105,7 @@ public terminal is
     public not_overlined                     => "55"
     # 57
     # 56
-    public set_underline_color               => "58"  // next arguments are 5;n or 2;r;g;b
+    public set_underline_color               => "58"  # next arguments are 5;n or 2;r;g;b
     public default_underline_color           => "59"
     public ideogram_underline                => "60"
     public ideogram_double_underline         => "61"
