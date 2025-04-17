@@ -61,12 +61,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
-_Thread_local int last_error = 0;
+_Thread_local int64_t last_error = 0;
 
 
 // returns the latest error number of
 // the current thread
-int fzE_last_error(void){
+int64_t fzE_last_error(void){
   return last_error;
 }
 

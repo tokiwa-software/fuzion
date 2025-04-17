@@ -82,12 +82,12 @@ void fzE_mem_zero(void *dest, size_t sz)
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
-_Thread_local int last_error = 0;
+_Thread_local int64_t last_error = 0;
 
 
 // returns the latest error number of
 // the current thread
-int fzE_last_error(void){
+int64_t fzE_last_error(void){
   // NYI: CLEANUP:
   return last_error == 0
     ? GetLastError()

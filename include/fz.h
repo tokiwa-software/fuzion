@@ -46,7 +46,7 @@ void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz);
 
 // returns the latest error number of
 // the current thread
-int fzE_last_error(void);
+int64_t fzE_last_error(void);
 
 // NYI: UNDER DEVELOPMENT: fzE_last_error_as_string, returning the error as a human readable string
 
