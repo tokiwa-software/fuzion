@@ -475,11 +475,12 @@ uint64_t fzE_unique_id(void);
  * result is a 32-bit array
  *
  * result[0] = year
- * result[1] = day_in_year
- * result[2] = hour
- * result[3] = min
- * result[4] = sec
- * result[5] = nanosec;
+ * result[1] = month
+ * result[2] = day_in_month
+ * result[3] = hour
+ * result[4] = min
+ * result[5] = sec
+ * result[6] = nanosec;
  */
 void fzE_date_time(void * result);
 
