@@ -1144,9 +1144,19 @@ public class Call extends AbstractCall
     var result = typeForInferencing();
     if (result == null)
       {
-        result = hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR)
-          ? Types.t_ERROR
-          : Types.t_FORWARD_CYCLIC;
+        if (hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR))
+          {
+            result = Types.t_ERROR;
+          }
+        else if (calledFeatureKnown() && calledFeature().state().atLeast(State.RESOLVED_TYPES))
+          {
+            AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics());
+            result = Types.t_ERROR;
+          }
+        else
+          {
+            result = Types.t_FORWARD_CYCLIC;
+          }
         setToErrorState0();
       }
     return result;
@@ -2463,18 +2473,7 @@ public class Call extends AbstractCall
    */
   private boolean returnsThis(Expr e)
   {
-    if (e instanceof If i)
-      {
-        var it = i.branches();
-        while (it.hasNext())
-          {
-            if (returnsThis(it.next()))
-              {
-                return true;
-              }
-          }
-      }
-    else if (e instanceof Match m)
+    if (e instanceof Match m)
       {
         for (var c : m.cases())
           {
@@ -2969,9 +2968,11 @@ public class Call extends AbstractCall
    */
   private Expr newIf(Expr cc, Expr block, Expr elseBlock)
   {
-    return
-      !(cc instanceof BoolConst bc)   ? new If(pos(), cc, block, elseBlock) :
-      bc.getCompileTimeConstBool() ? block : elseBlock;
+    return !(cc instanceof BoolConst bc)
+      ? Match.createIf(pos(), cc, block, elseBlock, false)
+      : bc.getCompileTimeConstBool()
+      ? block
+      : elseBlock;
   }
 
 

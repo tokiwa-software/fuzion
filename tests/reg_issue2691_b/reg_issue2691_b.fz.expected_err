@@ -16,15 +16,4 @@ block returns value of type 'unit' at --CURDIR--/reg_issue2691_b.fz:33:14:
     pre else if x < -10 then false
 -------------^
 
-
---CURDIR--/reg_issue2691_b.fz:33:14: error 3: Incompatible types in assignment
-    pre else if x < -10 then false
--------------^
-assignment to field : 'reg_issue2691_b.h.pre chk.result'
-expected formal type: 'bool'
-actual type found   : 'unit'
-assignable to       : 'unit'
-for value assigned  : ''
-To solve this, you could change the type of the target 'reg_issue2691_b.h.pre chk.result' to 'unit' or convert the type of the assigned value to 'bool'.
-
-3 errors.
+2 errors.

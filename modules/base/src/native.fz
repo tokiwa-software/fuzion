@@ -230,9 +230,7 @@ module fzE_process_create(
   arg_len i32,
   env_vars Array,
   env_vars_len i32,
-  res Array,
-  args_str Array,
-  env_str Array) i32 => native
+  res Array) i32 => native
 
 
 # wait for process to exit

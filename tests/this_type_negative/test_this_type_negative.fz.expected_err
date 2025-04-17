@@ -57,7 +57,7 @@ To solve this you could:
 
 
 --CURDIR--/test_this_type_negative.fz:34:5: error 5: Incompatible types in assignment
-    _ a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
+    _ a     := a.this  #  2. should flag an error: a.this not compatible to 'a'
 ----^
 assignment to field : 'test_this_type_negative.a._'
 expected formal type: 'test_this_type_negative.this.a'
@@ -71,7 +71,7 @@ To solve this you could:
 
 
 --CURDIR--/test_this_type_negative.fz:31:7: error 6: Incompatible types in assignment
-      _ a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
+      _ a     := a.this  #  1. should flag an error: a.this not compatible to 'a'
 ------^
 assignment to field : 'test_this_type_negative.a.x._'
 expected formal type: 'test_this_type_negative.this.a'

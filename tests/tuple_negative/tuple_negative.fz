@@ -35,43 +35,43 @@ tuple_negative is
 
   p(s Any) => say s
 
-  // start with some generic type inference tests, which are a pre-requisite for tuples to work
+  # start with some generic type inference tests, which are a pre-requisite for tuples to work
   g1(A type, a A) is
-  _ := g1 "Hello" // should infer <String>
-  _ := g1 123    // should infer <i32>
+  _ := g1 "Hello" # should infer <String>
+  _ := g1 123    # should infer <i32>
   chck(g1("Hello").a.codepoint_length = 5, "g1 A infer A=string");
   chck (g1(123).a = 123) "g1 A infer A=i32"
 
   g1a(A type, a A) A => a
-  itaa := g1a "String" // should infer <String>
-  itab := g1a 123      // should infer <i32>
+  itaa := g1a "String" # should infer <String>
+  itab := g1a 123      # should infer <i32>
   chck itaa.codepoint_length=6 "g1a A infer A=string"
   chck itab=123 "g1a A infer A=i32"
 
   g1b(AAAA type, a,b,c AAAA) is
-  g1bv1 := g1b true true false     // should infer <bool>
-  g1bv2 := g1b "String" "A" "test" // should infer <String>
+  g1bv1 := g1b true true false     # should infer <bool>
+  g1bv2 := g1b "String" "A" "test" # should infer <String>
   chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b AAAA infer AAAA=bool"
   chck ((g1bv2.a.codepoint_length + g1bv2.b.codepoint_length + g1bv2.c.codepoint_length) = 11) "g1b AAAA infer AAAA=string"
 
-  nothing1 tuple := tuple  ; p "nothing1 is $nothing1" // empty tuple using explicit types
-  nothing2 tuple := tuple  ; p "nothing2 is $nothing2" // empty tuple using explicit type and inferring generic
-  nothing3 tuple :=      (); p "nothing3 is $nothing3" // empty tuple using explicit type and tuple syntax sugar
-  nothing4 tuple   := tuple  ; p "nothing4 is $nothing4" // empty tuple inferring generics and explicit type
-  nothing5 tuple   := tuple    ; p "nothing5 is $nothing5" // empty tuple inferring generics and inferring generic
-  nothing6 tuple   :=        (); p "nothing6 is $nothing6" // empty tuple inferring generics and tuple syntax sugar
-  nothing7         := tuple  ; p "nothing7 is $nothing7" // empty tuple inferring type and explicit type
-  nothing8         := tuple    ; p "nothing8 is $nothing8" // empty tuple inferring type and inferring generic
-  nothing9         :=        (); p "nothing9 is $nothing9" // empty tuple inferring type and tuple syntax sugar
+  nothing1 tuple := tuple  ; p "nothing1 is $nothing1" # empty tuple using explicit types
+  nothing2 tuple := tuple  ; p "nothing2 is $nothing2" # empty tuple using explicit type and inferring generic
+  nothing3 tuple :=      (); p "nothing3 is $nothing3" # empty tuple using explicit type and tuple syntax sugar
+  nothing4 tuple   := tuple  ; p "nothing4 is $nothing4" # empty tuple inferring generics and explicit type
+  nothing5 tuple   := tuple    ; p "nothing5 is $nothing5" # empty tuple inferring generics and inferring generic
+  nothing6 tuple   :=        (); p "nothing6 is $nothing6" # empty tuple inferring generics and tuple syntax sugar
+  nothing7         := tuple  ; p "nothing7 is $nothing7" # empty tuple inferring type and explicit type
+  nothing8         := tuple    ; p "nothing8 is $nothing8" # empty tuple inferring type and inferring generic
+  nothing9         :=        (); p "nothing9 is $nothing9" # empty tuple inferring type and tuple syntax sugar
   # can't do any chck()s on empty tuples, let's hope everything is fine
 
-  one2 tuple i32 := tuple      42 ; p "one2 is {one2.values.0}" // one-tuple using explicit type and inferring generic
-  one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" //  4. should flag an error, (expr) is not a tuple
-  one5 tuple     := tuple     42 ;      //  6. should flag an error, type inference does not infer generics of result type
-  one6 tuple     :=          (42);      //  7. should flag an error, type inference does not infer generics of result type
-  one9           :=          (42); p "one9 is {one9.values.0}" //  8. should flag an error, (expr) is not a tuple, one9 is an i32
-  (one12)        :=          (42); p "one12 is $one12" // special case: Destructure i32, which works!
-  (one12b)       :=         (nil); p "one12 is $one12b" //  9. should flag an error, (expr) is not a tuple
+  one2 tuple i32 := tuple      42 ; p "one2 is {one2.values.0}" # one-tuple using explicit type and inferring generic
+  one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" #  4. should flag an error, (expr) is not a tuple
+  one5 tuple     := tuple     42 ;      #  6. should flag an error, type inference does not infer generics of result type
+  one6 tuple     :=          (42);      #  7. should flag an error, type inference does not infer generics of result type
+  one9           :=          (42); p "one9 is {one9.values.0}" #  8. should flag an error, (expr) is not a tuple, one9 is an i32
+  (one12)        :=          (42); p "one12 is $one12" # special case: Destructure i32, which works!
+  (one12b)       :=         (nil); p "one12 is $one12b" #  9. should flag an error, (expr) is not a tuple
   one16 i32 := 42;
   one17 i32 := 42;
   one18 i32 := 42;
@@ -79,13 +79,13 @@ tuple_negative is
   chck (one16 = 42) "one10"
   chck (one17 = 42) "one10"
 
-  two2 tuple i32 i32   := tuple         4  2 ; p "two2 is {two2.values.0}, {two2.values.1}" // one-tuple using explicit type and inferring generic
-  two3 tuple i32 i32   :=              (4, 2); p "two3 is {two3.values.0}, {two3.values.1}" // one-tuple using explicit type and tuple syntax sugar
-  two5 tuple           := tuple         4  2 ; // 13. should flag an error, type inference does not infer generics of result type
-  two6 tuple           :=              (4, 2); // 14. should flag an error, type inference does not infer generics of result type
-  two9                 :=              (4, 2); p "two9 is {two9.values.0}, {two9.values.1}" // one-tuple inferring type and tuple syntax sugar
-  (two11a, two11b)     := tuple         4  2 ; p "two11 is $two11a, $two11b" // two-tuple using destructure and inferring generic
-  (two12a, two12b)     :=              (4, 2); p "two12 is $two12a, $two12b" // two-tuple using destructure and tuple syntax sugar
+  two2 tuple i32 i32   := tuple         4  2 ; p "two2 is {two2.values.0}, {two2.values.1}" # one-tuple using explicit type and inferring generic
+  two3 tuple i32 i32   :=              (4, 2); p "two3 is {two3.values.0}, {two3.values.1}" # one-tuple using explicit type and tuple syntax sugar
+  two5 tuple           := tuple         4  2 ; # 13. should flag an error, type inference does not infer generics of result type
+  two6 tuple           :=              (4, 2); # 14. should flag an error, type inference does not infer generics of result type
+  two9                 :=              (4, 2); p "two9 is {two9.values.0}, {two9.values.1}" # one-tuple inferring type and tuple syntax sugar
+  (two11a, two11b)     := tuple         4  2 ; p "two11 is $two11a, $two11b" # two-tuple using destructure and inferring generic
+  (two12a, two12b)     :=              (4, 2); p "two12 is $two12a, $two12b" # two-tuple using destructure and tuple syntax sugar
   two16a i32 := 42;
   two16b i32 := 42;
   two17a i32 := 42;
@@ -101,7 +101,7 @@ tuple_negative is
   chck (two17a = 4 && two17b = 2) "two17"
   chck (two18a = 4 && two18b = 2) "two18"
 
-  t10 (i32, bool) => (3, false) // 15. should flag an error, no syntactic sugar for tuple types
+  t10 (i32, bool) => (3, false) # 15. should flag an error, no syntactic sugar for tuple types
   t10 tuple i32 bool => (3, false)
   p "tuple t10 is {t10.values.0}, {t10.values.1}"
   chck (t10.values.0 = 3    ) "t10.values.0"
@@ -152,8 +152,8 @@ tuple_negative is
   chck (t12a2 = 16) "second must be 16"
   chck (t12a3 = 64) "third must be 64"
 
-  (t12e1,t12e2,t12e1) := t11 7 // 21. should flag an error, repeated elements in destructuring
-  (t12f1,t12f1,t12f3) := t11 7 // 22. should flag an error, repeated elements in destructuring
+  (t12e1,t12e2,t12e1) := t11 7 # 21. should flag an error, repeated elements in destructuring
+  (t12f1,t12f1,t12f3) := t11 7 # 22. should flag an error, repeated elements in destructuring
   (t12g1,t12g2,t12g3) := t11 7
   chck (t12g1 = 7) "first must be 7"
   chck (t12g2 = 49) "second must be 49"
@@ -185,8 +185,8 @@ tuple_negative is
   t15a1 i32 := 42;
   t15a3 i32 := 42;
   t15a2 bool := false;
-  (t15a1,_,_)                := (01, true, 23); // 37. should flag an error, duplicate declaration
-  (_,t15a2,_)                := (01, true, 23); // 38. should flag an error, duplicate declaration
-  (_,_,t15a3)                := (01, true, 23); // 39. should flag an error, duplicate declaration
+  (t15a1,_,_)                := (01, true, 23); # 37. should flag an error, duplicate declaration
+  (_,t15a2,_)                := (01, true, 23); # 38. should flag an error, duplicate declaration
+  (_,_,t15a3)                := (01, true, 23); # 39. should flag an error, duplicate declaration
 
   exit

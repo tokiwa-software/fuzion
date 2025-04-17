@@ -296,11 +296,11 @@ visibility is
   visi9 =>
     a i32 => 3
     for
-      ix1 := a, ix1 + a                  // can make unqualified call to a, ix1 ..
-      ix2 := 3 * ix1 + a, a + ix2 + ix1  // can make unqualified call to a, ix1, ix2 ..
-      it1 in ix1..(ix2+a)                // can make unqualified call to a, ix1, ix2 ..
-      it2 in it1..2*it1                  // can make unqualified call to a, ix1, ix2, it1 ..
-      ix3 := a + ix1 + ix2 + it1 + it2   // can make unqualified call to a, ix1, ix2, it1, it2 ..
+      ix1 := a, ix1 + a                  # can make unqualified call to a, ix1 ..
+      ix2 := 3 * ix1 + a, a + ix2 + ix1  # can make unqualified call to a, ix1, ix2 ..
+      it1 in ix1..(ix2+a)                # can make unqualified call to a, ix1, ix2 ..
+      it2 in it1..2*it1                  # can make unqualified call to a, ix1, ix2, it1 ..
+      ix3 := a + ix1 + ix2 + it1 + it2   # can make unqualified call to a, ix1, ix2, it1, it2 ..
     while a + ix1 + ix2 + it1 + it2 + ix3 < 10000
       b => 6
       q := a + ix1 + ix2 + it1 + it2 + ix3 + b

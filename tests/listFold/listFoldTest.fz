@@ -95,7 +95,7 @@ listFoldTest is
   say "String list 9 is {sl9.fold String.concat}"; chck ((sl9.fold String.concat) = "quick brown fox jumps over the lazy dog.") "concat sl9"
   say "String list 10 is {slA.fold String.concat}"; chck ((slA.fold String.concat) = "The quick brown fox jumps over the lazy dog.") "concat slA"
 
-  // product mod 11
+  # product mod 11
   m : Monoid i32 is
     public redef infix ∙ (a, b i32) => a * b % 11
     public redef e => 1
@@ -126,7 +126,7 @@ listFoldTest is
   say "product 2 is {l2.fold i32.product}"; chck ((l2.fold i32.product) = 9) "l2.fold i32.product"
   say "product 3 is {l3.fold i32.product}"; chck ((l3.fold i32.product) = 720) "l3.fold i32.product"
   say "product 4 is {l4.fold i32.product}"; chck ((l4.fold i32.product) = 504000) "l4.fold i32.product"
-  // product 5 ff would overflow
-  //  say "product 5 is {l5.fold i32.product}"
+  # product 5 ff would overflow
+  #  say "product 5 is {l5.fold i32.product}"
 
   exit

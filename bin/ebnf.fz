@@ -33,13 +33,19 @@ main =>
   # return what we read from stdout as the result
   #
   Sequence.prefix ! String =>
-    lm : mutate is
-    lm ! ()->
+
+    # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
+    # as outer feature for `lm` to reduce number of DFA values for
+    # `lm1` (while `Sequence` has many values).
+    unit.lm1 : mutate is
+    unit.new_lm1 => lm1
+
+    unit.new_lm1 ! ()->
       seq := map x->x.as_string
       match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing {Sequence.this}, error is $e"
         p os.process =>
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_out String unit.lm1 (()->String.from_bytes (io.buffered unit.lm1).read_fully)
             e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
             s String => s
 
@@ -48,16 +54,22 @@ main =>
   # return what we read from stdout as the result
   #
   String.infix | (seq Sequence String) String =>
-    lm : mutate is
-    lm ! ()->
+
+    # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
+    # as outer feature for `lm` to reduce number of DFA values for
+    # `lm2` (while `String` has many values).
+    unit.lm2 : mutate is
+    unit.new_lm2 => lm2
+
+    unit.new_lm2 ! ()->
       match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing $seq, error is $e"
         p os.process =>
-          _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write String.this.utf8
-            _ := (io.buffered lm).writer.env.flush
+          _ := p.with_in unit unit.lm2 ()->
+            _ := (io.buffered unit.lm2).writer.env.write String.this.utf8
+            _ := (io.buffered unit.lm2).writer.env.flush
             _ := p.wait # close stdin
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_out String unit.lm2 (()->String.from_bytes (io.buffered unit.lm2).read_fully)
             e error => panic "failed reading stdout from $seq, error is: $e"
             s String => s
 

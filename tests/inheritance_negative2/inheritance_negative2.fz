@@ -27,12 +27,12 @@ inheritance_negative2 is
 
   inheritedNotFound1 unit =>
     A is
-    C : B1 is  // 1. should flag an error, inheritance of a feature that does not exist
+    C : B1 is  # 1. should flag an error, inheritance of a feature that does not exist
   inheritedNotFound1
 
   inheritedNotFound2 unit =>
     A is
-    C : A.B is  // 2. should flag an error, inheritance of an inner feature that does not exist
+    C : A.B is  # 2. should flag an error, inheritance of an inner feature that does not exist
   inheritedNotFound2
 
   outerInheritsNotFound3 unit =>
@@ -50,16 +50,16 @@ inheritance_negative2 is
       A3 ref : A is
     A1 ref : A is
     B1 ref : A1.B is
-    C1 ref : A1.B1.C is                 //  3. should flag an error: B1 not found
-    D1 ref : A1.B1.C1.D is              //  4. should flag an error: B1 not found
-    E1 ref : A1.B1.C1.D1.E is           //  5. should flag an error: B1 not found
-    F1 ref : A1.B1.C1.D1.E1.F is        //  6. should flag an error: B1 not found
+    C1 ref : A1.B1.C is                 #  3. should flag an error: B1 not found
+    D1 ref : A1.B1.C1.D is              #  4. should flag an error: B1 not found
+    E1 ref : A1.B1.C1.D1.E is           #  5. should flag an error: B1 not found
+    F1 ref : A1.B1.C1.D1.E1.F is        #  6. should flag an error: B1 not found
     A2 ref : A is
     B2 ref : A1.B is
-    C2 ref : A1.B1.C is                 //  7. should flag an error: B1 not found
-    D2 ref : A1.B1.C1.D is              //  8. should flag an error: B1 not found
-    E2 ref : A1.B1.C1.D1.E is           //  9. should flag an error: B1 not found
-    F2 ref : A1.B1.C1.D1.E1.F is        // 10. should flag an error: B1 not found
+    C2 ref : A1.B1.C is                 #  7. should flag an error: B1 not found
+    D2 ref : A1.B1.C1.D is              #  8. should flag an error: B1 not found
+    E2 ref : A1.B1.C1.D1.E is           #  9. should flag an error: B1 not found
+    F2 ref : A1.B1.C1.D1.E1.F is        # 10. should flag an error: B1 not found
     _ := A1
     _ := B1
     _ := C1

@@ -43,14 +43,14 @@ public class FunctionReturnType extends ReturnType
   /**
    * The parsed type.
    */
-  private AbstractType type;
+  private AbstractType _type;
 
 
   /**
    * When available, the source code position of the unresolved return
    * type. SourcePosition.builtIn if not available.
    */
-  private SourcePosition _pos;
+  private final SourcePosition _pos;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -62,7 +62,7 @@ public class FunctionReturnType extends ReturnType
    */
   public FunctionReturnType(AbstractType t)
   {
-    type = t;
+    _type = t;
     _pos = t instanceof UnresolvedType ut ? ut.pos() : SourcePosition.builtIn;
   }
 
@@ -89,9 +89,9 @@ public class FunctionReturnType extends ReturnType
    */
   public AbstractType functionReturnType()
   {
-    return type == Types.t_UNDEFINED
+    return _type == Types.t_UNDEFINED
       ? null
-      : type;
+      : _type;
   }
 
 
@@ -131,7 +131,7 @@ public class FunctionReturnType extends ReturnType
    */
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
-    type = type.visit(v, outer);
+    _type = _type.visit(v, outer);
   }
 
 
@@ -152,7 +152,7 @@ public class FunctionReturnType extends ReturnType
        this == outer.returnType());
 
     res.resolveDeclarations(outer);
-    type = type.resolve(res, outer.context());
+    _type = _type.resolve(res, outer.context());
   }
 
 
@@ -163,7 +163,7 @@ public class FunctionReturnType extends ReturnType
    */
   public String toString()
   {
-    return type.toString();
+    return _type.toString();
   }
 
 

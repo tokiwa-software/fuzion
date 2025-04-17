@@ -494,7 +494,8 @@ class ForClass extends ANY
                             "  # call Java instance method '" + me + "':\n" +
                             "  #\n" +
                             "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
-                            "    " + ("match fuzion.java.call_virtual (" + fr + ") " +
+                            "    " + ("match fuzion.java.call_virtual " +
+                                      (fr.contains(" ") ? "(" + fr + ")" : fr) + " " +
                                       fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -510,7 +511,8 @@ class ForClass extends ANY
                             "  # call Java static method '" + me + "':\n" +
                             "  #\n" +
                             "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
-                            "    " + ("match fuzion.java.call_static (" + fr + ") " +
+                            "    " + ("match fuzion.java.call_static " +
+                                      (fr.contains(" ") ? "(" + fr + ")" : fr) + " " +
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -553,7 +555,7 @@ class ForClass extends ANY
                        "  # call Java constructor '" + co + "':\n" +
                        "  #\n" +
                        "  public " + fn + fp + " " + outcomeResultType(co, fr) + " =>\n" +
-                       "    " + ("match fuzion.java.call_constructor (" + fr + ") " +
+                       "    " + ("match fuzion.java.call_constructor " + fr + " " +
                                  fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
                                  parametersArray(outer + "." + fn, pa) + "\n") +
@@ -753,7 +755,7 @@ class ForClass extends ANY
         if (t.isArray() && !t.getComponentType().isArray() /* NYI: nested arrays */)
           {
             var et = plainResultType(t.getComponentType());
-            mt = (et == null) ? null : "Sequence (" + et + ")";
+            mt = (et == null) ? null : "Sequence " + et;
           }
         else if (t == String.class)
           {
@@ -865,7 +867,7 @@ class ForClass extends ANY
             if (t.getComponentType().isPrimitive())
               {
                 res.append(
-                  "fuzion.java.array_to_java_object (" + plainResultType(t.getComponentType()) + ") ");
+                  "fuzion.java.array_to_java_object " + plainResultType(t.getComponentType()) + " ");
               }
             else
               {
@@ -1023,7 +1025,8 @@ class ForClass extends ANY
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
                                "  public " + fn + " " + rt + " =>\n" +
-                               "    " + ("fuzion.java.get_static_field (" + rt + ") " +
+                               "    " + ("fuzion.java.get_static_field " +
+                                         (rt.contains(" ") ? "(" + rt + ")" : rt) + " " +
                                          fuzionString(cn) + " " +
                                          fuzionString(jn) + " " +
                                          fuzionString(signature(fi.getType())) + "\n"));  // NYI fi.getType.getClass??
@@ -1034,7 +1037,8 @@ class ForClass extends ANY
                                 "  # read instance Java field '" + fi + "':\n" +
                                 "  #\n" +
                                 "  public " + fn + " " + rt + " =>\n" +
-                                "    " + ("fuzion.java.get_field (" + rt + ") " +
+                                "    " + ("fuzion.java.get_field " +
+                                          (rt.contains(" ") ? "(" + rt + ")" : rt) + " " +
                                           fcn + ".this " +
                                           fuzionString(jn) + " " +
                                           fuzionString(signature(fi.getType())) + "\n"

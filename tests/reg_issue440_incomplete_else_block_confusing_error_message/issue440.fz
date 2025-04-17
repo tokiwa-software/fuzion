@@ -23,7 +23,7 @@
 
 issue440 is
   something i32 =>
-    if true // 1. should flag an error, Incompatible types in assignment
+    if true # 1. should flag an error, Incompatible types in assignment
       1
     else
 

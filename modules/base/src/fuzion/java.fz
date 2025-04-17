@@ -27,7 +27,7 @@
 #
 public fuzion.java is
 
-  // NYI: UNDER DEVELOPMENT remove this, replace with effect
+  # NYI: UNDER DEVELOPMENT remove this, replace with effect
   public create_jvm0(class_path String) =>
     create_jvm (sys.c_string "-Djava.class.path=$class_path")
 

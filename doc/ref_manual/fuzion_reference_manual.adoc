@@ -272,15 +272,11 @@ include::rule.adoc[]
 :RULE_ID: LEXR_COMMENT2
 include::rule.adoc[]
 
-:RULE_SRC: src/dev/flang/parser/Lexer.java
-:RULE_ID: LEXR_COMMENT3
-include::rule.adoc[]
-
 Examples of valid comments are
 
     i := 42     # this is a comment
     this is not a comment
-    j := 32168  // this is also a comment
+    j := 32168  // this is not a comment either
     k := /* this is a comment */ 23
     /* this /* comment /* is */ nested */ */
     l := "not a comment, but a string literal"

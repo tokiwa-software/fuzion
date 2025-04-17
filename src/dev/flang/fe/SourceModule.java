@@ -675,8 +675,9 @@ part of the (((inner features))) declarations of the corresponding
         }
         @Override public Feature   action(Feature   f, AbstractFeature outer)
         {
-          f._scoped = !_scope.isEmpty();
-          findDeclarations(f, outer); return f;
+          f._declaredInScope = (!_scope.isEmpty() || f.isExtensionFeature()) ? outer : null;
+          findDeclarations(f, outer);
+          return f;
         }
       });
 
@@ -1001,8 +1002,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var existing = df.get(fn);
     if (existing != null)
       {
-        // NYI: need to check that the scopes are disjunct
-        if (existing instanceof Feature ef && ef._scoped && f._scoped
+        // NYI: need to check that the scopes ef and f are declared in are disjunct
+        if (existing instanceof Feature ef && ef._declaredInScope != null && f._declaredInScope != null
            || visibilityPreventsConflict(f, existing) || Feature.isAbstractAndFixedPair(f, existing))
           {
             var existingFeatures = FeatureName.getAll(df, fn.baseName(), 0);
@@ -1242,7 +1243,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     // we only need to do this evaluation for:
     // - scoped routines
     // - non argument fields
-    if (v instanceof Feature f && (f._scoped || v.isField() && !f.isArgument()))
+    if (v instanceof Feature f && (f._declaredInScope != null || v.isField() && !f.isArgument()))
       {
         /* cases like the following are forbidden:
           * ```
@@ -1331,7 +1332,9 @@ A post-condition of a feature that does not redefine an inherited feature must s
             stacks.get(0).pop();
           }
         };
-        f.outer().code().visit(visitor, null);
+        var declaredIn = f._declaredInScope != null ? f._declaredInScope
+                                                    : f.outer();
+        declaredIn.code().visit(visitor, null);
 
         if (f.isField())
           {
@@ -1347,7 +1350,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
             // the usage of this field is not in its containing features.
             if (usage.isEmpty())
               {
-                return !f._scoped;
+                return f._declaredInScope == null;
               }
           }
 
@@ -1362,7 +1365,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
          *   q => unit
          *   (c q).x.y
          */
-        if (usage.isEmpty() && Errors.any())
+        if (usage.isEmpty())
           {
             return false;
           }
