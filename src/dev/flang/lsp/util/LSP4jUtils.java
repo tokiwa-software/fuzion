@@ -33,8 +33,8 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.shared.Util;
-import dev.flang.shared.records.TokenInfo;
+import dev.flang.lsp.shared.Util;
+import dev.flang.lsp.shared.records.TokenInfo;
 
 public final class LSP4jUtils
 {

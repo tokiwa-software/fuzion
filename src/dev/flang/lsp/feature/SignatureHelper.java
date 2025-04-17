@@ -41,12 +41,12 @@ import org.eclipse.lsp4j.SignatureInformation;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.LexerTool;
+import dev.flang.lsp.shared.ParserTool;
+import dev.flang.lsp.shared.QueryAST;
+import dev.flang.lsp.shared.TypeTool;
 import dev.flang.lsp.util.Bridge;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.LexerTool;
-import dev.flang.shared.ParserTool;
-import dev.flang.shared.QueryAST;
-import dev.flang.shared.TypeTool;
 import dev.flang.util.ANY;
 
 public class SignatureHelper extends ANY

@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.shared;
+package dev.flang.lsp.shared;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -34,8 +34,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
-import dev.flang.shared.records.ComputationPerformance;
+import dev.flang.lsp.shared.concurrent.MaxExecutionTimeExceededException;
+import dev.flang.lsp.shared.records.ComputationPerformance;
 
 public class Concurrency
 {

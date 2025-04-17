@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.QueryAST;
 import dev.flang.lsp.util.Bridge;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.QueryAST;
 
 /**
  * return list of references for feature at cursor position

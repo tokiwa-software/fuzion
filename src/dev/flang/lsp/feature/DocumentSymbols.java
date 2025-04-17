@@ -35,9 +35,9 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.lsp.shared.ParserTool;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.LSP4jUtils;
-import dev.flang.shared.ParserTool;
 
 public class DocumentSymbols
 {

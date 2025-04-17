@@ -42,11 +42,11 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.be.jvm.runtime.Any;
 import dev.flang.lsp.enums.Transport;
+import dev.flang.lsp.shared.Concurrency;
+import dev.flang.lsp.shared.Context;
+import dev.flang.lsp.shared.ErrorHandling;
+import dev.flang.lsp.shared.IO;
 import dev.flang.lsp.util.LSP4jLogger;
-import dev.flang.shared.Concurrency;
-import dev.flang.shared.Context;
-import dev.flang.shared.ErrorHandling;
-import dev.flang.shared.IO;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 

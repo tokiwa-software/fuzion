@@ -23,7 +23,7 @@
 
 
 JAVA_FILES_LSP               = $(shell find $(SRC)/dev/flang/lsp -name '*.java' )
-JAVA_FILES_LSP_SHARED        = $(shell find $(SRC)/dev/flang/shared -name '*.java' )
+JAVA_FILES_LSP_SHARED        = $(shell find $(SRC)/dev/flang/lsp/shared -name '*.java' )
 CLASSES_DIR_LSP = ./build/classes_lsp
 CLASS_FILES_LSP              = $(CLASSES_DIR_LSP)/dev/flang/lsp/__marker_for_make__
 
@@ -63,7 +63,7 @@ JARS_LSP: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC
 
 $(CLASS_FILES_LSP): JARS_LSP $(CLASS_FILES_BE_JVM)
 	mkdir -p $(CLASSES_DIR_LSP)
-	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP) $(JAVA_FILES_LSP_SHARED)
+	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
 	$(JAVAC) -cp $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP_SHARED)
 	touch $@
 

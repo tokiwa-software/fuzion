@@ -60,8 +60,8 @@ import dev.flang.lsp.feature.Commands;
 import dev.flang.lsp.feature.Completion;
 import dev.flang.lsp.feature.SemanticToken;
 import dev.flang.lsp.feature.SignatureHelper;
-import dev.flang.shared.Concurrency;
-import dev.flang.shared.Context;
+import dev.flang.lsp.shared.Concurrency;
+import dev.flang.lsp.shared.Context;
 
 /**
  * Implementation of the language server

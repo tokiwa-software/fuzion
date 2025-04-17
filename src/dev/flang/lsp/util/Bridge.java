@@ -40,11 +40,11 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.ParserTool;
-import dev.flang.shared.SourcePositionTool;
-import dev.flang.shared.SourceText;
-import dev.flang.shared.Util;
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.ParserTool;
+import dev.flang.lsp.shared.SourcePositionTool;
+import dev.flang.lsp.shared.SourceText;
+import dev.flang.lsp.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;

@@ -20,16 +20,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class MaxExecutionTimeExceededException
+ * Source of class ComputationPerformance
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.shared.concurrent;
 
-public class MaxExecutionTimeExceededException extends Exception
-{
-  public MaxExecutionTimeExceededException(String message, Throwable cause)
-  {
-    super(message, cause);
-  }
-}
+package dev.flang.lsp.shared.records;
+
+/**
+ * wraps the result of a computation and the time it took to compute the result.
+ */
+public record ComputationPerformance<T> (T result, long nanoSeconds){}

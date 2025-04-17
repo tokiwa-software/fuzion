@@ -53,19 +53,19 @@ import com.google.gson.JsonPrimitive;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.lsp.Config;
 import dev.flang.lsp.FuzionLanguageClient;
+import dev.flang.lsp.shared.ASTWalker;
+import dev.flang.lsp.shared.CaseConverter;
+import dev.flang.lsp.shared.Concurrency;
+import dev.flang.lsp.shared.ErrorHandling;
+import dev.flang.lsp.shared.ExprTool;
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.HasSourcePositionTool;
+import dev.flang.lsp.shared.IO;
+import dev.flang.lsp.shared.ParserTool;
+import dev.flang.lsp.shared.TypeTool;
+import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
 import dev.flang.lsp.util.Computation;
-import dev.flang.shared.ASTWalker;
-import dev.flang.shared.CaseConverter;
-import dev.flang.shared.Concurrency;
-import dev.flang.shared.ErrorHandling;
-import dev.flang.shared.ExprTool;
-import dev.flang.shared.FeatureTool;
-import dev.flang.shared.HasSourcePositionTool;
-import dev.flang.shared.IO;
-import dev.flang.shared.ParserTool;
-import dev.flang.shared.TypeTool;
-import dev.flang.shared.Util;
 
 public enum Commands
 {

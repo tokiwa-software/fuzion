@@ -20,14 +20,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ComputationPerformance
+ * Source of class Tokens
  *
  *---------------------------------------------------------------------*/
 
-
-package dev.flang.shared.records;
+package dev.flang.lsp.shared.records;
 
 /**
- * wraps the result of a computation and the time it took to compute the result.
+ * the token left and right of the cursor
  */
-public record ComputationPerformance<T> (T result, long nanoSeconds){}
+public record Tokens(TokenInfo left, TokenInfo right)
+{
+}

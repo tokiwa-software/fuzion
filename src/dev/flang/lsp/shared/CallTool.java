@@ -25,7 +25,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.shared;
+package dev.flang.lsp.shared;
 
 import java.util.function.Predicate;
 

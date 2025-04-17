@@ -30,7 +30,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 
 import dev.flang.lsp.Config;
-import dev.flang.shared.Logger;
+import dev.flang.lsp.shared.Logger;
 import dev.flang.util.ANY;
 
 public class LSP4jLogger extends ANY implements Logger

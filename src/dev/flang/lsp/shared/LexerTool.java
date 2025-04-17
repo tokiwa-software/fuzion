@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.shared;
+package dev.flang.lsp.shared;
 
 import java.util.List;
 import java.util.Map;
@@ -33,10 +33,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import dev.flang.lsp.shared.records.TokenInfo;
+import dev.flang.lsp.shared.records.Tokens;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
-import dev.flang.shared.records.TokenInfo;
-import dev.flang.shared.records.Tokens;
 import dev.flang.util.ANY;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;

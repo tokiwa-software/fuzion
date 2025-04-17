@@ -34,7 +34,7 @@ import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 import dev.flang.lsp.feature.Commands;
-import dev.flang.shared.Context;
+import dev.flang.lsp.shared.Context;
 
 public class FuzionWorkspaceService implements WorkspaceService
 {

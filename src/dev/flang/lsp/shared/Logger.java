@@ -20,15 +20,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Tokens
+ * Source of interface Logger
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.shared.records;
+package dev.flang.lsp.shared;
 
-/**
- * the token left and right of the cursor
- */
-public record Tokens(TokenInfo left, TokenInfo right)
+public interface Logger
 {
+  public void error(String str);
+
+  public void warning(String str);
+
+  public void info(String str);
+
+  public void log(String str);
 }
