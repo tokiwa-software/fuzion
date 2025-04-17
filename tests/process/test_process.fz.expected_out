@@ -6,7 +6,6 @@ eecchhoo
 
 ===  Test: pass environment variable  ===
 MYENVVAR=content
-
 ===  Test: feed output of process 1 to process 2  ===
 'feed me to cat'
 
