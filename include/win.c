@@ -1038,7 +1038,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 void fzE_date_time(void * result)
 {
   time_t rawtime;
+  LARGE_INTEGER counter;
   time(&rawtime);
+  QueryPerformanceCounter(&counter);
   struct tm * ptm = gmtime(&rawtime);
   ((int32_t *)result)[0] = ptm->tm_year+1900;
   ((int32_t *)result)[1] = ptm->tm_mon+1;
@@ -1046,7 +1048,9 @@ void fzE_date_time(void * result)
   ((int32_t *)result)[3] = ptm->tm_hour;
   ((int32_t *)result)[4] = ptm->tm_min;
   ((int32_t *)result)[5] = ptm->tm_sec;
-  ((int32_t *)result)[6] = 0; // NYI: nanosec missing
+  long long billion = 1000000000;
+  // NYI: UNDER DEVELOPMENT: check if there is a better way
+  ((int32_t *)result)[6] = (int32_t)(counter.QuadPart % billion);
 }
 
 
