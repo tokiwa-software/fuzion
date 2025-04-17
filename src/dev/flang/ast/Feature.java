@@ -2052,7 +2052,7 @@ A ((Choice)) declaration must not contain a result type.
    */
   private void checkOuterOfAtomicIsNotValueConstructor()
   {
-    if(isIllegalOuterForAtomicField(this))
+    if (isIllegalOuterForAtomicField(this))
       {
         arguments().stream().forEach(arg ->
           {
