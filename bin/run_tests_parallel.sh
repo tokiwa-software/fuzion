@@ -146,7 +146,7 @@ echo ""
 echo "Slowest $NUM_SLOWEST tests using $TARGET backend:"
 # store complete output of sort in variable before pipeing to head:
 # https://stackoverflow.com/questions/46202653/bash-error-in-sort-sort-write-failed-standard-output-broken-pipe
-SORTED=$(sed --regexp-extended 's|\./build/tests/([^\]+)\sin\s(.*):\sok|\2 \1|g' "$BUILD_DIR"/run_tests.results | sort --field-separator='m' -k1,1nr --buffer-size=100M || "")
+SORTED=$(sed --regexp-extended 's|\./build/tests/([^\]+)\sin\s(.*):\sok|\2 \1|g' "$BUILD_DIR"/run_tests.results | sort --field-separator='m' -k1,1nr --buffer-size=100M || true)
 echo "$SORTED" | head --lines=$NUM_SLOWEST || true
 echo ""
 
