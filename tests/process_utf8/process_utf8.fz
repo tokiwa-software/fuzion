@@ -43,21 +43,21 @@ process_utf8 =>
 
   test "unicode argument" ()->
     (os.process.start "echo" ["👋🌏️‼️"]).bind p->
-      say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val
+      say p.wait
 
   test "unicode environment variable" ()->
     (os.process.start "printenv" ["職場🏢"] (container.ordered_map ["職場🏢"] ["👨‍💻☯️"])).bind p->
-      say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val
+      say p.wait
 
   test "unicode in executable name" ()->
     (os.process.start "ｉｆ" []).bind p->
-      say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val
+      say p.wait
