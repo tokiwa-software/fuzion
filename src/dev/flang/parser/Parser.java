@@ -1909,19 +1909,30 @@ klammerLambd: tuple lambda
   {
     SourcePosition pos = tokenSourcePos();
     var tupleElements = new List<Expr>();
+    Boolean[] b = new Boolean[]{false};
     bracketTermWithNLs(PARENS, "klammer",
                        () -> {
+                         var startColumn = tokenSourcePos().column();
                          do
                            {
                              tupleElements.add(operatorExpr());
                            }
                          while (skipComma());
+                         while (startColumn == tokenSourcePos().column() && currentAtMinIndent() != PARENS._right._token && currentAtMinIndent() != Token.t_indentationLimit)
+                           {
+                            b[0] = true;
+                            tupleElements.add(operatorExpr(false));
+                           }
                          return Void.TYPE;
                        },
                        () -> Void.TYPE);
 
 
-    if (isLambdaPrefix())                  // a lambda expression
+    if (b[0])
+      {
+        return new Block(true, tupleElements);
+      }
+    else if (isLambdaPrefix())                  // a lambda expression
       {
         return lambda(tupleElements);
       }
