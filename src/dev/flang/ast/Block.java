@@ -328,11 +328,16 @@ public class Block extends AbstractBlock
   Block assignToField(Resolution res, Context context, Feature r)
   {
     Expr resExpr = removeResultExpression();
+    if (resExpr == null && r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
+      {
+        resExpr = new Call(pos(), FuzionConstants.UNIT_NAME)
+          .resolveTypes(res, context);
+      }
     if (resExpr != null)
       {
         _expressions.add(resExpr.assignToField(res, context, r));
       }
-    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
+    else
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
