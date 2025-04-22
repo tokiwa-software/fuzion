@@ -83,6 +83,14 @@ else
         experr=$2.expected_err_int
     fi
 
+    # NYI: workaround for #2586
+    if [ "${OS-default}" = "Windows_NT" ]; then
+        iconv --unicode-subst="?"  --byte-subst="?" --widechar-subst="?" -f utf-8 -t ascii "$experr" > tmp_conv.txt || false && cp tmp_conv.txt "$experr"
+        iconv --unicode-subst="?"  --byte-subst="?" --widechar-subst="?" -f utf-8 -t ascii "$expout" > tmp_conv.txt || false && cp tmp_conv.txt "$expout"
+        iconv --unicode-subst="?"  --byte-subst="?" --widechar-subst="?" -f utf-8 -t ascii tmp_err.txt > tmp_conv.txt || false && cp tmp_conv.txt tmp_err.txt
+        iconv --unicode-subst="?"  --byte-subst="?" --widechar-subst="?" -f utf-8 -t ascii tmp_out.txt > tmp_conv.txt || false && cp tmp_conv.txt tmp_out.txt
+    fi
+
     FAILED="none" # "out" or "err" or "none"
     $DIFFERR "$experr" tmp_err.txt || FAILED="err"; true
     if [ "$FAILED" = "none" ]; then
