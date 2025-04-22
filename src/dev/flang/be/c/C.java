@@ -818,8 +818,7 @@ public class C extends ANY
         command.add("-lm");
       }
 
-      // NYI on windows link nothing
-    if (usesThreads())
+    if (usesThreads() && !isWindows())
       {
         command.add("-lpthread");
       }
