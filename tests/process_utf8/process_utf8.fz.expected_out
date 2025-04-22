@@ -1,12 +1,9 @@
 ===  Test: unicode argument  ===
 👋🌏️‼️
 
-0
-===  Test: unicode environment variable  ===
+===  Test: unicode environment variable 1  ===
 👨‍💻☯️
 
-0
 ===  Test: unicode in executable name  ===
 Fuzion says «Ⓗⓔⓛⓛⓞ».
 
-0
