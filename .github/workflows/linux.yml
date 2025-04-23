@@ -80,6 +80,7 @@ jobs:
 
   run_tests:
     needs: setup
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         backend: ["jvm", "c", "int"]
