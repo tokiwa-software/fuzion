@@ -35,7 +35,7 @@ FILE = $(NAME).fz
 all: jvm c int
 
 int:
-	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	$(FUZION) -noBackend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
 jvm:
 	$(FUZION) -classes $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)

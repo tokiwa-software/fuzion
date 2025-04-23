@@ -33,12 +33,12 @@ FUZION = ../../bin/fz $(FUZION_OPTIONS)
 all: jvm c int
 
 int:
-	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	$(FUZION) -frontendOnly $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
 jvm:
-	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	$(FUZION) -frontendOnly $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
 c:
-	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	$(FUZION) -frontendOnly $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
 effect:
