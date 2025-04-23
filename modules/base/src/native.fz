@@ -31,7 +31,7 @@ module fzE_init unit => native
 # returns the latest error number of
 # the current thread
 #
-module fzE_last_error i32 => native
+module fzE_last_error i64 => native
 
 
 # intrinsic that returns true in case of success or false in case of failure during dir creation
@@ -39,12 +39,6 @@ module fzE_last_error i32 => native
 module fzE_mkdir(
           # the internal array data representing the dir path in bytes
           path Array) i32 => native
-
-
-# NYI: int fzE_setenv(const char *name, const char *value, int overwrite);
-
-
-# NYI: int fzE_unsetenv(const char *name);
 
 
 # open the directory given by path
@@ -235,7 +229,7 @@ module fzE_process_create(
 
 # wait for process to exit
 #
-module fzE_process_wait(p i64) i32 => native
+module fzE_process_wait(p i64) i64 => native
 
 
 # returns -1 on error, 0 on end_of_file, number of read bytes otherwise.

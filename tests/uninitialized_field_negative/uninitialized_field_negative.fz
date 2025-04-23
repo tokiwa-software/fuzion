@@ -17,37 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion test uninitialized_field_negative
 #
 # -----------------------------------------------------------------------
 
-
-override PATH := $(PATH):$(shell pwd)
-
-all: jvm c int
-
-compile_unicode_feature:
-	../../bin/fz -c -o=smiley unicode_feature.fz
-	mv -f smiley.exe 😀.exe 2> /dev/null || mv -f smiley 😀 2> /dev/null || true
-
-jvm: compile_unicode_feature
-
-c:   compile_unicode_feature
-
-int: compile_unicode_feature
-
-effect: compile_unicode_feature
-
-record: compile_unicode_feature
-
-record_int: compile_unicode_feature
-
-record_jvm: compile_unicode_feature
-
-record_c: compile_unicode_feature
-
-record_effect: compile_unicode_feature
+uninitialized_field_negative =>
 
 
-override NAME = process_utf8
-include ../simple.mk
+  # this test was originally part of tests/visibility_scoping
+  #
+  case1 is
+    n => m   #  1. should flag an error: reading uninitialized field
+    a := n
+    m := 7
+    say a
+
+  case1

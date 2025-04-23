@@ -24,7 +24,7 @@ In call: 'q'
 
 
 --CURDIR--/visibility_scoping.fz:122:13: error 4: Could not find called feature
-        say x
+        say x   # 11. should flag an error: feature not found
 ------------^
 Feature not found: 'x' (no arguments)
 Target feature: 'visibility_scoping.test9'
@@ -88,7 +88,7 @@ In call: 'ar'
 
 
 --CURDIR--/visibility_scoping.fz:148:19: error 12: Could not find called feature
-        _ := unit.q   # 12. should flag en error: unit.q does not exist
+        _ := unit.q   # 12. should flag an error: unit.q does not exist
 ------------------^
 Feature not found: 'q' (no arguments)
 Target feature: 'unit'
@@ -96,7 +96,7 @@ In call: 'unit.q'
 
 
 --CURDIR--/visibility_scoping.fz:153:14: error 13: Could not find called feature
-        _ := q        # 13. should flag en error: q does not exist
+        _ := q        # 13. should flag an error: q does not exist
 -------------^
 Feature not found: 'q' (no arguments)
 Target feature: 'visibility_scoping.test10.f'
@@ -104,7 +104,7 @@ In call: 'q'
 
 
 --CURDIR--/visibility_scoping.fz:164:19: error 14: Could not find called feature
-        _ := unit.q   # 14. should flag en error: unit.q does not exist
+        _ := unit.q   # 14. should flag an error: unit.q does not exist
 ------------------^
 Feature not found: 'q' (no arguments)
 Target feature: 'unit'
@@ -112,7 +112,7 @@ In call: 'unit.q'
 
 
 --CURDIR--/visibility_scoping.fz:167:19: error 15: Could not find called feature
-        _ := unit.z1  # 15. should flag en error: unit.z1 not in scope
+        _ := unit.z1  # 15. should flag an error: unit.z1 not in scope
 ------------------^^
 Feature not found: 'z1' (no arguments)
 Target feature: 'unit'
@@ -120,7 +120,7 @@ In call: 'unit.z1'
 
 
 --CURDIR--/visibility_scoping.fz:168:19: error 16: Could not find called feature
-        _ := unit.z2  # 16. should flag en error: unit.z2 not in scope
+        _ := unit.z2  # 16. should flag an error: unit.z2 not in scope
 ------------------^^
 Feature not found: 'z2' (no arguments)
 Target feature: 'unit'
@@ -128,7 +128,7 @@ In call: 'unit.z2'
 
 
 --CURDIR--/visibility_scoping.fz:169:14: error 17: Could not find called feature
-        _ := q        # 17. should flag en error: q does not exist
+        _ := q        # 17. should flag an error: q does not exist
 -------------^
 Feature not found: 'q' (no arguments)
 Target feature: 'visibility_scoping.test10.f'
@@ -136,7 +136,7 @@ In call: 'q'
 
 
 --CURDIR--/visibility_scoping.fz:172:14: error 18: Could not find called feature
-        _ := c1       # 18. should flag en error: c1 not in scope
+        _ := c1       # 18. should flag an error: c1 not in scope
 -------------^^
 Feature not found: 'c1' (no arguments)
 Target feature: 'visibility_scoping.test10.f'
@@ -144,7 +144,7 @@ In call: 'c1'
 
 
 --CURDIR--/visibility_scoping.fz:173:14: error 19: Could not find called feature
-        _ := c2       # 19. should flag en error: c2 not in scope
+        _ := c2       # 19. should flag an error: c2 not in scope
 -------------^^
 Feature not found: 'c2' (no arguments)
 Target feature: 'visibility_scoping.test10.f'
@@ -152,7 +152,7 @@ In call: 'c2'
 
 
 --CURDIR--/visibility_scoping.fz:179:17: error 20: Could not find called feature
-      _ := unit.q   # 20. should flag en error: unit.q does not exist
+      _ := unit.q   # 20. should flag an error: unit.q does not exist
 ----------------^
 Feature not found: 'q' (no arguments)
 Target feature: 'unit'
@@ -160,7 +160,7 @@ In call: 'unit.q'
 
 
 --CURDIR--/visibility_scoping.fz:181:17: error 21: Could not find called feature
-      _ := unit.y   # 21. should flag en error: unit.y not in scope
+      _ := unit.y   # 21. should flag an error: unit.y not in scope
 ----------------^
 Feature not found: 'y' (no arguments)
 Target feature: 'unit'
@@ -168,7 +168,7 @@ In call: 'unit.y'
 
 
 --CURDIR--/visibility_scoping.fz:182:17: error 22: Could not find called feature
-      _ := unit.z1  # 22. should flag en error: unit.z1 not in scope
+      _ := unit.z1  # 22. should flag an error: unit.z1 not in scope
 ----------------^^
 Feature not found: 'z1' (no arguments)
 Target feature: 'unit'
@@ -176,7 +176,7 @@ In call: 'unit.z1'
 
 
 --CURDIR--/visibility_scoping.fz:183:17: error 23: Could not find called feature
-      _ := unit.z2  # 23. should flag en error: unit.z2 not in scope
+      _ := unit.z2  # 23. should flag an error: unit.z2 not in scope
 ----------------^^
 Feature not found: 'z2' (no arguments)
 Target feature: 'unit'
@@ -184,7 +184,7 @@ In call: 'unit.z2'
 
 
 --CURDIR--/visibility_scoping.fz:184:12: error 24: Could not find called feature
-      _ := q        # 24. should flag en error: q does not exist
+      _ := q        # 24. should flag an error: q does not exist
 -----------^
 Feature not found: 'q' (no arguments)
 Target feature: 'visibility_scoping.test10.g'
@@ -192,7 +192,7 @@ In call: 'q'
 
 
 --CURDIR--/visibility_scoping.fz:186:12: error 25: Could not find called feature
-      _ := b        # 25. should flag en error: b not in scope
+      _ := b        # 25. should flag an error: b not in scope
 -----------^
 Feature not found: 'b' (no arguments)
 Target feature: 'visibility_scoping.test10.g'
@@ -200,7 +200,7 @@ In call: 'b'
 
 
 --CURDIR--/visibility_scoping.fz:187:12: error 26: Could not find called feature
-      _ := c1       # 26. should flag en error: c1 not in scope
+      _ := c1       # 26. should flag an error: c1 not in scope
 -----------^^
 Feature not found: 'c1' (no arguments)
 Target feature: 'visibility_scoping.test10.g'
@@ -208,7 +208,7 @@ In call: 'c1'
 
 
 --CURDIR--/visibility_scoping.fz:188:12: error 27: Could not find called feature
-      _ := c2       # 27. should flag en error: c2 not in scope
+      _ := c2       # 27. should flag an error: c2 not in scope
 -----------^^
 Feature not found: 'c2' (no arguments)
 Target feature: 'visibility_scoping.test10.g'

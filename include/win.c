@@ -75,19 +75,19 @@ wchar_t* utf8_to_wide_str(const char* str)
 }
 
 // zero memory
-void fzE_mem_zero(void *dest, size_t sz)
+void fzE_mem_zero_secure(void *dest, size_t sz)
 {
   SecureZeroMemory(dest, sz);
 }
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
-_Thread_local int last_error = 0;
+_Thread_local int64_t last_error = 0;
 
 
 // returns the latest error number of
 // the current thread
-int fzE_last_error(void){
+int64_t fzE_last_error(void){
   // NYI: CLEANUP:
   return last_error == 0
     ? GetLastError()
@@ -108,7 +108,7 @@ int fzE_mkdir(const char *pathname){
 
 
 // set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value, int overwrite){
+int fzE_setenv(const char *name, const char *value){
   return -1;
 }
 
@@ -618,9 +618,14 @@ pthread_mutex_t fzE_global_mutex;
  */
 void fzE_init()
 {
+  // NYI: UNDER DEVELOPMENT: what about none UTF8 terminals?
+  // set console output code page to UTF-8
+  SetConsoleOutputCP(CP_UTF8);
+  // also set input code page
+  SetConsoleCP(CP_UTF8);
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
+  fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             // NYI #1646 setprotocol returns EINVAL on windows.
             // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
@@ -863,14 +868,14 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 
 // wait for process to finish
 // returns exit code or -1 on wait-failure.
-int32_t fzE_process_wait(int64_t p){
+int64_t fzE_process_wait(int64_t p){
   DWORD status = 0;
   WaitForSingleObject((HANDLE)p, INFINITE);
   if (!GetExitCodeProcess((HANDLE)p, &status)){
     return -1;
   }
   CloseHandle((HANDLE)p);
-  return (int32_t)status;
+  return (int64_t)status;
 }
 
 

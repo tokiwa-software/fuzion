@@ -36,7 +36,7 @@
 #
 webserver_native is
 
-  # just to install the default mutate effect
+  # NYI: CLEANUP: just to install the default mutate effect
   _ := mut
 
   port u16 := 8080
