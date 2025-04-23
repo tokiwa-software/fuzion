@@ -41,12 +41,6 @@ module fzE_mkdir(
           path Array) i32 => native
 
 
-# NYI: int fzE_setenv(const char *name, const char *value, int overwrite);
-
-
-# NYI: int fzE_unsetenv(const char *name);
-
-
 # open the directory given by path
 #
 # accepts as arguments a path (processed by fuzion.sys.c_string) and a pointer to

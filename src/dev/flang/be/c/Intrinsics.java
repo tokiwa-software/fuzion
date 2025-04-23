@@ -591,8 +591,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
         {
           return CStmnt.seq(CStmnt.iff(CExpr.call("fzE_setenv",new List<>(A0.castTo("char*") /* name */,
-                                                                      A1.castTo("char*") /* value */,
-                                                                      CExpr.int32const(1) /* overwrite */))
+                                                                      A1.castTo("char*") /* value */))
                                             .eq(CExpr.int32const(0)),
                                        c._names.FZ_TRUE.ret()),
                             c._names.FZ_FALSE.ret());

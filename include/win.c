@@ -75,7 +75,7 @@ wchar_t* utf8_to_wide_str(const char* str)
 }
 
 // zero memory
-void fzE_mem_zero(void *dest, size_t sz)
+void fzE_mem_zero_secure(void *dest, size_t sz)
 {
   SecureZeroMemory(dest, sz);
 }
@@ -108,7 +108,7 @@ int fzE_mkdir(const char *pathname){
 
 
 // set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value, int overwrite){
+int fzE_setenv(const char *name, const char *value){
   return -1;
 }
 
@@ -625,7 +625,7 @@ void fzE_init()
   SetConsoleCP(CP_UTF8);
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
+  fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             // NYI #1646 setprotocol returns EINVAL on windows.
             // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
