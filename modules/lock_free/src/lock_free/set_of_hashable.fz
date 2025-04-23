@@ -26,41 +26,40 @@
 #
 # This feature creates an instance of a Set.
 #
-public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K unit) | (Sequence K)) Set K =>
+public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K unit) | (Sequence K)) : Set K is
 
   map lock_free.Map K unit :=
     match vs
       vss Sequence => (lock_free.Map K unit).from_entries (vss.map (k -> tuple k unit))
       vsc lock_free.Map => vsc
 
-  ref : Set K is
 
-    # does this set contain the given value?
-    #
-    public redef contains (k K) bool =>
-      map[k].exists
-
-
-    # list representation of values in this set
-    #
-    public redef as_list list K =>
-      map.keys.as_list
+  # does this set contain the given value?
+  #
+  public redef contains (k K) bool =>
+    map[k].exists
 
 
-    # add new element k to this set.
-    #
-    # NYI: this should be integrated in the mutate effect!
-    #
-    public redef add (k K) Set K =>
-      ss := map.snapshot false
-      ss.put k unit
-      set_of_hashable ss
+  # list representation of values in this set
+  #
+  public redef as_list list K =>
+    map.keys.as_list
 
 
-    # remove an element k from the set if it exists.
-    # return the same set if it does not exist.
-    #
-    public remove (k K) Set K =>
-      ss := map.snapshot false
-      _ := ss.remove k
-      set_of_hashable ss
+  # add new element k to this set.
+  #
+  # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
+  #
+  public fixed redef add (k K) =>
+    ss := map.snapshot false
+    ss.put k unit
+    set_of_hashable ss
+
+
+  # remove an element k from the set if it exists.
+  # return the same set if it does not exist.
+  #
+  public remove (k K) Set K =>
+    ss := map.snapshot false
+    _ := ss.remove k
+    set_of_hashable ss

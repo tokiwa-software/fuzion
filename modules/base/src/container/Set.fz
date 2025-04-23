@@ -47,6 +47,12 @@ is
   public redef contains (e E) bool => abstract
 
 
+  # return a new Set that contains
+  # all elments in this Set and `k`.
+  #
+  public add (k E) Set.this => abstract
+
+
   # list representation of values in this set
   #
   public redef as_list list E => abstract
@@ -109,13 +115,6 @@ is
   #
   public is_superset_of(other container.Set E) =>
     other ∀ contains
-
-
-
-  # add new element k to this set.
-  #
-  public add (k E) Set E =>
-    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
 
 
   public redef as_string =>
