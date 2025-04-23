@@ -777,6 +777,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
     as_codepoints ∀ cp -> cp.is_ascii
 
 
+  # write the bytes of this String to
+  # writer of type: (io.buffered LM).writer
+  #
+  public write_to(LM type : mutate) ! (io.buffered LM).writer
+  =>
+    (io.buffered LM).writer.env.write utf8
+
+
   # monoid of strings with infix + operation.
   #
   public type.concat =>
