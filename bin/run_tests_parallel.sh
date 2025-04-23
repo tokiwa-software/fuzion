@@ -105,7 +105,10 @@ for test in $TESTS; do
     if test -n "$VERBOSE"; then
       printf '\nrun %s: ' "$test"
     fi
-    if test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
+    if [ "${OS-default}" = "Windows_NT" ] && test -e "$test"/skip_win; then
+      printf "_"
+      echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
+    elif test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
       printf "_"
       echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
     else
