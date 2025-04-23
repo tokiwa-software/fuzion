@@ -486,64 +486,64 @@ $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 	cp $^ $@
 
 $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
 
 $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	cat $(JAVA_FILE_UTIL_VERSION_IN) \
           | sed "s^@@VERSION@@^$(VERSION)^g" \
           | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
           | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
           | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
-	sed--in-place "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
+	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
 else
-	sed--in-place "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g" $@
+	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g" $@
 endif
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) -d $(CLASSES_DIR) $(JAVA_FILES_UTIL)
 	touch $@
 
 $(CLASS_FILES_UTIL_UNICODE): $(JAVA_FILES_UTIL_UNICODE) $(CLASS_FILES_UTIL)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_UTIL_UNICODE)
 	touch $@
 
 $(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_AST)
 	touch $@
 
 $(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_PARSER)
 	touch $@
 
 $(CLASS_FILES_IR): $(JAVA_FILES_IR) $(CLASS_FILES_UTIL) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_IR)
 	touch $@
 
 $(CLASS_FILES_MIR): $(JAVA_FILES_MIR) $(CLASS_FILES_IR)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_MIR)
 	touch $@
 
 $(CLASS_FILES_FE): $(JAVA_FILES_FE) $(CLASS_FILES_PARSER) $(CLASS_FILES_AST) $(CLASS_FILES_MIR)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FE)
 	touch $@
 
 $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR) $(CLASS_FILES_FE)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
 
 $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2): $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter.java $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter2.java.patch
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	patch --output $@ $^
 
 # phony target to update the .patch files used to generate sources from modified
@@ -553,87 +553,87 @@ update-java-patches:
 	diff $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter.java $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2) >$(SRC)/dev/flang/fuir/analysis/AbstractInterpreter2.java.patch || true
 
 $(CLASS_FILES_FUIR_ANALYSIS): $(JAVA_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS)
 	touch $@
 
 $(CLASS_FILES_FUIR_ANALYSIS_DFA): $(JAVA_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS_DFA)
 	touch $@
 
 $(CLASS_FILES_FUIR_CFG): $(JAVA_FILES_FUIR_CFG) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_CFG)
 	touch $@
 
 $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_FE) $(CLASS_FILES_FUIR)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
 	touch $@
 
 $(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
 
 $(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
 
 $(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
 
 $(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_JVM_CLASSFILE)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM)
 	touch $@
 
 $(CLASS_FILES_BE_JVM_CLASSFILE): $(JAVA_FILES_BE_JVM_CLASSFILE) $(CLASS_FILES_UTIL)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_CLASSFILE)
 	touch $@
 
 $(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
 	touch $@
 
 $(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
 
 $(CLASS_FILES_TOOLS_FZJAVA): $(JAVA_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS) $(CLASS_FILES_PARSER) $(CLASS_FILES_UTIL)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_FZJAVA)
 	touch $@
 
 $(CLASS_FILES_TOOLS_DOCS): $(JAVA_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOLS) $(CLASS_FILES_PARSER) $(CLASS_FILES_UTIL)
-	mkdir --parents $(CLASSES_DIR)
+	mkdir --p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_DOCS)
 	touch $@
 
 $(JARS_JFREE_SVG_JAR):
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	curl $(JFREE_SVG_URL) --output $@
 
 $(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(CLASS_FILES_UTIL_UNICODE) $(JARS_JFREE_SVG_JAR)
-	mkdir --parents $(CLASSES_DIR_LOGO)
+	mkdir --p $(CLASSES_DIR_LOGO)
 	$(JAVAC) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR)  $(CLASSES_DIR_LOGO) $(JAVA_FILES_MISC_LOGO)
 	touch $@
 
 $(BUILD_DIR)/assets/logo.svg: $(CLASS_FILES_MISC_LOGO)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo $@
 	inkscape $@ --export-filename $@.pdf
 	touch $@
 
 $(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -b $@
 	inkscape $@ --export-filename $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
@@ -641,7 +641,7 @@ $(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
 	touch $@
 
 $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -c $@
 	inkscape $@ --export-filename $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
@@ -649,14 +649,14 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	touch $@
 
 $(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS)
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC)/bin/fz $@
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
 
 $(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
-	rm --recursive --force $(@D)/base
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC)/modules/base $(@D)
+	rm -rf $(@D)/base
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC)/modules/base $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -save-module=$@ -XenableSetKeyword
 	$(FZ) -XXcheckIntrinsics
 
@@ -664,51 +664,51 @@ $(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
 .PRECIOUS: $(MOD_BASE)
 
 $(MOD_TERMINAL): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/terminal/src -name "*.fz")
-	rm --recursive --force $(@D)/terminal
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC)/modules/terminal $(@D)
+	rm -rf $(@D)/terminal
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC)/modules/terminal $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/terminal/src -save-module=$@
 
 $(MOD_LOCK_FREE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/lock_free/src -name "*.fz")
-	rm --recursive --force $(@D)/lock_free
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC)/modules/lock_free $(@D)
+	rm -rf $(@D)/lock_free
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC)/modules/lock_free $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/lock_free/src -save-module=$@
 
 $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz")
-	rm --recursive --force $(@D)/nom
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC)/modules/nom $(@D)
+	rm -rf $(@D)/nom
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -save-module=$@
 
 $(MOD_CLANG): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/clang/src -name "*.fz")
-	rm --recursive --force $(@D)/clang
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC)/modules/clang $(@D)
+	rm -rf $(@D)/clang
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC)/modules/clang $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/clang/src -save-module=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC)/bin/fzjava $@
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
 $(MOD_JAVA_BASE_FZ_FILES): $(MOD_BASE) $(FZJAVA)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.base -to=$(@D) -verbose=0"
 	touch $@
 
 $(MOD_JAVA_XML_FZ_FILES): $(FZJAVA)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.xml -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 
 $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(FZJAVA)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.datatransfer -to=$(@D) -modules=java.base,java.xml -verbose=0"
 # NYI: cleanup: see #462: manually move these features to the main directory
@@ -718,8 +718,8 @@ $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(FZJAVA)
 	touch $@
 
 $(MOD_JAVA_DESKTOP_FZ_FILES): $(FZJAVA)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.desktop -to=$(@D) -modules=java.base,java.xml,java.datatransfer -verbose=0"
 # NYI: cleanup: see #462: manually move these features to the main directory
@@ -733,263 +733,263 @@ $(MOD_JAVA_DESKTOP_FZ_FILES): $(FZJAVA)
 	touch $@
 
 $(MOD_JAVA_COMPILER_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.compiler -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_INSTRUMENT_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.instrument -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_LOGGING_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.logging -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_MANAGEMENT_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.management -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_MANAGEMENT_RMI_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_RMI)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.management.rmi -to=$(@D) -modules=java.base,java.management,java.rmi -verbose=0"
 	touch $@
 $(MOD_JAVA_NAMING_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.naming -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_NET_HTTP_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.net.http -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_PREFS_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.prefs -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_RMI_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.rmi -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SCRIPTING_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.scripting -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SE_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_SQL_ROWSET) $(MOD_JAVA_XML_CRYPTO) $(MOD_JAVA_MANAGEMENT_RMI) $(MOD_JAVA_SECURITY_JGSS) $(MOD_JAVA_SECURITY_SASL) $(MOD_JAVA_SCRIPTING) $(MOD_JAVA_DESKTOP) $(MOD_JAVA_COMPILER) $(MOD_JAVA_INSTRUMENT) $(MOD_JAVA_NET_HTTP) $(MOD_JAVA_PREFS)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.se -to=$(@D) -modules=java.base,java.naming,java.transaction.xa,java.logging,java.scripting,java.xml,java.datatransfer,java.prefs,java.sql,java.desktop,java.compiler,java.instrument,java.rmi,java.management,java.net.http,java.sql.rowset,java.xml.crypto,java.management.rmi,java.security.jgss,java.security.sasl -verbose=0"
 	touch $@
 $(MOD_JAVA_SECURITY_JGSS_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.security.jgss -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SECURITY_SASL_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.security.sasl -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SMARTCARDIO_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.smartcardio -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_SQL_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_LOGGING) $(MOD_JAVA_XML) $(MOD_JAVA_TRANSACTION_XA)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.sql -to=$(@D) -modules=java.base,java.logging,java.xml,java.transaction.xa -verbose=0"
 	touch $@
 $(MOD_JAVA_SQL_ROWSET_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_SQL) $(MOD_JAVA_NAMING) $(MOD_JAVA_LOGGING) $(MOD_JAVA_XML) $(MOD_JAVA_TRANSACTION_XA)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.sql.rowset -to=$(@D) -modules=java.base,java.logging,java.xml,java.transaction.xa,java.sql,java.naming -verbose=0"
 	touch $@
 $(MOD_JAVA_TRANSACTION_XA_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.transaction.xa -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JAVA_XML_CRYPTO_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_XML)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.xml.crypto -to=$(@D) -modules=java.xml,java.base -verbose=0"
 	touch $@
 $(MOD_JDK_ACCESSIBILITY_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_DESKTOP)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.accessibility -to=$(@D) -modules=java.base,java.xml,java.datatransfer,java.desktop -verbose=0"
 	touch $@
 $(MOD_JDK_ATTACH_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.attach -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_CHARSETS_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.charsets -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_COMPILER_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_COMPILER)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.compiler -to=$(@D) -modules=java.base,java.compiler -verbose=0"
 	touch $@
 $(MOD_JDK_CRYPTO_CRYPTOKI_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.crypto.cryptoki -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_CRYPTO_EC_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.crypto.ec -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_DYNALINK_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.dynalink -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_EDITPAD_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.editpad -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_HTTPSERVER_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.httpserver -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JARTOOL_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jartool -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JAVADOC_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JDK_COMPILER)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.javadoc -to=$(@D) -modules=java.base,java.compiler,jdk.compiler -verbose=0"
 	touch $@
 $(MOD_JDK_JCONSOLE_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_DESKTOP) $(MOD_JAVA_MANAGEMENT)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jconsole -to=$(@D) -modules=java.base,java.xml,java.datatransfer,java.desktop,java.management -verbose=0"
 	touch $@
 $(MOD_JDK_JDEPS_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jdeps -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JDI_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jdi -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JDWP_AGENT_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jdwp.agent -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JFR_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jfr -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JLINK_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jlink -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JPACKAGE_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jpackage -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JSHELL_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_COMPILER) $(MOD_JAVA_PREFS) $(MOD_JDK_JDI)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jshell -to=$(@D) -modules=java.base,java.compiler,java.prefs,jdk.jdi -verbose=0"
 	touch $@
 $(MOD_JDK_JSOBJECT_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jsobject -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_JSTATD_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.jstatd -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_LOCALEDATA_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.localedata -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_MANAGEMENT_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.management -to=$(@D) -modules=java.base,java.management -verbose=0"
 	touch $@
 $(MOD_JDK_MANAGEMENT_AGENT_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.management.agent -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_MANAGEMENT_JFR_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JDK_JFR)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.management.jfr -to=$(@D) -modules=java.base,java.management,jdk.jfr -verbose=0"
 	touch $@
 $(MOD_JDK_NAMING_DNS_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.naming.dns -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_NAMING_RMI_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.naming.rmi -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_NET_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.net -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_NIO_MAPMODE_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.nio.mapmode -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_SCTP_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.sctp -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 $(MOD_JDK_SECURITY_AUTH_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_NAMING)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.security.auth -to=$(@D) -modules=java.base,java.naming -verbose=0"
 	touch $@
 $(MOD_JDK_SECURITY_JGSS_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_SECURITY_JGSS)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.security.jgss -to=$(@D) -modules=java.base,java.security.jgss -verbose=0"
 	touch $@
 $(MOD_JDK_XML_DOM_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_XML)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.xml.dom -to=$(@D) -modules=java.base,java.xml -verbose=0"
 	touch $@
 $(MOD_JDK_ZIPFS_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE)
-	rm --recursive --force $(@D)
-	mkdir --parents $(@D)
+	rm -rf $(@D)
+	mkdir --p $(@D)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) jdk.zipfs -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 
@@ -1111,19 +1111,19 @@ $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_JDK_ZIPFS_DIR) -modules=java.base -save-module=$@
 
 $(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
-	rm --recursive --force $@
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC_TESTS) $@
+	rm -rf $@
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC_TESTS) $@
 	chmod +x $@/*.sh
 
 $(BUILD_DIR)/include: $(FUZION_FILES_RT)
-	rm --recursive --force $@
-	mkdir --parents $(@D)
-	cp --recursive --force $(FZ_SRC_INCLUDE) $@
+	rm -rf $@
+	mkdir --p $(@D)
+	cp -rf $(FZ_SRC_INCLUDE) $@
 
 $(BUILD_DIR)/examples: $(FZ_SRC)/examples
-	mkdir --parents $(@D)
-	cp --recursive --force $^ $@
+	mkdir --p $(@D)
+	cp -rf $^ $@
 
 $(BUILD_DIR)/UnicodeData.txt:
 	cd $(BUILD_DIR) && wget $(UNICODE_SOURCE)
@@ -1132,21 +1132,21 @@ $(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData $(BUILD_DIR)/UnicodeData.txt >$@
 
 $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/dev/flang/util/UnicodeData.java.in
-	sed --expression '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
+	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
 
 .phony: doc
 doc: $(DOCUMENTATION)
 
 $(BUILD_DIR)/generated/doc/fum_file.adoc: $(SRC)/dev/flang/fe/LibraryModule.java
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	sed --quiet '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" >$@
 
 $(DOC_FILES_FUMFILE): $(BUILD_DIR)/generated/doc/fum_file.adoc
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	asciidoc - <$^ >$@
 
 $(DOC_DESIGN_JVM): $(SRC)/dev/flang/be/jvm/JVM.java
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	sed --quiet '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" | asciidoc - >$@
 
 REF_MANUAL_ATTRIBUTES = \
@@ -1156,61 +1156,61 @@ REF_MANUAL_ATTRIBUTES = \
   --attribute UNICODE_SOURCE=$(UNICODE_SOURCE)
 
 $(BUILD_DIR)/generated/doc/unicode_version.adoc:
-	mkdir --parents $(@D)
-	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "sate:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+	mkdir --p $(@D)
+	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -whiteSpace >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_illegal.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -illegal >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_letter.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -letter >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_digit.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
-	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer igit >$@
+	mkdir --p $(@D)
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -digit >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_numeric.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -numeric >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_op.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -op >$@
 
 $(BUILD_DIR)/generated/doc/keywords.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -keywords >$@
 
 $(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -stringLiteralEscapes >$@
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	asciidoctor-pdf $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REF_MANUAL_SOURCE)
 
 $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	asciidoctor $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
 
 
-# NYI integrate into fz: fz ocs
+# NYI integrate into fz: fz -docs
 $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m fuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
 
-# NYI integrate into fz: fz ocs
+# NYI integrate into fz: fz -docs
 .phony: debug_api_docs
 debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
-	mkdir --parents $(BUILD_DIR)/debugdocs
+	mkdir --p $(BUILD_DIR)/debugdocs
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m fuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
-	jwebserver --port 15306 -irectory $$(realpath $(BUILD_DIR)/debugdocs)
+	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
 
 # phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
 # This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would
@@ -1306,8 +1306,8 @@ run_tests_jar: run_tests_jar_build
 
 .PHONY: clean
 clean:
-	rm --recursive --force $(BUILD_DIR)
-	rm --recursive --force fuzion_generated_clazzes
+	rm -rf $(BUILD_DIR)
+	rm -rf fuzion_generated_clazzes
 	find $(FZ_SRC) -name "*~" -type f -exec rm {} \;
 
 .PHONY: release
@@ -1357,7 +1357,7 @@ $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	@echo " + build/modules/fz_cmd.jmod"
 
 $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
-	rm --recursive --force $(MOD_FZ_CMD_DIR)
+	rm -rf $(MOD_FZ_CMD_DIR)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -verbose=0 $(MOD_FZ_CMD_DIR)"
 	touch $@
 
@@ -1416,12 +1416,12 @@ lint/javadoc:
 
 .PHONY: remove_unused_imports
 remove_unused_imports:
-	wget --output-document /tmp/google-java-format-1.21.0-alleps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-alleps.jar
-	$(JAVA) -jar /tmp/google-java-format-1.21.0-alleps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
+	wget --output-document /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
+	$(JAVA) -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
 
 
 $(BUILD_DIR)/pmd.zip:
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	wget --output-document $@ https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.3.0/pmd-dist-7.3.0-bin.zip
 
 $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
@@ -1442,17 +1442,17 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: a bit hacky to have so/dylib regardless of which OS.
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
 	@echo " + "$@
-	mkdir --parents $(BUILD_DIR)/lib
+	mkdir --p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
-	-DFUZION_ENABLE_THREADS \
+	FUZION_ENABLE_THREADS \
 	-DPTW32_STATIC_LIB \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
 	-lMswsock -lAdvApi32 -lWs2_32
 else
 	clang -Wall -Werror -O3 -shared -fPIC \
-	-DFUZION_ENABLE_THREADS \
+	FUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
 endif
@@ -1494,19 +1494,19 @@ JARS_LSP_LSP4J_JSONRPC   = $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.ja
 JARS_LSP_GSON            = $(BUILD_DIR)/jars/gson-2.11.0.jar
 
 $(JARS_LSP_LSP4J):
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	curl $(LSP_LSP4J_URL) --output $@
 
 $(JARS_LSP_LSP4J_GENERATOR):
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	curl $(LSP_LSP4J_GENERATOR_URL) --output $@
 
 $(JARS_LSP_LSP4J_JSONRPC):
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	curl $(LSP_LSP4J_JSONRPC_URL) --output $@
 
 $(JARS_LSP_GSON):
-	mkdir --parents $(@D)
+	mkdir --p $(@D)
 	curl $(LSP_GSON_URL) --output $@
 
 JARS_LSP: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC) $(JARS_LSP_GSON)
@@ -1517,7 +1517,7 @@ JARS_LSP: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC
 	sha256sum --status --check $(BUILD_DIR)/jars/lsp.sha256
 
 $(CLASS_FILES_LSP): JARS_LSP
-	mkdir --parents $(CLASSES_DIR_LSP)
+	mkdir --p $(CLASSES_DIR_LSP)
 	$(JAVAC) --class-path $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
 	touch $@
 
@@ -1526,7 +1526,7 @@ lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
 LSP_FUZION_HOME = fuzion/build
 LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
-LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+LSP_JAVA_ARGS = fuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) --class-path  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 
