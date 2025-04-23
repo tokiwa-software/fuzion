@@ -28,8 +28,8 @@ test_unwrap =>
 
   say2(v i32) => say v
 
-  (try (option i32)).on ()->
-    (try (outcome i32)).on ()->
+  (exception (option i32)).on ()->
+    (exception (outcome i32)).on ()->
       say a
       say b
 
