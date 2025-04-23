@@ -1918,7 +1918,11 @@ klammerLambd: tuple lambda
                              tupleElements.add(operatorExpr());
                            }
                          while (skipComma());
-                         while (startColumn == tokenSourcePos().column() && currentAtMinIndent() != PARENS._right._token && currentAtMinIndent() != Token.t_indentationLimit)
+
+                         while (startColumn == tokenSourcePos().column()
+                                && currentAtMinIndent() != PARENS._right._token
+                                && currentAtMinIndent() != Token.t_indentationLimit
+                                && currentAtMinIndent() != Token.t_eof)
                            {
                             b[0] = true;
                             tupleElements.add(operatorExpr(false));
