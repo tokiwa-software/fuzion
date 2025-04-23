@@ -139,28 +139,18 @@ is
   # total order
   #
   public fixed redef type.lteq(a, b time.calendar_duration) bool =>
-    # NYI #4836
-    time.lower is
-    time.greater is
-    time.equal is
-
-    # is a0 lower, greater or equal than/to b0?
-    #
-    lgoe(a0, b0 u64) time.lower | time.greater | time.equal =>
-      if a0 <= b0
-        if a0 = b0 then time.equal else time.lower
-      else
-        time.greater
-
     helper(mappers Sequence (time.calendar_duration->u64)) =>
       if mappers.is_empty
         true
       else
         # NYI: UNDER DEVELOPMENT: can not omit `.call`
-        match lgoe (mappers[0].call a) (mappers[0].call b)
-          time.lower => true
-          time.greater => false
-          time.equal => helper (mappers.drop 1)
+        lgoe := (mappers[0].call a) ⋄ (mappers[0].call b)
+        if lgoe = -1
+          true
+        else if lgoe = 1
+          true
+        else
+          helper (mappers.drop 1)
 
     helper [
       # NYI: UNDER DEVELOPMENT: can not omit parens
