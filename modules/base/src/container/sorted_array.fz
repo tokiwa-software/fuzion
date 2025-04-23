@@ -167,13 +167,13 @@ is
     #
     # cmp must implement the same total order as 'T.infix <='.
     #
-    cmp T -> i32
+    cmp T -> lgoe
 
     ) option i32
 
     post
       match result
-        i i32 => (cmp sorted_array.this[i]) = 0
+        i i32 => cmp sorted_array.this[i] = equal
         nil   => true # NYI: analysis: for all i=a.indices, sorted_array.this[i] /= key
   =>
     binary_search(l, r i32) option i32 =>
@@ -181,9 +181,9 @@ is
       if l > r
         nil
       else
-        c := cmp sorted_array.this[m]
-        if      c < 0 then binary_search m+1 r
-        else if c > 0 then binary_search l m-1
-        else               m
+        match cmp sorted_array.this[m]
+          lower   => binary_search m+1 r
+          greater => binary_search l m-1
+          equal   => m
 
     binary_search 0 length-1
