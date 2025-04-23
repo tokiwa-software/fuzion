@@ -1351,6 +1351,7 @@ public class AstErrors extends ANY
     var solution = "";
 
     if (call._targetOf_forErrorSolutions != null
+     && call._targetOf_forErrorSolutions.name() != null
      && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
      && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
       {
