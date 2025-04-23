@@ -17,20 +17,20 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature try
+#  Source code of Fuzion standard library feature try_REMOVE
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# try -- simple exception effect
+# try_REMOVE -- simple exception effect
 #
-# try provides an operation 'cause' that immediately stops execution and
+# try_REMOVE provides an operation 'cause' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (# type parameter used only to distinguish different
-            # instances of `try`. This permits using, e.g.,
-            # `try reader` and `try writer` and distinguish the
+public try_REMOVE (# type parameter used only to distinguish different
+            # instances of `try_REMOVE`. This permits using, e.g.,
+            # `try_REMOVE reader` and `try_REMOVE writer` and distinguish the
             # errors raised by the reader from those raised
             # by the writer.
             #
@@ -41,10 +41,10 @@ public try (# type parameter used only to distinguish different
             ) : eff.fallible error h
 is
 
-  # type feature that to create an instance of `try` with the given error handler.
+  # type feature that to create an instance of `try_REMOVE` with the given error handler.
   #
   public fixed redef type.new(h error->void) =>
-    try T h unit unit
+    try_REMOVE T h unit unit
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
@@ -53,7 +53,7 @@ is
   # resulting 'outcome'.
   #
   public type.on(R type, f ()->R) outcome R =>
-    try.this.try (outcome R) ()->
+    try_REMOVE.this.try (outcome R) ()->
         f()
       .catch e->
         e
@@ -63,23 +63,23 @@ is
   public raise(e error) => cause e
 
 
-# convenience routine to create a new instance of 'try T' and run 'f' in
+# convenience routine to create a new instance of 'try_REMOVE T' and run 'f' in
 # it.  The result will be an `outcome R` that, in case of success, contains
-# the result of `f`, or, in case of `(try T).env.raise`, contains the error.
+# the result of `f`, or, in case of `(try_REMOVE T).env.raise`, contains the error.
 #
-public try(T type,
+public try_REMOVE(T type,
            R type,
            f ()->R) =>
-  (try T).on f
+  (try_REMOVE T).on f
 
 
-# convenience routine to create a new instance of 'try T' and run 'f' in
+# convenience routine to create a new instance of 'try_REMOVE T' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
-# '(try T).env.raise'.
+# '(try_REMOVE T).env.raise'.
 #
-public try_or_panic(T type,
+public try_REMOVE_or_panic(T type,
                     R type,
                     f ()->R) R =>
-  match (try T).on f
+  match (try_REMOVE T).on f
     e error => panic $e
     r R => r
