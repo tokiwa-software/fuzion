@@ -1139,7 +1139,7 @@ doc: $(DOCUMENTATION)
 
 $(BUILD_DIR)/generated/doc/fum_file.adoc: $(SRC)/dev/flang/fe/LibraryModule.java
 	mkdir -p $(@D)
-	sed --quiet '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" >$@
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" >$@
 
 $(DOC_FILES_FUMFILE): $(BUILD_DIR)/generated/doc/fum_file.adoc
 	mkdir -p $(@D)
@@ -1147,7 +1147,7 @@ $(DOC_FILES_FUMFILE): $(BUILD_DIR)/generated/doc/fum_file.adoc
 
 $(DOC_DESIGN_JVM): $(SRC)/dev/flang/be/jvm/JVM.java
 	mkdir -p $(@D)
-	sed --quiet '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" | asciidoc - >$@
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" | asciidoc - >$@
 
 REF_MANUAL_ATTRIBUTES = \
   --attribute FZ_SRC=$(realpath $(FZ_SRC)) \
