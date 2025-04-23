@@ -24,7 +24,7 @@
 ex =>
   read_line option String =>
 
-    (try unit String ()->
+    (exception unit String ()->
       ref : String is
         public redef utf8 Sequence u8 =>
           (list u8).empty

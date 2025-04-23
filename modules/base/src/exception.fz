@@ -17,34 +17,33 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature try
+#  Source code of Fuzion standard library feature exception
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# try -- simple exception effect
+# exception -- simple exception effect
 #
-# try provides an operation 'cause' that immediately stops execution and
+# exception provides an operation 'cause' that immediately stops execution and
 # returns an 'error' wrapped in an 'outcome'.
 #
-public try (# type parameter used only to distinguish different
-            # instances of `try`. This permits using, e.g.,
-            # `try reader` and `try writer` and distinguish the
-            # errors raised by the reader from those raised
-            # by the writer.
-            #
-            public T type,
+public exception (# type parameter used only to distinguish different
+                  # instances of `exception`. This permits using, e.g.,
+                  # `exception reader` and `exception writer` and distinguish the
+                  # errors raised by the reader from those raised
+                  # by the writer.
+                  #
+                  public T type,
 
-            h error->void,
-            _, _ unit
-            ) : eff.fallible error h
+                  h error->void
+                  ) : eff.fallible error h
 is
 
-  # type feature that to create an instance of `try` with the given error handler.
+  # type feature that to create an instance of `exception` with the given error handler.
   #
   public fixed redef type.new(h error->void) =>
-    try T h unit unit
+    exception T h
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
@@ -53,33 +52,29 @@ is
   # resulting 'outcome'.
   #
   public type.on(R type, f ()->R) outcome R =>
-    try.this.try (outcome R) ()->
-        f()
-      .catch e->
-        e
-
-  # terminate immediately with the given error wrapped in 'option'.
-  #
-  public raise(e error) => cause e
+    exception.this.try   (outcome R) ()->
+                    f()
+                  .catch
+                    id
 
 
-# convenience routine to create a new instance of 'try T' and run 'f' in
+# convenience routine to create a new instance of 'exception T' and run 'f' in
 # it.  The result will be an `outcome R` that, in case of success, contains
-# the result of `f`, or, in case of `(try T).env.raise`, contains the error.
+# the result of `f`, or, in case of `(exception T).env.raise`, contains the error.
 #
-public try(T type,
+public exception(T type,
            R type,
            f ()->R) =>
-  (try T).on f
+  (exception T).on f
 
 
-# convenience routine to create a new instance of 'try T' and run 'f' in
+# convenience routine to create a new instance of 'exception T' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
-# '(try T).env.raise'.
+# '(exception T).env.raise'.
 #
-public try_or_panic(T type,
-                    R type,
-                    f ()->R) R =>
-  match (try T).on f
+public exception_or_panic(T type,
+                          R type,
+                          f ()->R) R =>
+  match (exception T).on f
     e error => panic $e
     r R => r
