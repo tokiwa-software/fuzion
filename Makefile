@@ -1210,7 +1210,7 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	mkdir -p $(BUILD_DIR)/debugdocs
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m fuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
-	jwebserver -port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
+	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
 
 # phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
 # This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would
@@ -1445,14 +1445,14 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
-	FUZION_ENABLE_THREADS \
+	-DFUZION_ENABLE_THREADS \
 	-DPTW32_STATIC_LIB \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
 	-lMswsock -lAdvApi32 -lWs2_32
 else
 	clang -Wall -Werror -O3 -shared -fPIC \
-	FUZION_ENABLE_THREADS \
+	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
 endif
@@ -1526,7 +1526,7 @@ lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
 LSP_FUZION_HOME = fuzion/build
 LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
-LSP_JAVA_ARGS = fuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) --class-path  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 
