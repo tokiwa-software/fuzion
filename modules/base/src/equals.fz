@@ -109,7 +109,7 @@ public infix ⩻(T type : property.orderable, a, b T) bool =>
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-public infix ⋄(T type : property.orderable, a, b T) lgoe =>
+public infix ⋄(T type : property.orderable, a, b T) order =>
   a <> b
 
 
@@ -142,8 +142,8 @@ public infix <(T type : property.orderable, a, b T) bool =>
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-public infix <>(T type : property.orderable, a, b T) lgoe =>
-  if      a < b then lower
+public infix <>(T type : property.orderable, a, b T) order =>
+  if      a < b then less
   else if a > b then greater
   else               equal
 

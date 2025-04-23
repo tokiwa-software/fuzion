@@ -17,13 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature lgoe
+#  Source code of Fuzion standard library feature order
 #
 # -----------------------------------------------------------------------
 
-# lower -- unit feature to denote the result of a comparion
+# less -- unit feature to denote the result of a comparion
 #
-public lower is
+public less is
 
 # greater -- unit feature to denote the result of a comparion
 #
@@ -34,28 +34,28 @@ public greater is
 public equal is
 
 
-# choice of lower greater or equal
+# choice of less, greater or equal
 #
-public lgoe : choice lower greater equal, property.equatable is
+public order : choice less greater equal, property.equatable is
 
-  # maps lgoe to a number
+  # maps order to a number
   #
-  # lower => -1
+  # less => -1
   # greater => +1
   # equal => 0
   #
-  public as_num =>
-    match lgoe.this
-      lower => -1
+  public sign =>
+    match order.this
+      less => -1
       greater => +1
       equal => 0
 
 
-  public fixed redef type.equality(a, b lgoe) bool =>
+  public fixed redef type.equality(a, b order) bool =>
     match a
-      lower =>
+      less =>
         match b
-          lower => true
+          less => true
           * => false
       greater =>
         match b
@@ -71,8 +71,8 @@ public lgoe : choice lower greater equal, property.equatable is
   # human readable string of this choice
   #
   public redef as_string =>
-    match lgoe.this
-      lower => "lower"
+    match order.this
+      less => "less"
       greater => "greater"
       equal => "equal"
 

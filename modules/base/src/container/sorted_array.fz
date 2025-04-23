@@ -167,7 +167,7 @@ is
     #
     # cmp must implement the same total order as 'T.infix <='.
     #
-    cmp T -> lgoe
+    cmp T -> order
 
     ) option i32
 
@@ -182,7 +182,7 @@ is
         nil
       else
         match cmp sorted_array.this[m]
-          lower   => binary_search m+1 r
+          less    => binary_search m+1 r
           greater => binary_search l m-1
           equal   => m
 

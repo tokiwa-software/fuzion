@@ -71,7 +71,7 @@ is
   #
   public redef as_list list T =>
     if (through ? nil => false
-                | thru T => step.sign = (from ⋄ thru).as_num.sign) then
+                | thru T => step.sign = (from ⋄ thru).sign) then
       nil
     else
       tail => (from+?step ? next T => (interval next through step).as_list
@@ -89,7 +89,7 @@ is
       thru T =>
         if from = thru then
           T.one
-        else if step.sign = (from ⋄ thru).as_num.sign then
+        else if step.sign = (from ⋄ thru).sign then
           T.zero
         else
           (thru - from) / step + T.one

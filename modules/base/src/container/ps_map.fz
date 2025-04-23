@@ -184,7 +184,7 @@ O(n log n).
       else
         (mk,mv) := data[m]
         match (mk) ⋄ k
-          lower   => binary_search m+1 r
+          less    => binary_search m+1 r
           greater => binary_search l m-1
           equal   => mv
 
