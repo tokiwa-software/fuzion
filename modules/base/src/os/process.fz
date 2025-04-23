@@ -149,6 +149,13 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
       p
 
 
+  # close standard input of this process
+  #
+  public close_in outcome unit =>
+    if fzE_pipe_close std_in != 0
+      error "closing standard in was not successful, error code: $fzE_last_error"
+
+
   # wait for this process
   #
   public wait =>
