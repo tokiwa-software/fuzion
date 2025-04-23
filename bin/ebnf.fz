@@ -25,11 +25,6 @@
 # 1) Extract ebnf grammar from Lexer/Parser.java
 # 2) Test if grammar can be parsed with antlr4
 
-lm1 : mutate is
-lm2 : mutate is
-alm1 => lm1
-alm2 => lm2
-_ := main
 main =>
 
   ########### Extensions ###############
