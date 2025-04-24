@@ -80,26 +80,6 @@ int64_t fzE_last_error(void);
 int fzE_mkdir(const char *pathname);
 
 /**
- * set environment variable
- *
- * @param name a pointer to zero terminated utf8 bytes.
- *
- * @param value a pointer to zero terminated utf8 bytes.
- *
- * @return 0 on success, -1 on error.
- */
-int fzE_setenv(const char *name, const char *value);
-
-/**
- * unset environment variable
- *
- * @param name a pointer to zero terminated utf8 bytes.
- *
- * @return 0 on success, -1 on error.
- */
-int fzE_unsetenv(const char *name);
-
-/**
  * open a directory for traversal.
  *
  * @param pathname a pointer to zero terminated utf8 bytes.
