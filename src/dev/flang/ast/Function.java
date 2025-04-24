@@ -451,9 +451,8 @@ public class Function extends AbstractLambda
 
         if (f != null)
           {
-            generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                         ? ff.resultTypeIfPresent(res)
-                         : new BuiltInType(FuzionConstants.UNIT_NAME));
+            res.resolveTypes(f);
+            generics.add(f.resultType());
             for (var a : f.arguments())
               {
                 res.resolveTypes(a);
