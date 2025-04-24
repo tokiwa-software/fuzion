@@ -144,13 +144,11 @@ is
         true
       else
         # NYI: UNDER DEVELOPMENT: can not omit `.call`
-        lgoe := (mappers[0].call a) ⋄ (mappers[0].call b)
-        if lgoe = -1
-          true
-        else if lgoe = 1
-          true
-        else
-          helper (mappers.drop 1)
+        match (mappers[0].call a) ⋄ (mappers[0].call b)
+          greater => false
+          less => true
+          equal => helper (mappers.drop 1)
+
 
     helper [
       # NYI: UNDER DEVELOPMENT: can not omit parens
