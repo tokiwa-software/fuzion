@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature order
+#
+# -----------------------------------------------------------------------
+
+# less -- unit feature to denote the result of a comparion
+#
+public less is
+
+# greater -- unit feature to denote the result of a comparion
+#
+public greater is
+
+# equal -- unit feature to denote the result of a comparion
+#
+public equal is
+
+
+# choice of less, greater or equal
+#
+public order : choice less greater equal, property.equatable is
+
+  # maps order to a number
+  #
+  # less => -1
+  # greater => +1
+  # equal => 0
+  #
+  public sign =>
+    match order.this
+      less => -1
+      greater => +1
+      equal => 0
+
+
+  public fixed redef type.equality(a, b order) bool =>
+    match a
+      less =>
+        match b
+          less => true
+          * => false
+      greater =>
+        match b
+          greater => true
+          * => false
+      equal =>
+        match b
+          equal => true
+          * => false
+
+
+
+  # human readable string of this choice
+  #
+  public redef as_string =>
+    match order.this
+      less => "less"
+      greater => "greater"
+      equal => "equal"
+
+

@@ -183,10 +183,10 @@ O(n log n).
         nil
       else
         (mk,mv) := data[m]
-        c := (mk) ⋄ k
-        if      c < 0 then binary_search m+1 r
-        else if c > 0 then binary_search l m-1
-        else               mv
+        match (mk) ⋄ k
+          less    => binary_search m+1 r
+          greater => binary_search l m-1
+          equal   => mv
 
     # find k in sub-arrays starting at data[at]
     #

@@ -119,7 +119,7 @@ public numeric : property.hashable, property.orderable is
 
 
   # sign function resulting in `-1`/`0`/`+1` depending on whether `numeric.this`
-  # is less than, equal or larger than zero
+  # is less than, equal or greater than zero
   #
   public sign =>
     if      numeric.this = numeric.this.zero then  0

@@ -94,13 +94,13 @@ public infix ≥(T type : property.orderable, a, b T) bool =>
 # does this come strictly after other?
 #
 public infix ⩼(T type : property.orderable, a, b T) bool =>
-  !(lteq a b)
+  a > b
 
 
 # does this come strictly before other?
 #
 public infix ⩻(T type : property.orderable, a, b T) bool =>
-  !(lteq b a)
+  a < b
 
 
 # three-way comparison between this and other.
@@ -109,10 +109,8 @@ public infix ⩻(T type : property.orderable, a, b T) bool =>
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-public infix ⋄(T type : property.orderable, a, b T) i32 =>
-  if      a < b then -1
-  else if a > b then +1
-  else                0
+public infix ⋄(T type : property.orderable, a, b T) order =>
+  a <> b
 
 
 # infix <= -- infix operation as short-hand for 'lteq'
@@ -144,10 +142,10 @@ public infix <(T type : property.orderable, a, b T) bool =>
 # result is > 0 if this > other
 # result is = 0 if this = other
 #
-public infix <>(T type : property.orderable, a, b T) i32 =>
-  if      a < b then -1
-  else if a > b then +1
-  else                0
+public infix <>(T type : property.orderable, a, b T) order =>
+  if      a < b then less
+  else if a > b then greater
+  else               equal
 
 
 # maximum of two values
