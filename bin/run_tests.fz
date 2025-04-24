@@ -38,7 +38,7 @@ envir_var_kv := [
   "PRECONDITIONS",
   "dev_flang_tools_serializeFUIR"
 ].map k->
-  (envir.vars.get "PATH").bind v->
+  (envir.vars.get k).bind v->
     (k,v)
  .filter o->o.ok
  .map o->o.val
@@ -130,6 +130,8 @@ read_file_fully(f String) outcome String =>
 
 main =>
 
+  # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
+
   if (envir.args.count != 3 && envir.args.count != 4)
     say "wrong argument count"
     say "usage:"
@@ -178,8 +180,10 @@ main =>
 
   end_time_total := time.nano.read
 
-  (ok, skipped, failed) := read_file_fully results
+  results_content := read_file_fully results
     .val
+
+  (ok, skipped, failed) := results_content
     .split
     .reduce (0,0,0) (r, t)->
       if t.ends_with "ok"
@@ -191,9 +195,19 @@ main =>
       else
         r
 
-  say " $ok/{tests.count} tests passed, $skipped skipped, $failed failed in {end_time_total-start_time_total}."
+  say ""
+  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {(end_time_total-start_time_total).as_string.trim}."
 
   if failed > 0
+    say "Failed tests:"
+    results_content
+      .split
+      .for_each t->
+        if t.ends_with "failed"
+          say t
+
+    # NYI: UNDER DEVELOPMENT: add rerun command like in bash scripts
+
     exit 1
 
 _ := main
