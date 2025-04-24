@@ -298,9 +298,12 @@ public class Function extends AbstractLambda
                 i++;
               }
           }
-        if (t != Types.t_ERROR && i != gs.size())
+        if (i != gs.size())
           {
-            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+            if (t != Types.t_ERROR)
+              {
+                AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+              }
             result = Types.t_ERROR;
           }
         if (t != Types.t_ERROR)
