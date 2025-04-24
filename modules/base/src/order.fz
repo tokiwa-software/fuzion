@@ -74,7 +74,7 @@ public order : choice less greater equal, property.equatable is
     
   # less is false 
   #
-  public is_not_less bool =>
+  public is_greater_or_equal bool =>
     match order.this
       less => false
       * => true
@@ -82,16 +82,16 @@ public order : choice less greater equal, property.equatable is
 
   # greater is false 
   #
-  public is_not_greater bool =>
+  public is_less_or_equal bool =>
     match order.this
-      less => false
+      greater => false
       * => true
 
   # equal is false 
   #
-  public is_not_equal bool =>
+  public is_less_or_greater bool =>
     match order.this
-      less => false
+      equal => false
       * => true
       
 
