@@ -29,11 +29,7 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 1' # monday
-    - cron: '0 0 * * 2' # ...
-    - cron: '0 0 * * 3' # ...
-    - cron: '0 0 * * 4' # ...
-    - cron: '0 0 * * 5' # friday
+    - cron: '0 0 * * 1-5' # monday through friday
 
 env:
   PRECONDITIONS: true
