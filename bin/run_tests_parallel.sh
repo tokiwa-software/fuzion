@@ -25,6 +25,8 @@
 #
 # -----------------------------------------------------------------------
 
+# NYI: UNDER DEVELOPMENT: remove, once run_tests.fz is stable
+
 set -euo pipefail
 
 # usage: run_tests_parallel.sh <build-dir> <target>

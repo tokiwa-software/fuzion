@@ -21,11 +21,39 @@
 #
 # -----------------------------------------------------------------------
 
+
+########### Extensions ###############
+
 # stores the results of a process
 #
 process_result(out String, err String, exit_code u32) is
 
-########### Extensions ###############
+# specified environment variables as key,value array
+#
+envir_var_kv := [
+  "PATH",
+  "LANG",
+  "JAVA_HOME",
+  "POSTCONDITIONS",
+  "PRECONDITIONS",
+  "dev_flang_tools_serializeFUIR"
+].map k->
+  (envir.vars.get "PATH").bind v->
+    (k,v)
+ .filter o->o.ok
+ .map o->o.val
+ .as_array
+
+# envir vars as map
+#
+envir_vars :=
+  (container.ordered_map
+    (envir_var_kv
+      .map x->x.0
+      .as_array)
+    (envir_var_kv
+      .map x->x.1
+      .as_array))
 
 # helper to get out, err, exit_code from started process
 #
@@ -49,7 +77,7 @@ record_process(p os.process,
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
     e error => panic "failed executing {Sequence.this}, error is $e"
     p os.process => record_process p Sequence.this.as_string
 
@@ -61,10 +89,12 @@ String.infix | (seq Sequence String) =>
 
   lm : mutate is
   lm ! ()->
-    match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
+    match os.process.start seq.first.val (seq.drop 1) envir_vars
       e error => panic "failed executing $seq, error is $e"
       p os.process =>
         _ := p.with_in unit lm ()->
+          # NYI: ambiguous result type:
+          # _ := write_to lm
           _ := (io.buffered lm).writer.env.write String.this.utf8
           _ := (io.buffered lm).writer.env.flush
           _ := p.close_in
@@ -77,9 +107,22 @@ String.infix | (seq Sequence String) =>
 String.prefix !! =>
   !split
 
-# NYI: UNDER DEVELOPMENT: move to base library?
-io.buffered.writer.write_string(str String) =>
-  write str.utf8
+
+# NYI: UNDER DEVELOPMENT: what about thread safety?
+append_line(dest String, str String) =>
+  lm : mutate is
+  lm ! ()->
+    _ := io.file.use unit lm $dest io.file.mode.append ()->
+      check ("$str\n".write_to lm).ok
+
+
+# read file f fully
+#
+read_file_fully(f String) outcome String =>
+  lm : mutate is
+  lm ! ()->
+    io.file.use _ lm f io.file.mode.read ()->
+      String.from_bytes (io.buffered lm).read_fully
 
 
 ########### run_tests ###############
@@ -87,72 +130,70 @@ io.buffered.writer.write_string(str String) =>
 
 main =>
 
-  if (envir.args.count != 3)
-    say "wrong argument count {envir.args.count}"
-  else
-    build_dir := envir.args[1]
-    target := envir.args[2]
-    # NYI: port to fuzion
-    tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
-      .out
-      .split
+  if (envir.args.count != 3 && envir.args.count != 4)
+    say "wrong argument count"
+    say "usage:"
+    say "run_tests.fz <build_dir> <target> [<n_threads>]"
+    exit 1
 
-    _ := io.file.delete "$build_dir/run_tests.results"
-    _ := io.file.delete "$build_dir/run_tests.failures"
+  build_dir := envir.args[1]
+  target := envir.args[2]
+  thread_count := ((envir.args.nth 3).val "4" /* NYI: determine by nproc or similar */).parse_i32.val
 
-    say "{tests.count} tests."
+  # NYI: port to fuzion
+  tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
+    .out
+    .split
 
-    start_time_total := time.nano.read
+  results := "$build_dir/run_tests.results"
+  failures := "$build_dir/run_tests.failures"
 
-    lm : mutate is
-    lm2 : mutate is
-    lm ! ()->
-      lm2 ! ()->
-        _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.write ()->
-          _ := io.file.use unit lm2 "$build_dir/run_tests.failures" io.file.mode.write ()->
+  _ := io.file.delete results
+  _ := io.file.delete failures
 
-            append_line(T type: mutate, str String) =>
-              check !((io.buffered T).writer.env.write_string "$str\n").error.is_error
+  say "{tests.count} tests, running $thread_count tests in parallel."
 
-            for test in tests do
-              if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target"
-                yak "_"
-                append_line lm "$test: skipped"
-              else
+  start_time_total := time.nano.read
 
-                start_time := time.nano.read
-                res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
-                end_time := time.nano.read
+  _ := concur.thread_pool thread_count ()->
+    for test in tests do
+      check concur.thread_pool.env.submit ()->
+        if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target"
+          yak "_"
+          append_line results "$test: skipped"
+        else
 
-                if res.exit_code = 0 then
-                  yak "."
-                  append_line lm "$test in {end_time-start_time}: ok"
-                else
-                  yak "#"
-                  append_line lm "$test in {end_time-start_time}: failed"
-                  append_line lm2 res.out
-                  append_line lm2 res.err
+          start_time := time.nano.read
+          res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
+          end_time := time.nano.read
 
-    end_time_total := time.nano.read
+          if res.exit_code = 0 then
+            yak "."
+            append_line results "$test in {end_time-start_time}: ok"
+          else
+            yak "#"
+            append_line results "$test in {end_time-start_time}: failed"
+            append_line failures res.out
+            append_line failures res.err
 
-    lm ! ()->
-      _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.read ()->
+  end_time_total := time.nano.read
 
-        (ok, skipped, failed) := (String.from_bytes (io.buffered lm).read_fully)
-          .split
-          .reduce (0,0,0) (r, t)->
-            if t.ends_with "ok"
-              (r.0+1, r.1, r.2)
-            else if t.ends_with "skipped"
-              (r.0, r.1+1, r.2)
-            else if t.ends_with "failed"
-              (r.0, r.1, r.2+1)
-            else
-              r
+  (ok, skipped, failed) := read_file_fully results
+    .val
+    .split
+    .reduce (0,0,0) (r, t)->
+      if t.ends_with "ok"
+        (r.0+1, r.1, r.2)
+      else if t.ends_with "skipped"
+        (r.0, r.1+1, r.2)
+      else if t.ends_with "failed"
+        (r.0, r.1, r.2+1)
+      else
+        r
 
-        say " $ok/{tests.count} tests passed, $skipped skipped, $failed failed in {end_time_total-start_time_total}."
+  say " $ok/{tests.count} tests passed, $skipped skipped, $failed failed in {end_time_total-start_time_total}."
 
-        if failed > 0
-          exit 1
+  if failed > 0
+    exit 1
 
 _ := main
