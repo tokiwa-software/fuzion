@@ -51,6 +51,51 @@ public order : choice less greater equal, property.equatable is
       equal => 0
 
 
+  # less is true
+  #
+  public is_less bool =>
+    match order.this
+      less => true
+      * => false
+
+  # greater is true
+  #
+  public is_greater bool =>
+    match order.this
+      greater => true
+      * => false
+
+  # equal is true
+  #
+  public is_equal bool =>
+    match order.this
+      equal => true
+      * => false
+    
+  # less is false 
+  #
+  public is_not_less bool =>
+    match order.this
+      less => false
+      * => true
+
+
+  # greater is false 
+  #
+  public is_not_greater bool =>
+    match order.this
+      less => false
+      * => true
+
+  # equal is false 
+  #
+  public is_not_equal bool =>
+    match order.this
+      less => false
+      * => true
+      
+
+
   public fixed redef type.equality(a, b order) bool =>
     match a
       less =>
