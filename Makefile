@@ -509,42 +509,42 @@ $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 
 $(CLASS_FILES_UTIL_UNICODE): $(JAVA_FILES_UTIL_UNICODE) $(CLASS_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_UTIL_UNICODE)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_UTIL_UNICODE)
 	touch $@
 
 $(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_AST)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_AST)
 	touch $@
 
 $(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_PARSER)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_PARSER)
 	touch $@
 
 $(CLASS_FILES_IR): $(JAVA_FILES_IR) $(CLASS_FILES_UTIL) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_IR)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_IR)
 	touch $@
 
 $(CLASS_FILES_MIR): $(JAVA_FILES_MIR) $(CLASS_FILES_IR)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_MIR)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_MIR)
 	touch $@
 
 $(CLASS_FILES_FE): $(JAVA_FILES_FE) $(CLASS_FILES_PARSER) $(CLASS_FILES_AST) $(CLASS_FILES_MIR)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FE)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FE)
 	touch $@
 
 $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR) $(CLASS_FILES_FE)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
 
 $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2): $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter.java $(SRC)/dev/flang/fuir/analysis/AbstractInterpreter2.java.patch
 	mkdir -p $(@D)
-	patch -o $@ $^
+	patch --output $@ $^
 
 # phony target to update the .patch files used to generate sources from modified
 # version of those generated sources
@@ -554,67 +554,67 @@ update-java-patches:
 
 $(CLASS_FILES_FUIR_ANALYSIS): $(JAVA_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS)
 	touch $@
 
 $(CLASS_FILES_FUIR_ANALYSIS_DFA): $(JAVA_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS_DFA)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS_DFA)
 	touch $@
 
 $(CLASS_FILES_FUIR_CFG): $(JAVA_FILES_FUIR_CFG) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_CFG)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_CFG)
 	touch $@
 
 $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_FE) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
 	touch $@
 
 $(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
 
 $(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
 
 $(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
 
 $(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_JVM_CLASSFILE)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM)
 	touch $@
 
 $(CLASS_FILES_BE_JVM_CLASSFILE): $(JAVA_FILES_BE_JVM_CLASSFILE) $(CLASS_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_CLASSFILE)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_CLASSFILE)
 	touch $@
 
 $(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
 	touch $@
 
 $(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
 
 $(CLASS_FILES_TOOLS_FZJAVA): $(JAVA_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS) $(CLASS_FILES_PARSER) $(CLASS_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_FZJAVA)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_FZJAVA)
 	touch $@
 
 $(CLASS_FILES_TOOLS_DOCS): $(JAVA_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOLS) $(CLASS_FILES_PARSER) $(CLASS_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
-	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_DOCS)
+	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_DOCS)
 	touch $@
 
 $(JARS_JFREE_SVG_JAR):
@@ -623,27 +623,27 @@ $(JARS_JFREE_SVG_JAR):
 
 $(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(CLASS_FILES_UTIL_UNICODE) $(JARS_JFREE_SVG_JAR)
 	mkdir -p $(CLASSES_DIR_LOGO)
-	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR_LOGO) $(JAVA_FILES_MISC_LOGO)
+	$(JAVAC) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR_LOGO) $(JAVA_FILES_MISC_LOGO)
 	touch $@
 
 $(BUILD_DIR)/assets/logo.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo $@
-	inkscape $@ -o $@.pdf
+	$(JAVA) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo $@
+	inkscape $@ --export-filename $@.pdf
 	touch $@
 
 $(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -b $@
-	inkscape $@ -o $@.tmp.pdf
+	$(JAVA) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -b $@
+	inkscape $@ --export-filename $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
 	rm -f $@.tmp.pdf
 	touch $@
 
 $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -c $@
-	inkscape $@ -o $@.tmp.pdf
+	$(JAVA) --class-path $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR):$(CLASSES_DIR_LOGO) dev.flang.misc.logo.FuzionLogo -c $@
+	inkscape $@ --export-filename $@.tmp.pdf
 	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
 	rm -f $@.tmp.pdf
 	touch $@
@@ -1129,7 +1129,7 @@ $(BUILD_DIR)/UnicodeData.txt:
 	cd $(BUILD_DIR) && wget $(UNICODE_SOURCE)
 
 $(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData $(BUILD_DIR)/UnicodeData.txt >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData $(BUILD_DIR)/UnicodeData.txt >$@
 
 $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/dev/flang/util/UnicodeData.java.in
 	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
@@ -1139,7 +1139,7 @@ doc: $(DOCUMENTATION)
 
 $(BUILD_DIR)/generated/doc/fum_file.adoc: $(SRC)/dev/flang/fe/LibraryModule.java
 	mkdir -p $(@D)
-	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" >$@
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" >$@
 
 $(DOC_FILES_FUMFILE): $(BUILD_DIR)/generated/doc/fum_file.adoc
 	mkdir -p $(@D)
@@ -1147,7 +1147,7 @@ $(DOC_FILES_FUMFILE): $(BUILD_DIR)/generated/doc/fum_file.adoc
 
 $(DOC_DESIGN_JVM): $(SRC)/dev/flang/be/jvm/JVM.java
 	mkdir -p $(@D)
-	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep --invert-match "\--asciidoc--" | asciidoc - >$@
 
 REF_MANUAL_ATTRIBUTES = \
   --attribute FZ_SRC=$(realpath $(FZ_SRC)) \
@@ -1157,39 +1157,39 @@ REF_MANUAL_ATTRIBUTES = \
 
 $(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
-	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep -E "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -whiteSpace >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -whiteSpace >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_illegal.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -illegal >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -illegal >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_letter.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -letter >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -letter >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_digit.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -digit >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -digit >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_numeric.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -numeric >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -numeric >$@
 
 $(BUILD_DIR)/generated/doc/codepoints_op.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -op >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -op >$@
 
 $(BUILD_DIR)/generated/doc/keywords.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -keywords >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -keywords >$@
 
 $(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.parser.Lexer -stringLiteralEscapes >$@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.parser.Lexer -stringLiteralEscapes >$@
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
@@ -1202,14 +1202,14 @@ $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.ad
 
 # NYI integrate into fz: fz -docs
 $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES)
-	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
+	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
 
 # NYI integrate into fz: fz -docs
 .phony: debug_api_docs
 debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	mkdir -p $(BUILD_DIR)/debugdocs
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
-	$(JAVA) -cp $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
+	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
 	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
 
 # phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
@@ -1222,7 +1222,7 @@ unicode: $(BUILD_DIR)/UnicodeData.java $(BUILD_DIR)/unicode_data.fz
 
 # generate $(BUILD_DIR)/unicode_data.fz using the latest UnicodeData.txt.
 $(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData -fz $(BUILD_DIR)/UnicodeData.txt > $@
+	$(JAVA) --class-path $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData -fz $(BUILD_DIR)/UnicodeData.txt > $@
 
 # phony target to regenerate Fuzion logo.
 # This must be phony since $(SRC)/assets/logo.svg would be a circular dependency
@@ -1357,7 +1357,7 @@ $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	@echo " + build/modules/fz_cmd.jmod"
 
 $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
-	rm -Rf $(MOD_FZ_CMD_DIR)
+	rm -rf $(MOD_FZ_CMD_DIR)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -verbose=0 $(MOD_FZ_CMD_DIR)"
 	touch $@
 
@@ -1366,7 +1366,7 @@ $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 
 .PHONY: lint/java
 lint/java:
-	$(JAVAC) -Xlint -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+	$(JAVAC) -Xlint --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
 		$(JAVA_FILES_AST) \
@@ -1391,7 +1391,7 @@ lint/java:
 
 .PHONY: lint/javadoc
 lint/javadoc:
-	$(JAVAC) -Xdoclint:all,-missing -cp $(CLASSES_DIR) -d $(CLASSES_DIR) \
+	$(JAVAC) -Xdoclint:all,-missing --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
 		$(JAVA_FILES_AST) \
@@ -1416,17 +1416,17 @@ lint/javadoc:
 
 .PHONY: remove_unused_imports
 remove_unused_imports:
-	wget -O /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
+	wget --output-document /tmp/google-java-format-1.21.0-all-deps.jar https://github.com/google/google-java-format/releases/download/v1.21.0/google-java-format-1.21.0-all-deps.jar
 	$(JAVA) -jar /tmp/google-java-format-1.21.0-all-deps.jar -r --fix-imports-only  --skip-sorting-imports `find src/`
 
 
 $(BUILD_DIR)/pmd.zip:
 	mkdir -p $(@D)
-	wget -O $@ https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.3.0/pmd-dist-7.3.0-bin.zip
+	wget --output-document $@ https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.3.0/pmd-dist-7.3.0-bin.zip
 
 $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
 	echo "7e56043b5db83b288804c97d48a46db37bba22861b63eadd8e69f72c74bfb0a8 $(BUILD_DIR)/pmd.zip" > $(BUILD_DIR)/pmd.zip.sha256
-	sha256sum -c $(BUILD_DIR)/pmd.zip.sha256
+	sha256sum --check $(BUILD_DIR)/pmd.zip.sha256
 	unzip $(BUILD_DIR)/pmd.zip -d $@
 
 # this linter detects different things than standard java linter
@@ -1514,11 +1514,11 @@ JARS_LSP: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC
 	echo "1adaeb34550ebec21636a45afe76ff8b60188a056966feb3c7e562450ba911be $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
 	echo "4e1aa77474de1791d96dc55932fb46efdf53233548f38f62ba7376f8b0bc6650 $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
 	echo "57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b $(BUILD_DIR)/jars/gson-2.11.0.jar" >> $(BUILD_DIR)/jars/lsp.sha256
-	sha256sum --status -c $(BUILD_DIR)/jars/lsp.sha256
+	sha256sum --status --check $(BUILD_DIR)/jars/lsp.sha256
 
 $(CLASS_FILES_LSP): JARS_LSP
 	mkdir -p $(CLASSES_DIR_LSP)
-	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
+	$(JAVAC) --class-path $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
 	touch $@
 
 lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
@@ -1528,7 +1528,7 @@ LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
 LSP_JAVA_ARGS = -Dfuzion.home=$(LSP_FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 lsp/debug/stdio: lsp/compile
-	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
+	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) --class-path  $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON):$(CLASSES_DIR_LSP) $(LSP_JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 
 ########
 # End : Fuzion Language Server
