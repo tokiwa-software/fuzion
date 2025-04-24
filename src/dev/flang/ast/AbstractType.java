@@ -472,6 +472,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        actual.isGenericArgument() || actual.feature() != null || Errors.any(),
        Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
 
+        /*
+    // tag::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+    NYI: UNDER DEVELOPMENT:
+    // end::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+        */
+
     if (assignableTo != null)
       {
         assignableTo.add(actual.toString());
@@ -1441,6 +1447,31 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   AbstractType union(AbstractType that, Context context)
   {
+        /*
+    // tag::fuzion_rule_TYPE_SYSTEM_UNION[]
+A union of two types is obtained as follows.
+
+1. Both types are void
++
+result of the union is void.
+
+2. One of the types is void
++
+result of the union is the other type.
+
+3. first type is assignable from second type (boxing and/or tagging is allowed)
++
+result is the first type
+
+4. second type is assignable from first type (boxing and/or tagging is allowed)
++
+result is the second type
+
+5. none if the above applies
++
+there is no union of the two types
+    // end::fuzion_rule_TYPE_SYSTEM_UNION[]
+        */
     AbstractType result =
       this == Types.t_ERROR                        ? Types.t_ERROR     :
       that == Types.t_ERROR                        ? Types.t_ERROR     :
