@@ -21,14 +21,17 @@
 #
 # -----------------------------------------------------------------------
 
+# stores the results of a process
+#
+process_result(out String, err String, exit_code u32) is
 
 ########### Extensions ###############
 
 # helper to get out, err, exit_code from started process
 #
-p_res(p os.process,
+record_process(p os.process,
       # the command, for error messages
-      cmd String) (String, String, u32) =>
+      cmd String) process_result =>
   lm : mutate is
   lm ! ()->
     match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
@@ -39,7 +42,7 @@ p_res(p os.process,
           err String =>
             match p.wait
               e error => panic "failed waiting for $cmd, error is: $e"
-              ec u32 => (out, err, ec)
+              ec u32 => process_result out err ec
 
 # execute this Sequence of process+args
 # return what we read from stdout as the result
@@ -48,7 +51,7 @@ Sequence.prefix ! =>
   seq := map x->x.as_string
   match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
     e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => p_res p Sequence.this.as_string
+    p os.process => record_process p Sequence.this.as_string
 
 
 # feed this string to a new process
@@ -65,7 +68,7 @@ String.infix | (seq Sequence String) =>
           _ := (io.buffered lm).writer.env.write String.this.utf8
           _ := (io.buffered lm).writer.env.flush
           _ := p.close_in
-        p_res p seq.as_string
+        record_process p seq.as_string
 
 
 # execute this string by splitting at all whitespaces
@@ -90,8 +93,8 @@ main =>
     build_dir := envir.args[1]
     target := envir.args[2]
     # NYI: port to fuzion
-    tests := (((!!"find $build_dir/tests -name Makefile -print0").0 | ["xargs", "--null", "--max-args=1", "dirname"]).0 | ["sort"])
-      .0
+    tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
+      .out
       .split
 
     _ := io.file.delete "$build_dir/run_tests.results"
@@ -121,36 +124,35 @@ main =>
                 res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
                 end_time := time.nano.read
 
-                if res.2 = 0 then
+                if res.exit_code = 0 then
                   yak "."
                   append_line lm "$test in {end_time-start_time}: ok"
                 else
                   yak "#"
-                  say res.0
-                  say res.1
                   append_line lm "$test in {end_time-start_time}: failed"
-                  append_line lm2 res.0
-                  append_line lm2 res.1
+                  append_line lm2 res.out
+                  append_line lm2 res.err
 
     end_time_total := time.nano.read
 
     lm ! ()->
       _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.read ()->
 
-        results := (String.from_bytes (io.buffered lm).read_fully).split.as_array
-        ok := results
-          .filter (str -> str.ends_with "ok")
-          .count
-        skipped := results
-          .filter (str -> str.ends_with "skipped")
-          .count
-        failed := results
-          .filter (str -> str.ends_with "failed")
-          .count
+        (ok, skipped, failed) := (String.from_bytes (io.buffered lm).read_fully)
+          .split
+          .reduce (0,0,0) (r, t)->
+            if t.ends_with "ok"
+              (r.0+1, r.1, r.2)
+            else if t.ends_with "skipped"
+              (r.0, r.1+1, r.2)
+            else if t.ends_with "failed"
+              (r.0, r.1, r.2+1)
+            else
+              r
 
         say " $ok/{tests.count} tests passed, $skipped skipped, $failed failed in {end_time_total-start_time_total}."
 
         if failed > 0
-        exit 1
+          exit 1
 
 _ := main
