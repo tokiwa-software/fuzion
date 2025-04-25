@@ -35,11 +35,14 @@
 public ordered_map(
            public OK type : property.orderable,
            public V  type,
-           ks array OK,
-           vs array V) : container.Map OK V
+           k0 Sequence OK,
+           v0 Sequence V) : container.Map OK V
 pre
-  ks.length = vs.length
+  k0.count = v0.count
 is
+
+  ks := k0.as_array
+  vs := v0.as_array
 
 
   # entry represents the pair of key and value at the given
