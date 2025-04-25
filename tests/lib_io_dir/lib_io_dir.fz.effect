@@ -1,9 +1,10 @@
 io.Err
 fuzion.runtime.pre_fault
+fuzion.runtime.contract_fault
 fuzion.runtime.fault
 io.file.delete
 io.dir.make
 io.Out
+fuzion.runtime.post_fault
 io.dir.read
 panic
-fuzion.runtime.post_fault
