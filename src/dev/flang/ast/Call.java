@@ -2996,7 +2996,7 @@ public class Call extends AbstractCall
     Expr result = this;
     // must not be inheritance call since we do not want `: i32 2` turned into a numeric literal.
     // also we can not inherit from none constructor features like and/or etc.
-    if (_pendingError == null && !Errors.any() && !isInheritanceCall())
+    if (_pendingError == null && !isInheritanceCall())
       {
         // convert
         //   a && b into if a then b     else false
