@@ -135,9 +135,14 @@ public class Select extends Call {
               // implict
               : resolveImplicit(res, context, getActualResultType(res, context, true));
           }
-        else
+        else if (_target != null)
           {
             AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target.type());
+          }
+        else
+          {
+            if (CHECKS)  check
+              (Errors.any());
           }
       }
     if (_currentlyResolving != null)
