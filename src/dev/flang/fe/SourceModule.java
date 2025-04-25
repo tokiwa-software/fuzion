@@ -1283,10 +1283,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
           @Override public Expr action(Function lambda){
             if (usage.isEmpty() || definition.isEmpty())
               {
-                stacks.get(0).push(lambda._expr);
+                var e = lambda.expr();
+                stacks.get(0).push(e);
                 var old = visitingInnerFeature[0];
                 visitingInnerFeature[0] = true;
-                lambda._expr.visit(this, null);
+                e.visit(this, null);
                 visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }

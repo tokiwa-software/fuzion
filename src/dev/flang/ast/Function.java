@@ -112,7 +112,8 @@ public class Function extends AbstractLambda
   /**
    * the right hand side of the '->', replaced by Expr.NO_VALUE in case of error.
    */
-  Expr _expr;
+  private Expr _expr;
+  public Expr expr() { return _expr; }
 
 
   /*--------------------------  constructors  ---------------------------*/
