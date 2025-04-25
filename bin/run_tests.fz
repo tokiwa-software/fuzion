@@ -112,8 +112,8 @@ String.prefix !! =>
 append_line(dest String, str String) =>
   lm : mutate is
   lm ! ()->
-    _ := io.file.use unit lm $dest io.file.mode.append ()->
-      check ("$str\n".write_to lm).ok
+    check (io.file.use unit lm $dest io.file.mode.append ()->
+             check ("$str\n".write_to lm).ok).ok
 
 
 # read file f fully
@@ -200,6 +200,11 @@ main =>
 
   if failed > 0
     say "Failed tests:"
+
+    say "==DEBUG CODE, REMOVE ME=="
+    say results_content
+    say "==DEBUG CODE, REMOVE ME=="
+
     results_content
       .split
       .for_each t->
