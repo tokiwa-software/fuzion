@@ -7,9 +7,15 @@ fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
+      fuzion.runtime.fault.cause kind_and_msg).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
 fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/pre_fault.fz:39:7:
-      fuzion.runtime.fault.cause ("precondition", msg)).default
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      fuzion.runtime.contract_fault.cause ("precondition", msg)).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
