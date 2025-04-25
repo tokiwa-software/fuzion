@@ -584,6 +584,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
           .map_to_list x->(String.from_bytes x)
 
 
+
+  # split string at line feeds
+  #
+  public lines list String =>
+    split encodings.ascii.lf_str
+
+
   # remove leading and trailing white space from this string
   #
   public trim String =>

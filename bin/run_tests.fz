@@ -140,12 +140,26 @@ main =>
 
   build_dir := envir.args[1]
   target := envir.args[2]
-  thread_count := ((envir.args.nth 3).val "4" /* NYI: determine by nproc or similar */).parse_i32.val
+
+
+  # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
+  # first, try third arg then try a few executables, if everything fails use default value
+  tc :=
+    (fuzion.runtime.contract_fault.try ()->(envir.args.nth 3).val.trim.parse_i32.val)
+      .catch _->
+        (fuzion.runtime.contract_fault.try ()->(!!"nproc --all").out.trim.parse_i32.val)
+          .catch _->
+            (fuzion.runtime.contract_fault.try ()->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val)
+              .catch _->
+                (fuzion.runtime.contract_fault.try ()->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val)
+                  .catch _->4
+  thread_count := tc > 6 ? 6 : tc
+
 
   # NYI: port to fuzion
   tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
     .out
-    .split
+    .lines
 
   results := "$build_dir/run_tests.results"
   failures := "$build_dir/run_tests.failures"
@@ -184,7 +198,7 @@ main =>
     .val
 
   (ok, skipped, failed) := results_content
-    .split
+    .lines
     .reduce (0,0,0) (r, t)->
       if t.ends_with "ok"
         (r.0+1, r.1, r.2)
@@ -201,12 +215,8 @@ main =>
   if failed > 0
     say "Failed tests:"
 
-    say "==DEBUG CODE, REMOVE ME=="
-    say results_content
-    say "==DEBUG CODE, REMOVE ME=="
-
     results_content
-      .split
+      .lines
       .for_each t->
         if t.ends_with "failed"
           say t
