@@ -221,6 +221,10 @@ main =>
         if t.ends_with "failed"
           say t
 
+    say "============= run_tests.failures START ============="
+    say (read_file_fully failures)
+    say "============= run_tests.failures END ============="
+
     # NYI: UNDER DEVELOPMENT: add rerun command like in bash scripts
 
     exit 1
