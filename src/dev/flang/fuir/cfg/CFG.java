@@ -436,8 +436,6 @@ public class CFG extends ANY
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
-    put("fuzion.sys.env_vars.set0"       , (cfg, cl) -> { } );
-    put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 

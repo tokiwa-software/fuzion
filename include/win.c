@@ -36,7 +36,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>     // setenv, unsetenv
+#include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -105,19 +105,6 @@ int fzE_mkdir(const char *pathname){
   free(wideStr);
   return result;
 }
-
-
-// set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value){
-  return -1;
-}
-
-
-// unset environment variable, return zero on success
-int fzE_unsetenv(const char *name){
-  return -1;
-}
-
 
 
 typedef struct {
