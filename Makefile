@@ -1349,7 +1349,13 @@ add_simple_test: no-java
 .PHONY: rerecord_simple_tests
 rerecord_simple_tests:
 	echo "ATTENTION: This rerecording is naive. You will have to manually revert any inappropriate changes after recording session."
-	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_out" -print -quit)" ]; then make record -C build/"$$file"/ && cp build/"$$file"/*.expected_* "$$file"; fi done
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_out" -print -quit)" ]; then make record -C build/"$$file"/; fi done
+	rsync -a --include='*/' --include='*.expected_*' --exclude='*' build/tests/ tests/
+
+.PHONY: rerecord_effects
+rerecord_effects:
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.effect" -print -quit)" ]; then make record_effect -C build/"$$file"/; fi done
+	rsync -a --include='*/' --include='*.effect' --exclude='*' build/tests/ tests/
 
 $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	rm -f $(MOD_FZ_CMD_DIR).jmod
