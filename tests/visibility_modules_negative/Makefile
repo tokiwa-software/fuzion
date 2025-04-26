@@ -63,7 +63,7 @@ record_c: clean modules/mod.fum
 # compile mod into mod.fum
 modules/mod.fum:
 	mkdir -p $(@D)
-	$(FUZION) -sourceDirs=./mod -save-module=$@  $(CHECK)
+	$(FUZION) -sourceDirs=./mod -saveModule=$@  $(CHECK)
 
 clean:
 	rm -rf modules *~ */*~ */*/*~
