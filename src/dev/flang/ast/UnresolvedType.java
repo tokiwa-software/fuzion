@@ -460,26 +460,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * Get a String representation of this UnresolvedType.
-   *
-   * Note that this does not work for instances of UnresolvedType before they were
-   * resolved.  Use toString() for creating strings early in the front end
-   * phase.
-   */
-  public String asString()
+  @Override
+  public String toString(boolean humanReadable, AbstractFeature context)
   {
-    return Types.INTERNAL_NAMES.contains(_name)
-      ? toString()         // internal types like Types.t_UNDEFINED, t_ERROR, t_ADDRESS
-      : super.asString();
+    return toString();
   }
 
 
   /**
-   * toString
-   *
-   * @return
+   * Get a String representation of this Type.
    */
+  @Override
   public String toString()
   {
     String result;

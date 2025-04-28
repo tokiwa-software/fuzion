@@ -2048,7 +2048,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
 
-
   /**
    * For a normal type, this is the list of the unresolved version of actual
    * type parameters given to the type, as far as they are available. They are
@@ -2058,7 +2057,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> unresolvedGenerics() { return generics(); }
 
 
-
   /**
    * Get a String representation of this Type.
    *
@@ -2066,16 +2064,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * resolved.  Use toString() for creating strings early in the front end
    * phase.
    */
-  public String asString() { return asString(false, null); }
+  public String toString(boolean humanReadable) { return toString(humanReadable, null); }
 
-  /**
-   * Get a String representation of this Type.
-   *
-   * Note that this does not work for instances of Type before they were
-   * resolved.  Use toString() for creating strings early in the front end
-   * phase.
-   */
-  public String asString(boolean humanReadable) { return asString(humanReadable, null); }
 
   /**
    * Get a String representation of this Type.
@@ -2086,7 +2076,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the feature to which the name should be relative to
    */
-  public String asString(boolean humanReadable, AbstractFeature context)
+  public String toString(boolean humanReadable, AbstractFeature context)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric());
@@ -2101,7 +2091,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var o = outer();
-        String outer = o != null && (o.isGenericArgument() || !o.feature().isUniverse()) ? o.asStringWrapped(humanReadable) + "." : "";
+        String outer = o != null && (o.isGenericArgument() || !o.feature().isUniverse()) ? o.toStringWrapped(humanReadable) + "." : "";
         var f = feature();
         var typeType = f.isCotype();
         if (typeType)
@@ -2143,7 +2133,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
               {
-                result = result + " " + g.asStringWrapped(humanReadable, context);
+                result = result + " " + g.toStringWrapped(humanReadable, context);
               }
             skip = false;
           }
@@ -2153,13 +2143,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * toString
-   *
-   * @return
+   * Get a String representation of this Type.
    */
   public String toString()
   {
-    return asString();
+    return toString(false, null);
   }
 
 
@@ -2173,21 +2161,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * wrap the result of asString in parentheses if necessary
+   * wrap the result of toString in parentheses if necessary
    */
-  public String asStringWrapped(boolean humanReadable)
+  public String toStringWrapped(boolean humanReadable)
   {
-    return StringHelpers.wrapInParentheses(asString(humanReadable));
+    return StringHelpers.wrapInParentheses(toString(humanReadable));
   }
 
 
   /**
-   * wrap the result of asString in parentheses if necessary
+   * wrap the result of toString in parentheses if necessary
+   *
    * @param context the feature to which the path should be relative to, universe if null
    */
-  public String asStringWrapped(boolean humanReadable, AbstractFeature context)
+  public String toStringWrapped(boolean humanReadable, AbstractFeature context)
   {
-    return StringHelpers.wrapInParentheses(asString(humanReadable, context));
+    return StringHelpers.wrapInParentheses(toString(humanReadable, context));
   }
 
 
