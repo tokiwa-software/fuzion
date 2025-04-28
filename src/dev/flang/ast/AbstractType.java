@@ -58,7 +58,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Cached result of dependsOnGenerics().
    */
-  public YesNo _dependsOnGenerics = YesNo.dontKnow;
+  private YesNo _dependsOnGenerics = YesNo.dontKnow;
 
 
   /**
@@ -74,7 +74,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Cached result of calling usedFeatures(_usedFeatures).
    */
-  Set<AbstractFeature> _usedFeatures = null;
+  private Set<AbstractFeature> _usedFeatures = null;
 
 
 
