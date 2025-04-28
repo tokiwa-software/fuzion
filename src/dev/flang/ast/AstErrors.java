@@ -2269,10 +2269,18 @@ public class AstErrors extends ANY
       "To solve this, rename one of the called features.");
   }
 
-  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition e)
+  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition expr_or_type)
   {
+    if (PRECONDITIONS) require
+      (expr_or_type instanceof Expr || expr_or_type instanceof AbstractType);
+
+    var lhs =
+      expr_or_type instanceof Expr         e ? "expression " + s(e) :
+      expr_or_type instanceof AbstractType t ? "type "       + s(t)
+                                             : code(expr_or_type.toString());
+
     error(pos, "Qualifier expected for "+code(".this")+" expression.",
-          "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+          "Found " + lhs + " where a simple qualifier " +  code("a.b.c") + " was expected");
   }
 
   public static void unusedResult(Expr e)

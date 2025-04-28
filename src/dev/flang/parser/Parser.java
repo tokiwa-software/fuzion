@@ -1513,7 +1513,7 @@ callTail    : indexCall  callTail
             var q = result.asQualifier();
             if (q == null)
               {
-                AstErrors.qualifierExpectedForDotThis(target.pos(), result);
+                AstErrors.qualifierExpectedForDotThis(sourceRange(result.pos()), result);
               }
             else
               {

@@ -1,9 +1,13 @@
 
 --CURDIR--/reg_issue5156.fz:29:8: error 1: Qualifier expected for '.this' expression.
   a => Any.type.this  # causes error, `A.type` is invalid before `.this`
--------^^^^^^^^
-Found expression --CURDIR--/reg_issue5156.fz:29:8:
-  a => Any.type.this  # causes error, `A.type` is invalid before `.this`
--------^^^^^^^^ where a simple qualifier 'a.b.c' was expected
+-------^^^^^^^^^^^^^
+Found expression 'Any.type' where a simple qualifier 'a.b.c' was expected
 
-one error.
+
+--CURDIR--/reg_issue5156.fz:41:8: error 2: Qualifier expected for '.this' expression.
+  y(a (option y).this) is
+-------^^^^^^^^^^^^^^
+Found type 'option y' where a simple qualifier 'a.b.c' was expected
+
+2 errors.
