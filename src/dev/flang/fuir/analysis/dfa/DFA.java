@@ -2053,8 +2053,6 @@ public class DFA extends ANY
                                          , cl -> Value.UNIT);
     put("fuzion.sys.env_vars.has0"       , cl -> cl._dfa.bool() );
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.sys.env_vars.set0"       , cl -> cl._dfa.bool() );
-    put("fuzion.sys.env_vars.unset0"     , cl -> cl._dfa.bool() );
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
           var oc = fuir(cl).clazzActualGeneric(cl._cc, 0);

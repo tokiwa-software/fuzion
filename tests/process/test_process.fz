@@ -46,6 +46,7 @@ test_process =>
   test "write to stdin of process" ()->
     (os.process.start "cat").bind p->
       _ := p.write_string "Hello from the other side."
+      # closing input so cat knows we are done and must write to standard out
       say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
@@ -62,10 +63,15 @@ test_process =>
 
 
   test "pass environment variable" ()->
-    (os.process.start "printenv" ["MYENVVAR"] (container.map_of [("MYENVVAR", "content")])).bind p->
+    (os.process.start "printenv" [] (container.map_of [("MYENVVAR", "content")])).bind p->
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+          out := ((io.buffered lm).read_string 1E9)
+            .val
+            .split "\n"
+            # for some reason on windows/msys these are included, even though we want empty env...
+            .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
+          say (String.join out)
 
 
 

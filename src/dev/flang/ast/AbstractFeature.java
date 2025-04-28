@@ -94,6 +94,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   static { _NO_FEATURES_.freeze(); }
 
 
+  /**
+   * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
+   * failure due to previous errors.
+   */
+  public static final AbstractType[] HAND_DOWN_FAILED = new AbstractType[0];
+
+
   /*------------------------  static variables  -------------------------*/
 
 
@@ -791,14 +798,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return instance of Call to be used for the parent call in cotype().
    */
-  Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
+  Call cotypeInheritanceCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res, AbstractFeature that, Expr target)
   {
     var o = outer();
     var oc = o == null || o.isUniverse()                            ? Universe.instance
-      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.typeCall(p, res, that)
-      : o.typeCall(p, new List<>(o.selfType(),
-                                 o.generics().asActuals().map(that::rebaseTypeForCotype)),
-                   res, that, null);
+      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.cotypeInheritanceCall(res, that)
+      : o.cotypeInheritanceCall(p, new List<>(o.selfType(),
+                                              o.generics().asActuals().map(that::rebaseTypeForCotype)),
+                                res, that, null);
 
     var tf = cotype(res);
     return new Call(p,
@@ -953,7 +960,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return inherits()
       .stream()
       .filter(pc -> pc.calledFeature() != Types.f_ERROR)
-      .map(pc -> pc.typeCall(pos(), res, this))
+      .map(pc -> pc.cotypeInheritanceCall(res, this))
       .collect(List.collector());
   }
 
@@ -1285,13 +1292,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param heir a feature that inherits from outer()
    *
    * @return the types from the argument array a has seen this within
-   * heir. Their number might have changed due to open generics.
+   * heir. Their number might have changed due to open generics.  Result may be
+   * HAND_DOWN_FAILED in case of previous errors.
    */
   public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
        state().atLeast(State.RESOLVING_TYPES));
+
+    var result = HAND_DOWN_FAILED;
 
     if (heir != Types.f_ERROR)
       {
@@ -1301,10 +1311,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            a = AbstractFeature.handDownInheritance(res, inh, a, heir);
+            result = AbstractFeature.handDownInheritance(res, inh, a, heir);
           }
       }
-    return a;
+    return result;
   }
 
 
@@ -1859,6 +1869,30 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
        +  "is " + kind();
 
+  }
+
+
+  /**
+   * Check if this feature qualifies to be a
+   * native value, i.e. a struct.
+   */
+  protected boolean mayBeNativeValue()
+  {
+    return isConstructor()
+      && !isRef()
+      && !hasOuterRef()
+      && typeArguments().isEmpty()
+      && inherits().size() == 1
+      && !Contract.hasPreConditionsFeature(this)
+      && !Contract.hasPostConditionsFeature(this)
+      && (code() instanceof Block b && b._expressions.isEmpty())
+      && valueArguments()
+        .stream()
+        .map(va -> va.resultType())
+        .allMatch(rt ->
+             Types.resolved.numericTypes.contains(rt)
+             || Types.resolved.legalNativeResultTypes.contains(rt)
+             || !rt.isGenericArgument() && rt.feature().mayBeNativeValue());
   }
 
 

@@ -17,12 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature num.minus
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# negative sign of a number
-#
-# note that this value is of unit type minus, not of type sign
-#
-public minus is
+override NAME = reg_issue5018
+include ../simple.mk

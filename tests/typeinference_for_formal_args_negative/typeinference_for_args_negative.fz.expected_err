@@ -5,18 +5,18 @@
 For the formal argument 'typeinference_for_args_negative.scenario4.m2.y' the type can only be derived if there is a call to 'typeinference_for_args_negative.scenario4.m2'.
 
 
---CURDIR--/typeinference_for_args_negative.fz:59:26: error 2: Could not find called feature
+--CURDIR--/typeinference_for_args_negative.fz:88:8: error 2: Type inference from actual arguments failed since no actual call was found
+    m2(y) is
+-------^
+For the formal argument 'typeinference_for_args_negative.scenario5.m2.y' the type can only be derived if there is a call to 'typeinference_for_args_negative.scenario5.m2'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:59:26: error 3: Could not find called feature
       t(p Sequence T) => test "scenario4: type of m2.y is " $T "Type of 'void'"
 -------------------------^^^^
 Feature not found: 'test' (3 arguments)
 Target feature: 'typeinference_for_args_negative.scenario4.f.t'
 In call: 'test "scenario4: type of m2.y is " $T "Type of 'void'"'
-
-
---CURDIR--/typeinference_for_args_negative.fz:88:8: error 3: Type inference from actual arguments failed since no actual call was found
-    m2(y) is
--------^
-For the formal argument 'typeinference_for_args_negative.scenario5.m2.y' the type can only be derived if there is a call to 'typeinference_for_args_negative.scenario5.m2'.
 
 
 --CURDIR--/typeinference_for_args_negative.fz:32:6: error 4: Type inference from actual arguments failed since no actual call was found

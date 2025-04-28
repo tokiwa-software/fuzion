@@ -34,32 +34,8 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Cond
+public record Cond(Expr cond)
 {
-
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   *
-   */
-  public Expr cond;
-
-
-  /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Constructor
-   *
-   * @param c
-   */
-  public Cond(Expr c)
-  {
-    this.cond = c;
-  }
-
 
   /*-------------------------  static methods  --------------------------*/
 
@@ -78,61 +54,6 @@ public class Cond
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    cond = cond.visit(v, outer);
-    v.action(this);
-  }
-
-
-  /**
-   * visit all the expressions within this Cond.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    cond.visitExpressions(v);
-  }
-
-
-  /**
-   * check the type of the expression of this condition.
-   */
-  public void checkTypes()
-  {
-    var t = cond.type();
-    if (t != Types.t_ERROR && Types.resolved.t_bool.compareTo(t) != 0)
-      {
-        AstErrors.contractExpressionMustResultInBool(cond);
-      }
-  }
-
-
-  /**
-   * During type inference: Inform the condition that it is used in an
-   * environment that expects a bool type.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Cond is used
-   */
-  void propagateExpectedType(Resolution res, Context context)
-  {
-    cond = cond.propagateExpectedType(res, context, Types.resolved.t_bool);
-  }
 
 
   /**

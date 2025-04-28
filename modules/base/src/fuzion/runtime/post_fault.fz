@@ -36,7 +36,7 @@ is
   # install default post_fault handler
   type.install_default =>
     (fuzion.runtime.post_fault msg->
-      fuzion.runtime.fault.cause ("postcondition", msg)).default
+      fuzion.runtime.contract_fault.cause ("postcondition", msg)).default
 
 
   # create an instance of `post_fault` with the given error handler.

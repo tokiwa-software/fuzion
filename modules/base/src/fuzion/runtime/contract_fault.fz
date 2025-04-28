@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 # contract_fault -- effect that terminates a computation due to a failed
-# condition in a check statement
+# condition in a pre, post or check statement
 #
 public contract_fault (
   # the handler this effect uses to fail

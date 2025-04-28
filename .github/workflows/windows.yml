@@ -29,7 +29,7 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 0' # every sunday
+    - cron: '0 0 * * 1-5' # monday through friday
 
 
 env:
@@ -60,36 +60,43 @@ jobs:
             mingw-w64-ucrt-x86_64-clang
             diffutils
             patch
+            libsqlite
+            libsqlite-devel
 
 
       - name: install choco packages
         shell: powershell
         run: |
           choco install openjdk --version 21.0.2
-          choco install sqlite
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v2.6.0
+
+      - name: create dll links
+        run: |
+          ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
+          ln -s  /usr/bin/msys-sqlite3-0.dll /ucrt64/bin/sqlite3.dll
 
       - name: echo versions
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
-          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH:/c/ProgramData/chocolatey/lib/SQLite/tools/"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           clang --version
           javac --version
           whereis jvm.dll
           whereis sqlite3.dll
+          whereis clang.dll
 
       - name: build libgc
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
-          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH:/c/ProgramData/chocolatey/lib/SQLite/tools/"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
         run: |
           export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
-          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH:/c/ProgramData/chocolatey/lib/SQLite/tools/"
+          export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           make run_tests

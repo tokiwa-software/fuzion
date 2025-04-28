@@ -25,7 +25,7 @@
 
 choicetest is
 
-  // object-oriented style using subclasses
+  # object-oriented style using subclasses
   Light ref is
   Red    ref : Light is
   Yellow ref : Light is
@@ -36,7 +36,7 @@ choicetest is
 
   say "l1 is Red, l2 is Green"
 
-  // using choice-type
+  # using choice-type
   Penny   is
   Nickel  is
   Dime    is

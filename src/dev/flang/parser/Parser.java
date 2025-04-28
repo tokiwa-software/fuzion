@@ -83,11 +83,23 @@ public class Parser extends Lexer
    */
   public static boolean ENABLE_SET_KEYWORD = false;
 
-  private boolean _nestedIf = false;
-  private int _lastIfLine = -1;
-  private boolean _elif = false;
-  private SourcePosition _outerElse = null;
-  private SourcePosition _then = null;
+  /**
+   * contains the last line number in which an `if` was found,
+   * required to set the semicolon state for the ambiguous semicolon error
+   */
+  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
+
+  /**
+   * SourcePosition of the outer `else`, null if not in `else` block
+   * required for proper alignment of `if`, `then`, `else` and `else if`
+   */
+  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
+
+  /**
+   * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
+   * required for proper alignment of `if`, `then`, `else` and `else if`
+   */
+  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -295,64 +307,8 @@ field       : returnType
       eff == UnresolvedType.NONE &&
       inh.isEmpty()       ? implFldOrRout(hasType)
                           : implRout(hasType);
-    p = handleImplKindOf(pos, p, i == 0, l, inh, v);
     l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
     return new FList(l);
-  }
-
-
-  /**
-   * When parsing feature Implementation, convert 'of' syntax sugar as follows:
-   *
-   *   a,b,c : choice of
-   *     x is p
-   *     y is q
-   *     z is r
-    *
-   * into
-   *
-   *   x is p
-   *   y is q
-   *   z is r
-   *   a : choice x y z is
-   *   b : choice x y z is
-   *   c : choice x y z is
-   *
-   *
-   * @param pos position of this feature (of 'a')
-   *
-   * @param p the Impl that was parsed
-   *
-   * @param first true if this was called for the first name ('a'), false for
-   * later ones ('b', 'c').
-   *
-   * @param l list of features declared. Inner features ('x', 'y', 'z') will be
-   * added to l if first is true.
-   *
-   * @param inh the inheritance call list.
-   *
-   * @param v the visibility to be used for the features defined in of {@code <block>}
-   *
-   */
-  Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh, Visi v)
-  {
-    if (p._kind == Impl.Kind.Of)
-      {
-        if (inh.isEmpty())
-          {
-            AstErrors.featureOfMustInherit(pos, p.pos);
-          }
-        else
-          {
-            var c = (Call) inh.getLast();
-            var ng = new List<AbstractType>();
-            ng.addAll(c.actualTypeParameters());
-            addFeaturesFromBlock(first, l, p.expr(), ng, p, v);
-            c._generics = ng;
-          }
-        p = new Impl(p.pos, emptyBlock(), Impl.Kind.Routine);
-      }
-    return p;
   }
 
 
@@ -1557,7 +1513,7 @@ callTail    : indexCall  callTail
             var q = result.asQualifier();
             if (q == null)
               {
-                AstErrors.qualifierExpectedForDotThis(tokenSourcePos(), result);
+                AstErrors.qualifierExpectedForDotThis(target);
               }
             else
               {
@@ -2912,31 +2868,40 @@ nextValue   : COMMA exprInLine
 
   /**
    * Parse ifexpr
+   */
+  Match ifexpr()
+  {
+    return ifexpr(false);
+  }
+
+  /**
+   * Parse ifexpr
+   *
+   * @param elif is this part of an `else if`
    *
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  If ifexpr()
+  Match ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
         SourcePosition ifPos = pos;
 
-        var oldMinIdent = _elif ? null : setMinIndent(tokenPos());
-        _elif = false;
+        var oldMinIdent = elif ? null : setMinIndent(tokenPos());
 
         match(Token.t_if, "ifexpr");
 
-        _nestedIf = _lastIfLine == line();
+        boolean nestedIf = _lastIfLine == line();
         _lastIfLine = line();
         Expr e = exprInLine();
 
         // semi error if in same line
-        if (_nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
+        if (nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
         Block b = thenPart(false);
 
         // reset if new line
-        if (_nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+        if (nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
 
         var elPos = tokenSourcePos();
 
@@ -2962,10 +2927,11 @@ ifexpr      : "if" exprInLine thenPart elseBlock
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
-        return new If(pos, e, b,
+        return Match.createIf(pos, e, b,
           // do no use empty blocks as else blocks since the source position
           // of those block might be somewhere unexpected.
-          els != null && els._expressions.size() > 0 ? els : null
+          els != null && els._expressions.size() > 0 ? els : null,
+          false
         );
       });
   }
@@ -3009,13 +2975,13 @@ elseBlock   : "else" block
       {
         if (current() == Token.t_if)
           {
-            _elif = true;
+            result = new Block(false, new List<Expr>(ifexpr(true)));
           }
         else
           {
             _outerElse = null;
+            result = block();
           }
-        result = block();
       }
     else
       {
@@ -3815,7 +3781,7 @@ typeTail    : dot simpletype
             var qn = lhs.asQualifier();
             if (qn == null)
               {
-                AstErrors.qualifierExpectedForDotThis(sourceRange(lhs.pos()), lhs);
+                AstErrors.qualifierExpectedForDotThis(lhs);
                 result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING, new List<>(), null);
               }
             else

@@ -7,9 +7,15 @@ fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
+      fuzion.runtime.fault.cause kind_and_msg).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
 fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/pre_fault.fz:39:7:
-      fuzion.runtime.fault.cause ("precondition", msg)).default
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      fuzion.runtime.contract_fault.cause ("precondition", msg)).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
@@ -24,16 +30,16 @@ i32.precall infix +: {base.fum}/numeric.fz:47:5:
 ----^^^
       debug: (numeric.this +! other)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-i32.type.sum.anonymous.infix ∙#2: {base.fum}/numeric.fz:240:51:
+i32.type.sum.anonymous.infix ∙#2: {base.fum}/numeric.fz:226:51:
       public redef infix ∙ (a, b numeric.this) => a + b
 --------------------------------------------------^^^^^
 i32.type.sum.anonymous.op#2: {base.fum}/Monoid.fz:60:24:
   public op(a, b T) => infix ∙  a b
 -----------------------^^^^^^^^^^^^
-(list i32).fold#2: {base.fum}/list.fz:217:39:
+(list i32).fold#2: {base.fum}/list.fz:226:39:
               | c Cons => c.tail.fold (m.op s c.head) m
 --------------------------------------^^^^^^^^^^^^^^^
-(interval i32).fold#1: {base.fum}/Sequence.fz:397:31:
+(interval i32).fold#1: {base.fum}/Sequence.fz:432:31:
   public fold (m Monoid T) => as_list.fold m.e m
 ------------------------------^^^^^^^^^^^^^^^^^^
 reg_issue2325: --CURDIR--/reg_issue2325.fz:25:8:

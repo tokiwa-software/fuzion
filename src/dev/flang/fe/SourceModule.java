@@ -675,8 +675,9 @@ part of the (((inner features))) declarations of the corresponding
         }
         @Override public Feature   action(Feature   f, AbstractFeature outer)
         {
-          f._scoped = !_scope.isEmpty();
-          findDeclarations(f, outer); return f;
+          f._declaredInScope = (!_scope.isEmpty() || f.isExtensionFeature()) ? outer : null;
+          findDeclarations(f, outer);
+          return f;
         }
       });
 
@@ -846,6 +847,10 @@ part of the (((inner features))) declarations of the corresponding
     for (var e : s.entrySet())
       {
         var f = e.getValue();
+        if (_options._compilingModule && outer.isUniverse() && f.isField())
+          {
+            AstErrors.mustNotDeclareFieldInModulesUniverse(f);
+          }
         addToDeclaredOrInheritedFeatures(outer, f);
         if (f instanceof Feature ff)
           {
@@ -997,8 +1002,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var existing = df.get(fn);
     if (existing != null)
       {
-        // NYI: need to check that the scopes are disjunct
-        if (existing instanceof Feature ef && ef._scoped && f._scoped
+        // NYI: need to check that the scopes ef and f are declared in are disjunct
+        if (existing instanceof Feature ef && ef._declaredInScope != null && f._declaredInScope != null
            || visibilityPreventsConflict(f, existing) || Feature.isAbstractAndFixedPair(f, existing))
           {
             var existingFeatures = FeatureName.getAll(df, fn.baseName(), 0);
@@ -1238,7 +1243,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     // we only need to do this evaluation for:
     // - scoped routines
     // - non argument fields
-    if (v instanceof Feature f && (f._scoped || v.isField() && !f.isArgument()))
+    if (v instanceof Feature f && (f._declaredInScope != null || v.isField() && !f.isArgument()))
       {
         /* cases like the following are forbidden:
           * ```
@@ -1278,10 +1283,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
           @Override public Expr action(Function lambda){
             if (usage.isEmpty() || definition.isEmpty())
               {
-                stacks.get(0).push(lambda._expr);
+                var e = lambda.expr();
+                stacks.get(0).push(e);
                 var old = visitingInnerFeature[0];
                 visitingInnerFeature[0] = true;
-                lambda._expr.visit(this, null);
+                e.visit(this, null);
                 visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
@@ -1327,7 +1333,9 @@ A post-condition of a feature that does not redefine an inherited feature must s
             stacks.get(0).pop();
           }
         };
-        f.outer().code().visit(visitor, null);
+        var declaredIn = f._declaredInScope != null ? f._declaredInScope
+                                                    : f.outer();
+        declaredIn.code().visit(visitor, null);
 
         if (f.isField())
           {
@@ -1343,7 +1351,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
             // the usage of this field is not in its containing features.
             if (usage.isEmpty())
               {
-                return !f._scoped;
+                return f._declaredInScope == null;
               }
           }
 
@@ -1358,7 +1366,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
          *   q => unit
          *   (c q).x.y
          */
-        if (usage.isEmpty() && Errors.any())
+        if (usage.isEmpty())
           {
             return false;
           }
@@ -1602,9 +1610,14 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
-        var ta = o.handDown(_res, argTypes(o), f.outer());
         var ra = argTypes(f);
-        if (ta.length != ra.length)
+        var ta = o.handDown(_res, argTypes(o), f.outer());
+        if (ta == AbstractFeature.HAND_DOWN_FAILED)
+          {
+            if (CHECKS) check
+              (Errors.any());
+          }
+        else if (ta.length != ra.length)
           {
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
           }
@@ -1862,7 +1875,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     f
       .contract()
       ._declared_preconditions
-      .forEach(r -> r.visit(new FeatureVisitor() {
+      .forEach(r -> r.cond().visit(new FeatureVisitor() {
         @Override
         public void action(AbstractCall c)
         {

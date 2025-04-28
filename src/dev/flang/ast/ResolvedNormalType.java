@@ -340,6 +340,7 @@ public class ResolvedNormalType extends ResolvedType
       (feature().generics().sizeMatches(generics()));
   }
 
+
   /**
    * Instantiate a new ResolvedNormalType and return its unique instance.
    */
@@ -347,6 +348,24 @@ public class ResolvedNormalType extends ResolvedType
   {
     return new ResolvedNormalType(original, originalOuterFeature);
   }
+
+
+  /**
+   * create resolved type for feature in universe and generics
+   *
+   * @param feature the feature that is defined in universe
+   *
+   * @param generics the generics of the type
+   *
+   */
+  public static AbstractType create(AbstractFeature feature, List<AbstractType> generics)
+  {
+    if (PRECONDITIONS) require
+      (feature.outer().isUniverse());
+
+    return create(generics, generics, null, feature);
+  }
+
 
   /**
    * Constructor for artificial built-in types.

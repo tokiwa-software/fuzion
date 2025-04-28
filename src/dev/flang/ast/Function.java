@@ -104,9 +104,16 @@ public class Function extends AbstractLambda
 
 
   /**
-   * the right hand side of the '->'
+   * the right hand side of the '->', as produced by the parser
    */
-  public final Expr _expr;
+  final Expr _originalExpr;
+
+
+  /**
+   * the right hand side of the '->', replaced by Expr.NO_VALUE in case of error.
+   */
+  private Expr _expr;
+  public Expr expr() { return _expr; }
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -134,6 +141,7 @@ public class Function extends AbstractLambda
     _namesAsExprs = names;
     _names = names.map2(n->n.asParsedName());
     _names.removeIf(n -> n==null);
+    _originalExpr = e;
     _expr = e;
   }
 
@@ -256,7 +264,6 @@ public class Function extends AbstractLambda
                 AstErrors.expectedFunctionTypeForLambda(pos(), t);
               }
             t = Types.t_ERROR;
-            result = Types.t_ERROR;
           }
 
         /* We have an expression of the form
@@ -281,19 +288,29 @@ public class Function extends AbstractLambda
         int i = 1;
         for (var n : _names)
           {
-            var arg = new Feature(n._pos,
-                                  Visi.PRIV,
-                                  0,
-                                  i < gs.size() ? gs.get(i) : Types.t_ERROR,
-                                  n._name,
-                                  Contract.EMPTY_CONTRACT);
-            a.add(arg);
-            i++;
+            if (i < gs.size() && gs.get(i) == Types.t_UNDEFINED)
+              {
+                t = Types.t_ERROR;
+              }
+            else
+              {
+                var arg = new Feature(n._pos,
+                                      Visi.PRIV,
+                                      0,
+                                      i < gs.size() ? gs.get(i) : Types.t_ERROR,
+                                      n._name,
+                                      Contract.EMPTY_CONTRACT);
+                a.add(arg);
+                i++;
+              }
           }
-        if (t != Types.t_ERROR && i != gs.size())
+        if (i != gs.size())
           {
-            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
-            result = Types.t_ERROR;
+            if (t != Types.t_ERROR)
+              {
+                AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+              }
+            t = Types.t_ERROR;
           }
         if (t != Types.t_ERROR)
           {
@@ -343,6 +360,11 @@ public class Function extends AbstractLambda
               }
 
             _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
+          }
+        else
+          {
+            _expr = Expr.NO_VALUE;
+            result = Types.t_ERROR;
           }
       }
     return result;
@@ -443,9 +465,8 @@ public class Function extends AbstractLambda
 
         if (f != null)
           {
-            generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                         ? ff.resultTypeIfPresent(res)
-                         : new BuiltInType(FuzionConstants.UNIT_NAME));
+            res.resolveTypes(f);
+            generics.add(f.resultType());
             for (var a : f.arguments())
               {
                 res.resolveTypes(a);
@@ -459,8 +480,8 @@ public class Function extends AbstractLambda
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
-          (Errors.any() || _inheritsCall == inheritsCall2);
-        _type = _call.type();
+          (Errors.any() || _inheritsCall == inheritsCall2,
+           _type == null || _type.isAssignableFrom(_call.type()));
       }
   }
 
@@ -507,6 +528,9 @@ public class Function extends AbstractLambda
     // we should probably have replaced Function already...
     return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
       ? Types.t_ERROR
+      // we have a lambda with no args and the expr type is inferrable
+      : _type == null && _names.isEmpty() && _expr.typeForInferencing() != null
+      ? ResolvedNormalType.create(Types.resolved.f_Lazy, new List<>(_expr.typeForInferencing()))
       : _type;
   }
 
@@ -520,13 +544,9 @@ public class Function extends AbstractLambda
    */
   public Expr resolveSyntacticSugar2(Resolution res)
   {
-    Expr result = this;
-    var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
-    if (!Errors.any())  // avoid null pointer handling in case calledFeature not found etc.
-      {
-        result = _call;
-      }
-    return result;
+    return _call != null
+      ? _call
+      : this;
   }
 
 
@@ -537,7 +557,18 @@ public class Function extends AbstractLambda
    */
   public String toString()
   {
-    return _names + " -> " + _expr;
+    return _names + " -> " + _originalExpr;
+  }
+
+
+  /**
+   * Check whether this Function has a valid type, i.e. is not an error
+   * @return this Function
+   */
+  public Expr checkTypes()
+  {
+    type(); // just for triggering error messages
+    return this;
   }
 
 }

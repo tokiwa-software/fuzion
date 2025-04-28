@@ -347,7 +347,7 @@ public class Fuzion extends Tool
       }
     },
 
-    saveMod("-save-module=<file>")
+    saveMod("-saveModule=<file>")
     {
       boolean runsCode() { return false; }
       void parseBackendArg(Fuzion f, String a)
@@ -393,7 +393,7 @@ public class Fuzion extends Tool
                   }
                 catch (IOException io)
                   {
-                    Errors.error("-save-module: I/O error when writing module file",
+                    Errors.error("-saveModule: I/O error when writing module file",
                                  "While trying to write file '"+ f._saveMod + "' received '" + io + "'");
                   }
               }
@@ -406,7 +406,7 @@ public class Fuzion extends Tool
      * any errors that happened in the frontend.
      * Can be used for syntax checking of fz files.
      */
-    frontEndOnly("-frontend-only")
+    frontEndOnly("-frontendOnly")
     {
       void processFrontEnd(Fuzion f, FrontEnd fe)
       {
@@ -419,7 +419,7 @@ public class Fuzion extends Tool
      * any errors that happened in the stages up to
      * and including the DFA.
      */
-    noBackend("-no-backend")
+    noBackend("-noBackend")
     {
       void process(FuzionOptions options, FUIR fuir)
       {
@@ -476,7 +476,7 @@ public class Fuzion extends Tool
     /**
      * parse the argument that activates this backend. This is not needed for
      * backends like {@code -c} or {@code -dfa}, but for those that require additional
-     * argument like {@code -save-module=<path>}.
+     * argument like {@code -saveModule=<path>}.
      */
     void parseBackendArg(Fuzion f, String a)
     {
@@ -597,7 +597,7 @@ public class Fuzion extends Tool
 
   /**
    * Should we load the base module? We do not want to load if when using
-   * -save-module= backend to create the base module file.
+   * -saveModule= backend to create the base module file.
    */
   boolean _loadBaseMod = true;
 
@@ -1218,7 +1218,7 @@ public class Fuzion extends Tool
    */
   private String moduleName()
   {
-    var n = "main";
+    var n = FuzionConstants.MAIN_MODULE_NAME;
     if (_saveMod != null)
        {
          var p = _saveMod;

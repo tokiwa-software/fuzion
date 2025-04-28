@@ -61,7 +61,7 @@ portable_nproc() {
     if [ "$OS" = "Linux" ]; then
         NPROCS="$(nproc --all)"
     elif [ "$OS" = "Darwin" ] || \
-         [ "$(echo "$OS" | grep -q BSD)" = "BSD" ]; then
+         [ "$(echo "$OS" | grep --quiet BSD)" = "BSD" ]; then
         NPROCS="$(sysctl -n hw.ncpu)"
     else
         NPROCS="$(getconf _NPROCESSORS_ONLN || echo 4)"  # glibc/coreutils fallback
@@ -84,7 +84,7 @@ renice -n 19 $$ > /dev/null
 
 BUILD_DIR=$1
 TARGET=$2
-TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname | sort)
+TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs --null --max-args=1 dirname | sort)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
@@ -105,12 +105,15 @@ for test in $TESTS; do
     if test -n "$VERBOSE"; then
       printf '\nrun %s: ' "$test"
     fi
-    if test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
+    if [ "${OS-default}" = "Windows_NT" ] && test -e "$test"/skip_win; then
+      printf "_"
+      echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
+    elif test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
       printf "_"
       echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
     else
       START_TIME="$(nanosec)"
-      if timeout --kill-after=600s 600s make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
+      if timeout --kill-after=600s 600s make "$TARGET" --environment-overrides --directory="$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
          TEST_RESULT=true
       else
          TEST_RESULT=false
@@ -144,14 +147,19 @@ grep failed$ "$BUILD_DIR"/run_tests.results || true
 NUM_SLOWEST=5
 echo ""
 echo "Slowest $NUM_SLOWEST tests using $TARGET backend:"
-sed -E 's|\./build/tests/([^\]+)\sin\s(.*):\sok|\2 \1|g' "$BUILD_DIR"/run_tests.results | sort -t 'm' -k1,1nr | head -n $NUM_SLOWEST
+# store complete output of sort in variable before pipeing to head:
+# https://stackoverflow.com/questions/46202653/bash-error-in-sort-sort-write-failed-standard-output-broken-pipe
+# added `or true` to workaround broken pipe that sometimes occurred in test runs
+SORTED=$(sed --regexp-extended 's|\./build/tests/([^\]+)\sin\s(.*):\sok|\2 \1|g' "$BUILD_DIR"/run_tests.results | sort --field-separator='m' -k1,1nr --buffer-size=100M || true)
+# added `or true` to workaround broken pipe that sometimes occurred in test runs
+echo "$SORTED" | head --lines=$NUM_SLOWEST || true
 echo ""
 
 if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
 
   echo "To rerun all failed tests, use this command:"
-  grep failed$ "$BUILD_DIR"/run_tests.results | cut -d' ' -f1 | sed 's/^/make -C /' | sed -z 's/\n/ \&\& /g'
+  grep failed$ "$BUILD_DIR"/run_tests.results | cut -d' ' -f1 | sed -e "s/^/make $TARGET -C /" | sed -z 's/\n/ \&\& /g'
 
   exit 1;
 fi

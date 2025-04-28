@@ -357,10 +357,9 @@ public class Feature extends AbstractFeature
 
 
   /*
-   * true if this feature is found to be
-   * declared in a block with
-   * _newscope=true (e.g. if/else, loop)
-   * or in a case-block
+   * feature that contains the declaration of this feature if
+   * this.isExtensionFeature() or if this feature is found to be declared in a
+   * block with _newscope=true (e.g. if/else, loop) or in a case-block
    *
    * example:
    * ```
@@ -374,12 +373,12 @@ public class Feature extends AbstractFeature
    *        f4 =>
    *      }
    * ```
-   * f1, f3 and f4 are _scoped in this example.
-   * f2 is not _scoped, i.e. does not need to be checked if in scope.
+   * f1, f3 and f4 have _declaredInScope!=null in this example.
+   * f2 is has _declaredInScope==null, i.e. does not need to be checked if in scope.
    * This is because if f1 is accessible then f2 is also always accessible.
    *
    */
-  public boolean _scoped = false;
+  public AbstractFeature _declaredInScope = null;
 
 
   /**
@@ -561,6 +560,8 @@ public class Feature extends AbstractFeature
          new List<>(),
          null,
          impl);
+    if (PRECONDITIONS) require
+      (t != Types.t_UNDEFINED);
   }
 
 
@@ -598,6 +599,8 @@ public class Feature extends AbstractFeature
          new List<>(),
          c,
          i);
+    if (PRECONDITIONS) require
+      (t != Types.t_UNDEFINED || n == FuzionConstants.INTERNAL_RESULT_NAME);
   }
 
 
@@ -930,7 +933,7 @@ public class Feature extends AbstractFeature
   public boolean outerSet()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || state() == State.LOADING);
+      (Errors.any() || isUniverse() || state() == State.LOADING);
 
     return _outer != null;
   }
@@ -967,7 +970,7 @@ public class Feature extends AbstractFeature
               case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
               case TypeParameter                                      -> Kind.TypeParameter;
               case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
-              case Routine, RoutineDef, Of                            -> Kind.Routine;
+              case Routine, RoutineDef                                -> Kind.Routine;
               case Abstract                                           -> Kind.Abstract;
               case Intrinsic                                          -> Kind.Intrinsic;
               case Native                                             -> Kind.Native;
@@ -1490,9 +1493,14 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this a fully qualified feature?
+   * Is this feature with a qualified feature name such as
+   *
+   *   String.danish => String.this.replace "a" "å"
+   *
+   * i.e., a feature declaration that is located syntactially outside of the
+   * outer feature's declaration.
    */
-  private boolean isExtensionFeature()
+  public boolean isExtensionFeature()
   {
     return _qname.size() > 1 && _qname.get(0) != FuzionConstants.TYPE_NAME;
   }
@@ -1917,9 +1925,7 @@ A ((Choice)) declaration must not contain a result type.
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
             @Override public Call  action(Call           c) { c.propagateExpectedType(res, _context); return c; }
-            @Override public void  action(Cond           c) { c.propagateExpectedType(res, _context); }
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
-            @Override public Expr  action(If             i) { i.propagateExpectedType(res, _context); return i; }
           });
 
         /*
@@ -2017,12 +2023,12 @@ A ((Choice)) declaration must not contain a result type.
         @Override public boolean visitActualsLate() { return true; }
         @Override public void         action(AbstractAssign a) {        a.checkTypes(res,  _context);           }
         @Override public Call         action(Call           c) {        c.checkTypes(res,  _context); return c; }
-        @Override public void         action(Constant       c) {        c.checkRange();                         }
+        @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
         @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
-        @Override public void         action(Cond           c) {        c.checkTypes();                         }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
+        @Override public Expr         action(Function       f) { return f.checkTypes();                         }
       });
 
     res._module.checkTypes(this);
@@ -2068,7 +2074,10 @@ A ((Choice)) declaration must not contain a result type.
           || at.isFunctionTypeExcludingLazy()
           || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()
           // NYI: BUG: check if array element type is valid
-          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array))
+          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
+          || !at.isGenericArgument() && at.feature().mayBeNativeValue()
+          )
+        )
       {
         AstErrors.illegalNativeType(pos, "Argument type", at);
       }
@@ -2078,7 +2087,7 @@ A ((Choice)) declaration must not contain a result type.
   private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
   {
     ensureTypeSetsInitialized(res);
-    if (!Types.resolved.legalNativeResultTypes.contains(rt))
+    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue()))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);
       }
@@ -2168,7 +2177,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr  action(Function    f) { return f.resolveSyntacticSugar2(res); }
         @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
-        @Override public Expr  action(If          i) { return i.resolveSyntacticSugar2(res); }
+        @Override public Expr  action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
       });
 
     _state = State.RESOLVED_SUGAR2;

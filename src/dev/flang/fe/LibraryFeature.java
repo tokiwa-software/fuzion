@@ -697,7 +697,7 @@ public class LibraryFeature extends AbstractFeature
                   cases.add(lc);
                   cat = _libModule.caseNextPos(cat);
                 }
-              c = new AbstractMatch()
+              c = new AbstractMatch(null)
                 {
                   public Expr subject() { return subj; }
                   public List<AbstractCase> cases() { return cases; }

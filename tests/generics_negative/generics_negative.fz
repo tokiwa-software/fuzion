@@ -35,7 +35,7 @@ generics_negative is
   opengenerics4 (A type, B type, C type...) is
     _ A := any;
     _ B := any;
-    _ C := any; // 4. should flag an error, open generic cannot be field type.
+    _ C := any; # 4. should flag an error, open generic cannot be field type.
 
   opengenerics5a (A type, B type, C type...) is
     f1(a A) is
@@ -49,18 +49,18 @@ generics_negative is
     f1(a A) unit => abstract
     f2(a A, b B) unit => abstract
     f3(a A, b B, c C...) unit => abstract
-    f4(a A, b B, c C, a1 A) unit => abstract  // 6. should flag an error, open generic can only be used for last argument
+    f4(a A, b B, c C, a1 A) unit => abstract  # 6. should flag an error, open generic can only be used for last argument
 
   opengenerics7 (A type, B type, C type...) : opengenerics6 A A A A is
 
   opengenerics8 (A type, B type, C type...) : opengenerics6 B B B B is
 
-  opengenerics9 (A type, B type, C type...) : opengenerics6 C A A A is // 7. should flag an error: open generic cannot be used as generic argument
+  opengenerics9 (A type, B type, C type...) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
 
-  opengenerics10 (A type, B type, C type...) is  // NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
+  opengenerics10 (A type, B type, C type...) is  # NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
     x1 : choice A is
     x2 : choice A B is
-    x3 : choice A C B is  // 8. should flag an error: choice cannot use open generic
+    x3 : choice A C B is  # 8. should flag an error: choice cannot use open generic
 
   opengenerics11 ref : Function i32 is
     public redef call() i32 => 42
@@ -73,77 +73,77 @@ generics_negative is
 
   f1 Function i32 := opengenerics11
   _ := f1.call()
-  _ := f1.call 7              //  9. should flag an error, wrong number of arguments
+  _ := f1.call 7              #  9. should flag an error, wrong number of arguments
   _ := f1()
-  _ := f1 7                   // 10. should flag an error, wrong number of arguments
+  _ := f1 7                   # 10. should flag an error, wrong number of arguments
 
   f2 Function i32 bool := opengenerics15
-  _ := f2.call()              // 11. should flag an error, wrong number of arguments
+  _ := f2.call()              # 11. should flag an error, wrong number of arguments
   _ := f2.call true
-  _ := f2.call true false     // 12. should flag an error, wrong number of arguments
-  _ := f2()                   // 13. should flag an error, wrong number of arguments
+  _ := f2.call true false     # 12. should flag an error, wrong number of arguments
+  _ := f2()                   # 13. should flag an error, wrong number of arguments
   _ := f2 true
-  _ := f2 true false          // 14. should flag an error, wrong number of arguments
+  _ := f2 true false          # 14. should flag an error, wrong number of arguments
 
   r1 Function unit := opengenerics17
   _ := r1.call()
-  _ := r1.call 7              // 15. should flag an error, wrong number of arguments
+  _ := r1.call 7              # 15. should flag an error, wrong number of arguments
   _ := r1()
-  _ := r1 7                   // 16. should flag an error, wrong number of arguments
+  _ := r1 7                   # 16. should flag an error, wrong number of arguments
 
   r2 Function unit i32 bool := (i, b) ->
-  _ := r2.call()              // 17. should flag an error, wrong number of arguments
-  _ := r2.call 3              // 18. should flag an error, wrong number of arguments
+  _ := r2.call()              # 17. should flag an error, wrong number of arguments
+  _ := r2.call 3              # 18. should flag an error, wrong number of arguments
   _ := r2.call 3 false
-  _ := r2.call 3 false 7      // 19. should flag an error, wrong number of arguments
-  _ := r2()                   // 20. should flag an error, wrong number of arguments
-  _ := r2 3                   // 21. should flag an error, wrong number of arguments
+  _ := r2.call 3 false 7      # 19. should flag an error, wrong number of arguments
+  _ := r2()                   # 20. should flag an error, wrong number of arguments
+  _ := r2 3                   # 21. should flag an error, wrong number of arguments
   _ := r2 3 false
-  _ := r2 3 false 7           // 22. should flag an error, wrong number of arguments
+  _ := r2 3 false 7           # 22. should flag an error, wrong number of arguments
 
   opengenerics23(A, B, C type) is
-    f(a A.i32) i32 => 3          // 23. should flag an error: generic used as outer type
-    _ A i32 := any               // 24. should flag an error: generic must not have generic args
+    f(a A.i32) i32 => 3          # 23. should flag an error: generic used as outer type
+    _ A i32 := any               # 24. should flag an error: generic must not have generic args
 
   opengenerics24 is
-    x1 Function := any           // 25. should flag an error: not enough generics
-    x1.call()       // should be ignored by compiler after previous errors
-    x1()            // should be ignored by compiler after previous errors
+    x1 Function := any           # 25. should flag an error: not enough generics
+    x1.call()       # should be ignored by compiler after previous errors
+    x1()            # should be ignored by compiler after previous errors
     x2 Function i32 bool := any
     _ i32  := x2.call true
-    _ i32  := x2.call 3         // 26. should flag an error: wrong argument type
-    _ bool := x2.call true      // 27. should flag an error: wrong type in assignment
+    _ i32  := x2.call 3         # 26. should flag an error: wrong argument type
+    _ bool := x2.call true      # 27. should flag an error: wrong type in assignment
     _ i32  := x2 true
-    _ i32  := x2 3              // 28. should flag an error: wrong argument type
-    _ bool := x2 true           // 29. should flag an error: wrong type in assignment
+    _ i32  := x2 3              # 28. should flag an error: wrong argument type
+    _ bool := x2 true           # 29. should flag an error: wrong type in assignment
     x3 Function unit i32 bool := any
     x3.call 3 true
-    x3.call false false          // 30. should flag an error: wrong argument type
-    x3.call 3 3                  // 31. should flag an error: wrong argument type
-    x3.call 3 true 3             // 32. should flag an error: wrong argument count
-    x3.call 3                    // 33. should flag an error: wrong argument count
+    x3.call false false          # 30. should flag an error: wrong argument type
+    x3.call 3 3                  # 31. should flag an error: wrong argument type
+    x3.call 3 true 3             # 32. should flag an error: wrong argument count
+    x3.call 3                    # 33. should flag an error: wrong argument count
     x3 3 true
-    x3 false false               // 34. should flag an error: wrong argument type
-    x3 3 3                       // 35. should flag an error: wrong argument type
-    x3 3 true 3                  // 36. should flag an error: wrong argument count
-    x3 3                         // 37. should flag an error: wrong argument count
+    x3 false false               # 34. should flag an error: wrong argument type
+    x3 3 3                       # 35. should flag an error: wrong argument type
+    x3 3 true 3                  # 36. should flag an error: wrong argument count
+    x3 3                         # 37. should flag an error: wrong argument count
 
     g(A, B, C type) is
-    _ g := any                  // 38. should flag an error: not enough generics
-    _ g i32 := any              // 39. should flag an error: not enough generics
-    _ g i32 i32 := any          // 40. should flag an error: not enough generics
+    _ g := any                  # 38. should flag an error: not enough generics
+    _ g i32 := any              # 39. should flag an error: not enough generics
+    _ g i32 i32 := any          # 40. should flag an error: not enough generics
     _ g i32 i32 i32 := any
-    _ g i32 i32 i32 i32 := any  // 41. should flag an error: too many generics
+    _ g i32 i32 i32 i32 := any  # 41. should flag an error: too many generics
 
 
   features_from_separate_source_file is
     public hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
-    qwerty.uiop.asdfg                                       // 42. should flag an error: missing generic argument to qwerty
-    public asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
+    qwerty.uiop.asdfg                                       # 42. should flag an error: missing generic argument to qwerty
+    public asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
     public asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
     public uiop (qwerty i32).uiop := (qwerty i32).uiop
     public qwert qwerty i32 := qwerty i32
-    set hjkl := qwert.uiop.asdfg.hjkl                       // 44. should flag an error: missing actual argument to hjkl
+    set hjkl := qwert.uiop.asdfg.hjkl                       # 44. should flag an error: missing actual argument to hjkl
     set asdfg1 := uiop.asdfg
     set asdfg2 := uiop.asdfg
     set uiop := qwert.uiop
@@ -156,8 +156,8 @@ generics_negative is
           say "y is $y"
     _ A i32 bool   := A i32 bool
     x1 (A i32 bool  ).B String bool := (A i32 bool).B String bool true
-    x2 (A i32 i32   ).B String bool := (A i64 bool).B String bool true  // 45. should flag an error: incompatible types
-    x3 (A i32 String).B String bool := x1                               // 46. should flag an error: incompatible types
+    x2 (A i32 i32   ).B String bool := (A i64 bool).B String bool true  # 45. should flag an error: incompatible types
+    x3 (A i32 String).B String bool := x1                               # 46. should flag an error: incompatible types
     _ := x1.p
     _ := x2.p
     _ := x3.p
@@ -173,24 +173,24 @@ generics_negative is
 
     x G := G
     _ := x.f 3 true 5
-    x.f "String" false 7  // 47. should flag an error: incompatible argument #1
-    x.f 4 3 7             // 48. should flag an error: incompatible argument #2
-    x.f 4 false "false"   // 49.a should flag an error: incompatible argument #3
+    x.f "String" false 7  # 47. should flag an error: incompatible argument #1
+    x.f 4 3 7             # 48. should flag an error: incompatible argument #2
+    x.f 4 false "false"   # 49.a should flag an error: incompatible argument #3
     y F i32 bool i32 := x
     y.f 3 true 5
-    y.f "String" false 8  // 49.b should flag an error: incompatible argument #1
-    y.f 9 10 8            // 50. should flag an error: incompatible argument #2
-    y.f 9 false "8"       // 51. should flag an error: incompatible argument #3
+    y.f "String" false 8  # 49.b should flag an error: incompatible argument #1
+    y.f 9 10 8            # 50. should flag an error: incompatible argument #2
+    y.f 9 false "8"       # 51. should flag an error: incompatible argument #3
   _ := opengenerics12
 
   ambiguousTypeParameterName =>
     outer(X, Y, Z type) is
       inner(X type, Y2 type, Z type)
       is
-        _  := option X  nil      // 52. should flag an error: ambiguous type parameter
+        _  := option X  nil      # 52. should flag an error: ambiguous type parameter
         _  := option Y  nil
         _  := option Y2 nil
-        _  := option Z  nil      // 53. should flag an error: ambiguous type parameter
+        _  := option Z  nil      # 53. should flag an error: ambiguous type parameter
 
   _ := ambiguousTypeParameterName
 
@@ -200,12 +200,12 @@ generics_negative is
 
     child : parent u8 23 is
 
-      f1(x      PARENT_TYPE_PARAMETER) => $x + $v  // ok, this is a new free type, not inherited type parameter
-      f2(x list PARENT_TYPE_PARAMETER) => $x + $v  // ok, this is a new free type, not inherited type parameter
+      f1(x      PARENT_TYPE_PARAMETER) => $x + $v  # ok, this is a new free type, not inherited type parameter
+      f2(x list PARENT_TYPE_PARAMETER) => $x + $v  # ok, this is a new free type, not inherited type parameter
 
-      g1      PARENT_TYPE_PARAMETER => v       // 54. should flag an error: PARENT_TYPE_PARAMETER not visible
-      g2 list PARENT_TYPE_PARAMETER => v : g2  // 55. should flag an error: PARENT_TYPE_PARAMETER not visible
-      g3 => option PARENT_TYPE_PARAMETER nil   // 56. should flag an error: PARENT_TYPE_PARAMETER not visible
+      g1      PARENT_TYPE_PARAMETER => v       # 54. should flag an error: PARENT_TYPE_PARAMETER not visible
+      g2 list PARENT_TYPE_PARAMETER => v : g2  # 55. should flag an error: PARENT_TYPE_PARAMETER not visible
+      g3 => option PARENT_TYPE_PARAMETER nil   # 56. should flag an error: PARENT_TYPE_PARAMETER not visible
 
     _ :=  (child.f1 23)
     _ :=  (child.f2 23:nil)

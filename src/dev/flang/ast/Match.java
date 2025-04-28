@@ -26,7 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Iterator;
+import java.util.Stack;
+
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -64,12 +68,6 @@ public class Match extends AbstractMatch
   public List<AbstractCase> cases() { return _cases; }
 
 
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  private final SourcePosition _pos;
-
-
   private boolean _assignedToField = false;
 
 
@@ -90,26 +88,17 @@ public class Match extends AbstractMatch
                Expr e,
                List<AbstractCase> c)
   {
+    super(pos);
     if (PRECONDITIONS) require
       (e != null,
        c != null);
 
     _subject = e;
     _cases = c;
-    _pos = pos;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**
@@ -125,7 +114,6 @@ public class Match extends AbstractMatch
   public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
     _subject = _subject.visit(v, outer);
-    v.action(this);
     v.action(this);
     for (var c: cases())
       {
@@ -144,14 +132,12 @@ public class Match extends AbstractMatch
    */
   void resolveTypes(Resolution res, Context context)
   {
-    var st = _subject.type();
-    if (CHECKS) check
-      (Errors.any() || st != Types.t_ERROR);
-    if (st != Types.t_ERROR && !st.isGenericArgument())
+    var st = _subject.typeForInferencing();
+    if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
       {
         res.resolveTypes(st.feature());
       }
-    if (st.isChoice() && Types.resolved.t_void != st)
+    if (st != null && st.isChoice() && Types.resolved.t_void != st)
       {
         var cgs = st.choiceGenerics(context);
         for (var i = 0; i < cgs.size(); i++)
@@ -256,6 +242,170 @@ public class Match extends AbstractMatch
   public boolean producesResult()
   {
     return !_assignedToField;
+  }
+
+
+  /**
+   * typeForInferencing returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  @Override
+  AbstractType typeForInferencing()
+  {
+    if (_type == null)
+      {
+        var t = typeFromCases();
+        _type = t != Types.t_ERROR ? t : null;
+      }
+    return _type;
+  }
+
+
+  /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
+   */
+  @Override
+  public AbstractType type()
+  {
+    if (_type == null)
+      {
+        _type = typeFromCases();
+        if (_type == null)
+          {
+            _type = Types.t_ERROR;
+          }
+        else if (_type == Types.t_ERROR)
+          {
+            new IncompatibleResultsOnBranches(
+              pos(),
+              "Incompatible types in " +
+                (kind() == Kind.Plain ? "cases of match" : "branches of if") +
+                " expression",
+              casesForType());
+          }
+      }
+    if (POSTCONDITIONS) ensure
+      (_type != null,
+       _type != Types.t_UNDEFINED);
+    return _type;
+  }
+
+
+  /**
+   * Helper routine for typeForInferencing to determine the
+   * type of this if expression on demand, i.e., as late as possible.
+   */
+  private AbstractType typeFromCases()
+  {
+    return Expr.union(new List<>(casesForType()), Context.NONE);
+  }
+
+
+  /**
+   * Iterator over all case blocks,
+   * including nested match case blocks
+   */
+  private Iterator<Expr> casesForType()
+  {
+    return new Iterator<Expr>()
+    {
+      Stack<Iterator<AbstractCase>> stack = new Stack<Iterator<AbstractCase>>();
+      {
+        stack.push(cases().iterator());
+      }
+      public boolean hasNext()
+      {
+        while (!stack.peek().hasNext() && stack.size() > 1)
+          {
+            stack.pop();
+          }
+        return stack.peek().hasNext();
+      }
+      public Expr next()
+      {
+        var c = stack.peek().next().code();
+        if (c instanceof Match m)
+          {
+            stack.push(m.cases().iterator());
+            return next();
+          }
+        else if (c instanceof Block b && b.resultExpression() instanceof Match m)
+          {
+            stack.push(m.cases().iterator());
+            return next();
+          }
+        else
+          {
+            return c;
+          }
+      }
+    };
+  }
+
+
+  /**
+   * create an if expr,
+   *
+   * @param pos the source position of the if
+   *
+   * @param c then condition
+   *
+   * @param b the "true"-block, must not be null
+   *
+   * @param elseB else block, may be null
+   *
+   * @param fromContract is this an if generated from a contract? (for error messages)
+   */
+  public static Match createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
+  {
+    if (PRECONDITIONS) require
+      (c != null,
+       b != null);
+
+    /**
+     * If there is no else / elseif, create a default else
+     * branch returning unit.
+     */
+    if (elseB == null)
+      {
+        var unit = new Call(pos, FuzionConstants.UNIT_NAME);
+        elseB = new Block(new List<>(unit));
+      }
+
+    // Types.resolved may still be null, so we have to
+    // create these cases in a lazy fashion.
+    var cases = new List<AbstractCase>(
+          new Case(b.pos(), null, b)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[1] = SourcePosition.notAvailable;
+              return true;
+            }
+          },
+          new Case(elseB.pos(), null, elseB)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[0] = SourcePosition.notAvailable;
+              return true;
+            }
+          });
+
+    return new Match(pos, c, new List<>())
+      {
+        @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
+        @Override public List<AbstractCase> cases() { return cases; }
+      };
   }
 
 

@@ -1,6 +1,6 @@
 
 --CURDIR--/visibility_scoping.fz:70:24: error 1: Could not find called feature
-    say ((0..1).map y->x)  # should flag an error: feature not found
+    say ((0..1).map y->x)  #  3. should flag an error: feature not found
 -----------------------^
 Feature not found: 'x' (no arguments)
 Target feature: 'visibility_scoping.test4.λ.call'
@@ -8,7 +8,7 @@ In call: 'x'
 
 
 --CURDIR--/visibility_scoping.fz:40:9: error 2: Could not find called feature
-    say x     # should flag an error: feature not found
+    say x     #  1. should flag an error: feature not found
 --------^
 Feature not found: 'x' (no arguments)
 Target feature: 'visibility_scoping.test1'
@@ -16,7 +16,7 @@ In call: 'x'
 
 
 --CURDIR--/visibility_scoping.fz:81:30: error 3: Could not find called feature
-    say "outside else: q is $q"   # should flag an error: feature not found
+    say "outside else: q is $q"   #  4. should flag an error: feature not found
 -----------------------------^
 Feature not found: 'q' (no arguments)
 Target feature: 'visibility_scoping.test5'
@@ -24,66 +24,194 @@ In call: 'q'
 
 
 --CURDIR--/visibility_scoping.fz:122:13: error 4: Could not find called feature
-        say x
+        say x   # 11. should flag an error: feature not found
 ------------^
 Feature not found: 'x' (no arguments)
 Target feature: 'visibility_scoping.test9'
 In call: 'x'
 
 
---CURDIR--/visibility_scoping.fz:97:10: error 5: Could not find called feature
-    _ := t   # should flag an error: feature not found
+--CURDIR--/visibility_scoping.fz:96:10: error 5: Could not find called feature
+    _ := tt   #  9. should flag an error: feature not found
+---------^^
+Feature not found: 'tt' (no arguments)
+Target feature: 'visibility_scoping.test6'
+In call: 'tt'
+
+
+--CURDIR--/visibility_scoping.fz:97:10: error 6: Could not find called feature
+    _ := t    # 10. should flag an error: feature not found
 ---------^
 Feature not found: 't' (no arguments)
 Target feature: 'visibility_scoping.test6'
 In call: 't'
 
 
---CURDIR--/visibility_scoping.fz:93:10: error 6: Could not find called feature
-    b => tt   # should flag an error: feature not found
+--CURDIR--/visibility_scoping.fz:93:10: error 7: Could not find called feature
+    b => tt   #  6. should flag an error: feature not found
 ---------^^
 Feature not found: 'tt' (no arguments)
 Target feature: 'visibility_scoping.test6.b'
 In call: 'tt'
 
 
---CURDIR--/visibility_scoping.fz:94:10: error 7: Could not find called feature
-    c => t   # should flag an error: feature not found
+--CURDIR--/visibility_scoping.fz:94:10: error 8: Could not find called feature
+    c => t    #  7. should flag an error: feature not found
 ---------^
 Feature not found: 't' (no arguments)
 Target feature: 'visibility_scoping.test6.c'
 In call: 't'
 
 
---CURDIR--/visibility_scoping.fz:92:10: error 8: Could not find called feature
-    a => ttt # should flag an error: feature not found
+--CURDIR--/visibility_scoping.fz:92:10: error 9: Could not find called feature
+    a => ttt  #  5. should flag an error: feature not found
 ---------^^^
 Feature not found: 'ttt' (no arguments)
 Target feature: 'visibility_scoping.test6.a'
 In call: 'ttt'
 
 
---CURDIR--/visibility_scoping.fz:95:10: error 9: Could not find called feature
-    _ := ttt # should flag an error: feature not found
+--CURDIR--/visibility_scoping.fz:95:10: error 10: Could not find called feature
+    _ := ttt  #  8. should flag an error: feature not found
 ---------^^^
 Feature not found: 'ttt' (no arguments)
 Target feature: 'visibility_scoping.test6'
 In call: 'ttt'
 
 
---CURDIR--/visibility_scoping.fz:96:10: error 10: Could not find called feature
-    _ := tt   # should flag an error: feature not found
----------^^
-Feature not found: 'tt' (no arguments)
-Target feature: 'visibility_scoping.test6'
-In call: 'tt'
-
-
 --CURDIR--/visibility_scoping.fz:59:13: error 11: Could not find called feature
-        say ar  # should flag an error: feature not found
+        say ar  #  2. should flag an error: feature not found
 ------------^^
 Feature not found: 'ar' (no arguments)
 Target feature: 'visibility_scoping.test3.anonymous.call'
 In call: 'ar'
 
-11 errors.
+
+--CURDIR--/visibility_scoping.fz:148:19: error 12: Could not find called feature
+        _ := unit.q   # 12. should flag an error: unit.q does not exist
+------------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'unit'
+In call: 'unit.q'
+
+
+--CURDIR--/visibility_scoping.fz:153:14: error 13: Could not find called feature
+        _ := q        # 13. should flag an error: q does not exist
+-------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_scoping.test10.f'
+In call: 'q'
+
+
+--CURDIR--/visibility_scoping.fz:164:19: error 14: Could not find called feature
+        _ := unit.q   # 14. should flag an error: unit.q does not exist
+------------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'unit'
+In call: 'unit.q'
+
+
+--CURDIR--/visibility_scoping.fz:167:19: error 15: Could not find called feature
+        _ := unit.z1  # 15. should flag an error: unit.z1 not in scope
+------------------^^
+Feature not found: 'z1' (no arguments)
+Target feature: 'unit'
+In call: 'unit.z1'
+
+
+--CURDIR--/visibility_scoping.fz:168:19: error 16: Could not find called feature
+        _ := unit.z2  # 16. should flag an error: unit.z2 not in scope
+------------------^^
+Feature not found: 'z2' (no arguments)
+Target feature: 'unit'
+In call: 'unit.z2'
+
+
+--CURDIR--/visibility_scoping.fz:169:14: error 17: Could not find called feature
+        _ := q        # 17. should flag an error: q does not exist
+-------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_scoping.test10.f'
+In call: 'q'
+
+
+--CURDIR--/visibility_scoping.fz:172:14: error 18: Could not find called feature
+        _ := c1       # 18. should flag an error: c1 not in scope
+-------------^^
+Feature not found: 'c1' (no arguments)
+Target feature: 'visibility_scoping.test10.f'
+In call: 'c1'
+
+
+--CURDIR--/visibility_scoping.fz:173:14: error 19: Could not find called feature
+        _ := c2       # 19. should flag an error: c2 not in scope
+-------------^^
+Feature not found: 'c2' (no arguments)
+Target feature: 'visibility_scoping.test10.f'
+In call: 'c2'
+
+
+--CURDIR--/visibility_scoping.fz:179:17: error 20: Could not find called feature
+      _ := unit.q   # 20. should flag an error: unit.q does not exist
+----------------^
+Feature not found: 'q' (no arguments)
+Target feature: 'unit'
+In call: 'unit.q'
+
+
+--CURDIR--/visibility_scoping.fz:181:17: error 21: Could not find called feature
+      _ := unit.y   # 21. should flag an error: unit.y not in scope
+----------------^
+Feature not found: 'y' (no arguments)
+Target feature: 'unit'
+In call: 'unit.y'
+
+
+--CURDIR--/visibility_scoping.fz:182:17: error 22: Could not find called feature
+      _ := unit.z1  # 22. should flag an error: unit.z1 not in scope
+----------------^^
+Feature not found: 'z1' (no arguments)
+Target feature: 'unit'
+In call: 'unit.z1'
+
+
+--CURDIR--/visibility_scoping.fz:183:17: error 23: Could not find called feature
+      _ := unit.z2  # 23. should flag an error: unit.z2 not in scope
+----------------^^
+Feature not found: 'z2' (no arguments)
+Target feature: 'unit'
+In call: 'unit.z2'
+
+
+--CURDIR--/visibility_scoping.fz:184:12: error 24: Could not find called feature
+      _ := q        # 24. should flag an error: q does not exist
+-----------^
+Feature not found: 'q' (no arguments)
+Target feature: 'visibility_scoping.test10.g'
+In call: 'q'
+
+
+--CURDIR--/visibility_scoping.fz:186:12: error 25: Could not find called feature
+      _ := b        # 25. should flag an error: b not in scope
+-----------^
+Feature not found: 'b' (no arguments)
+Target feature: 'visibility_scoping.test10.g'
+In call: 'b'
+
+
+--CURDIR--/visibility_scoping.fz:187:12: error 26: Could not find called feature
+      _ := c1       # 26. should flag an error: c1 not in scope
+-----------^^
+Feature not found: 'c1' (no arguments)
+Target feature: 'visibility_scoping.test10.g'
+In call: 'c1'
+
+
+--CURDIR--/visibility_scoping.fz:188:12: error 27: Could not find called feature
+      _ := c2       # 27. should flag an error: c2 not in scope
+-----------^^
+Feature not found: 'c2' (no arguments)
+Target feature: 'visibility_scoping.test10.g'
+In call: 'c2'
+
+27 errors.

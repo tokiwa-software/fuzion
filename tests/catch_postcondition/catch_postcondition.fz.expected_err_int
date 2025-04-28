@@ -7,9 +7,15 @@ fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
+      fuzion.runtime.fault.cause kind_and_msg).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
 fuzion.type.runtime.type.post_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/post_fault.fz:39:7:
-      fuzion.runtime.fault.cause ("postcondition", msg)).default
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      fuzion.runtime.contract_fault.cause ("postcondition", msg)).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.post_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
@@ -30,9 +36,17 @@ public postcondition_fault(msg String) => post_fault.cause msg
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
     for v := T.one, double v
 ----^
-(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:291:7:
+(catch_postcondition.test#1 i16).post double: --CURDIR--/catch_postcondition.fz:291:7:
   say (test i32)
 ------^^^^^^^^^^
+(catch_postcondition.test#1 i16).double#1: --CURDIR--/catch_postcondition.fz:37:7:
+      post
+------^^^^
+        equals result-x x
+--------^^^^^^^^^^^^^^^^^
+(catch_postcondition.test#1 i16).loop: --CURDIR--/catch_postcondition.fz:43:21:
+    for v := T.one, double v
+--------------------^^^^^^^^
 catch_postcondition.test#1 i16: --CURDIR--/catch_postcondition.fz:43:5:
     for v := T.one, double v
 ----^
@@ -77,7 +91,7 @@ fuzion.type.runtime.type.fault.type.instate#4 (option String): <source position 
 ----------------^^^^^^^
       F.instate T v code_try (_ -> code_catch m.get.get)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:275:10:
+fuzion.runtime.postcondition_fault#1: --CURDIR--/catch_postcondition.fz:275:10:
     r := fuzion.runtime.fault.try ()->
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            option tries[c].call
@@ -88,6 +102,14 @@ fuzion.type.runtime.type.fault.type.instate#4 (option String): <source position 
 -----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            nil
 -----------^^^
+(catch_postcondition.test#1 i32).post double: --CURDIR--/catch_postcondition.fz:38:9:
+        equals result-x x
+--------^^^^^^^^^^^^^^^^^
+(catch_postcondition.test#1 i32).double#1: --CURDIR--/catch_postcondition.fz:37:7:
+      post
+------^^^^
+        equals result-x x
+--------^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).loop: --CURDIR--/catch_postcondition.fz:43:21:
     for v := T.one, double v
 --------------------^^^^^^^^

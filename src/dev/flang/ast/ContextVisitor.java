@@ -85,31 +85,6 @@ public abstract class ContextVisitor extends FeatureVisitor
   }
 
 
-  @Override public void actionBeforeIfThen(If i)
-  {
-    if (i.cond instanceof AbstractCall sc &&
-        sc.calledFeature() == Types.resolved.f_Type_infix_colon)
-      {
-        _context = _context.addTypeConstraint(sc);
-        check(_context != null);
-      }
-  }
-
-  @Override public void actionBeforeIfElse(If i)
-  {
-    if (i.cond instanceof AbstractCall sc &&
-        sc.calledFeature() == Types.resolved.f_Type_infix_colon)
-      {
-        _context = _context.exterior();
-        check(_context != null);
-      }
-    // NYI: UNDER DEVELOPMENT: We might add support for `if !(T : x) then else ...treat T as x...`
-  }
-
-  @Override public void actionAfterIf(If i)
-  {
-  }
-
 }
 
 /* end of file */

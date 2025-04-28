@@ -31,4 +31,4 @@ x i32 a
 x a
 
 x i32 a b
-x _ a b   // could work, but does not
+x _ a b   # could work, but does not

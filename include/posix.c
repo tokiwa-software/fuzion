@@ -32,7 +32,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>     // setenv, unsetenv
+#include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -61,12 +61,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
-_Thread_local int last_error = 0;
+_Thread_local int64_t last_error = 0;
 
 
 // returns the latest error number of
 // the current thread
-int fzE_last_error(void){
+int64_t fzE_last_error(void){
   return last_error;
 }
 
@@ -78,24 +78,24 @@ inline int set_last_error(int ret_val)
   return ret_val;
 }
 
+// zero memory
+void fzE_mem_zero_secure(void *dest, size_t sz)
+{
+#ifdef __STDC_LIB_EXT1__
+  memset_s(dest, sz, 0, sz);
+#else
+  volatile unsigned char *p = dest;
+  while (sz--) {
+      *p++ = 0;
+  }
+#endif
+}
+
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
   return mkdir(pathname, S_IRWXU);
 }
-
-
-// set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value, int overwrite){
-  return setenv(name, value, overwrite);
-}
-
-
-// unset environment variable, return zero on success
-int fzE_unsetenv(const char *name){
-  return unsetenv(name);
-}
-
 
 void * fzE_opendir(const char *pathname, int64_t * result) {
   errno = 0;
@@ -200,12 +200,18 @@ int fzE_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  // NYI use lock to make this _atomic_.
+
+  // make sure no fork is done while we open socket
+  fzE_lock();
+
   int sockfd = set_last_error(socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol)));
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
   }
+
+  fzE_unlock();
+
   return sockfd;
 }
 
@@ -213,7 +219,7 @@ int fzE_socket(int family, int type, int protocol){
 int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * host, char * port, struct addrinfo ** result){
   struct addrinfo hints;
 
-  fzE_memset(&hints, 0, sizeof hints);
+  fzE_mem_zero_secure(&hints, sizeof hints);
 
   hints.ai_family = fzE_get_family(family);
   hints.ai_socktype = fzE_get_socket_type(socktype);
@@ -307,7 +313,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -329,7 +335,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_memset(&peeraddr, 0, sizeof(peeraddr));
+  fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -502,7 +508,7 @@ void fzE_init()
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  fzE_memset(&fzE_global_mutex, 0, sizeof(fzE_global_mutex));
+  fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
@@ -589,7 +595,8 @@ void fzE_unlock()
 // NYI make this thread safe
 // NYI option to pass stdin,stdout,stderr
 // zero on success, -1 error
-int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result, char * args_str, char * env_str) {
+int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result)
+{
 
   // Describes the how and why
   // of making file descriptors, handlers, sockets
@@ -601,6 +608,9 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
   // how it is done in jdk:
   // https://github.com/openjdk/jdk/blob/c2d9fa26ce903be7c86a47db5ff289cdb9de3a62/src/java.base/unix/native/libjava/ProcessImpl_md.c#L53
+
+  // make sure no files are opened while we start child process
+  fzE_lock();
 
   errno = 0;
 
@@ -685,13 +695,16 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
       result[3] = (int64_t) stdErr[0];
     }
   }
+
+  fzE_unlock();
+
   return ret;
 }
 
 
 // wait for process to finish
 // returns exit code or -1 on wait-failure.
-int32_t fzE_process_wait(int64_t p){
+int64_t fzE_process_wait(int64_t p){
   int status;
   return set_last_error(waitpid(p, &status, WUNTRACED | WCONTINUED)) == -1
     ? -1
@@ -726,13 +739,16 @@ int fzE_pipe_close(int64_t desc){
 void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 {
   assert( mode >= 0 && mode <= 2 );
-  // NYI use lock to make fopen and fcntl _atomic_.
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
   // at the same time as another thread performs a fork(2) plus execve(2) is vulnerable
   // to a race condition that may unintentionally leak the file descriptor to the
   // program executed in the child process.  See the discussion of the O_CLOEXEC flag in open(2)
   // for details and a remedy to the problem."
   errno = 0;
+
+  // make sure no fork is done while we open file
+  fzE_lock();
+
   FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
   if (fp!=NULL)
   {
@@ -742,6 +758,9 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   {
     open_results[0] = (int64_t)errno;
   }
+
+  fzE_unlock();
+
   return fp;
 }
 
@@ -845,4 +864,71 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
     : result == 0
     ? -1  // EOF
     : -2; // ERROR
+}
+
+
+/**
+ * result is a 32-bit array
+ *
+ * result[0] = year
+ * result[1] = month
+ * result[2] = day_in_month
+ * result[3] = hour
+ * result[4] = min
+ * result[5] = sec
+ * result[6] = nanosec;
+ */
+void fzE_date_time(void * result)
+{
+  struct timespec ts;
+  struct tm ptm;
+
+  clock_gettime(CLOCK_REALTIME, &ts);
+  gmtime_r(&ts.tv_sec, &ptm);
+
+  ((int32_t *)result)[0] = ptm.tm_year + 1900;
+  ((int32_t *)result)[1] = ptm.tm_mon + 1;
+  ((int32_t *)result)[2] = ptm.tm_mday;
+  ((int32_t *)result)[3] = ptm.tm_hour;
+  ((int32_t *)result)[4] = ptm.tm_min;
+  ((int32_t *)result)[5] = ptm.tm_sec;
+  ((int32_t *)result)[6] = ts.tv_nsec;
+}
+
+
+int32_t fzE_file_write(void * file, void * buf, int32_t size)
+{
+  size_t result = fwrite(buf, 1, size, (FILE*)file);
+  return ferror((FILE*)file)!=0
+    ? -1
+    : result;
+}
+
+int32_t fzE_file_move(const char *oldpath, const char *newpath)
+{
+  return rename(oldpath, newpath);
+}
+
+int32_t fzE_file_close(void * file)
+{
+  return fclose((FILE*)file);
+}
+
+int32_t fzE_file_seek(void * file, int64_t offset)
+{
+  return fseek((FILE*)file, offset, SEEK_SET);
+}
+
+int64_t fzE_file_position(void * file)
+{
+  return ftell((FILE*)file);
+}
+
+void * fzE_file_stdin(void) { return stdin; }
+void * fzE_file_stdout(void) { return stdout; }
+void * fzE_file_stderr(void) { return stderr; }
+
+int32_t fzE_file_flush(void * file)
+{
+  return fflush(file) == 0 ? 0 : -1;
 }

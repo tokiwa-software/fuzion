@@ -1,0 +1,158 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code run_tests script
+#
+# -----------------------------------------------------------------------
+
+# stores the results of a process
+#
+process_result(out String, err String, exit_code u32) is
+
+########### Extensions ###############
+
+# helper to get out, err, exit_code from started process
+#
+record_process(p os.process,
+      # the command, for error messages
+      cmd String) process_result =>
+  lm : mutate is
+  lm ! ()->
+    match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+      e error => panic "failed reading stdout from $cmd, error is: $e"
+      out String =>
+        match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          e error => panic "failed reading stderr from $cmd, error is: $e"
+          err String =>
+            match p.wait
+              e error => panic "failed waiting for $cmd, error is: $e"
+              ec u32 => process_result out err ec
+
+# execute this Sequence of process+args
+# return what we read from stdout as the result
+#
+Sequence.prefix ! =>
+  seq := map x->x.as_string
+  match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
+    e error => panic "failed executing {Sequence.this}, error is $e"
+    p os.process => record_process p Sequence.this.as_string
+
+
+# feed this string to a new process
+# return what we read from stdout as the result
+#
+String.infix | (seq Sequence String) =>
+
+  lm : mutate is
+  lm ! ()->
+    match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
+      e error => panic "failed executing $seq, error is $e"
+      p os.process =>
+        _ := p.with_in unit lm ()->
+          _ := (io.buffered lm).writer.env.write String.this.utf8
+          _ := (io.buffered lm).writer.env.flush
+          _ := p.close_in
+        record_process p seq.as_string
+
+
+# execute this string by splitting at all whitespaces
+# return what we read from stdout as the result
+#
+String.prefix !! =>
+  !split
+
+# NYI: UNDER DEVELOPMENT: move to base library?
+io.buffered.writer.write_string(str String) =>
+  write str.utf8
+
+
+########### run_tests ###############
+
+
+main =>
+
+  if (envir.args.count != 3)
+    say "wrong argument count {envir.args.count}"
+  else
+    build_dir := envir.args[1]
+    target := envir.args[2]
+    # NYI: port to fuzion
+    tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
+      .out
+      .split
+
+    _ := io.file.delete "$build_dir/run_tests.results"
+    _ := io.file.delete "$build_dir/run_tests.failures"
+
+    say "{tests.count} tests."
+
+    start_time_total := time.nano.read
+
+    lm : mutate is
+    lm2 : mutate is
+    lm ! ()->
+      lm2 ! ()->
+        _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.write ()->
+          _ := io.file.use unit lm2 "$build_dir/run_tests.failures" io.file.mode.write ()->
+
+            append_line(T type: mutate, str String) =>
+              check !((io.buffered T).writer.env.write_string "$str\n").error.is_error
+
+            for test in tests do
+              if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target"
+                yak "_"
+                append_line lm "$test: skipped"
+              else
+
+                start_time := time.nano.read
+                res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
+                end_time := time.nano.read
+
+                if res.exit_code = 0 then
+                  yak "."
+                  append_line lm "$test in {end_time-start_time}: ok"
+                else
+                  yak "#"
+                  append_line lm "$test in {end_time-start_time}: failed"
+                  append_line lm2 res.out
+                  append_line lm2 res.err
+
+    end_time_total := time.nano.read
+
+    lm ! ()->
+      _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.read ()->
+
+        (ok, skipped, failed) := (String.from_bytes (io.buffered lm).read_fully)
+          .split
+          .reduce (0,0,0) (r, t)->
+            if t.ends_with "ok"
+              (r.0+1, r.1, r.2)
+            else if t.ends_with "skipped"
+              (r.0, r.1+1, r.2)
+            else if t.ends_with "failed"
+              (r.0, r.1, r.2+1)
+            else
+              r
+
+        say " $ok/{tests.count} tests passed, $skipped skipped, $failed failed in {end_time_total-start_time_total}."
+
+        if failed > 0
+          exit 1
+
+_ := main

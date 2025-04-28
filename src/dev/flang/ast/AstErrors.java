@@ -41,6 +41,7 @@ import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.Terminal;
 
 
 /**
@@ -198,13 +199,47 @@ public class AstErrors extends ANY
 
   /**
    * Produce a String from a list of candidates of the form "one of the features
-   * x at x.fz:23, or y at y.fz:42
+   * • x at x.fz:23
+   * • y at y.fz:42
+   *
+   * @param addArgCallHint whether to add a hint indicating how many arguments this feature accepts
    */
-  static String sc(List<FeatureAndOuter> candidates)
+  static String sc(List<FeatureAndOuter> candidates, boolean addArgCallHint)
   {
-    return candidates.stream().map(c -> sbnf(c._feature.featureName()) + " at " + c._feature.pos().show() + "\n")
+    return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
+                                        + " at " + c._feature.pos().show() + (Terminal.ENABLED ? "" : "\n")
+                                        + (addArgCallHint ? callableArgCountMsg(c._feature) + "\n\n" : ""))
       .collect(List.collector())
-      .toString(candidates.size() > 1 ? "one of the features " : "the feature ", ", or\n", "");
+      .toString(candidates.size() > 1 ? "one of the features\n" : "the feature ", "", "");
+  }
+
+  private static String argCountStr(AbstractFeature f)
+  {
+    int typeCount  = f.typeArguments().size();
+    int valueCount = f.valueArguments().size();
+    String typeArgStr = StringHelpers.singularOrPlural(typeCount, "type argument");
+    String valArgStr  = StringHelpers.singularOrPlural(valueCount, "value argument");
+
+    return
+      typeCount == 0
+        ? valueCount == 0
+            ? "(no arguments)"
+            : "(" + valArgStr + ")"
+        : valueCount == 0
+            ? "(" + typeArgStr + ")"
+            : " (" + typeArgStr + ", " + valArgStr + ")";
+  }
+
+  private static String callableArgCountMsg(AbstractFeature f)
+  {
+    return "To call " + sbn(f.featureName().baseName())
+      + (f.arguments().isEmpty()
+          ? " you must not provide arguments."
+          : " you must provide "
+            + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
+            + (f.typeArguments().size() > 0
+                ? " The type arguments may be omitted or `_` may be used in place of a type argument."
+                : ""));
   }
 
 
@@ -731,7 +766,7 @@ public class AstErrors extends ANY
     error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + " " +
+          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ".\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -1215,7 +1250,7 @@ public class AstErrors extends ANY
 
     if (!candidates.isEmpty())
       {
-        solution = "To solve this, you might change the actual number of arguments to match " + sc(candidates);
+        solution = "To solve this, you might change the actual number of arguments to match " + sc(candidates, true);
       }
 
     return solution;
@@ -1233,7 +1268,7 @@ public class AstErrors extends ANY
 
     if (!candidates.isEmpty())
       {
-        solution = "To solve this, you might change the visibility of " + sc(candidates);
+        solution = "To solve this, you might change the visibility of " + sc(candidates, false);
       }
 
     return solution;
@@ -1316,6 +1351,7 @@ public class AstErrors extends ANY
     var solution = "";
 
     if (call._targetOf_forErrorSolutions != null
+     && call._targetOf_forErrorSolutions.name() != null
      && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
      && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
       {
@@ -2233,10 +2269,19 @@ public class AstErrors extends ANY
       "To solve this, rename one of the called features.");
   }
 
-  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition e)
+  public static void qualifierExpectedForDotThis(HasSourcePosition expr_or_type)
   {
-    error(pos, "Qualifier expected for "+code(".this")+" expression.",
-          "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+    if (PRECONDITIONS) require
+      (expr_or_type instanceof Expr || expr_or_type instanceof AbstractType);
+
+    var lhs =
+      expr_or_type instanceof Expr         e ? "expression " + s(e) :
+      expr_or_type instanceof AbstractType t ? "type "       + s(t)
+                                             : code(expr_or_type.toString());
+
+    error(expr_or_type.pos(),
+          "Qualifier expected for " + code(".this") + " expression.",
+          "Found " + lhs + " where a simple qualifier " +  code("a.b.c") + " was expected");
   }
 
   public static void unusedResult(Expr e)
@@ -2333,7 +2378,7 @@ public class AstErrors extends ANY
           To solve this, do either of the following
             - use the field
           """ +
-          ((f instanceof Feature && ((Feature)f)._scoped) ? "" : "  - set it to " + skw("public") + "\n") +
+          ((f instanceof Feature && ((Feature)f)._declaredInScope != null) ? "" : "  - set it to " + skw("public") + "\n") +
           "  - explicitly ignore the result by using " + sbn("_") + " instead of " + sbnf(f));
         Errors.unusedFieldErrCount++;
       }
@@ -2374,6 +2419,13 @@ public class AstErrors extends ANY
     error(pos,
           "Implementation restriction: "+ string + " " + s(at) + " is not (yet) allowed in native features.",
           "To solve, this specify a legal type.");
+  }
+
+  public static void mustNotDeclareFieldInModulesUniverse(AbstractFeature f)
+  {
+    error(f.pos(),
+          "In modules, declaring fields without a parent feature is forbidden.",
+          "To solve this, remove the field or move its declaration into a parent feature.");
   }
 
 }

@@ -79,14 +79,8 @@ install_default =>
     # helper feature for start and `infix |`
     #
     public redef start(n String, args Sequence String, env_vars container.Map String String) outcome os.process
-    pre else
-      # NYI: UNDER DEVELOPMENT: allow utf-8?
-      # NYI: UNDER DEVELOPMENT: what about quotes(") ?
-      debug: n.as_codepoints                          ∀ .is_ascii
-      debug: args             ∀ (x -> x.as_codepoints ∀ .is_ascii)
-      debug: env_vars.keys    ∀ (x -> x.as_codepoints ∀ .is_ascii)
-      debug: env_vars.values  ∀ (x -> x.as_codepoints ∀ .is_ascii)
     =>
+      # NYI: UNDER DEVELOPMENT: what about quotes(") ?
 
       sys => fuzion.sys
       NULL := [u8 0].internal_array.data
@@ -105,17 +99,9 @@ install_default =>
       # posix_spawn needs last arg to be NULL
       env_data := array Array env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
 
-      # args as string for windows to avoid malloc in backend
-      args_str := sys.c_string (String.type.join (([n]++args).map (x -> "\"" + x + "\"")) " ")
-
-      # environment variables for windows to avoid malloc in backend
-      # NULL terminates each environment variable
-      # NULL is also used to terminate the environment variables data structure.
-      env_str := sys.c_string ((String.type.join env_var_strings (codepoint 0)) + (codepoint 0))
-
       res_data := sys.internal_array_init i64 4
 
-      if (fzE_process_create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.data args_str env_str) = -1
+      if (fzE_process_create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.data) = -1
         error "*** error creating process $n, got error number: $fzE_last_error ***"
       else
         os.process res_data[0] res_data[1] res_data[2] res_data[3]
@@ -130,9 +116,3 @@ public processes =>
   install_default
   processes.env
 
-
-# Process_Handler
-#
-public Process_Handler ref is
-
-  public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process => abstract

@@ -22,6 +22,7 @@
 # -----------------------------------------------------------------------
 
 reg_issue3772 =>
-  num.sign.is_plus => true
-  x num.sign := num.minus
-  say x.is_plus
+  # _override_ module visible feature
+  a.b => true
+  say a
+  say a.b

@@ -32,7 +32,7 @@ set -eu
 
 BUILD_DIR=$1
 TARGET=$2
-TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs -0 -n1 dirname | sort)
+TESTS=$(find "$BUILD_DIR"/tests -name Makefile -print0 | xargs --null --max-args=1 dirname | sort)
 VERBOSE="${VERBOSE:-""}"
 
 rm -rf "$BUILD_DIR"/run_tests.results
@@ -59,12 +59,15 @@ for test in $TESTS; do
   if test -n "$VERBOSE"; then
     printf '\nrun %s: ' "$test"
   fi
-  if test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
+  if [ "${OS-default}" = "Windows_NT" ] && test -e "$test"/skip_win; then
+    printf "_"
+    echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
+  elif test -e "$test"/skip -o -e "$test"/skip_"$TARGET"; then
     printf "_"
     echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
   else
     START_TIME="$(nanosec)"
-    if timeout --kill-after=600s 600s make "$TARGET" -e -C "$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
+    if timeout --kill-after=600s 600s make "$TARGET" --environment-overrides --directory="$test" >"$test"/out.txt 2>"$test"/stderr.txt; then
        TEST_RESULT=true
     else
        TEST_RESULT=false
@@ -96,7 +99,7 @@ if [ "$FAILED" -ge 1 ]; then
   cat "$BUILD_DIR"/run_tests.failures
 
   echo "To rerun all failed tests, use this command:"
-  grep failed$ "$BUILD_DIR"/run_tests.results | cut -d' ' -f1 | sed 's/^/make -C /' | sed -z 's/\n/ \&\& /g'
+  grep failed$ "$BUILD_DIR"/run_tests.results | cut -d' ' -f1 | sed -e "s/^/make $TARGET -C /" | sed -z 's/\n/ \&\& /g'
 
   exit 1;
 fi

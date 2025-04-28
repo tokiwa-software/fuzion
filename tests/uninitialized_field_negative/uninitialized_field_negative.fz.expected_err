@@ -1,0 +1,16 @@
+
+--CURDIR--/uninitialized_field_negative.fz:30:10: error 1: reading uninitialized field 'uninitialized_field_negative.case1.m' from instance of 'uninitialized_field_negative.case1'
+    n => m   #  1. should flag an error: reading uninitialized field
+---------^
+Callchain that lead to this point:
+
+call 'uninitialized_field_negative.case1.n' at --CURDIR--/uninitialized_field_negative.fz:31:10:
+    a := n
+---------^
+call 'uninitialized_field_negative.case1' at --CURDIR--/uninitialized_field_negative.fz:36:3:
+  case1
+--^^^^^
+call 'uninitialized_field_negative'
+program entry point
+
+one error.
