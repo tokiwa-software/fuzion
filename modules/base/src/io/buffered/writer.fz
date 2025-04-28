@@ -57,11 +57,6 @@ is
   #
   private:public write_result(public bytes_written i32, public error outcome unit) is
 
-    # was writing successful?
-    #
-    public ok => error.ok
-
-
 
     # was writing successful?
     #
