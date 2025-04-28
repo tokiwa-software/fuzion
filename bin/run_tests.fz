@@ -201,9 +201,9 @@ main =>
 
   results_content := read_file_fully results
     .val
+    .lines
 
   (ok, skipped, failed) := results_content
-    .lines
     .reduce (0,0,0) (r, t)->
       if t.ends_with "ok"
         (r.0+1, r.1, r.2)
@@ -221,7 +221,6 @@ main =>
     say "Failed tests:"
 
     results_content
-      .lines
       .for_each t->
         if t.ends_with "failed"
           say t
@@ -230,7 +229,17 @@ main =>
     say (read_file_fully failures)
     say "============= run_tests.failures END ============="
 
-    # NYI: UNDER DEVELOPMENT: add rerun command like in bash scripts
+    say "To re-run all failed tests, use this command:"
+    say <| results_content
+      .map x->x.split[0]
+      .map x->"make $target -C $x"
+      .as_string " && "
+
+    say "To re-recordord all failed tests, use this command:"
+    say <| results_content
+      .map x->x.split[0]
+      .map x->"make record_$target -C $x"
+      .as_string " && "
 
     exit 1
 
