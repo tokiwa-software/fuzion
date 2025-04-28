@@ -1513,7 +1513,7 @@ callTail    : indexCall  callTail
             var q = result.asQualifier();
             if (q == null)
               {
-                AstErrors.qualifierExpectedForDotThis(target.pos(), result);
+                AstErrors.qualifierExpectedForDotThis(target);
               }
             else
               {
@@ -3781,7 +3781,7 @@ typeTail    : dot simpletype
             var qn = lhs.asQualifier();
             if (qn == null)
               {
-                AstErrors.qualifierExpectedForDotThis(sourceRange(lhs.pos()), lhs);
+                AstErrors.qualifierExpectedForDotThis(lhs);
                 result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING, new List<>(), null);
               }
             else

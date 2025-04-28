@@ -28,3 +28,17 @@ reg_issue5156 =>
 
   a => Any.type.this  # causes error, `A.type` is invalid before `.this`
   b =>                # before fix #5156, error was wrongly displayed here
+
+
+  # another case added for parsing `typeTail`:
+  x(a option (x).this) is
+
+  _ := x nil
+  _ := x (x nil)
+
+
+  # another case added for parsing `typeTail`:
+  y(a (option y).this) is
+
+  _ := y nil
+  _ := y (y nil)
