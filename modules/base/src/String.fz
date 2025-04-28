@@ -597,13 +597,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # remove leading white space from this string
   #
-  trim_start =>
+  public trim_start =>
     String.from_bytes (utf8.drop_while c->c.is_ascii_white_space)
 
 
   # remove trailing white space from this string
   #
-  trim_end =>
+  public trim_end =>
     String.from_bytes (utf8.as_list.reverse.drop_while c->c.is_ascii_white_space).reverse
 
 
