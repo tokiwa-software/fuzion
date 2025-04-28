@@ -213,7 +213,8 @@ public class ResolvedNormalType extends ResolvedType
        || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
        Types.resolved == null
          || f.compareTo(Types.resolved.f_void) != 0
-         || refOrVal == RefOrVal.LikeUnderlyingFeature);
+         || refOrVal == RefOrVal.LikeUnderlyingFeature,
+         !(o instanceof ResolvedNormalType rnt && rnt.feature() == f));
 
     this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();

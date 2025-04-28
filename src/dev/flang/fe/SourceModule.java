@@ -761,8 +761,9 @@ part of the (((inner features))) declarations of the corresponding
    */
   private void addDeclared(AbstractFeature outer, AbstractFeature inner)
   {
-    if (PRECONDITIONS)
-      require(outer.isConstructor(), inner.isCotype());
+    if (PRECONDITIONS) require
+      (outer.isConstructor(), inner.isCotype(),
+       outer != inner);
 
     var fn = inner.featureName();
     var doi = declaredOrInheritedFeatures(outer);
@@ -874,6 +875,9 @@ part of the (((inner features))) declarations of the corresponding
   // NYI: merge addToDeclaredOrInheritedFeatures and addDeclaredOrInherited
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
+    if (PRECONDITIONS) require
+      (outer != f);
+
     var fn = f.featureName();
     var isInherited = outer != f.outer();
     var c = f.contract();
@@ -995,7 +999,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(State.LOADING));
+      (outer.state().atLeast(State.LOADING),
+       outer != f);
 
     var fn = f.featureName();
     var df = declaredFeatures(outer);

@@ -263,7 +263,26 @@ public abstract class Module extends ANY implements FeatureLookup
                       (cf != outer);
 
                     var res = this instanceof SourceModule sm ? sm._res : null;
-                    if (!f.isFixed())
+                    if (cf.compareTo(outer.outer()) == 0 && outer == f)
+                      {
+                        /**
+                         * inheriting from outer,
+                         * prevent adding self to declared or inherited.
+                         *
+                         * example where this is relevant:
+                         * ```
+                         * a(T type) is
+                         *   b : a b is
+                         * ```
+                         *
+                         * but also in `Any.as_string` which implicitly inherits from Any:
+                         * ```
+                         * Any is
+                         *   as_string : Any is
+                         * ```
+                         */
+                      }
+                    else if (!f.isFixed())
                       {
                         var newfn = cf.handDown(res, f, fn, p, outer);
                         addDeclaredOrInherited(set, outer, newfn, f);
@@ -297,7 +316,8 @@ public abstract class Module extends ANY implements FeatureLookup
   protected void addDeclaredOrInherited(SortedMap<FeatureName, List<AbstractFeature>> set, AbstractFeature outer, FeatureName fn, AbstractFeature f)
   {
     if (PRECONDITIONS)
-      require(Errors.any() || !f.isFixed() || outer == f.outer());
+      require(Errors.any() || !f.isFixed() || outer == f.outer(),
+              f != outer);
 
     var it = get(set, fn).listIterator();
     while (f != null && it.hasNext())
@@ -479,6 +499,8 @@ public abstract class Module extends ANY implements FeatureLookup
         // then we search in this module
         for (var e : declaredFeatures(outer).entrySet())
           {
+            if (CHECKS) check
+              (outer != e.getValue());
             addDeclaredOrInherited(s, outer, e.getKey(), e.getValue());
           }
 
@@ -498,7 +520,7 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer)
   {
-    return this.declaredOrInheritedFeatures(outer, _dependsOn);
+    return declaredOrInheritedFeatures(outer, _dependsOn);
   }
 
 
