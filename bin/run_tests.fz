@@ -36,7 +36,10 @@ envir_var_kv := [
   "JAVA_HOME",
   "POSTCONDITIONS",
   "PRECONDITIONS",
-  "dev_flang_tools_serializeFUIR"
+  "dev_flang_tools_serializeFUIR",
+  "CPATH",
+  "LIBRARY_PATH",
+  "FUZION_CLANG_INSTALLED_DIR"
 ].map k->
   (envir.vars.get k).bind v->
     (k,v)
