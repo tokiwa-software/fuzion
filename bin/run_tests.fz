@@ -163,7 +163,7 @@ main =>
   tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
     .out
     .lines
-    .filter x->!x.is_blank
+    .filter (x -> !x.is_blank)
     .as_array
 
   results := "$build_dir/run_tests.results"
