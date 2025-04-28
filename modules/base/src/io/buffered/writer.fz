@@ -63,6 +63,11 @@ is
 
 
 
+    # was writing successful?
+    #
+    public ok => error.ok
+
+
   # buffered writing of the given array
   #
   public write (data Sequence u8) write_result =>

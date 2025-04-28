@@ -50,7 +50,8 @@ is
 
   # add new element k to this set.
   #
-  # NYI: Resolve duality of `add0` (that results in `ps_set`) and `add` (that
+  # NYI: UNDER DEVELOPMENT:
+  #      Resolve duality of `add0` (that results in `ps_set`) and `add` (that
   #      results in `Set`). Maybe `Set.add` should result in `Set.this.type`,
   #      so we do not need `add0`?
   #
@@ -63,9 +64,9 @@ is
 
   # add new element k to this set.
   #
-  # NYI: this should be integrated in the mutate effect!
+  # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
   #
-  public redef add (k K) Set K =>
+  public fixed redef add (k K) ps_set K =>
     add0 k
 
 
