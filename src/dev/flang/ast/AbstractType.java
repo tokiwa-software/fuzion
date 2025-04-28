@@ -215,16 +215,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * This is used only during early phases of the front end before types where
-   * checked if they are or contains generics.
-   */
-  boolean checkedForGeneric()
-  {
-    return true;
-  }
-
-
-  /**
    * is this a formal generic argument that is open, i.e., the last argument in
    * a formal generic arguments list and followed by ... as A in
    * {@code Function<R,A...>}.
@@ -238,9 +228,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isOpenGeneric()
   {
-    if (PRECONDITIONS) require
-      (checkedForGeneric());
-
     return isGenericArgument() && genericArgument().isOpen();
   }
 
@@ -742,9 +729,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean dependsOnGenericsNoOuter()
   {
-    if (PRECONDITIONS) require
-      (checkedForGeneric());
-
     boolean result = false;
     if (isGenericArgument())
       {
@@ -773,10 +757,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean dependsOnGenerics()
   {
-
-    if (PRECONDITIONS) require
-      (checkedForGeneric());
-
     YesNo result = _dependsOnGenerics;
     if (result == YesNo.dontKnow)
       {
@@ -823,9 +803,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType applyTypePars(AbstractType target)
   {
     if (PRECONDITIONS) require
-      (checkedForGeneric(),
-       target != null,
-       target.checkedForGeneric(),
+      (target != null,
        Errors.any() || !isOpenGeneric(),
        Errors.any() || target.isGenericArgument() || target.feature().generics().sizeMatches(target.generics()));
 
@@ -894,8 +872,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType applyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
-      (checkedForGeneric(),
-       Errors.any() ||
+      (Errors.any() ||
        f.generics().sizeMatches(actualGenerics),
        Errors.any() || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
@@ -1478,9 +1455,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public int compareTo(AbstractType other)
   {
     if (PRECONDITIONS) require
-      (checkedForGeneric(),
-       other != null,
-       other.checkedForGeneric(),
+      (other != null,
        (this  instanceof ResolvedType),
        (other instanceof ResolvedType));
 
@@ -1505,9 +1480,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public int compareToIgnoreOuter(AbstractType other)
   {
     if (PRECONDITIONS) require
-      (checkedForGeneric(),
-       other != null,
-       other.checkedForGeneric(),
+      (other != null,
        (this  instanceof ResolvedType),
        (other instanceof ResolvedType));
 
@@ -2088,9 +2061,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public String asString(boolean humanReadable, AbstractFeature context)
   {
-    if (PRECONDITIONS) require
-      (checkedForGeneric());
-
     String result;
 
     if (isGenericArgument())
