@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue5156.fz:29:8: error 1: Qualifier expected for '.this' expression.
+  a => Any.type.this  # causes error, `A.type` is invalid before `.this`
+-------^^^^^^^^
+Found expression --CURDIR--/reg_issue5156.fz:29:8:
+  a => Any.type.this  # causes error, `A.type` is invalid before `.this`
+-------^^^^^^^^ where a simple qualifier 'a.b.c' was expected
+
+one error.
