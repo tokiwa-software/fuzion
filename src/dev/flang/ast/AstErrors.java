@@ -2269,7 +2269,7 @@ public class AstErrors extends ANY
       "To solve this, rename one of the called features.");
   }
 
-  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition expr_or_type)
+  public static void qualifierExpectedForDotThis(HasSourcePosition expr_or_type)
   {
     if (PRECONDITIONS) require
       (expr_or_type instanceof Expr || expr_or_type instanceof AbstractType);
@@ -2279,7 +2279,8 @@ public class AstErrors extends ANY
       expr_or_type instanceof AbstractType t ? "type "       + s(t)
                                              : code(expr_or_type.toString());
 
-    error(pos, "Qualifier expected for "+code(".this")+" expression.",
+    error(expr_or_type.pos(),
+          "Qualifier expected for " + code(".this") + " expression.",
           "Found " + lhs + " where a simple qualifier " +  code("a.b.c") + " was expected");
   }
 
