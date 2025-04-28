@@ -36,7 +36,7 @@ is
   # install default pre_fault handler
   type.install_default =>
     (fuzion.runtime.pre_fault msg->
-      fuzion.runtime.fault.cause ("precondition", msg)).default
+      fuzion.runtime.contract_fault.cause ("precondition", msg)).default
 
 
   # create an instance of `pre_fault` with the given error handler.

@@ -36,7 +36,7 @@ is
   # install default check_fault handler
   type.install_default =>
     (fuzion.runtime.check_fault msg->
-      fuzion.runtime.fault.cause ("check", msg)).default
+      fuzion.runtime.contract_fault.cause ("check", msg)).default
 
 
   # create an instance of `check_fault` with the given error handler.
