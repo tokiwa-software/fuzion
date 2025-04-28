@@ -45,6 +45,18 @@ public class Select extends Call {
   private Call _currentlyResolving;
 
 
+  /**
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param target the target of the call, null if none.
+   *
+   * @param name the name of the called feature,
+   *             null on partial application, e.g.:
+   *               say ([(3,4),(5,6)].map (.1) .sum)
+   *
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. NO_SELECT for none.
+   */
   public Select(SourcePosition pos, Expr target, String name, int select)
   {
     super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null);
