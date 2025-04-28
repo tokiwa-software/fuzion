@@ -7,26 +7,32 @@ fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
+      fuzion.runtime.fault.cause kind_and_msg).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
 fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/pre_fault.fz:39:7:
-      fuzion.runtime.fault.cause ("precondition", msg)).default
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      fuzion.runtime.contract_fault.cause ("precondition", msg)).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
 fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:58:42:
 public precondition_fault(msg String) => pre_fault.cause msg
 -----------------------------------------^^^^^^^^^^^^^^^^^^^
-(interval i32).pre sliding: {base.fum}/Sequence.fz:1244:7:
+(interval i32).pre sliding: {base.fum}/Sequence.fz:1279:7:
       debug: size > 0
 ------^^^^^^^^^^^^^^^
-(interval i32).precall sliding: {base.fum}/Sequence.fz:1243:5:
+(interval i32).precall sliding: {base.fum}/Sequence.fz:1278:5:
     pre
 ----^^^
       debug: size > 0
 ------^^^^^^^^^^^^^^^
       debug: step > 0
 ------^^^^^^^^^^^^^^^
-(interval i32).sliding#1: {base.fum}/Sequence.fz:1229:5:
+(interval i32).sliding#1: {base.fum}/Sequence.fz:1264:5:
     sliding size 1
 ----^^^^^^^^^^^^^^
 sequence_sliding: --CURDIR--/sequence_sliding.fz:41:10:

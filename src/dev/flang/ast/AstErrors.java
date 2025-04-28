@@ -766,7 +766,7 @@ public class AstErrors extends ANY
     error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + " " +
+          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ".\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 

@@ -94,6 +94,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   static { _NO_FEATURES_.freeze(); }
 
 
+  /**
+   * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
+   * failure due to previous errors.
+   */
+  public static final AbstractType[] HAND_DOWN_FAILED = new AbstractType[0];
+
+
   /*------------------------  static variables  -------------------------*/
 
 
@@ -1285,13 +1292,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param heir a feature that inherits from outer()
    *
    * @return the types from the argument array a has seen this within
-   * heir. Their number might have changed due to open generics.
+   * heir. Their number might have changed due to open generics.  Result may be
+   * HAND_DOWN_FAILED in case of previous errors.
    */
   public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
        state().atLeast(State.RESOLVING_TYPES));
+
+    var result = HAND_DOWN_FAILED;
 
     if (heir != Types.f_ERROR)
       {
@@ -1301,10 +1311,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            a = AbstractFeature.handDownInheritance(res, inh, a, heir);
+            result = AbstractFeature.handDownInheritance(res, inh, a, heir);
           }
       }
-    return a;
+    return result;
   }
 
 

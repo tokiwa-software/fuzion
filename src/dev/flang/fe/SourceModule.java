@@ -1283,10 +1283,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
           @Override public Expr action(Function lambda){
             if (usage.isEmpty() || definition.isEmpty())
               {
-                stacks.get(0).push(lambda._expr);
+                var e = lambda.expr();
+                stacks.get(0).push(e);
                 var old = visitingInnerFeature[0];
                 visitingInnerFeature[0] = true;
-                lambda._expr.visit(this, null);
+                e.visit(this, null);
                 visitingInnerFeature[0] = old;
                 stacks.get(0).pop();
               }
@@ -1609,9 +1610,14 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
-        var ta = o.handDown(_res, argTypes(o), f.outer());
         var ra = argTypes(f);
-        if (ta.length != ra.length)
+        var ta = o.handDown(_res, argTypes(o), f.outer());
+        if (ta == AbstractFeature.HAND_DOWN_FAILED)
+          {
+            if (CHECKS) check
+              (Errors.any());
+          }
+        else if (ta.length != ra.length)
           {
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
           }
