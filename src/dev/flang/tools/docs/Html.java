@@ -806,7 +806,7 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().toString());
+               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().toString(true));
       }
     else
       {

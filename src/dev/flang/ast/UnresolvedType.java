@@ -795,7 +795,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                 if (!f.generics().errorIfSizeDoesNotMatch(generics,
                                                           pos.pos(),
                                                           "type",
-                                                          "Type: " + thiz.toString() + "\n"))
+                                                          "Type: " + thiz.toString(true) + "\n"))
                   {
                     f = Types.f_ERROR;
                   }
