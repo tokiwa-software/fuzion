@@ -66,7 +66,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
   #
-  public fixed redef add (k K) ps_set K =>
+  public fixed redef add (k K) Set K =>
     add0 k
 
 
