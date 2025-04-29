@@ -45,13 +45,15 @@ public sync is
 
   private:public mutex(module mtx Mutex) is
 
+    public synchronized(T type, code ()->T) T =>
+      check mtx_lock mtx
+      res := code.call
+      check mtx_unlock mtx
+      res
+
     public type.new outcome concur.sync.mutex =>
       concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
-
-    public condition outcome concur.sync.condition =>
-      (concur.sync.cnd_init mtx).bind cnd->
-        concur.sync.condition mtx cnd
 
     # NYI destroy
 
@@ -77,5 +79,10 @@ public sync is
     public wait
     pre is_locked.read
     => cnd_wait cnd mtx
+
+    public type.new outcome concur.sync.condition =>
+      concur.sync.mtx_init.bind mtx->
+        (concur.sync.cnd_init mtx).bind cnd->
+          concur.sync.condition mtx cnd
 
     # NYI destroy
