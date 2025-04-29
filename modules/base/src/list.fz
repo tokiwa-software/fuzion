@@ -639,7 +639,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     pre
       A : property.orderable
   =>
-    unique_list2(l list A, existing container.ps_set A) list A =>
+    unique_list2(l list A, existing container.Set A) list A =>
       match l
         nil    => nil
         c Cons => if existing.contains c.head then          unique_list2 c.tail  existing

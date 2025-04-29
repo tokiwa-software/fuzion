@@ -50,7 +50,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
   #
   # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
   #
-  public fixed redef add (k K) =>
+  public fixed redef add (k K) Set K =>
     ss := map.snapshot false
     ss.put k unit
     set_of_hashable ss
