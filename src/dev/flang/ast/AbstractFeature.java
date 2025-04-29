@@ -90,7 +90,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * empty list of AbstractFeature
    */
-  public static List<AbstractFeature> _NO_FEATURES_ = new List<>();
+  public static final List<AbstractFeature> _NO_FEATURES_ = new List<>();
   static { _NO_FEATURES_.freeze(); }
 
 
@@ -456,13 +456,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return qualifiedName(null);
   }
 
+
   /**
    * qualifiedName returns the qualified name of this feature, relative to feature context (if context is not null)
    *
    * @param context the feature to which the name should be relative to, universe if null
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
    */
-  public String qualifiedName(AbstractFeature context)
+  String qualifiedName(AbstractFeature context)
   {
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
     return
@@ -874,6 +875,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return The feature that should be the direct ancestor of this feature's
    * type feature.
+   *
+   * NYI: CLEANUP: move to resolution
    */
   public AbstractFeature cotype(Resolution res)
   {

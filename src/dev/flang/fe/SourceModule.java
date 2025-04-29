@@ -1106,18 +1106,39 @@ A post-condition of a feature that does not redefine an inherited feature must s
       }
     var result = new List<AbstractFeature>();
     forEachDeclaredOrInheritedFeature(outer,
-                                      f ->
+                                      af ->
                                       {
-                                        if (featureVisible(use.pos()._sourceFile, f) &&
-                                            // NYI: UNDER DEVELOPMENT: this means selector .0 .1 can only be used for library features currently
-                                            f instanceof LibraryFeature lf &&
-                                            lf.resultType().isOpenGeneric() &&
-                                            f.arguments().isEmpty())
+                                        if (isOpenTypeParameterCandiate(use, af))
                                           {
-                                            result.add(f);
+                                            result.add(af);
                                           }
                                       });
     return result.size() == 1 ? result.getFirst() : null;
+  }
+
+
+  /**
+   * check if feature af is a feasible open type parameter candiadate
+   */
+  private boolean isOpenTypeParameterCandiate(Expr use, AbstractFeature af)
+  {
+    return featureVisible(use.pos()._sourceFile, af) &&
+        resultTypeIsOpenGeneric(af) &&
+        af.arguments().isEmpty();
+  }
+
+
+  /**
+   * check if result type of {@code af} is known and an open generic
+   */
+  private boolean resultTypeIsOpenGeneric(AbstractFeature af)
+  {
+    return af instanceof LibraryFeature lf &&
+           lf.resultType().isOpenGeneric()
+        ||
+           af instanceof Feature f &&
+           _res.resultTypeIfPresent(f) != null &&
+           _res.resultTypeIfPresent(f).isOpenGeneric();
   }
 
 

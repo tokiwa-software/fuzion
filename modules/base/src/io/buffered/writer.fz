@@ -96,4 +96,4 @@ is
       else
         (n_written, e)
       )
-    write_result wr.values.0 wr.values.1
+    write_result wr.0 wr.1

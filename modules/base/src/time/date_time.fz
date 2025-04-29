@@ -129,9 +129,9 @@ is
       a.args_in_order
        .zip b.args_in_order x,y->(x,y)
        .reduce trit.unknown r,t->
-         if t.values.0 = t.values.1
+         if t.0 = t.1
            trit.unknown
-         else if t.values.0 < t.values.1
+         else if t.0 < t.1
            abort trit.yes
          else
            abort trit.no

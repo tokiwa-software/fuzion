@@ -97,7 +97,7 @@ is
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
   equalize(other uint)
-  post debug: result.values.0.count = result.values.1.count
+  post debug: result.0.count = result.1.count
   =>
     if other.data.count < data.count
       (data, zeros data.count-other.data.count ++ other.data)
