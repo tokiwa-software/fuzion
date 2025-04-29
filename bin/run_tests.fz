@@ -199,6 +199,8 @@ main =>
   results_content := read_file_fully results
     .val
     .lines
+    .filter (x -> !x.is_blank)
+    .as_array
 
   (ok, skipped, failed) := results_content
     .reduce (0,0,0) (r, t)->
