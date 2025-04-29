@@ -21,11 +21,42 @@
 #
 # -----------------------------------------------------------------------
 
+
+########### Extensions ###############
+
 # stores the results of a process
 #
 process_result(out String, err String, exit_code u32) is
 
-########### Extensions ###############
+# specified environment variables as key,value array
+#
+envir_var_kv := [
+  "PATH",
+  "LANG",
+  "JAVA_HOME",
+  "POSTCONDITIONS",
+  "PRECONDITIONS",
+  "dev_flang_tools_serializeFUIR",
+  "CPATH",
+  "LIBRARY_PATH",
+  "FUZION_CLANG_INSTALLED_DIR"
+].map k->
+  (envir.vars.get k).bind v->
+    (k,v)
+ .filter o->o.ok
+ .map o->o.val
+ .as_array
+
+# envir vars as map
+#
+envir_vars :=
+  (container.ordered_map
+    (envir_var_kv
+      .map x->x.0
+      .as_array)
+    (envir_var_kv
+      .map x->x.1
+      .as_array))
 
 # helper to get out, err, exit_code from started process
 #
@@ -45,26 +76,26 @@ record_process(p os.process,
               ec u32 => process_result out err ec
 
 # execute this Sequence of process+args
-# return what we read from stdout as the result
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
     e error => panic "failed executing {Sequence.this}, error is $e"
     p os.process => record_process p Sequence.this.as_string
 
 
 # feed this string to a new process
-# return what we read from stdout as the result
 #
 String.infix | (seq Sequence String) =>
 
   lm : mutate is
   lm ! ()->
-    match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
+    match os.process.start seq.first.val (seq.drop 1) envir_vars
       e error => panic "failed executing $seq, error is $e"
       p os.process =>
         _ := p.with_in unit lm ()->
+          # NYI: ambiguous result type:
+          # _ := write_to lm
           _ := (io.buffered lm).writer.env.write String.this.utf8
           _ := (io.buffered lm).writer.env.flush
           _ := p.close_in
@@ -72,14 +103,26 @@ String.infix | (seq Sequence String) =>
 
 
 # execute this string by splitting at all whitespaces
-# return what we read from stdout as the result
 #
 String.prefix !! =>
   !split
 
-# NYI: UNDER DEVELOPMENT: move to base library?
-io.buffered.writer.write_string(str String) =>
-  write str.utf8
+
+# NYI: UNDER DEVELOPMENT: what about thread safety?
+append_line(dest String, str String) =>
+  lm : mutate is
+  lm ! ()->
+    check (io.file.use unit lm $dest io.file.mode.append ()->
+             check ("$str\n".write_to lm).ok).ok
+
+
+# read file f fully
+#
+read_file_fully(f String) outcome String =>
+  lm : mutate is
+  lm ! ()->
+    io.file.use _ lm f io.file.mode.read ()->
+      String.from_bytes (io.buffered lm).read_fully
 
 
 ########### run_tests ###############
@@ -87,72 +130,114 @@ io.buffered.writer.write_string(str String) =>
 
 main =>
 
-  if (envir.args.count != 3)
-    say "wrong argument count {envir.args.count}"
-  else
-    build_dir := envir.args[1]
-    target := envir.args[2]
-    # NYI: port to fuzion
-    tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
-      .out
-      .split
+  # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
-    _ := io.file.delete "$build_dir/run_tests.results"
-    _ := io.file.delete "$build_dir/run_tests.failures"
+  if (envir.args.count != 3 && envir.args.count != 4)
+    say "wrong argument count"
+    say "usage:"
+    say "run_tests.fz <build_dir> <target> [<n_threads>]"
+    exit 1
 
-    say "{tests.count} tests."
+  build_dir := envir.args[1]
+  target := envir.args[2]
 
-    start_time_total := time.nano.read
 
-    lm : mutate is
-    lm2 : mutate is
-    lm ! ()->
-      lm2 ! ()->
-        _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.write ()->
-          _ := io.file.use unit lm2 "$build_dir/run_tests.failures" io.file.mode.write ()->
+  # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
+  # first, try third arg then try a few executables, if everything fails use default value
+  tc :=
+    (fuzion.runtime.contract_fault.try ()->(envir.args.nth 3).val.trim.parse_i32.val)
+      .catch _->
+        (fuzion.runtime.contract_fault.try ()->(!!"nproc --all").out.trim.parse_i32.val)
+          .catch _->
+            (fuzion.runtime.contract_fault.try ()->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val)
+              .catch _->
+                (fuzion.runtime.contract_fault.try ()->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val)
+                  .catch _->4
+  thread_count := tc > 6 ? 6 : tc
 
-            append_line(T type: mutate, str String) =>
-              check !((io.buffered T).writer.env.write_string "$str\n").error.is_error
 
-            for test in tests do
-              if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target"
-                yak "_"
-                append_line lm "$test: skipped"
-              else
+  # NYI: port to fuzion
+  tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
+    .out
+    .lines
+    .filter (x -> !x.is_blank)
+    .as_array
 
-                start_time := time.nano.read
-                res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
-                end_time := time.nano.read
+  results := "$build_dir/run_tests.results"
+  failures := "$build_dir/run_tests.failures"
 
-                if res.exit_code = 0 then
-                  yak "."
-                  append_line lm "$test in {end_time-start_time}: ok"
-                else
-                  yak "#"
-                  append_line lm "$test in {end_time-start_time}: failed"
-                  append_line lm2 res.out
-                  append_line lm2 res.err
+  _ := io.file.delete results
+  _ := io.file.delete failures
 
-    end_time_total := time.nano.read
+  say "{tests.count} tests, running $thread_count tests in parallel."
 
-    lm ! ()->
-      _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.read ()->
+  start_time_total := time.nano.read
 
-        (ok, skipped, failed) := (String.from_bytes (io.buffered lm).read_fully)
-          .split
-          .reduce (0,0,0) (r, t)->
-            if t.ends_with "ok"
-              (r.0+1, r.1, r.2)
-            else if t.ends_with "skipped"
-              (r.0, r.1+1, r.2)
-            else if t.ends_with "failed"
-              (r.0, r.1, r.2+1)
-            else
-              r
+  _ := concur.thread_pool thread_count ()->
+    for test in tests do
+      check concur.thread_pool.env.submit ()->
+        if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target"
+          yak "_"
+          append_line results "$test: skipped"
+        else
 
-        say " $ok/{tests.count} tests passed, $skipped skipped, $failed failed in {end_time_total-start_time_total}."
+          start_time := time.nano.read
+          res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
+          end_time := time.nano.read
 
-        if failed > 0
-          exit 1
+          if res.exit_code = 0 then
+            yak "."
+            append_line results "$test in {end_time-start_time}: ok"
+          else
+            yak "#"
+            append_line results "$test in {end_time-start_time}: failed"
+            append_line failures res.out
+            append_line failures res.err
+
+  end_time_total := time.nano.read
+
+  results_content := read_file_fully results
+    .val
+    .lines
+
+  (ok, skipped, failed) := results_content
+    .reduce (0,0,0) (r, t)->
+      if t.ends_with "ok"
+        (r.0+1, r.1, r.2)
+      else if t.ends_with "skipped"
+        (r.0, r.1+1, r.2)
+      else if t.ends_with "failed"
+        (r.0, r.1, r.2+1)
+      else
+        r
+
+  say ""
+  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {(end_time_total-start_time_total).as_string.trim}."
+
+  if failed > 0
+    say "Failed tests:"
+
+    results_content
+      .for_each t->
+        if t.ends_with "failed"
+          say t
+
+    say "============= run_tests.failures START ============="
+    say (read_file_fully failures)
+    say "============= run_tests.failures END ============="
+
+    say "To re-run all failed tests, use this command:"
+    say <| results_content
+      .map x->x.split[0]
+      .map x->"make $target -C $x"
+      .as_string " && "
+
+    say "To re-recordord all failed tests, use this command:"
+    say <| results_content
+      .map x->x.split[0]
+      .map x->"make record_$target -C $x"
+      .as_string " && "
+
+    exit 1
 
 _ := main

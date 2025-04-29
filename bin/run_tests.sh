@@ -25,6 +25,8 @@
 #
 # -----------------------------------------------------------------------
 
+# NYI: UNDER DEVELOPMENT: remove, once run_tests.fz is stable
+
 set -eu
 
 # usage: run_tests.sh <build-dir> <target>
