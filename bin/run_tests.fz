@@ -128,6 +128,23 @@ read_file_fully(f String) outcome String =>
 ########### run_tests ###############
 
 
+find_tests(dir String) array String =>
+  m : mutate is
+  tests := m ! ()->
+    io.dir.use _ dir ()->
+      res := (mutate.array String).type.new m 0 ""
+      _ :=
+        for x := io.dir.open.read
+        while x.ok
+          if io.file.exists "$dir/{x.val}/Makefile"
+            res.add "$dir/{x.val}"
+      res.as_array
+
+  tests
+    .val
+    .as_array
+
+
 main =>
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
@@ -155,13 +172,7 @@ main =>
                   .catch _->4
   thread_count := tc > 6 ? 6 : tc
 
-
-  # NYI: port to fuzion
-  tests := (((!!"find $build_dir/tests -name Makefile -print0").out | ["xargs", "--null", "--max-args=1", "dirname"]).out | ["sort"])
-    .out
-    .lines
-    .filter (x -> !x.is_blank)
-    .as_array
+  tests := find_tests "$build_dir/tests"
 
   results := "$build_dir/run_tests.results"
   failures := "$build_dir/run_tests.failures"
