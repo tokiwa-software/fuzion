@@ -190,3 +190,12 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
   #
   public fixed redef type.lteq(a, b process.this) bool =>
     a.id <= b.id
+
+
+
+  # NYI: UNDER DEVELOPMENT:
+  # - check if process is still running
+  # - send signal to process
+  # - get the exit code from a process?
+  # - change nice level
+  # - ...

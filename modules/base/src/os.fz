@@ -23,7 +23,3 @@
 
 
 public os is
-
-  # NYI send_signal(p i64, signal i32) unit => intrinsic
-  # NYI is_alive(p i64) unit => intrinsic
-  # NYI exit_code(p i64) unit => intrinsic
