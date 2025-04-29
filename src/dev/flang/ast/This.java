@@ -93,7 +93,7 @@ public class This extends ExprWithPos
    *
    * @param f the outer feature whose instance we want to access.
    */
-  public This(SourcePosition pos, AbstractFeature cur, AbstractFeature f)
+  private This(SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {
     super(pos);
 
@@ -137,7 +137,7 @@ public class This extends ExprWithPos
    *
    * @param f the outer feature whose instance we want to access.
    *
-   * @return the type resolved expression to access f.this.
+   * @return the expression to access f.this.
    */
   static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
   {
@@ -145,7 +145,14 @@ public class This extends ExprWithPos
       (context != null,
        f != null);
 
-    return new This(pos, context.outerFeature(), f).resolveTypes(res, context);
+    var outer = context.outerFeature();
+
+    var result = new This(pos, outer, f);
+
+    return res.state(outer) != State.RESOLVING_INHERITANCE &&
+           res.state(outer) != State.RESOLVING
+      ? result.resolveTypes(res, context)
+      : result;
   }
 
 
