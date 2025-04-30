@@ -108,12 +108,13 @@ String.prefix !! =>
   !split
 
 
-# NYI: UNDER DEVELOPMENT: what about thread safety?
-append_line(dest String, str String) =>
+append_line(mtx concur.sync.mutex, dest String, str String) =>
+
   lm : mutate is
   lm ! ()->
-    check (io.file.use unit lm $dest io.file.mode.append ()->
-             check ("$str\n".write_to lm).ok).ok
+    mtx.synchronized ()->
+      check (io.file.use unit lm $dest io.file.mode.append ()->
+              check ("$str\n".write_to lm).ok).ok
 
 
 # read file f fully
@@ -123,6 +124,10 @@ read_file_fully(f String) outcome String =>
   lm ! ()->
     io.file.use _ lm f io.file.mode.read ()->
       String.from_bytes (io.buffered lm).read_fully
+
+
+is_windows =>
+  ((envir.vars.get "OS").val "").lower_case.contains "windows"
 
 
 ########### run_tests ###############
@@ -146,6 +151,11 @@ find_tests(dir String) array String =>
 
 
 main =>
+
+  mtx := concur.sync.mutex.new.val
+
+  append_line(dest String, str String) =>
+    append_line mtx dest str
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
@@ -174,6 +184,8 @@ main =>
 
   tests := find_tests "$build_dir/tests"
 
+  check tests.count>500
+
   results := "$build_dir/run_tests.results"
   failures := "$build_dir/run_tests.failures"
 
@@ -193,7 +205,9 @@ main =>
         else
 
           start_time := time.nano.read
-          res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
+          # NYI: UNDER DEVELOPMENT: use fuzion to do the timeout
+          with_to := if is_windows then "" else "timeout --kill-after=600s 600s "
+          res := !!"{with_to}make $target --environment-overrides --directory=$test"
           end_time := time.nano.read
 
           if res.exit_code = 0 then
