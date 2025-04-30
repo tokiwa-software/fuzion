@@ -374,8 +374,8 @@ public class Contract extends ANY
           ? outer.contract()._hasPre    // use `pre` position if `outer` is of the form `f pre cc is ...`
           : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
 
-    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : Universe.instance;
+    var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
+                                     : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
       {
         addContractFeatures(res, ff, context);
@@ -415,8 +415,8 @@ public class Contract extends ANY
         args.add(ca);
       }
 
-    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : Universe.instance;
+    var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
+                                     : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, ff, context);
@@ -453,8 +453,7 @@ public class Contract extends ANY
         ca = ca.resolveTypes(res, preAndCallOuter.context());
         args.add(ca);
       }
-    var t = new This(p, preAndCallOuter, preAndCallOuter.outer())
-      .resolveTypes(res, preAndCallOuter.context());
+    var t = This.thiz(res, p, preAndCallOuter.context(), preAndCallOuter.outer());
     return new Call(p,
                     t,
                     preAndCallOuter.generics().asActuals(),
@@ -528,9 +527,9 @@ public class Contract extends ANY
           ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
           : in.pos();                // `in` does not have `post` clause, only inherits postconditions. So use the feature position instead
 
-    var t = in.isConstructor() ? new This(p, in, in).resolveTypes(res, in.context())
+    var t = in.isConstructor() ? This.thiz(res, p, in.context(), in)
                                : (in.outerRef() != null)
-                                  ? new This(p, in, in.outer()).resolveTypes(res, in.context())
+                                  ? This.thiz(res, p, in.context(), in.outer())
                                   : Universe.instance;
     if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
       {
