@@ -244,23 +244,22 @@ main =>
   if failed > 0
     say "Failed tests:"
 
-    results_content
-      .for_each t->
-        if t.ends_with "failed"
-          say t
+    failed_tests := results_content.filter (.ends_with "failed")
+
+    failed_tests.for_each say
 
     say "============= run_tests.failures START ============="
     say (read_file_fully failures)
     say "============= run_tests.failures END ============="
 
     say "To re-run all failed tests, use this command:"
-    say <| results_content
+    say <| failed_tests
       .map x->x.split[0]
       .map x->"make $target -C $x"
       .as_string " && "
 
     say "To re-recordord all failed tests, use this command:"
-    say <| results_content
+    say <| failed_tests
       .map x->x.split[0]
       .map x->"make record_$target -C $x"
       .as_string " && "
