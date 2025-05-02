@@ -339,18 +339,18 @@ is
     new_map
 
 
-  # initialize a map from an array of key value tuples
+  # initialize a map from a Sequence of key value tuples
   #
-  public type.from_array(kvs array (tuple KEY VAL)) =>
-    from_array kvs false
+  public type.from_sequence(kvs Sequence (tuple KEY VAL)) =>
+    from_sequence kvs false
 
 
-  # initialize a map from an array of key value tuples
+  # initialize a map from a Sequence of key value tuples
   #
   # if the freeze argument is true, then the map is frozen
-  # after being populated with the entries from the array.
+  # after being populated with the entries from the Sequence.
   #
-  public type.from_array(kvs array (tuple KEY VAL), freeze bool) =>
+  public type.from_sequence(kvs Sequence (tuple KEY VAL), freeze bool) =>
     new_map := empty
     kvs.for_each x->
       new_map.put x.0 x.1
