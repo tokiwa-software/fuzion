@@ -2130,10 +2130,7 @@ public class DFA extends ANY
         });
     put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(fuir(cl).effectTypeFromIntrinsic(cl._cc)) != null
         ? cl._dfa.True()
-        : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
-                          * should reconsider if handling of default effects changes
-                          */
-        );
+        : cl._dfa.False());
 
     put("fuzion.java.Java_Object.is_null0"  , cl ->
         {
@@ -2149,8 +2146,7 @@ public class DFA extends ANY
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
         return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
-      }
-    );
+      });
     put("fuzion.java.array_to_java_object0" , cl ->
         {
           var data = fuir(cl).lookup_fuzion_sys_internal_array_data  (fuir(cl).clazzArgClazz(cl._cc,0));
