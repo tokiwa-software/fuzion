@@ -357,7 +357,7 @@ O(n log n).
   # create a mutable map from this
   #
   public redef as_mutable_map(LM type : mutate) container.Mutable_Map PK V =>
-    (container.mutable_tree_map LM PK V).from_array items.as_array
+    (container.mutable_tree_map LM PK V).from_sequence items
 
 
   # empty -- an empty partially sorted map
