@@ -99,20 +99,20 @@ public u8(public val u8) : num.wrap_around, has_interval is
   # this single bit set or 0 if this is 0.
   #
   public highest_one_bit u8 =>
-    (v , s)  := (val, u8 0)
-    (v1, s1) := if (v  < 0x10) (v , s ) else (v  >> 4, s  + 4)
-    (v2, s2) := if (v1 < 4   ) (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if (v2 < 2   ) (v2, s2) else (v2 >> 1, s2 + 1)
+    v , s  := (val, u8 0)
+    v1, s1 := if (v  < 0x10) (v , s ) else (v  >> 4, s  + 4)
+    v2, s2 := if (v1 < 4   ) (v1, s1) else (v1 >> 2, s1 + 2)
+    v3, s3 := if (v2 < 2   ) (v2, s2) else (v2 >> 1, s2 + 1)
     v3 << s3
 
 
   # count the number of trailing zeros in this integer.
   #
   public trailing_zeros i32 =>
-    (v , s)  := (val, 0)
-    (v1, s1) := if (v  & 0xf) != 0 then (v , s ) else (v  >> 4, s  + 4)
-    (v2, s2) := if (v1 &   3) != 0 then (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if (v2 &   1) != 0 then (v2, s2) else (v2 >> 1, s2 + 1)
+    v , s  := (val, 0)
+    v1, s1 := if (v  & 0xf) != 0 then (v , s ) else (v  >> 4, s  + 4)
+    v2, s2 := if (v1 &   3) != 0 then (v1, s1) else (v1 >> 2, s1 + 2)
+    v3, s3 := if (v2 &   1) != 0 then (v2, s2) else (v2 >> 1, s2 + 1)
     if             (v3 &   1) != 0 then      s3  else           8
 
 

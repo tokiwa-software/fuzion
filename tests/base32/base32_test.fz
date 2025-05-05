@@ -66,7 +66,7 @@ base32_test is
     for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
-      (plain, code_expected) := tup
+      plain, code_expected := tup
       code_actual := match plain
                         str String   => encodings.base32.encode_to_string str.utf8.as_array
                         arr array u8 => encodings.base32.encode_to_string arr
@@ -102,7 +102,7 @@ base32_test is
     for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
-      (plain_exp, code) := tup
+      plain_exp, code := tup
       out :=
         match encodings.base32.decode code.utf8.as_array
           actual array u8 =>
