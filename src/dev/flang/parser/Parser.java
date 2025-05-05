@@ -254,11 +254,11 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : modAndName routOrField
+feature     : modAndNames routOrField
             ;
-modAndName  : visibility
+modAndNames : visibility
               modifiers
-              qual
+              featNames
             ;
    */
   FList feature()
@@ -266,7 +266,7 @@ modAndName  : visibility
     var pos = tokenSourcePos();
     var v = visibility();
     var m = modifiers();
-    var n = qual(true);
+    var n = featNames();
     return routOrField(pos, new List<Feature>(), v, m, n, 0);
   }
 
@@ -293,8 +293,10 @@ field       : returnType
               implFldOrRout
             ;
    */
-  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<ParsedName> n, int i)
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<ParsedName>> n, int i)
   {
+    var name = n.get(i);
+    var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt(false);
     var r = returnType();
@@ -302,13 +304,29 @@ field       : returnType
     var hasType = r instanceof FunctionReturnType;
     var inh = inherits();
     Contract c = contract(forkAtFormArgs);
-    Impl p =
-      a  .isEmpty()    &&
-      eff == UnresolvedType.NONE &&
-      inh.isEmpty()       ? implFldOrRout(hasType)
-                          : implRout(hasType);
-    l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
-    return new FList(l);
+    Impl p;
+
+    if (a.isEmpty() &&
+        eff == UnresolvedType.NONE &&
+        inh.isEmpty())
+      {
+        p = implFldOrRout(hasType, (n.size() > 1) ? i : -1);
+      }
+    else
+      {
+        if (n.size() > 1)
+          {
+            AstErrors.illegalMultipleFeatureDeclaration(pos, n);
+          }
+
+        p = implRout(hasType);
+      }
+
+    l.add(new Feature(v, m, r, name, a, inh, c, p, eff));
+
+    return p2 == null
+      ? new FList(l)
+      : p2.routOrField(pos, l, v, m, n, i+1);
   }
 
 
@@ -801,6 +819,25 @@ modifier    : "redef"
       case t_fixed       : return true;
       default            : return false;
       }
+  }
+
+
+  /**
+   * Parse featNames
+   *
+featNames   : qual (COMMA featNames
+                   |
+                   )
+            ;
+   */
+  List<List<ParsedName>> featNames()
+  {
+    var result = new List<List<ParsedName>>(qual(true));
+    while (skipComma())
+      {
+        result.add(qual(true));
+      }
+    return result;
   }
 
 
@@ -2658,7 +2695,6 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
    *
 expr        : checkexpr
             | assign
-            | destructure
             | feature
             | operatorExpr
             ;
@@ -2671,7 +2707,6 @@ expr        : checkexpr
     var e =
       isCheckPrefix()       ? checkexpr()   :
       isAssignPrefix()      ? assign()      :
-      isDestructurePrefix() ? destructure() :
       isFeaturePrefix()     ? feature()     : operatorExpr();
     var p2 = lastTokenEndPos();
     e.setSourceRange(sourceRange(p0, p1, p2));
@@ -2798,8 +2833,8 @@ nextValue   : COMMA exprInLine
       }
     else
       {
-        p1 =        implFldInit(hasType);
-        p2 = forked.implFldInit(hasType);
+        p1 =        implFldInit(hasType, -1);
+        p2 = forked.implFldInit(hasType, -1);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
@@ -3068,73 +3103,6 @@ assign      : "set" name ":=" exprInLine
 
 
   /**
-   * Parse destructure
-   *
-destructure : destructr
-            ;
-destructr   : "(" argNames ")"       ":=" exprInLine
-            ;
-   */
-  Expr destructure()
-  {
-    if (fork().skipFormArgs())
-      {
-        var a = formArgs(false);
-        var pos = tokenSourcePos();
-        matchOperator(":=", "destructure");
-        return Destructure.create(pos, a, null, exprInLine());
-      }
-    else
-      {
-        match(Token.t_lparen, "destructure");
-        var names = argNames();
-        match(Token.t_rparen, "destructure");
-        var pos = tokenSourcePos();
-        matchOperator(":=", "destructure");
-        return Destructure.create(pos, null, names, exprInLine());
-      }
-  }
-
-
-  /**
-   * Check if the current position starts destructure.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start a destructure.
-   */
-  boolean isDestructurePrefix()
-  {
-    return (current() == Token.t_lparen) && fork().skipDestructrPrefix() ||
-      (current() == Token.t_set) && (fork().skipDestructrPrefix());
-  }
-
-
-  /**
-   * Check if the current position starts a destructr and skip an unspecified part
-   * of it.
-   *
-   * @return true iff the next token(s) start a destructure.
-   */
-  boolean skipDestructrPrefix()
-  {
-    boolean result = false;
-    skip(Token.t_set);
-    if (skip(Token.t_lparen))
-      {
-        do
-          {
-            result = skipName();
-          }
-        while (result && skipComma());
-        result = result
-          && skip(Token.t_rparen)
-          && isOperator(":=");
-      }
-    return result;
-  }
-
-
-  /**
    * Parse call or anonymous feature or this
    *
 callOrFeatOrThis  : anonymous
@@ -3398,17 +3366,22 @@ implFldOrRout   : implRout           // may start at min indent
                 |
                 ;
    */
-  Impl implFldOrRout(boolean hasType)
+  Impl implFldOrRout(boolean hasType, int select)
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
         isOperator(true, "=>"))
       {
+        if (select != -1)
+          {
+            AstErrors.illegalMultipleFeatureDeclaration(tokenSourcePos(), null);
+          }
+
         return implRout(hasType);
       }
     else if (isOperator(true, ":="))
       {
-        return implFldInit(hasType);
+        return implFldInit(hasType, select);
       }
     else
       {
@@ -3424,17 +3397,29 @@ implFldOrRout   : implRout           // may start at min indent
 implFldInit : ":=" operatorExpr      // may start at min indent
             ;
    */
-  Impl implFldInit(boolean hasType)
+  Impl implFldInit(boolean hasType, int select)
   {
     SourcePosition pos = tokenSourcePos();
     if (!skip(true, ":="))
       {
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
-    return new Impl(pos,
-                    operatorExpr(), // block()?
-                    hasType ? Impl.Kind.FieldInit
-                            : Impl.Kind.FieldDef);
+
+    if (select < 0)
+      {
+        return new Impl(pos,
+                        operatorExpr(), // block()?
+                        hasType ? Impl.Kind.FieldInit
+                                : Impl.Kind.FieldDef);
+      }
+    else
+      {
+        var s = new Select(pos, operatorExpr(), null, select);
+        return new Impl(pos,
+                        s,
+                        hasType ? Impl.Kind.FieldInit
+                                : Impl.Kind.FieldDef);
+      }
   }
 
 

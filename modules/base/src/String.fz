@@ -83,10 +83,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
     a.utf8
       .zip b.utf8 (c,d)->(c,d)
       .filter (x ->
-        (c, d) := x
+        c, d := x
         c != d)
       .map (x ->
-        (c, d) := x
+        c, d := x
         c ≤ d)
       # if all bytes are equal lengths of strings might still differ
       .first a.utf8.count≤b.utf8.count

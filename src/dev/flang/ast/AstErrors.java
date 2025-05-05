@@ -1876,35 +1876,11 @@ public class AstErrors extends ANY
       }
   }
 
-  static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<ParsedName> names)
+  public static void illegalMultipleFeatureDeclaration(SourcePosition pos, List<List<ParsedName>> names)
   {
     error(pos,
-          "Destructuring not possible for value whose type is a type parameter.",
-          "Type of expression is " + s(t) + "\n" +
-          "Cannot destructure value of type parameter type into (" + spn(names) + ")");
-  }
-
-  static void destructuringRepeatedEntry(SourcePosition pos, String n, int count)
-  {
-    error(pos,
-          "Repeated entry in destructuring",
-          "Variable " + ss(n) + " appears " + StringHelpers.times(count) + ".");
-  }
-
-
-  static void destructuringMisMatch(SourcePosition pos, List<String> fieldNames, List<ParsedName> names)
-  {
-    int fn = fieldNames.size();
-    int nn = names.size();
-    error(pos,
-          "Destructuring mismatch between number of visible fields and number of target variables.",
-          "Found " + ((fn == 0) ? "no visible argument fields" :
-                      (fn == 1) ? "one visible argument field" :
-                      "" + fn + " visible argument fields"     ) + " " + sn(fieldNames) + "\n" +
-          (nn == 0 ? "while there are no destructuring variables" :
-           nn == 1 ? "while there is one destructuring variable: " + spn(names)
-                   : "while there are " + nn + " destructuring variables: " + spn(names)) + ".\n"
-          );
+          "Illegal multiple feature declaration",
+          "Multiple feature declaration can only be used for fields.");
   }
 
   static void illegalResultType(AbstractFeature f, ReturnType rt)

@@ -76,8 +76,8 @@ is
           nil     =>     # slot is free, so use it:
             mcontents[at.as_i64] := (k, v)
 
-          t tuple =>     # we have a conflict
-            (ek, _) := t
+          t tuple HK V =>     # we have a conflict
+            ek, _ := t
             if ek = k    # no conflict, but remapping of k
               mcontents[at.as_i64] := (k, v)
             else         # conflict
@@ -102,7 +102,7 @@ is
       match contents[at]
         nil     => nil
         t tuple =>
-          (ek, v) := t
+          ek, v := t
           if ek = k
             v
           else
