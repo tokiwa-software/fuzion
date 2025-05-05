@@ -1238,11 +1238,11 @@ public class AstErrors extends ANY
 
   public static void preWithImplicitTrueInherited(AbstractFeature f)
   {
-    var redefinedPreTrue = f.redefines().stream().filter(af->af.contract()._hasPre == null)
+    var redefinedPreTrue = f.redefines().stream().filter(af->af.preFeature() == null)
                             .map(af->s(af))
                             .collect(Collectors.joining(" and "));
 
-    int count = (int)f.redefines().stream().filter(af->af.contract()._hasPre == null).count();
+    int count = (int)f.redefines().stream().filter(af->af.preFeature() == null).count();
 
     error(f.contract()._hasPre,
           "Precodition added, although implicit " + code("pre true") + " was inherited",
