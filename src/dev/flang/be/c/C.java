@@ -793,10 +793,6 @@ public class C extends ANY
         command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
       }
 
-    if (linkJVM())
-      {
-        command.addAll("-DFUZION_LINK_JVM");
-      }
 
     if (usesThreads())
       {
@@ -837,17 +833,25 @@ public class C extends ANY
       {
         command.addAll(_options.pathOf("include/posix.c"));
       }
+    if (linkJVM())
+      {
+        command.addAll(_options.pathOf("include/fz_jni.c"));
+      }
 
     command.addAll(cf.fileName());
 
-    if (linkJVM())
+    if (!JAVA_HOME.isBlank())
       {
         command.addAll(
           "-I" + JAVA_HOME + "/include",
           "-I" + JAVA_HOME + "/include/linux",
           "-I" + JAVA_HOME + "/include/win32",
-          "-I" + JAVA_HOME + "/include/darwin",
-          "-L" + JAVA_HOME + "/lib/server");
+          "-I" + JAVA_HOME + "/include/darwin");
+      }
+
+    if (linkJVM())
+      {
+        command.addAll("-L" + JAVA_HOME + "/lib/server");
 
         if (!isWindows())
           {
@@ -897,6 +901,8 @@ public class C extends ANY
    */
   private boolean usesThreads()
   {
+    if (CHECKS) check
+      (!_intrinsics._usedIntrinsics.isEmpty());
     return Stream.of("fuzion.sys.thread.spawn0",
                      "fuzion.sys.thread.join0",
                      "concur.atomic.compare_and_swap0",
@@ -913,6 +919,8 @@ public class C extends ANY
    */
   private boolean linkLibMath()
   {
+    if (CHECKS) check
+      (!_intrinsics._usedIntrinsics.isEmpty());
     return Stream.of("f32.prefix -",
                      "f32.infix +",
                      "f32.infix -",
@@ -975,6 +983,8 @@ public class C extends ANY
    */
   private boolean linkJVM()
   {
+    if (CHECKS) check
+      (!_intrinsics._usedIntrinsics.isEmpty());
     return JAVA_HOME != null
       && Stream.of("fuzion.java.Java_Object.is_null0",
                     "fuzion.java.array_get",
@@ -1186,14 +1196,14 @@ public class C extends ANY
        "#include <errno.h>\n"+
        "#include <stdatomic.h>\n");
 
-    if (linkJVM())
-      {
-        cf.println("#include <jni.h>");
-      }
 
     var fzH = _options.pathOf("include/fz.h");
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
+    if (!JAVA_HOME.isBlank())
+      {
+        cf.println("#include \"" + _options.pathOf("include/fz_jni.h") + "\"");
+      }
 
     if (_options._cLink != null)
       {
