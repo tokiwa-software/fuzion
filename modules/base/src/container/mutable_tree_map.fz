@@ -97,7 +97,7 @@ is
     # is called first. then the AVL rebalancing is done
     #
     put_recursively(node option Entry) tuple (option Entry) (option VAL) =>
-      (new_node, old_val) := insert_or_modify_entries node
+      new_node, old_val := insert_or_modify_entries node
       (rebalance new_node, old_val)
 
 
@@ -116,11 +116,11 @@ is
           (option new_node, option VAL nil)
         e Entry =>
           if k < e.key
-            (node0, old_val) := put_recursively e.left.get
+            node0, old_val := put_recursively e.left.get
             e.left <- node0
             (option e, old_val)
           else if e.key < k
-            (node0, old_val) := put_recursively e.right.get
+            node0, old_val := put_recursively e.right.get
             e.right <- node0
             (option e, old_val)
           else
@@ -131,7 +131,7 @@ is
             (option new_node, option old_val)
 
 
-    (new_root, old) := put_recursively root.get
+    new_root, old := put_recursively root.get
     root <- new_root
     old
 
@@ -150,7 +150,7 @@ is
     # mapping is called first. then the AVL rebalancing is done
     #
     remove_recursively(k KEY, node option Entry) tuple (option Entry) (option VAL) =>
-      (new_node, old_val) := remove_or_modify_entries k node
+      new_node, old_val := remove_or_modify_entries k node
       (rebalance new_node, old_val)
 
 
@@ -178,11 +178,11 @@ is
         nil => (option Entry nil, option VAL nil)
         e Entry =>
           if k < e.key
-            (n, old_val) := remove_recursively k e.left.get
+            n, old_val := remove_recursively k e.left.get
             e.left <- n
             (option e, old_val)
           else if e.key < k
-            (n, old_val) := remove_recursively k e.right.get
+            n, old_val := remove_recursively k e.right.get
             e.right <- n
             (option e, old_val)
           else
@@ -198,12 +198,12 @@ is
                     new_node := Entry m.get.key m.get.val
                     new_node.left <- l
 
-                    (nr, old_val0) := remove_recursively m.get.key e.right.get
+                    nr, old_val0 := remove_recursively m.get.key e.right.get
                     new_node.right <- nr
                     (option new_node, option old_val0)
 
 
-    (new_root, old) := remove_recursively key root.get
+    new_root, old := remove_recursively key root.get
     root <- new_root
     old
 

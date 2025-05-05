@@ -154,19 +154,16 @@ public class Assign extends AbstractAssign
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
-   *
-   * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure expression.
    */
   @Override
-  void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Resolution res, Context context)
   {
     var f = _assignedField;
     if (f == null)
       {
         var fo = FeatureAndOuter.filter(res._module.lookup(context.outerFeature(),
                                                            _name,
-                                                           destructure == null ? this : destructure,
+                                                           this,
                                                            true,
                                                            false),
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);

@@ -81,11 +81,11 @@ public ryū(public T type : float) is
   # convert float to string for nontrivial case
   as_string_nontrivial(val T, scientific_notation bool, rounding_mode rounding_mode) String =>
 
-    (smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even) := step_2 val
+    smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even := step_2 val
 
-    (dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10) := step_3 (val.exponent-T.mantissa_bits-2).as_i64 smaller_halfway_point mv larger_halfway_point mm_shift is_even rounding_mode
+    dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10 := step_3 (val.exponent-T.mantissa_bits-2).as_i64 smaller_halfway_point mv larger_halfway_point mm_shift is_even rounding_mode
 
-    (output, output_length, exponent_decimal) := step_4 dv dp dm dm_is_trailing_zeros dv_is_trailing_zeros e10 is_even scientific_notation rounding_mode
+    output, output_length, exponent_decimal := step_4 dv dp dm dm_is_trailing_zeros dv_is_trailing_zeros e10 is_even scientific_notation rounding_mode
 
     step_5 output output_length exponent_decimal (val < T.zero) scientific_notation
 
