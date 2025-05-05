@@ -39,7 +39,8 @@ envir_var_kv := [
   "dev_flang_tools_serializeFUIR",
   "CPATH",
   "LIBRARY_PATH",
-  "FUZION_CLANG_INSTALLED_DIR"
+  "FUZION_CLANG_INSTALLED_DIR",
+  "OS"
 ].map k->
   (envir.vars.get k).bind v->
     (k,v)
