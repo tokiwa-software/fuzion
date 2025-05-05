@@ -200,7 +200,7 @@ main =>
   _ := concur.thread_pool thread_count ()->
     for test in tests do
       check concur.thread_pool.env.submit ()->
-        if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target"
+        if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target" || (is_windows && (io.file.exists "$test/skip_win"))
           yak "_"
           append_line results "$test: skipped"
         else
