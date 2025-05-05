@@ -89,6 +89,7 @@ int fzE_mkdir(const char *pathname);
  *    on error result[0]=-1
  *
  * @return pointer to directory
+ *         NOTE: needs to be closed via fzE_dir_close
  */
 void * fzE_opendir(const char *pathname, int64_t * result);
 
@@ -286,15 +287,16 @@ int fzE_socket_read(int sockfd, void * buf, size_t count);
 int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
 
-/*
+/**
  * create a memory map of a file at an offset.
  * unix:    the offset must be a multiple of the page size, usually 4096 bytes.
  * windows: the offset must be a multiple of the memory allocation granularity, usually 65536 bytes
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
- * returns:
+ * @return
  *   - error   :  result[0]=-1 and NULL
  *   - success :  result[0]=0  and an address where the file was mapped to
+ * NOTE: needs to be unmapped via fzE_munmap
  */
 void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
 
@@ -406,10 +408,6 @@ void fzE_unlock(void);
  *
  * @param result array to be filled with descriptors [process_id, std_in, std_out, std_err]
  *
- * @param args_str the process+arguments as a string
- *
- * @param env_str the environment variables, 0-terminated string of 0-terminated strings, e.g.: "PATH=/usr/bin\0VAR1=some_value\0\0"
- *
  * @return -1 error, 0 success
  */
 int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result);
@@ -452,9 +450,7 @@ int fzE_pipe_close(int64_t desc);
  * @param mode 0 read, 1 write, 2 append
  *
  * @return pointer to the open file or undefined on error.
- *
- * NOTE: the file needs to closed again via fzE_file_close.
- *
+ *         NOTE: the file needs to closed again via fzE_file_close.
  */
 void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
 
@@ -628,8 +624,7 @@ jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, co
  * initialize a mutex
  *
  * @return NULL on error or pointer to mutex
- *
- * NOTE: needs to be destroyed via fzE_mtx_destroy.
+ *         NOTE: eventually needs to be destroyed via fzE_mtx_destroy.
  */
 void *  fzE_mtx_init     (void);
 
@@ -671,6 +666,7 @@ void    fzE_mtx_destroy  (void * mtx);
  * initialize a condition
  *
  * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
  */
 void *  fzE_cnd_init     (void);
 
