@@ -912,7 +912,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 
   HANDLE hFile = CreateFileW(
       file_name_w,
-      GENERIC_READ | GENERIC_WRITE,
+      GENERIC_READ | GENERIC_WRITE, // NYI: UNDER DEVELOPMENT: consider mode
       FILE_SHARE_READ,
       &sa,
       OPEN_ALWAYS,
@@ -923,6 +923,17 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
     : 0;
+
+  if (hFile != INVALID_HANDLE_VALUE && mode == 2)
+  {
+    LARGE_INTEGER zero = {0}, new_pos = {0};
+    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
+      open_results[0] = (int64_t)GetLastError();
+      CloseHandle(hFile);
+      return NULL;
+    }
+  }
+
   return (void *)hFile;
 }
 
