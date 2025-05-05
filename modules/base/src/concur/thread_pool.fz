@@ -83,12 +83,11 @@ Blocking_Queue(T type, cnd concur.sync.condition) ref is
 # submit a task to the thread_pool.
 #
 public thread_pool(R type, size i32, code ()->R) outcome R =>
-  (concur.sync.mutex.new.bind mtx->
-    mtx.condition.bind cnd->
-      (thread_pool cnd size) ! ()->
-        res := code.call
-        thread_pool.env.await
-        res)
+  (concur.sync.condition.new.bind cnd->
+    (thread_pool cnd size) ! ()->
+      res := code.call
+      thread_pool.env.await
+      res)
     .bind id
 
 
@@ -128,8 +127,7 @@ is
 
     fut ref : concur.Future T is
 
-      fut_mtx := concur.sync.mutex.new.val # NYI: error handling
-      fut_cnd := fut_mtx.condition.val # NYI: error handling
+      fut_cnd := concur.sync.condition.new.val # NYI: error handling
 
       compute_result := concur.atomic (option T) nil
 

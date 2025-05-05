@@ -60,7 +60,7 @@ public infix |> (A, R type, a A, f A->R) =>
 # which often correponds more naturally to the data flow through the code.
 #
 public infix ||> (A, B, R type, a (A,B), f (A,B)->R) =>
-  f a.values.0 a.values.1
+  f a.0 a.1
 
 
 # infix |||> -- pipe with a three-tuple argument, destructuring the tuple into arguments
@@ -80,7 +80,7 @@ public infix ||> (A, B, R type, a (A,B), f (A,B)->R) =>
 # which often correponds more naturally to the data flow through the code.
 #
 public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) =>
-  f a.values.0 a.values.1 a.values.2
+  f a.0 a.1 a.2
 
 
 # infix ||||> -- pipe with a four-tuple argument, destructuring the tuple into arguments
@@ -100,7 +100,7 @@ public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) =>
 # which often correponds more naturally to the data flow through the code.
 #
 public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) =>
-  f a.values.0 a.values.1 a.values.2 a.values.3
+  f a.0 a.1 a.2 a.3
 
 
 # infix |||||> -- pipe with a five-tuple argument, destructuring the tuple into arguments
@@ -120,7 +120,7 @@ public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) =>
 # which often correponds more naturally to the data flow through the code.
 #
 public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) =>
-  f a.values.0 a.values.1 a.values.2 a.values.3 a.values.4
+  f a.0 a.1 a.2 a.3 a.4
 
 
 # infix ||||||> -- pipe with a six-tuple argument, destructuring the tuple into arguments
@@ -140,7 +140,7 @@ public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) =>
 # which often correponds more naturally to the data flow through the code.
 #
 public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)->R) =>
-  f a.values.0 a.values.1 a.values.2 a.values.3 a.values.4 a.values.5
+  f a.0 a.1 a.2 a.3 a.4 a.5
 
 
 # a six-tuple is large enough for two 3-D coordinates, so let's stop here for now....

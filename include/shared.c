@@ -847,22 +847,22 @@ uint64_t fzE_unique_id()
 }
 
 
-uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
+extern inline uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
 {
   return ((uint8_t *)addr)[idx];
 }
 
-void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
+extern inline void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
 {
   ((uint8_t *)addr)[idx] = x;
 }
 
-void * fzE_null(void)
+extern inline void * fzE_null(void)
 {
   return NULL;
 }
 
-int fzE_is_null(void * p)
+extern inline int fzE_is_null(void * p)
 {
   return p == NULL
     ? 0

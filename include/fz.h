@@ -80,26 +80,6 @@ int64_t fzE_last_error(void);
 int fzE_mkdir(const char *pathname);
 
 /**
- * set environment variable
- *
- * @param name a pointer to zero terminated utf8 bytes.
- *
- * @param value a pointer to zero terminated utf8 bytes.
- *
- * @return 0 on success, -1 on error.
- */
-int fzE_setenv(const char *name, const char *value);
-
-/**
- * unset environment variable
- *
- * @param name a pointer to zero terminated utf8 bytes.
- *
- * @return 0 on success, -1 on error.
- */
-int fzE_unsetenv(const char *name);
-
-/**
  * open a directory for traversal.
  *
  * @param pathname a pointer to zero terminated utf8 bytes.
@@ -120,7 +100,7 @@ void * fzE_opendir(const char *pathname, int64_t * result);
  * NYI: UNDER DEVELOPMENT (max 1024)
  * @param result pointer to 1024-bytes of memory, contains the utf8 bytes if successful.
  *
- * @result -1 on error, 0 on end reached, length of result on success
+ * @return -1 on error, 0 on end reached, length of result on success
  */
 int fzE_dir_read(intptr_t * dir, void * result);
 
@@ -133,53 +113,176 @@ int fzE_dir_read(intptr_t * dir, void * result);
  */
 int fzE_dir_close(intptr_t * dir);
 
-// 0 = blocking
-// 1 = none_blocking
+/**
+ * set the socket descriptor sockfd
+ * to (none_)blocking mode.
+ *
+ * @param blocking
+ *          0 = blocking
+ *          1 = none_blocking
+ *
+ * @return 0 if successful, -1 if not
+ */
 int fzE_set_blocking(int sockfd, int blocking);
 
-// close a socket descriptor
+/**
+ * close a socket
+ *
+ * @return 0 if successful, -1 if not
+ */
 int fzE_close(int sockfd);
 
-// initialize a new socket for given
-// family, socket_type, protocol
+/**
+ * create a new socket
+ *
+ * @param family
+ *      ipv4  => 2
+ *      ipv6  => 10
+ *
+ * @param type
+ *      stream => 1
+ *      datagram => 2
+ *
+ * @param protocol
+ *      tcp  => 6
+ *      udp  => 17
+ *
+ * @return 0 if successful, -1 if not
+ */
 int fzE_socket(int family, int type, int protocol);
 
-// create a new socket and bind to given host:port
-// result[0] contains either an errorcode or a socket descriptor
-// -1 error, 0 success
+/**
+ * create a new socket and bind to given host:port
+ *
+ * @param family
+ *      address family (e.g., ipv4 => 2)
+ *
+ * @param socktype
+ *      socket type (e.g., stream => 1, datagram => 2)
+ *
+ * @param protocol
+ *      protocol to be used (e.g., tcp => 6, udp => 17)
+ *
+ * @param host
+ *      hostname or ip address to bind to
+ *
+ * @param port
+ *      port to bind to
+ *
+ * @param result
+ *      result[0] contains either an error code or a socket descriptor
+ *      -1 on error, 0 on success
+ *
+ * @return 0 if successful, -1 if not
+ */
 int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
 
-// set the given socket to listening
-// backlog = queuelength of pending connections
+/**
+ * set the given socket to listening
+ *
+ * @param sockfd
+ *      socket file descriptor
+ *
+ * @param backlog
+ *      queue length of pending connections
+ *
+ * @return 0 if successful, -1 if not
+ */
 int fzE_listen(int sockfd, int backlog);
 
-// accept a new connection
-// blocks if socket is blocking
+/**
+ * accept a new connection (blocks if socket is set to blocking)
+ *
+ * @param sockfd
+ *      listening socket file descriptor
+ *
+ * @return new socket descriptor for the connection, or -1 on error
+ */
 int fzE_accept(int sockfd);
 
-// create connection for given parameters
-// result[0] contains either an errorcode or a socket descriptor
-// -1 error, 0 success
+/**
+ * create connection for given parameters
+ *
+ * @param family
+ *      address family (e.g., ipv4 => 2)
+ *
+ * @param socktype
+ *      socket type (e.g., stream => 1, datagram => 2)
+ *
+ * @param protocol
+ *      protocol to be used (e.g., tcp => 6, udp => 17)
+ *
+ * @param host
+ *      hostname or ip address to connect to
+ *
+ * @param port
+ *      port to connect to
+ *
+ * @param result
+ *      result[0] contains either an error code or a socket descriptor
+ *      -1 on error, 0 on success
+ *
+ * @return 0 if successful, -1 if not
+ */
 int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
 
-// get the peer's ip address
-// result is the length of the ip address written to buf
-// might return useless information when called on udp socket
+/**
+ * get the peer's ip address
+ *
+ * @param sockfd
+ *      connected socket file descriptor
+ *
+ * @param buf
+ *      buffer to store the ip address
+ *
+ * @return length of the ip address written to buf
+ *         may return invalid info when called on a udp socket
+ */
 int fzE_get_peer_address(int sockfd, void * buf);
 
-// get the peer's port
-// result is the port number
-// might return useless infomrmation when called on udp socket
+/**
+ * get the peer's port
+ *
+ * @param sockfd
+ *      connected socket file descriptor
+ *
+ * @return the port number
+ *         may return invalid info when called on a udp socket
+ */
 unsigned short fzE_get_peer_port(int sockfd);
 
-// read up to count bytes bytes from sockfd
-// into buf. may block if socket is  set to blocking.
-// return -1 on error or number of bytes read
+/**
+ * read up to count bytes from sockfd into buf
+ *
+ * @param sockfd
+ *      socket file descriptor to read from
+ *
+ * @param buf
+ *      buffer to store read data
+ *
+ * @param count
+ *      maximum number of bytes to read
+ *
+ * @return number of bytes read, or -1 on error
+ *         may block if socket is set to blocking
+ */
 int fzE_socket_read(int sockfd, void * buf, size_t count);
 
-// write buf to sockfd
-// may block if socket is set to blocking.
-// return error code or zero on success
+/**
+ * write buf to sockfd
+ *
+ * @param sockfd
+ *      socket file descriptor to write to
+ *
+ * @param buf
+ *      buffer containing data to write
+ *
+ * @param count
+ *      number of bytes to write
+ *
+ * @return 0 on success, or error code
+ *         may block if socket is set to blocking
+ */
 int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
 
@@ -195,8 +298,11 @@ int fzE_socket_write(int sockfd, const void * buf, size_t count);
  */
 void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
 
-// unmap an address that was previously mapped by fzE_mmap
-// -1 error, 0 success
+/**
+ * unmap an address that was previously mapped by fzE_mmap
+ *
+ * @return -1 error, 0 success
+ */
 int fzE_munmap(void * mapped_address, const int file_size);
 
 /**
@@ -264,15 +370,15 @@ void fzE_init(void);
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-// NYI: UNDER DEVELOPMENT result type should be pointer
+// NYI: UNDER DEVELOPMENT: result type should be pointer
 int64_t fzE_thread_create(void *(*code)(void *),
                           void *restrict);
 
 /**
  * Join with a running thread.
  */
-// NYI add return value
-// NYI: UNDER DEVELOPMENT arg type should be pointer
+// NYI: UNDER DEVELOPMENT:  add return value
+// NYI: UNDER DEVELOPMENT: arg type should be pointer
 void fzE_thread_join(int64_t thrd);
 
 /**

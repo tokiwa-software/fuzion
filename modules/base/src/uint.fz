@@ -25,7 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-module:public uint (public b Sequence u32, _ unit) : has_interval
+module:public uint (module b Sequence u32, _ unit) : has_interval
 is
 
   # the actually relevant data of this uint.
@@ -97,7 +97,7 @@ is
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
   equalize(other uint)
-  post debug: result.values.0.count = result.values.1.count
+  post debug: result.0.count = result.1.count
   =>
     if other.data.count < data.count
       (data, zeros data.count-other.data.count ++ other.data)
@@ -357,7 +357,7 @@ is
   # this uint as an int
   public as_int int
   =>
-    int num.plus (uint b unit)
+    int true (uint b unit)
 
 
   # this uint as a string, may contain leading zeros

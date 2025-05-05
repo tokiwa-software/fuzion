@@ -56,15 +56,13 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   # get a sequence of all keys in this map
   #
   public keys =>
-    # NYI: BUG: t.0 does not work here, see #4750
-    items.map t->t.values.0
+    items.map (.0)
 
 
   # get a sequence of all values in this map
   #
   public values =>
-    # NYI: BUG: t.1 does not work here, see #4750
-    items.map t->t.values.1
+    items.map (.1)
 
 
   # get the value stored in this map at key k, nil if k is not
@@ -96,7 +94,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   #
   public put_all(kvs Sequence (tuple K V)) =>
     for kv in kvs do
-      put kv.values.0 kv.values.1
+      put kv.0 kv.1
 
 
   # remove key from map
@@ -140,7 +138,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   public type.from_entries(kvs Sequence (tuple K V)) Mutable_Map.this =>
     m := empty
     for kv in kvs do
-      m.put kv.values.0 kv.values.1
+      m.put kv.0 kv.1
     m
 
 */

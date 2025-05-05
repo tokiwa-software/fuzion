@@ -90,8 +90,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * empty list of AbstractFeature
    */
-  public static List<AbstractFeature> _NO_FEATURES_ = new List<>();
+  public static final List<AbstractFeature> _NO_FEATURES_ = new List<>();
   static { _NO_FEATURES_.freeze(); }
+
+
+  /**
+   * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
+   * failure due to previous errors.
+   */
+  public static final AbstractType[] HAND_DOWN_FAILED = new AbstractType[0];
 
 
   /*------------------------  static variables  -------------------------*/
@@ -449,13 +456,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return qualifiedName(null);
   }
 
+
   /**
    * qualifiedName returns the qualified name of this feature, relative to feature context (if context is not null)
    *
    * @param context the feature to which the name should be relative to, universe if null
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
    */
-  public String qualifiedName(AbstractFeature context)
+  String qualifiedName(AbstractFeature context)
   {
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
     return
@@ -867,6 +875,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return The feature that should be the direct ancestor of this feature's
    * type feature.
+   *
+   * NYI: CLEANUP: move to resolution
    */
   public AbstractFeature cotype(Resolution res)
   {
@@ -1285,13 +1295,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param heir a feature that inherits from outer()
    *
    * @return the types from the argument array a has seen this within
-   * heir. Their number might have changed due to open generics.
+   * heir. Their number might have changed due to open generics.  Result may be
+   * HAND_DOWN_FAILED in case of previous errors.
    */
   public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
        state().atLeast(State.RESOLVING_TYPES));
+
+    var result = HAND_DOWN_FAILED;
 
     if (heir != Types.f_ERROR)
       {
@@ -1301,10 +1314,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            a = AbstractFeature.handDownInheritance(res, inh, a, heir);
+            result = AbstractFeature.handDownInheritance(res, inh, a, heir);
           }
       }
-    return a;
+    return result;
   }
 
 

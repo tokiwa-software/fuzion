@@ -17,35 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature num.sign
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# the sign of a number
-#
-# this can be plus or minus
-#
-public sign : choice num.plus num.minus, property.equatable is
-
-  module is_plus =>
-    match sign.this
-      num.plus => true
-      num.minus => false
-
-  # equality: are these signs equal?
-  #
-  public fixed redef type.equality(a, b num.sign) bool =>
-    match a
-      num.plus =>
-        match b
-          num.plus => true
-          num.minus => false
-      num.minus =>
-        match b
-          num.plus => false
-          num.minus => true
-
-  public redef as_string String =>
-    match sign.this
-      num.plus => ""
-      num.minus => "-"
+override NAME = reg_issue5156
+include ../simple.mk

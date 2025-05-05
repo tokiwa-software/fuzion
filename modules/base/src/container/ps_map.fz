@@ -162,7 +162,7 @@ O(n log n).
               i := 0, i+1
               i1 := 0, if (use1) i1+1 else i1
               i2 := 0, if (use1) i2   else i2+1
-              use1 := i1 < sz && (i2 ≥ sz || data[ole + i1].values.0 < a[new+i2].values.0)
+              use1 := i1 < sz && (i2 ≥ sz || data[ole + i1].0 < a[new+i2].0)
             while  i < 2*sz
               a[new-sz+i] := if use1 then data[ole + i1] else a[new+i2]
           join (fill - sz - 2*(fill - ole - sz) - 2*sz) new-sz 2*sz
@@ -183,10 +183,10 @@ O(n log n).
         nil
       else
         (mk,mv) := data[m]
-        c := (mk) ⋄ k
-        if      c < 0 then binary_search m+1 r
-        else if c > 0 then binary_search l m-1
-        else               mv
+        match (mk) ⋄ k
+          less    => binary_search m+1 r
+          greater => binary_search l m-1
+          equal   => mv
 
     # find k in sub-arrays starting at data[at]
     #
@@ -226,9 +226,9 @@ O(n log n).
                 i in 0..
                 i1 := 0, if (use1) i1+1 else i1
                 i2 := 0, if (use1) i2   else i2+1
-                use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].values.0 < a[size-rsz+i2]))
+                use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].0 < a[size-rsz+i2]))
               while i < sz+rsz
-                a[size-rsz-sz + i1 + i2] := if (use1) data[ole + i1].values.0 else a[size-rsz+i2]
+                a[size-rsz-sz + i1 + i2] := if (use1) data[ole + i1].0 else a[size-rsz+i2]
             join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
           else
             join ole-sz 2*sz rsz (skip + sz + skip)
@@ -271,7 +271,7 @@ O(n log n).
       nil
     else
       sub_sz := size.highest_one_bit
-      min data[0].values.0 0 sub_sz (data.capacity - sub_sz)
+      min data[0].0 0 sub_sz (data.capacity - sub_sz)
 
 
   # get the highest key in this map
@@ -301,7 +301,7 @@ O(n log n).
       nil
     else
       sub_sz := size.highest_one_bit
-      max data[0].values.0 0 sub_sz (data.capacity - sub_sz)
+      max data[0].0 0 sub_sz (data.capacity - sub_sz)
 
 
   # union of two ps_maps
@@ -320,7 +320,7 @@ O(n log n).
         a
       else
         kv := data[l]
-        a0 := if (a.has kv.values.0) a else a.add kv
+        a0 := if (a.has kv.0) a else a.add kv
         add_all a0 l+1 r
 
     # helper to add 'sz' elements from 'ps_map.this.data[at..at+sz]' to 'a', with
@@ -357,7 +357,7 @@ O(n log n).
   # create a mutable map from this
   #
   public redef as_mutable_map(LM type : mutate) container.Mutable_Map PK V =>
-    (container.mutable_tree_map LM PK V).from_array items.as_array
+    (container.mutable_tree_map LM PK V).from_sequence items
 
 
   # empty -- an empty partially sorted map

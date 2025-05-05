@@ -139,7 +139,7 @@ javaHello : Java is
     util_map := fuzion.java.cast Java.java.util.Map tm
 
     tm2 := Java.java.util.TreeMap.new
-    _ := try (outcome Java.java.util.Map) unit ()->
+    _ := exception (outcome Java.java.util.Map) unit ()->
       tm2.putAll util_map.get
       say tm2.toString
 
@@ -154,7 +154,7 @@ javaHello : Java is
     util_map := fuzion.java.cast Java.java.util.Map jstr
 
     tm2 := Java.java.util.TreeMap.new
-    _ := try (outcome Java.java.util.Map) unit ()->
+    _ := exception (outcome Java.java.util.Map) unit ()->
       tm2.putAll util_map.get
       say tm2.toString
 

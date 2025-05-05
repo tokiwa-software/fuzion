@@ -104,9 +104,16 @@ public class Function extends AbstractLambda
 
 
   /**
-   * the right hand side of the '->'
+   * the right hand side of the '->', as produced by the parser
    */
-  public final Expr _expr;
+  final Expr _originalExpr;
+
+
+  /**
+   * the right hand side of the '->', replaced by Expr.NO_VALUE in case of error.
+   */
+  private Expr _expr;
+  public Expr expr() { return _expr; }
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -134,6 +141,7 @@ public class Function extends AbstractLambda
     _namesAsExprs = names;
     _names = names.map2(n->n.asParsedName());
     _names.removeIf(n -> n==null);
+    _originalExpr = e;
     _expr = e;
   }
 
@@ -256,7 +264,6 @@ public class Function extends AbstractLambda
                 AstErrors.expectedFunctionTypeForLambda(pos(), t);
               }
             t = Types.t_ERROR;
-            result = Types.t_ERROR;
           }
 
         /* We have an expression of the form
@@ -283,7 +290,6 @@ public class Function extends AbstractLambda
           {
             if (i < gs.size() && gs.get(i) == Types.t_UNDEFINED)
               {
-                result = Types.t_ERROR;
                 t = Types.t_ERROR;
               }
             else
@@ -298,10 +304,13 @@ public class Function extends AbstractLambda
                 i++;
               }
           }
-        if (t != Types.t_ERROR && i != gs.size())
+        if (i != gs.size())
           {
-            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
-            result = Types.t_ERROR;
+            if (t != Types.t_ERROR)
+              {
+                AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+              }
+            t = Types.t_ERROR;
           }
         if (t != Types.t_ERROR)
           {
@@ -351,6 +360,11 @@ public class Function extends AbstractLambda
               }
 
             _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
+          }
+        else
+          {
+            _expr = Expr.NO_VALUE;
+            result = Types.t_ERROR;
           }
       }
     return result;
@@ -451,9 +465,8 @@ public class Function extends AbstractLambda
 
         if (f != null)
           {
-            generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                         ? ff.resultTypeIfPresent(res)
-                         : new BuiltInType(FuzionConstants.UNIT_NAME));
+            res.resolveTypes(f);
+            generics.add(f.resultType());
             for (var a : f.arguments())
               {
                 res.resolveTypes(a);
@@ -544,7 +557,7 @@ public class Function extends AbstractLambda
    */
   public String toString()
   {
-    return _names + " -> " + _expr;
+    return _names + " -> " + _originalExpr;
   }
 
 

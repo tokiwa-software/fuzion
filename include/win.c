@@ -36,7 +36,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>     // setenv, unsetenv
+#include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -105,19 +105,6 @@ int fzE_mkdir(const char *pathname){
   free(wideStr);
   return result;
 }
-
-
-// set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value){
-  return -1;
-}
-
-
-// unset environment variable, return zero on success
-int fzE_unsetenv(const char *name){
-  return -1;
-}
-
 
 
 typedef struct {
@@ -714,7 +701,7 @@ void fzE_unlock()
 wchar_t *build_unicode_args(char *args[], size_t argsLen) {
   size_t totalLen = 2;
   for (size_t i = 0; i < argsLen - 1; ++i) {
-    totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0)+1;
+    totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0) + 1 + sizeof(L"\"\" ");
   }
   wchar_t *cmd = (wchar_t *)malloc(totalLen * sizeof(wchar_t));
   assert(!!cmd);
@@ -925,7 +912,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 
   HANDLE hFile = CreateFileW(
       file_name_w,
-      GENERIC_READ | GENERIC_WRITE,
+      GENERIC_READ | GENERIC_WRITE, // NYI: UNDER DEVELOPMENT: consider mode
       FILE_SHARE_READ,
       &sa,
       OPEN_ALWAYS,
@@ -936,6 +923,17 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
     : 0;
+
+  if (hFile != INVALID_HANDLE_VALUE && mode == 2)
+  {
+    LARGE_INTEGER zero = {0}, new_pos = {0};
+    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
+      open_results[0] = (int64_t)GetLastError();
+      CloseHandle(hFile);
+      return NULL;
+    }
+  }
+
   return (void *)hFile;
 }
 

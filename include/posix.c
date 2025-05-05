@@ -32,7 +32,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>     // setenv, unsetenv
+#include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -96,19 +96,6 @@ void fzE_mem_zero_secure(void *dest, size_t sz)
 int fzE_mkdir(const char *pathname){
   return mkdir(pathname, S_IRWXU);
 }
-
-
-// set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value){
-  return setenv(name, value, 1);
-}
-
-
-// unset environment variable, return zero on success
-int fzE_unsetenv(const char *name){
-  return unsetenv(name);
-}
-
 
 void * fzE_opendir(const char *pathname, int64_t * result) {
   errno = 0;

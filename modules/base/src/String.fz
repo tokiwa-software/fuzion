@@ -584,6 +584,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
           .map_to_list x->(String.from_bytes x)
 
 
+  # split string at line feeds
+  #
+  public lines list String =>
+    split encodings.ascii.lf_str
+
+
   # remove leading and trailing white space from this string
   #
   public trim String =>
@@ -597,13 +603,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # remove leading white space from this string
   #
-  trim_start =>
+  public trim_start =>
     String.from_bytes (utf8.drop_while c->c.is_ascii_white_space)
 
 
   # remove trailing white space from this string
   #
-  trim_end =>
+  public trim_end =>
     String.from_bytes (utf8.as_list.reverse.drop_while c->c.is_ascii_white_space).reverse
 
 
@@ -775,6 +781,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public is_ascii =>
     as_codepoints ∀ cp -> cp.is_ascii
+
+
+  # write the bytes of this String to
+  # writer of type: (io.buffered LM).writer
+  #
+  public write_to(LM type : mutate) ! (io.buffered LM).writer
+  =>
+    (io.buffered LM).writer.env.write utf8
 
 
   # monoid of strings with infix + operation.

@@ -638,25 +638,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   public unique_list list A
     pre
       A : property.orderable
-    =>
-      /* NYI: CLEANUP: #4628 the following code can be used once #4628 is fixed
+  =>
+    unique_list2(l list A, existing container.Set A) list A =>
+      match l
+        nil    => nil
+        c Cons => if existing.contains c.head then          unique_list2 c.tail  existing
+                  else                             c.head : unique_list2 c.tail (existing.add c.head)
+    unique_list2 list.this (container.ps_set A).empty
 
-        unique_list2(l list A, existing container.Set A) list A =>
-          match list.this
-            nil    => nil
-            c Cons => if existing.contains c.head then          unique_list2 l  existing
-                      else                             c.head : unique_list2 l (existing.add c.head)
-        unique_list2 list.this (container.ps_set A).empty
-      */
-
-      # workaround for #4628 using new type parameter `X`:
-      unique_list(X type : property.orderable, l list X, existing container.Set X) list X =>
-        match l
-          nil    => nil
-          c Cons => if existing.contains c.head then          unique_list X c.tail  existing
-                    else                             c.head : unique_list X c.tail (existing.add c.head)
-
-      unique_list A list.this (container.ps_set A).empty
 
 
   # sliding window

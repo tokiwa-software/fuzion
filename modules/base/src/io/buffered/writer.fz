@@ -58,6 +58,11 @@ is
   private:public write_result(public bytes_written i32, public error outcome unit) is
 
 
+    # was writing successful?
+    #
+    public ok => error.ok
+
+
   # buffered writing of the given array
   #
   public write (data Sequence u8) write_result =>
@@ -91,4 +96,4 @@ is
       else
         (n_written, e)
       )
-    write_result wr.values.0 wr.values.1
+    write_result wr.0 wr.1

@@ -766,7 +766,7 @@ public class AstErrors extends ANY
     error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + " " +
+          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ".\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -1351,6 +1351,7 @@ public class AstErrors extends ANY
     var solution = "";
 
     if (call._targetOf_forErrorSolutions != null
+     && call._targetOf_forErrorSolutions.name() != null
      && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
      && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
       {
@@ -2268,10 +2269,19 @@ public class AstErrors extends ANY
       "To solve this, rename one of the called features.");
   }
 
-  public static void qualifierExpectedForDotThis(SourcePosition pos, HasSourcePosition e)
+  public static void qualifierExpectedForDotThis(HasSourcePosition expr_or_type)
   {
-    error(pos, "Qualifier expected for "+code(".this")+" expression.",
-          "Found expression "+e.pos().show()+" where a simple qualifier " +  code("a.b.c") + " was expected");
+    if (PRECONDITIONS) require
+      (expr_or_type instanceof Expr || expr_or_type instanceof AbstractType);
+
+    var lhs =
+      expr_or_type instanceof Expr         e ? "expression " + s(e) :
+      expr_or_type instanceof AbstractType t ? "type "       + s(t)
+                                             : code(expr_or_type.toString());
+
+    error(expr_or_type.pos(),
+          "Qualifier expected for " + code(".this") + " expression.",
+          "Found " + lhs + " where a simple qualifier " +  code("a.b.c") + " was expected");
   }
 
   public static void unusedResult(Expr e)

@@ -1,5 +1,6 @@
 io.Err
 fuzion.runtime.pre_fault
+fuzion.runtime.contract_fault
 fuzion.runtime.fault
 io.Out
 io.file.delete

@@ -583,7 +583,7 @@ public class Loop extends ANY
       @Override
       public Expr action(Function f)
       {
-        f._expr.visit(this, null);
+        f.expr().visit(this, null);
         return super.action(f);
       }
     };

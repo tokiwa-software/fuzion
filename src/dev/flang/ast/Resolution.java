@@ -570,6 +570,16 @@ public class Resolution extends ANY
     return af.state();
   }
 
+
+  /**
+   * Ask the resolution for the resulttype of feature f.
+   * returns null if result type is not known yet.
+   */
+  public AbstractType resultTypeIfPresent(Feature f)
+  {
+    return f.resultTypeIfPresent(this);
+  }
+
 }
 
 /* end of file */

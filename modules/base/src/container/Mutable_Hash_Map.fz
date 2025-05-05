@@ -247,7 +247,7 @@ is
   #
   public redef as_map container.Map HK V =>
     pairs := items
-    container.hash_map HK V (pairs.map (.values.0) ).as_array (pairs.map (.values.1)).as_array
+    container.hash_map HK V (pairs.map (.0) ).as_array (pairs.map (.1)).as_array
 
 
   # create an empty instance of Mutable_Hash_Map
