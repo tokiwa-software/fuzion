@@ -701,7 +701,7 @@ void fzE_unlock()
 wchar_t *build_unicode_args(char *args[], size_t argsLen) {
   size_t totalLen = 2;
   for (size_t i = 0; i < argsLen - 1; ++i) {
-    totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0)+1;
+    totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0) + 1 + sizeof(L"\"\" ");
   }
   wchar_t *cmd = (wchar_t *)malloc(totalLen * sizeof(wchar_t));
   assert(!!cmd);
