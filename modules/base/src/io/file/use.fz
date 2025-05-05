@@ -61,10 +61,11 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
       fuzion.sys.fileio.write desc bytes.as_array
 
 
-  mode_num := match m
-                mode.read => i8 0
-                mode.write => i8 1
-                mode.append => i8 2
+  mode_num i32 /* NYI: UNDER DEVELOPMENT: type inference */ :=
+    match m
+      mode.read => 0
+      mode.write => 1
+      mode.append => 2
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
     # install effect `open T` and run `code`

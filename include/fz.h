@@ -443,6 +443,19 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes);
 int fzE_pipe_close(int64_t desc);
 
 /**
+ * the mode in which to open file
+ * NYI: UNDER DEVELOPMENT: maybe flag is the better term?,
+ *                         missing support for O_CREAT, O_SYNC etc.
+ *                         Might be better to keep fzE_file_open simple and
+ *                         provide some kind of fzE_fctln?
+ */
+typedef enum file_open_mode {
+  FZ_FILE_MODE_READ = 0,
+  FZ_FILE_MODE_WRITE = 1,
+  FZ_FILE_MODE_APPEND = 2
+}file_open_mode;
+
+/**
  * open a file
  *
  * @param file_name the files name
@@ -456,7 +469,7 @@ int fzE_pipe_close(int64_t desc);
  * NOTE: the file needs to closed again via fzE_file_close.
  *
  */
-void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode);
 
 /**
  * @param file the pointer to the file

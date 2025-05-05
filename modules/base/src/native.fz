@@ -270,7 +270,7 @@ module fzE_file_open(
               # open_results[error number] as a Fuzion Pointer
               open_results Array,
               # opening flag (Read: 0, Write: 1, Append: 2)
-              flag i8) File_Descriptor => native
+              flag i32) File_Descriptor => native
 
 
 # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
