@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue3508_dangling_else.fz:26:36: error 1: Ambiguous dangling else
+  if false then if false then unit else say "dangling" # 1. should flag an error: dangling else
+-----------------------------------^
+It is unclear to which 'if' the 'else' block belongs to.
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+one error.
