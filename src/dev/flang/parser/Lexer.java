@@ -30,11 +30,11 @@ import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
@@ -955,14 +955,14 @@ public class Lexer extends SourceFile
    *
    * @return c.call()'s result.
    */
-  <V> V relaxLineAndSpaceLimit(Callable<V> c)
+  <V> V relaxLineAndSpaceLimit(Supplier<V> c)
   {
     int oldLine = sameLine(-1);
     int oldEAS = endAtSpaceOrSemi(Integer.MAX_VALUE);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
     var oldSemiSt = semiState(SemiState.CONTINUE);
-    V result = c.call();
+    V result = c.get();
     sameLine(oldLine);
     endAtSpaceOrSemi(oldEAS);
     endAtColon(oldEAC);
@@ -975,17 +975,17 @@ public class Lexer extends SourceFile
   /**
    * short-hand for bracketTermWithNLs with c==def.
    */
-  <V> V optionalBrackets(Parens brackets, String rule, Callable<V> c)
+  <V> V optionalBrackets(Parens brackets, String rule, Supplier<V> c)
   {
     return currentMatches(true, brackets._left)
       ? bracketTermWithNLs(brackets, rule, c, c)
-      : c.call();
+      : c.get();
   }
 
   /**
    * short-hand for bracketTermWithNLs with c==def.
    */
-  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c)
   {
     return bracketTermWithNLs(brackets, rule, c, c);
   }
@@ -1013,7 +1013,7 @@ public class Lexer extends SourceFile
    *
    * @return value returned by c or def, resp.
    */
-  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c, Supplier<V> def)
   {
     var oldSemiSt = semiState(SemiState.CONTINUE);
     var start = brackets._left;
@@ -1059,7 +1059,7 @@ public class Lexer extends SourceFile
    * bracket term could be parsed and the parser/lexer is at an undefined
    * position.
    */
-  boolean skipBracketTermWithNLs(Parens brackets, Callable<Boolean> c)
+  boolean skipBracketTermWithNLs(Parens brackets, Supplier<Boolean> c)
   {
     var start = brackets._left;
     var end   = brackets._right;
