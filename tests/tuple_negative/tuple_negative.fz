@@ -70,8 +70,6 @@ tuple_negative is
   one5 tuple     := tuple     42 ;      #  6. should flag an error, type inference does not infer generics of result type
   one6 tuple     :=          (42);      #  7. should flag an error, type inference does not infer generics of result type
   one9           :=          (42); p "one9 is {one9.values.0}" #  8. should flag an error, (expr) is not a tuple, one9 is an i32
-  (one12)        :=          (42); p "one12 is $one12" # special case: Destructure i32, which works!
-  (one12b)       :=         (nil); p "one12 is $one12b" #  9. should flag an error, (expr) is not a tuple
   one16 i32 := 42;
   one17 i32 := 42;
   one18 i32 := 42;
@@ -84,8 +82,8 @@ tuple_negative is
   two5 tuple           := tuple         4  2 ; # 13. should flag an error, type inference does not infer generics of result type
   two6 tuple           :=              (4, 2); # 14. should flag an error, type inference does not infer generics of result type
   two9                 :=              (4, 2); p "two9 is {two9.values.0}, {two9.values.1}" # one-tuple inferring type and tuple syntax sugar
-  (two11a, two11b)     := tuple         4  2 ; p "two11 is $two11a, $two11b" # two-tuple using destructure and inferring generic
-  (two12a, two12b)     :=              (4, 2); p "two12 is $two12a, $two12b" # two-tuple using destructure and tuple syntax sugar
+  two11a, two11b       := tuple         4  2 ; p "two11 is $two11a, $two11b" # two-tuple using destructure and inferring generic
+  two12a, two12b       :=              (4, 2); p "two12 is $two12a, $two12b" # two-tuple using destructure and tuple syntax sugar
   two16a i32 := 42;
   two16b i32 := 42;
   two17a i32 := 42;
@@ -122,7 +120,7 @@ tuple_negative is
   chck (t10aaa.values.0.codepoint_length = 14) "t10aaa.values.0"
   chck (t10aaa.values.1 = 666) "t10aaa.values.1"
 
-  (t10a1, t10a2) := t10;
+  t10a1, t10a2 := t10;
   p "tuple t10a1/2 is {t10a1}, {t10a2}"
   chck (t10a1 = 3) "t10a1"
   chck !t10a2 "t10a2"
@@ -152,9 +150,9 @@ tuple_negative is
   chck (t12a2 = 16) "second must be 16"
   chck (t12a3 = 64) "third must be 64"
 
-  (t12e1,t12e2,t12e1) := t11 7 # 21. should flag an error, repeated elements in destructuring
-  (t12f1,t12f1,t12f3) := t11 7 # 22. should flag an error, repeated elements in destructuring
-  (t12g1,t12g2,t12g3) := t11 7
+  t12e1,t12e2,t12e1 := t11 7 # 21. should flag an error, repeated elements in destructuring
+  t12f1,t12f1,t12f3 := t11 7 # 22. should flag an error, repeated elements in destructuring
+  t12g1,t12g2,t12g3 := t11 7
   chck (t12g1 = 7) "first must be 7"
   chck (t12g2 = 49) "second must be 49"
   chck (t12g3 = 343) "third must be 343"
@@ -163,30 +161,30 @@ tuple_negative is
   t12h2 i32 := 42
   t12h3 i32 := 42
 
-  (_,_,t12i3) := t11 9; chck (t12i3 = 729) "t12i3 must be 729"
-  (_,t12i2,_) := t11 9; chck (t12i2 =  81) "t12i2 must be 81"
-  (t12i1,_,_) := t11 9; chck (t12i1 =   9) "t12i1 must be 9"
+  _,_,t12i3 := t11 9; chck (t12i3 = 729) "t12i3 must be 729"
+  _,t12i2,_ := t11 9; chck (t12i2 =  81) "t12i2 must be 81"
+  t12i1,_,_ := t11 9; chck (t12i1 =   9) "t12i1 must be 9"
 
-  (_,_)     := (12, 23)
-  (_,_)     := (true, 23)
+  _,_     := (12, 23)
+  _,_     := (true, 23)
 
   t13a1 i32 := 42
   t13a3 i32 := 42
-  (t13d1,_,_)                := (01, 12, 23); chck (t13d1 = 01) "t13d1 must be 01"
-  (_,t13d2,_)                := (01, 12, 23); chck (t13d2 = 12) "t13d2 must be 12"
-  (_,_,t13d3)                := (01, 12, 23); chck (t13d3 = 23) "t13d3 must be 23"
+  t13d1,_,_                := (01, 12, 23); chck (t13d1 = 01) "t13d1 must be 01"
+  _,t13d2,_                := (01, 12, 23); chck (t13d2 = 12) "t13d2 must be 12"
+  _,_,t13d3                := (01, 12, 23); chck (t13d3 = 23) "t13d3 must be 23"
 
   t14a1 i32 := 42;
   t14a3 i32 := 42;
-  (t14d1,_,_)                := (01, true, 23); chck (t14d1 = 01) "t14d1 must be 01"
-  (_,t14d2,_)                := (01, true, 23); chck (t14d2      ) "t14d2 must be true"
-  (_,_,t14d3)                := (01, true, 23); chck (t14d3 = 23) "t14d3 must be 23"
+  t14d1,_,_                := (01, true, 23); chck (t14d1 = 01) "t14d1 must be 01"
+  _,t14d2,_                := (01, true, 23); chck (t14d2      ) "t14d2 must be true"
+  _,_,t14d3                := (01, true, 23); chck (t14d3 = 23) "t14d3 must be 23"
 
   t15a1 i32 := 42;
   t15a3 i32 := 42;
   t15a2 bool := false;
-  (t15a1,_,_)                := (01, true, 23); # 37. should flag an error, duplicate declaration
-  (_,t15a2,_)                := (01, true, 23); # 38. should flag an error, duplicate declaration
-  (_,_,t15a3)                := (01, true, 23); # 39. should flag an error, duplicate declaration
+  t15a1,_,_                := (01, true, 23); # 37. should flag an error, duplicate declaration
+  _,t15a2,_                := (01, true, 23); # 38. should flag an error, duplicate declaration
+  _,_,t15a3                := (01, true, 23); # 39. should flag an error, duplicate declaration
 
   exit

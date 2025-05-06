@@ -145,9 +145,9 @@ O(n log n).
   #
   public add (kv (tuple PK V)) ps_map PK V =>
     nsize := size + 1
-    (ndata, nfill) := if (nsize & size) = 0
-                      then ((container.expanding_array (PK,V)).empty (data.capacity * 2 + (nsize+1) / 2), 0)
-                      else (data, fill)
+    ndata, nfill := if (nsize & size) = 0
+                    then ((container.expanding_array (PK,V)).empty (data.capacity * 2 + (nsize+1) / 2), 0)
+                    else (data, fill)
     nsz := (1 << (size+1).trailing_zeros)
 
     d := ndata.expand nsz ()->
@@ -182,7 +182,7 @@ O(n log n).
       if l > r
         nil
       else
-        (mk,mv) := data[m]
+        mk, mv := data[m]
         match (mk) ⋄ k
           less    => binary_search m+1 r
           greater => binary_search l m-1
@@ -249,7 +249,7 @@ O(n log n).
   public min option PK =>
 
     min0 (m PK, l i32, r i32) PK =>
-      (lk, _) := data[l]
+      lk, _ := data[l]
       if (m ≤ lk) m else lk
 
     min (m PK, at i32, sz i32, tail i32) PK =>
@@ -279,7 +279,7 @@ O(n log n).
   public max option PK =>
 
     max0 (m PK, l i32, r i32) PK =>
-      (rk, _) := data[r]
+      rk, _ := data[r]
       if (m ≥ rk) m else rk
 
     max (m PK, at i32, sz i32, tail i32) PK =>
