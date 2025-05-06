@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
-import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.Tag;
@@ -100,8 +99,8 @@ public class ASTWalker
         .filter(x -> x.calledFeature().inherits().size() != 0)
         .flatMap(x -> traverseCall(x, feature)),
 
-      feature.contract()._declared_preconditions.stream().flatMap(x -> traverseExpression(x.cond, feature.outer())),
-      feature.contract()._declared_postconditions.stream().flatMap(x -> traverseExpression(x.cond, feature.outer())),
+      feature.contract()._declared_preconditions.stream().flatMap(x -> traverseExpression(x.cond(), feature.outer())),
+      feature.contract()._declared_postconditions.stream().flatMap(x -> traverseExpression(x.cond(), feature.outer())),
 
       descend
               ? ParserTool.declaredFeatures(feature, true)
@@ -167,13 +166,6 @@ public class ASTWalker
     if (expr instanceof Box b)
       {
         return traverseExpression(b._value, outer);
-      }
-    if (expr instanceof If i)
-      {
-        return Util.concatStreams(
-          traverseExpression(i.cond, outer),
-          traverseBlock(i.block, outer),
-          i.elseBlock != null ? traverseBlock(i.elseBlock, outer): Stream.empty());
       }
     // for offering completions on constants
     if (expr instanceof Constant ac)

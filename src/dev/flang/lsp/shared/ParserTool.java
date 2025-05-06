@@ -48,7 +48,6 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Function;
-import dev.flang.ast.If;
 import dev.flang.ast.Impl;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Tag;
@@ -260,11 +259,9 @@ public class ParserTool extends ANY
         @Override public Expr         action      (DotType        d) { FoundPos(d.pos()); return d; }
         @Override public void         actionBefore(AbstractCase   c) { FoundPos(c.pos()); }
         @Override public void         actionAfter (AbstractCase   c) { FoundPos(c.pos()); }
-        @Override public void         action      (Cond           c) { FoundPos(c.cond.pos()); }
         @Override public Expr         action      (Destructure    d) { FoundPos(d.pos()); return d; }
         @Override public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
         @Override public Expr         action      (Function       f) { FoundPos(f.pos()); return f; }
-        @Override public Expr         action      (If             i) { FoundPos(i.pos()); return i; }
         @Override public void         action      (Impl           i) { FoundPos(i.pos); }
         @Override public Expr         action      (InlineArray    i) { FoundPos(i.pos()); return i; }
         @Override public void         action      (AbstractMatch  m) { FoundPos(m.pos()); }

@@ -35,7 +35,6 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
-import dev.flang.ast.If;
 import dev.flang.ast.Types;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
@@ -52,7 +51,7 @@ public class HasSourcePositionTool
   {
     try
       {
-        if (item instanceof If || item instanceof Block)
+        if (item instanceof Block)
           {
             return "";
           }
