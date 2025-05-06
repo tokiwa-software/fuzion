@@ -23,7 +23,22 @@
 
 reg_issue3508_dangling_else =>
 
-  if false then if false then unit else say "dangling" # 1. should flag an error: dangling else
+  # CORRECT
+
+  if false then else if false then unit else say "ok"
+
+  if true then if true then if true then
+
+  if true then unit else unit; if false then unit else unit; if true then unit else unit
+
+  if false then else if false then else if false then else
+
+  if true then {if false then} else {if false then else}
 
 
-  if false then else if false then unit else say "ok"  # correct
+
+  if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
+
+  if true then if true then if true then else            # 2. should flag an error: dangling else
+
+  if true then {if false then if false then else} else   # 3. should flag an error: dangling else
