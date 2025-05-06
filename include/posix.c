@@ -736,7 +736,7 @@ int fzE_pipe_close(int64_t desc){
 
 
 // open_results[0] the error number
-void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode)
 {
   assert( mode >= 0 && mode <= 2 );
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
@@ -749,7 +749,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   // make sure no fork is done while we open file
   fzE_lock();
 
-  FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
+  FILE * fp = fopen(file_name, mode==FZ_FILE_MODE_READ ? "rb" : "a+b");
   if (fp!=NULL)
   {
     fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);

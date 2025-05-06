@@ -899,7 +899,7 @@ int fzE_pipe_close(int64_t desc){
 
 
 // open_results[0] the error number
-void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode)
 {
   assert(mode >= 0 && mode <= 2);
 
@@ -924,7 +924,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
     ? (int64_t)GetLastError()
     : 0;
 
-  if (hFile != INVALID_HANDLE_VALUE && mode == 2)
+  if (hFile != INVALID_HANDLE_VALUE && mode == FZ_FILE_MODE_APPEND)
   {
     LARGE_INTEGER zero = {0}, new_pos = {0};
     if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
