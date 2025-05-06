@@ -2410,7 +2410,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Ambiguous dangling else",
-          "It is unclear to which " + skw("if") + " the " + skw("else") + " block belongs to."
+          "It is unclear to which " + skw("if") + " the " + skw("else") + " block belongs."
           + "\nTo solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
   }
 

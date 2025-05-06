@@ -95,7 +95,7 @@ public class Parser extends Lexer
    * 1 for first `if` in line, increased with every `if` in same line
    * reset by newline or a block with braces
    */
-  private int _danglingElseState = 0;       // NYI: CLEANUP: state in parser should be avoided see #4991
+  private int _danglingElseState;           // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /**
    * SourcePosition of the outer `else`, null if not in `else` block
@@ -127,6 +127,8 @@ public class Parser extends Lexer
   private Parser(Parser original)
   {
     super(original);
+
+    _danglingElseState = original._danglingElseState;
   }
 
 
@@ -2927,17 +2929,16 @@ elseBlock   : "else" block
 
     if (skip(true, Token.t_else))
       {
+        // reached unambiguous `else`, therefore a new if-else-block would be unambiguous
+        _danglingElseState--;
+
         if (current() == Token.t_if)
           {
-            // reached unambiguous `else`, therefore a new if-else-block would be unambiguous
-            _danglingElseState--;
             result = new Block(false, new List<Expr>(ifexpr(true)));
           }
         else
           {
             _outerElse = null;
-
-        _danglingElseState--;
 
             result = block();
           }
@@ -2952,9 +2953,6 @@ elseBlock   : "else" block
     if (POSTCONDITIONS) ensure
       (result == null          ||
        result instanceof Block    );
-
-    // reached unambiguous `else`, therefore a new if-else-block would be unambiguous
-    _danglingElseState--;
 
     return result;
   }
