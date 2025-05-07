@@ -518,12 +518,13 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 class='$5'>$0</h1><h2>$3</h2><div class='heading-summary'>$1</div><div class='fd-comment'>$2</div>$6"
-      .replace("$0", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
+    return "$0<h1 class='$1'>$2</h1><h2>$3</h2><div class='heading-summary'>$4</div><div class='fd-comment'>$5</div>$6"
+      .replace("$0", f.isUniverse() ? "<h1 hidden>" + lm.name() + "</h1>" : "") // short version of title for navtitle
+      .replace("$1", f.isUniverse() ? "": "d-none")
+      .replace("$2", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
       .replace("$3", anchorTags(f))
-      .replace("$1", f.isUniverse() ? "": summary(f))
-      .replace("$2", Util.commentOf(f))
-      .replace("$5", f.isUniverse() ? "": "d-none")
+      .replace("$4", f.isUniverse() ? "": summary(f))
+      .replace("$5", Util.commentOf(f))
       .replace("$6", redefines(f));
   }
 
@@ -997,7 +998,7 @@ public class Html extends ANY
   <nav style="display: none">$0</nav>
 </div>
 <div class="container">
-  <section><h1>Fuzion Library Modules</h1>
+  <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
     <div class='fd-comment'></div>
   </section>
   <section>
