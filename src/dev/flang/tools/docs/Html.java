@@ -228,8 +228,8 @@ public class Html extends ANY
       // fills remaining space
       + "<div class='flex-grow-1'></div>"
       + "</div>"
-      + source(af)
-      + "</div>";
+      + "</div>"
+      + source(af);
   }
 
   /**
@@ -936,7 +936,7 @@ public class Html extends ANY
 
   /**
    * For LibraryFeatures return the features LibraryModule
-   * otherwise the LibraryModule of this HTML object 
+   * otherwise the LibraryModule of this HTML object
    */
   private final LibraryModule libModule(AbstractFeature f)
   {
