@@ -76,6 +76,8 @@ public abstract class FeatureVisitor extends ANY
   public void         action      (Tag              b                       ) { }
   public Expr         action      (This             t                       ) { return t; }
   public AbstractType action      (AbstractType     t                       ) { return t; }
+  public Expr         action2     (Match            m                       ) { return m; }
+
 
   /**
    * Visitors that want a different treatment for visiting actual arguments of a

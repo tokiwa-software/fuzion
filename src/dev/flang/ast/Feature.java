@@ -1928,6 +1928,10 @@ A ((Choice)) declaration must not contain a result type.
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
           });
 
+        visit(new ContextVisitor(context()) {
+            @Override public Expr action2(Match m) { return m.addResultFields(res, _context); }
+          });
+
         /*
          * extra pass to automatically wrap values into 'Lazy'
          * or unwrap values inheriting {@code unwrap}

@@ -167,7 +167,7 @@ public class Case extends AbstractCase
 
     _field = f;
     _types = l;
-    _code  = c;
+    _code  = Block.fromExpr(c);
     if (f != null)
       {
         if (f.returnType().functionReturnType() instanceof UnresolvedType ut)

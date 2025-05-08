@@ -48,6 +48,15 @@ public class Match extends AbstractMatch
 {
 
 
+  /*-------------------------  static variables -------------------------*/
+
+
+  /**
+   * quick-and-dirty way to make unique names for match result vars
+   */
+  static private long _id_ = 0;
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -111,15 +120,19 @@ public class Match extends AbstractMatch
    *
    * @return this.
    */
-  public Match visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _subject = _subject.visit(v, outer);
+    var s = _subject;
+    var ns = _subject.visit(v, outer);
+    if (CHECKS) check
+      (s == _subject);
+    _subject = ns;
     v.action(this);
     for (var c: cases())
       {
         c.visit(v, this, outer);
       }
-    return this;
+    return v.action2(this);
   }
 
 
@@ -201,6 +214,35 @@ public class Match extends AbstractMatch
     return this;
   }
 
+  Expr addResultFields(Resolution res, Context context)
+  {
+    // This will trigger addFieldForResult in some cases, e.g.:
+    // `match (if true then true else true) * =>`
+    _subject = subject().propagateExpectedType(res, context, subject().type());
+
+    return addFieldForResult(res, context, type());
+  }
+
+
+  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  {
+    Expr result = this;
+    if (!t.isVoid())
+      {
+        var pos = pos();
+        Feature r = new Feature(res,
+                                pos,
+                                Visi.PRIV,
+                                t,
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                                context.outerFeature());
+        r.scheduleForResolution(res);
+        res.resolveTypes();
+        result = new Block(new List<>(assignToField(res, context, r),
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
+      }
+    return result;
+  }
 
   /**
    * During type inference: Inform this expression that it is used in an
@@ -222,16 +264,9 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    // NYI: CLEANUP: there should be another mechanism, for
-    // adding missing result fields instead of misusing
-    // `propagateExpectedType`.
-    //
-
-    // This will trigger addFieldForResult in some cases, e.g.:
-    // `match (if true then true else true) * =>`
-    _subject = subject().propagateExpectedType(res, context, subject().type());
-
-    return addFieldForResult(res, context, t);
+    _type = t;
+    cases().forEach(c -> c.code().propagateExpectedType(res, context, t));
+    return this;
   }
 
 
