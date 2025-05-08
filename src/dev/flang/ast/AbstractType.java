@@ -2103,7 +2103,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
         var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
-          +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
+          +  (f.definesType() || fn.argCount() == 0 || fn.isInternal() || humanReadable
                 ? ""
                 : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
 
