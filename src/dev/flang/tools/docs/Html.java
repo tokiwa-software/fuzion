@@ -518,7 +518,7 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 class='$5'>$0</h1><h2>$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
+    return "<h1 class='$5'>$0</h1><h2>$3</h2><div class='heading-summary'>$1</div><div class='fd-comment'>$2</div>$6"
       .replace("$0", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
       .replace("$3", anchorTags(f))
       .replace("$1", f.isUniverse() ? "": summary(f))
@@ -998,7 +998,7 @@ public class Html extends ANY
 </div>
 <div class="container">
   <section><h1>Fuzion Library Modules</h1>
-    <h2></h2><h3></h3><div class='fd-comment'></div>
+    <div class='fd-comment'></div>
   </section>
   <section>
         """.replace("$0", navigationModules()));
