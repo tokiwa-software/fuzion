@@ -50,6 +50,11 @@ is
   => (next.get exclusive_bound.as_u64).as_i32
 
 
+  # return next random number of type i32 in the full range of i32 (i32.min..i32.max)
+  #
+  public next_i32 => next_u32.cast_to_i32
+
+
   # return next random number of type i64 in the range 0..exclusive_bound-1
   #
   # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
@@ -59,16 +64,31 @@ is
   => (next.get exclusive_bound.as_u64).as_i64
 
 
+  # return next random number of type i64 in the full range of i64 (i64.min..i64.max)
+  #
+  public next_i64 => next_u64.cast_to_i64
+
+
   # return next random number of type u32 in the range 0..exclusive_bound-1
   #
   public next_u32(exclusive_bound u32) => (next.get exclusive_bound.as_u64).as_u32
+
+
+  # return next random number of type u32 in the full range of u32 (0..u32.max)
+  #
+  public next_u32 => (next_u64 & 0x0000_0000_ffff_ffff).as_u32
 
 
   # return next random number of type u64 in the range 0..exclusive_bound-1
   #
   # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
   #
-  public next_u64(exclusive_bound u64) =>  next.get exclusive_bound
+  public next_u64(exclusive_bound u64) => next.get exclusive_bound
+
+
+  # return next random number of type u64 in the full range of u64 (0..u64.max)
+  #
+  public next_u64 => next.p.get
 
 
   # return next random number of type f32 in the range [0..1),
