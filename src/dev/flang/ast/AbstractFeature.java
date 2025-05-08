@@ -554,11 +554,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     List<AbstractType> result;
 
-    if (this == Types.f_ERROR)
-      {
-        result = null;
-      }
-    else if (isBaseChoice())
+    if (isBaseChoice())
       {
         result = generics().asActuals();
       }

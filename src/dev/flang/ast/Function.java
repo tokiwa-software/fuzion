@@ -396,7 +396,7 @@ public class Function extends AbstractLambda
             if (frmlRt.feature() != lmbdRt.selfOrConstraint(res, context).feature())
               {
                 result = frmlRt.applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
-                if (result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
+                if (result.isChoice() && result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
                   {
                     _feature.setRefinedResultType(res, result);
                   }
