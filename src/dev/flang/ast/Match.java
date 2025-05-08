@@ -401,10 +401,9 @@ public class Match extends AbstractMatch
             }
           });
 
-    return new Match(pos, c, new List<>())
+    return new Match(pos, c, cases)
       {
         @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
-        @Override public List<AbstractCase> cases() { return cases; }
       };
   }
 
@@ -416,7 +415,7 @@ public class Match extends AbstractMatch
    */
   public String toString()
   {
-    var sb = new StringBuilder("match " + subject() + "\n");
+    var sb = new StringBuilder((kind() == Kind.Plain ? "match " : "if ") + subject() + "\n");
     for (var c : cases())
       {
         sb.append(c.toString()).append("\n");
