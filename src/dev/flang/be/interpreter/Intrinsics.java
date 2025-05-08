@@ -269,13 +269,13 @@ public class Intrinsics extends ANY
           return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
         });
 
-    put("concur.util.loadFence",   (executor, innerClazz) -> args ->
+    put("concur.util.load_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
         });
 
-    put("concur.util.storeFence",  (executor, innerClazz) -> args ->
+    put("concur.util.store_fence",  (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
           return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));

@@ -143,8 +143,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 
-    put("concur.util.loadFence",
-        "concur.util.storeFence",
+    put("concur.util.load_fence",
+        "concur.util.store_fence",
         (jvm, si, cc, tvalue, args) ->
         {
           return new Pair<>(Expr.UNIT,
