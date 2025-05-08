@@ -207,29 +207,31 @@ public class Html extends ANY
    */
   private String summary(AbstractFeature af, AbstractFeature outer)
   {
-    return "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
-      + "<div class='d-flex flex-wrap word-break-break-word'>"
-      + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
-      + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
-      + anchor(af)
-      + arguments(af)
-      + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
-      + inherited(af)
-      + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
-        : af.isConstructor()     ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-        : af.isField()           ? "&nbsp;" + anchor(af.resultType(), outer) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
-                                 : "")
-      + annotateInherited(af, outer)
-      + annotateRedef(af, outer)
-      + annotateAbstract(af)
-      + annotateContainsAbstract(af)
-      + annotatePrivateConstructor(af)
-      + annotateModule(af)
-      // fills remaining space
-      + "<div class='flex-grow-1'></div>"
-      + "</div>"
-      + "</div>"
-      + source(af);
+    return
+      "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
+        + "<div class='d-flex flex-wrap word-break-break-word'>"
+          + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
+          + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
+            + anchor(af)
+            + arguments(af)
+            + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
+            + inherited(af)
+            + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
+               : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
+               : af.isField()         ? "&nbsp;" + anchor(af.resultType(), outer) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
+                                      : "")
+            + annotateInherited(af, outer)
+            + annotateRedef(af, outer)
+            + annotateAbstract(af)
+            + annotateContainsAbstract(af)
+            + annotatePrivateConstructor(af)
+            + annotateModule(af)
+            // fills remaining space
+            + "<div class='flex-grow-1'></div>"
+          + "</div>"
+        + "</div>"
+        + source(af)
+      + "</div>";
   }
 
   /**
@@ -496,7 +498,7 @@ public class Html extends ANY
     var content = features.map(af ->
       // NYI summary tag must not contain div
       "<details id='" + htmlID(af)
-      + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+      + "' $0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
         // NYI rename fd-private?
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
         .replace("$1", summary(af, outer))
@@ -615,7 +617,7 @@ public class Html extends ANY
     if (!codeLines.isEmpty())
       {
         /* dump codeLines into a fuzion-lang.dev runcode box */
-        var id = "fzdocs." + name + codeNo[0];
+        var id = ("fzdocs." + name + codeNo[0]).replace(" ", ""); // NYI: CLEANUP: better not to add spaces in the first place
         var code = codeLines
           .stream()
           .map(cl -> { return cl.replaceAll("^    ", ""); })
