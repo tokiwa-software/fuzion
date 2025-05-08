@@ -1,0 +1,202 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature uuid
+#
+# -----------------------------------------------------------------------
+
+
+# UUID as defined in RFC9562
+#
+# https://datatracker.ietf.org/doc/html/rfc9562
+#
+# NYI: UNDER DEVELOPMENT: some versions are missing
+#
+public uuid(private val u128) : property.orderable is
+
+  # Create a string representation of this UUID
+  # using lowercase letters
+  #
+  # e.g. f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+  #
+  public redef as_string() String
+  =>
+    (val.hi >> 32).hex 8
+      + "-"
+      + (val.hi >> 16 & 0xff_ff) .hex 4
+      + "-"
+      + (val.hi & 0xff_ff) .hex 4
+      + "-"
+      + (val.lo >> 48) .hex 4
+      + "-"
+      + (val.lo & 0xffff_ffff_ffff) .hex 12
+
+
+  # the version field as a decimal number
+  #
+  public version i32 =>
+    (val.hi >> 12 & 0xf).as_i32
+
+
+  # the variant field as a decimal number
+  #
+  public var_field i32 =>
+    (val.lo >> 60).as_i32
+
+
+  # The value of this UUID as an u128
+  #
+  public as_u128 u128 =>
+    val
+
+
+  # Data of this UUID without the bits of version and variant field
+  # as an u128 with 122 bits of data
+  #
+  public data u128
+    post debug: result <= (u128.max >> 6.as_u128)
+  =>
+    ((u128 ((val.hi & 0xffff_ffff_ffff_0000) >> 4 | val.hi & 0x0000_0000_0000_0fff) 0) >> 2.as_u128)
+      | (val & u128 0 0x3fff_ffff_ffff_ffff)
+
+
+  # does a come before b or is equal to b?
+  #
+  public fixed redef type.lteq(a, b uuid) bool =>
+    u128.type.lteq a.val b.val
+
+
+  /* NYI: UNDER DEVELOPMENT: implement missing UUID versions
+
+  public type.create_v1_time() uuid => panic "not yet implemented"
+
+
+  public type.create_v3_md5_from_name(
+    # UUID of the namespace
+    nsid u128,
+
+    # the name from which to generate a UUID
+    name String
+  ) uuid
+  => panic "not yet implemented"
+
+
+  public type.create_v5_sha1_from_name(
+    # UUID of the namespace
+    nsid u128,
+
+    # the name from which to generate a UUID
+    name String
+  ) uuid
+  => panic "not yet implemented"
+
+
+  public type.create_v6_time() uuid => panic "not yet implemented"
+
+
+  public type.create_v7_time() uuid => panic "not yet implemented"
+
+  */
+
+
+  # Version 4 UUID containing 122 bits of random data
+  #
+  # https://datatracker.ietf.org/doc/html/rfc9562#name-uuid-version-4
+  #
+  public type.create_random() uuid =>
+    mask := u128 0xffff_ffff_ffff_0fff 0x3fff_ffff_ffff_ffff
+    version_and_variant := u128 0x0000_0000_0000_4000 0x8000_0000_0000_0000
+
+    uuid ((u128 random.next_u64 random.next_u64) & mask | version_and_variant)
+
+
+  # Version 8 UUID containing 122 bits of custom data
+  #
+  # https://datatracker.ietf.org/doc/html/rfc9562#name-uuid-version-8
+  #
+  public type.create_custom(
+    # data to embed into the uuid, the first 6 bits must be zero
+    data u128
+  ) uuid
+    pre debug: data <= (u128.max >> 6.as_u128)
+  =>
+    version_and_variant := u128 0x0000_0000_0000_8000 0x8000_0000_0000_0000
+
+    shifted := (data & u128 0  0x3fff_ffff_ffff_ffff)
+                | ((data & (u128 0x0000_0000_0000_03ff 0xc000_0000_0000_0000)) << 2.as_u128)
+                | ((data & (u128 0x03ff_ffff_ffff_fc00 0x0000_0000_0000_0000)) << 6.as_u128)
+
+    uuid (shifted | version_and_variant)
+
+
+  # The Nil UUID is special form of UUID that is specified to have all 128 bits set to zero
+  #
+  # A Nil UUID value can be useful to communicate the absence of any other UUID value in
+  # situations that otherwise require or use a 128-bit UUID. A Nil UUID can express the concept
+  # "no such value here".
+  # Thus, it is reserved for such use as needed for implementation-specific situations.
+  #
+  # https://datatracker.ietf.org/doc/html/rfc9562#name-nil-uuid
+  #
+  public type.nil_uuid() uuid =>
+    uuid u128.zero
+
+
+  # The Max UUID is a special form of UUID that is specified to have all 128 bits set to 1
+  #
+  # This UUID can be thought of as the inverse of the Nil UUID
+  # A Max UUID value can be used as a sentinel value in situations where a 128-bit UUID
+  # is required, but a concept such as "end of UUID list" needs to be expressed and is
+  # reserved for such use as needed for implementation-specific situations.
+  #
+  # https://datatracker.ietf.org/doc/html/rfc9562#name-max-uuid
+  #
+  public type.max_uuid() uuid =>
+    uuid u128.max
+
+
+  # Create a UUID from an u128
+  #
+  # Does not check for valid version, variant, etc.
+  #
+  public type.from_u128(uuid_val u128) uuid =>
+    uuid uuid_val
+
+
+  # Create a UUID from its String representation
+  #
+  # Does not check for valid version, variant, etc.
+  #
+  # Hexadecimal digits in groups of 8-4-4-4-12
+  # XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  # where X is a hexadecimal digit
+  #
+  public type.from_string(uuid_str String) outcome uuid =>
+
+    #           1         2         3
+    # 012345678901234567890123456789012345
+    # f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+
+    ls := uuid_str.as_codepoints
+
+    if uuid_str.byte_length = 36 && ls[8] = ls[13] = ls[18] = ls[23] = "-"
+      (encodings.base16.decode_str (uuid_str.upper_case.replace "-" "")).bind (uuid) (byte_arr ->
+        (uuid (byte_arr.foldf u128 u128.zero ((res,byte) -> res << 8.as_u128 | byte.as_u128))))
+    else
+      error "uuid must have format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX where X is a hexadecimal digit"
