@@ -159,30 +159,10 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param f if this type corresponds to a feature, then this is the
    * feature, else null.
-   *
-   * @param refOrVal
-   */
-  public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
-  {
-    return create(g, ug, o, f, refOrVal, true);
-  }
-
-
-  /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
-   *
-   * @param g the actual generic arguments (resolved)
-   *
-   * @param ug the actual generic arguments (unresolved)
-   *
-   * @param o
-   *
-   * @param f if this type corresponds to a feature, then this is the
-   * feature, else null.
    */
   public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
   {
-    return create(g, ug, o, f, RefOrVal.LikeUnderlyingFeature);
+    return create(g, ug, o, f, RefOrVal.LikeUnderlyingFeature, true);
   }
 
 
@@ -372,7 +352,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   protected ResolvedNormalType()
   {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature, true);
+    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature, false);
   }
 
 
