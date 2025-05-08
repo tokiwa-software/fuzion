@@ -220,8 +220,8 @@ public class CFG extends ANY
     put("concur.atomic.racy_accesses_supported", (cfg, cl) -> { } );
     put("concur.atomic.read0"            , (cfg, cl) -> { } );
     put("concur.atomic.write0"           , (cfg, cl) -> { } );
-    put("concur.util.loadFence"          , (cfg, cl) -> { } );
-    put("concur.util.storeFence"         , (cfg, cl) -> { } );
+    put("concur.util.load_fence"          , (cfg, cl) -> { } );
+    put("concur.util.store_fence"         , (cfg, cl) -> { } );
 
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );

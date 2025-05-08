@@ -1779,12 +1779,12 @@ public class DFA extends ANY
           return Value.UNIT;
         });
 
-    put("concur.util.loadFence", cl ->
+    put("concur.util.load_fence", cl ->
         {
           return Value.UNIT;
         });
 
-    put("concur.util.storeFence", cl ->
+    put("concur.util.store_fence", cl ->
         {
           return Value.UNIT;
         });

@@ -285,12 +285,12 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("concur.util.loadFence", (c,cl,outer,in) ->
+    put("concur.util.load_fence", (c,cl,outer,in) ->
         {
           return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
         });
 
-    put("concur.util.storeFence", (c,cl,outer,in) ->
+    put("concur.util.store_fence", (c,cl,outer,in) ->
         {
           return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
         });
