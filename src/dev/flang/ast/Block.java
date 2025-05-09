@@ -390,17 +390,6 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last expression is not an expression that produces a result.
-   */
-  public boolean producesResult()
-  {
-    var expr = resultExpression();
-    return expr != null && expr.producesResult();
-  }
-
-
-  /**
    * check that each expression in this block
    * results in either unit or void.
    */
