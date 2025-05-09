@@ -20,43 +20,39 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionWorkspaceService
+ * Source of class References
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp;
+package dev.flang.lsp.feature;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
-import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.WorkspaceService;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.ReferenceParams;
 
-import dev.flang.lsp.feature.Commands;
-import dev.flang.lsp.shared.Context;
+import dev.flang.lsp.shared.FeatureTool;
+import dev.flang.lsp.shared.QueryAST;
+import dev.flang.lsp.util.Bridge;
 
-public class FuzionWorkspaceService implements WorkspaceService
+/**
+ * return list of references for feature at cursor position
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_references
+ */
+public class References
 {
 
-  @Override
-  public void didChangeConfiguration(DidChangeConfigurationParams params)
+  public static List<? extends Location> getReferences(ReferenceParams params)
   {
-    Context.logger.log("[Workspace] received config change.");
-    FuzionLanguageServer.refetchClientConfig();
+    var feature = QueryAST.featureAt(Bridge.toSourcePosition(params));
+    if (feature.isEmpty())
+      {
+        return List.of();
+      }
+    return FeatureTool.callsTo(feature.get())
+      .map(entry -> Bridge.toLocation(entry.getKey()))
+      .collect(Collectors.toList());
   }
-
-  @Override
-  public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
-  {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
-  {
-    return Commands.execute(params);
-  }
-
 
 }

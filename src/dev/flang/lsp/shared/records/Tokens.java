@@ -20,43 +20,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionWorkspaceService
+ * Source of class Tokens
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp;
+package dev.flang.lsp.shared.records;
 
-import java.util.concurrent.CompletableFuture;
-
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
-import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.WorkspaceService;
-
-import dev.flang.lsp.feature.Commands;
-import dev.flang.lsp.shared.Context;
-
-public class FuzionWorkspaceService implements WorkspaceService
+/**
+ * the token left and right of the cursor
+ */
+public record Tokens(TokenInfo left, TokenInfo right)
 {
-
-  @Override
-  public void didChangeConfiguration(DidChangeConfigurationParams params)
-  {
-    Context.logger.log("[Workspace] received config change.");
-    FuzionLanguageServer.refetchClientConfig();
-  }
-
-  @Override
-  public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
-  {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
-  {
-    return Commands.execute(params);
-  }
-
-
 }
