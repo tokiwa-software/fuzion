@@ -28,14 +28,14 @@
 #
 # NYI: UNDER DEVELOPMENT: some versions are missing
 #
-public uuid(private val u128) : property.orderable is
+private:public uuid(val u128) : property.orderable is
 
   # Create a string representation of this UUID
   # using lowercase letters
   #
   # e.g. f81d4fae-7dec-11d0-a765-00a0c91e6bf6
   #
-  public redef as_string() String
+  public redef as_string String
   =>
     (val.hi >> 32).hex 8
       + "-"
