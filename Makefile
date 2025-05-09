@@ -125,6 +125,7 @@ MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
+MOD_UUID               = $(BUILD_DIR)/modules/uuid.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
@@ -450,6 +451,7 @@ FZ_MODULES = \
 			$(MOD_TERMINAL) \
 			$(MOD_LOCK_FREE) \
 			$(MOD_NOM) \
+			$(MOD_UUID) \
 			$(MOD_CLANG)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
@@ -680,6 +682,12 @@ $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveModule=$@
+
+$(MOD_UUID): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/uuid/src -name "*.fz")
+	rm -rf $(@D)/uuid
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/uuid $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/uuid/src -saveModule=$@
 
 $(MOD_CLANG): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/clang/src -name "*.fz")
 	rm -rf $(@D)/clang

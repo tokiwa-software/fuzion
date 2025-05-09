@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = uuid_test
+FUZION_OPTIONS = -modules=uuid
 include ../simple.mk
