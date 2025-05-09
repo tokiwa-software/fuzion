@@ -215,3 +215,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   display: inline-block;
   width: 3ch;
 }
+
+.heading-summary{
+  font-size: 120%;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+}
