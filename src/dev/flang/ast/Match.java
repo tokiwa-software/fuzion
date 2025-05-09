@@ -48,6 +48,15 @@ public class Match extends AbstractMatch
 {
 
 
+  /*-------------------------  static variables -------------------------*/
+
+
+  /**
+   * quick-and-dirty way to make unique names for match result vars
+   */
+  static private long _id_ = 0;
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -232,6 +241,37 @@ public class Match extends AbstractMatch
     _subject = subject().propagateExpectedType(res, context, subject().type());
 
     return addFieldForResult(res, context, t);
+  }
+
+
+  /**
+   * Add a field for the result of this match expression,
+   * add an assign to this field of each cases result.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this assignment is used
+   *
+   * @param t the type to use for the result field
+   */
+  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  {
+    Expr result = this;
+    if (!t.isVoid())
+      {
+        var pos = pos();
+        Feature r = new Feature(res,
+                                pos,
+                                Visi.PRIV,
+                                t,
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                                context.outerFeature());
+        r.scheduleForResolution(res);
+        res.resolveTypes();
+        result = new Block(new List<>(assignToField(res, context, r),
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
+      }
+    return result;
   }
 
 

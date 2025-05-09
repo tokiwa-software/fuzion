@@ -68,15 +68,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   };
 
 
-  /*-------------------------  static variables -------------------------*/
-
-
-  /**
-   * quick-and-dirty way to make unique names for expression result vars
-   */
-  static private long _id_ = 0;
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -554,27 +545,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public List<ParsedName> asQualifier()
   {
     return null;
-  }
-
-
-  protected Expr addFieldForResult(Resolution res, Context context, AbstractType t)
-  {
-    var result = this;
-    if (!t.isVoid())
-      {
-        var pos = pos();
-        Feature r = new Feature(res,
-                                pos,
-                                Visi.PRIV,
-                                t,
-                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                context.outerFeature());
-        r.scheduleForResolution(res);
-        res.resolveTypes();
-        result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
-      }
-    return result;
   }
 
 
