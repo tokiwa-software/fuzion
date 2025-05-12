@@ -2418,6 +2418,11 @@ A ((Choice)) declaration must not contain a result type.
         result = result.resolve(res, outer().context());
       }
 
+    if (explicitTypeRequired() && (_returnType == NoType.INSTANCE))
+      {
+        AstErrors.explicitTypeRequired(this, result);
+      }
+
     if (result != null)
       {
         // FORWARD_CYCLIC should be returned only once.
