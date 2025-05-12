@@ -56,14 +56,10 @@ is
   # modulo operator whose result is always positive
   #
   modded_mod(a, c i64) i64
+  post debug: result >= 0
   =>
     b := c + 1
-    m := a % b
-
-    if m < 0
-      m + b
-    else
-      m
+    (a+b) % b
 
 
   # buffer is full?
