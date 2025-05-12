@@ -49,8 +49,13 @@ module:public connections(active container.Set i32) : effect is
   # have not been closed manually
   #
   public redef finally =>
-    active.for_each desc->
-      _ := fuzion.sys.net.close desc # NYI: handle errors
+    active
+      .map desc->
+        fuzion.sys.net.close desc
+      .for_each res->
+        match res
+          e error => fuzion.runtime.fault.cause ("net.connections.finally", "closing connection failed: {e}")
+          unit =>
 
 
 # short-hand to get connections effect

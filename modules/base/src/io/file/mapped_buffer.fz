@@ -54,5 +54,5 @@ module:public mapped_buffer
   # cleanup
   #
   public redef finally =>
-    # NYI: what to do on error?
-    _ := fzE_munmap memory length
+    if fzE_munmap memory length = -1
+      fuzion.runtime.fault.cause ("io.file.mapped_buffer.finally", "unmapping memory failed")

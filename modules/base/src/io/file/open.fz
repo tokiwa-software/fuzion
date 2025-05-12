@@ -69,7 +69,9 @@ module:public open(fd File_Descriptor,
   # close file when de-instating effect
   #
   public redef finally =>
-    _ := fuzion.sys.fileio.close fd
+    match fuzion.sys.fileio.close fd
+      e error => fuzion.runtime.fault.cause ("io.file.open.finally", "closing file failed:  {e}")
+      unit =>
 
 
 
