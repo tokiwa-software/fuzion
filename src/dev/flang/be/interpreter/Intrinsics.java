@@ -400,6 +400,7 @@ public class Intrinsics extends ANY
           return new JavaRef(res);
         });
     putUnsafe("fuzion.java.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    putUnsafe("fuzion.java.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);

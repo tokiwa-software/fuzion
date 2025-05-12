@@ -266,7 +266,7 @@ void fzE_create_jvm(char * option_string) {
 }
 
 // close the JVM.
-void fzE_destroy_jvm()
+void fzE_destroy_jvm(void)
 {
   (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
 }

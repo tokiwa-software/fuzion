@@ -990,7 +990,8 @@ public class C extends ANY
                     "fuzion.java.primitive_to_java_object",
                     "fuzion.java.java_string_to_string",
                     "fuzion.java.string_to_java_object0",
-                    "fuzion.java.fuzion.java.create_jvm")
+                    "fuzion.java.fuzion.java.create_jvm",
+                    "fuzion.java.fuzion.java.destroy_jvm")
       .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
@@ -1124,11 +1125,6 @@ public class C extends ANY
                         CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
                         CExpr.call(_names.function(cl), new List<>())
                         ));
-
-    if (linkJVM())
-      {
-        cf.println("fzE_destroy_jvm();");
-      }
 
     cf.println("}");
   }
