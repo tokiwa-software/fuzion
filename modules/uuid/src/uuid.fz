@@ -103,7 +103,7 @@ private:public uuid(val u128) : property.orderable is
 
   /* NYI: UNDER DEVELOPMENT: implement missing UUID versions
 
-  public type.create_v1_time() uuid => panic "not yet implemented"
+  public type.create_v1_time uuid => panic "not yet implemented"
 
 
   public type.create_v3_md5_from_name(
@@ -126,10 +126,10 @@ private:public uuid(val u128) : property.orderable is
   => panic "not yet implemented"
 
 
-  public type.create_v6_time() uuid => panic "not yet implemented"
+  public type.create_v6_time uuid => panic "not yet implemented"
 
 
-  public type.create_v7_time() uuid => panic "not yet implemented"
+  public type.create_v7_time uuid => panic "not yet implemented"
 
   */
 
@@ -155,7 +155,7 @@ private:public uuid(val u128) : property.orderable is
   #
   # https://datatracker.ietf.org/doc/html/rfc9562#name-uuid-version-4
   #
-  public type.create_random() uuid =>
+  public type.create_random uuid =>
     uuid ((u128 random.next_u64 random.next_u64) & data_mask | v4_vers_var_bits)
 
 
@@ -186,7 +186,7 @@ private:public uuid(val u128) : property.orderable is
   #
   # https://datatracker.ietf.org/doc/html/rfc9562#name-nil-uuid
   #
-  public type.nil_uuid() uuid =>
+  public type.nil_uuid uuid =>
     uuid u128.zero
 
 
@@ -199,7 +199,7 @@ private:public uuid(val u128) : property.orderable is
   #
   # https://datatracker.ietf.org/doc/html/rfc9562#name-max-uuid
   #
-  public type.max_uuid() uuid =>
+  public type.max_uuid uuid =>
     uuid u128.max
 
 
