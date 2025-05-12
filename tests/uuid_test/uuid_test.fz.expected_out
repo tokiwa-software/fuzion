@@ -1,0 +1,25 @@
+f81d4fae-7dec-11d0-a765-00a0c91e6bf6 <-- expected
+f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+OK
+OK
+my_uuid_1 equal to itself
+my_uuid_2 equal to itself
+1 <> 2 = equal
+2 <> 1 = equal
+
+random:
+version = 4 OK
+variant is OK
+
+nil and max:
+00000000-0000-0000-0000-000000000000 (version  0, variant 0000)
+ffffffff-ffff-ffff-ffff-ffffffffffff (version 15, variant 1111)
+
+custom:
+00000000-0000-8000-8000-000000000000 (version  8, variant 1000)
+ffffffff-ffff-8fff-bfff-ffffffffffff (version  8, variant 1011)
+48d159d2-2404-88d0-a567-890123456789 (version  8, variant 1010)
+aaaaaaaa-aaaa-8aaa-aaaa-aaaaaaaaaaaa (version  8, variant 1010)
+01234567489012342567890123456789 OK
+02aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa OK
