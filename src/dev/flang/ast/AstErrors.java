@@ -2428,6 +2428,12 @@ public class AstErrors extends ANY
           "To solve this, remove the field or move its declaration into a parent feature.");
   }
 
+  public static void mustNotCallEffectFinally(Call call)
+  {
+    error(call.pos(), "Must not call " + ss("<effect>.finally") + ".",
+      ss("<effect>.finally") + " is called automatically when deinstating the effect.");
+  }
+
 }
 
 /* end of file */

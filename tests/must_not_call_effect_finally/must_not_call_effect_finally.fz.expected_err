@@ -1,0 +1,13 @@
+
+--CURDIR--/must_not_call_effect_finally.fz:27:6: error 1: Must not call '<effect>.finally'.
+  lm.finally
+-----^^^^^^^
+'<effect>.finally' is called automatically when deinstating the effect.
+
+
+--CURDIR--/must_not_call_effect_finally.fz:30:12: error 2: Must not call '<effect>.finally'.
+    lm.env.finally
+-----------^^^^^^^
+'<effect>.finally' is called automatically when deinstating the effect.
+
+2 errors.
