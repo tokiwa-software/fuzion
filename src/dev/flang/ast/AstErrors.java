@@ -2002,10 +2002,14 @@ public class AstErrors extends ANY
 
   static void noActualCallFound(AbstractFeature formalArg)
   {
-    error(formalArg.pos(),
-          "Type inference from actual arguments failed since no actual call was found",
-          "For the formal argument " + s(formalArg) + " " +
-          "the type can only be derived if there is a call to " + s(formalArg.outer()) + ".");
+    // only show error for features that are not required to have a type specified manually
+    if (!formalArg.outer().explicitTypeRequired())
+    {
+        error(formalArg.pos(),
+              "Type inference from actual arguments failed since no actual call was found",
+              "For the formal argument " + s(formalArg) + " " +
+              "the type can only be derived if there is a call to " + s(formalArg.outer()) + ".");
+      }
   }
 
 
@@ -2448,6 +2452,19 @@ public class AstErrors extends ANY
   {
     error(call.pos(), "Must not call " + ss("<effect>.finally") + ".",
       ss("<effect>.finally") + " is called automatically.");
+  }
+
+  public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
+  {
+    String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
+                           "\nInferred type is " + s(inf) : "\nNo type could be inferred";
+
+    error(f.pos(),
+          (f.visibility().eraseTypeVisibility() == Visi.PUB)
+            ? "Public features must have explicit result type"
+            : "Arguments of public features must have explicit type",
+          "Feature " + s(f) + " is " + skw("public") + " but has no explicit type specified"
+          + inferredMsg);
   }
 
 }
