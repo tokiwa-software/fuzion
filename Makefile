@@ -1482,4 +1482,6 @@ $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERP
 	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
 
 
-include ./lsp.mk
+# rules relevant for language server protocol
+#
+include $(FZ_SRC)/lsp.mk
