@@ -71,13 +71,13 @@ is
 
       # exit with the given code
       #
-      public redef exit(code u8) =>
+      public redef exit(code u8) void =>
         fuzion.std.exit code.as_i32
 
 
       # exit with the stored code
       #
-      public redef exit =>
+      public redef exit void =>
         fuzion.std.exit exit_code.as_i32
 
 
@@ -105,17 +105,17 @@ exit0 =>
 # exit with a code argument calls exit.exit code, i.e., it uses the
 # current exit effect to exit with the given message.
 #
-public exit(code u8) => exit0.exit code
+public exit(code u8) void => exit0.exit code
 
 
 # exit with the currently stored exit code
 #
-public exit => exit0.exit
+public exit void => exit0.exit
 
 
 # change the currently stored exit code
 #
-public set_exit_code(code u8)
+public set_exit_code(code u8) outcome unit
 pre debug: code ≤ 127
   => exit0.set_exit_code code
 
@@ -125,7 +125,7 @@ pre debug: code ≤ 127
 # In case the handler aborts this effect, this feature will
 # return normally after a call to `exit.env.exit n`.
 #
-public exit(handler Exit_Handler, code ()->unit) =>
+public exit(handler Exit_Handler, code ()->unit) unit =>
   exit.instate unit (exit handler unit unit) code _->unit
 
 

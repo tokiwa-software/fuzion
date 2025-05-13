@@ -66,5 +66,5 @@ public fallible(ERROR type, h ERROR->void) : effect is
   # Note that the code is not executed unless `.catch` or `infix ||` is applied
   # to the result of the call to `try`.
   #
-  public type.try(T type, code_try ()->T) =>
+  public type.try(T type, code_try ()->T) eff.try ERROR fallible.this T =>
     eff.try ERROR fallible.this T code_try

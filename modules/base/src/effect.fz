@@ -125,7 +125,7 @@ public effect is
   # determine the required effects and create code to  instate them at the beginning
   # of an application.
   #
-  public type.default(e effect.this) => default0 e
+  public type.default(e effect.this) unit => default0 e
 
 
   # convenience version of `type.default` for effect values whose type is
@@ -235,7 +235,7 @@ public effect is
   #
   #     effect_type <- effect_instance ! code
   #
-  public type.infix <- (E type : effect, e E) =>
+  public type.infix <- (E type : effect, e E) effect0 E =>
     effect0 e
 
 
@@ -277,7 +277,7 @@ public effect is
   # NYI: BUG: It is currently not enforced that replace is only called during the execution
   # of an operation of a currently instated effect of the same effect type.
   #
-  public type.replace(e effect.this)
+  public type.replace(e effect.this) unit
   pre
     safety: effect.this.is_instated
   =>
@@ -294,7 +294,7 @@ public effect is
   # replace may only be called during the execution of an operation of a currently instated
   # effect of the same effect type.
   #
-  public replace
+  public replace unit
   pre
     safety: effect.this.is_instated
   =>
@@ -335,7 +335,7 @@ public effect is
   # a result. This is used, e.g, in `mutate` to avoid static analysis
   # reporting `panic` as an effect of the use of a local mutate instance.
   #
-  public abortable => true
+  public abortable bool => true
 
 
   # abort the current execution and return from the surrounding call to
@@ -362,14 +362,14 @@ public effect is
   # after it has been de-instated.
   #
   # This happens either on a normal return form the code passed to
-  # `instate`, on an abort perfomed on this effect or on an abort
+  # `instate`, on an abort performed on this effect or on an abort
   # performed on an effect instated prior to this effect's instation.
   #
   # This can be used to perform actions when leaving an effect such
   # a cleanup up resources that were created or opened by operations
   # of this effect.
   #
-  public finally =>
+  public finally unit =>
 
 
   # internal feature that will be called on the instance of this effect
@@ -413,12 +413,12 @@ instate_helper(# result type
 
   # wrapper to call `code` and store result in 'res`
   call_code : Function unit is
-    public redef call =>
+    public redef call unit =>
       set res := code()
 
   # wrapper to call `def` on final effect value and store result in 'res`
   call_def : Function unit ET is
-    public redef call(cur_e ET) =>
+    public redef call(cur_e ET) unit =>
       set res := def cur_e
 
 

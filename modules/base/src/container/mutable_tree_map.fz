@@ -42,13 +42,13 @@ is
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  public redef size =>
+  public redef size i32 =>
     fold i32 0 ((i, _) -> i + 1)
 
 
   # get a sequence of all key/value pairs in this map
   #
-  public redef items =>
+  public redef items Sequence (tuple KEY VAL) =>
     match root.get
       e Entry => e.items
       nil => (list (tuple KEY VAL)).empty
@@ -56,7 +56,7 @@ is
 
   # freeze the map, such that it is no longer mutable afterwards
   #
-  public freeze =>
+  public freeze unit =>
     if root.open
       root.close
 
@@ -79,7 +79,7 @@ is
 
   # add the mapping k -> v as a new entry to this map
   #
-  public redef put(k KEY, v VAL) =>
+  public redef put(k KEY, v VAL) unit =>
     _ := replace k v
 
   # add the mapping k -> v as a new entry to this map
@@ -87,7 +87,7 @@ is
   # returns the value that k previously mapped to, or nil if
   # k was not yet contained in this map
   #
-  public replace(k KEY, v VAL) =>
+  public replace(k KEY, v VAL) option VAL =>
     # helper feature to add a mapping to this map. this feature
     # additionally takes the node we are currently working at, and
     # also returns any new node, or the reference to the existing
@@ -326,13 +326,13 @@ is
 
   # returns an empty tree of elements of type A.
   #
-  public fixed redef type.empty =>
+  public fixed redef type.empty container.mutable_tree_map LM KEY VAL =>
     container.mutable_tree_map LM KEY VAL
 
 
   # returns a tree of elements of type A that contains just the element a.
   #
-  public type.from_key_value(k KEY, v VAL) =>
+  public type.from_key_value(k KEY, v VAL) container.mutable_tree_map LM KEY VAL =>
     new_map := empty
     new_map.put k v
 
@@ -341,7 +341,7 @@ is
 
   # initialize a map from a Sequence of key value tuples
   #
-  public type.from_sequence(kvs Sequence (tuple KEY VAL)) =>
+  public type.from_sequence(kvs Sequence (tuple KEY VAL)) container.mutable_tree_map LM KEY VAL =>
     from_sequence kvs false
 
 
@@ -350,7 +350,7 @@ is
   # if the freeze argument is true, then the map is frozen
   # after being populated with the entries from the Sequence.
   #
-  public type.from_sequence(kvs Sequence (tuple KEY VAL), freeze bool) =>
+  public type.from_sequence(kvs Sequence (tuple KEY VAL), freeze bool) container.mutable_tree_map LM KEY VAL =>
     new_map := empty
     kvs.for_each x->
       new_map.put x.0 x.1

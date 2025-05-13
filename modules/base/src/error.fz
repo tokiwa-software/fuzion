@@ -49,5 +49,5 @@ is
 
   # equality
   #
-  public fixed redef type.equality(x, y error) =>
+  public fixed redef type.equality(x, y error) bool =>
     x.msg = y.msg

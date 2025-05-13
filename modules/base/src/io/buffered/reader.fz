@@ -41,7 +41,7 @@ is
   # in case the buffer is empty it fills the buffer
   # before returning it.
   #
-  public read => read buf_size
+  public read switch (array u8) (outcome io.end_of_file) => read buf_size
 
 
   # read returns the current buffer or end of file.
@@ -265,7 +265,7 @@ public read_lines array String ! reader =>
 # Read input line by line calling `f` for each line until `f` returns false
 # or end_of_file is reached.
 #
-public read_line_while(f String -> bool) ! reader =>
+public read_line_while(f String -> bool) String ! reader =>
   for s := "",  s + "\n" + match rl
                              s1 String => s1
                              io.end_of_file => panic "unreachable code path"

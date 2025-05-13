@@ -80,7 +80,7 @@ public composition is
   # we can emulate this if we require the argument to be given twice:
   public M(T, U, V type, f0 (T->U)->(T->V), f1 T->U) T->V => f0 f1
   # applying M to id:
-  public Mid(T type) => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
+  public Mid(T type) Unary T T => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
   # applying M to M
   # public MM(T type) => M T T T x->(MM x) x->(MM x)
 

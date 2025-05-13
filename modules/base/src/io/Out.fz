@@ -46,6 +46,6 @@ module default_out : io.Out is
 
 # short-hand for accessing out effect in current environment
 #
-public out =>
+public out io.Out =>
   Out.install_default
   io.Out.env

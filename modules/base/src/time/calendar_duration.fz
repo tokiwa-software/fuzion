@@ -63,7 +63,7 @@ is
   #
   # NYI overflow handling
   #
-  public infix + (other calendar_duration) =>
+  public infix + (other calendar_duration) calendar_duration =>
     calendar_duration
       (years + other.years)
       (months + other.months)
@@ -78,7 +78,7 @@ is
   #
   # NYI overflow handling
   #
-  public infix * (n u64) =>
+  public infix * (n u64) calendar_duration =>
     calendar_duration
       (years * n)
       (months * n)
