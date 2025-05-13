@@ -182,7 +182,7 @@ public class Block extends AbstractBlock
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable
-      // NYI hack, positions used for loops are not always in right order.
+      // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
       : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
       ? SourcePosition.notAvailable
       : new SourceRange(
