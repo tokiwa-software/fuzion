@@ -176,7 +176,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   {
     return
       (_f == null ? "--" : _f.qualifiedName()) +
-      (_tp != null ? _tp.toString(t -> " " + t.asStringWrapped(true))
+      (_tp != null ? _tp.toString(t -> " " + t.toStringWrapped(true))
                    : (_max ? " MAX" : " MIN"));
   }
 
