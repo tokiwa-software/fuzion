@@ -130,7 +130,7 @@ public class AstErrors extends ANY
   }
   protected static String s(AbstractType t)
   {
-    return st(t == null ? "--null--" : t.toString());
+    return st(t == null ? "--null--" : t.toString(true));
   }
   static String s(ReturnType rt)
   {
@@ -427,7 +427,7 @@ public class AstErrors extends ANY
           {
             assignableToSB
               .append("assignable to       : ")
-              .append(st(actlT.asRef().toString()));
+              .append(st(actlT.asRef().toString(true)));
             if (frmlT.isAssignableFromOrContainsError(actlT, context))
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";

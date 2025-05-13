@@ -113,7 +113,11 @@ public class Match extends AbstractMatch
    */
   public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _subject = _subject.visit(v, outer);
+    var os = _subject;
+    var ns = _subject.visit(v, outer);
+    if (CHECKS) check
+      (os == _subject);
+    _subject = ns;
     v.action(this);
     for (var c: cases())
       {
@@ -226,17 +230,28 @@ public class Match extends AbstractMatch
     // adding missing result fields instead of misusing
     // `propagateExpectedType`.
     //
-
-    // This will trigger addFieldForResult in some cases, e.g.:
-    // `match (if true then true else true) * =>`
-    _subject = subject().propagateExpectedType(res, context, subject().type());
-
     return addFieldForResult(res, context, t);
   }
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block
+   * This will trigger addFieldForResult in some cases, e.g.:
+   * `match (if true then true else true) * =>`
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   *
+   */
+  void addFieldsForSubject(Resolution res, Context context)
+  {
+    _subject = subject().propagateExpectedType(res, context, subject().type());
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
    * whose last expression is not an expression that produces a result.
    */
   @Override public boolean producesResult()

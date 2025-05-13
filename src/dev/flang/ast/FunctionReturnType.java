@@ -163,7 +163,7 @@ public class FunctionReturnType extends ReturnType
    */
   public String toString()
   {
-    return _type.toString();
+    return _type.toString(true);
   }
 
 
