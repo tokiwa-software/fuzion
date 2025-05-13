@@ -52,7 +52,7 @@ public stdin is
 
   # create a reader for stdin using the given local mutate instance
   #
-  public reader (LM type : mutate) =>
+  public reader (LM type : mutate) (buffered LM).reader =>
     (buffered LM).reader stdin_read_handler 1024
 
   # read all of stdin in an array of u8 bytes using
@@ -74,7 +74,7 @@ public stdin is
   # read all of stdin in a single String using
   # String.from_bytes on the result of read_fully.
   #
-  public read_string =>
+  public read_string String =>
     String.from_bytes read_fully
 
 # Read handler for stdin

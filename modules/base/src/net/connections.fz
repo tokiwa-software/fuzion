@@ -48,14 +48,14 @@ module:public connections(active container.Set i32) : effect is
   # cleanup active connections that
   # have not been closed manually
   #
-  public redef finally =>
+  public redef finally unit =>
     active.for_each desc->
       _ := fuzion.sys.net.close desc # NYI: handle errors
 
 
 # short-hand to get connections effect
 #
-public connections =>
+public connections net.connections =>
   if !net.connections.is_instated
     (connections (container.set_of_ordered i32 [])).default
   net.connections.env

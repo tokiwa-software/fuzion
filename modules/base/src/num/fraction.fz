@@ -49,7 +49,7 @@ is
 
 
   # reduce numerator and denominator by their gcd:
-  public reduce =>
+  public reduce fraction B =>
     gcd := numerator.abs.gcd denominator
     if gcd = B.one
       a
@@ -58,15 +58,15 @@ is
 
 
   # basic operations
-  public fixed redef prefix + => a
-  public fixed redef prefix - => fraction -a.numerator a.denominator
-  public fixed redef infix + (b fraction B) => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
-  public fixed redef infix - (b fraction B) => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
-  public fixed redef infix * (b fraction B) => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
-  public fixed redef infix / (b fraction B) => (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
+  public fixed redef prefix + fraction B => a
+  public fixed redef prefix - fraction B => fraction -a.numerator a.denominator
+  public fixed redef infix + (b fraction B) fraction B => (fraction (numerator * b.denominator + b.numerator * denominator) (denominator * b.denominator)).reduce
+  public fixed redef infix - (b fraction B) fraction B => (fraction (numerator * b.denominator - b.numerator * denominator) (denominator * b.denominator)).reduce
+  public fixed redef infix * (b fraction B) fraction B => (fraction (numerator * b.numerator                              ) (denominator * b.denominator)).reduce
+  public fixed redef infix / (b fraction B) fraction B => (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
 
 
-  public redef as_string => "{numerator}⁄{denominator}"
+  public redef as_string String => "{numerator}⁄{denominator}"
 
 
   # -----------------------------------------------------------------------
@@ -76,21 +76,21 @@ is
 
   # identity element for 'infix +'
   #
-  public fixed redef type.zero => B.zero ⁄ B.one
+  public fixed redef type.zero num.fraction B => B.zero ⁄ B.one
 
 
   # identity element for 'infix *'
   #
-  public fixed redef type.one => B.one ⁄ B.one
+  public fixed redef type.one num.fraction B => B.one ⁄ B.one
 
 
   # equality
   #
-  public fixed redef type.equality(a, b num.fraction B) =>
+  public fixed redef type.equality(a, b num.fraction B) bool =>
     (a - b).numerator.is_zero
 
 
   # total order
   #
-  public fixed redef type.lteq(a, b num.fraction B) =>
+  public fixed redef type.lteq(a, b num.fraction B) bool =>
     (a - b).numerator.sign ≤ 0

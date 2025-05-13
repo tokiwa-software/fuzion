@@ -47,7 +47,7 @@ is
   # Encodes a given byte sequence in base16
   # returns a sequence of ascii values
   #
-  public encode(data array u8) =>
+  public encode(data array u8) Sequence u8 =>
     data.flat_map b->
       [alphabet[(b>>4).as_i32], alphabet[(b&15).as_i32]]
 
@@ -55,21 +55,21 @@ is
   # Encodes a given byte sequence in base16
   # returns a string
   #
-  public encode_to_string(data array u8) =>
+  public encode_to_string(data array u8) String =>
     String.type.from_bytes (encode data)
 
 
   # decodes a base16 string, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
   #
-  public decode_str(data String) =>
+  public decode_str(data String) outcome (array u8) =>
     decode data.utf8.as_array
 
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
   #
-  public decode(data array u8) =>
+  public decode(data array u8) outcome (array u8) =>
 
     dec_char_at(i) =>
 
@@ -117,6 +117,5 @@ is
 # base16 encoding and decoding as defined in RFC 4648
 # alphabet is: 0-9, A-F
 #
-public base16 =>
+public base16 base16 =>
   base16 "0123456789ABCDEF".utf8.as_array "base16"
-

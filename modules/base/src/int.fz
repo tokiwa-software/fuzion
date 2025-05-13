@@ -157,7 +157,7 @@ is
   # does this numeric value fit into an u8? This is redefined by children
   # of numeric that support `as_u8`.
   #
-  public fixed redef fits_in_u8 =>
+  public fixed redef fits_in_u8 bool =>
     int.zero ≤ int.this ≤ u8.max.as_int
 
 
@@ -182,7 +182,7 @@ is
 
 
   # does this int fit into an u128?
-  public fits_in_u128 =>
+  public fits_in_u128 bool =>
     ns && data.count ≤ 4
 
 
@@ -194,7 +194,7 @@ is
 
 
   # does this int fit into an i128?
-  public fits_in_i128 =>
+  public fits_in_i128 bool =>
     data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 

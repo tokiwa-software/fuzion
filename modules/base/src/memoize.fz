@@ -151,7 +151,7 @@ public memoize is
 
                 # the function to caculate the result
                 #
-                f K->V)
+                f K->V) V
     =>
       store[k].or_else ()->
         v := f k

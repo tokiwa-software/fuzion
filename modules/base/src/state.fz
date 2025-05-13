@@ -47,7 +47,7 @@ is
 
   # monadic operator
   #
-  public redef infix >>= (f T -> state T S) => state.this.bind f
+  public redef infix >>= (f T -> state T S) state T S => state.this.bind f
 
 
   # monadic operator
@@ -60,7 +60,7 @@ is
 
   # return function
   #
-  public return (a T) => state a get mode.next
+  public return (a T) state T S => state a get mode.next
 
 
   # map this using f
@@ -71,13 +71,13 @@ is
 
   # modify the state, leaving the contents unchanged
   #
-  public modify (f S -> S) =>
+  public modify (f S -> S) state T S =>
     state val (f get) mode.next
 
 
   # set state to new, leaving the contents unchanged
   #
-  public put (new S) =>
+  public put (new S) state T S =>
     state val new mode.next
 
 
@@ -93,14 +93,14 @@ is
 # state with 1 argument is short hand for a state containing unit and
 # initial_value
 #
-public state(S type, initial_value S) => state unit initial_value oneway_monad_mode.plain
+public state(S type, initial_value S) state unit S => state unit initial_value oneway_monad_mode.plain
 
 
 # install new state monad for type S and run r within that state monad
 #
 # return result of r.
 #
-public state(S, R type, initial_value S, r ()->R) =>
+public state(S, R type, initial_value S, r ()->R) R =>
   res option R := nil
   (state unit S) <- (state unit S unit initial_value oneway_monad_mode.inst) ! (()->set res := r.call)
   res.get
@@ -108,19 +108,19 @@ public state(S, R type, initial_value S, r ()->R) =>
 
 # short-hand for accessing state monad for given type in current environment
 #
-public state_of(S type) => (state unit S).env
+public state_of(S type) state unit S => (state unit S).env
 
 
 # short-hand for getting state monad for given type in current environment
 #
-public state_get(S type) => (state_of S).get
+public state_get(S type) S => (state_of S).get
 
 
 # short-hand for modifying state monad for given type in current environment
 #
-public state_modify(S type, f S->S) => (state_of S).modify f
+public state_modify(S type, f S->S) state unit S => (state_of S).modify f
 
 
 # short-hand for setting state monad for given type in current environment
 #
-public state_put(S type, new S) => (state_of S).put new
+public state_put(S type, new S) state unit S => (state_of S).put new
