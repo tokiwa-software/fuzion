@@ -80,7 +80,9 @@ public abstract class AbstractAssign extends Expr
   public AbstractAssign(Expr v)
   {
     if (CHECKS) check
-      (v != null);
+      (v != null,
+       // correct mechanism is Match.addFieldForResult
+       !(v instanceof AbstractMatch));
 
     this._value = v;
   }
