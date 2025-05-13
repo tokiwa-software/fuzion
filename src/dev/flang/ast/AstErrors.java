@@ -1355,10 +1355,9 @@ public class AstErrors extends ANY
      && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
      && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
       {
-
         solution = "Lambda operator is part of infix operator here:" + System.lineSeparator() +
           call._targetOf_forErrorSolutions.pos().show() + System.lineSeparator() +
-          "To solve this, add a space after " + skw("->") + ".";
+          "To solve this, put the lambda in parentheses and add a space after " + skw("->") + ".";
       }
 
     return solution;
