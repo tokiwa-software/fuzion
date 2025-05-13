@@ -37,8 +37,10 @@ module thread is
 
     spawn0 Do_Call
 
-  spawn0(T type : ()->unit, code T) i64 => intrinsic
+  spawn0(T type : ()->unit, code T) Thread => intrinsic
 
   # intrinsic to join with a terminated thread
   #
-  module join0(thread_id i64) unit => intrinsic
+  # NOTE: this must only be called once!
+  #
+  module join0(thread_id Thread) unit => intrinsic
