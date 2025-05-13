@@ -78,17 +78,13 @@ public class Util
       }
     var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
-    while (line > 0)
+
+    while (line > 0 && af.pos()._sourceFile.line(line).matches("^\\s*#.*"))
       {
-        var pos = new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.lineStartPos(line));
-        var strline = Util.lineAt((LibraryFeature) af, pos);
-        if (!strline.matches("^\\s*#.*"))
-          {
-            break;
-          }
-        commentLines.add(strline);
+        commentLines.add(af.pos()._sourceFile.line(line));
         line = line - 1;
       }
+
     Collections.reverse(commentLines);
 
     var result = Html.processComment(af.qualifiedName(), commentLines
@@ -113,24 +109,6 @@ public class Util
           .map(l -> l.replaceAll("^#", "").trim())
           .collect(Collectors.joining(System.lineSeparator()))
           .trim();
-      }
-    catch (IOException e)
-      {
-        return "";
-      }
-  }
-
-
-  /**
-   * get line as string of source position pos
-   */
-  private static String lineAt(LibraryFeature lf, SourcePosition pos)
-  {
-    var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replaceFirst("\\{(.*?)\\.fum\\}", lf._libModule.srcPath())).toUri();
-    try
-      {
-        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
       }
     catch (IOException e)
       {
