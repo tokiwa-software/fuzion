@@ -188,6 +188,7 @@ public class Types extends ANY
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_effect;
+    public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
     public final AbstractFeature f_error;
     public final AbstractFeature f_error_msg;
@@ -254,6 +255,7 @@ public class Types extends ANY
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);
       f_effect                  = universe.get(mod, "effect", 0);
+      f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
       f_error                   = universe.get(mod, "error", 1);
       f_error_msg               = f_error.get(mod, "msg", 0);
