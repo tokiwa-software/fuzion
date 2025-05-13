@@ -1384,6 +1384,45 @@ public Sequence(public T type) ref : property.countable is
       res.as_map
 
 
+  # group the elements of this sequence by a key of type K
+  # using a custom Mutable_Map
+  #
+  # f determines the key of an element
+  #
+  public group_by(K type : property.equatable, M type : container.Mutable_Map K (Sequence T), f T -> K) container.Map K (Sequence T)
+  =>
+    res := M.empty
+
+    for_each x->
+      key := f x
+      match res[key]
+        nil => res.put key [x]
+        s Sequence T => res.put key s++[x]
+
+    res.as_map
+
+
+  # group the elements of this sequence by a key of type K
+  # using a mutable_tree_map
+  #
+  # f determines the key of an element
+  #
+  public group_by(K type : property.orderable, f T -> K) container.Map K (Sequence T) =>
+    lm : mutate is
+    lm ! ()->
+      group_by K (container.mutable_tree_map lm K (Sequence T)) f
+
+
+  /* NYI: UNDER DEVELOPMENT: impl. restriction: Incompatible type parameter
+  # group the elements of this sequence
+  #
+  public group(M type : container.Mutable_Map T (Sequence T)) container.Map T (Sequence T)
+    pre T : property.equatable
+  =>
+    group_by T M id
+  */
+
+
   # wrap this sequence into an orderable type.
   #
   # This requires the underlying element type to be orderable.
