@@ -76,6 +76,3 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
               # NYI: handle error once signature of with is changed
               _ := (io.buffered LM).writer.env.flush
               tmp)
-      # NYI: UNDER DEVELOPMENT: nested outcomes
-      .bind id
-      .bind id

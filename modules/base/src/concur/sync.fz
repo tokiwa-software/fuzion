@@ -41,16 +41,27 @@ public sync is
   cnd_destroy(cnd Condition) unit => intrinsic
 
 
-  # NYI: documentation missing, waiting for JVM backend impl
+  # NYI: tie life of mutex/condition to thread pool?
 
+
+
+  # a mutex is a synchronization primitive
+  # that allows threads to wait for one another.
+  #
   private:public mutex(module mtx Mutex) is
 
+    # run code synchronized across all threads
+    # that also use this mutex
+    #
     public synchronized(T type, code ()->T) T =>
       check mtx_lock mtx
       res := code.call
       check mtx_unlock mtx
       res
 
+
+    # initialize a new mutex
+    #
     public type.new outcome concur.sync.mutex =>
       concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
@@ -58,10 +69,16 @@ public sync is
     # NYI destroy
 
 
+  # a condition is synchronization primitive
+  # that allows threads to signal and wait for one another.
+  #
   private:public condition(mtx Mutex, cnd Condition) is
 
     public is_locked := concur.atomic false
 
+    # run code synchronized across all threads
+    # that also use this condition
+    #
     public synchronized(T type, code ()->T) T =>
       check mtx_lock mtx
       is_locked.write true
@@ -70,16 +87,30 @@ public sync is
       check mtx_unlock mtx
       res
 
+
+    # signal one waiting thread to wake up
+    #
     public signal
-    pre is_locked.read
+      pre is_locked.read
     => cnd_signal cnd
+
+
+    # signal all waiting thread to wake up
+    #
     public broadcast
-    pre is_locked.read
+      pre is_locked.read
     => cnd_broadcast cnd
+
+
+    # make this thread wait for signal
+    #
     public wait
-    pre is_locked.read
+      pre is_locked.read
     => cnd_wait cnd mtx
 
+
+    # initialize a new condition
+    #
     public type.new outcome concur.sync.condition =>
       concur.sync.mtx_init.bind mtx->
         (concur.sync.cnd_init mtx).bind cnd->
