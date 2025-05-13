@@ -78,11 +78,11 @@ public class Util
       }
     var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
-    while (true)
+    while (line > 0)
       {
         var pos = new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.lineStartPos(line));
         var strline = Util.lineAt((LibraryFeature) af, pos);
-        if (line < 1 || !strline.matches("^\\s*#.*"))
+        if (!strline.matches("^\\s*#.*"))
           {
             break;
           }
