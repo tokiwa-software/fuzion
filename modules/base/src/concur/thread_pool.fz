@@ -91,6 +91,41 @@ public thread_pool(R type, size i32, code ()->R) outcome R =>
     .bind id
 
 
+# concrete implementation of concur.Future
+# meant to run on a thread thread_pool
+#
+Computable_Future(
+  # result type of the computation
+  T type,
+  # the thread pool to use for subsequent computation
+  TP type : concur.thread_pool,
+  # the code of the future
+  task ()->T) ref : concur.Future T is
+
+  cnd := concur.sync.condition.new.val # NYI: error handling
+
+  compute_result := concur.atomic (option T) nil
+
+  compute =>
+    cr := task.call
+    cnd.synchronized ()->
+      compute_result.write cr
+      check cnd.broadcast
+
+  public redef is_done bool => compute_result.read.exists
+
+  public redef get T =>
+    if !is_done
+      cnd.synchronized ()->
+        if !is_done
+          check cnd.wait
+
+    compute_result.read.val
+
+  public redef and_then(T2 type, new_task T->T2) concur.Future T2 =>
+    TP.env.submit T2 ()->(new_task get)
+
+
 
 # simple, fixed size thread pool
 #
@@ -123,35 +158,7 @@ is
   # the thread pool has already shut down.
   #
   public submit(T type, task ()->T) concur.Future T =>
-
-
-    fut ref : concur.Future T is
-
-      fut_cnd := concur.sync.condition.new.val # NYI: error handling
-
-      compute_result := concur.atomic (option T) nil
-
-      compute =>
-        cr := task.call
-        fut_cnd.synchronized ()->
-          compute_result.write cr
-          check fut_cnd.broadcast
-
-      public redef is_done bool => compute_result.read.exists
-
-      public redef get T =>
-        if !is_done
-          fut_cnd.synchronized ()->
-            if !is_done
-              check fut_cnd.wait
-
-        compute_result.read.val
-
-      public redef and_then(T2 type, new_task T->T2) concur.Future T2 =>
-        submit T2 ()->(new_task get)
-
-    res := fut
-
+    res := Computable_Future _ thread_pool.this task
     if bq.enqueue ()->res.compute
       res
     else
