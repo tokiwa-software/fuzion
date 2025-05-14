@@ -2177,6 +2177,11 @@ public class DFA extends ANY
     put("fuzion.java.create_jvm", cl -> Value.UNIT);
     put("fuzion.java.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
     put("fuzion.java.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
+    put("array.add_f32_vec", cl ->
+      {
+        var ec = fuir(cl).clazzActualGeneric(cl._cc, 0);
+        return cl._dfa.newSysArray(NumericValue.create(cl._dfa, ec), ec); // NYI: get length from args
+      });
   }
 
 

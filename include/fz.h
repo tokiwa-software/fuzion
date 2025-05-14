@@ -754,4 +754,7 @@ void * fzE_null(void);
 int fzE_is_null(void * p);
 
 
+void fzE_add_float_array(const float a[], const float b[], float result[], size_t size);
+
+
 #endif /* fz.h  */

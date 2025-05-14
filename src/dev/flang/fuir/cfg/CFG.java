@@ -484,6 +484,7 @@ public class CFG extends ANY
 
     put("native_string_length"              , (cfg, cl) -> { } );
     put("native_array"                      , (cfg, cl) -> { } );
+    put("array.add_f32_vec"                 , (cfg, cl) -> { } );
   }
 
 

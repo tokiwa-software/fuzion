@@ -1458,14 +1458,14 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 	@echo " + "$@
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
-	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
+	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -mavx -shared \
 	-DFUZION_ENABLE_THREADS \
 	-DPTW32_STATIC_LIB \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
 	-lMswsock -lAdvApi32 -lWs2_32
 else
-	clang -Wall -Werror -O3 -shared -fPIC \
+	clang -Wall -Werror -O3 -mavx -shared -fPIC \
 	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
