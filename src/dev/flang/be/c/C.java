@@ -2239,11 +2239,8 @@ public class C extends ANY
    */
   CExpr field(int outercl, CExpr outer, int field)
   {
-    if (outercl == _fuir.clazzUniverse())
-      {
-        outer = CNames.UNIVERSE;
-      }
-    return fields(outer, outercl).field(_names.fieldName(field));
+    return fields(outer, outercl)
+      .field(_names.fieldName(field));
   }
 
   /**
