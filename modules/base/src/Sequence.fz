@@ -154,10 +154,10 @@ public Sequence(public T type) ref : property.countable is
   #   .peek say
   #   .drop_while <10
   #
-  public peek (f T -> unit) list T =>
-    as_list ? nil    =>
-            | c Cons => f c.head; _ := c.tail.peek f
-    as_list
+  public peek (f T -> unit) Sequence T =>
+    map x->
+      f x
+      x
 
 
   # consume all elements of this Sequence by f. This is an infix operator alias
