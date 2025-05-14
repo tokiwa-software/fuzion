@@ -546,14 +546,6 @@ public class Contract extends ANY
 
 
   /**
-   * Helper to create {@code ParsedCall} to {@code n} at position {@code p}
-   */
-  private static ParsedCall pc(SourcePosition p, String n)
-  {
-    return new ParsedCall(new ParsedName(p, n));
-  }
-
-  /**
    * Helper to create {@code ParsedCall} to {@code t}.{@code n} at position {@code p}
    */
   private static ParsedCall pc(Expr t, SourcePosition p, String n)
@@ -622,7 +614,7 @@ public class Contract extends ANY
                 // need to check the conditions defined locally at all.
                 // However, we want to check the condition code for errors etc.,
                 // so we wrap it into `(true || <cond>)`
-                cond = new ParsedCall(pc(pos, "true"),
+                cond = new ParsedCall(BoolConst.TRUE,
                                       new ParsedName(pos, "infix ||"), new List<>(cond));
               }
             l.add(Match.createIf(p,
@@ -715,7 +707,7 @@ public class Contract extends ANY
     if (preBool)
       {
         new_code = new List<>(cc != null ? cc
-                                         : pc(pos, "true"));
+                                         : BoolConst.TRUE);
       }
     else if (cc != null)
       {
