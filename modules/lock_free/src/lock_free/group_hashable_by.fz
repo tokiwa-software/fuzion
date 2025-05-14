@@ -27,4 +27,4 @@
 # f determines the key of an element
 #
 public Sequence.group_hashable_by(K type : property.hashable, f T -> K) container.Map K (Sequence T) =>
-  group_by K (lock_free.Map K (Sequence T)) f
+  group_by_mm K (lock_free.Map K (Sequence T)) f

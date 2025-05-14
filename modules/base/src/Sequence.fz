@@ -1389,7 +1389,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # f determines the key of an element
   #
-  public group_by(K type : property.equatable, M type : container.Mutable_Map K (Sequence T), f T -> K) container.Map K (Sequence T)
+  public group_by_mm(K type : property.equatable, M type : container.Mutable_Map K (Sequence T), f T -> K) container.Map K (Sequence T)
   =>
     res := M.empty
 
@@ -1410,7 +1410,7 @@ public Sequence(public T type) ref : property.countable is
   public group_by(K type : property.orderable, f T -> K) container.Map K (Sequence T) =>
     lm : mutate is
     lm ! ()->
-      group_by K (container.mutable_tree_map lm K (Sequence T)) f
+      group_by_mm K (container.mutable_tree_map lm K (Sequence T)) f
 
 
   /* NYI: UNDER DEVELOPMENT: impl. restriction: Incompatible type parameter
