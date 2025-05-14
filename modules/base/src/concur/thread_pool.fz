@@ -22,60 +22,6 @@
 # -----------------------------------------------------------------------
 
 
-# NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229
-Blocking_Queue(T type, cnd concur.sync.condition) ref is
-
-  # is closed for taking any new elements?
-  #
-  is_closed := concur.atomic false
-
-  data := concur.atomic (array T) []
-
-
-  # enqueue an element
-  # if queue is already closed, returns false
-  # otherwise enqueues the element and returns true
-  #
-  enqueue(el T) bool =>
-    if is_closed.read
-      false
-    else
-      for old := data.read
-          new := old.put old.length el
-      while !data.compare_and_set old new
-      else
-        cnd.synchronized ()->
-          # signal a waiting thread to pick up the work
-          check cnd.signal
-        true
-
-
-  # dequeue an element
-  # returns nil, if queue is closed and empty
-  # otherwise returns the dequeued element
-  #
-  dequeue option T =>
-    o := data.read
-    if o.is_empty
-      if is_closed.read
-        nil
-      else
-        cnd.synchronized ()->
-          # check the two conditions again, otherwise we MUST NOT wait
-          if !is_closed.read && data.read.is_empty
-            # NYI: BUG: possible dead lock? what if we write to data in the meantime?
-            # we should use TLA+ or similar to prove correctness
-            # https://www.hillelwayne.com/post/list-of-tla-examples/
-            check cnd.wait
-        dequeue
-    else
-      res := o[0]
-      n := array o.count-1 i->o[i+1]
-      if data.compare_and_set o n
-        res
-      else
-        dequeue
-
 
 # simple, fixed size thread pool
 #
@@ -83,12 +29,8 @@ Blocking_Queue(T type, cnd concur.sync.condition) ref is
 # submit a task to the thread_pool.
 #
 public thread_pool(R type, size i32, code ()->R) outcome R =>
-  (concur.sync.condition.new.bind cnd->
-    (thread_pool cnd size) ! ()->
-      res := code.call
-      thread_pool.env.await
-      res)
-    .bind id
+  concur.sync.condition.new.bind cnd->
+    (thread_pool cnd size) ! code
 
 
 # concrete implementation of concur.Future
@@ -165,9 +107,11 @@ is
       panic "Thread pool has already shut down."
 
 
-  # initiate shutdown, then wait for all added tasks to complete
+  # stop accepting jobs,
+  # notify all threads to wake up,
+  # wait for all threads to finish
   #
-  await =>
+  public redef finally =>
 
     # initiate shutdown of thread pool
     # i.e. stop accepting jobs
