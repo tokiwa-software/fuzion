@@ -39,6 +39,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.TreeSet;
+import java.util.Vector;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -62,7 +63,7 @@ public class Docs extends ANY
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
-    /* fuzionHome              */ new FuzionHome()._fuzionHome,
+    /* fuzionHome              */ FuzionHome._fuzionHome,
     /* loadBaseMod             */ true,
     /* eraseInternalNamesInMod */ false,
     /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
@@ -89,7 +90,7 @@ public class Docs extends ANY
     List<String> modules = new List<>();
 
     try {
-      modules.addAll((Files.list(new FuzionHome()._fuzionHome.resolve("modules"))
+      modules.addAll((Files.list(FuzionHome._fuzionHome.resolve("modules"))
                             .filter(Files::isRegularFile)
                             .map(Path::getFileName)
                             .map(Path::toString)
