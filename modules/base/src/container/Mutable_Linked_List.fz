@@ -51,7 +51,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
 
   # append an element to the linked list
   #
-  public append(data T) =>
+  public append(data T) unit =>
     match n.get
       nil => n <- Mutable_Linked_List LM T append.this.data
       ll Mutable_Linked_List => ll.append append.this.data
@@ -59,7 +59,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
 
   # append an entire list to this linked list
   #
-  public concat_mutable_linked_list(other Mutable_Linked_List LM T) =>
+  public concat_mutable_linked_list(other Mutable_Linked_List LM T) unit =>
     match n.get
       nil => n <- other
       ll Mutable_Linked_List => ll.concat_mutable_linked_list other
@@ -67,7 +67,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
 
   # freeze this list, i.e., turn all references into immutable values
   #
-  public freeze =>
+  public freeze unit =>
     if n.open
       n.close
 
@@ -86,7 +86,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   #     mll.append 42
   #     mll.freeze
   #
-  public type.new(from Sequence T)
+  public type.new(from Sequence T) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
   =>

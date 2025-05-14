@@ -57,7 +57,7 @@ public mutate : linear_effect is
 
 
   # does this effect support abort?
-  public redef abortable => false
+  public redef abortable bool => false
 
 
   # short-hand to access effect type
@@ -108,12 +108,12 @@ public mutate : linear_effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    public open => my_id != u64 0
+    public open bool => my_id != u64 0
 
 
     # stop any further mutations of this element
     #
-    public close =>
+    public close unit =>
       set my_id := 0
 
 
@@ -135,7 +135,7 @@ public mutate : linear_effect is
     # If this is open, check that the mutate effect this was created with is still
     # instated in the current environment.
     #
-    public get ! mutate.this =>
+    public get T ! mutate.this =>
       if open
         check_and_replace
       mutable_value
@@ -143,7 +143,7 @@ public mutate : linear_effect is
 
     # read the mutable value that is now immutable after it was closed for mutation.
     #
-    public val
+    public val T
     pre
       safety: !open
     =>
@@ -157,7 +157,7 @@ public mutate : linear_effect is
     #
     public put (
       # the new value to be stored with 'h'
-      to T)
+      to T) unit
       ! mutate.this
     pre
       safety: open
@@ -168,7 +168,7 @@ public mutate : linear_effect is
 
     # infix operator for put, OCaml/F#-style syntax
     #
-    public infix <- (to T) => put to
+    public infix <- (to T) unit => put to
 
 
     # update mutable field using a function of the old value
@@ -176,7 +176,7 @@ public mutate : linear_effect is
     public update (
       # function calculating the new value from the old value
       f T->T
-      )
+      ) unit
     =>
       put (f get)
 
@@ -189,12 +189,12 @@ public mutate : linear_effect is
 
     # unwrap this mutable value
     #
-    public redef unwrap ! mutate => get
+    public redef unwrap T ! mutate => get
 
 
     # returns `as_string` of the current value
     #
-    public redef as_string => get.as_string
+    public redef as_string String => get.as_string
 
 
 
@@ -206,11 +206,11 @@ public mutate : linear_effect is
 
 # short-hand for accessing mut effect in current environment
 #
-public mut =>
+public mut mutate =>
   mutate.install_default
   mutate.env
 
 
 # create a new mutable value of type T with initial value v
 #
-public mut(T type, v T) => mut.new v
+public mut(T type, v T) mutate.new T => mut.new v

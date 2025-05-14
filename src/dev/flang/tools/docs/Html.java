@@ -131,7 +131,7 @@ public class Html extends ANY
               + htmlEncodedBasename(f)
               + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
               + c.actualTypeParameters().stream()
-                 .map(at -> htmlEncodeNbsp(at.asString(false, af)))
+                 .map(at -> htmlEncodeNbsp(at.toString(false, af)))
                  .collect(Collectors.joining(", ")) + "</a>";
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -149,10 +149,10 @@ public class Html extends ANY
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.asString(false, context))
+        return htmlEncodeNbsp(at.toString(false, context))
                + (at.isOpenGeneric() ? "..." : "");
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString(false, context)))
+    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(false, context)))
       .replace("$2", featureAbsoluteURL(at.feature()));
   }
 
@@ -809,7 +809,7 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
+               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().toString(true));
       }
     else
       {

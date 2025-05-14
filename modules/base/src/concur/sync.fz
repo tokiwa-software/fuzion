@@ -74,7 +74,7 @@ public sync is
   #
   private:public condition(mtx Mutex, cnd Condition) is
 
-    public is_locked := concur.atomic false
+    public is_locked concur.atomic bool := concur.atomic false
 
     # run code synchronized across all threads
     # that also use this condition
@@ -90,21 +90,21 @@ public sync is
 
     # signal one waiting thread to wake up
     #
-    public signal
+    public signal bool
       pre is_locked.read
     => cnd_signal cnd
 
 
     # signal all waiting thread to wake up
     #
-    public broadcast
+    public broadcast bool
       pre is_locked.read
     => cnd_broadcast cnd
 
 
     # make this thread wait for signal
     #
-    public wait
+    public wait bool
       pre is_locked.read
     => cnd_wait cnd mtx
 

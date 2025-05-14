@@ -75,9 +75,9 @@ typeinference is
   r2 := match r { i i32 => { i = 3 }; String,bool,typeInferencingFromMatch1.E => false }
   chck r2 "typeInferencingFromMatch1 A"
 #  chck ((typeInferencingFromMatch1.f(typeInferencingFromMatch1.A) ? i i32 => i==3, * => false),"typeInferencingFromMatch1 A")  # NYI: does not work yet
-  set r := typeInferencingFromMatch1.f typeInferencingFromMatch1.D
-  set r2 := match r { b bool => { b <=> false }; i32, String,typeInferencingFromMatch1.E => false }
-  chck r2 "typeInferencingFromMatch1 D"
+  r3 := typeInferencingFromMatch1.f typeInferencingFromMatch1.D
+  r4 := match r3 { b bool => { b <=> false }; i32, String,typeInferencingFromMatch1.E => false }
+  chck r4 "typeInferencingFromMatch1 D"
   #  chck((typeInferencingFromMatch1.f(typeInferencingFromMatch1.D) ? b bool => b==false, * => false),"typeInferencingFromMatch1 D");  # NYI: does not work yet
 
   typeInferencingFromMatch2 is

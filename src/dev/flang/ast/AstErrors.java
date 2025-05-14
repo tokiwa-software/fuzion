@@ -130,7 +130,7 @@ public class AstErrors extends ANY
   }
   protected static String s(AbstractType t)
   {
-    return st(t == null ? "--null--" : t.toString());
+    return st(t == null ? "--null--" : t.toString(true));
   }
   static String s(ReturnType rt)
   {
@@ -427,7 +427,7 @@ public class AstErrors extends ANY
           {
             assignableToSB
               .append("assignable to       : ")
-              .append(st(actlT.asRef().toString()));
+              .append(st(actlT.asRef().toString(true)));
             if (frmlT.isAssignableFromOrContainsError(actlT, context))
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
@@ -1355,10 +1355,9 @@ public class AstErrors extends ANY
      && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
      && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
       {
-
         solution = "Lambda operator is part of infix operator here:" + System.lineSeparator() +
           call._targetOf_forErrorSolutions.pos().show() + System.lineSeparator() +
-          "To solve this, add a space after " + skw("->") + ".";
+          "To solve this, put the lambda in parentheses and add a space after " + skw("->") + ".";
       }
 
     return solution;
@@ -2426,6 +2425,12 @@ public class AstErrors extends ANY
     error(f.pos(),
           "In modules, declaring fields without a parent feature is forbidden.",
           "To solve this, remove the field or move its declaration into a parent feature.");
+  }
+
+  public static void mustNotCallEffectFinally(Call call)
+  {
+    error(call.pos(), "Must not call " + ss("<effect>.finally") + ".",
+      ss("<effect>.finally") + " is called automatically.");
   }
 
 }

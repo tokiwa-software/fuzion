@@ -38,7 +38,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
 
   # cleanup effect
   #
-  public redef finally =>
+  public redef finally unit =>
     running_processes.for_each p->
       _ := wait p
 
@@ -112,7 +112,6 @@ install_default =>
 
 # short-hand to processes effect
 #
-public processes =>
+public processes processes =>
   install_default
   processes.env
-

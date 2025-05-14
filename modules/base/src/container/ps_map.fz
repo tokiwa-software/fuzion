@@ -351,7 +351,7 @@ O(n log n).
 
   # infix operator synonym for union of two ps_maps
   #
-  public infix ∪ (other ps_map PK V) => union other
+  public infix ∪ (other ps_map PK V) ps_map PK V => union other
 
 
   # create a mutable map from this
@@ -364,7 +364,7 @@ O(n log n).
   #
   # This feature creates an empty instance of ps_map.
   #
-  public fixed redef type.empty => container.ps_map ((container.expanding_array (PK,V)).empty 0) 0 0
+  public fixed redef type.empty container.ps_map PK V => container.ps_map ((container.expanding_array (PK,V)).empty 0) 0 0
 
 
   # ps_map -- routine to initialize a partially sorted map from two Sequences
@@ -375,7 +375,7 @@ O(n log n).
       # list of keys in the map
       ks Sequence PK,
       # list of values corresponding to keys in the map
-      vs Sequence V)
+      vs Sequence V) container.ps_map PK V
   =>
     for
       r := (container.ps_map PK V).empty, r.add k v

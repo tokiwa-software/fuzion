@@ -47,13 +47,13 @@ public Linked_List(public T type) ref : Sequence T is
 
   # a representation of this linked list as a string.
   #
-  public redef as_string =>
+  public redef as_string String =>
     Linked_List.this.as_string0 "[ {data}"
 
 
   # return this linked list as a list
   #
-  public redef as_list =>
+  public redef as_list list T =>
     match next
       ll Linked_List T => (data : ()->ll.as_list)
       nil => (data : ()->nil)

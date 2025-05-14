@@ -43,7 +43,7 @@ public Lazy(public T type) ref : Nullary T,
   #
   public redef infix >>= (f T -> Lazy T) Lazy T =>
     ref : Lazy T is
-      public redef call =>
+      public redef call T =>
         (f Lazy.this.call).call
 
 
@@ -51,4 +51,4 @@ public Lazy(public T type) ref : Nullary T,
   #
   public redef type.return (a T) Lazy T =>
     ref : Lazy T is
-      public redef call => a
+      public redef call T => a
