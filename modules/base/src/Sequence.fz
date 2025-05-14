@@ -320,6 +320,16 @@ public Sequence(public T type) ref : property.countable is
   public cycle Sequence T => as_list.cycle
 
 
+  # create a Sequence that repeats the current Sequence `n` times.
+  #
+  public infix *(n i32)
+    pre
+      debug: n >= 0
+  =>
+    if n <= 0 || is_empty then (Sequence T).empty
+                          else Sequence.this ++ Sequence.this * (n-1)
+
+
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
   # as a list and the empty list 'nil'.
   #
