@@ -1,5 +1,516 @@
-## 2025-xx-xx: V0.093
+## 2025-05-14: V0.093
 
+- Fuzion language
+
+  - add support for none lib features for short hand access of open
+    type parameters ([5166](https://github.com/tokiwa-software/fuzion/pull/5166)).
+    This permits, e.g., base library code code like
+
+        items := [(1,"eins"),(2,"zwei")]
+        keys := a.map items->items.values.0
+        vals := a.map items->items.values.1
+
+    to be written as
+
+        items := [(1,"eins"),(2,"zwei")]
+        keys := a.map (.0)
+        vals := a.map (.1)
+
+  - remove support for double-slash comments ([5075](https://github.com/tokiwa-software/fuzion/pull/5075)).
+    Single line comments must be introduced using `#` now as in
+
+        beast := 666   # chapter 13, verse 18 of the Book of Revelation
+
+  - remove `of` keyword ([4983](https://github.com/tokiwa-software/fuzion/pull/4983)). The syntax sugar of the form
+
+        fruit : choice of apple, pear, banana.
+
+    now has to be written as
+
+        apple is
+        pear is
+        banana is
+        fruit : choice apple pear banana is
+
+  - remove full stop ([4979](https://github.com/tokiwa-software/fuzion/pull/4979)). Empty feature declarations like
+
+        point2D (x, y i32).
+        point3D (x, y, z i32).
+
+    now have to be written using `is`, even if nothing follows:
+
+        point2D (x, y i32) is
+        point3D (x, y, z i32) is
+
+  - require `is` keyword for anonymous feature declaration ([4956](https://github.com/tokiwa-software/fuzion/pull/4956)), i.e., instead of
+
+        nul String =>
+          ref : String
+            public redef utf8 Sequence u8 => [u8 0]
+
+    the new syntax is:
+
+        nul String =>
+          ref : String is
+            public redef utf8 Sequence u8 => [u8 0]
+
+  - the code of an anonymous feature now must be indented further than `ref` ([4976](https://github.com/tokiwa-software/fuzion/pull/4976)). So instead of
+
+        nul String := ref : String is
+            public redef utf8 Sequence u8 => [u8 0]
+
+    we now require
+
+        nul String := ref : String is
+                        public redef utf8 Sequence u8 => [u8 0]
+
+    or
+
+        nul String :=
+          ref : String is
+            public redef utf8 Sequence u8 => [u8 0]
+
+  - Restrict possibilities for indentation of `else` ([4948](https://github.com/tokiwa-software/fuzion/pull/4948)), disallowing confusing cases such as
+
+        if c0 then "-true-"
+              else if c1 then "-false::true-"
+        else       "-false::false-"    # 1. should flag an error: inconsistent indentation
+
+    or
+
+        if c0 then "-true-"
+        else if c1 then "-false::true-"
+             else if c2       "-false::false::true-"
+        else             "-false::false::false-" # 2. should flag an error: inconsistent indentation
+
+  - forbid setting argument visibility on non constructor features ([4904](https://github.com/tokiwa-software/fuzion/pull/4904))
+
+  - Enable partial application for string literals, numeric literals and operator calls ([4867](https://github.com/tokiwa-software/fuzion/pull/4867)). This avoids the explicit use of lambda: instead of
+
+        log_string(s ()->String) => if logging then say s()
+        log_i32(s ()->i32) => log_string ()->"i32:{i()}"
+        log ()->"test"
+        log ()->4711
+
+     one can now write
+
+        log_string(s ()->String) => if logging then say s()
+        log_i32(s ()->i32) => log_string "i32:{i()}"
+        log "test"
+        log 4711
+
+  - improve type inference for calls to `flat_map`, `bind` where the type parameter must be inferred from the type parameter of a lambda result ([4916](https://github.com/tokiwa-software/fuzion/pull/4916)). This simplifies code like
+
+        say ([1,2,3].flat_map i32 x->[x,x])
+
+    to
+
+        say ([1,2,3].flat_map x->[x,x])
+
+  - allow `fixed` implementation alongside `abstract` feature declaration([4934](https://github.com/tokiwa-software/fuzion/pull/4934))
+
+  - redefined features no longer inherit visibility of original feature ([4915](https://github.com/tokiwa-software/fuzion/pull/4915))
+
+  - partial application now works for select ([4936](https://github.com/tokiwa-software/fuzion/pull/4936)). This is very useful for accessing elements in a tuple, e.g., as follows:
+
+    The following code sums up the first elements of a `Sequence` of `tuple`s, resulting in `8`:
+
+        say ([(3,4),(5,6)].map (.0) |> .sum)
+
+    while this sums up the second elements of a Sequence of tuples, resulting in `10`:
+
+        say ([(3,4),(5,6)].map (.1) |> .sum)
+
+    This can also be used for nested `tuple`s
+
+        say <| [(".0",(".1.0", ".1.1"))].map (.1.0)
+        say <| [(".0", ((".1.0.0", ".1.0.1"), ".1.1"))].map (.1.0.1)
+
+    or `tuples` of arrays
+
+        say <| [(0,[1,2,3],0), (1, [4,5,6], 1)].map (.1[2])
+
+    or with subsequent calls
+
+        say <| [("a","b","c"), ("d","e","f")].map (.2.as_string)
+
+  - prefix operator precedence over postfix ([4786](https://github.com/tokiwa-software/fuzion/pull/4786))
+
+    This means that code like `~x~`, which applies both `prefix ~` and `postfix
+    ~`, now will apply the prefix operator first, i.e., the code will be executed
+    as if parentheses were set like this: `(~x)~`.
+
+- Parser
+
+  - Improved error output for `Qualifier expected for '.this' expression`
+    errors, fix [5156](https://github.com/tokiwa-software/fuzion/issues/5156)
+    ([5157](https://github.com/tokiwa-software/fuzion/pull/5157),
+    [5159](https://github.com/tokiwa-software/fuzion/pull/5159))
+
+  - create better error when parsing numeric literals like `1e3` with lowercase
+    exponent indicator
+    ([4923](https://github.com/tokiwa-software/fuzion/pull/4923))
+
+  - fix ebnf grammar that contained reference to non-existing rule `op`, which
+    is now `OPERATOR`
+    ([4951](https://github.com/tokiwa-software/fuzion/pull/4951))
+
+- Front end
+
+  - add impl. restriction error for unsupported contracts such as preconditions
+    for fields or postconditions for intrinsics
+    ([5009](https://github.com/tokiwa-software/fuzion/pull/5009))
+
+  - avoid errors caused by additional lambda argument ([4986](https://github.com/tokiwa-software/fuzion/pull/4986))
+
+  - avoid `NullPointerException` to fix [5114](https://github.com/tokiwa-software/fuzion/issues/5114) ([5129](https://github.com/tokiwa-software/fuzion/pull/5129))
+
+  - do not suppress inline code for ? : in case of previous errors (which
+    resulted in additional, confusing errors), fix
+    [5114](https://github.com/tokiwa-software/fuzion/issues/5114)
+    ([5142](https://github.com/tokiwa-software/fuzion/pull/5142))
+
+  - extend syntax sugar to convert numliterals to required type
+    ([4981](https://github.com/tokiwa-software/fuzion/pull/4981)). This
+    simplifies type generic code for numeric types such that instead of
+
+        triple(n T : numeric) => n * T.from_u32 3
+
+    you can now write
+
+        triple(n T : numeric) => n * 3
+
+    and then use this, e.g., as follows
+
+        triple (complex 2 3) |> say  # will print `6+9i`
+
+  - fix crash when trying to infer result type of lambda with no arguments ([5020](https://github.com/tokiwa-software/fuzion/pull/5020))
+
+  - Fix position of inheritance calls generated for cotype, fix
+    [5003](https://github.com/tokiwa-software/fuzion/issues/5003)
+    ([5005](https://github.com/tokiwa-software/fuzion/pull/5005))
+
+  - improve error when failing to resolve partial application ([5032](https://github.com/tokiwa-software/fuzion/pull/5032))
+
+  - raise better error for `say &lt;| ([0,1,2].map 42)` ([5040](https://github.com/tokiwa-software/fuzion/pull/5040))
+
+  - specify possible argument count for suggested features in error message ([5017](https://github.com/tokiwa-software/fuzion/pull/5017))
+
+  - AstErrors, fix NPE ([5109](https://github.com/tokiwa-software/fuzion/pull/5109))
+
+  - fix crash when failing to infer type parameters in call ([5024](https://github.com/tokiwa-software/fuzion/pull/5024))
+
+  - fix scoped visibility handling for extension features, fix [5082](https://github.com/tokiwa-software/fuzion/issues/5082) ([5084](https://github.com/tokiwa-software/fuzion/pull/5084))
+
+  - raise error when adding field without parent in module ([5023](https://github.com/tokiwa-software/fuzion/pull/5023))
+
+  - Select, fix NPE ([5132](https://github.com/tokiwa-software/fuzion/pull/5132))
+
+  - suppress subsequent error on argument count in [5114](https://github.com/tokiwa-software/fuzion/issues/5114) ([5131](https://github.com/tokiwa-software/fuzion/pull/5131))
+
+  - Fix 4992: Type constraint using`.this` results in error ([5000](https://github.com/tokiwa-software/fuzion/pull/5000))
+
+  - resolveSyntacticSugar2, performance enhancements ([4921](https://github.com/tokiwa-software/fuzion/pull/4921))
+
+  - `ResolvedNormalType.asThis` do not create this type of universe ([4791](https://github.com/tokiwa-software/fuzion/pull/4791))
+
+  - add comment on formal generics ([4759](https://github.com/tokiwa-software/fuzion/pull/4759))
+
+  - add error for illegal use of select ([4738](https://github.com/tokiwa-software/fuzion/pull/4738))
+
+  - cleanup: use "must not" instead of "cannot" for rules or restrictions ([4748](https://github.com/tokiwa-software/fuzion/pull/4748))
+
+  - Feature, add comment to `_effects` field ([4797](https://github.com/tokiwa-software/fuzion/pull/4797))
+
+  - Fix [197<](https://github.com/tokiwa-software/fuzion/issues/197) by fixing order of `applyTypePars` for call result type ([4712](https://github.com/tokiwa-software/fuzion/pull/4712))
+
+  - fix crash when using type constraints ([4764](https://github.com/tokiwa-software/fuzion/pull/4764))
+
+  - fix setting context for _extension_ features ([4727](https://github.com/tokiwa-software/fuzion/pull/4727))
+
+  - remove possibility to specify types in tuple destructuring ([4702](https://github.com/tokiwa-software/fuzion/pull/4702))
+
+  - suppress error if type of actual is error ([4747](https://github.com/tokiwa-software/fuzion/pull/4747))
+
+  - suppress subsequent error referencing type `--UNDEFINED--` ([4762](https://github.com/tokiwa-software/fuzion/pull/4762))
+
+  - suppress subsequent errors for error types ([4731](https://github.com/tokiwa-software/fuzion/pull/4731))
+
+  - fix choice-this-types ([4743](https://github.com/tokiwa-software/fuzion/pull/4743))
+
+  - fix extension feature not found ([4798](https://github.com/tokiwa-software/fuzion/pull/4798))
+
+  - fix fuir-file-naming ([4767](https://github.com/tokiwa-software/fuzion/pull/4767))
+
+  - fix inheritance for contracts ([4732](https://github.com/tokiwa-software/fuzion/pull/4732))
+
+  - fix redefinition for features added to library features ([4794](https://github.com/tokiwa-software/fuzion/pull/4794))
+
+  - LibOut, relax check condition to allow native to have type params ([4832](https://github.com/tokiwa-software/fuzion/pull/4832))
+
+  - fix short handle select parsing ([4704](https://github.com/tokiwa-software/fuzion/pull/4704))
+
+  - bug fixes
+
+    - `Match.typeForInferencing` return `null` on error ([4919](https://github.com/tokiwa-software/fuzion/pull/4919))
+
+    - fix NPE in `Select.toString` ([4958](https://github.com/tokiwa-software/fuzion/pull/4958))
+
+    - fix NullPointerException for target of Select ([4960](https://github.com/tokiwa-software/fuzion/pull/4960))
+
+    - suppress subsequent errors in case of type inference of lambda error ([4931](https://github.com/tokiwa-software/fuzion/pull/4931))
+
+    - add check for argument and result types of native features ([4850](https://github.com/tokiwa-software/fuzion/pull/4850))
+
+    - allow setting feature name for features with arguments ([4969](https://github.com/tokiwa-software/fuzion/pull/4969))
+
+    - do not implicitly assume result type to be void ([4974](https://github.com/tokiwa-software/fuzion/pull/4974))
+
+    - fix class cast exception ([4968](https://github.com/tokiwa-software/fuzion/pull/4968))
+
+    - fix issue with type inference of inheritance call of cotypes ([4891](https://github.com/tokiwa-software/fuzion/pull/4891))
+
+    - fix logic in `isExtensionFeature` ([4889](https://github.com/tokiwa-software/fuzion/pull/4889))
+
+    - fix type parameter inference for inheritance call ([4890](https://github.com/tokiwa-software/fuzion/pull/4890))
+
+- Middle End
+
+  - fix unjustified error for `reading uninitialized field` created by DFA ([5094](https://github.com/tokiwa-software/fuzion/pull/5094))
+
+  - fuir: `clazzOuterRef` now always return `NO_CLAZZ` for native, fields etc. ([5012](https://github.com/tokiwa-software/fuzion/pull/5012))
+
+  - dfa: `genericResult` return null if result is void ([4876](https://github.com/tokiwa-software/fuzion/pull/4876))
+
+  - dfa: native, dummy call function args ([4878](https://github.com/tokiwa-software/fuzion/pull/4878))
+
+  - fuir: add convenience method, fuir clazzNativeName ([4848](https://github.com/tokiwa-software/fuzion/pull/4848))
+
+  - fuir: isTailCall return true if site always results in void ([4243](https://github.com/tokiwa-software/fuzion/pull/4243))
+
+  - dfa: Do not call `result()`in `Call.toString()`. ([4808](https://github.com/tokiwa-software/fuzion/pull/4808))
+
+  - fuir: add serialization ([4726](https://github.com/tokiwa-software/fuzion/pull/4726))
+
+    Fuzion intermediate representation is now serialized and persisted in a file. This also fixes the thread safety issue we had before.
+
+  - fuir: change logic in lookup_ ([4840](https://github.com/tokiwa-software/fuzion/pull/4840))
+
+- Back Ends
+
+  - native: add upcalls, i.e., passing Fuzion function for callback to native
+    code ([4926](https://github.com/tokiwa-software/fuzion/pull/4926))
+
+- JVM and C back end
+
+  - jvm: change type of functions descriptor args array ([5011](https://github.com/tokiwa-software/fuzion/pull/5011))
+
+  - c: convert some functions to windows native ([5074](https://github.com/tokiwa-software/fuzion/pull/5074))
+
+  - c: zero memory (securely) ([5034](https://github.com/tokiwa-software/fuzion/pull/5034))
+
+  - c/jvm: add initial support for native values ([5021](https://github.com/tokiwa-software/fuzion/pull/5021))
+
+  - fix verifier error in mandelbrot test ([4775](https://github.com/tokiwa-software/fuzion/pull/4775))
+
+  - better error handling for unreachable code ([4765](https://github.com/tokiwa-software/fuzion/pull/4765))
+
+- Windows
+
+  - `fzE_date_time` add support for nano seconds ([5089](https://github.com/tokiwa-software/fuzion/pull/5089))
+
+  - build args and env in win.c ([5087](https://github.com/tokiwa-software/fuzion/pull/5087))
+
+  - fix `fzE_dir_read`, exclude NULL-byte from length ([5081](https://github.com/tokiwa-software/fuzion/pull/5081))
+
+  - fix problems related to `tests/process_utf8` ([5096](https://github.com/tokiwa-software/fuzion/pull/5096))
+
+  - fix test process ([5091](https://github.com/tokiwa-software/fuzion/pull/5091))
+
+  - use wide char api explicitly ([5028](https://github.com/tokiwa-software/fuzion/pull/5028))
+
+  - install libsqlite via msys ([5103](https://github.com/tokiwa-software/fuzion/pull/5103))
+
+  - re-add workaround for unicode problem ([5101](https://github.com/tokiwa-software/fuzion/pull/5101))
+
+  - tests: add skip_win option ([5105](https://github.com/tokiwa-software/fuzion/pull/5105))
+
+  - create link libclang.dll, clang.dll ([5033](https://github.com/tokiwa-software/fuzion/pull/5033))
+
+  - fix error: 'poll.h' file not found ([4977](https://github.com/tokiwa-software/fuzion/pull/4977))
+
+- fz tool
+
+  - changed all options to camelCase ([5150](https://github.com/tokiwa-software/fuzion/pull/5150))
+
+- Base library
+
+  - New base library features
+
+    - add `order`, choice of less/greater/equal as result type for `infix ⋄`
+      instead of magic constants `-1`, `0` and `+1`
+      ([5118](https://github.com/tokiwa-software/fuzion/pull/5118),
+      [5133](https://github.com/tokiwa-software/fuzion/pull/5133))
+
+    - add `String.lines`, splitting the String at `\n` ([5154](https://github.com/tokiwa-software/fuzion/pull/5154))
+
+    - add `process.close_in` to close standard input ([5108](https://github.com/tokiwa-software/fuzion/pull/5108))
+
+    - implement `calendar.duration.type.lteq` ([5112](https://github.com/tokiwa-software/fuzion/pull/5112))
+
+    - String add `write_to`, writing String to installed writer ([5123](https://github.com/tokiwa-software/fuzion/pull/5123))
+
+    - `write_result`, add `ok`, shorthand to check if writing was successful ([5155](https://github.com/tokiwa-software/fuzion/pull/5155))
+
+    - time: add skeleton implementation for `calendar_duration` ([4905](https://github.com/tokiwa-software/fuzion/pull/4905))
+
+    - time/calendar_duration: implement `as_string` ([4939](https://github.com/tokiwa-software/fuzion/pull/4939))
+
+    - time/date_time: use month and day arguments instead of day in year ([4872](https://github.com/tokiwa-software/fuzion/pull/4872))
+
+    - added `Mutable_Hash_Map` ([4873](https://github.com/tokiwa-software/fuzion/pull/4873))
+
+    - base: add a `property.countable` feature and use it in`Sequence` ([4721](https://github.com/tokiwa-software/fuzion/pull/4721))
+
+    - add `array.type.empty` ([4841](https://github.com/tokiwa-software/fuzion/pull/4841))
+
+    - add `linear_effect` ([4672](https://github.com/tokiwa-software/fuzion/pull/4672))
+
+      A linear effect checks at runtime if it has already been instated and panics if this is the case.
+
+    - Add `Sequence.orderable` ([4733](https://github.com/tokiwa-software/fuzion/pull/4733))
+
+      With `.as_orderable` a sequence can be wrapped into an orderable type, requires the type of the elements in the sequence to be orderable.
+
+      This allows the sequence to be used as key in a tree map ( which requires keys to be orderable).
+
+      An example can be found in the [Advent of Code solution for Dec 22](https://github.com/fridis/fuzion_aoc/blob/main/2024/22/part2_group_map_reduce.fz).
+
+    - lib/Sequence: implement `scan1`, variant of `scan` without initial value ([4793](https://github.com/tokiwa-software/fuzion/pull/4793))
+
+  - Changes to the following standard library features
+
+    - change `ordered_map` arg types to `Sequence` ([5136](https://github.com/tokiwa-software/fuzion/pull/5136))
+
+    - make `String.trim_start`/`trim_end` public ([5158](https://github.com/tokiwa-software/fuzion/pull/5158))
+
+    - fix argument order inconsistency in `scan` and `fold` in `Sequence` ([5004](https://github.com/tokiwa-software/fuzion/pull/5004))
+
+    - fix hierarchy of faults, `contract_fault` now used by `pre_fault`, `post_fault`, and `check_fault`,  ([5139](https://github.com/tokiwa-software/fuzion/pull/5139))
+
+    - make `Lazy` inherit from `monad` ([5036](https://github.com/tokiwa-software/fuzion/pull/5036))
+
+    - mark `bind` in `outcome` as `fixed`, so `parse_result` can reuse the name ([5010](https://github.com/tokiwa-software/fuzion/pull/5010))
+
+    - mark `Set.add` as `abstract` ([5113](https://github.com/tokiwa-software/fuzion/pull/5113),
+      [5167](https://github.com/tokiwa-software/fuzion/pull/5167))
+
+    - rename `try` as `exception` ([5117](https://github.com/tokiwa-software/fuzion/pull/5117))
+
+    - When reading form `io.stdin`, no longer block until `EOF`/`ctrl-D` to allow interactive input terminated with the `return` key([4894](https://github.com/tokiwa-software/fuzion/pull/4894))
+
+    - Add heuristics to avoid `Sequence.concat` to cause quadratic performance ([4696](https://github.com/tokiwa-software/fuzion/pull/4696))
+
+    - mark bool.ternary args as `Lazy` ([4785](https://github.com/tokiwa-software/fuzion/pull/4785))
+
+    - specify effect type to be of type `mutate` in `Mutable_Array` ([4730](https://github.com/tokiwa-software/fuzion/pull/4730))
+
+  - Removed library features
+
+    - remove `num.sign` ([5127](https://github.com/tokiwa-software/fuzion/pull/5127))
+
+    - made `type_of` lazy and removed `type_of_lazy` ([5053](https://github.com/tokiwa-software/fuzion/pull/5053))
+
+- Tests
+
+  - test: use `run_tests.fz` ([5134](https://github.com/tokiwa-software/fuzion/pull/5134))
+
+  - tests add reg. test [1726](https://github.com/tokiwa-software/fuzion/issues/1726) ([5031](https://github.com/tokiwa-software/fuzion/pull/5031))
+
+  - tests: add reg. test [2701](https://github.com/tokiwa-software/fuzion/issues/2701) ([5035](https://github.com/tokiwa-software/fuzion/pull/5035))
+
+  - tests: add test [4422](https://github.com/tokiwa-software/fuzion/issues/4422) ([5037](https://github.com/tokiwa-software/fuzion/pull/5037))
+
+  - tests: call `wait` at the end, did only work because of buffering ([5098](https://github.com/tokiwa-software/fuzion/pull/5098))
+
+  - tests: change test process to print complete env ([5083](https://github.com/tokiwa-software/fuzion/pull/5083))
+
+  - tests: file/dir, use unicode symbols ([5027](https://github.com/tokiwa-software/fuzion/pull/5027))
+
+  - tests: fix comments in `tests/visibility_scoping` ([5093](https://github.com/tokiwa-software/fuzion/pull/5093))
+
+  - tests: include target when generating rerun command ([5066](https://github.com/tokiwa-software/fuzion/pull/5066))
+
+  - tests: try workaround broken pipe problem ([5088](https://github.com/tokiwa-software/fuzion/pull/5088))
+
+  - skip native_value test on jvm backend because of [5026](https://github.com/tokiwa-software/fuzion/issues/5026) ([5044](https://github.com/tokiwa-software/fuzion/pull/5044))
+
+  - fix test sqlite on windows
+    ([4982](https://github.com/tokiwa-software/fuzion/pull/4982))
+
+  - add regression test for
+    [2489](https://github.com/tokiwa-software/fuzion/issues/2489), partial
+    application with type inference
+    ([4871](https://github.com/tokiwa-software/fuzion/pull/4871))
+
+  - add regression tests
+    ([4757](https://github.com/tokiwa-software/fuzion/pull/4757),
+    [4709](https://github.com/tokiwa-software/fuzion/pull/4709),
+    [4813](https://github.com/tokiwa-software/fuzion/pull/4813))
+
+  - tests: document and check `call.this` ([4769](https://github.com/tokiwa-software/fuzion/pull/4769))
+
+  - tests: fix `tuple_negative`, remove unsupported test cases ([4739](https://github.com/tokiwa-software/fuzion/pull/4739))
+
+  - tests: remove unsupported test cases from `tupletest` ([4737](https://github.com/tokiwa-software/fuzion/pull/4737))
+
+  - tests: test starting process using unicode ([4691](https://github.com/tokiwa-software/fuzion/pull/4691))
+
+  - tools: add `serializeFuir` to -no-backend ([4773](https://github.com/tokiwa-software/fuzion/pull/4773))
+
+- Documentation
+
+  - fixed links to features in other modules (e.g., when inheriting from feature in different module ([5014](https://github.com/tokiwa-software/fuzion/pull/5014))
+
+  - fix display of constraint for type parameters ([4881](https://github.com/tokiwa-software/fuzion/pull/4881))
+
+  - make API sources link configurable ([4930](https://github.com/tokiwa-software/fuzion/pull/4930))
+
+  - link rfc2119 and clarify "cannot" ([4787](https://github.com/tokiwa-software/fuzion/pull/4787))
+
+  - fix comments in api docs missing ([4744](https://github.com/tokiwa-software/fuzion/pull/4744))
+
+  - fix link to source files in api docs ([4724](https://github.com/tokiwa-software/fuzion/pull/4724))
+
+  - fix navigation on the left side escaping the frame of the site ([4801](https://github.com/tokiwa-software/fuzion/pull/4801))
+
+  - reimplement generation of tree structure for navigation on left side ([4722](https://github.com/tokiwa-software/fuzion/pull/4722))
+
+  - The Fuzion Grammar is not shown using Railroad Diagrams: <a href="https://fuzion-lang.dev/fuzion_railroad.html">fuzion_railroad.html</a>
+
+- Build infrastructure
+
+  - port run_tests to Fuzion ([5110](https://github.com/tokiwa-software/fuzion/pull/5110))
+
+  - run_tests: fix failing precondition in failed tests enumeration ([5168](https://github.com/tokiwa-software/fuzion/pull/5168))
+
+  - run windows tests every workday ([5143](https://github.com/tokiwa-software/fuzion/pull/5143))
+
+  - makefile: add helper to rerecord effects ([5144](https://github.com/tokiwa-software/fuzion/pull/5144))
+
+  - Makefile: include API docs in make target `doc` ([5079](https://github.com/tokiwa-software/fuzion/pull/5079))
+
+  - workflow: programmatically determine clang major version ([5029](https://github.com/tokiwa-software/fuzion/pull/5029))
+
+  - Switched to long options ([5107](https://github.com/tokiwa-software/fuzion/pull/5107))
+
+  - now shows reason if test was canceled because of timeout or stack limit ([4954](https://github.com/tokiwa-software/fuzion/pull/4954))
+
+  - now shows the slowest tests after a test run ([4973](https://github.com/tokiwa-software/fuzion/pull/4973))
+
+- `fz` command
+
+  - fz: option `-saveLib` of the `fz` command is now called `-save-module` ([4888](https://github.com/tokiwa-software/fuzion/pull/4888))
 
 ## 2025-02-14: V0.092
 
@@ -5613,9 +6124,9 @@ Benchmarks:
 
 - First version to be presented to very few selected users via the fuzion-lang.dev website.
 
-<!--  LocalWords:  Fuzion JDK Makefile fz lt ints ascii nano DFA CFG JVM fzjava
- -->
-<!--  LocalWords:  VerifyError backend stackmap backends envir args Boehm
- -->
-<!--  LocalWords:  atomics XkeepGeneratedCode
- -->
+<!--  LocalWords:  Fuzion JDK Makefile fz lt ints ascii nano DFA CFG JVM fzjava -->
+<!--  LocalWords:  VerifyError backend stackmap backends envir args Boehm eins -->
+<!--  LocalWords:  atomics XkeepGeneratedCode zwei redef postfix ebnf cotype ok -->
+<!--  LocalWords:  postconditions intrinsics NullPointerException numliterals -->
+<!--  LocalWords:  AstErrors destructuring fuir verifier mandelbrot unicode dll -->
+<!--  LocalWords:  camelCase -->
