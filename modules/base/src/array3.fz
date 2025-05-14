@@ -49,17 +49,17 @@ is
 
   # indices range in first dimension
   #
-  public indices0 => 0..length0-1
+  public indices0 interval i32 => 0..length0-1
 
 
   # indices range in second dimension
   #
-  public indices1 => 0..length1-1
+  public indices1 interval i32 => 0..length1-1
 
 
   # indices range in third dimension
   #
-  public indices2 => 0..length2-1
+  public indices2 interval i32 => 0..length2-1
 
 
   public index [ ] (i0, i1, i2 i32) T
@@ -75,7 +75,7 @@ is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
-  public redef as_string : encodings =>
+  public redef as_string String : encodings =>
     dim_1(i i32) =>
       ("  [" + ascii.lf_str
         + indices1
@@ -110,7 +110,7 @@ is
       debug: 0 ≤ j < length1
       debug: 0 ≤ k < length2
   is
-    public redef head => (i, j, k, index[] i j k)
+    public redef head tuple i32 i32 i32 T => (i, j, k, index[] i j k)
     public redef tail list (tuple i32 i32 i32 T) =>
       if      k < length2-1 then enumerate_cons i   j   k+1
       else if j < length1-1 then enumerate_cons i   j+1 0
@@ -127,7 +127,7 @@ is
   #
   public type.new(
           length0, length1, length2 i32,
-          init3 (i32, i32, i32) -> T)
+          init3 (i32, i32, i32) -> T) array3 T
     pre
       safety: length0 ≥ 0
       safety: length1 ≥ 0
@@ -154,7 +154,7 @@ is
 #
 public array3(T type,
         length0, length1, length2 i32,
-        init3 (i32, i32, i32) -> T)
+        init3 (i32, i32, i32) -> T) array3 T
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0

@@ -43,17 +43,17 @@ is
 
   # indices range in the first dimension
   #
-  public indices0 => (i64 0)..length0-1
+  public indices0 interval i64 => (i64 0)..length0-1
 
 
   # indices range in the second dimension
   #
-  public indices1 => (i64 0)..length1-1
+  public indices1 interval i64 => (i64 0)..length1-1
 
 
   # all pairs of indices: (0, 0), (0, 1), (0, 2), ..., (length0-1, length1-1)
   #
-  public index_pairs =>
+  public index_pairs Sequence (tuple i64 i64) =>
     indices0.flat_map i->
       indices1.map j->(i,j)
 
@@ -80,13 +80,13 @@ is
 
   # create immutable array from this buffer
   #
-  public as_array ! E =>
+  public as_array array T ! E =>
     array (length0.as_i32 * length1.as_i32) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
 
 
   # create a list from this buffer
   #
-  public as_list =>
+  public as_list list T =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -96,4 +96,4 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string => as_array.as_string
+  public redef as_string String => as_array.as_string

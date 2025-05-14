@@ -468,7 +468,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
     return
       /* special type parameter used for this.type in type features */
-      isCoTypesThisType() ? (tfo != null ? tfo.qualifiedName(context) : "null") + ".this.type" :
+      isCoTypesThisType() ? (tfo != null ? tfo.qualifiedName(context) : "null") + ".this.type (in type feature)" :
 
       /* cotype: use original name and add ".type": */
       isCotype()             &&
@@ -1751,10 +1751,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
-  public boolean producesResult()
+  @Override public boolean producesResult()
   {
     return false;
   }

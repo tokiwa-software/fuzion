@@ -30,19 +30,19 @@ public u64(public val u64) : num.wrap_around, has_interval is
   # overflow checking
 
   # would negation cause an overflow?
-  public redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg bool => !is_zero
 
   # would addition + other cause an overflow or underflow?
-  public fixed redef overflow_on_add (other u64) => u64.max -° val < other
-  public fixed redef underflow_on_add(other u64) => false
+  public fixed redef overflow_on_add (other u64) bool => u64.max -° val < other
+  public fixed redef underflow_on_add(other u64) bool => false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other u64) => false
-  public fixed redef underflow_on_sub(other u64) => val < other
+  public fixed redef overflow_on_sub (other u64) bool => false
+  public fixed redef underflow_on_sub(other u64) bool => val < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed redef overflow_on_mul (other u64) => if other = 0 then false else (val *° other / other) != val
-  public fixed redef underflow_on_mul(other u64) => false
+  public fixed redef overflow_on_mul (other u64) bool => if other = 0 then false else (val *° other / other) != val
+  public fixed redef underflow_on_mul(other u64) bool => false
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed redef prefix -° u64 => intrinsic
@@ -51,8 +51,8 @@ public u64(public val u64) : num.wrap_around, has_interval is
   public fixed redef infix *° (other u64) u64 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u64) => div other
-  public fixed redef infix % (other u64) => mod other
+  public fixed redef infix / (other u64) u64 => div other
+  public fixed redef infix % (other u64) u64 => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u64) u64 => intrinsic
@@ -69,7 +69,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # does this u64 fit into an u8?
   #
-  public fixed redef fits_in_u8  => val ≤ u8.max.as_u64
+  public fixed redef fits_in_u8 bool => val ≤ u8.max.as_u64
 
   # this u64 as an i8
   public as_i8 i8
@@ -156,7 +156,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # this u64 as an int
   #
-  public as_int  => int.from_u64 val
+  public as_int int => int.from_u64 val
 
 
   # this u64 as an uint
@@ -174,7 +174,7 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # conversion to float
   public as_f64 f64 => intrinsic
-  public as_f32 => as_f64.as_f32
+  public as_f32 f32 => as_f64.as_f32
 
 
   # create hash code from this number
@@ -246,14 +246,14 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  public fixed redef type.all_bits_set => u64 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.all_bits_set u64 => u64 0x_ffff_ffff_ffff_ffff
 
 
   # minimum
   #
-  public fixed redef type.min => u64 0
+  public fixed redef type.min u64 => u64 0
 
 
   # maximum
   #
-  public fixed redef type.max => u64 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.max u64 => u64 0x_ffff_ffff_ffff_ffff

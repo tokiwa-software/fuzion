@@ -28,13 +28,13 @@ public ffi is
 
   # returns a NULL Pointer
   #
-  public null =>
+  public null Native_Ref =>
     fzE_null
 
 
   # test if p is the NULL pointer
   #
-  public is_null(p Native_Ref) =>
+  public is_null(p Native_Ref) bool =>
     fzE_is_null p = 0
 
 

@@ -27,7 +27,7 @@ module:public connection(desc i32) is
   # note that connections are closed automatically
   # when effect is uninstalled, i.e. on abort or when thread is finished.
   #
-  public close =>
+  public close outcome unit =>
     fuzion.sys.net.close desc
 
 

@@ -93,7 +93,7 @@ default_stat_handler : Stat_Handler is
 
 # short-hand for accessing the stat effect in current environment
 #
-public stat =>
+public stat stat =>
   install_default
   stat.env
 
@@ -108,7 +108,7 @@ public stat(
      # the (relative or absolute) file name, using platform specific path separators
      path String,
      # a boolean resolve flag to resolve symbolic links or not
-     resolve bool) =>
+     resolve bool) outcome meta_data =>
   install_default
   if resolve
     stat.env.stats path

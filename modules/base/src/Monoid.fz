@@ -57,4 +57,4 @@ is
   public e T => abstract
 
   # alternative names for infix operators
-  public op(a, b T) => infix ∙  a b
+  public op(a, b T) T => infix ∙  a b

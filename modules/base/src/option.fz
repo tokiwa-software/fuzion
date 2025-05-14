@@ -34,7 +34,7 @@ is
 
   # Does this option contain no value of type T?
   #
-  public is_nil => !exists
+  public is_nil bool => !exists
 
 
   # monadic operator
@@ -58,7 +58,7 @@ is
 
   # monadic operator for bool result, false for nil
   #
-  public infix >>? (f T -> bool)
+  public infix >>? (f T -> bool) bool
   pre
     T : numeric
   =>
@@ -184,7 +184,7 @@ is
 
   # is zero
   #
-  public is_zero
+  public is_zero bool
   pre
     T : numeric
   => sign ==? 0
@@ -220,4 +220,4 @@ is
 #
 #   o option TypeOfX := x
 #
-public option(T type, o option T) => o
+public option(T type, o option T) option T => o

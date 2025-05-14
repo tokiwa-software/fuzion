@@ -78,7 +78,7 @@ public nom is
   # out  = the result of parsing, e.g. a concrete syntax tree
   #
   public success(R, O type, public rest R, public out O) is
-    public redef as_string => $out
+    public redef as_string String => $out
 
 
 

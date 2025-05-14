@@ -45,7 +45,7 @@ is
 
   # list representation of values in this set
   #
-  public redef as_list => psm.keys.as_list
+  public redef as_list list K => psm.keys.as_list
 
 
   # add new element k to this set.
@@ -72,22 +72,22 @@ is
 
   # create a sorted array from the elements of this set
   #
-  public redef as_array => psm.as_key_array
+  public redef as_array array K => psm.as_key_array
 
 
   # check if an element equal to given element k is part of this set
   #
-  public has (k K) => psm.has k
+  public has (k K) bool => psm.has k
 
 
   # get the lowest element in this set
   #
-  public redef min => psm.min
+  public redef min option K => psm.min
 
 
   # get the highest element in this set
   #
-  public redef max => psm.max
+  public redef max option K => psm.max
 
 
   # add all elements of the given Sequence to this set

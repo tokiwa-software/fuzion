@@ -28,7 +28,7 @@
 public java is
 
   # NYI: UNDER DEVELOPMENT remove this, replace with effect
-  public create_jvm0(class_path String) =>
+  public create_jvm0(class_path String) unit =>
     create_jvm (sys.c_string "-Djava.class.path=$class_path")
 
   create_jvm(option_string universe.Array) unit => intrinsic
@@ -37,7 +37,7 @@ public java is
   # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
   #
-  public get_static_field(T type, clazz String, field String, signature String) =>
+  public get_static_field(T type, clazz String, field String, signature String) T =>
     c := string_to_java_object1 clazz
     f := string_to_java_object1 field
     get_static_field0 T c f (sys.c_string signature)
@@ -46,14 +46,14 @@ public java is
   # read a field of given name from given object instance thiz.  Wrap result into
   # an instance of T.
   #
-  public get_field(T type, thiz Java_Object, field String, signature String) =>
+  public get_field(T type, thiz Java_Object, field String, signature String) T =>
     f := string_to_java_object1 field
     get_field0 T thiz.java_ref f (sys.c_string signature)
 
 
   # set a static field of given name in class with given name.
   #
-  public set_static_field(clazz String, field String, val Java_Object, signature String) =>
+  public set_static_field(clazz String, field String, val Java_Object, signature String) unit =>
     c := string_to_java_object1 clazz
     f := string_to_java_object1 field
     set_static_field0 c f val.java_ref (sys.c_string signature)
@@ -61,7 +61,7 @@ public java is
 
   # set a field of given name from given object instance thiz.
   #
-  public set_field(thiz Java_Object, field String, val Java_Object, signature String) =>
+  public set_field(thiz Java_Object, field String, val Java_Object, signature String) unit =>
     f := string_to_java_object1 field
     set_field0 thiz.java_ref f val.java_ref (sys.c_string signature)
 
@@ -105,10 +105,10 @@ public java is
   public Array(public T type,
                public redef java_ref Java_Ref) ref : Sequence T, Java_Object java_ref
   is
-    public length                  => array_length T java_ref
+    public length i32              => array_length T java_ref
     public redef finite trit       => trit.yes
-    public redef index [ ] (i i32) => array_get    T java_ref i (sys.c_string signature)
-    public redef as_list => as_list 0
+    public redef index [ ] (i i32) T => array_get    T java_ref i (sys.c_string signature)
+    public redef as_list list T => as_list 0
 
 
     # create list starting at index from
@@ -127,8 +127,8 @@ public java is
       pre
         debug: 0 ≤ i < length
     is
-      public redef head => Array.this[i]
-      public redef tail => as_list i+1
+      public redef head T => Array.this[i]
+      public redef tail list T => as_list i+1
 
 
     # get the java signature for type T.
@@ -158,7 +158,7 @@ public java is
   #
   public Java_String(public redef java_ref Java_Ref) ref : String, Java_Object java_ref
   is
-    public redef utf8 => (java_string_to_string java_ref).utf8
+    public redef utf8 Sequence u8 => (java_string_to_string java_ref).utf8
 
 
   # Call a virtual Java method class_name.name with given signature signature
@@ -239,7 +239,7 @@ public java is
 
   # get a null value of type T
   #
-  public null(T type : Java_Object)
+  public null(T type : Java_Object) outcome T
   =>
     # NYI: UNDER DEVELOPMENT: HACK!
     cast T (call_static (Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
@@ -247,7 +247,7 @@ public java is
 
   # cast this to some other class
   #
-  public cast(T type : Java_Object, thiz Java_Object)
+  public cast(T type : Java_Object, thiz Java_Object) outcome T
   =>
     cast0 T thiz.java_ref
 
@@ -352,13 +352,13 @@ public java is
 
   # short-hands
   #
-  public i8    .as_java_object => fuzion.java.i8_to_java_object  val
-  public i16   .as_java_object => fuzion.java.i16_to_java_object val
-  public u16   .as_java_object => fuzion.java.u16_to_java_object val
-  public i32   .as_java_object => fuzion.java.i32_to_java_object val
-  public i64   .as_java_object => fuzion.java.i64_to_java_object val
-  public f32   .as_java_object => fuzion.java.f32_to_java_object val
-  public f64   .as_java_object => fuzion.java.f64_to_java_object val
-  public bool  .as_java_object => fuzion.java.bool_to_java_object bool.this
-  public String.as_java_object => fuzion.java.string_to_java_object String.this
-  public array .as_java_object => fuzion.java.array_to_java_object array.this
+  public i8    .as_java_object fuzion.java.Java_Object => fuzion.java.i8_to_java_object  val
+  public i16   .as_java_object fuzion.java.Java_Object => fuzion.java.i16_to_java_object val
+  public u16   .as_java_object fuzion.java.Java_Object => fuzion.java.u16_to_java_object val
+  public i32   .as_java_object fuzion.java.Java_Object => fuzion.java.i32_to_java_object val
+  public i64   .as_java_object fuzion.java.Java_Object => fuzion.java.i64_to_java_object val
+  public f32   .as_java_object fuzion.java.Java_Object => fuzion.java.f32_to_java_object val
+  public f64   .as_java_object fuzion.java.Java_Object => fuzion.java.f64_to_java_object val
+  public bool  .as_java_object fuzion.java.Java_Object => fuzion.java.bool_to_java_object bool.this
+  public String.as_java_object fuzion.java.Java_Object => fuzion.java.string_to_java_object String.this
+  public array .as_java_object fuzion.java.Java_Object => fuzion.java.array_to_java_object array.this

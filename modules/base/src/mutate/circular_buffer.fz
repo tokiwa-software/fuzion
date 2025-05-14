@@ -158,7 +158,7 @@ is
 
   # read the elements from the buffer
   #
-  public redef flush (n i64) =>
+  public redef flush (n i64) universe.array T =>
     check_and_replace
 
     x := array n.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
@@ -168,13 +168,13 @@ is
 
   # create immutable array from this
   #
-  public redef as_array =>
+  public redef as_array universe.array T =>
     array buffered.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
 
 
   # create a list from this array
   #
-  public redef as_list =>
+  public redef as_list list T =>
     as_array.as_list
 
 
