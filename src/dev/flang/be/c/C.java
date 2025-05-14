@@ -785,6 +785,7 @@ public class C extends ANY
           }
 
         command.addAll("-O3");
+        command.addAll("-mavx");
       }
 
     if(_options._useBoehmGC)

@@ -1003,6 +1003,18 @@ public class Intrinsics extends ANY
     put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
     // essentially a NOP in c-backend
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
+
+    put("array.add_f32_vec", (c,cl,outer,in) ->{
+      var tmp = new CIdent("tmp");
+      var internalArray = c._fuir.clazzArgClazz(cl, 0);
+      var data   = c._names.fieldName(c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray));
+      var length = c._names.fieldName(c._fuir.lookup_fuzion_sys_internal_array_length(internalArray));
+      return CStmnt.seq(
+        CExpr.decl("float *", tmp, CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("float").mul(A0.field(length))))),
+        CExpr.call("fzE_add_float_array", new List<>(A0.field(data).castTo("const float *"), A1.field(data).castTo("const float *"), tmp, A0.field(length))),
+        tmp.castTo("void *").ret()
+      );
+    });
   }
 
 
