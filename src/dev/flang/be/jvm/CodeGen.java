@@ -208,8 +208,6 @@ class CodeGen
    *
    * @param s cl id of clazz we are interpreting
    *
-   * @param tc clazz id of the target instance
-   *
    * @param f clazz id of the assigned field
    *
    * @param tvalue the target instance
@@ -219,7 +217,7 @@ class CodeGen
    * @return statement to perform the given assignment
    */
   @Override
-  public Expr assignStatic(int s, int tc, int f, Expr tvalue, Expr val)
+  public Expr assignStatic(int s, int f, Expr tvalue, Expr val)
   {
     return _jvm.assignField(s, f, _fuir.clazzResultClazz(f), tvalue, val);
   }

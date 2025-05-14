@@ -19,9 +19,9 @@ fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: {base.fum}/fu
 fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:58:42:
-public precondition_fault(msg String) => pre_fault.cause msg
------------------------------------------^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:58:47:
+public precondition_fault(msg String) void => pre_fault.cause msg
+----------------------------------------------^^^^^^^^^^^^^^^^^^^
 pre issue270: --CURDIR--/issue270.fz:25:7:
   pre false # 1. should flag an error: Precondition does not hold
 ------^^^^^

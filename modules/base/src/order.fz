@@ -44,7 +44,7 @@ public order : choice less greater equal, property.equatable is
   # greater => +1
   # equal => 0
   #
-  public sign =>
+  public sign i32 =>
     match order.this
       less => -1
       greater => +1
@@ -71,28 +71,28 @@ public order : choice less greater equal, property.equatable is
     match order.this
       equal => true
       * => false
-    
-  # the value of this order is `greater` or `equal`  
+
+  # the value of this order is `greater` or `equal`
   #
   public is_greater_or_equal bool =>
     match order.this
       less => false
       * => true
 
-  # the value of this order is `less` or `equal` 
+  # the value of this order is `less` or `equal`
   #
   public is_less_or_equal bool =>
     match order.this
       greater => false
       * => true
 
-  # the value of this order is `unequal` 
+  # the value of this order is `unequal`
   #
   public is_unequal bool =>
     match order.this
       equal => false
       * => true
-      
+
 
 
   public fixed redef type.equality(a, b order) bool =>
@@ -114,10 +114,8 @@ public order : choice less greater equal, property.equatable is
 
   # human readable string of this choice
   #
-  public redef as_string =>
+  public redef as_string String =>
     match order.this
       less => "less"
       greater => "greater"
       equal => "equal"
-
-

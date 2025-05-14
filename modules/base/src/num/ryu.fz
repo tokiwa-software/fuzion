@@ -44,14 +44,14 @@ public ryū(public T type : float) is
 
   # rounding mode 'conservative', never accepts lower/upper bound
   #
-  public rounding_conservative := (rounding_mode (is_even)->false (is_even)->false)
+  public rounding_conservative rounding_mode := rounding_mode (is_even)->false (is_even)->false
 
 
   # rounding mode 'even', chooses the closest even number.
   # examples: 0.5 => 0
   #           1.5 => 2
   #
-  public rounding_even := (rounding_mode (is_even)->is_even (is_even)->is_even)
+  public rounding_even rounding_mode := rounding_mode (is_even)->is_even (is_even)->is_even
 
 
   # convert float to string using conservative rounding

@@ -62,12 +62,12 @@ is
 
   # has one element been created using 'new'?
   #
-  public has_last => last_opt??
+  public has_last bool => last_opt??
 
 
   # return the last handle that was created by 'new'
   #
-  public last
+  public last handle2_0 T
     pre
       debug: has_last
   =>
@@ -81,7 +81,7 @@ is
   public create (
     # initial value referred to by the new handle
     w T
-    )
+    ) handle2_0 T
   =>
     (new w).last
 
@@ -91,7 +91,7 @@ is
   public get (
     # a handle created by 'new'
     h handle2_0 T
-    )
+    ) T
   =>
     h.get
 
@@ -103,7 +103,7 @@ is
     h handle2_0 T,
 
     # the new value to be stored with 'h'
-    w T)
+    w T) handles2 T X
   =>
     h.put w
     handles2 v last_opt mode.next
@@ -118,18 +118,18 @@ is
 
     # function calculating the new value from the old value
     f T->T
-    )
+    ) handles2 T X
   =>
     h.put (f h.get)
     handles2 v last_opt mode.next
 
 
-  public redef infix >>= (f X -> handles2 T X) => bind X f
+  public redef infix >>= (f X -> handles2 T X) handles2 T X => bind X f
 
   public bind(B type, f X -> handles2 T B) handles2 T B =>
     handles2 (f v).v last_opt oneway_monad_mode.plain
 
-  public return(B type, w B) => handles2 T B w last_opt oneway_monad_mode.plain
+  public return(B type, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
@@ -161,13 +161,13 @@ is
 
   # set value stored in this handle to new_val
   #
-  public put(new_val T) =>
+  public put(new_val T) unit =>
     set get := new_val
     (handles2 T unit).env.replace
 
   # update value stored in this handle using f.
   #
-  public update(f T->T) =>
+  public update(f T->T) T =>
     set get := f get
     (handles2 T unit).env.replace
     get
@@ -184,4 +184,4 @@ handles2_type(T type) is
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-public handle2(T type, v T) => (handles2 T).create v
+public handle2(T type, v T) handle2_0 T => (handles2 T).create v

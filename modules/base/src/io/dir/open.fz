@@ -40,12 +40,12 @@ module:public open(dd Directory_Descriptor,
 
   # close dir when de-instating effect
   #
-  public redef finally =>
+  public redef finally unit =>
     _ := fzE_dir_close dd
 
 
 # short hand to get the currently
 # installed open effect
 #
-public open =>
+public open open =>
   open.env

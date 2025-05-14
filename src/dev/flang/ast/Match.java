@@ -113,7 +113,11 @@ public class Match extends AbstractMatch
    */
   public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _subject = _subject.visit(v, outer);
+    var os = _subject;
+    var ns = _subject.visit(v, outer);
+    if (CHECKS) check
+      (os == _subject);
+    _subject = ns;
     v.action(this);
     for (var c: cases())
       {
@@ -226,20 +230,31 @@ public class Match extends AbstractMatch
     // adding missing result fields instead of misusing
     // `propagateExpectedType`.
     //
-
-    // This will trigger addFieldForResult in some cases, e.g.:
-    // `match (if true then true else true) * =>`
-    _subject = subject().propagateExpectedType(res, context, subject().type());
-
     return addFieldForResult(res, context, t);
   }
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * This will trigger addFieldForResult in some cases, e.g.:
+   * `match (if true then true else true) * =>`
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   *
+   */
+  void addFieldsForSubject(Resolution res, Context context)
+  {
+    _subject = subject().propagateExpectedType(res, context, subject().type());
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
-  public boolean producesResult()
+  @Override public boolean producesResult()
   {
     return !_assignedToField;
   }
@@ -401,10 +416,9 @@ public class Match extends AbstractMatch
             }
           });
 
-    return new Match(pos, c, new List<>())
+    return new Match(pos, c, cases)
       {
         @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
-        @Override public List<AbstractCase> cases() { return cases; }
       };
   }
 
@@ -416,7 +430,7 @@ public class Match extends AbstractMatch
    */
   public String toString()
   {
-    var sb = new StringBuilder("match " + subject() + "\n");
+    var sb = new StringBuilder((kind() == Kind.Plain ? "match " : "if ") + subject() + "\n");
     for (var c : cases())
       {
         sb.append(c.toString()).append("\n");

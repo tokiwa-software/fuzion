@@ -108,4 +108,4 @@ public choice(public CHOICE_ELEMENT_TYPE type...) is
 
   # explicitly tag value a to become choice
   #
-  public type.tag(a choice.this) => a
+  public type.tag(a choice.this) choice.this => a

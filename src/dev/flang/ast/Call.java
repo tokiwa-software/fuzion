@@ -2945,6 +2945,15 @@ public class Call extends AbstractCall
     if (CHECKS) check
       (res._options.isLanguageServer() || Errors.any() || _type != null);
 
+    if (_calledFeature != null &&
+        context.outerFeature() != Types.resolved.f_effect_static_finally &&
+        (_calledFeature == Types.resolved.f_effect_finally ||
+         _calledFeature.redefinesFull().contains(Types.resolved.f_effect_finally))
+       )
+      {
+        AstErrors.mustNotCallEffectFinally(this);
+      }
+
     if (_type != null && _type != Types.t_ERROR)
       {
         var o = _type;

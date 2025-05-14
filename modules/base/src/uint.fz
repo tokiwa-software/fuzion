@@ -242,7 +242,7 @@ is
 
   # total order
   #
-  public fixed redef type.lteq(a, b uint) =>
+  public fixed redef type.lteq(a, b uint) bool =>
     if a.data.count = b.data.count
       a.data
         # zip the two equally long lists of digits
@@ -296,7 +296,7 @@ is
 
   # does this uint fit into an u8?
   #
-  public redef fits_in_u8 =>
+  public redef fits_in_u8 bool =>
     data.count ≤ 1 && data[0].fits_in_u8
 
 
@@ -310,7 +310,7 @@ is
 
   # does this uint fit in 64 bits?
   #
-  public fits_in_u64 =>
+  public fits_in_u64 bool =>
     data.count ≤ 2
 
 
@@ -325,7 +325,7 @@ is
 
 
   # does this uint fit into an u128?
-  public fits_in_u128 =>
+  public fits_in_u128 bool =>
     data.count ≤ 4
 
 
@@ -340,7 +340,7 @@ is
 
 
   # does this uint fit into an i128?
-  public fits_in_i128 =>
+  public fits_in_i128 bool =>
     data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 

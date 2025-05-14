@@ -126,8 +126,6 @@ public class C extends ANY
      *
      * @param s site of the expression causing this assignment
      *
-     * @param tc clazz id of the target instance
-     *
      * @param f clazz id of the assigned field
      *
      * @param tvalue the target instance
@@ -137,8 +135,9 @@ public class C extends ANY
      * @return statement to perform the given access
      */
     @Override
-    public CStmnt assignStatic(int s, int tc, int f, CExpr tvalue, CExpr val)
+    public CStmnt assignStatic(int s, int f, CExpr tvalue, CExpr val)
     {
+      var tc = _fuir.clazzAt(s);
       return assignField(tvalue, tc, tc, f, val, _fuir.clazzResultClazz(f));
     }
 

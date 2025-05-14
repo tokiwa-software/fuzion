@@ -85,6 +85,9 @@ jobs:
       - name: build docs
         run: make doc
 
+      - name: compile language server
+        run: make lsp/compile
+
       - name: run tests
         run: make run_tests_parallel
 

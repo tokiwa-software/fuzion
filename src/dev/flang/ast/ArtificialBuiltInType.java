@@ -117,17 +117,11 @@ public class ArtificialBuiltInType extends ResolvedNormalType
     return _id;
   }
 
-  /**
-   * asString is redefined here to avoid accessing _feature to create name.
-   */
-  public String asString()
-  {
-    return _name;
-  }
 
   /**
    * toString is redefined here to avoid accessing _feature to create name.
    */
+  @Override
   public String toString()
   {
     return _name;

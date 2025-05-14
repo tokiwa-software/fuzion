@@ -41,13 +41,13 @@ is
 
   # create an instance of `post_fault` with the given error handler.
   #
-  public fixed redef type.new(h String -> void) => fuzion.runtime.post_fault h
+  public fixed redef type.new(h String -> void) fuzion.runtime.post_fault => fuzion.runtime.post_fault h
 
 
 # post_fault with no argument returns post_fault.env, the currently installed
 # runtime post_fault handler.
 #
-public post_fault =>
+public post_fault post_fault =>
   post_fault.install_default
   post_fault.env
 
@@ -55,4 +55,4 @@ public post_fault =>
 # cause a postcondition fault with given msg argument, i.e., call post_fault.cause
 # msg, i.e., use the current post_fault effect to fail with the given message.
 #
-public postcondition_fault(msg String) => post_fault.cause msg
+public postcondition_fault(msg String) void => post_fault.cause msg

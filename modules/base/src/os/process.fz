@@ -158,32 +158,32 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
 
   # wait for this process
   #
-  public wait =>
+  public wait outcome u32 =>
     # NYI: process should be ref?
     os.processes.wait (os.process id std_in std_out std_err)
 
 
   # start a process with name, arguments and environment variables
   #
-  public type.start(n String, args Sequence String, env_vars container.Map String String) =>
+  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process=>
     os.processes.start n args env_vars
 
 
   # start a process with name and arguments
   #
-  public type.start(n String, args Sequence String) =>
+  public type.start(n String, args Sequence String) outcome os.process=>
     start n args (container.ps_map String String).empty
 
 
   # start a process with name and no arguments
   #
-  public type.start(n String) =>
+  public type.start(n String) outcome os.process =>
     start n []
 
 
   # equality
   #
-  public fixed redef type.equality(a, b process.this) => a.id = b.id
+  public fixed redef type.equality(a, b process.this) bool => a.id = b.id
 
 
   # lteq
