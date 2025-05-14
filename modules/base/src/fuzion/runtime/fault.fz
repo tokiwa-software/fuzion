@@ -27,7 +27,12 @@
 #
 public fault (
   # the handler this effect uses to fail
-  p ((String, String))->void
+  p (
+      # the kind of the fault, e.g. "postcondition"
+     (String,
+      # the error message of the fault
+      String)
+    ) -> void
   ) : eff.fallible p
 is
 
