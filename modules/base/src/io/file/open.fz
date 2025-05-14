@@ -34,10 +34,10 @@ module:public open(fd File_Descriptor,
 
     hndlr :=
       ref : Seek_Handler is
-        public redef seek(offset i64) =>
+        public redef seek(offset i64) outcome unit =>
           fuzion.sys.fileio.seek fd offset
 
-        public redef file_position =>
+        public redef file_position outcome i64 =>
           fuzion.sys.fileio.file_position fd
 
     file.this.seek hndlr ! code
@@ -68,7 +68,7 @@ module:public open(fd File_Descriptor,
 
   # close file when de-instating effect
   #
-  public redef finally =>
+  public redef finally unit =>
     match fuzion.sys.fileio.close fd
       e error => fuzion.runtime.fault.cause ("io.file.open.finally", "closing file failed:  {e}")
       unit =>
@@ -78,5 +78,5 @@ module:public open(fd File_Descriptor,
 # short hand to get the currently
 # installed open effect
 #
-public open =>
+public open open =>
   open.env

@@ -28,7 +28,7 @@ module:public instant (val u64) : property.orderable is
   # which instant will be after the time specified by the duration
   # has passed after this instant?
   #
-  public fixed infix + (d duration) =>
+  public fixed infix + (d duration) instant =>
     instant (val + d.nanos)
 
 

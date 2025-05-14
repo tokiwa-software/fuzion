@@ -42,7 +42,7 @@ is
 
   # type feature that to create an instance of `exception` with the given error handler.
   #
-  public fixed redef type.new(h error->void) =>
+  public fixed redef type.new(h error->void) exception T =>
     exception T h
 
 
@@ -64,7 +64,7 @@ is
 #
 public exception(T type,
            R type,
-           f ()->R) =>
+           f ()->R) outcome R =>
   (exception T).on f
 
 

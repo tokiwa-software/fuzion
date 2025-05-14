@@ -58,7 +58,7 @@ is
   #   for i in arr.indices do
   #     say arr[i]
   #
-  public indices => (i64 0)..length-1
+  public indices interval i64 => (i64 0)..length-1
 
 
   # get element at given index i
@@ -81,13 +81,13 @@ is
 
   # create immutable array from this buffer
   #
-  public as_array ! E =>
+  public as_array array T ! E =>
     array length.as_i32 (i -> Buffer.this[i.as_i64])
 
 
   # create a list from this buffer
   #
-  public as_list =>
+  public as_list list T =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -97,4 +97,4 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string => as_array.as_string
+  public redef as_string String => as_array.as_string

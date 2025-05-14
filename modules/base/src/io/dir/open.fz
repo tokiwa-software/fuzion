@@ -40,7 +40,7 @@ module:public open(dd Directory_Descriptor,
 
   # close dir when de-instating effect
   #
-  public redef finally =>
+  public redef finally unit =>
     if fzE_dir_close dd != 0
       fuzion.runtime.fault.cause ("io.dir.open.finally", "closing directory failed.")
 
@@ -48,5 +48,5 @@ module:public open(dd Directory_Descriptor,
 # short hand to get the currently
 # installed open effect
 #
-public open =>
+public open open =>
   open.env

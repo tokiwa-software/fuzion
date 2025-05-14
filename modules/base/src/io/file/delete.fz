@@ -51,7 +51,7 @@ default_delete_handler : Delete_Handler is
 # returns unit as outcome in case of successful deletion and error in case of failure
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
-public delete(path String) =>
+public delete(path String) outcome unit =>
   (delete default_delete_handler unit).default
   delete.env.delete path
 

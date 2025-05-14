@@ -182,7 +182,7 @@ public class Block extends AbstractBlock
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable
-      // NYI hack, positions used for loops are not always in right order.
+      // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
       : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
       ? SourcePosition.notAvailable
       : new SourceRange(
@@ -386,17 +386,6 @@ public class Block extends AbstractBlock
         _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
     return this;
-  }
-
-
-  /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last expression is not an expression that produces a result.
-   */
-  public boolean producesResult()
-  {
-    var expr = resultExpression();
-    return expr != null && expr.producesResult();
   }
 
 

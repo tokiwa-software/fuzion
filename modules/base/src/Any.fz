@@ -40,7 +40,7 @@ public Any ref is
   # inside and outside of constant strings: $x and "$x" will produce the
   # same string.
   #
-  public prefix $ => Any.this.as_string
+  public prefix $ String => Any.this.as_string
 
 
   # Get the dynamic type of this instance.  For value instances `x`, this is
@@ -52,7 +52,7 @@ public Any ref is
   # endless hierarchy of types.  So for Type values, dynamic_type is redefined
   # to just return Type.type.
   #
-  public dynamic_type => Any.this.type
+  public dynamic_type Type => Any.this.type
 
 
   # Get a type as a value.
@@ -63,4 +63,4 @@ public Any ref is
   # `type_value` is here to show how this can be implemented and to illustrate the
   # difference to `dynamic_type`.
   #
-  public type.type_value => Any.this.type
+  public type.type_value Type => Any.this.type

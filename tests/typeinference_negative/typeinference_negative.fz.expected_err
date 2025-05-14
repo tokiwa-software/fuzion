@@ -111,9 +111,9 @@ block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:211:22
 block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:212:22:
     else if !b     { "String" }
 ---------------------^^^^^^^^
-blocks return values of type 'unit' at --CURDIR--/typeinference_negative.fz:213:20:
+blocks return values of type 'unit' at --CURDIR--/typeinference_negative.fz:213:22:
     else if b && b { _ i32 := 3 }
--------------------^^^^^^^^^^^^^^
+---------------------^
 and at --CURDIR--/typeinference_negative.fz:214:20:
     else if b || b { }
 -------------------^^^
@@ -356,9 +356,9 @@ block returns value of type 'i32' at --CURDIR--/typeinference_negative.fz:219:24
 block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:220:24:
       else if !b     { "String" }
 -----------------------^^^^^^^^
-blocks return values of type 'unit' at --CURDIR--/typeinference_negative.fz:221:22:
+blocks return values of type 'unit' at --CURDIR--/typeinference_negative.fz:221:24:
       else if b && b { _ i32 := 3 }
----------------------^^^^^^^^^^^^^^
+-----------------------^
 and at --CURDIR--/typeinference_negative.fz:222:22:
       else if b || b { }
 ---------------------^^^

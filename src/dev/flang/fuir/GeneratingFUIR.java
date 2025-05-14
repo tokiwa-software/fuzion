@@ -653,7 +653,7 @@ public class GeneratingFUIR extends FUIR
     var c = id2clazz(cl);
     var res = c.feature().featureName().baseName();
     res = res + c._type.generics()
-      .toString(" ", " ", "", t -> t.asStringWrapped(false));
+      .toString(" ", " ", "", t -> t.toStringWrapped(false));
     return res;
   }
 
@@ -726,7 +726,7 @@ public class GeneratingFUIR extends FUIR
 
     return cl == NO_CLAZZ
       ? "-- no clazz --"
-      : id2clazz(cl).asString(false);
+      : id2clazz(cl).toString(false);
   }
 
 
@@ -743,7 +743,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.asString(true);
+    return c.toString(true);
   }
 
 
