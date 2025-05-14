@@ -19,9 +19,9 @@ fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: {base.fum}/fu
 fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:58:42:
-public precondition_fault(msg String) => pre_fault.cause msg
------------------------------------------^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:58:47:
+public precondition_fault(msg String) void => pre_fault.cause msg
+----------------------------------------------^^^^^^^^^^^^^^^^^^^
 i32.pre infix +: {base.fum}/numeric.fz:48:7:
       debug: (numeric.this +! other)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -30,18 +30,18 @@ i32.precall infix +: {base.fum}/numeric.fz:47:5:
 ----^^^
       debug: (numeric.this +! other)
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-i32.type.sum.anonymous.infix ∙#2: {base.fum}/numeric.fz:226:51:
-      public redef infix ∙ (a, b numeric.this) => a + b
---------------------------------------------------^^^^^
-i32.type.sum.anonymous.op#2: {base.fum}/Monoid.fz:60:24:
-  public op(a, b T) => infix ∙  a b
------------------------^^^^^^^^^^^^
+i32.type.sum.anonymous.infix ∙#2: {base.fum}/numeric.fz:226:64:
+      public redef infix ∙ (a, b numeric.this) numeric.this => a + b
+---------------------------------------------------------------^^^^^
+i32.type.sum.anonymous.op#2: {base.fum}/Monoid.fz:60:26:
+  public op(a, b T) T => infix ∙  a b
+-------------------------^^^^^^^^^^^^
 (list i32).fold#2: {base.fum}/list.fz:226:39:
               | c Cons => c.tail.fold (m.op s c.head) m
 --------------------------------------^^^^^^^^^^^^^^^
-(interval i32).fold#1: {base.fum}/Sequence.fz:432:31:
-  public fold (m Monoid T) => as_list.fold m.e m
-------------------------------^^^^^^^^^^^^^^^^^^
+(interval i32).fold#1: {base.fum}/Sequence.fz:432:33:
+  public fold (m Monoid T) T => as_list.fold m.e m
+--------------------------------^^^^^^^^^^^^^^^^^^
 reg_issue2325: --CURDIR--/reg_issue2325.fz:25:8:
   n := (0..100000).fold i32.type.sum
 -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

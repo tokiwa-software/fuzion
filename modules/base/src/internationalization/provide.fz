@@ -31,18 +31,18 @@ public provide ref : effect is
     #
     public date(d i32, m i32, y i32) String => abstract
 
-    # currency -- operation of the internationalization.provide effect and 
+    # currency -- operation of the internationalization.provide effect and
     # formats the currency specific to the installed location
     #
     public currency(c i32) String => abstract
 
     # current -- operation of the internationalization.provide effect to be able to install the default effect
-    public current =>
+    public current internationalization.provide =>
         internationalization.provide.install_default
         internationalization.provide.env
 
 
-    public type.install_default =>
+    public type.install_default unit =>
 
         if !internationalization.provide.is_instated
             l := envir.vars.get "LANG" ""
@@ -60,4 +60,3 @@ public provide ref : effect is
                     internationalization.ISO
 
             internationalization.provide.type.default p
-

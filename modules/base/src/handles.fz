@@ -93,12 +93,12 @@ is
 
   # has one element been created using 'new'?
   #
-  public has_last => count > 0
+  public has_last bool => count > 0
 
 
   # return the last handle that was created by 'new'
   #
-  public last
+  public last handle0 T
     pre
       debug: has_last
   =>
@@ -112,7 +112,7 @@ is
   public create (
     # initial value referred to by the new handle
     w T
-    )
+    ) handle0 T
   =>
     (new w).last
 
@@ -122,7 +122,7 @@ is
   public get (
     # a handle created by 'new'
     h handle0 T
-    )
+    ) T
   =>
     ar[h.x]
 
@@ -134,7 +134,7 @@ is
     h handle0 T,
 
     # the new value to be stored with 'h'
-    w T)
+    w T) handles T X
   =>
     handles v (ar.put h.x w) mode.next
 
@@ -148,7 +148,7 @@ is
 
     # function calculating the new value from the old value
     f T->T
-    )
+    ) unit
   =>
     update0 h.x f
 
@@ -167,26 +167,26 @@ is
     _ := handles v (ar.put x (f ar[x])) mode.next
 
 
-  public redef infix >>= (f X -> handles T X) => bind X f
+  public redef infix >>= (f X -> handles T X) handles T X => bind X f
 
   public bind(B type, f X -> handles T B) handles T B =>
     handles (f v).v ar oneway_monad_mode.plain
 
-  public return( B type, w B) => handles w ar oneway_monad_mode.plain
+  public return( B type, w B) handles T B => handles w ar oneway_monad_mode.plain
 
 # short-hand for creating and installing an empty set of handles of given type.
 #
-public handles(T type, rr ()->unit) =>
+public handles(T type, rr ()->unit) unit =>
   (handles unit (array T 0 x->do) oneway_monad_mode.inst) ! rr
 
 # short-hand for creating an empty set of handles of given type.
 #
-public handles_(T type) => handles unit (array T 0 x->do) oneway_monad_mode.plain
+public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
 #
-public handles(T type) =>
+public handles(T type) handles T unit =>
   (handles_type T).install_default
   (handles T unit).env
 
@@ -208,13 +208,13 @@ is
 
   # update value stored in this handle using f.
   #
-  public update(f T->T) =>
+  public update(f T->T) T =>
     (handles T).update0 x f
     get
 
   # get value stored in this handle
   #
-  public get =>
+  public get T =>
     (handles T).ar[x]
 
 
@@ -232,4 +232,4 @@ handles_type(T type) is
 #
 # this uses the handles instance from the current environment
 #
-public handle(T type, v T) => (handles T).create v
+public handle(T type, v T) handle0 T => (handles T).create v

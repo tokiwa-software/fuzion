@@ -112,7 +112,7 @@ Computable_Future(
       compute_result.write cr
       check cnd.broadcast
 
-  public redef is_done => compute_result.read.exists
+  public redef is_done bool => compute_result.read.exists
 
   public redef get T =>
     if !is_done
@@ -122,7 +122,7 @@ Computable_Future(
 
     compute_result.read.val
 
-  public redef and_then(T2 type, new_task T->T2) =>
+  public redef and_then(T2 type, new_task T->T2) concur.Future T2 =>
     TP.env.submit T2 ()->(new_task get)
 
 

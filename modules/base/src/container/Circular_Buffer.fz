@@ -94,7 +94,7 @@ is
 
   # create a list from this buffer
   #
-  public as_list =>
+  public as_list list T =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -104,4 +104,4 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string => as_array.as_string
+  public redef as_string String => as_array.as_string

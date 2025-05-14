@@ -38,14 +38,14 @@ is
 
   # type feature that to create an instance of `panic` with the given error handler.
   #
-  public fixed redef type.new(h String->void)
+  public fixed redef type.new(h String->void) panic
   => panic h unit
 
 
 # panic with no argument returns panic.env, the currently installed
 # panic handler.
 #
-public panic =>
+public panic panic =>
   panic.install_default
   panic.env
 
@@ -53,4 +53,4 @@ public panic =>
 # panic with a msg argument calls panic.cause msg, i.e., it uses the
 # current panic effect to panic with the given message.
 #
-public panic(msg String) => panic.cause msg
+public panic(msg String) void => panic.cause msg

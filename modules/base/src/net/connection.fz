@@ -27,19 +27,19 @@ module:public connection(desc i32) is
   # note that connections are closed automatically
   # when effect is uninstalled, i.e. on abort or when thread is finished.
   #
-  public close =>
+  public close outcome unit =>
     fuzion.sys.net.close desc
 
 
   # is the connection still active?
   #
-  public is_active =>
+  public is_active bool =>
     true # NYI
 
 
   # this installs reader, writer and channel for the given connection
   #
-  public with(T type, LM type : mutate, fn ()->T)
+  public with(T type, LM type : mutate, fn ()->T) T
   pre is_active
   =>
     with0 T LM fn
@@ -60,7 +60,7 @@ module:public connection(desc i32) is
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
-  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T)
+  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) concur.Future (outcome T)
   pre is_active
   =>
     TP.env.submit (outcome T) ()->

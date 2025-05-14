@@ -369,7 +369,7 @@ public class Case extends AbstractCase
         for (var t : _types)
           {
             sb.append(first ? "" : ", ");
-            sb.append(t.toString());
+            sb.append(t.toString(true));
             first = false;
           }
       }

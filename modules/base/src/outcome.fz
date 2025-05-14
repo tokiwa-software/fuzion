@@ -54,7 +54,7 @@ is
 
   # Does this outcome contain an error
   #
-  public is_error => !ok
+  public is_error bool => !ok
 
 
   # error of an outcome that is known to contain an error
@@ -75,7 +75,7 @@ is
   # returns the result of T.as_string for a successful outcome, or
   # "--$e--" for e error.
   #
-  public redef as_string =>
+  public redef as_string String =>
     outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
 
@@ -131,4 +131,4 @@ is
 #
 #   o outcome TypeOfX := x
 #
-public outcome(T type, o outcome T) => o
+public outcome(T type, o outcome T) outcome T => o

@@ -43,7 +43,7 @@ module:public Type ref is
   #
   # result has the form "Type of '<name>'", but this might change in the future
   #
-  public redef as_string => "Type of '$name'"
+  public redef as_string String => "Type of '$name'"
 
 
   # convenience prefix operator to create a string from a value.
@@ -54,14 +54,14 @@ module:public Type ref is
   #
   # NYI: Redefinition allows the type feature to be distinguished from its normal counterpart, see #3913
   #
-  public redef prefix $ => Type.this.as_string
+  public redef prefix $ String => Type.this.as_string
 
 
   # There is no dynamic type of a type instance since this would result in an
   # endless hierarchy of types, so dynamic_type is redefined to just return
   # Type.type here.
   #
-  public redef dynamic_type => Type.type
+  public redef dynamic_type Type => Type.type
 
 
   # Is this type assignable to a type parameter with constraint `T`?
@@ -95,7 +95,7 @@ module:public Type ref is
   #       else
   #         nil
   #
-  public infix : (T type) =>
+  public infix : (T type) bool =>
 
     # Fuzion's middle end will replace calls to `Type.infix :` by calls to either
     # `Type.infix_colon_true` or `Type.infix_colon_false` depending on the result.
@@ -123,7 +123,7 @@ module:public Type ref is
 # `type_as_value x`. The middle end then replaces calls to
 # `type_as_value` by `T`'s type clazz.
 #
-public type_as_value(T type) => T
+public type_as_value(T type) Type => T
 
 
 # universe feature to determine the compile-time type of an expression.
@@ -141,5 +141,4 @@ public type_as_value(T type) => T
 #   `type_of "bla"` is `String`
 #   `type_of (panic "***")` will terminate
 #
-public type_of(T type, _ Lazy T) => T
-
+public type_of(T type, _ Lazy T) Type => T

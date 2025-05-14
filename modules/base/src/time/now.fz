@@ -28,7 +28,7 @@ public now (p () -> time.date_time) : effect is
 
   # get current date_time
   #
-  public get =>
+  public get time.date_time =>
     res := p()
     replace
     res
@@ -59,6 +59,6 @@ public now (p () -> time.date_time) : effect is
 # Uses currently installed time.now effect
 # or installs the default_now handler
 #
-public now =>
+public now now =>
   now.install_default
   now.env

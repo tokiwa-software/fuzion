@@ -503,54 +503,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    String result;
-
-    if (this == Types.t_ERROR)
-      {
-        result = Errors.ERROR_STRING;
-      }
-    else if (_outer != null)
-      {
-        String outer = _outer.toStringWrapped();
-        result = ""
-          + (outer == "" ||
-             outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
-                                                         : outer + ".")
-          + (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
-             _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
-                                                                                      : ""       )
-          + (_feature == null ? Errors.ERROR_STRING
-                              : _feature.featureName().baseNameHuman());
-      }
-    else
-      {
-        result =
-          _feature == null ? "<null-feature>" :
-          ((_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
-            _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
-                                                                                    : ""       )
-           + _feature.qualifiedName());
-      }
-    if (isThisType())
-      {
-        result = result + ".this";
-      }
-    if (_generics != UnresolvedType.NONE)
-      {
-        result = result + _generics
-          .toString(" ", " ", "", (g) -> g.toStringWrapped());
-      }
-    return result;
-  }
-
-
-  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on

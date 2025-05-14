@@ -59,7 +59,7 @@ public read(ro Dir_Read_Handler) : effect is
 
 # short-hand for accessing read effect in current environment
 #
-public read =>
+public read read =>
   read.type.install_default
   read.env
 

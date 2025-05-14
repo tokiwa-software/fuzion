@@ -30,4 +30,4 @@
 #
 # currently, pedantic always returns true.
 #
-public pedantic => true
+public pedantic bool => true
