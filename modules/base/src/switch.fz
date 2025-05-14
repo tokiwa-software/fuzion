@@ -35,28 +35,28 @@ is
 
   # Does this switch contain a value of type A?
   #
-  public exists => (switch.this ? A => true
-                                | B => false)
+  public exists bool => (switch.this ? A => true
+                                     | B => false)
 
 
   # Does this switch contain a value of type A?
   #
-  public ok => exists
+  public ok bool => exists
 
 
   # short-hand postfix operator for 'exists'
   #
-  public postfix ?? => exists
+  public postfix ?? bool => exists
 
 
   # short-hand postfix operator for '!exists'
   #
-  public postfix !! => !exists
+  public postfix !! bool => !exists
 
 
   # short-hand prefix operator for '!exists'
   #
-  public prefix ! => !exists
+  public prefix ! bool => !exists
 
 
   # unwraps a switch that is known to contain a value
@@ -64,7 +64,7 @@ is
   # this can only be called in cases where it is known for sure that this switch
   # is not nil.  A runtime error will be created otherwise.
   #
-  public get
+  public get A
   pre
     safety: switch.this??
   =>
@@ -74,7 +74,7 @@ is
 
   # unwrap value or get default
   #
-  public get (default Lazy A) =>
+  public get (default Lazy A) A =>
     switch.this ? a A => a
                 | B => default
 
@@ -169,7 +169,7 @@ is
 
   # monadic operator
   #
-  public redef infix >>= (f A -> switch.this) =>
+  public redef infix >>= (f A -> switch.this) switch.this =>
     switch.this ? a A => f a
                 | b B => b
 
@@ -202,7 +202,7 @@ is
 
   # converts switch to a string
   #
-  public redef as_string =>
+  public redef as_string String =>
     match switch.this
       a A => a.as_string
       b B => b.as_string
@@ -221,9 +221,8 @@ is
   # result is only true if both x and y or
   # of choice type A and x.A = y.A
   #
-  public fixed redef type.equality(x, y equatable_switch A B) =>
+  public fixed redef type.equality(x, y equatable_switch A B) bool =>
     x ? xa A =>
         y ? ya A => xa = ya
           | _  B => false
       | _  B => false
-

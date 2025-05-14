@@ -151,7 +151,7 @@ is
 
   # number of entries in this map
   #
-  public redef size =>
+  public redef size i32 =>
     load.get
 
 
@@ -237,7 +237,7 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  public redef items =>
+  public redef items Sequence (tuple HK V) =>
     contents.get.as_array
       .filter o->o??
       .map (o -> o.get (panic "filter failed"))
@@ -252,4 +252,4 @@ is
 
   # create an empty instance of Mutable_Hash_Map
   #
-  public fixed redef type.empty => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2
+  public fixed redef type.empty container.Mutable_Hash_Map LM HK V => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2

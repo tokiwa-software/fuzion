@@ -125,8 +125,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @param s site of the expression causing this assignment
      *
-     * @param tc clazz id of the target instance
-     *
      * @param f clazz id of the assigned field
      *
      * @param tvalue the target instance
@@ -135,7 +133,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @return resulting code of this assignment.
      */
-    public abstract RESULT assignStatic(int s, int tc, int f, VALUE tvalue, VALUE val);
+    public abstract RESULT assignStatic(int s, int f, VALUE tvalue, VALUE val);
 
     /**
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
@@ -450,7 +448,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             l.add(cur.v1());
             var out = _processor.outer(s);
             l.add(out.v1());
-            l.add(_processor.assignStatic(s, cl, or, cur.v0(), out.v0()));
+            l.add(_processor.assignStatic(s, or, cur.v0(), out.v0()));
           }
       }
 
@@ -464,7 +462,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             l.add(cur.v1());
             var af = _fuir.clazzArg(cl, i);
             var ai = _processor.arg(s, i);
-            l.add(_processor.assignStatic(s, cl, af, cur.v0(), ai));
+            l.add(_processor.assignStatic(s, af, cur.v0(), ai));
           }
       }
   }

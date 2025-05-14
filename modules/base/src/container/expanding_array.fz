@@ -58,7 +58,7 @@ is
   # Get the capacity of this `expanding_array`, i.e., the number of
   # elements that can be added without re-allocating the array data.
   #
-  public capacity => data.length
+  public capacity i32 => data.length
 
 
   # get the contents of this array at the given index
@@ -80,7 +80,7 @@ is
   # In the latter cases, a new internal array of required capacity
   # will be allocated and the existing elements will be copied over.
   #
-  public fixed ensure_capacity(new_capacity i32)
+  public fixed ensure_capacity(new_capacity i32) expanding_array T
     post
       debug: ((capacity < new_capacity) : result.capacity = new_capacity)
   =>
@@ -122,7 +122,7 @@ is
   # `add` called repeatedly on the same `expanding_array` creates copies
   # of the underlying array data and hence has performance in `O(length)`.
   #
-  public add(v T)
+  public add(v T) expanding_array T
     pre
       # prevent i32-overflow in capacity
       safety: (length+1).highest_one_bit < i32.max.highest_one_bit
@@ -143,11 +143,11 @@ is
   # which `set []` or `put` was called) maybe be read using `get` or `index []`.
   #
   # `filler` may set elements repeatedly, but it must set all elements for the
-  # new indices `lenght`..`length+n-1` before it returns.
+  # new indices `length`..`length+n-1` before it returns.
   #
   # expand is not thread-safe.
   #
-  public expand(n i32, filler ()->unit)
+  public expand(n i32, filler ()->unit) expanding_array T
     pre
       debug: n >= 0
   =>
@@ -221,7 +221,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty
+  public type.empty container.expanding_array T
   =>
     empty default_capacity
 
@@ -232,7 +232,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty(initial_capacity i32)
+  public type.empty(initial_capacity i32) container.expanding_array T
     pre
       debug: initial_capacity >= 0
   =>
@@ -291,7 +291,7 @@ private slot(T type) : choice reserved unused T is
 
   # String representation of slot, for debugging
   #
-  public redef as_string =>
+  public redef as_string String =>
     match slot.this
       v T => $v
       unused   => "unused"
@@ -313,7 +313,7 @@ is
   #
   # `put` must be called for all indices of newly added entries.
   #
-  public put(i i32, v T)
+  public put(i i32, v T) unit
     pre
       safety: length <= i < length+n
   =>
@@ -325,7 +325,7 @@ is
   # call to `put i v` for some value `v` or for indices in the range `0..length-1`
   # for all indices that existed before `expand` was called.
   #
-  public has(i i32)
+  public has(i i32) bool
     pre
       safety: 0 <= i < length+n
   =>
@@ -342,7 +342,7 @@ is
   # before the call to `expand` as well as for indices that where initialized
   # via a call to `put` afterwards.
   #
-  public get(i i32)
+  public get(i i32) T
     pre
       safety: 0 <= i < length+n
       debug: has i
@@ -353,7 +353,7 @@ is
 
   # short-hand index operator alias for `get`
   #
-  public index [](i i32)
+  public index [](i i32) T
     pre
       safety: 0 <= i < length+n
       debug: has i
@@ -363,7 +363,7 @@ is
 
   # short-hand set-index operator alias for `put`
   #
-  public set [](i i32, v T)
+  public set [](i i32, v T) unit
     pre
       safety: length <= i < length+n
   =>

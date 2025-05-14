@@ -46,6 +46,6 @@ module default_err : io.Err is
 
 # short-hand for accessing out effect in current environment
 #
-public err =>
+public err io.Err =>
   Err.install_default
   io.Err.env

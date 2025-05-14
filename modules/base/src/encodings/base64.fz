@@ -37,7 +37,7 @@ is
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a sequence of ascii values
   #
-  public encode(data array u8) =>
+  public encode(data array u8) Sequence u8 =>
 
     # extract four sextets from 24 bits (of an u32)
     enc24(n u32) =>
@@ -63,7 +63,7 @@ is
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a string
   #
-  public encode_to_string(data array u8) =>
+  public encode_to_string(data array u8) String =>
     String.type.from_bytes (encode data)
 
 
@@ -74,7 +74,7 @@ is
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
-  public decode_str(data String) =>
+  public decode_str(data String) outcome (array u8) =>
     decode data.utf8.as_array
 
 
@@ -85,7 +85,7 @@ is
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
-  public decode(data array u8) =>
+  public decode(data array u8) outcome (array u8) =>
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
@@ -171,7 +171,7 @@ is
 # base64 encoding and decoding as defined in RFC 4648
 # using A-z, 0-9, + and / as its alphabet
 #
-public base64 =>
+public base64 base64 =>
   base64 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".utf8.as_array "base64"
 
 
@@ -179,5 +179,5 @@ public base64 =>
 # modification of base64 which is safer for URLs and file names
 # For the non-alphanumeric characters the alphabet uses "-" and "_" instead of "+" and "/".
 #
-public base64url =>
+public base64url base64 =>
     base64 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".utf8.as_array "base64url"

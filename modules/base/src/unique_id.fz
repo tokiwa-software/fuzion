@@ -26,7 +26,7 @@
 public unique_id (p Unique_Id_Handler) : effect
 is
 
-  public get => {replace; p.get}
+  public get u64 => {replace; p.get}
 
   type.install_default =>
     (unique_id default_handler).default
@@ -36,7 +36,7 @@ is
   #
   type.default_handler =>
     ref : Unique_Id_Handler is
-      public redef get => fzE_unique_id
+      public redef get u64 => fzE_unique_id
 
 
 public Unique_Id_Handler ref is
@@ -52,6 +52,6 @@ public Unique_Id_Handler ref is
 # would take more than 500 years before we run out of values
 # (2^64/10^9/3600/24/365.25).
 #
-public unique_id =>
+public unique_id u64 =>
   unique_id.install_default
   unique_id.env.get

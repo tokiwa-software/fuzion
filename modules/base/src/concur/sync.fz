@@ -60,7 +60,7 @@ public sync is
 
   private:public condition(mtx Mutex, cnd Condition) is
 
-    public is_locked := concur.atomic false
+    public is_locked concur.atomic bool := concur.atomic false
 
     public synchronized(T type, code ()->T) T =>
       check mtx_lock mtx
@@ -70,13 +70,13 @@ public sync is
       check mtx_unlock mtx
       res
 
-    public signal
+    public signal bool
     pre is_locked.read
     => cnd_signal cnd
-    public broadcast
+    public broadcast bool
     pre is_locked.read
     => cnd_broadcast cnd
-    public wait
+    public wait bool
     pre is_locked.read
     => cnd_wait cnd mtx
 

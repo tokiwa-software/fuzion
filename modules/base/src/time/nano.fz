@@ -30,7 +30,7 @@
 # of events, such as measuring the time it takes to perform some
 # calculation.
 #
-# time.nano may have a signficant drift compared to actual time, it might
+# time.nano may have a significant drift compared to actual time, it might
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
@@ -38,7 +38,7 @@ public nano (p Nano_Time_Handler) : effect is
 
   # no guarantee can be given for precision nor resolution
   #
-  public read =>
+  public read instant =>
     res := p.read
     replace
     instant res
@@ -46,7 +46,7 @@ public nano (p Nano_Time_Handler) : effect is
 
   # no guarantee can be given for precision nor resolution
   #
-  public sleep(d time.duration) =>
+  public sleep(d time.duration) unit =>
     res := p.sleep d
     replace
     res
@@ -73,7 +73,7 @@ public nano (p Nano_Time_Handler) : effect is
 
 # short-hand for accessing time.nano effect in current environment
 #
-public nano =>
+public nano nano =>
   if !nano.is_instated
     nano.install_default
   nano.env
