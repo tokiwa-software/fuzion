@@ -58,12 +58,12 @@ public Sequence(public T type) ref : property.countable is
   # is this Sequence known to be array backed? If so, this means that operations
   # like index[] are fast.
   #
-  public is_array_backed => false
+  public is_array_backed bool => false
 
 
   # is this Sequence empty?
   #
-  public is_empty => as_list.is_empty
+  public is_empty bool => as_list.is_empty
 
 
   # count the number of elements in this Sequence.  Note that this typically
@@ -71,7 +71,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # For lists that are not array backed, this might require time in O(count).
   #
-  public redef count
+  public redef count i32
   => (map i32 (_ -> 1)).fold i32.sum
 
 
@@ -79,19 +79,19 @@ public Sequence(public T type) ref : property.countable is
   # given predicate. Note that this typically
   # runs forever if executed on an endless list.
   #
-  public count(f T->bool) =>
+  public count(f T->bool) i32 =>
     (filter f).count
 
 
   # get the first element of this Sequence
   #
-  public first
+  public first option T
   => as_list.first
 
 
   # get the first element of this Sequence or default if sequence is empty
   #
-  public first(default T)
+  public first(default T) T
   =>
     first.val default
 
@@ -101,13 +101,13 @@ public Sequence(public T type) ref : property.countable is
   # This may take time in O(count), in particular, it may not terminate
   # for an infinite Sequence.
   #
-  public last
+  public last option T
   => as_list.last
 
 
   # get the last element of this Sequence or default if sequence is empty
   #
-  public last(default T)
+  public last(default T) T
   =>
     last.val default
 
@@ -154,7 +154,7 @@ public Sequence(public T type) ref : property.countable is
   #   .peek say
   #   .drop_while <10
   #
-  public peek (f T -> unit) =>
+  public peek (f T -> unit) list T =>
     as_list ? nil    =>
             | c Cons => f c.head; _ := c.tail.peek f
     as_list
@@ -167,7 +167,7 @@ public Sequence(public T type) ref : property.countable is
   #
   #  1..10 ! say
   #
-  public infix ! (f T -> unit) => for_each f
+  public infix ! (f T -> unit) unit => for_each f
 
 
   # apply 'f' to each element 'e' as long as 'f e'
@@ -193,7 +193,7 @@ public Sequence(public T type) ref : property.countable is
   # filter elements using predicate f, infix operator
   # synonym of filter.
   #
-  public infix |& (f T -> bool) => filter f
+  public infix |& (f T -> bool) Sequence T => filter f
 
 
   # filter elements using predicate f, infix operator
@@ -201,7 +201,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # NYI: What is better, 'infix |&' or 'infix &', or something else?
   #
-  public infix & (f T -> bool) => filter f
+  public infix & (f T -> bool) Sequence T => filter f
 
 
   # check if predicate f holds for all elements
@@ -257,7 +257,7 @@ public Sequence(public T type) ref : property.countable is
   # at may be <= 0 or >= count, in which case the resulting tuple will be the
   # (empty list, Sequence.this.as_list) or (Sequence.this.as_list, empty list), resp.
   #
-  public split_at(at i32) => ((take at), (drop at))
+  public split_at(at i32) tuple (Sequence T) (Sequence T) => ((take at), (drop at))
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
@@ -311,7 +311,7 @@ public Sequence(public T type) ref : property.countable is
 
   # infix operand synonym for concat
   #
-  public infix ++ (s Sequence T) => concat s
+  public infix ++ (s Sequence T) Sequence T => concat s
 
 
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
@@ -339,7 +339,7 @@ public Sequence(public T type) ref : property.countable is
   # false (which may be the case since a Sequence in general might not know that it
   # if finite), you may use `as_string_all`.
   #
-  public redef as_string =>
+  public redef as_string String =>
     if finite = trit.yes
       as_string_all
     else
@@ -354,7 +354,7 @@ public Sequence(public T type) ref : property.countable is
   # NOTE: In case this Sequence is not finite, this will attempt to create an
   # infinitely long string resulting in failure due to resource exhaustion.
   #
-  public as_string_all => "[{as_string ", "}]"
+  public as_string_all String => "[{as_string ", "}]"
 
 
   # create a string representation of this Sequence including all the string
@@ -363,12 +363,12 @@ public Sequence(public T type) ref : property.countable is
   # NOTE: In case this Sequence is not finite, this will attempt to create an
   # infinitely long string resulting in failure due to resource exhaustion.
   #
-  public as_string (sep String) => as_list.as_string sep
+  public as_string (sep String) String => as_list.as_string sep
 
 
   # call 'as_string' on the elements
   #
-  public as_strings => map c->c.as_string
+  public as_strings Sequence String => map c->c.as_string
 
 
   # map the Sequence to a new Sequence applying function f to all elements
@@ -429,7 +429,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # e.g., to sum the elements of a Sequence of i32, use s.fold i32.sum
   #
-  public fold (m Monoid T) => as_list.fold m.e m
+  public fold (m Monoid T) T => as_list.fold m.e m
 
 
   # fold the elements of this non-empty Sequence using the given function
@@ -459,28 +459,28 @@ public Sequence(public T type) ref : property.countable is
   #
   # e.g., to concat the elements of a list of String, use l.foldr String.concat
   #
-  public foldr (m Monoid T) => as_list.foldr m
+  public foldr (m Monoid T) T => as_list.foldr m
 
 
   # fold the elements of this list using the given monoid and initial value right-to-left.
   #
   # Used to fold a list tail-recursively
   #
-  public foldr (s T, m Monoid T) => as_list.foldr m.e m
+  public foldr (s T, m Monoid T) T => as_list.foldr m.e m
 
 
   # fold the elements of this non-empty list using the given function right-to-left
   #
   # e.g., to concat the elements of a non-empty list of lists, use foldr1 (++)
   #
-  public foldr1 (f (T,T)->T) => as_list.foldr1 f
+  public foldr1 (f (T,T)->T) T => as_list.foldr1 f
 
 
   # fold the elements of this list using the given function right-to-left.
   #
   # e.g., to concat the elements of a list of lists, use foldrf (++) []
   #
-  public foldrf (B type, e B, f (T,B)->B) => as_list.foldrf e f
+  public foldrf (B type, e B, f (T,B)->B) B => as_list.foldrf e f
 
 
   # map this Sequence to a list that contains the result of folding
@@ -489,7 +489,7 @@ public Sequence(public T type) ref : property.countable is
   # e.g., for a Sequence of i32 s, s.scan i32.sum creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public scan (m Monoid T) => as_list.scan m.e m
+  public scan (m Monoid T) list T => as_list.scan m.e m
 
 
   # map this Sequence to a list that contains the result of folding
@@ -541,7 +541,7 @@ public Sequence(public T type) ref : property.countable is
 
   # insert element v at position at
   #
-  public insert(at i32, v T)
+  public insert(at i32, v T) Sequence T
   pre
     debug: at ≥ 0
   =>
@@ -550,12 +550,12 @@ public Sequence(public T type) ref : property.countable is
 
   # sort this Sequence using the order defined by less_or_equal
   #
-  public sort_by(less_or_equal (T, T) -> bool) => container.sorted_array Sequence.this less_or_equal
+  public sort_by(less_or_equal (T, T) -> bool) container.sorted_array T => container.sorted_array Sequence.this less_or_equal
 
 
   # sort this Sequence
   #
-  public sort
+  public sort container.sorted_array T
   pre
     T : property.orderable
   post
@@ -658,7 +658,7 @@ public Sequence(public T type) ref : property.countable is
   # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
-  public is_valid_index(i i32) =>
+  public is_valid_index(i i32) bool =>
     (0 ≤ i && (if is_array_backed then i ≤ count
                                   else !(drop i-1).is_empty))
 
@@ -952,7 +952,7 @@ public Sequence(public T type) ref : property.countable is
   # head of the list, 1 if it comes directly after head, etc. nil if x is
   # not in the list.
   #
-  public index_of(x T)
+  public index_of(x T) option i32
     pre
       T : property.equatable
   =>
@@ -961,7 +961,7 @@ public Sequence(public T type) ref : property.countable is
 
   # does the Sequence contain element x?
   #
-  public contains(x T)
+  public contains(x T) bool
     pre
       T : property.equatable
   =>
@@ -1029,7 +1029,7 @@ public Sequence(public T type) ref : property.countable is
 
   # replace all occurrences of old by new
   #
-  public replace(old, new Sequence T)
+  public replace(old, new Sequence T) Sequence T
     pre
       T : property.equatable
   =>
@@ -1039,7 +1039,7 @@ public Sequence(public T type) ref : property.countable is
 
   # replace the first n occurrences of old by new
   #
-  public replace (old, new Sequence T, n u64)
+  public replace (old, new Sequence T, n u64) Sequence T
     pre
       T : property.equatable
   =>
@@ -1112,7 +1112,7 @@ public Sequence(public T type) ref : property.countable is
         idx i32 =>
           ref : Cons (Sequence T) (list (Sequence T)) is
             public redef head Sequence T := take (if split_after then idx + s.count else idx)
-            public redef tail =>
+            public redef tail list (Sequence T) =>
               rest := drop (idx + s.count)
 
               match limit
@@ -1236,7 +1236,7 @@ public Sequence(public T type) ref : property.countable is
 
   # the standard deviation of the sequence
   # https://en.wikipedia.org/wiki/Standard_deviation
-  public std_dev
+  public std_dev option T
     pre
       T : float
   =>
@@ -1246,7 +1246,7 @@ public Sequence(public T type) ref : property.countable is
   # the euclidean norm of this sequence
   # i.e. the square of the sum of squares of this sequence
   #
-  public euclidean_norm
+  public euclidean_norm T
     pre
       T : float
   =>
@@ -1260,7 +1260,7 @@ public Sequence(public T type) ref : property.countable is
   # `(0..5).sliding 3`
   # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
-  public sliding (size i32) =>
+  public sliding (size i32) Sequence (Sequence T) =>
     sliding size 1
 
 
@@ -1419,7 +1419,7 @@ public Sequence(public T type) ref : property.countable is
   #   say <| l.sum     # '6'
   #
   #
-  public sum
+  public sum T
     pre
       T : numeric
   => fold T.sum
@@ -1433,7 +1433,7 @@ public Sequence(public T type) ref : property.countable is
   #   say <| l.product     # '6'
   #
   #
-  public product
+  public product T
     pre
       T : numeric
   => fold T.product
@@ -1447,7 +1447,7 @@ public Sequence(public T type) ref : property.countable is
 
   # monoid of Sequences with infix concatenation operation.
   #
-  public type.concat_monoid =>
+  public type.concat_monoid Monoid (Sequence T) =>
 
     ref : Monoid (Sequence T) is
 
@@ -1464,7 +1464,7 @@ public Sequence(public T type) ref : property.countable is
   # Maximum number of elements shown for on a call to `as_string` for a non-finite
   # Sequence.
   #
-  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS => 10
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i32 => 10
 
 
 
@@ -1521,7 +1521,7 @@ is
 
   # equality
   #
-  public redef type.equality(a, b equatable_sequence.this) =>
+  public redef type.equality(a, b equatable_sequence.this) bool =>
     equality0(a1, b1 equatable_sequence.this) =>
       (a1.unwrap.zip b1.unwrap x,y->x=y) ∀ id
 

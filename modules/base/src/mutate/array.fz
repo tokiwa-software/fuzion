@@ -72,13 +72,13 @@ is
 
   # create immutable array from this
   #
-  public redef as_array =>
+  public redef as_array universe.array T =>
     array length.as_i32 (i -> data[i])
 
 
   # create a list from this array
   #
-  public redef as_list =>
+  public redef as_list list T =>
     # since array is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -115,5 +115,5 @@ is
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
-public new_array (T type, length i64, init T) =>
+public new_array (T type, length i64, init T) container.Mutable_Array T mutate.this =>
   (mutate.array T).new mutate.this length init

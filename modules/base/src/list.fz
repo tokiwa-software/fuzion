@@ -52,19 +52,19 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # This is a helper function that needs to be defined because list is an heir
   # of Sequence.
   #
-  public redef as_list => list.this
+  public redef as_list list A => list.this
 
 
   # is this list empty?
   #
-  public redef is_empty =>
+  public redef is_empty bool =>
     list.this ? nil  => true
               | Cons => false
 
 
   # count the elements of this list
   #
-  public redef count => count_n 0
+  public redef count i32 => count_n 0
 
 
   # count the elements of this list starting at n.
@@ -114,7 +114,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # get the head of this list
   #
-  public redef first
+  public redef first option A
   =>
     head
 
@@ -158,7 +158,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 
   # collect the contents of this list into an array
   #
-  public redef as_array =>
+  public redef as_array array A =>
 
     # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
     # as outer feature for `lm` to reduce number of DFA values for `lm` (while `list`
@@ -188,8 +188,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil    => nil
       c Cons =>
         ref : Cons B (list B) is
-          public redef head => f c.head
-          public redef tail => c.tail.map_to_list f
+          public redef head B => f c.head
+          public redef tail list B => c.tail.map_to_list f
 
 
   # map the list to a new list applying function f to all elements
@@ -206,22 +206,22 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
             ref : Cons B (list B) is
-              public redef head => c2.head
-              public redef tail => (c2.tail ++ c.tail.flat_map_to_list f).as_list
+              public redef head B => c2.head
+              public redef tail list B => (c2.tail ++ c.tail.flat_map_to_list f).as_list
 
 
   # fold the elements of this list using the given monoid.
   #
   # e.g., to sum the elements of a list of i32, use l.fold i32.sum
   #
-  public redef fold (m Monoid A) => fold m.e m
+  public redef fold (m Monoid A) A => fold m.e m
 
 
   # fold the elements of this list using the given monoid and initial value
   #
   # Used to fold a list tail-recursively
   #
-  public fold (s A, m Monoid A) =>
+  public fold (s A, m Monoid A) A =>
     list.this ? nil    => s
               | c Cons => c.tail.fold (m.op s c.head) m
 
@@ -230,7 +230,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to find the minimum of a list of i32, use `l.fold1 (<=)`
   #
-  public redef fold1 (f (A,A)->A) =>
+  public redef fold1 (f (A,A)->A) A =>
     list.this ? nil    => panic "list.fold1 called on empty list"
               | c Cons => c.tail.foldf c.head f
 
@@ -239,7 +239,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to find the product of a list of i32, use `s.foldf (*) 1`
   #
-  public redef foldf (B type, e B, f (B,A)->B) =>
+  public redef foldf (B type, e B, f (B,A)->B) B =>
     list.this ? nil    => e
               | c Cons => c.tail.foldf (f e c.head) f
 
@@ -248,14 +248,14 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to concat the elements of a list of String, use l.foldr String.concat
   #
-  public redef foldr (m Monoid A) => foldr m.e m
+  public redef foldr (m Monoid A) A => foldr m.e m
 
 
   # fold the elements of this list using the given monoid and initial value right-to-left.
   #
   # Used to fold a list tail-recursively
   #
-  public redef foldr (s A, m Monoid A) =>
+  public redef foldr (s A, m Monoid A) A =>
     list.this ? nil    => s
               | c Cons => m.op c.head (c.tail.foldr s m)
 
@@ -264,7 +264,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to concat the elements of a non-empty list of lists, use foldr1 (++)
   #
-  public redef foldr1 (f (A,A)->A) =>
+  public redef foldr1 (f (A,A)->A) A =>
     list.this ? nil    => panic "list.fold1 called on empty list"
               | c Cons => f c.head (c.tail.foldr1 f)
 
@@ -273,7 +273,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # e.g., to concat the elements of a list of lists, use foldrf (++) []
   #
-  public redef foldrf (B type, e B, f (A,B)->B) =>
+  public redef foldrf (B type, e B, f (A,B)->B) B =>
     list.this ? nil    => e
               | c Cons => f c.head (c.tail.foldrf e f)
 
@@ -284,7 +284,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # e.g., for a Sequence of i32 s, s.scan i32.sum creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public redef scan (m Monoid A) => scan m.e m
+  public redef scan (m Monoid A) list A => scan m.e m
 
 
   # map this Sequence to a list that contains the result of folding
@@ -343,8 +343,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
         nil    => nil
         c Cons =>
           ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-            public redef head => c.head
-            public redef tail => if n = 1 then nil else c.tail.take_list n-1
+            public redef head A => c.head
+            public redef tail list A => if n = 1 then nil else c.tail.take_list n-1
 
 
   # reverse the order of the elements in this list
@@ -364,7 +364,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # create a string representation of this list including all the string
   # representations of its contents, separated by 'sep'.
   #
-  public redef as_string (sep String) =>
+  public redef as_string (sep String) String =>
     String.join (map String x->x.as_string) sep
 
 
@@ -471,8 +471,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       c Cons =>
         if p c.head
           ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-            public redef head => c.head
-            public redef tail => c.tail.take_while_list p
+            public redef head A => c.head
+            public redef tail list A => c.tail.take_while_list p
         else
           nil
 
@@ -514,8 +514,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     match drop_while_list (a -> !(p a))
       nil    => nil
       c Cons => ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-                  public redef head => c.head
-                  public redef tail => c.tail.filter_list p
+                  public redef head A => c.head
+                  public redef tail list A => c.tail.filter_list p
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'
@@ -533,7 +533,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil    => nil
       c Cons =>
         cycle_cons (h Cons A (list A)) : Cons A (list A) is
-          public redef head => h.head
+          public redef head A => h.head
           public redef tail list A =>
             cycle_cons (h.tail ? nil    => c
                                | d Cons => d)
@@ -545,8 +545,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef tails list (list A) =>
     ref : Cons (list A) (list (list A)) is
-      public redef head => list.this
-      public redef tail =>
+      public redef head list A => list.this
+      public redef tail list (list A) =>
         list.this ? nil    => nil
                   | c Cons => c.tail.tails
 
@@ -566,8 +566,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       c1 Cons =>
         b.as_list ? c2 Cons =>
                       zip_cons : Cons V (list V) is
-                        public redef head => f c1.head c2.head
-                        public redef tail => c1.tail.zip_list c2.tail f
+                        public redef head V => f c1.head c2.head
+                        public redef tail list V => c1.tail.zip_list c2.tail f
                       zip_cons
                   | nil    => nil
       nil => nil
@@ -588,7 +588,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #   ...           , ...
   #   list.this.last, b.last
   #
-  public combine_list(U, V type, b Sequence U, f (A,U)->V) =>
+  public combine_list(U, V type, b Sequence U, f (A,U)->V)  Sequence V =>
     flat_map x->(b.map y->(f x y))
 
 
@@ -684,7 +684,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # to avoid clash with inherited `Sequence.concat_monoid`. Maybe
   # the inherited one should be renamed once renaming is supported.
   #
-  public type.list_concat_monoid =>
+  public type.list_concat_monoid Monoid (list A) =>
 
     ref : Monoid (list A) is
 
@@ -703,8 +703,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 #
 public list(T type, h T, t Lazy (list T)) list T =>
   ref : Cons T (list T) is
-    public redef head => h
-    public redef tail => t
+    public redef head T => h
+    public redef tail list T => t
 
 
 # infix operator to create a list from head h and lazy tail t.
@@ -718,7 +718,7 @@ public list(T type, h T, t Lazy (list T)) list T =>
 #
 #   ones => 1 : ones
 #
-public infix : (A type, h A, t Lazy (list A)) =>
+public infix : (A type, h A, t Lazy (list A)) list A=>
   list h t
 
 
@@ -745,5 +745,5 @@ public infix : (A type, h A, t Lazy (list A)) =>
 #
 # will produce the powers of two: 1,2,4,8,16,32,...
 #
-public infix :: (A type, h A, f A->A) =>
+public infix :: (A type, h A, f A->A) list A =>
   h : (f h :: f)

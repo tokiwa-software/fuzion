@@ -2174,10 +2174,11 @@ A ((Choice)) declaration must not contain a result type.
     _state = State.RESOLVING_SUGAR2;
 
     visit(new ContextVisitor(context()) {
-        @Override public Expr  action(Function    f) { return f.resolveSyntacticSugar2(res); }
-        @Override public Expr  action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
-        @Override public void  action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
-        @Override public Expr  action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
+        @Override public Expr action(Function    f) { return f.resolveSyntacticSugar2(res); }
+        @Override public Expr action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
+        @Override public void action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
+        @Override public Expr action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
+        @Override public void action(AbstractMatch am){ if (am instanceof Match m) { m.addFieldsForSubject(res, _context); } }
       });
 
     _state = State.RESOLVED_SUGAR2;

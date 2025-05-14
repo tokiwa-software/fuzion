@@ -217,28 +217,6 @@ public class ResolvedParametricType extends ResolvedType
   }
 
 
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    String n;
-    if (_generic.isThisTypeInCotype())
-      {
-        var qn = _generic.feature().qualifiedName();
-        qn = qn.substring(0, qn.lastIndexOf(".type"));
-        n = qn + ".this.type (in type feature)";
-      }
-    else
-      {
-        n = _generic.typeParameter().qualifiedName();
-      }
-    return n + (isRef().yes() ? " (boxed)" : "");
-  }
-
-
 }
 
 /* end of file */

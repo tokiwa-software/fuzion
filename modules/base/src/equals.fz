@@ -26,22 +26,22 @@
 # equals -- feature that compares two values using the equality relation
 # defined in their type
 #
-public equals(T type : property.equatable, a, b T) => T.equality a b
+public equals(T type : property.equatable, a, b T) bool => T.equality a b
 
 
 # infix ≟ -- infix operation as short-hand for 'equals'
 #
-public infix ≟(T type : property.equatable, a, b T) => equals a b
+public infix ≟(T type : property.equatable, a, b T) bool => equals a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-public infix =(T type : property.equatable, a, b T) => equals a b
+public infix =(T type : property.equatable, a, b T) bool => equals a b
 
 
 # infix = -- infix operation as short-hand for 'equals'
 #
-public infix !=(T type : property.equatable, a, b T) => !equals a b
+public infix !=(T type : property.equatable, a, b T) bool => !equals a b
 
 
 # is `a` contained in `Set` `s`?
@@ -54,7 +54,7 @@ public infix !=(T type : property.equatable, a, b T) => !equals a b
 #
 public infix ∈ (T type : property.equatable,
                 a T,
-                s container.Set T)
+                s container.Set T) bool
 =>
   s.contains a
 
@@ -69,7 +69,7 @@ public infix ∈ (T type : property.equatable,
 #
 public infix ∉ (T type : property.equatable,
                 a T,
-                s container.Set T)
+                s container.Set T) bool
 =>
   !(s.contains a)
 
@@ -77,12 +77,12 @@ public infix ∉ (T type : property.equatable,
 # lteq -- feature that compares two values using the lteq relation
 # defined in their type
 #
-public lteq(T type : property.partially_orderable, a, b T) => T.lteq a b
+public lteq(T type : property.partially_orderable, a, b T) bool => T.lteq a b
 
 
 # infix ≤ -- infix operation as short-hand for 'lteq'
 #
-public infix ≤(T type : property.partially_orderable, a, b T) => lteq a b
+public infix ≤(T type : property.partially_orderable, a, b T) bool => lteq a b
 
 
 # does this come after other?
@@ -115,7 +115,7 @@ public infix ⋄(T type : property.orderable, a, b T) order =>
 
 # infix <= -- infix operation as short-hand for 'lteq'
 #
-public infix <=(T type : property.partially_orderable, a, b T) => lteq a b
+public infix <=(T type : property.partially_orderable, a, b T) bool => lteq a b
 
 
 # does this come after other?
@@ -150,11 +150,11 @@ public infix <>(T type : property.orderable, a, b T) order =>
 
 # maximum of two values
 #
-public max(T type : property.orderable, a, b T) =>
+public max(T type : property.orderable, a, b T) T =>
   if a > b then a else b
 
 
 # minimum of two values
 #
-public min(T type : property.orderable, a, b T) =>
+public min(T type : property.orderable, a, b T) T =>
   if a < b then a else b

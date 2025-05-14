@@ -258,9 +258,9 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Cached result values of {@code asString(boolean)}
+   * Cached result values of {@code toString(boolean)}
    */
-  String _asStringHuman, _asString;
+  String _toStringHuman, _toString;
 
 
   /**
@@ -1236,13 +1236,13 @@ class Clazz extends ANY implements Comparable<Clazz>
    * humans but possibly not unique. false for a unique String representing
    * this clazz to be used by compilers.
    */
-  String asString(boolean humanReadable)
+  String toString(boolean humanReadable)
   {
-    String result = humanReadable ? _asStringHuman : _asString;
+    String result = humanReadable ? _toStringHuman : _toString;
     if (result == null)
       {
         var o = _outer;
-        String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.asString(humanReadable)) + "." : "";
+        String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.toString(humanReadable)) + "." : "";
         var f = feature();
         var typeType = f.isCotype();
         if (typeType)
@@ -1282,17 +1282,17 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
               {
-                result = result + " " + StringHelpers.wrapInParentheses(g.asString(humanReadable));
+                result = result + " " + StringHelpers.wrapInParentheses(g.toString(humanReadable));
               }
             skip = false;
           }
         if (humanReadable)
           {
-            _asStringHuman = result;
+            _toStringHuman = result;
           }
         else
           {
-            _asString = result;
+            _toString = result;
           }
       }
     return result;
@@ -1302,7 +1302,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   @Override
   public String toString()
   {
-    return asString(false); // maybe better true, i.e., human readable
+    return toString(false); // maybe better true, i.e., human readable
   }
 
 
@@ -1713,7 +1713,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (feature().isCotype());
 
-    return _type.generics().get(0).asString(true);
+    return _type.generics().get(0).toString(true);
   }
 
 

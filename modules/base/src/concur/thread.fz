@@ -31,7 +31,7 @@ module:public thread(id i64) : property.equatable is
 
   # wait for this thread to finish execution
   #
-  public join =>
+  public join unit =>
     if joined.compare_and_set trit.no trit.unknown
       fuzion.sys.thread.join0 id
       joined.write trit.yes
