@@ -94,7 +94,7 @@ public abstract_array
   #
   public redef for_each (f T -> unit) unit =>
     for i in indices do
-      f index[](i)
+      f (index[] i)
 
 
   # create a list from this array

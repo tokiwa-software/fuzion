@@ -184,10 +184,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as an int value of arbitrary size
   #
-  public parse_int        outcome int => parse_int int(10)
-  public parse_int_binary outcome int => parse_int int(2)
-  public parse_int_octal  outcome int => parse_int int(8)
-  public parse_int_hex    outcome int => parse_int int(16)
+  public parse_int        outcome int => parse_int (int 10)
+  public parse_int_binary outcome int => parse_int (int 2)
+  public parse_int_octal  outcome int => parse_int (int 8)
+  public parse_int_hex    outcome int => parse_int (int 16)
   public parse_int (base int) outcome int
     pre (int 1) < base ≤ int 36
   =>
