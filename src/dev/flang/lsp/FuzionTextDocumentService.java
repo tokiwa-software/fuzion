@@ -51,8 +51,6 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
-import org.eclipse.lsp4j.InlayHint;
-import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PrepareRenameDefaultBehavior;
@@ -79,7 +77,6 @@ import dev.flang.lsp.feature.Diagnostics;
 import dev.flang.lsp.feature.DocumentHighlights;
 import dev.flang.lsp.feature.DocumentSymbols;
 import dev.flang.lsp.feature.Hovering;
-import dev.flang.lsp.feature.InlayHints;
 import dev.flang.lsp.feature.References;
 import dev.flang.lsp.feature.Rename;
 import dev.flang.lsp.feature.SemanticToken;
@@ -213,14 +210,6 @@ public class FuzionTextDocumentService implements TextDocumentService
     return Computation.cancellableComputation(() -> DocumentSymbols.getDocumentSymbols(params), "document symbol",
       5000);
   }
-
-  /* NYI
-  @Override
-  public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params)
-  {
-    return Computation.CancellableComputation(() -> InlayHints.getInlayHints(params), "inlay hint", 5000);
-  }
-  */
 
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)

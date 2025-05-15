@@ -60,55 +60,7 @@ public class QueryAST extends ANY
   public static Optional<AbstractFeature> targetFeature(SourcePosition params)
   {
     return findTargetFeatureInAST(params)
-      .or(() -> {
-        // NYI this is a (bad) hack to handle incomplete source code
-        // that contains something like `expr. ` where the parser than assumes
-        // the dot to be a full stop but is actually just incomplete source code
-        var tokens = LexerTool.tokensAt(params);
-        if (tokens.left().text().equals(".") && tokens.right().token().equals(Token.t_ws))
-          {
-            return findTargetFeatureInASTDefusedFullStop(params);
-          }
-        return Optional.empty();
-      })
       .or(() -> constant(params));
-  }
-
-  /**
-   * try to find a called feature in AST
-   * but insert dummy character after dot first
-   * so parser does not parse it as full stop.
-   *
-   * @param params
-   * @return
-   */
-  private static Optional<? extends AbstractFeature> findTargetFeatureInASTDefusedFullStop(SourcePosition params)
-  {
-    var uri = SourceText.uriOf(params);
-    var text = SourceText.getText(params);
-    SourceText.setText(uri, insertDummyCharacter(text, params));
-    var result = findTargetFeatureInAST(params);
-    SourceText.setText(uri, text);
-    return result;
-  }
-
-  /*
-   * insert dummy character � at pos
-   */
-  private static String insertDummyCharacter(String text, SourcePosition pos)
-  {
-    var lines = text.lines().toList();
-    return IntStream
-      .range(0, (int) lines.size())
-      .mapToObj(x -> {
-        if (x + 1 != pos.line())
-          {
-            return lines.get(x);
-          }
-        return lines.get(x).substring(0, pos.column() - 1) + "�"
-          + lines.get(x).substring(pos.column() - 1, lines.get(x).length());
-      })
-      .collect(Collectors.joining(System.lineSeparator()));
   }
 
   // NYI motivate/explain this heuristic

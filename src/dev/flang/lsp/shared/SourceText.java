@@ -52,7 +52,7 @@ public class SourceText extends ANY
     if (PRECONDITIONS)
       require(text != null);
 
-    textDocuments.put(uri, addReplacementCharacterAfterNoneFullStopDots(text));
+    textDocuments.put(uri, text);
   }
 
   public static String getText(URI uri)
@@ -103,41 +103,6 @@ public class SourceText extends ANY
         ErrorHandling.writeStackTrace(e);
         return null;
       }
-  }
-
-  private static final Pattern dotAtEOL = Pattern.compile("(^.+\\.)(\\s*$)", Pattern.MULTILINE);
-
-  /**
-   * The character `.` has two meanings in Fuzion.
-   * One it can be a fullstop to end i.e. a choice of and
-   * two it can be part of a chained call.
-   * For incomplete source text this creates a problem because the
-   * parser then assumes the wrong for some dots. We try to work
-   * around this by adding some magic string to the end of dots
-   * we believe to be of a call chain. This should make completion
-   * work most of the time.
-   * @param text
-   * @return
-   */
-  private static String addReplacementCharacterAfterNoneFullStopDots(String text)
-  {
-    return dotAtEOL
-      .matcher(text.replaceAll("\\$", "MAGIC_STRING_DOLLAR"))
-      .replaceAll(x -> {
-        String group1 = x.group(1);
-        String group2 = x.group(2);
-        String line = group1 + group2;
-        // NYI right now this is just a hack...
-        var isChoiceOf = Pattern.compile(".*choice\\s+of.*", Pattern.DOTALL);
-        var isComment = Pattern.compile("\\s*#.*", Pattern.DOTALL);
-        if (isChoiceOf.matcher(line).matches()
-          || isComment.matcher(line).matches())
-          {
-            return line;
-          }
-        return group1 + "�" + group2;
-      })
-      .replaceAll("MAGIC_STRING_DOLLAR", "\\$");
   }
 
   /**
