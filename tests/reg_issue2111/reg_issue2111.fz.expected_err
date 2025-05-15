@@ -3,6 +3,6 @@
   test my_switch on
 --^^^^
 formal type parameter 'T' with constraint 'property.equatable'
-actual type parameter '(test.this test.T).my_switch'
+actual type parameter 'test.this.my_switch'
 
 one error.
