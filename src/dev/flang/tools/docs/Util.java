@@ -79,6 +79,7 @@ public class Util
     var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
 
+    // NYI: OPTIMIZATION: use lexer to retrieve comments
     while (line > 0 && af.pos()._sourceFile.line(line).matches("^\\s*#.*"))
       {
         commentLines.add(af.pos()._sourceFile.line(line));
