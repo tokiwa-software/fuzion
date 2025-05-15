@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -436,7 +437,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
                                   new List<>(),
                                   result);
 
-            result = fn.propagateExpectedType(res, context, t);
+            result = fn.propagateExpectedType(res, context, t, null);
             fn.resolveTypes(res, context);
             fn.updateTarget(res);
           }
@@ -462,11 +463,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     return this;
   }

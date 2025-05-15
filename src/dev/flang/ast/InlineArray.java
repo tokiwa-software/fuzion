@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -164,7 +165,7 @@ public class InlineArray extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     if (_type == null)
       {
@@ -178,7 +179,7 @@ public class InlineArray extends ExprWithPos
             var li = _elements.listIterator();
             while (li.hasNext())
               {
-                li.set(li.next().propagateExpectedType(res, context, elementType));
+                li.set(li.next().propagateExpectedType(res, context, elementType, null));
               }
             var arr = Types.resolved.f_array;
             _type = arr.resultType()

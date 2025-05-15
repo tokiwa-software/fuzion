@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -1594,7 +1595,17 @@ public class AstErrors extends ANY
           );
   }
 
-  static void expectedFunctionTypeForLambda(SourcePosition pos, AbstractType t)
+  /**
+   * Produce error in case a lambda expression is not assigned to a function type.
+   *
+   * @param pos position of the error
+   *
+   * @param t expected type that is not a function type.
+   *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   */
+  static void expectedFunctionTypeForLambda(SourcePosition pos, AbstractType t, Supplier<String> from)
   {
     if (CHECKS) check
       (any() || t != Types.t_ERROR);
@@ -1605,7 +1616,7 @@ public class AstErrors extends ANY
               "Target type of a lambda expression must be " + s(Types.resolved.f_Function) + ".",
               "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
               "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
-              "Target type: " + s(t) + "\n" +
+              "Target type: " + s(t) + (from == null ? "" : " from " + from.get()) + "\n" +
               "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
       }
   }

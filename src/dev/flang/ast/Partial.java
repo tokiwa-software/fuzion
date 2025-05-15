@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -158,19 +160,22 @@ public class Partial extends AbstractLambda
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
     t = t.functionTypeFromChoice(context);
-    var type = propagateTypeAndInferResult(res, context, t, false);
+    var type = propagateTypeAndInferResult(res, context, t, false, from);
     if (_function != null)
       {
-        result = _function.propagateExpectedType(res, context, type);
+        result = _function.propagateExpectedType(res, context, type, from);
       }
     return result;
   }
@@ -190,12 +195,15 @@ public class Partial extends AbstractLambda
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return if inferResultType, the result type inferred from this lambda or
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
   @Override
-  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -219,7 +227,7 @@ public class Partial extends AbstractLambda
       }
     if (_function != null)
       {
-        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType);
+        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType, from);
       }
     return result;
   }

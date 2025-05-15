@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -358,11 +359,14 @@ public class Block extends AbstractBlock
    *
    * @param type the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType type, Supplier<String> from)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -377,7 +381,7 @@ public class Block extends AbstractBlock
 
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, context, type);
+        var x = resExpr.propagateExpectedType(res, context, type, from);
         _expressions.remove(idx);
         _expressions.add(x);
       }

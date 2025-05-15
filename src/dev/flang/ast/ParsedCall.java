@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -555,9 +556,9 @@ public class ParsedCall extends Call
                               this)
           {
             @Override
-            AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+            AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
             {
-              var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType);
+              var rs = super.propagateTypeAndInferResult(res, context, t, inferResultType, from);
               if (rs != Types.t_ERROR)
                 {
                   updateTarget(res);
@@ -659,13 +660,13 @@ public class ParsedCall extends Call
           return wasLazy ? ParsedCall.this : super.originalLazyValue();
         }
         @Override
-        Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType)
+        Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType, Supplier<String> from)
         {
           if (expectedType.isFunctionTypeExcludingLazy())
             { // produce an error if the original call is ambiguous with partial application
               ParsedCall.this.checkPartialAmbiguity(res, context, expectedType);
             }
-          return super.propagateExpectedType(res, context, expectedType);
+          return super.propagateExpectedType(res, context, expectedType, null);
         }
       };
     _movedTo = result;

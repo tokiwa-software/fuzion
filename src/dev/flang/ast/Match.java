@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -228,12 +229,15 @@ public class Match extends AbstractMatch
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     // NYI: CLEANUP: there should be another mechanism, for
     // adding missing result fields instead of misusing
@@ -285,7 +289,7 @@ public class Match extends AbstractMatch
    */
   void addFieldsForSubject(Resolution res, Context context)
   {
-    _subject = subject().propagateExpectedType(res, context, subject().type());
+    _subject = subject().propagateExpectedType(res, context, subject().type(), null);
   }
 
 
