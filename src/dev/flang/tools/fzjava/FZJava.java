@@ -222,7 +222,7 @@ public class FZJava extends Tool
       {
         List<String> emptyList = new List<>();
         var feOptions = new FrontEndOptions(/* verbose */ _verbose,
-                                            /* fuzionHome */ (new FuzionHome())._fuzionHome,
+                                            /* fuzionHome */ FuzionHome._fuzionHome,
                                             /* loadBaseMod */ true,
                                             /* eraseInternalNamesInMod */ true,
                                             /* modules */ _options._loadModules,

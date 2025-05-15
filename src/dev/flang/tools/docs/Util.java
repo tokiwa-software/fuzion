@@ -101,7 +101,7 @@ public class Util
 
   private static String universeComment()
   {
-    var uri = (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
+    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
