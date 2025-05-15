@@ -72,7 +72,7 @@ int64_t fzE_last_error(void){
 
 // helper to set last_error
 // if return value of some function is -1.
-inline int set_last_error(int ret_val)
+int set_last_error(int ret_val)
 {
   last_error = ret_val == -1 ? errno : 0;
   return ret_val;
