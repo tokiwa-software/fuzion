@@ -1878,12 +1878,19 @@ opExpr      :     opTail
   {
     if (!skipDot())
       {
+        int pos = tokenPos();
         var oe = new OpExpr();
         skipOps(oe);
         if (oe.size() != 1 || isTermPrefix())
           {
             opTail(oe);
-            return oe.toExpr();
+            var result = oe.toExpr();
+            result = callTail(false, result);
+            if (result != Call.ERROR)
+              {
+                result.setSourceRange(sourceRange(pos));
+              }
+            return result;
           }
         else
           {
@@ -1912,8 +1919,10 @@ ops         : dotCallOrOp ops
   boolean skipOps(OpExpr oe)
   {
     var oldcount = oe.size();
-    while (current() == Token.t_op)
+    var space = false;
+    while (current() == Token.t_op && (space || !isDot()))
       {
+        space = ignoredTokenBefore();
         oe.add(dotCallOrOp());
       }
     return oldcount < oe.size();
