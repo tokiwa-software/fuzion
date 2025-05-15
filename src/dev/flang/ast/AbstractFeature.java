@@ -469,12 +469,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return
       isCoTypesThisType()
         /* special type parameter used for this.type in type features */
-        ? (tfo != null ? tfo.qualifiedName(context) : "null") + ".this.type"
+        ? (tfo != null ? tfo.qualifiedName(context) : "null")
+          + ".this.type"
         : isCotype() && cotypeOrigin() != null
-        /* cotype: use original name and add ".type": */
-        ? cotypeOrigin().qualifiedName(context) + ".type"
-        /* a normal feature name */
-        : qualifiedName0(context);
+          /* cotype: use original name and add ".type": */
+          ? cotypeOrigin().qualifiedName(context) + ".type"
+          /* a normal feature name */
+          : qualifiedName0(context);
   }
 
 
