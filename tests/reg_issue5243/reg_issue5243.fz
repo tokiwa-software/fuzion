@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5243
+#
+# -----------------------------------------------------------------------
+
+# Test that errors are produced if a lambda or partial call is assigned to a
+# non-function argument in a call to an infix operator.
+#
+reg_issue5243 =>
+
+  # this works
+  say ((1..) .filter %%2)
+
+  # this produces an error since it is parsed as `1.infix .. (.filter  %%2)`
+  #
+  # We might decide to parse this as `(1.postfix ..).filter %%2` and accept this.
+  #
+  say (1.. .filter %%2)   # should fail (at least for now)
+
+  # these should always produce an error
+  say (1 .. .filter %%2)  # should fail
+  say (1 +  .filter %%2)  # should fail
+
+  # these should always work
+  say (1..10 ∀ %%2)
+  say (1..10 ∀ .is_even)
+
+  i32.is_even => val %% 2

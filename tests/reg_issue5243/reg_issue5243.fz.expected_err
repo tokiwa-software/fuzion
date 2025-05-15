@@ -1,0 +1,28 @@
+
+--CURDIR--/reg_issue5243.fz:33:13: error 1: Target type of a lambda expression must be 'Function'.
+  say (1.. .filter %%2)   # should fail (at least for now)
+------------^^^^^^
+A lambda expression can only be used if assigned to a field or argument of type 'Function'
+with argument count of the lambda expression equal to the number of type parameters of the type.
+Target type: 'i32' from formal argument type in call to 'has_interval.infix ..'
+To solve this, assign the lambda expression to a field of function type, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+
+
+--CURDIR--/reg_issue5243.fz:36:14: error 2: Target type of a lambda expression must be 'Function'.
+  say (1 .. .filter %%2)  # should fail
+-------------^^^^^^
+A lambda expression can only be used if assigned to a field or argument of type 'Function'
+with argument count of the lambda expression equal to the number of type parameters of the type.
+Target type: 'i32' from formal argument type in call to 'has_interval.infix ..'
+To solve this, assign the lambda expression to a field of function type, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+
+
+--CURDIR--/reg_issue5243.fz:37:14: error 3: Target type of a lambda expression must be 'Function'.
+  say (1 +  .filter %%2)  # should fail
+-------------^^^^^^
+A lambda expression can only be used if assigned to a field or argument of type 'Function'
+with argument count of the lambda expression equal to the number of type parameters of the type.
+Target type: 'i32' from formal argument type in call to 'num.wrap_around.precall infix +'
+To solve this, assign the lambda expression to a field of function type, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+
+3 errors.
