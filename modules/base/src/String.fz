@@ -389,7 +389,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public substring(from, to i32) String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.byte_length
-    # NYI check if from/to are valid start/end bytes?
+      debug: String.is_valid_utf8_first_byte utf8[from]
+      debug: !String.is_multi_byte_start_byte utf8[to-1]
+    post
+      pedantic: result.codepoints_and_errors ∀ x->x.ok
   =>
     String.from_bytes (String.this.utf8.slice from to)
 
@@ -884,6 +887,27 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public type.z_char      u8 => "z".utf8.first.get
   public type.cap_a_char  u8 => "A".utf8.first.get
   public type.cap_z_char  u8 => "Z".utf8.first.get
+
+
+  # is byte a valid starting byte of a utf-8 string?
+  #
+  public type.is_valid_utf8_first_byte(byte u8) =>
+    0x00 <= byte <= 0x7F
+     || String.is_multi_byte_start_byte byte
+
+
+  # is byte a start of a 2,3 or 4 byte sequence in utf-8?
+  #
+  public type.is_multi_byte_start_byte(byte u8) =>
+    0xC2 <= byte <= 0xDF
+     || 0xE0 <= byte <= 0xEF
+     || 0xF0 <= byte <= 0xF4
+
+
+  # is this a valid continuation byte in a utf8 sequence?
+  #
+  public type.is_continuation_byte(byte u8) =>
+    0x80 <= byte <= 0xBF
 
 
 # state used by `String.fields_func`.
