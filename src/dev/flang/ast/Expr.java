@@ -585,7 +585,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     var result = this;
     var t = type();
 
-    if (!t.isVoid() && (frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)))
+    if (!t.isVoid() && frmlT.isAssignableFrom(t, context))
       {
         var rt = needsBoxing(frmlT, context);
         if (rt != null)
@@ -606,7 +606,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
         || result.needsBoxing(frmlT, context) == null
-        || !(frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)));
+        || !frmlT.isAssignableFrom(t, context));
 
     return result;
   }

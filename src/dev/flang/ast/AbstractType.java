@@ -474,7 +474,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual_type.isGenericArgument())
           {
-            result = isAssignableFrom(actual_type.genericArgument().constraint(context).asRef(), context);
+            result = isAssignableFrom(actual_type.genericArgument().constraint(context), context);
           }
         else
           {
@@ -500,6 +500,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (!result && target_type.isChoice() && !isThisTypeInCotype())
       {
         result = target_type.isChoiceMatch(actual_type, context);
+      }
+
+    if (!result && actual.isRef().noOrDontKnow())
+      {
+        result = isAssignableFrom(actual.asRef());
       }
     return result;
   }
@@ -1425,16 +1430,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       this.isVoid()                                ? that              :
       that.isVoid()                                ? this              :
       this.isAssignableFrom(that        , context) ? this :
-      that.isAssignableFrom(this        , context) ? that :
-      this.isAssignableFrom(that.asRef(), context) ? this :
-      that.isAssignableFrom(this.asRef(), context) ? that : Types.t_ERROR;
+      that.isAssignableFrom(this        , context) ? that : Types.t_ERROR;
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_ERROR     ||
        this.isVoid() && result == that ||
        that.isVoid() && result == this ||
-       (result.isAssignableFrom(this, context) || result.isAssignableFrom(this.asRef(), context) &&
-        result.isAssignableFrom(that, context) || result.isAssignableFrom(that.asRef(), context)    ));
+       (result.isAssignableFrom(this, context) &&
+        result.isAssignableFrom(that, context)));
 
     return result;
   }
