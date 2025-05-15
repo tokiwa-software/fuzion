@@ -214,6 +214,7 @@ public class Lexer extends SourceFile
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
     t_spaceOrSemiLimit,  // token follows white space or semicolon while endAtSpace is enabled
+    t_commaLimit,        // token is operator "," while endAtComma is enabled
     t_colonLimit,        // token is operator ":" while endAtColon is enabled
     t_barLimit,          // token is operator "|" while endAtBar is enabled
     t_ambiguousSemi,     // it is unclear whether the semicolon ends the inner or the outer block, will always cause a syntax error
@@ -648,6 +649,13 @@ public class Lexer extends SourceFile
 
   /**
    * {@code :} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
+   * "," will be replaced by {@code t_commaLimit}.
+   */
+  private boolean _endAtComma = false;
+
+
+  /**
+   * {@code :} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
    * operator ":" will be replaced by {@code t_colonLimit}.
    */
   private boolean _endAtColon = false;
@@ -702,6 +710,7 @@ public class Lexer extends SourceFile
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
     _endAtSpace = original._endAtSpace;
+    _endAtComma = original._endAtComma;
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
     _atSemicolon = original._atSemicolon;
@@ -878,6 +887,23 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Restrict parsing until the next occurrence of ",". "," will be replaced by
+   * t_commaLimit.
+   *
+   * @param endAtComma true to enable, false to disable
+   *
+   * @return the previous endAtComma-restriction.
+   */
+  boolean endAtComma(boolean endAtComma)
+  {
+    var result = _endAtComma;
+    _endAtComma = endAtComma;
+
+    return result;
+  }
+
+
+  /**
    * Restrict parsing until the next occurrence of operator ":".  Operator ":"
    * will be replaced by t_colonLimit.
    *
@@ -959,12 +985,14 @@ public class Lexer extends SourceFile
   {
     int oldLine = sameLine(-1);
     int oldEAS = endAtSpaceOrSemi(Integer.MAX_VALUE);
+    var oldEAc = endAtComma(false);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
     var oldSemiSt = semiState(SemiState.CONTINUE);
     V result = c.get();
     sameLine(oldLine);
     endAtSpaceOrSemi(oldEAS);
+    endAtComma(oldEAc);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
     semiState(oldSemiSt);
@@ -1116,7 +1144,7 @@ public class Lexer extends SourceFile
    *
    * @param endAtBar true to replace operator "|" by t_barLimit.
    */
-  Token current(int minIndent, int sameLine, int endAtSpaceOrSemi, boolean endAtColon, boolean endAtBar)
+  Token current(int minIndent, int sameLine, int endAtSpaceOrSemi, boolean endAtComma, boolean endAtColon, boolean endAtBar)
   {
     var t = _curToken;
     int l = line();
@@ -1128,6 +1156,8 @@ public class Lexer extends SourceFile
       p > endAtSpaceOrSemi && _curToken == Token.t_semicolon ? Token.t_spaceOrSemiLimit       :
       p == _minIndentStartPos                                ? t                              :
       minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit       :
+      endAtComma                  &&
+      _curToken == Token.t_comma                             ? Token.t_commaLimit             :
       endAtColon                  &&
       _curToken == Token.t_op     &&
       tokenAsString().equals(":")                            ? Token.t_colonLimit             :
@@ -1160,7 +1190,7 @@ public class Lexer extends SourceFile
    */
   public Token current()
   {
-    return current(_minIndent, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
+    return current(_minIndent, _sameLine, _endAtSpace, _endAtComma, _endAtColon, _endAtBar);
   }
 
 
@@ -1170,7 +1200,7 @@ public class Lexer extends SourceFile
    */
   Token currentAtMinIndent()
   {
-    return current(_minIndent - 1, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
+    return current(_minIndent - 1, _sameLine, _endAtSpace, _endAtComma, _endAtColon, _endAtBar);
   }
 
 
@@ -2446,6 +2476,7 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
       case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
+      case t_commaLimit       -> Errors.commaNotAllowedHere     (sourcePos(tokenPos()), detail);
       case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
       case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
       case t_ambiguousSemi    -> Errors.ambiguousSemicolon(sourcePos(pos));
