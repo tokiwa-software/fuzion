@@ -67,6 +67,7 @@ public enum SpecialClazzes
   c_Mapped_Memory("Mapped_Memory"             , 0, c_universe  ),
   c_Array       ("Array"                      , 0, c_universe  ),
   c_Native_Ref  ("Native_Ref"                 , 0, c_universe  ),
+  c_Thread      ("Thread"                     , 0, c_universe  ),
   ;
 
   final String _name;

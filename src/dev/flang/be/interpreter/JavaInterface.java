@@ -204,6 +204,7 @@ public class JavaInterface extends FUIRContext
         case SpecialClazzes.c_File_Descriptor -> new JavaRef(o);
         case SpecialClazzes.c_Directory_Descriptor -> new JavaRef(o);
         case SpecialClazzes.c_Mapped_Memory -> new JavaRef(o);
+        case SpecialClazzes.c_Thread -> new JavaRef(o);
         default ->
           {
             var result = new Instance(rc);

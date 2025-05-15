@@ -25,7 +25,9 @@
 
 # type for a spawned thread
 #
-module:public thread(id i64) : property.equatable is
+module:public thread(thrd Thread) : property.equatable is
+
+  id := unique_id
 
   joined := concur.atomic trit.no
 
@@ -33,7 +35,7 @@ module:public thread(id i64) : property.equatable is
   #
   public join unit =>
     if joined.compare_and_set trit.no trit.unknown
-      fuzion.sys.thread.join0 id
+      fuzion.sys.thread.join0 thrd
       joined.write trit.yes
     else
       # NYI: UNDER DEVELOPMENT:

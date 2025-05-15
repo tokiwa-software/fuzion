@@ -55,3 +55,8 @@ private:module Mapped_Memory ref is
 # undefined behaviour.
 #
 private:module Array /* NYI: UNDER DEVELOPMENT: (ET type)*/ ref is
+
+
+# a type denoting a (started) thread
+#
+private:module Thread ref is

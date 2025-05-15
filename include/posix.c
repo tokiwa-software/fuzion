@@ -524,7 +524,7 @@ void fzE_init()
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void *(*code)(void *),
+void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
 #ifdef FUZION_ENABLE_THREADS
@@ -539,12 +539,11 @@ int64_t fzE_thread_create(void *(*code)(void *),
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  // NYI: BUG: free pt
-  return (int64_t)pt;
+  return pt;
 #else
   printf("You discovered a severe bug. (fzE_thread_join)");
   exit(EXIT_FAILURE);
-  return -1;
+  return NULL;
 #endif
 }
 
@@ -552,7 +551,7 @@ int64_t fzE_thread_create(void *(*code)(void *),
 /**
  * Join with a running thread.
  */
-void fzE_thread_join(int64_t thrd)
+void fzE_thread_join(void * thrd)
 {
 #ifdef FUZION_ENABLE_THREADS
 #ifdef GC_THREADS
@@ -560,6 +559,7 @@ void fzE_thread_join(int64_t thrd)
 #else
   pthread_join(*(pthread_t *)thrd, NULL);
 #endif
+  fzE_free(thrd);
 #endif
 }
 

@@ -98,6 +98,15 @@ void * fzE_malloc_safe(size_t size) {
 }
 
 
+void fzE_free(void * ptr) {
+#ifdef GC_THREADS
+  GC_FREE(ptr);
+#else
+  free(ptr);
+#endif
+}
+
+
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
   // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memcpy_s
   memcpy(dest, src, sz);

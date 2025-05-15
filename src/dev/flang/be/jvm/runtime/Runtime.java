@@ -220,18 +220,6 @@ public class Runtime extends ANY
   };
 
 
-  /**
-   * This contains all started threads.
-   */
-  static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
-    @Override
-    protected boolean close(Thread f)
-    {
-      return true;
-    };
-  };
-
-
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
@@ -1217,9 +1205,9 @@ public class Runtime extends ANY
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
-  public static long thread_spawn(Any code, Class call)
+  public static Object thread_spawn(Any code, Class call)
   {
-    long result = 0;
+    Object result = null;
     Method r = null;
     for (var m : call.getDeclaredMethods())
       {
@@ -1234,8 +1222,7 @@ public class Runtime extends ANY
       }
     else
       {
-        var t = new FuzionThread(r, code);
-        result = _startedThreads_.add(t);
+        result = new FuzionThread(r, code);
       }
     return result;
   }
