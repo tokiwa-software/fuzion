@@ -642,7 +642,7 @@ public Sequence(public T type) ref : property.countable is
   # ages := map (Sequence i32) human i32 (x -> x.age)
   # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
-  # say ([human(4), human(12), human(30)].into xf) # [12,30]
+  # say ([(human 4), (human 12), (human 30)].into xf) # [12,30]
   public into(TA type, xf transducer (Sequence TA) TA T) Sequence TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
@@ -681,7 +681,7 @@ public Sequence(public T type) ref : property.countable is
   #
   public index [] (i i32) T
     pre
-      debug: is_valid_index(i)
+      debug: is_valid_index i
   =>
     (nth i).get
 

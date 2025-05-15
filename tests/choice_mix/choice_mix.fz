@@ -349,7 +349,7 @@ choice_mix is
            i := 0, i + 1
          while i < 25
            yak "$i ==> "
-           match f(i)
+           match f i
              x i32    => yak x
              b1 bool  => { if b1 { yak  "true" } else { yak "false" } }
              s String => yak s
