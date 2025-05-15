@@ -1672,6 +1672,7 @@ actualArgs  : actualSpaces
            t_indentationLimit,
            t_lineLimit       ,
            t_spaceOrSemiLimit,
+           t_commaLimit      ,
            t_colonLimit      ,
            t_barLimit        ,
            t_eof             -> true;
@@ -2510,6 +2511,7 @@ brblock     : BRACEL exprs BRACER
         t_indentationLimit,
         t_lineLimit,
         t_spaceOrSemiLimit,
+        t_commaLimit,
         t_colonLimit,
         t_barLimit,
         t_rbrace,
