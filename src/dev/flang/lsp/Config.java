@@ -36,7 +36,6 @@ import com.google.gson.JsonObject;
 
 import dev.flang.lsp.enums.Transport;
 import dev.flang.lsp.feature.CodeLenses;
-import dev.flang.lsp.feature.InlayHints;
 import dev.flang.lsp.shared.Context;
 import dev.flang.lsp.shared.ErrorHandling;
 import dev.flang.lsp.shared.ParserTool;
@@ -112,7 +111,6 @@ public class Config
     setJavaModules(json);
     setFuzionOptions(json);
     setCodeLensOptions(json);
-    setInlayHint(json);
     setFuirEnabled(json);
   }
 
@@ -121,25 +119,6 @@ public class Config
     Context.middleEndEnabled = ErrorHandling.resultOrDefault(() -> json.get("middle_end_enabled").getAsBoolean(), false);
   }
 
-  private static void setInlayHint(JsonObject json)
-  {
-    try
-      {
-        if (ErrorHandling.resultOrDefault(() -> json.get("inlay_hints").getAsBoolean(),
-          true))
-          {
-            InlayHints.enable();
-          }
-        else
-          {
-            InlayHints.disable();
-          }
-      }
-    catch (Exception e)
-      {
-        Context.logger.error("[Config] parsing of inlay hint options failed.");
-      }
-  }
 
   private static void setCodeLensOptions(JsonObject json)
   {
