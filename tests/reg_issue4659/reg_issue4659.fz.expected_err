@@ -5,6 +5,6 @@
 Indentation reference point is --CURDIR--/reg_issue4659.fz:24:6:
 _ := for
 -----^
-While parsing: loop, parse stack: loop, term, termOrCallTl, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+While parsing: loop, parse stack: loop, term, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 one error.
