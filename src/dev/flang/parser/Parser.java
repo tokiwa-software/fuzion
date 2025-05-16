@@ -1397,12 +1397,8 @@ indexTail   : ":=" exprInLine
    *
    * @param target the target of the call
    *
-callTail    : indexCall  callTail
-            | dot call   callTail
-            | dot "env"  callTail
-            | dot "type" callTail
-            | dot "this" callTail
-            | dot select callTail
+callTail    : indexCall callTail
+            | dotCall
             |
             ;
    */
@@ -1415,54 +1411,75 @@ callTail    : indexCall  callTail
       }
     else if (skippedDot || skipDot())
       {
-        if (skip(Token.t_env))
+        result = dotCall(target);
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse dotCall
+   *
+   * @param target the target of the call
+   *
+dotCall     : dot call   callTail
+            | dot "env"  callTail
+            | dot "type" callTail
+            | dot "this" callTail
+            | dot select callTail
+            ;
+   */
+  Expr dotCall(Expr target)
+  {
+    Expr result;
+    if (skip(Token.t_env))
+      {
+        AbstractType t = target.asParsedType();
+        if (t == null)
           {
-            AbstractType t = result.asParsedType();
-            if (t == null)
-              {
-                AstErrors.noValidLHSInExpresssion(result, ".env");
-                t = Types.t_ERROR;
-                result = Call.ERROR;
-              }
-            else
-              {
-                result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), result), new ParsedName(sourceRange(target.pos()), "from_env")));
-              }
-          }
-        else if (skip(Token.t_type))
-          {
-            AbstractType t = result.asParsedType();
-            if (t == null)
-              {
-                AstErrors.noValidLHSInExpresssion(result, ".type");
-                t = Types.t_ERROR;
-                result = Call.ERROR;
-              }
-            else
-              {
-                result = callTail(false, new DotType(sourceRange(target.pos()), result));
-              }
-          }
-        else if (skip(Token.t_this))
-          {
-            var q = result.asQualifier();
-            if (q == null)
-              {
-                AstErrors.qualifierExpectedForDotThis(target);
-              }
-            else
-              {
-                result = callTail(false, new This(q));
-              }
-          }
-        else if (current() == Token.t_numliteral)
-          {
-            result = callTail(false, select(result, null));
+            AstErrors.noValidLHSInExpresssion(target, ".env");
+            t = Types.t_ERROR;
+            result = Call.ERROR;
           }
         else
           {
-            result = call(result);
+            result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), target), new ParsedName(sourceRange(target.pos()), "from_env")));
           }
+      }
+    else if (skip(Token.t_type))
+      {
+        AbstractType t = target.asParsedType();
+        if (t == null)
+          {
+            AstErrors.noValidLHSInExpresssion(target, ".type");
+            t = Types.t_ERROR;
+            result = Call.ERROR;
+          }
+        else
+          {
+            result = callTail(false, new DotType(sourceRange(target.pos()), target));
+          }
+      }
+    else if (skip(Token.t_this))
+      {
+        var q = target.asQualifier();
+        if (q == null)
+          {
+            AstErrors.qualifierExpectedForDotThis(target);
+            result = Call.ERROR;
+          }
+        else
+          {
+            result = callTail(false, new This(q));
+          }
+      }
+    else if (current() == Token.t_numliteral)
+      {
+        result = callTail(false, select(target, null));
+      }
+    else
+      {
+        result = call(target);
       }
     return result;
   }
@@ -1819,10 +1836,10 @@ exprNoColon : operatorExpr          // may not contain `:` unless enclosed in { 
   /**
    * Parse opExpr
    *
-opExpr      : optionalops termOrCallTl opsTail callTail
+opExpr      : opsOpt term opsTail callTail
             | OPERATOR
             ;
-optionalops : ops
+opsOpt      : ops
             |
             ;
    */
@@ -1837,7 +1854,7 @@ optionalops : ops
       }
     if (oe.size() != 1 || isTermPrefix(oe.size() > 0) || isDot())
       {
-        termOrCallTl(oe);
+        oe.add(term());
         result = opsTail(oe);
         result.setSourceRange(sourceRange(pos));
       }
@@ -1883,7 +1900,7 @@ ops         : OPERATOR
 opsTail     : opsTerms callTail
             ;
 opsTerms    : ops
-            | ops termOrCallTl opsTerms
+            | ops term opsTerms
             |
             ;
    */
@@ -1894,35 +1911,10 @@ opsTerms    : ops
         var spaceBeforeLastOperator = ops(oe);
         if (isTermPrefix(true) || spaceBeforeLastOperator && isDot())
           {
-            termOrCallTl(oe);
+            oe.add(term());
           }
       }
     return callTail(false, oe.toExpr());
-  }
-
-
-  /**
-   * Parse termOrCallTl -- either a term or a parial call `.xyz args`
-   *
-   * @param oe OpExpr instance the ops()s should be added to
-   *
-termOrDotCll: term
-            | callTail  // if white space before last OPERATOR, i.e.,
-                        // `1.. ∀ .is_even` is fully parsed as opExpr while
-                        // `1.. .filter %%2` returns `x..`, which becomes the
-                        // target in a call `(x..).filter %%2`
-            ;
-   */
-  void termOrCallTl(OpExpr oe)
-  {
-    if (skipDot())
-      {
-        oe.add(Partial.dotCall(tokenSourcePos(), a -> callTail(true, a)));
-      }
-    else
-      {
-        oe.add(term());
-      }
   }
 
 
@@ -2087,6 +2079,10 @@ addSemiElmts: SEMI semiSepElmts
    * Parse term
    *
 term        : simpleterm callTail
+            | dotCall   // if white space before last OPERATOR, i.e.,
+                        // `1.. ∀ .is_even` is fully parsed as opExpr while
+                        // `1.. .filter %%2` returns `x..`, which becomes the
+                        // target in a call `(x..).filter %%2`
             ;
 simpleterm  : bracketTerm
             | stringTerm
@@ -2100,7 +2096,9 @@ simpleterm  : bracketTerm
   Expr term()
   {
     int pos = tokenPos();
-    var result = switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
+    var result = skipDot()
+      ? Partial.dotCall(tokenSourcePos(), a -> dotCall(a))
+      : switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
       case t_lbrace, t_lparen, t_lbracket ->  bracketTerm();
       case t_numliteral -> {
