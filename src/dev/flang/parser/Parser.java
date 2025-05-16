@@ -1835,7 +1835,7 @@ optionalops : ops
       {
         ops(oe);
       }
-    if (oe.size() != 1 || isTermPrefix() || isDot())
+    if (oe.size() != 1 || isTermPrefix(oe.size() > 0) || isDot())
       {
         termOrCallTl(oe);
         result = opsTail(oe);
@@ -1892,7 +1892,7 @@ opsTerms    : ops
     while (current() == Token.t_op)
       {
         var spaceBeforeLastOperator = ops(oe);
-        if (isTermPrefix() || spaceBeforeLastOperator && isDot())
+        if (isTermPrefix(true) || spaceBeforeLastOperator && isDot())
           {
             termOrCallTl(oe);
           }
@@ -2210,9 +2210,11 @@ stringTermB : '}any chars&quot;'
    * Check if the current position starts a term.  Does not change the position
    * of the parser.
    *
+   * @param inOperatorExpression true if this term is in an operator expression.
+   *
    * @return true iff the next token(s) start a term.
    */
-  boolean isTermPrefix()
+  boolean isTermPrefix(boolean inOperatorExpression)
   {
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
@@ -2221,10 +2223,10 @@ stringTermB : '}any chars&quot;'
       case t_lbrace    :
       case t_numliteral:
       case t_if        :
-      case t_for       :
-        //      case t_do        :    -- results in failures in tests/outerNormalization.fz
-      case t_while     :
       case t_match     : return true;
+      case t_for       :
+      case t_do        :
+      case t_while     : return !inOperatorExpression;
       default          :
         return
           isStartedString(current())
