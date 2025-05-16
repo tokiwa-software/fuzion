@@ -199,9 +199,10 @@ public class Case extends AbstractCase
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {
-    v.actionBefore(this);
+    v.actionBefore(this, m);
     if (_field != null)
       {
         _field.visit(v, outer);
@@ -215,7 +216,7 @@ public class Case extends AbstractCase
           }
       }
     _code = _code.visit(v, outer);
-    v.actionAfter(this);
+    v.actionAfter(this, m);
   }
 
 
