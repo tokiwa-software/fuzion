@@ -2222,7 +2222,7 @@ stringTermB : '}any chars&quot;'
       case t_numliteral:
       case t_if        :
       case t_for       :
-      case t_do        :
+        //      case t_do        :    -- results in failures in tests/outerNormalization.fz
       case t_while     :
       case t_match     : return true;
       default          :
