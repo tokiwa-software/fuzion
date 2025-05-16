@@ -514,8 +514,8 @@ visiFlag    : "private" colon "module"
    * Parse qualified name
    *
 qual        : name
-            | name dot qual
-            | type dot qual
+            | name PERIOD qual
+            | type PERIOD qual
             ;
    */
   List<ParsedName> qual(boolean mayBeAtMinIndent)
@@ -1643,8 +1643,19 @@ actualArgs  : actualSpaces
   boolean endsActuals(boolean atMinIndent)
   {
     return
-      // `.call` ends immediately
+      // The `.` in `f a b c .xyz` ends actuals `a b c` immediately;
+      //
       current() == Token.t_period ||
+
+      // the multi-line case
+      //
+      //    f a b c
+      //      .xyz
+      //
+      // will stop the actual arguments after `c` due to `t_spaceOrSemiLimit` and will be parsed as
+      //
+      //   (f a b c).xyz
+      //
 
       switch (current(atMinIndent))
       {
@@ -3236,7 +3247,7 @@ universeCall      : universe dot call
   Expr universeCall()
   {
     var universe = universe();
-    match(Token.t_period, "universeCall");
+    dot();
     return call(universe);
   }
 
@@ -3253,7 +3264,7 @@ universePureCall  : universe dot pureCall
   Call universePureCall()
   {
     var universe = universe();
-    match(Token.t_period, "universePureCall");
+    dot();
     return pureCall(universe);
   }
 
@@ -4041,10 +4052,22 @@ colon       : ":"
 
 
   /**
-   * Parse "." if it is found.
+   * Parse dot.
    *
-dot         : "."      // either preceded by white space or not followed by white space
+dot         : PERIOD   // may appear in new line even if parsed as part of exprInLine
             ;
+   */
+  void dot()
+  {
+    if (!skipDot())
+      {
+        syntaxError(Token.t_period.toString(), "dot");
+      }
+  }
+
+
+  /**
+   * Parse "." if it is found.
    *
    * @return true iff a "." was found and skipped.
    */
