@@ -5,7 +5,7 @@
 Indentation reference point is --CURDIR--/reg_issue4426.fz:24:10:
   while (b = 1 do
 ---------^
-While parsing: klammer, parse stack: klammer, bracketTerm, term, opTail, opExpr, operatorExpr (twice), exprInLine, loop, term, opTail, opExpr, operatorExpr (twice), expr, exprs, block (twice), unit
+While parsing: klammer, parse stack: klammer, bracketTerm, term, opTail, opExpr, operatorExpr, exprInLine, loop, term, opTail, opExpr, operatorExpr, expr, exprs, block (twice), unit
 
 
 --CURDIR--/reg_issue4426.fz:24:12: error 2: Wrong syntax in '.type' expression.
