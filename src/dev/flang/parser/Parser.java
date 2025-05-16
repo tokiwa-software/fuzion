@@ -1817,58 +1817,36 @@ exprNoColon : operatorExpr          // may not contain `:` unless enclosed in { 
 
 
   /**
-   * Parse dotCall, a partial call with the target missing like `.as_string` in `[1,2,3].map .as_string`
-   *
-dotCall     : callTail
-            ;
-   */
-  Expr dotCall()
-  {
-    return Partial.dotCall(tokenSourcePos(), a -> callTail(true, a));
-  }
-
-
-  /**
    * Parse opExpr
    *
-opExpr      : term opsTail
-            | ops term opsTail
+opExpr      : optionalops termOrCallTl opsTail callTail
             | OPERATOR
-            | dotCall
+            ;
+optionalops : ops
+            |
             ;
    */
   Expr opExpr()
   {
-    if (!skipDot())
+    Expr result;
+    int pos = tokenPos();
+    var oe = new OpExpr();
+    if (current() == Token.t_op)
       {
-        int pos = tokenPos();
-        var oe = new OpExpr();
-        if (current() == Token.t_op)
-          {
-            ops(oe);
-          }
-        if (oe.size() != 1 || isTermPrefix())
-          {
-            oe.add(term());
-            opsTail(oe);
-            var result = oe.toExpr();
-            result = callTail(false, result);
-            if (result != Call.ERROR)
-              {
-                result.setSourceRange(sourceRange(pos));
-              }
-            return result;
-          }
-        else
-          {
-            return new Partial(oe.op(0)._pos,
-                               oe.op(0)._text);
-          }
+        ops(oe);
+      }
+    if (oe.size() != 1 || isTermPrefix() || isDot())
+      {
+        termOrCallTl(oe);
+        result = opsTail(oe);
+        result.setSourceRange(sourceRange(pos));
       }
     else
       {
-        return dotCall();
+        result = new Partial(oe.op(0)._pos,
+                             oe.op(0)._text);
       }
+    return result;
   }
 
 
@@ -1902,27 +1880,48 @@ ops         : OPERATOR
    *
    * @param oe OpExpr instance the ops()s should be added to
    *
-opsTail     : ops term opsTail
-            | ops dotCall opsTail  // if white space before last OPERATOR, i.e.,
-                                   // `1.. ∀ .is_even` is fully parsed as opExpr while
-                                   // `1.. .filter %%2` returns `x..`, which becomes the
-                                   // target in a call `(x..).filter %%2`
+opsTail     : opsTerms callTail
+            ;
+opsTerms    : ops
+            | ops termOrCallTl opsTerms
             |
             ;
    */
-  void opsTail(OpExpr oe)
+  Expr opsTail(OpExpr oe)
   {
     while (current() == Token.t_op)
       {
         var spaceBeforeLastOperator = ops(oe);
-        if (isTermPrefix())
+        if (isTermPrefix() || spaceBeforeLastOperator && isDot())
           {
-            oe.add(term());
+            termOrCallTl(oe);
           }
-        else if (spaceBeforeLastOperator && skipDot())
-          {
-            oe.add(dotCall());
-          }
+      }
+    return callTail(false, oe.toExpr());
+  }
+
+
+  /**
+   * Parse termOrCallTl -- either a term or a parial call `.xyz args`
+   *
+   * @param oe OpExpr instance the ops()s should be added to
+   *
+termOrDotCll: term
+            | callTail  // if white space before last OPERATOR, i.e.,
+                        // `1.. ∀ .is_even` is fully parsed as opExpr while
+                        // `1.. .filter %%2` returns `x..`, which becomes the
+                        // target in a call `(x..).filter %%2`
+            ;
+   */
+  void termOrCallTl(OpExpr oe)
+  {
+    if (skipDot())
+      {
+        oe.add(Partial.dotCall(tokenSourcePos(), a -> callTail(true, a)));
+      }
+    else
+      {
+        oe.add(term());
       }
   }
 
