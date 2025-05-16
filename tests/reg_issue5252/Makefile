@@ -17,30 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue5243
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Test that errors are produced if a lambda or partial call is assigned to a
-# non-function argument in a call to an infix operator.
-#
-reg_issue5243 =>
-
-  # this works
-  say ((1..) .filter %%2)
-
-  # this used to produce an error since it was parsed as `1.infix .. (.filter  %%2)`
-  #
-  # Now, this is parsed as `(1.postfix ..).filter %%2` and accepted.
-  #
-  say (1.. .filter %%2)
-
-  # these should always produce an error
-  say (1 .. .filter %%2)  # should fail
-  say (1 +  .filter %%2)  # should fail
-
-  # these should always work
-  say (1..10 ∀ %%2)
-  say (1..10 ∀ .is_even)
-
-  i32.is_even => val %% 2
+override NAME = reg_issue5252
+include ../simple.mk

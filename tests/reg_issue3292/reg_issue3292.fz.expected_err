@@ -4,6 +4,6 @@
 --------------^^^^^^
 Feature not found: 'infix ≥≥≥≥≥≥' (one argument)
 Target feature: 'String'
-In call: '≥≥≥≥≥≥'
+In call: '"漢字" ≥≥≥≥≥≥ "ひらがな"'
 
 one error.
