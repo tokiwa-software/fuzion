@@ -34,53 +34,52 @@ sockets_test is
 
     say_silent(s Any) => unit
 
-    # install server in env
-    say "opened $protocol/$family-server on port $port: {(net.server.start family protocol port)}"
-
     accept =>
-      match net.server.accept
-        error => false
-        c net.connection =>
-          sc := c.in_thread_pool unit concur.thread_pool lm lm ()->
-            chan => net.channel.env
+      (net.server.env.accept.bind c->
+        sc := c.in_thread_pool unit concur.thread_pool lm lm ()->
+          chan => net.channel.env
 
-            say_silent "$protocol/$family-server, accepted connection"
-            say_silent chan.get_peer_address
-            say_silent chan.get_peer_port
+          say_silent "$protocol/$family-server, accepted connection"
+          say_silent chan.get_peer_address
+          say_silent chan.get_peer_port
 
-            rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
+          rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-            say_silent "$protocol/$family-server, read lines: >{rr}<"
+          say_silent "$protocol/$family-server, read lines: >{rr}<"
 
-            match protocol
-              net.protocol.tcp =>
+          match protocol
+            net.protocol.tcp =>
 
-                res := "received: {rr.as_string}\n\n"
+              res := "received: {rr.as_string}\n\n"
 
-                w =>
-                  x := ((io.buffered lm).writer.env.write res.utf8.as_array).error
+              w =>
+                x := ((io.buffered lm).writer.env.write res.utf8.as_array).error
 
-                  match x
-                    unit => (io.buffered lm).writer.env.flush
-                    error => x
+                match x
+                  unit => (io.buffered lm).writer.env.flush
+                  error => x
 
-                match w
-                  e error => say_silent "$protocol/$family-server, write error $e"
-                  * => say_silent "$protocol/$family-server, write succeeded"
+              match w
+                e error => say_silent "$protocol/$family-server, write error $e"
+                * => say_silent "$protocol/$family-server, write succeeded"
 
 
-              net.protocol.udp =>
-                # rest of udp datagram was discarded
-              * =>
-                panic "NI"
+            net.protocol.udp =>
+              # rest of udp datagram was discarded
+            * =>
+              panic "NI"
 
-          tmp := sc.get
-          _ := c.close
-          tmp.ok
+        tmp := sc.get
+        _ := c.close
+        tmp.ok).ok
 
 
-    while net.server.is_active && accept
-    do
+    # install server in env
+    say <| net.server.start family protocol port ()->
+      say "opened $protocol/$family-server on port $port."
+
+      while accept
+      do
 
 
   # client

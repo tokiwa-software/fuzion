@@ -1,7 +1,9 @@
-opened TCP/IPv4-server on port 50000: unit
-opened UDP/IPv4-server on port 50001: unit
-opened TCP/IPv6-server on port 50003: unit
-opened UDP/IPv6-server on port 50004: unit
+opened TCP/IPv4-server on port 50000.
+opened UDP/IPv4-server on port 50001.
+unit
+opened TCP/IPv6-server on port 50003.
+opened UDP/IPv6-server on port 50004.
+unit
 ### TCP/IPv4-Tests ###
 TCP/IPv4-client 1, write to 127.0.0.1:50000 => unit
 TCP/IPv4-client 1, read lines from  127.0.0.1:50000: >

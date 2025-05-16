@@ -40,19 +40,17 @@ webserver_native is
   _ := mut
 
   port u16 := 8080
-  match net.server.start net.family.ipv6 net.protocol.tcp port
-    e error => say e
-    unit =>
-      say "started server on port: $port"
-      say "you may now send a request, e.g.:"
-      say "echo 'Hello' | curl 'http://[::1]:8080'"
+  say <| net.server.start net.family.ipv6 net.protocol.tcp port ()->
+    say "started server on port: $port"
+    say "you may now send a request, e.g.:"
+    say "echo 'Hello' | curl 'http://[::1]:8080'"
+
+    for n in 1..
+    while (accept_connection n).ok
 
 
-  # accept connections while server is active
-  #
-  for n in 1..
-  while net.server.is_active
-    _ := net.server.accept.bind c->
+  accept_connection(n i32) =>
+    net.server.env.accept.bind c->
       _ := c.with unit mutate ()->
         say "accepted connection:"
 
