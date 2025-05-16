@@ -964,7 +964,11 @@ public class Intrinsics extends ANY
         ? noJava
         : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
     });
-    // NYI: UNDER DEVELOPMENT: put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {});
+    put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {
+      return  C.JAVA_HOME == null
+        ? noJava
+        : CExpr.call("fzE_destroy_jvm", new List<>());
+    });
 
     put("concur.sync.mtx_init",      (c,cl,outer,in) ->
       {

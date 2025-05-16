@@ -25,13 +25,39 @@
 
 # fuzion.java -- unit type grouping low-level helpers for Java interface
 #
-public java is
+# NYI: UNDER DEVELOPMENT:
+# private:public java : effect is
+public java : effect is
 
-  # NYI: UNDER DEVELOPMENT remove this, replace with effect
-  public create_jvm0(class_path String) unit =>
-    create_jvm (sys.c_string "-Djava.class.path=$class_path")
-
+  # NYI: UNDER DEVELOPMENT: support starting multiple jvms?
+  #
   create_jvm(option_string universe.Array) unit => intrinsic
+  destroy_jvm unit => intrinsic
+
+
+  # short-hand to for jvm with no additional class path
+  #
+  public type.jvm(T type, code ()->T) T =>
+    # NYI: BUG: java.lang.Error: require-condition1 failed: AbstractType.java:875 "(Errors.any() || f.generics().sizeMatches(actualGenerics), Errors.any() || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());"
+    # fuzion.java.jvm "" code
+    fuzion.java.jvm T "" code
+
+
+  # - start jvm (or use an exisiting jvm)
+  # - instate effect `fuzion.java`
+  # - run code on the jvm
+  # - destroy jvm (if jvm had to be started)
+  #
+  public type.jvm(T type, class_path String, code ()->T) T =>
+    fuzion.java ! ()->
+      fuzion.java.env.create_jvm (fuzion.sys.c_string "-Djava.class.path=$class_path")
+      code.call
+
+
+  # cleanup the started jvm
+  #
+  public redef finally unit =>
+    destroy_jvm
 
 
   # read a static field of given name in class with given name.  Wrap result into

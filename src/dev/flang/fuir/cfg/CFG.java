@@ -470,6 +470,7 @@ public class CFG extends ANY
     put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
     put("fuzion.java.primitive_to_java_object", (cfg, cl) -> { } );
     put("fuzion.java.create_jvm"            , (cfg, cl) -> { } );
+    put("fuzion.java.destroy_jvm"           , (cfg, cl) -> { } );
 
     put("concur.sync.mtx_init"              , (cfg, cl) -> { } );
     put("concur.sync.mtx_lock"              , (cfg, cl) -> { } );
