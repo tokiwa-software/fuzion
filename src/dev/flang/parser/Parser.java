@@ -513,9 +513,12 @@ visiFlag    : "private" colon "module"
   /**
    * Parse qualified name
    *
-qual        : name
-            | name PERIOD qual
-            | type PERIOD qual
+qual        : namequal
+            | type dot namequal
+            ;
+namequal    : name
+            | name dot qual
+            ;
             ;
    */
   List<ParsedName> qual(boolean mayBeAtMinIndent)
@@ -526,16 +529,9 @@ qual        : name
         if (skip(mayBeAtMinIndent, Token.t_type))
           {
             result.add(new ParsedName(SourcePosition.builtIn, FuzionConstants.TYPE_NAME));
-            if (!isDot())
-              {
-                match(Token.t_period, "qual");
-                result.add(ParsedName.ERROR_NAME);
-              }
+            dot();
           }
-        else
-          {
-            result.add(name(mayBeAtMinIndent, false));
-          }
+        result.add(name(mayBeAtMinIndent, false));
         mayBeAtMinIndent = false;
       }
     while (skipDot());
@@ -2274,7 +2270,7 @@ dotCallOrOp : dot call
   Object dotCallOrOp()
   {
     if (PRECONDITIONS) require
-      (current() == Token.t_op);
+      (current() == Token.t_op || isDot());
 
     Object result; // Function or Operator
     if (skipDot())
