@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -187,13 +189,16 @@ public class Function extends AbstractLambda
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
+    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false, from);
     return this;
   }
 
@@ -246,12 +251,15 @@ public class Function extends AbstractLambda
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return if inferResultType, the result type inferred from this lambda or
    * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
   @Override
-  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
@@ -261,7 +269,7 @@ public class Function extends AbstractLambda
             // suppress error for t_UNDEFINED, but only if other error was already reported
             if (t != Types.t_UNDEFINED || !Errors.any())
               {
-                AstErrors.expectedFunctionTypeForLambda(pos(), t);
+                AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
               }
             t = Types.t_ERROR;
           }
@@ -396,7 +404,7 @@ public class Function extends AbstractLambda
             if (frmlRt.feature() != lmbdRt.selfOrConstraint(res, context).feature())
               {
                 result = frmlRt.applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
-                if (result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
+                if (result.isChoice() && result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
                   {
                     _feature.setRefinedResultType(res, result);
                   }

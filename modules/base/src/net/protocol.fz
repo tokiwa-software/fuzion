@@ -29,10 +29,10 @@
 public protocol is
 
   public tcp is
-    public redef as_string => "TCP"
+    public redef as_string String => "TCP"
 
   public udp is
-    public redef as_string => "UDP"
+    public redef as_string String => "UDP"
 
   public val : choice tcp udp nil is
     module as_num i32 =>
@@ -41,9 +41,8 @@ public protocol is
         udp  => 17
         nil  => -1
 
-    public redef as_string =>
+    public redef as_string String =>
       match val.this
         t tcp   => t.as_string
         u udp   => u.as_string
         nil     => "none"
-

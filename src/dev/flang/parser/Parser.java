@@ -1080,16 +1080,12 @@ argNames    : name ( COMMA argNames
    */
   boolean skipArgNames()
   {
-    return skipArgNames(true);
-  }
-  boolean skipArgNames(boolean mayUseCommas)
-  {
     boolean result;
     do
       {
         result = skipName();
       }
-    while (result && mayUseCommas && skipComma());
+    while (result && skipComma());
     return result;
   }
 
@@ -1676,6 +1672,7 @@ actualArgs  : actualSpaces
            t_indentationLimit,
            t_lineLimit       ,
            t_spaceOrSemiLimit,
+           t_commaLimit      ,
            t_colonLimit      ,
            t_barLimit        ,
            t_eof             -> true;
@@ -1718,7 +1715,8 @@ actualArgs  : actualSpaces
 actualCommas: actualSome
             |
             ;
-actualSome  : operatorExpr actualMore
+actualSome  : operatorExpr          // may not contain `,` unless enclosed in { }, [ ], or ( ).
+              actualMore
             ;
 actualMore  : COMMA actualSome
             |
@@ -1732,7 +1730,9 @@ actualMore  : COMMA actualSome
       {
         do
           {
-            result.add(operatorExpr(false /* see #3978 for an example where this is necessary */));
+            var oldEAc = endAtComma(true);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
+            result.add(operatorExpr());
+            endAtComma(oldEAc);
           }
         while (skipComma());
       }
@@ -1794,7 +1794,7 @@ bracketTerm : brblock
   /**
    * An actual that ends in white space or semicolon unless enclosed in { }, [ ], or ( ).
    *
-actualSpace :  operatorExpr         // no white space or semicolon except enclosed in { }, [ ], or ( ).
+actualSpace :  operatorExpr         // no white space or semicolon unless enclosed in { }, [ ], or ( ).
             ;
 
    */
@@ -1826,20 +1826,18 @@ exprInLine  : operatorExpr   // within one line
   /**
    * Parse
    *
-operatorExpr  : opExpr
-                ( QUESTION expr  COLON expr
-                | QUESTION casesBars
-                |
-                )
-              ;
-   */
+operatorExpr: opExpr
+              ( QUESTION exprNoColon COLON expr
+              | QUESTION casesBars
+              |
+              )
+            ;
+exprNoColon : operatorExpr          // may not contain `:` unless enclosed in { }, [ ], or ( ).
+            ;
+  */
   Expr operatorExpr()
   {
-    return operatorExpr(true);
-  }
-  Expr operatorExpr(boolean mayUseCommas)
-  {
-    Expr result = opExpr(mayUseCommas);
+    Expr result = opExpr();
     if (current() == Token.t_question)
       {
         SourcePosition pos = tokenSourcePos();
@@ -1854,12 +1852,12 @@ operatorExpr  : opExpr
           {
             i.ok();
             var eac = endAtColon(true);
-            Expr f = operatorExpr(mayUseCommas);
+            Expr f = operatorExpr();
             endAtColon(eac);
             i.next();
             i.ok();
             matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = operatorExpr(mayUseCommas);
+            Expr g = operatorExpr();
             i.end();
             result = new ParsedCall(result, new ParsedName(pos, "ternary ? :"), new List<>(f, g));
           }
@@ -1877,7 +1875,7 @@ opExpr      :     opTail
             | callTail
             ;
    */
-  Expr opExpr(boolean mayUseCommas)
+  Expr opExpr()
   {
     if (!skipDot())
       {
@@ -1885,7 +1883,7 @@ opExpr      :     opTail
         skipOps(oe);
         if (oe.size() != 1 || isTermPrefix())
           {
-            opTail(oe, mayUseCommas);
+            opTail(oe);
             return oe.toExpr();
           }
         else
@@ -1931,12 +1929,12 @@ opTail      : term
             | term ops opTail
             ;
    */
-  void opTail(OpExpr oe, boolean mayUseCommas)
+  void opTail(OpExpr oe)
   {
-    oe.add(term(mayUseCommas));
+    oe.add(term());
     if (skipOps(oe) && isTermPrefix())
       {
-        opTail(oe, mayUseCommas);
+        opTail(oe);
       }
   }
 
@@ -2040,10 +2038,10 @@ plainLambda : argNames lambda
    * @return true iff the next token(s) start a plainLambda.
    *
    */
-  boolean isPlainLambdaPrefix(boolean mayUseCommas)
+  boolean isPlainLambdaPrefix()
   {
     var f = fork();
-    return f.skipArgNames(mayUseCommas) && f.isLambdaPrefix();
+    return f.skipArgNames() && f.isLambdaPrefix();
   }
 
 
@@ -2112,7 +2110,7 @@ simpleterm  : bracketTerm
             | callOrFeatOrThis
             ;
    */
-  Expr term(boolean mayUseCommas)
+  Expr term()
   {
     int pos = tokenPos();
     var result = switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
@@ -2141,7 +2139,7 @@ simpleterm  : bracketTerm
                               }
                             else
                               {
-                                var res = callOrFeatOrThis(mayUseCommas);
+                                var res = callOrFeatOrThis();
                                 if (res == null)
                                   {
                                     syntaxError(pos, "term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name)", "term");
@@ -2334,9 +2332,10 @@ casesNoBars : caze semiOrFlatLF casesNoBars
    * @param in the Indentation instance created at the position of '?' or at
    * current position (for a 'match'-expression).
    *
-casesBars   : caze ( '|' casesBars
-                   |
-                   )
+casesBars   : caze                  // may not contain `|` unless enclosed in { }, [ ], or ( ).
+              ( '|' casesBars
+              |
+              )
             ;
    */
   List<AbstractCase> casesBars(Indentation in)
@@ -2512,6 +2511,7 @@ brblock     : BRACEL exprs BRACER
         t_indentationLimit,
         t_lineLimit,
         t_spaceOrSemiLimit,
+        t_commaLimit,
         t_colonLimit,
         t_barLimit,
         t_rbrace,
@@ -3174,11 +3174,11 @@ callOrFeatOrThis  : anonymous
                   | call0
                   ;
    */
-  Expr callOrFeatOrThis(boolean mayUseCommas)
+  Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix()               ? anonymous()      : // starts with value/ref/:/fun/name
-      isPlainLambdaPrefix(mayUseCommas) ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
+      isAnonymousPrefix()   ? anonymous()      : // starts with value/ref/:/fun/name
+      isPlainLambdaPrefix() ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
       call0();
   }
 
@@ -3846,7 +3846,7 @@ typePars    : typeInParens typePars
    * while '(u8)', '((()->i32))' or '((((u8,bool)->f64)))' are types in parentheses.
    *
 typeInParens: "(" typeInParens ")"
-            | type         // no white space except enclosed in { }, [ ], or ( ).
+            | type         // no white space unless enclosed in { }, [ ], or ( ).
             ;
    */
   AbstractType typeInParens()

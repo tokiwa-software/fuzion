@@ -131,7 +131,7 @@ public class Html extends ANY
               + htmlEncodedBasename(f)
               + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
               + c.actualTypeParameters().stream()
-                 .map(at -> htmlEncodeNbsp(at.asString(false, af)))
+                 .map(at -> htmlEncodeNbsp(at.toString(false, af)))
                  .collect(Collectors.joining(", ")) + "</a>";
           })
           .collect(Collectors.joining("<span class='mr-2 fd-keyword'>,</span>"));
@@ -149,10 +149,10 @@ public class Html extends ANY
   {
     if (at.isGenericArgument())
       {
-        return htmlEncodeNbsp(at.asString(false, context))
+        return htmlEncodeNbsp(at.toString(false, context))
                + (at.isOpenGeneric() ? "..." : "");
       }
-    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.asString(false, context)))
+    return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(false, context)))
       .replace("$2", featureAbsoluteURL(at.feature()));
   }
 
@@ -207,28 +207,30 @@ public class Html extends ANY
    */
   private String summary(AbstractFeature af, AbstractFeature outer)
   {
-    return "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
-      + "<div class='d-flex flex-wrap word-break-break-word'>"
-      + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
-      + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
-      + anchor(af)
-      + arguments(af)
-      + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
-      + inherited(af)
-      + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
-        : af.isConstructor()     ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-        : af.isField()           ? "&nbsp;" + anchor(af.resultType(), outer) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
-                                 : "")
-      + annotateInherited(af, outer)
-      + annotateRedef(af, outer)
-      + annotateAbstract(af)
-      + annotateContainsAbstract(af)
-      + annotatePrivateConstructor(af)
-      + annotateModule(af)
-      // fills remaining space
-      + "<div class='flex-grow-1'></div>"
-      + "</div>"
-      + source(af)
+    return
+      "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
+        + "<div class='d-flex flex-wrap word-break-break-word'>"
+          + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
+          + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
+            + anchor(af)
+            + arguments(af)
+            + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
+            + inherited(af)
+            + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
+               : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
+               : af.isField()         ? "&nbsp;" + anchor(af.resultType(), outer) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
+                                      : "")
+            + annotateInherited(af, outer)
+            + annotateRedef(af, outer)
+            + annotateAbstract(af)
+            + annotateContainsAbstract(af)
+            + annotatePrivateConstructor(af)
+            + annotateModule(af)
+            // fills remaining space
+            + "<div class='flex-grow-1'></div>"
+          + "</div>"
+        + "</div>"
+        + source(af)
       + "</div>";
   }
 
@@ -496,7 +498,7 @@ public class Html extends ANY
     var content = features.map(af ->
       // NYI summary tag must not contain div
       "<details id='" + htmlID(af)
-      + "'$0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
+      + "' $0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
         // NYI rename fd-private?
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
         .replace("$1", summary(af, outer))
@@ -516,12 +518,13 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 class='$5'>$0</h1><h2>$3</h2><h3>$1</h3><div class='fd-comment'>$2</div>$6"
-      .replace("$0", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
+    return "$0<h1 class='$1'>$2</h1><h2>$3</h2><div class='heading-summary'>$4</div><div class='fd-comment'>$5</div>$6"
+      .replace("$0", f.isUniverse() ? "<h1 hidden>" + lm.name() + "</h1>" : "") // short version of title for navtitle
+      .replace("$1", f.isUniverse() ? "": "d-none")
+      .replace("$2", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
       .replace("$3", anchorTags(f))
-      .replace("$1", f.isUniverse() ? "": summary(f))
-      .replace("$2", Util.commentOf(f))
-      .replace("$5", f.isUniverse() ? "": "d-none")
+      .replace("$4", f.isUniverse() ? "": summary(f))
+      .replace("$5", Util.commentOf(f))
       .replace("$6", redefines(f));
   }
 
@@ -615,7 +618,7 @@ public class Html extends ANY
     if (!codeLines.isEmpty())
       {
         /* dump codeLines into a fuzion-lang.dev runcode box */
-        var id = "fzdocs." + name + codeNo[0];
+        var id = ("fzdocs." + name + codeNo[0]).replace(" ", ""); // NYI: CLEANUP: better not to add spaces in the first place
         var code = codeLines
           .stream()
           .map(cl -> { return cl.replaceAll("^    ", ""); })
@@ -806,7 +809,7 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().asString());
+               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().toString(true));
       }
     else
       {
@@ -936,7 +939,7 @@ public class Html extends ANY
 
   /**
    * For LibraryFeatures return the features LibraryModule
-   * otherwise the LibraryModule of this HTML object 
+   * otherwise the LibraryModule of this HTML object
    */
   private final LibraryModule libModule(AbstractFeature f)
   {
@@ -995,8 +998,8 @@ public class Html extends ANY
   <nav style="display: none">$0</nav>
 </div>
 <div class="container">
-  <section><h1>Fuzion Library Modules</h1>
-    <h2></h2><h3></h3><div class='fd-comment'></div>
+  <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
+    <div class='fd-comment'></div>
   </section>
   <section>
         """.replace("$0", navigationModules()));

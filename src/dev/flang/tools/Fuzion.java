@@ -586,7 +586,7 @@ public class Fuzion extends Tool
   /**
    * Home directory of the Fuzion installation.
    */
-  Path _fuzionHome = (new FuzionHome())._fuzionHome;
+  Path _fuzionHome = FuzionHome._fuzionHome;
 
 
   /**

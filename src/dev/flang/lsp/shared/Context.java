@@ -1,12 +1,12 @@
 /*
 
-This file is part of the Fuzion language implementation.
+This file is part of the Fuzion language server protocol implementation.
 
-The Fuzion language implementation is free software: you can redistribute it
+The Fuzion language server protocol implementation is free software: you can redistribute it
 and/or modify it under the terms of the GNU General Public License as published
 by the Free Software Foundation, version 3 of the License.
 
-The Fuzion language implementation is distributed in the hope that it will be
+The Fuzion language server protocol implementation is distributed in the hope that it will be
 useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 License for more details.
@@ -20,30 +20,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source code of interface Callable
+ * Source of class Context
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.util;
 
+package dev.flang.lsp.shared;
 
-/**
- * Callable is a Runnable with a result, but with exception (as in
- * java.util.concurrent.Callable).
- *
- * @author Fridtjof Siebert (siebert@tokiwa.software)
- */
-public interface Callable<V>
+import dev.flang.util.FuzionOptions;
+
+public class Context
 {
-
-
-  /*-----------------------------  methods  -----------------------------*/
-
-  /**
-   * The code wrapped in this Callable
-   */
-  V call();
-
+  public static FuzionOptions fuzionOptions = new FuzionOptions(0, 0, false, true, SourceText.fuzionHome, null){
+    public boolean isLanguageServer() { return true; };
+  };
+  public static Logger logger = new DummyLogger();
+  public static boolean middleEndEnabled = false;
 }
-
-/* end of file */

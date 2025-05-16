@@ -60,7 +60,7 @@ is
 
     # was writing successful?
     #
-    public ok => error.ok
+    public ok bool => error.ok
 
 
   # buffered writing of the given array

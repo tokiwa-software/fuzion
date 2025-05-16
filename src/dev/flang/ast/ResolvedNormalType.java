@@ -159,30 +159,10 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param f if this type corresponds to a feature, then this is the
    * feature, else null.
-   *
-   * @param refOrVal
-   */
-  public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
-  {
-    return create(g, ug, o, f, refOrVal, true);
-  }
-
-
-  /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
-   *
-   * @param g the actual generic arguments (resolved)
-   *
-   * @param ug the actual generic arguments (unresolved)
-   *
-   * @param o
-   *
-   * @param f if this type corresponds to a feature, then this is the
-   * feature, else null.
    */
   public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
   {
-    return create(g, ug, o, f, RefOrVal.LikeUnderlyingFeature);
+    return create(g, ug, o, f, RefOrVal.LikeUnderlyingFeature, true);
   }
 
 
@@ -372,7 +352,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   protected ResolvedNormalType()
   {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature, true);
+    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature, false);
   }
 
 
@@ -519,54 +499,6 @@ public class ResolvedNormalType extends ResolvedType
   public boolean isThisType()
   {
     return this._refOrVal == RefOrVal.ThisType;
-  }
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    String result;
-
-    if (this == Types.t_ERROR)
-      {
-        result = Errors.ERROR_STRING;
-      }
-    else if (_outer != null)
-      {
-        String outer = _outer.toStringWrapped();
-        result = ""
-          + (outer == "" ||
-             outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
-                                                         : outer + ".")
-          + (_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
-             _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
-                                                                                      : ""       )
-          + (_feature == null ? Errors.ERROR_STRING
-                              : _feature.featureName().baseNameHuman());
-      }
-    else
-      {
-        result =
-          _feature == null ? "<null-feature>" :
-          ((_refOrVal == RefOrVal.Boxed && (_feature == null || !_feature.isRef()) ? "ref " :
-            _refOrVal == RefOrVal.Value &&  _feature != null &&  _feature.isRef()  ? "value "
-                                                                                    : ""       )
-           + _feature.qualifiedName());
-      }
-    if (isThisType())
-      {
-        result = result + ".this";
-      }
-    if (_generics != UnresolvedType.NONE)
-      {
-        result = result + _generics
-          .toString(" ", " ", "", (g) -> g.toStringWrapped());
-      }
-    return result;
   }
 
 

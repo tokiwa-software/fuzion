@@ -13,10 +13,10 @@ panic.type.install_default.λ.call#1: {base.fum}/panic.fz:36:18:
 panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic#1: {base.fum}/panic.fz:56:29:
-public panic(msg String) => panic.cause msg
-----------------------------^^^^^^^^^^^^^^^
-(reg_issue2231.type.ef.type.instate#3 void).λ.call#1: {base.fum}/effect.fz:188:28:
+panic#1: {base.fum}/panic.fz:56:34:
+public panic(msg String) void => panic.cause msg
+---------------------------------^^^^^^^^^^^^^^^
+(reg_issue2231.type.ef.type.instate#3 void).λ.call#1: {base.fum}/effect.fz:190:28:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ---------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (instate_helper void reg_issue2231.ef).call_def.call#1: {base.fum}/effect.fz:422:18:
@@ -24,7 +24,7 @@ public panic(msg String) => panic.cause msg
 -----------------^^^
 reg_issue2231.type.ef.type.abort: <source position not available>:
 
-reg_issue2231.type.ef.type.precall abort: {base.fum}/effect.fz:321:3:
+reg_issue2231.type.ef.type.precall abort: {base.fum}/effect.fz:323:3:
   pre
 --^^^
     safety: effect.this.is_instated

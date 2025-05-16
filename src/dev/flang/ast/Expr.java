@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -66,15 +67,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
     @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
     @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
   };
-
-
-  /*-------------------------  static variables -------------------------*/
-
-
-  /**
-   * quick-and-dirty way to make unique names for expression result vars
-   */
-  static private long _id_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -445,7 +437,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
                                   new List<>(),
                                   result);
 
-            result = fn.propagateExpectedType(res, context, t);
+            result = fn.propagateExpectedType(res, context, t, null);
             fn.resolveTypes(res, context);
             fn.updateTarget(res);
           }
@@ -471,11 +463,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     return this;
   }
@@ -554,27 +549,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public List<ParsedName> asQualifier()
   {
     return null;
-  }
-
-
-  protected Expr addFieldForResult(Resolution res, Context context, AbstractType t)
-  {
-    var result = this;
-    if (!t.isVoid())
-      {
-        var pos = pos();
-        Feature r = new Feature(res,
-                                pos,
-                                Visi.PRIV,
-                                t,
-                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                context.outerFeature());
-        r.scheduleForResolution(res);
-        res.resolveTypes();
-        result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
-      }
-    return result;
   }
 
 
@@ -817,7 +791,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
   public boolean producesResult()

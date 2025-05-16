@@ -165,8 +165,6 @@ public class DFA extends ANY
      *
      * @param s site of the expression causing this assignment
      *
-     * @param tc clazz id of the target instance
-     *
      * @param f clazz id of the assigned field
      *
      * @param tvalue the target instance
@@ -174,7 +172,7 @@ public class DFA extends ANY
      * @param val the new value to be assigned to the field.
      */
     @Override
-    public void assignStatic(int s, int tc, int f, Val tvalue, Val val)
+    public void assignStatic(int s, int f, Val tvalue, Val val)
     {
       tvalue.value().setField(DFA.this, f, val.value());
     }
@@ -1971,12 +1969,12 @@ public class DFA extends ANY
           return Value.UNIT;
         });
 
-    put("concur.util.loadFence", cl ->
+    put("concur.util.load_fence", cl ->
         {
           return Value.UNIT;
         });
 
-    put("concur.util.storeFence", cl ->
+    put("concur.util.store_fence", cl ->
         {
           return Value.UNIT;
         });

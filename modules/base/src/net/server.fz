@@ -39,18 +39,18 @@ is
 
   # get the last error that occurred
   #
-  public last_error => state.bind (_ -> unit)
+  public last_error outcome unit => state.bind (_ -> unit)
 
 
   # is the server running?
   #
-  public is_active =>
+  public is_active bool =>
     state.ok
 
 
   # close server, stop listening on port
   #
-  public close =>
+  public close unit =>
     _ := state.bind d->
       (match fuzion.sys.net.close d
         unit =>
@@ -125,7 +125,7 @@ is
 
 # get currently installed server from env
 #
-public server =>
+public server server =>
   if !server.is_instated
     (server (error "not initialized") nil).default
   server.env

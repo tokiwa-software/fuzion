@@ -32,13 +32,13 @@ is
 
   # print the given string followed be new line
   #
-  public println (s Any) =>
+  public println (s Any) unit =>
     print (s.as_string + (codepoint 10))
 
 
   # print the given string
   #
-  public print (s Any) =>
+  public print (s Any) unit =>
     # NYI: UNDER DEVELOPMENT error handling?
     _ := write s.as_string.utf8.as_array
     _ := flush
@@ -46,7 +46,7 @@ is
 
   # print new line
   #
-  public println =>
+  public println unit =>
     print (codepoint 10)
 
 
@@ -60,4 +60,3 @@ is
   # explicitly flush everything that has been written
   #
   public flush outcome unit => abstract
-

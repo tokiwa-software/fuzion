@@ -36,7 +36,7 @@
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix |> (A, R type, a A, f A->R) =>
+public infix |> (A, R type, a A, f A->R) R =>
   f a
 
 
@@ -57,9 +57,9 @@ public infix |> (A, R type, a A, f A->R) =>
 #   l := l1.pairs l2
 #          .map (p -> p ||> f)
 #
-# which often correponds more naturally to the data flow through the code.
+# which often corresponds more naturally to the data flow through the code.
 #
-public infix ||> (A, B, R type, a (A,B), f (A,B)->R) =>
+public infix ||> (A, B, R type, a (A,B), f (A,B)->R) R =>
   f a.0 a.1
 
 
@@ -79,7 +79,7 @@ public infix ||> (A, B, R type, a (A,B), f (A,B)->R) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) =>
+public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) R =>
   f a.0 a.1 a.2
 
 
@@ -99,7 +99,7 @@ public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) =>
+public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) R =>
   f a.0 a.1 a.2 a.3
 
 
@@ -119,7 +119,7 @@ public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) =>
+public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) R =>
   f a.0 a.1 a.2 a.3 a.4
 
 
@@ -139,7 +139,7 @@ public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)->R) =>
+public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)->R) R =>
   f a.0 a.1 a.2 a.3 a.4 a.5
 
 
@@ -159,7 +159,7 @@ public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <| (A, R type, f A->R, a A) =>
+public infix <| (A, R type, f A->R, a A) R =>
   f a
 
 
@@ -182,7 +182,7 @@ public infix <| (A, R type, f A->R, a A) =>
 #
 # .
 #
-public infix <|| (A, B, R type, f (A,B)->R, a (A,B)) =>
+public infix <|| (A, B, R type, f (A,B)->R, a (A,B)) R =>
   a ||> f
 
 
@@ -202,7 +202,7 @@ public infix <|| (A, B, R type, f (A,B)->R, a (A,B)) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) =>
+public infix <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) R =>
   a |||> f
 
 
@@ -222,7 +222,7 @@ public infix <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) =>
+public infix <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) R =>
   a ||||> f
 
 
@@ -242,7 +242,7 @@ public infix <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E)) =>
+public infix <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E)) R =>
   a |||||> f
 
 
@@ -262,7 +262,7 @@ public infix <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E)) =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <|||||| (A, B, C, D, E, F, R type, f (A,B,C,D,E,F)->R, a (A,B,C,D,E,F)) =>
+public infix <|||||| (A, B, C, D, E, F, R type, f (A,B,C,D,E,F)->R, a (A,B,C,D,E,F)) R =>
   a ||||||> f
 
 

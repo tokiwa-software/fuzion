@@ -19,9 +19,9 @@ fuzion.type.runtime.type.post_fault.type.install_default.λ.call#1: {base.fum}/f
 fuzion.runtime.post_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:58:43:
-public postcondition_fault(msg String) => post_fault.cause msg
-------------------------------------------^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:58:48:
+public postcondition_fault(msg String) void => post_fault.cause msg
+-----------------------------------------------^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).post double: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^^^^^^^^^^^^
@@ -617,9 +617,9 @@ catch_postcondition.z.λ.call.λ.call#1: --CURDIR--/catch_postcondition.fz:111:1
 fuzion.runtime.post_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:58:43:
-public postcondition_fault(msg String) => post_fault.cause msg
-------------------------------------------^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:58:48:
+public postcondition_fault(msg String) void => post_fault.cause msg
+-----------------------------------------------^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).post double: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^^^^^^^^^^^^
@@ -784,9 +784,9 @@ catch_postcondition.λ.call#1: --CURDIR--/catch_postcondition.fz:124:7:
 fuzion.runtime.post_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:58:43:
-public postcondition_fault(msg String) => post_fault.cause msg
-------------------------------------------^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:58:48:
+public postcondition_fault(msg String) void => post_fault.cause msg
+-----------------------------------------------^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.test#1 i32).post double: --CURDIR--/catch_postcondition.fz:38:9:
         equals result-x x
 --------^^^^^^^^^^^^^^^^^

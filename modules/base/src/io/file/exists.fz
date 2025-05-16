@@ -24,6 +24,5 @@
 
 # Does a file or directory at path exist?
 #
-public exists(path String) =>
+public exists(path String) bool =>
   (stat path false).ok
-

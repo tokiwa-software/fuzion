@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -46,6 +47,15 @@ import dev.flang.util.SourcePosition;
  */
 public class Match extends AbstractMatch
 {
+
+
+  /*-------------------------  static variables -------------------------*/
+
+
+  /**
+   * quick-and-dirty way to make unique names for match result vars
+   */
+  static private long _id_ = 0;
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -113,7 +123,11 @@ public class Match extends AbstractMatch
    */
   public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _subject = _subject.visit(v, outer);
+    var os = _subject;
+    var ns = _subject.visit(v, outer);
+    if (CHECKS) check
+      (os == _subject);
+    _subject = ns;
     v.action(this);
     for (var c: cases())
       {
@@ -215,31 +229,75 @@ public class Match extends AbstractMatch
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     // NYI: CLEANUP: there should be another mechanism, for
     // adding missing result fields instead of misusing
     // `propagateExpectedType`.
     //
-
-    // This will trigger addFieldForResult in some cases, e.g.:
-    // `match (if true then true else true) * =>`
-    _subject = subject().propagateExpectedType(res, context, subject().type());
-
     return addFieldForResult(res, context, t);
   }
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Add a field for the result of this match expression,
+   * add an assign to this field of each cases result.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this assignment is used
+   *
+   * @param t the type to use for the result field
+   */
+  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  {
+    Expr result = this;
+    if (!t.isVoid())
+      {
+        var pos = pos();
+        Feature r = new Feature(res,
+                                pos,
+                                Visi.PRIV,
+                                t,
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                                context.outerFeature());
+        r.scheduleForResolution(res);
+        res.resolveTypes();
+        result = new Block(new List<>(assignToField(res, context, r),
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
+      }
+    return result;
+  }
+
+
+  /**
+   * This will trigger addFieldForResult in some cases, e.g.:
+   * `match (if true then true else true) * =>`
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   */
+  void addFieldsForSubject(Resolution res, Context context)
+  {
+    _subject = subject().propagateExpectedType(res, context, subject().type(), null);
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
-  public boolean producesResult()
+  @Override public boolean producesResult()
   {
     return !_assignedToField;
   }
@@ -401,10 +459,9 @@ public class Match extends AbstractMatch
             }
           });
 
-    return new Match(pos, c, new List<>())
+    return new Match(pos, c, cases)
       {
         @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
-        @Override public List<AbstractCase> cases() { return cases; }
       };
   }
 
@@ -416,7 +473,7 @@ public class Match extends AbstractMatch
    */
   public String toString()
   {
-    var sb = new StringBuilder("match " + subject() + "\n");
+    var sb = new StringBuilder((kind() == Kind.Plain ? "match " : "if ") + subject() + "\n");
     for (var c : cases())
       {
         sb.append(c.toString()).append("\n");

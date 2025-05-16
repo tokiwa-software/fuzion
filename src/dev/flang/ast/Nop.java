@@ -83,10 +83,10 @@ public class Nop extends ExprWithPos
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
-  public boolean producesResult()
+  @Override public boolean producesResult()
   {
     return false;
   }

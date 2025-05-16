@@ -80,7 +80,9 @@ public abstract class AbstractAssign extends Expr
   public AbstractAssign(Expr v)
   {
     if (CHECKS) check
-      (v != null);
+      (v != null,
+       // correct mechanism is Match.addFieldForResult
+       !(v instanceof AbstractMatch));
 
     this._value = v;
   }
@@ -193,7 +195,7 @@ public abstract class AbstractAssign extends Expr
           {
             _value = _value.propagateExpectedTypeForPartial(res, context, rt);
           }
-        _value = _value.propagateExpectedType(res, context, rt);
+        _value = _value.propagateExpectedType(res, context, rt, null);
       }
   }
 
@@ -311,10 +313,10 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
-  public boolean producesResult()
+  @Override public boolean producesResult()
   {
     return false;
   }
