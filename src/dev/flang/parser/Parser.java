@@ -528,7 +528,7 @@ qual        : name
             result.add(new ParsedName(SourcePosition.builtIn, FuzionConstants.TYPE_NAME));
             if (!isDot())
               {
-                matchOperator(".", "qual");
+                match(Token.t_period, "qual");
                 result.add(ParsedName.ERROR_NAME);
               }
           }
@@ -1644,7 +1644,7 @@ actualArgs  : actualSpaces
   {
     return
       // `.call` ends immediately
-      isOperator('.') ||
+      current() == Token.t_period ||
 
       switch (current(atMinIndent))
       {
@@ -1921,7 +1921,7 @@ ops         : dotCallOrOp ops
   {
     var oldcount = oe.size();
     var space = false;
-    while (current() == Token.t_op && (space || !isDot()))
+    while (current() == Token.t_op || space && isDot())
       {
         space = ignoredTokenBefore();
         oe.add(dotCallOrOp());
@@ -3236,7 +3236,7 @@ universeCall      : universe dot call
   Expr universeCall()
   {
     var universe = universe();
-    matchOperator(".", "universeCall");
+    match(Token.t_period, "universeCall");
     return call(universe);
   }
 
@@ -3253,7 +3253,7 @@ universePureCall  : universe dot pureCall
   Call universePureCall()
   {
     var universe = universe();
-    matchOperator(".", "universePureCall");
+    match(Token.t_period, "universePureCall");
     return pureCall(universe);
   }
 
@@ -4050,11 +4050,11 @@ dot         : "."      // either preceded by white space or not followed by whit
    */
   boolean skipDot()
   {
-    var result = skip('.');
+    var result = skip(Token.t_period);
     if (!result)
       { // allow dot to appear in new line
         var oldLine = sameLine(-1);
-        result = skip('.');
+        result = skip(Token.t_period);
         sameLine(result ? line() : oldLine);
       }
     return result;
@@ -4067,7 +4067,7 @@ dot         : "."      // either preceded by white space or not followed by whit
   boolean isDot()
   {
     var oldLine = sameLine(-1);
-    var result = isOperator('.');
+    var result = current() == Token.t_period;
     sameLine(oldLine);
     return result;
   }
