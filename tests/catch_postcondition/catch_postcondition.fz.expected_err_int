@@ -1,7 +1,7 @@
 
 error 1: Postcondition `equals result-x x` does not hold after call
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:38:7:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
@@ -315,9 +315,25 @@ fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source posi
 (catch_postcondition.try_post (option String)).catch#1.h.lm.infix !#2 (option String): {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(catch_postcondition.try_post (option String)).catch#1.h: --CURDIR--/catch_postcondition.fz:105:15:
+(catch_postcondition.try_post (option String)).catch#1.h: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post (option String)).catch#1: --CURDIR--/catch_postcondition.fz:195:7:
       h.res
 ------^
@@ -375,9 +391,25 @@ fuzion.type.runtime.type.post_fault.type.instate#4 (option String): <source posi
 (catch_postcondition.try_post (option String)).catch#1.h.lm.infix !#2 (option String): {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(catch_postcondition.try_post (option String)).catch#1.h: --CURDIR--/catch_postcondition.fz:105:15:
+(catch_postcondition.try_post (option String)).catch#1.h: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post (option String)).catch#1: --CURDIR--/catch_postcondition.fz:195:7:
       h.res
 ------^
@@ -429,9 +461,25 @@ fuzion.type.runtime.type.post_fault.type.instate#4 String: <source position not 
 (catch_postcondition.try_post String).catch#1.h.lm.infix !#2 String: {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(catch_postcondition.try_post String).catch#1.h: --CURDIR--/catch_postcondition.fz:105:15:
+(catch_postcondition.try_post String).catch#1.h: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post String).catch#1: --CURDIR--/catch_postcondition.fz:195:7:
       h.res
 ------^
@@ -481,9 +529,25 @@ fuzion.type.runtime.type.post_fault.type.instate#4 String: <source position not 
 (catch_postcondition.try_post String).catch#1.h.lm.infix !#2 String: {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-(catch_postcondition.try_post String).catch#1.h: --CURDIR--/catch_postcondition.fz:105:15:
+(catch_postcondition.try_post String).catch#1.h: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post String).catch#1: --CURDIR--/catch_postcondition.fz:195:7:
       h.res
 ------^
@@ -541,9 +605,25 @@ catch_postcondition.loop.h.lm.instate_self#2 (option String): {base.fum}/effect.
 catch_postcondition.loop.h.lm.infix !#2 (option String): {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-catch_postcondition.loop.h: --CURDIR--/catch_postcondition.fz:105:15:
+catch_postcondition.loop.h: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:166:10:
     r := h.res
 ---------^
@@ -590,18 +670,50 @@ catch_postcondition.loop.h.lm.instate_self#2 (option String): {base.fum}/effect.
 catch_postcondition.loop.h.lm.infix !#2 (option String): {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-catch_postcondition.loop.h: --CURDIR--/catch_postcondition.fz:105:15:
+catch_postcondition.loop.h: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:166:10:
     r := h.res
 ---------^
 catch_postcondition.z.lm.infix !#2 (option String): --CURDIR--/catch_postcondition.fz:162:3:
   for c in tries.indices do
 --^
-catch_postcondition.z: --CURDIR--/catch_postcondition.fz:105:15:
+catch_postcondition.z: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.z.catch#1: --CURDIR--/catch_postcondition.fz:152:118:
     redef catch(s String) option String => {say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil}
 ---------------------------------------------------------------------------------------------------------------------^
@@ -686,9 +798,25 @@ catch_postcondition.z.lm.instate_self#2 (option String): {base.fum}/effect.fz:21
 catch_postcondition.z.lm.infix !#2 (option String): {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-catch_postcondition.z: --CURDIR--/catch_postcondition.fz:105:15:
+catch_postcondition.z: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:154:7:
   say z.res
 ------^
@@ -732,9 +860,25 @@ fuzion.type.runtime.type.post_fault.type.instate#4 String: <source position not 
 (catch_postcondition.ref handle_post String).lm.infix !#2 String: {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-catch_postcondition.anonymous: --CURDIR--/catch_postcondition.fz:105:15:
+catch_postcondition.anonymous: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:132:8:
   say (ref : handle_post String is
 -------^
@@ -778,9 +922,25 @@ catch_postcondition.y.lm.instate_self#2 String: {base.fum}/effect.fz:211:5:
 catch_postcondition.y.lm.infix !#2 String: {base.fum}/effect.fz:228:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
-catch_postcondition.y: --CURDIR--/catch_postcondition.fz:105:15:
+catch_postcondition.y: --CURDIR--/catch_postcondition.fz:105:12:
     res := lm ! ()->
---------------^
+-----------^^^^^^^^^
+        m := lm.env.new (option String nil)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (fuzion.runtime.post_fault.instate
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          T
+----------^
+          (rt.post_fault msg->
+----------^^^^^^^^^^^^^^^^^^^^
+            m <- msg
+------------^^^^^^^^
+            fuzion.runtime.post_fault.abort)
+------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          try
+----------^^^
+          (_ -> catch m.get.get))
+----------^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.type.runtime.type.post_fault.type.precall abort: --CURDIR--/catch_postcondition.fz:124:7:
   say y.res
 ------^
