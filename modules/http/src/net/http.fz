@@ -1,0 +1,89 @@
+# NYI: should we somehow combine those types?
+#
+#
+http_handler(LM  type: mutate, READER type: (io.buffered LM).reader, WRITER type: (io.buffered LM).writer) : Http_Handler is
+
+
+  br := "\r\n"
+
+
+  public redef get(host, location String /* NYI:, dict container.Map String String */) outcome Http_Response
+  =>
+
+    req_payload :=
+      "GET $location HTTP/1.1" + br +
+      "Host: $host" + br + br
+
+    outcome.or_cause T =>
+      match outcome.this
+        t T => t
+        e error => cause e
+
+    option.or_cause(msg String) T =>
+      match option.this
+        t T => t
+        nil => cause (error msg)
+
+    outcome.or_cause(inner_error String) T =>
+      match outcome.this
+        t T => t
+        e error => cause (error "{inner_error}\n\n\n{e.msg}")
+
+    option.cause(e error) =>
+      (exception unit).env.cause e
+    outcome.cause(e error) =>
+      (exception unit).env.cause e
+
+    # use exception to avoid nesting of code
+    exception unit _ ()->
+      (WRITER.env.write req_payload.utf8.as_array).error.or_cause
+      WRITER.env.flush.or_cause
+      header := (io.buffered LM).read_line_while (l -> !l.is_empty)
+
+      s := header
+        .split
+        .nth 1
+        .or_cause "first line of response malformed $header"
+        .parse_i32
+        .or_cause "status not a number? $header"
+
+      ref : Http_Response s is
+
+        public redef dict container.Map String String =>
+          panic "NYI"
+        public redef content array u8 =>
+          panic "NYI"
+
+
+public Http_Response(public status i32) ref is
+
+  public dict container.Map String String => abstract
+  public content array u8 => abstract
+
+http_lm : mutate is
+
+
+private:public http(h Http_Handler) : effect is
+
+  # NYI: type.get(host, location String) outcome Http_Response =>
+
+  public get(host, location String /* NYI:, dict container.Map String String */) =>
+    replace
+    h.get host location
+
+  public type.with(T type, host String, code Lazy T) outcome T =>
+
+    net.http_lm ! ()->
+      (net.client net.family.ipv4 net.protocol.tcp host 80).bind c->
+        c.with _ net.http_lm ()->
+          net.http (net.http_handler net.http_lm (io.buffered net.http_lm).reader (io.buffered net.http_lm).writer) ! ()->
+            code
+
+
+public Http_Handler ref is
+  public get(host, location String /* NYI:, dict container.Map String String */) outcome Http_Response
+    pre
+        debug: !host.contains_whitespace # NYI: do url encoding
+        debug: !location.contains_whitespace # NYI: do url encoding
+        # NYI: debug: dict.keys ∀ k -> !k.contains_whitespace
+  => abstract
