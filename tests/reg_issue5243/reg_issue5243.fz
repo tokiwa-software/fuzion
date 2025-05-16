@@ -29,11 +29,11 @@ reg_issue5243 =>
   # this works
   say ((1..) .filter %%2)
 
-  # this produces an error since it is parsed as `1.infix .. (.filter  %%2)`
+  # this used to produce an error since it was parsed as `1.infix .. (.filter  %%2)`
   #
-  # We might decide to parse this as `(1.postfix ..).filter %%2` and accept this.
+  # Now, this is parsed as `(1.postfix ..).filter %%2` and accepted.
   #
-  say (1.. .filter %%2)   # should fail (at least for now)
+  say (1.. .filter %%2)
 
   # these should always produce an error
   say (1 .. .filter %%2)  # should fail
