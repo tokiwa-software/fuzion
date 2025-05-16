@@ -35,6 +35,7 @@ import java.math.BigInteger;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -834,11 +835,14 @@ public class NumLiteral extends Constant
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     // if expected type is choice, examine if there is exactly one numeric
     // constant type in choice generics, if so use that for further type
@@ -869,7 +873,7 @@ public class NumLiteral extends Constant
   {
     if (t.isLazyType())
       {
-        propagateExpectedType(res, context, t.generics().get(0));
+        propagateExpectedType(res, context, t.generics().get(0), null);
       }
     return super.wrapInLazy(res, context, t);
   }

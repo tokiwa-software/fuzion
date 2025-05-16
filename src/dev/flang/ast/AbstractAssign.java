@@ -195,7 +195,7 @@ public abstract class AbstractAssign extends Expr
           {
             _value = _value.propagateExpectedTypeForPartial(res, context, rt);
           }
-        _value = _value.propagateExpectedType(res, context, rt);
+        _value = _value.propagateExpectedType(res, context, rt, null);
       }
   }
 

@@ -375,7 +375,7 @@ public class Impl extends ANY
   {
     if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
-        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType());
+        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType(), null);
       }
   }
 
@@ -392,7 +392,7 @@ public class Impl extends ANY
    */
   void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, context, t);
+    _expr = _expr.propagateExpectedType(res, context, t, null);
   }
 
 

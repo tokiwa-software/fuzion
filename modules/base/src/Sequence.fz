@@ -67,9 +67,9 @@ public Sequence(public T type) ref : property.countable is
 
 
   # count the number of elements in this Sequence.  Note that this typically
-  # runs forever if executed on an endless list
+  # runs forever if executed on an endless Sequence
   #
-  # For lists that are not array backed, this might require time in O(count).
+  # For Sequences that are not array backed, this might require time in O(count).
   #
   public redef count i32
   => (map i32 (_ -> 1)).fold i32.sum
@@ -77,7 +77,7 @@ public Sequence(public T type) ref : property.countable is
 
   # count the number of elements in this Sequence that match the
   # given predicate. Note that this typically
-  # runs forever if executed on an endless list.
+  # runs forever if executed on an endless Sequence.
   #
   public count(f T->bool) i32 =>
     (filter f).count
@@ -137,27 +137,31 @@ public Sequence(public T type) ref : property.countable is
       as_array
 
 
-  # create a list and call 'for_each f' on it
+  # run `f` on each element in this Sequence in order.
+  #
+  # Note that this makes sense only if `f` has some side-effect, e.g., to print
+  # each element, use `s.for_each say`
   #
   public for_each(f T -> unit) unit => as_list.for_each f
 
 
-  # calls `f` for element in the Sequence.
+  # calls `f` for each element in the Sequence.
   #
   # Unlike `for_each` this returns itself
   # allowing easier composition with
   # other Sequence features.
   #
   # example:
+  #
   # [1,2,3,4,5]
   #   .filter is_prime
   #   .peek say
   #   .drop_while <10
   #
-  public peek (f T -> unit) list T =>
-    as_list ? nil    =>
-            | c Cons => f c.head; _ := c.tail.peek f
-    as_list
+  public peek (f T -> unit) Sequence T =>
+    map x->
+      f x
+      x
 
 
   # consume all elements of this Sequence by f. This is an infix operator alias
@@ -177,7 +181,7 @@ public Sequence(public T type) ref : property.countable is
       .for_each _->unit
 
 
-  # create a new list that contains the first elements of
+  # create a new Sequence that contains the first elements of
   # this Sequence for which 'f e' is false
   #
   public before(f T -> bool) Sequence T =>
@@ -214,7 +218,7 @@ public Sequence(public T type) ref : property.countable is
   public infix ∃ (f T -> bool) bool => as_list ∃ f
 
 
-  # create a list that consists only of the first n elements of this
+  # create a Sequence that consists only of the first n elements of this
   # Sequence, fewer if this Sequence has fewer elements
   #
   public take (n i32) Sequence T => as_list.take n
@@ -225,7 +229,7 @@ public Sequence(public T type) ref : property.countable is
   public reverse Sequence T => as_list.reverse_list
 
 
-  # create a list that consists of the elements of this Sequence except the first
+  # create a Sequence that consists of the elements of this Sequence except the first
   # n elements
   #
   # NOTE: this may have performance in O(n) unless it is backed by an immutable array.
@@ -314,10 +318,20 @@ public Sequence(public T type) ref : property.countable is
   public infix ++ (s Sequence T) Sequence T => concat s
 
 
-  # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
+  # create a Sequence that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
   public cycle Sequence T => as_list.cycle
+
+
+  # create a Sequence that repeats the current Sequence `n` times.
+  #
+  public infix *(n i32)
+    pre
+      debug: n >= 0
+  =>
+    if n <= 0 || is_empty then (Sequence T).empty
+                          else Sequence.this ++ Sequence.this * (n-1)
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
@@ -415,7 +429,7 @@ public Sequence(public T type) ref : property.countable is
   # In case this Sequence has less than two elements, the result will
   # be the empty list.
   #
-  # ex. to obtain a list of differences you, you may use `map_pairs (-)`:
+  # ex. to obtain a Sequence of differences, you may use `map_pairs (-)`:
   #
   #   [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a
   #
@@ -455,30 +469,30 @@ public Sequence(public T type) ref : property.countable is
     as_list.foldf e f
 
 
-  # fold the elements of this list using the given monoid right-to-left.
+  # fold the elements of this Sequence using the given monoid right-to-left.
   #
-  # e.g., to concat the elements of a list of String, use l.foldr String.concat
+  # e.g., to concat the elements of a Sequence `s` of Strings, use `s.foldr String.concat`
   #
   public foldr (m Monoid T) T => as_list.foldr m
 
 
-  # fold the elements of this list using the given monoid and initial value right-to-left.
+  # fold the elements of this Sequence using the given monoid and initial value right-to-left.
   #
-  # Used to fold a list tail-recursively
+  # Used to fold a Sequence tail-recursively
   #
   public foldr (s T, m Monoid T) T => as_list.foldr m.e m
 
 
-  # fold the elements of this non-empty list using the given function right-to-left
+  # fold the elements of this non-empty Sequence using the given function right-to-left
   #
-  # e.g., to concat the elements of a non-empty list of lists, use foldr1 (++)
+  # e.g., to concat the elements of a non-empty Sequence of Sequeces, use `foldr1 (++)`
   #
   public foldr1 (f (T,T)->T) T => as_list.foldr1 f
 
 
-  # fold the elements of this list using the given function right-to-left.
+  # fold the elements of this Sequence using the given function right-to-left.
   #
-  # e.g., to concat the elements of a list of lists, use foldrf (++) []
+  # e.g., to concat the elements of a Sequence of Sequences, use `foldrf [] (++)`
   #
   public foldrf (B type, e B, f (T,B)->B) B => as_list.foldrf e f
 
@@ -492,11 +506,11 @@ public Sequence(public T type) ref : property.countable is
   public scan (m Monoid T) list T => as_list.scan m.e m
 
 
-  # map this Sequence to a list that contains the result of folding
+  # map this Sequence to a Sequence that contains the result of folding
   # all prefixes using the given function and initial value.
   #
-  # e.g., for a Sequence s of i32, s.scan (+) 0 creates a list of
-  # partial sums (0..).map x->(s.take x).fold i32.sum
+  # e.g., for a Sequence s `[3,8,10]`, `s.scan 0 (+)` creates a Sequence of
+  # partial sums `[0, 3, 11, 21]`
   #
   public scan (R type, a R, f (R,T)->R) Sequence R => as_list.scan R a f
 
@@ -565,7 +579,7 @@ public Sequence(public T type) ref : property.countable is
     sort_by (<=)
 
 
-  # create a new list from the result of applying 'f' to the
+  # create a new Sequence from the result of applying 'f' to the
   # elements of this Sequence and 'b' in order.
   #
   public zip(U,V type, b Sequence U, f (T,U)->V) Sequence V => as_list.zip b f

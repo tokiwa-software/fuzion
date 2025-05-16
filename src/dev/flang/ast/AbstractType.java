@@ -2098,14 +2098,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = result + ".type";
           }
-        var skip = typeType;
-        for (var g : generics())
+        if (!isThisType())
           {
-            if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+            var skip = typeType;
+            for (var g : generics())
               {
-                result = result + " " + g.toStringWrapped(humanReadable, context);
+                if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+                  {
+                    result = result + " " + g.toStringWrapped(humanReadable, context);
+                  }
+                skip = false;
               }
-            skip = false;
           }
       }
     return result;

@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion gtk example
+#
+# -----------------------------------------------------------------------
+
+
+gtk_application_window_new(gtkApplication Native_Ref) Native_Ref => native
+gtk_window_set_title(gtkWidget Native_Ref, c_str array u8) unit => native
+gtk_window_set_default_size(gtkWidget Native_Ref, x,y i32) unit => native
+gtk_window_present(gtkWidget Native_Ref) unit => native
+gtk_application_new(c_str array u8, flags i32) Native_Ref => native
+g_signal_connect_data(F type: Function unit Native_Ref Native_Ref, app Native_Ref, c_str array u8, cb F, data, destroy_data Native_Ref, connect_flags i32) u64 => native
+g_application_run(app Native_Ref, argc i32, argv Native_Ref) i32 => native
+g_object_unref(app Native_Ref) unit => native
+
+String.as_c_string =>
+  (String.this + codepoint 0).utf8.as_array
+
+
+gtk =>
+
+  activate : Function unit Native_Ref Native_Ref is
+    public redef call(app0, user_data Native_Ref) unit =>
+      window := gtk_application_window_new app0
+      gtk_window_set_title window "Window".as_c_string
+      gtk_window_set_default_size window 200 200
+      gtk_window_present window
+
+
+  app := gtk_application_new "org.gtk.example".as_c_string 0
+  _ := g_signal_connect_data app "activate".as_c_string activate ffi.null ffi.null 0
+  _ := g_application_run app 0 ffi.null
+  g_object_unref app
+
+gtk

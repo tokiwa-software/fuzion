@@ -149,7 +149,6 @@ public class FuzionLanguageServer implements LanguageServer
   private ServerCapabilities getServerCapabilities()
   {
     var capabilities = new ServerCapabilities();
-    initializeInlayHints(capabilities);
     initializeCompletion(capabilities);
     initializeHover(capabilities);
     initializeDefinition(capabilities);
@@ -180,11 +179,6 @@ public class FuzionLanguageServer implements LanguageServer
       .map(c -> c.name())
       .collect(Collectors.toList());
     capabilities.setExecuteCommandProvider(new ExecuteCommandOptions(commands));
-  }
-
-  private void initializeInlayHints(ServerCapabilities capabilities)
-  {
-    capabilities.setInlayHintProvider(false /* NYI: BUG inlay hints broken */);
   }
 
   private void initializeSignatureHelp(ServerCapabilities capabilities)
