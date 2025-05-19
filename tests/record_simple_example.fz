@@ -1,0 +1,125 @@
+########### Extensions ###############
+
+# stores the results of a process
+#
+process_result(out String, err String, exit_code u32) is
+
+# specified environment variables as key,value array
+#
+envir_var_kv := [
+  "PATH",
+  "LANG",
+  "JAVA_HOME",
+  "POSTCONDITIONS",
+  "PRECONDITIONS",
+  "dev_flang_tools_serializeFUIR",
+  "CPATH",
+  "LIBRARY_PATH",
+  "FUZION_CLANG_INSTALLED_DIR",
+  "OS",
+  "FUZION_HOME",
+  "FUZION_JAVA",
+  "FUZION_JAVA_STACK_SIZE",
+  "FUZION_JAVA_OPTIONS",
+  "FUZION_JVM_BACKEND_OPTIONS",
+  "FUZION_C_BACKEND_OPTIONS"
+].map k->
+  (envir.vars.get k).bind v->
+    (k,v)
+ .filter o->o.ok
+ .map o->o.val
+ .as_array
+
+# envir vars as map
+#
+envir_vars :=
+  (container.ordered_map
+    (envir_var_kv
+      .map x->x.0
+      .as_array)
+    (envir_var_kv
+      .map x->x.1
+      .as_array))
+  .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
+
+# helper to get out, err, exit_code from started process
+#
+record_process(p os.process,
+      # the command, for error messages
+      cmd String) process_result =>
+  lm : mutate is
+  lm ! ()->
+    match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+      e error => panic "failed reading stdout from $cmd, error is: $e"
+      out String =>
+        match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          e error => panic "failed reading stderr from $cmd, error is: $e"
+          err String =>
+            match p.wait
+              e error => panic "failed waiting for $cmd, error is: $e"
+              ec u32 => process_result out err ec
+
+# execute this Sequence of process+args
+#
+Sequence.prefix ! =>
+  seq := map x->x.as_string
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
+    e error => panic "failed executing {Sequence.this}, error is $e"
+    p os.process => record_process p Sequence.this.as_string
+
+
+# execute this string by splitting at all whitespaces
+#
+String.prefix !! =>
+  !split
+
+
+write_to_file(dest String, data String) =>
+  _ := io.file.delete dest
+  lm : mutate is
+  lm ! ()->
+    check (io.file.use unit lm dest io.file.mode.write ()->
+      check (data.write_to lm).ok).ok
+
+
+
+####### record_simple_example ########
+
+
+type_ := envir.args[1]
+fz_run   := envir.args[2]
+file     := envir.args[3]
+
+res :=
+  if type_ = "jvm" || type_ = "any"
+    !!"$fz_run -XmaxErrors=-1 -jvm {(envir.vars.get "FUZION_JVM_BACKEND_OPTIONS").get ""} $file"
+  else if type_ = "c"
+    c := !!"$fz_run -XmaxErrors=-1 -c {(envir.vars.get "FUZION_C_BACKEND_OPTIONS").get ""} -o=testbin $file"
+    if (c.exit_code = 0)
+      e := !!"./testbin"
+      _ := io.file.delete "testbin"
+      process_result c.out+e.out c.err+e.err e.exit_code
+    else
+      c
+  else if type_ = "int"
+    !!"$fz_run -XmaxErrors=-1 -interpreter $file"
+  else if type_ = "effect"
+    !!"$fz_run -XmaxErrors=-1 -effects $file"
+  else
+    panic "not supported"
+
+if type_ != "effect"
+  sfx :=
+    if type_ = "any"
+      ""
+    else
+      "_$type_"
+
+  write_to_file "$file.expected_out$sfx" res.out
+  # NYI: replace with fuzion
+  cur_dir := (!!"../_cur_dir.sh").out.trim
+  write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
+else
+  write_to_file "$file.effect" res.err
+
+say "RECORDED $file"
