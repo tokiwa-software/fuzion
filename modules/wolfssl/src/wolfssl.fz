@@ -1,0 +1,80 @@
+wolfSSL_Init i32 => native
+wolfSSL_CTX_new(method Native_Ref) Native_Ref => native
+wolfTLSv1_2_client_method() Native_Ref => native
+wolfSSL_new(ctx Native_Ref) Native_Ref => native
+wolfSSL_write(ssl Native_Ref, data array u8, sz i32) i32 => native
+wolfSSL_read(ssl Native_Ref, data array u8, sz i32) i32 => native
+wolfSSL_CTX_SetIORecv(F type : Function i32 Native_Ref Native_Ref i32 Native_Ref, ctx Native_Ref, cb F) unit => native
+wolfSSL_CTX_SetIOSend(F type : Function i32 Native_Ref Native_Ref i32 Native_Ref, ctx Native_Ref, cb F) unit => native
+memcpy(dest Native_Ref, src array u8, sz i32) Native_Ref => native
+wolfSSL_free(ssl Native_Ref) unit => native
+wolfSSL_CTX_free(ssl Native_Ref) unit => native
+wolfSSL_Cleanup unit => native
+
+
+# NYI define effect
+public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, LM2 =>
+
+
+  my_IORecv : Function i32 Native_Ref Native_Ref i32 Native_Ref is
+    public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
+      match (io.buffered LM).reader.env.read sz
+        a array =>
+          (io.buffered LM).reader.env.discard sz
+          x := (min sz a.count)
+          _ := memcpy buf a x
+          x
+        outcome => exit 1
+
+
+  my_IOSend : Function i32 Native_Ref Native_Ref i32 Native_Ref is
+    public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
+      arr := ffi.from_native_array u8 buf sz
+      check ((io.buffered LM).writer.env.write arr).error.ok
+      check (io.buffered LM).writer.env.flush.ok
+      sz
+
+
+  check wolfSSL_Init=1
+  ctx := wolfSSL_CTX_new wolfTLSv1_2_client_method
+  check !(ffi.is_null ctx)
+
+  wolfSSL_CTX_SetIORecv ctx my_IORecv
+  wolfSSL_CTX_SetIOSend ctx my_IOSend
+
+  ssl := wolfSSL_new ctx
+  check !(ffi.is_null ssl)
+
+
+  wolf_ssl_read_handler : io.Read_Handler is
+
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
+      arr := array u8 count i->0
+      res := wolfSSL_read ssl arr count
+      if res = -1
+        error "error reading from ssl."
+      else if res = 0
+        io.end_of_file
+      else
+        arr
+          .slice 0 res
+          .as_array
+
+
+  wolf_ssl_writer_handler : io.Write_Handler is
+
+    public redef write(b Sequence u8) outcome unit =>
+      if wolfSSL_write ssl b.as_array b.count <= 0
+        error "error writing to ssl connection."
+
+
+  r := ((io.buffered LM2).reader wolf_ssl_read_handler 1E2) ! ()->
+    (io.buffered LM2).writer wolf_ssl_writer_handler 1E2 ! ()->
+      code.call
+
+
+  wolfSSL_free ssl
+  wolfSSL_CTX_free ctx
+  wolfSSL_Cleanup
+
+  r
