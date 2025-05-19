@@ -23,6 +23,19 @@
 
 reg_issue5199_float_base_prefix =>
 
+  say 1.as_string   # ok
+  say 0b1.as_string # ok
+  say 0o1.as_string # ok
+  say 0d1.as_string # ok
+  say 0x1.as_string # ok
+
+  say 1.01.as_string     # ok
+  say 0b1.0b01.as_string # ok
+  say 0o1.0o01.as_string # ok
+  say 0d1.0d01.as_string # ok
+  say 0x1.0x01.as_string # ok
+
+  
   _ i32 := 0   # ok
   _ i32 := 0b0 # ok
   _ i32 := 0o0 # ok
@@ -52,6 +65,7 @@ reg_issue5199_float_base_prefix =>
   _ f64 := -0o7.0o567           # ok
   _ f64 := -0d2.0d71828         # ok
   _ f64 := -0xabba_affee.0xcafe # ok
+
 
   _ f64 := 0.0d1                #  1. should flag an error: no prefix expected
   _ f64 := 0b0.1                #  2. should flag an error: prefix missing
