@@ -521,7 +521,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
            c_File_Descriptor,
            c_Directory_Descriptor,
            c_Java_Ref,
-           c_Mapped_Memory ->
+           c_Mapped_Memory,
+           c_Thread ->
         Expr.aload(slot, JAVA_LANG_OBJECT);
       default -> {
         var rt = jvm._types.javaType(rc0);
@@ -891,11 +892,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 .andThen(Expr.classconst(call_ct))
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                            "thread_spawn",
-                                           "(" + (// Names.ANY_DESCR +
-                                                  Names.ANY_DESCR +
+                                           "(" + (Names.ANY_DESCR +
                                                   JAVA_LANG_CLASS.descriptor()) +
-                                           ")J",
-                                           ClassFileConstants.PrimitiveType.type_long));
+                                           ")" + JAVA_LANG_OBJECT.descriptor(),
+                                           JAVA_LANG_OBJECT));
               return new Pair<>(result, Expr.UNIT);
             }
           else
