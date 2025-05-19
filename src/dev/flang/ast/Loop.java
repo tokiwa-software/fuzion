@@ -433,27 +433,12 @@ public class Loop extends ANY
         result = true;
       }
     else if (booleanAsImplicitResult(whileCond, untilCond))
-      { /* add implicit TRUE / FALSE results to success and else blocks: */
-        _successBlock = Block.newIfNull(_successBlock);
-        _successBlock._expressions.add(BoolConst.TRUE );
-        if (_elseBlock0 == null)
-          {
-            _elseBlock0 = BoolConst.FALSE;
-            _elseBlock1 = BoolConst.FALSE;
-            _elseBlock2 = BoolConst.FALSE;
-          }
-        else
-          {
-            var e0 = Block.fromExpr(_elseBlock0);
-            var e1 = Block.fromExpr(_elseBlock1);
-            var e2 = Block.fromExpr(_elseBlock2);
-            e0._expressions.add(BoolConst.FALSE);
-            e1._expressions.add(BoolConst.FALSE);
-            e2._expressions.add(BoolConst.FALSE);
-            _elseBlock0 = e0;
-            _elseBlock1 = e1;
-            _elseBlock2 = e2;
-          }
+      {
+        /* add implicit TRUE / FALSE results to success and else blocks: */
+        _successBlock = new Block(true, _successBlock == null ? new List<>(BoolConst.TRUE) : new List<>(_successBlock, BoolConst.TRUE));
+        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock0, BoolConst.FALSE));
+        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock1, BoolConst.FALSE));
+        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock2, BoolConst.FALSE));
         result = true;
       }
     return result;
