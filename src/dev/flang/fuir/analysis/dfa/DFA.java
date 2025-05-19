@@ -58,6 +58,7 @@ import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.IntMap;
 import dev.flang.util.LongMap;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -246,8 +247,10 @@ public class DFA extends ANY
      */
     Val access(int s, Val tvalue, List<Val> args)
     {
-      Val res = null;
+      var resa = new Val[1];
       var tv = tvalue.value();
+      tv.forAll(t -> resa[0] = accessSingleTarget(s, t, args, resa[0], tvalue));
+      /*
       if (tv instanceof ValueSet tvalues)
         {
           for (var t : tvalues._componentsArray)
@@ -255,10 +258,21 @@ public class DFA extends ANY
               res = accessSingleTarget(s, t, args, res, tvalue);
             }
         }
+      else if (tv instanceof AllValuesOfOneType tvalues)
+        {
+          tvalues._iterating++;
+          for (var t : tvalues._componentsList)
+            {
+              res = accessSingleTarget(s, t, args, res, tvalue);
+            }
+          tvalues._iterating--;
+        }
       else
         {
           res = accessSingleTarget(s, tvalue.value(), args, res, tvalue);
         }
+      */
+      var res = resa[0];
       if (res != null &&
           tvalue instanceof EmbeddedValue &&
           !_fuir.clazzIsRef(_fuir.accessTargetClazz(s)) &&
@@ -304,7 +318,8 @@ public class DFA extends ANY
          || true
          ,
 
-         !(tvalue instanceof ValueSet));
+         !(tvalue instanceof ValueSet),
+         !(tvalue instanceof AllValuesOfOneType));
       var t_cl = tvalue == Value.UNIT ? _fuir.accessTargetClazz(s) : tvalue._clazz;
       var cc = _fuir.lookup(s, t_cl);
       if (cc != FUIR.NO_CLAZZ)
@@ -391,7 +406,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, s, tvalue.value(), args, _call._env, _call);
+                var ca = newCall(_call, cc, s, tvalue.value(), args, _call._env, _call);
                 res = ca.result();
                 if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
@@ -541,7 +556,13 @@ public class DFA extends ANY
 
       // register calls for constant creation even though
       // not every backend actually performs these calls.
-      newCall(constCl, NO_SITE, _universe, args, null /* new environment */, context);
+      newCall(null,
+              constCl,
+              NO_SITE,
+              Value.UNIT /* universe, but we do not use _universe as target */,
+              args,
+              null /* new environment */,
+              context);
 
       return result;
     }
@@ -612,6 +633,15 @@ public class DFA extends ANY
                     {
                       taken = matchSingleSubject(s, v, mc, t) || taken;
                     }
+                }
+              else if (sv instanceof AllValuesOfOneType vs)
+                {
+                  vs._iterating++;
+                  for (var v : vs._componentsList)
+                    {
+                      taken = matchSingleSubject(s, v, mc, t) || taken;
+                    }
+                  vs._iterating--;
                 }
               else
                 {
@@ -928,6 +958,7 @@ public class DFA extends ANY
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
+  TreeMap<CallGroup, CallGroup> _callGroups = new TreeMap<>();
 
 
   /**
@@ -935,6 +966,7 @@ public class DFA extends ANY
    * way to lookup that key.
    */
   LongMap<Call> _callsQuick = new LongMap<>();
+  LongMap<CallGroup> _callGroupsQuick = new LongMap<>();
 
 
   /**
@@ -1063,6 +1095,10 @@ public class DFA extends ANY
    * that could have any value allowed by the numeric type.
    */
   List<NumericValue> _numericValuesAny = new List<>();
+
+
+  List<Instance> _oneInstanceOfClazz = new List<>();
+  List<AllValuesOfOneType> _allValuesOfClazz = new List<>();
 
 
   /**
@@ -1275,39 +1311,96 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var cl = _fuir.mainClazz();
-
-    newCall(cl,
-            NO_SITE,
-            Value.UNIT,
-            new List<>(),
-            null /* env */,
-            Context._MAIN_ENTRY_POINT_);
-
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
-    findFixPoint();
+    findFixPoint(false);
+
+    for (var k : _callGroupsQuick.keySet())
+      {
+        _callGroupsQuick.get(k).saveEffects();
+      }
+    for (var g : _callGroups.values())
+      {
+        g.saveEffects();
+      }
+    if (false)
+    for (var e : _clazzesThatRequireEffect.keySet())
+      {
+        System.out.println("Effect "+_fuir.clazzAsString(e)+" needed for ");
+        for (var c : _clazzesThatRequireEffect.get(e))
+          {
+            System.out.println("  "+_fuir.clazzAsString(c));
+          }
+      }
+
+    _cachedValues = new TreeMap<>(Value.COMPARATOR);
+    // _numUniqueValues = 0;    -- NYI: Somewhere, the old unique ids are still in use, need to check why! See reg_issue2478 to check this.
+    _uniqueValues = new List<Value>();
+    _instancesForSite = new List<>();
+    _tagged = new LongMap<>();
+    _joined = new LongMap<>();
+    _uninitializedSysArray = new IntMap<>();
+
+    _callsQuick = new LongMap<>();
+    _calls = new TreeMap<>();
+    _callGroupsQuick = new LongMap<>();
+    _callGroups = new TreeMap<>();
+
+    _instancesForSite = new List<>();
+    _unitCalls = new IntMap<>();
+
+    findFixPoint(true);
+
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
   }
 
 
   /**
+   * If -verbose= is set to 2 or lager, print information about a new iteration
+   * that is starting.
+   *
+   * @param variant what kind of iteration is this?
+   *
+   * @param iteration count.
+   */
+  void verbosePrintIteration(String variant, int cnt)
+  {
+    if (_options.verbose(2))
+      {
+        _options.verbosePrintln(2,
+                                "DFA " + variant + " iteration #" + cnt + ": --------------------------------------------------" +
+                                (_options.verbose(3) ? "calls:"   + _calls.size()       +
+                                                       ",values:" + _numUniqueValues    +
+                                                       ",envs:"   + _envs.size()        +
+                                                       "; "       + (_options.verbose(4) ? _changedSetBy.get() : "")
+                                                     : ""                                 ));
+      }
+  }
+
+  boolean _real;
+
+  /**
    * Iteratively perform data flow analysis until a fix point is reached.
    */
-  void findFixPoint()
+  void findFixPoint(boolean real)
   {
+    _real = real;
     var cnt = 0;
     do
       {
         cnt++;
-        if (_options.verbose(2))
-          {
-            _options.verbosePrintln(2,
-                                    "DFA iteration #" + cnt + ": --------------------------------------------------" +
-                                    (_options.verbose(3) ? "calls:"+_calls.size() + ",values:" + _numUniqueValues + ",envs:" + _envs.size() + "; " + _changedSetBy.get()
-                                                         : ""                                                                  ));
-          }
+        verbosePrintIteration(real ? "real" : "pre", cnt);
         _changed = false;
+        if (cnt == 1)
+          {
+            newCall(null,
+                    _fuir.mainClazz(),
+                    NO_SITE,
+                    Value.UNIT,
+                    new List<>(),
+                    null /* env */,
+                    Context._MAIN_ENTRY_POINT_);
+          }
         _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
@@ -1335,10 +1428,14 @@ public class DFA extends ANY
           }
       }
 
-    _reportResults = true;
-    iteration();
+    if (real)
+      {
+        verbosePrintIteration("final", cnt);
+        _reportResults = true;
+        iteration();
 
-    _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
+        _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
+      }
 
     if (CHECKS) check
       (!_changed);
@@ -1367,6 +1464,7 @@ public class DFA extends ANY
             var i = counts.getOrDefault(c._cc, 0);
             counts.put(c._cc, i+1);
           }
+        System.out.println("callstats: "+counts.size());
         counts
           .keySet()
           .stream()
@@ -1376,7 +1474,7 @@ public class DFA extends ANY
                     return ca != cb ? Integer.compare(counts.get(a), counts.get(b))
                       : Integer.compare(a, b);
                   })
-          .filter(c -> counts.get(c) > total / 500)
+          //          .filter(c -> counts.get(c) > total / 50)
           .forEach(c ->
                    {
                      System.out.println("Call count "+counts.get(c)+"/"+total+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
@@ -1409,7 +1507,7 @@ public class DFA extends ANY
           {
             var i = counts.getOrDefault(v._clazz, 0);
             counts.put(v._clazz, i+1);
-            if (v._clazz == NO_CLAZZ && ((i&(i-1))==0)) System.out.println("clazz is null for "+v.getClass()+" "+v);
+            //            if (_fuir.clazzAsString(v._clazz).equals("array u8")) System.out.println("v "+v.getClass()+": "+v);
           }
         counts
           .keySet()
@@ -1506,6 +1604,8 @@ public class DFA extends ANY
   }
 
 
+  static int _cnt_;
+
   /**
    * Analyze code for given call
    *
@@ -1513,6 +1613,98 @@ public class DFA extends ANY
    */
   void analyze(Call c)
   {
+    if (false && (_cnt_ & ++_cnt_)==0)
+      {
+        _options.verbosePrintln(2,
+                                "XDFA iteration: --------------------------------------------------" +
+                                (_options.verbose(3) ? "calls:"   + _calls.size()       +
+                                                       ",values:" + _numUniqueValues    +
+                                                       ",envs:"   + _envs.size()        +
+                                                       "; "       + _changedSetBy.get()
+                                                     : ""                                 ));
+        showCallStatistics();
+      }
+    if (/* HERE! */ false && (_cnt_&(_cnt_-1))==0)
+      {
+        // if (_numUniqueValues > 10000)
+      {
+        _options.verbosePrintln(4, "DFA done:");
+        _options.verbosePrintln(4, "Values: " + _numUniqueValues);
+        int i = 0;
+        var valueStrings = new TreeMap<String, String>();
+        var valueCount = new TreeMap<String, Integer>();
+        int vscnt = 0, icnt = 0;
+        for (var v : _uniqueValues)
+          {
+            var k = _fuir.clazzId2num(v._clazz) + ": " + _fuir.clazzAsString(v._clazz);
+            valueStrings.put(k, v.toString());
+            valueCount.put(k, valueCount.getOrDefault(k, 0)+1);
+            if (false && k.endsWith("(array u8).array_cons"))
+              {
+                if (v instanceof Instance)
+                  {
+                    icnt++;
+                    System.out.println(valueCount.getOrDefault(k, 0)+" inst: "+icnt+" vs: "+vscnt+" "+v.getClass()+" "+v);
+                  }
+                else if (v instanceof ValueSet)
+                  {
+                    vscnt++;
+                  }
+              }
+          }
+        int ttl = 0;
+        var ks0 = valueStrings.keySet().toArray(new String[0]);
+        java.util.Arrays.sort(ks0, (a,b)->Integer.compare(valueCount.get(a),valueCount.get(b)));
+        for (var k : ks0)
+          {
+            var cnt = valueCount.get(k);
+            ttl += cnt;
+            var v = valueStrings.get(k);
+            i++;
+            if (cnt > _numUniqueValues/1000 || k.endsWith(": list u8"))
+              _options.verbosePrintln(1, "" + cnt + " x value "+i+"/"+_numUniqueValues+": " + k);
+            //            if (/* HERE! */ !false && k.endsWith(": list u8"))
+            if (/* HERE! */ !false && k.endsWith(": (array u8).array_cons"))
+              {
+                var j = 1;
+                for (var vv : _uniqueValues)
+                  {
+                    var kk = _fuir.clazzId2num(vv._clazz) + ": " + _fuir.clazzAsString(vv._clazz);
+                    if (kk.equals(k))
+                      System.out.println(dev.flang.util.Terminal.BOLD_PURPLE+(j++)+dev.flang.util.Terminal.RESET+": "+vv);
+                  }
+              }
+          }
+        // System.out.println("ttl:"+ttl+" should be "+_calls.size());
+
+        i = 0;
+        var callCount = new TreeMap<Integer, Integer>();
+        var callStrings = new TreeMap<Integer, Call>();
+        vscnt = 0; icnt = 0;
+        for (var v : _calls.values())
+          {
+            var k = _fuir.clazzId2num(v._cc);
+            callStrings.put(k, v);
+            callCount.put(k, callCount.getOrDefault(k, 0)+1);
+          }
+        var ks = callStrings.keySet().toArray(new Integer[0]);
+        java.util.Arrays.sort(ks, (a,b)->Integer.compare(callCount.get(a),callCount.get(b)));
+        for (Integer k : ks)
+          {
+            var cnt = callCount.get(k);
+            var v = callStrings.get(k);
+            i++;
+            if (cnt > _calls.size()/1000)
+              _options.verbosePrintln(1, "" + cnt + " x calll "+_fuir.clazzAsString(v._cc)+"/"+_numUniqueValues+": " + k);
+          }
+
+
+        //        showCallStatistics();
+        //        System.exit(1);
+      }
+
+        showCallStatistics();
+      }
     if (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine)
       {
         var i = c._instance;
@@ -1995,20 +2187,21 @@ public class DFA extends ANY
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl._cc);
-      var result = cl.getEffectCheck(ecl);
-      if (result == null && cl._dfa._reportResults)
-        {
-          DfaErrors.usedEffectNotInstalled(fuir(cl).sitePos(cl._site),
-                                           fuir(cl).clazzAsString(ecl),
-                                           cl);
-          cl._dfa._missingEffects.put(ecl, ecl);
-        }
-      return result;
+      return cl.getEffectCheck2(ecl);
     });
     put("effect.type.unsafe_from_env"    , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl._cc);
-      return cl.getEffectForce(cl._site, ecl);
+      Value result;
+      if (cl._dfa._real)
+        {
+          result = cl.getEffectForce(cl._site, ecl);
+        }
+      else
+        {
+          result = cl._dfa._preEffectValues.get(ecl);
+        }
+      return result;
     });
 
 
@@ -2061,7 +2254,7 @@ public class DFA extends ANY
 
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
-          var ignore = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
+          var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
@@ -2070,19 +2263,48 @@ public class DFA extends ANY
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
-          cl.replaceEffect(ecl, new_e);
+
+          if (cl._dfa._real)
+            {
+              cl.replaceEffect(ecl, new_e);
+            }
+          else
+            {
+              cl.replaceEffect(ecl, new_e); // NYI: Why here as well? base16_test.fz needs this??!!??
+              var oev = cl._dfa._preEffectValues.get(ecl);
+              var ev = oev == null ? new_e : oev.join(cl._dfa, new_e, ecl);
+              if (oev != ev)
+                {
+                  cl._dfa._preEffectValues.put(ecl, ev);
+                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzAsString(cl._cc));
+                }
+            }
+
           return Value.UNIT;
         });
     put("effect.type.default0"              , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
           var new_e = cl._args.get(0).value();
-          var old_e = cl._dfa._defaultEffects.get(ecl);
-          if (old_e == null)
+          if (cl._dfa._real)
             {
-              cl._dfa._defaultEffects.put(ecl, new_e);
-              cl._dfa._defaultEffectContexts.put(ecl, cl);
-              cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl._cc));
+              var old_e = cl._dfa._defaultEffects.get(ecl);
+              if (old_e == null)
+                {
+                  cl._dfa._defaultEffects.put(ecl, new_e);
+                  cl._dfa._defaultEffectContexts.put(ecl, cl);
+                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl._cc));
+                }
+            }
+          else
+            {
+              var oev = cl._dfa._preEffectValues.get(ecl);
+              var ev = oev == null ? new_e : oev.join(cl._dfa, new_e, ecl);
+              if (oev != ev)
+                {
+                  cl._dfa._preEffectValues.put(ecl, ev);
+                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl._cc));
+                }
             }
           return Value.UNIT;
         });
@@ -2098,31 +2320,78 @@ public class DFA extends ANY
           var a1 = cl._args.get(1).value();  // code
           var a2 = cl._args.get(2).value();  // default code
 
-          var newEnv = cl._dfa.newEnv(cl._env, ecl, a0);
-          var result = cl._dfa.newCall(call, NO_SITE, a1, new List<>(), newEnv, cl).result();
+          var newEnv = (cl._dfa._real) ? cl._dfa.newEnv(cl._env, ecl, a0) : null;
+          var cll = cl._dfa.newCall(cl,
+                                    call,
+                                    NO_SITE,
+                                    a1,
+                                    new List<>(),
+                                    newEnv,
+                                    cl);
+          cll._group.mayHaveEffect(ecl);
 
-          var ev = newEnv.getActualEffectValues(ecl);
-          var aborted = newEnv.isAborted(ecl);
+          // manually propagate effects from result to cl, except for the one we
+          // have instated here:
+          for (var recl : cll._group._usedEffects)
+            {
+              if (recl != ecl)
+                {
+                  cl._group.needsEffect(recl);   // NYI: needed? Done also in CallGroup.needsEffect!
+                }
+            }
+
+          var result = cll.result();
+          Value ev;
+          if (cl._dfa._real)
+            {
+              ev = newEnv.getActualEffectValues(ecl);
+            }
+          else
+            {
+              var oev = cl._dfa._preEffectValues.get(ecl);
+              ev = oev == null ? a0 : oev.join(cl._dfa, a0, ecl);
+              if (oev != ev)
+                {
+                  cl._dfa._preEffectValues.put(ecl, ev);
+                  cl._dfa.wasChanged(() -> EFFECT_INSTATE_NAME + " called: " + fuir(cl).clazzAsString(cl._cc));
+                }
+            }
+          var aborted =
+            // NYI: Why check both, newEnv.isAborted and _preEffectsAborted?
+            newEnv != null && newEnv.isAborted(ecl) ||
+            cl._dfa._preEffectsAborted.contains(ecl) ||
+            (cl._dfa._real ? newEnv.isAborted(ecl) : cl._dfa._preEffectsAborted.contains(ecl));
           var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1), aborted);
+          // System.out.println("ABORTED IS "+aborted+" for "+cl._dfa._fuir.clazzAsString(ecl));
           if (aborted)
             { // default result, only if abort is ever called
-              var res = cl._dfa.newCall(call_def, NO_SITE, a2, new List<>(ev), cl._env, cl).result();
+              var def = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl);
+              var res = def.result();
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl._cc)) :
                 result != null                ? result
                                               : res;
             }
 
-          cl._dfa.newCall(finallie, NO_SITE, ev, new List<>(), cl._env, cl);
+          cl._dfa.newCall(cl, finallie, NO_SITE, ev, new List<>(), cl._env, cl);
           return result;
         });
     put("effect.type.abort0"                , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
-          var ev = cl.getEffectForce(cl._cc, ecl); // report an error if effect is missing
-          if (ev != null)
+          var ev = cl.getEffectCheck2(ecl);
+          if (cl._dfa._real)
             {
-              cl._env.aborted(ecl);
+              if (ev != null      /* NYI: needed? */ &&
+                  cl._env != null /* NYI: needed? */ )
+                {
+                  cl._env.aborted(ecl);
+                }
+              cl._dfa._preEffectsAborted.add(ecl);  // NYI: why here as well ?
+            }
+          else
+            {
+              cl._dfa._preEffectsAborted.add(ecl);
             }
           return null;
         });
@@ -2362,16 +2631,18 @@ public class DFA extends ANY
    */
   void replaceDefaultEffect(int ecl, Value e)
   {
-    var old_e = _defaultEffects.get(ecl);
-
-    if (CHECKS) check
-      (old_e != null);
-
-    var new_e = old_e == null ? e : old_e.join(this, e, ecl);
-    if (old_e == null || Value.compare(old_e, new_e) != 0)
+    if (_real)
       {
-        _defaultEffects.put(ecl, new_e);
-        wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
+        var old_e = _defaultEffects.get(ecl);
+        if (old_e != null)
+          {
+            var new_e = old_e == null ? e : old_e.join(this, e, ecl);
+            if (old_e == null || Value.compare(old_e, new_e) != 0)
+              {
+                _defaultEffects.put(ecl, new_e);
+                wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
+              }
+          }
       }
   }
 
@@ -2403,6 +2674,19 @@ public class DFA extends ANY
   }
 
 
+  TreeSet<Integer> _calledClazzesDuringPrePhase = new TreeSet<>();
+  TreeMap<Integer, TreeSet<Integer>> _clazzesThatRequireEffect = new TreeMap<>();
+  TreeMap<Integer, TreeSet<Integer>> _effectsRequiredByClazz = new TreeMap<>();
+
+  TreeMap<Integer, Value>_preEffectValues = new TreeMap<>();
+  TreeSet<Integer> _preEffectsAborted = new TreeSet<>();
+
+  TreeMap<Integer, TreeSet<Integer>> _instanceNeedsEffect = new TreeMap<>();
+  TreeSet<Integer> instanceNeedsEffects(int cc)
+  {
+    return _instanceNeedsEffect.computeIfAbsent(cc, k->new TreeSet<>());
+  }
+
   /**
    * Create instance of given clazz.
    *
@@ -2424,13 +2708,26 @@ public class DFA extends ANY
       {
         r = NumericValue.create(DFA.this, cl);
       }
-    else if(_fuir.clazzIs(cl, SpecialClazzes.c_bool))
+    else if (_fuir.clazzIs(cl, SpecialClazzes.c_bool))
       {
         r = bool();
       }
     else
       {
-        if (_fuir.clazzIsRef(cl))
+        if (onlyOneInstance(cl))
+          {
+            var cnum = _fuir.clazzId2num(cl);
+            var a = _oneInstanceOfClazz.getIfExists(cnum);
+            if (a == null)
+              {
+                var ni = new Instance(this, cl, site, context);
+                makeUnique(ni);
+                _oneInstanceOfClazz.force(cnum, ni);
+                a = ni;
+              }
+            r = a;
+          }
+        else if (_fuir.clazzIsRef(cl))
           {
             var vc = _fuir.clazzAsValue(cl);
             check(!_fuir.clazzIsRef(vc));
@@ -2452,11 +2749,19 @@ public class DFA extends ANY
                 clazzm = new LongMap<>();
                 _instancesForSite.force(sci, clazzm);
               }
-            var env = context.env();
-            var k1 = cl;
-            var k2 = env == null ? 0 : env._id + 1;
+            var env = _real ? context.env() : null;
+            var k1 = _fuir.clazzId2num(cl);
+            var k2 = (env == null ? 0 : env._id + 1);
             var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
             r = clazzm.get(k);
+            if (r == null && env != null)
+              { // check if instance is an effect that is already present in the
+                // current environment. If so, we do not create a new instance
+                // since this would end up creating an new environment with that
+                // new instance added, which will in turn end up here again to
+                // create another instance ... ad infinitum.
+                r = context.findEffect(cl, site);
+              }
             if (r == null)
               {
                 var ni = new Instance(this, cl, site, context);
@@ -2464,11 +2769,16 @@ public class DFA extends ANY
                 clazzm.put(k, ni);
                 makeUnique(ni);
                 r = ni;
+                if (false) if (_fuir.clazzAsString(cl).equals("(array u8).array_cons"))
+                  {
+                    System.out.println("NEW Instance #"+(++arrayConsCnt)+": "+ni+" ENV "+env+" CONTEXT: "+(context instanceof Call cc ? cc.toString() : "--"));
+                  }
               }
           }
       }
     return r;
   }
+  static int arrayConsCnt;
 
 
   /**
@@ -2674,17 +2984,256 @@ public class DFA extends ANY
         res = _joined.get(k);
         if (res == null)
           {
-            if      (v.contains(w)) { res = v; }
-            else if (w.contains(v)) { res = w; }
+            if (onlyOneValueSet(clazz))
+              {
+                var cnum = _fuir.clazzId2num(clazz);
+                var a = _allValuesOfClazz.getIfExists(cnum);
+                if (a == null)
+                  {
+                    a = new AllValuesOfOneType(this, clazz);
+                    makeUnique(a);
+                    _allValuesOfClazz.force(cnum, a);
+                  }
+                a.add(v);
+                a.add(w);
+                res = a;
+            /*
+            if (
+
+                if      (v.contains(w)) { res = v; }
+                else if (w.contains(v)) { res = w; }
+                else
+                  {
+                    res = _allValuesOfClazz.getIfExists(cnum);
+                    if (res == null)
+                      {
+                        res = new ValueSet(this, v, w, clazz);
+                        check(res._clazz == clazz);
+                        res = cache(res);
+                        if (false) if (res._clazz != clazz)
+                          {
+                            say("PROBLEM after cache(res): "+res._clazz+" "+_fuir.clazzAsString(res._clazz)+" "+_fuir.clazzIsRef(res._clazz));
+                            say("PROBLEM after cache(res): "+clazz     +" "+_fuir.clazzAsString(clazz     )+" "+_fuir.clazzIsRef(clazz));
+                          }
+                      }
+                    else
+                      {
+                        if (false) if (res._clazz != clazz)
+                          {
+                            say(""+res._clazz+" "+clazz+" "+_fuir.clazzAsString(res._clazz)+" "+_fuir.clazzAsString(clazz));
+                          }
+                        // check(res._clazz == clazz);
+                        var cv = res.contains(v);
+                        var cw = res.contains(w);
+                        if (!cv || !cw)
+                          {
+                            if (!cv) { res = new ValueSet(this, res, v, clazz); res = cache(res); }
+                            if (!cw) { res = new ValueSet(this, res, w, clazz); res = cache(res); }
+                          }
+                      }
+                    check(cnum == _fuir.clazzId2num(clazz));
+                    _allValuesOfClazz.force(cnum, (ValueSet) res);
+                    check(res._clazz == clazz);
+                  }
+            */
+              }
             else
               {
-                res = new ValueSet(this, v, w, clazz);
-                res = cache(res);
+                if      (v.contains(w)) { res = v; }
+                else if (w.contains(v)) { res = w; }
+                else
+                  {
+                    res = new ValueSet(this, v, w, clazz);
+                    res = cache(res);
+                  }
               }
             _joined.put(k, res);
           }
       }
     return res;
+  }
+
+
+  static boolean ONLY_ONE_VALUE_SET = false;
+
+
+  static boolean ONLY_ONE_INSTANCE  = !false;
+  /* performance for  make -f fridi.make jar
+
+     original: 76it, 183448 values 1:06.63elapsed o
+
+Value count 1109/183448 for ref list u8
+Value count 1473/183448 for i32
+Value count 1825/183448 for list u8
+Value count 2021/183448 for codepoint
+Value count 2199/183448 for Any
+Value count 2926/183448 for u32
+Value count 4576/183448 for String
+Value count 4692/183448 for ref codepoint
+Value count 7349/183448 for Sequence u8
+Value count 16840/183448 for array u8
+Value count 17563/183448 for fuzion.sys.internal_array u8
+
+     new: 76it, 172760 values 1:00.83elapsed
+
+Value count 1109/172760 for ref list u8
+Value count 1155/172760 for Any
+Value count 1473/172760 for i32
+Value count 1825/172760 for list u8
+Value count 2285/172760 for String
+Value count 2926/172760 for u32
+Value count 7056/172760 for Sequence u8
+Value count 16881/172760 for array u8
+Value count 17546/172760 for fuzion.sys.internal_array u8
+
+   */
+
+  static boolean NEW = false;
+  static boolean NO_SET_OF_REFS     = NEW;
+
+  /*
+
+
+    NO_SET_OF_REFS is false:
+
+7795 x value 271/93681: 2051: Sequence u8
+1046 x value 325/93681: 227: String
+2516 x value 336/93681: 2327: (array u8).concat#1
+2819 x value 337/93681: 232: const_string
+5334 x value 340/93681: 2345: list u8
+2940 x value 341/93681: 2346: Cons u8 (list u8)
+4209 x value 355/93681: 2406: (array u8).array_cons
+4496 x value 379/93681: 248: ref const_string
+2163 x value 386/93681: 2512: (container.type.expanding_array.type u8).empty#1
+2156 x value 406/93681: 2606: (container.expanding_array u8).realloc#1
+5489 x value 415/93681: 2660: (container.expanding_array u8).concat#1
+3061 x value 439/93681: 2751: (container.expanding_array u8).array_cons
+2458 x value 980/93681: 4899: i32.as_string#1
+2203 x value 1009/93681: 5002: i32.highest#1
+2331 x value 1090/93681: 5313: (list u8).concat#1
+1389 x value 1283/93681: 682: list String
+1845 x value 1290/93681: 69: interval u32
+[..]
+
+real	3m16,939s
+user	3m31,564s
+sys	0m0,854s
+
+
+NO_SET_OF_REFS == false && RefValue.contains removed
+
+--> does not terminate
+
+
+
+    NO_SET_OF_REFS is true:
+
+XDFA iteration: --------------------------------------------------calls:236439,values:203633,envs:59; *** change not set ***
+3571 x value 144/203633: 1572: (container.expanding_array String).realloc#1
+3864 x value 152/203633: 1626: (container.expanding_array String).concat#1
+3427 x value 336/203633: 2327: (array u8).concat#1
+2721 x value 337/203633: 232: const_string
+12148 x value 340/203633: 2345: list u8
+6252 x value 341/203633: 2346: Cons u8 (list u8)
+2592 x value 355/203633: 2406: (array u8).array_cons
+2293 x value 357/203633: 2421: (array u8).ref array_cons
+2481 x value 375/203633: 2479: ref list u8
+4072 x value 379/203633: 248: ref const_string
+2912 x value 386/203633: 2512: (container.type.expanding_array.type u8).empty#1
+2905 x value 406/203633: 2606: (container.expanding_array u8).realloc#1
+6853 x value 415/203633: 2660: (container.expanding_array u8).concat#1
+2477 x value 439/203633: 2751: (container.expanding_array u8).array_cons
+2278 x value 442/203633: 2766: (container.expanding_array u8).ref array_cons
+3319 x value 952/203633: 4776: i32.as_string#1
+2920 x value 979/203633: 4879: i32.highest#1
+2150 x value 1072/203633: 5242: (list String).concat#1
+3165 x value 1088/203633: 5310: (list u8).concat#1
+4781 x value 1094/203633: 532: Sequence String
+9510 x value 1282/203633: 682: list String
+5092 x value 1283/203633: 683: Cons String (list String)
+2178 x value 1289/203633: 69: interval u32
+11543 x value 1310/203633: 779: array String
+2741 x value 1311/203633: 785: fuzion.sys.internal_array String
+5485 x value 1320/203633: 812: ref array String
+2157 x value 1322/203633: 818: (array String).concat#1
+3 errors.
+
+real	4m54,871s
+user	5m31,463s
+sys	0m1,247s
+
+
+
+   */
+
+
+  static boolean JOIN_CALLS_WITH_WIDER_ENV = false;
+
+  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = !false;
+
+
+  List<Boolean> _onlyOneValueSet = new List<>();
+
+
+  boolean onlyOneValueSet(int clazz)
+  {
+    if (!ONLY_ONE_VALUE_SET) return false;
+    var cnum = _fuir.clazzId2num(clazz);
+    var b = _onlyOneValueSet.getIfExists(cnum);
+    if (b == null)
+      {
+        // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
+        // this should be something generic instead, e.g.
+        //
+        //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
+        //
+        b = switch (_fuir.clazzAsString(clazz))
+          {
+          case
+            "ref array u8", "i32", "ref list u8", "codepoint",
+            // "Any",        -- Any causes abstract methods errors
+            // "list u8",    -- choice does not work yet
+            "u32",
+            // "String",     -- String causes abstract methods errors
+            "ref codepoint", "Sequence u8", "array u8",
+            "fuzion.sys.internal_array u8",
+            "Cons"
+            -> true;
+          default -> false;
+          };
+        _onlyOneValueSet.force(cnum, b);
+      }
+    return b;
+  }
+
+  List<Boolean> _onlyOneInstance = new List<>();
+
+
+  boolean onlyOneInstance(int clazz)
+  {
+    if (!ONLY_ONE_INSTANCE) return false;
+    var cnum = _fuir.clazzId2num(clazz);
+    var b = _onlyOneInstance.getIfExists(cnum);
+    if (b == null)
+      {
+        // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
+        // this should be something generic instead, e.g.
+        //
+        //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
+        //
+        b = switch (_fuir.clazzAsString(clazz))
+          {
+          case
+          "list u8",
+          "codepoint",
+          "Sequence u8",
+          "array u8",
+          "fuzion.sys.internal_array u8" -> true;
+          default -> false;
+          };
+        _onlyOneInstance.force(cnum, b);
+      }
+    return b;
   }
 
 
@@ -2869,6 +3418,53 @@ public class DFA extends ANY
   }
 
 
+  long callQuickHash(int cl, int site, Value tvalue, Env env)
+  {
+    long k = -1;
+    var k1 = _fuir.clazzId2num(cl);
+    var k2 = tvalue._id;
+    var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
+    var k4 = env == null ? 0 : env._id + 1;
+    if (CHECKS) check
+      (k1 >= 0,
+       k2 >= 0,
+       k3 >= 0,
+       k4 >= 0);
+    // We use a LongMap in case we manage to fiddle k1..k4 into a long
+    //
+    // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
+    //
+    // Bit 6666555555555544444444443333333333222222222211111111110000000000
+    //     3210987654321098765432109876543210987654321098765432109876543210
+    //     <----clazz id----><---tvalue id----><---siteIndex----><-env-id->
+    //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
+    //
+    if (k1 <= 0x3FFFE &&
+        k2 <= 0x3FFFE &&
+        k3 <= 0x3FFFE &&
+        k4 <= 0x03FE)
+      {
+        k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
+        /*
+          if (!(((k >> (18*2+10)) & 0x3FFFF) == k1))
+          {
+          System.out.println("k1: "+Long.toHexString(k1));
+          System.out.println("k: "+Long.toHexString(k));
+          System.out.println("k >> (18*2+10): "+Long.toHexString(k >> (18*2+10)));
+          }
+        */
+        if (CHECKS) check
+          (((k >> (18*2+10)) & 0x3FFFF) == k1,
+           ((k >> (18  +10)) & 0x3FFFF) == k2,
+           ((k >> (     10)) & 0x3FFFF) == k3,
+           ((k               & 0x003FF) == k4));
+      }
+    return k;
+  }
+
+
+  static int _cntArrayCons = 0;
+
   /**
    * Create call to given clazz with given target and args.
    *
@@ -2889,8 +3485,33 @@ public class DFA extends ANY
    * @return cl a new or existing call to cl with the given target, args and
    * environment.
    */
-  Call newCall(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
+  Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
+    var oenv = env;
+    CallGroup g;
+    var kg = CallGroup.quickHash(this, cl, site, tvalue);
+    if (kg != -1)
+      {
+        g = _callGroupsQuick.get(kg);
+        if (g == null)
+          {
+            g = new CallGroup(this, cl, site, tvalue);
+            _callGroupsQuick.put(kg, g);
+          }
+      }
+    else
+      {
+        var ng = new CallGroup(this, cl, site, tvalue);
+        g = _callGroups.putIfAbsent(ng, ng);
+        g = g != null ? g : ng;
+      }
+
+    var s = _fuir.clazzAsString(cl);
+    if (!s.startsWith("instate_helper ") && !s.startsWith("(instate_helper "))
+      {
+        env = env == null ? null : env.filterCallGroup(g);
+      }
+
     Call e, r;
     r = _unitCalls.get(cl);
     if (isUnitType(cl))
@@ -2898,7 +3519,7 @@ public class DFA extends ANY
         e = r;
         if (r == null)
           {
-            r = new Call(this, cl, site, tvalue, args, env, context);
+            r = new Call(g, args, env, context);
             _unitCalls.put(cl, r);
           }
       }
@@ -2909,46 +3530,52 @@ public class DFA extends ANY
             _unitCalls.put(cl, null);
             _calls.remove(r);
           }
-        var k1 = _fuir.clazzId2num(cl);
-        var k2 = tvalue._id;
-        var k3 = siteSensitive(cl) ? siteIndex(site) : 0;
-        var k4 = env == null ? 0 : env._id + 1;
-        // We use a LongMap in case we manage to fiddle k1..k4 into a long
-        //
-        // try to fit clazz id, tvalue id, siteIndex and env id into long as follows
-        //
-        // Bit 6666555555555544444444443333333333222222222211111111110000000000
-        //     3210987654321098765432109876543210987654321098765432109876543210
-        //     <----clazz id----><---tvalue id----><---siteIndex----><-env-id->
-        //     |     18 bits    ||     18 bits    ||     18 bits    ||10 bits |
-        //
-        if (k1 <= 0x3FFFF &&
-            k2 <= 0x3FFFF &&
-            k3 <= 0x3FFFF &&
-            k4 <= 0x03FF)
+        var k = COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED ? -1 : callQuickHash(cl, site, tvalue, env);
+        if (k != -1)
           {
-            var k = ((k1 * 0x40000L + k2) * 0x40000L + k3) * 0x400L + k4;
-            if (CHECKS) check
-              (((k >> (18*2+10)) & 0x3FFFF) == k1,
-               ((k >> (18  +10)) & 0x3FFFF) == k2,
-               ((k >> (     10)) & 0x3FFFF) == k3,
-               ((k               & 0x003FF) == k4));
             r = _callsQuick.get(k);
             e = r;
             if (r == null)
               {
-                r = new Call(this, cl, site, tvalue, args, env, context);
+                r = findCallWithWiderEnv(cl, site, tvalue, args, env, context);
+                e = r;
+                if (r == null)
+                  {
+                    r = new Call(g, args, env, context);
+                  }
                 _callsQuick.put(k, r);
               }
           }
         else
           {
+            if (env != null && !true)
+              {
+                var fe = _effectsRequiredByClazz.get(cl);
+                env = fe == null ? null : env.filterX(fe);
+              }
             // TreeMap fallback in case we failed to pack the key into a long.
             //
             // NYI: OPTIMIZATION: We might find a more efficient way for this case,
             // maybe two nested LongMaps?
-            r = new Call(this, cl, site, tvalue, args, env, context);
+            r = new Call(g, args, env, context);
             e = _calls.get(r);
+            if (env != null && e != null && e._env != null)
+              {
+                e._env.propagateAbort(env);
+              }
+            if (false && e != null && _fuir.clazzAsString(e._cc).equals("a#1") && e != null)
+              {
+                var which = new TreeSet<Integer>();
+                which.addAll(g._usedEffects);
+                which.addAll(e._group._usedEffects);
+                System.out.println(dev.flang.util.Terminal.BOLD_RED + "SAME: "+env + "\n"+
+                                   dev.flang.util.Terminal.BOLD_RED + "SAME: "+e._env + "\n" +
+                                   dev.flang.util.Terminal.BOLD_RED + "SAME: "+Env.compare(which, env, e._env) + "\n" +
+                                   "SAME: "+ e._group._usedEffects.stream().map(i->_fuir.clazzAsString(i)).reduce("", (a,b)->a+","+b) + "\n" +
+                                   "SAME: "+ which.stream().map(i->_fuir.clazzAsString(i)).reduce("", (a,b)->a+","+b) +
+
+                                   dev.flang.util.Terminal.RESET);
+              }
           }
       }
     if (e == null)
@@ -2958,18 +3585,94 @@ public class DFA extends ANY
           {
             DfaErrors.fatal("DFA: Exceeded maximum number of calls " + Integer.MAX_VALUE);
           }
+
+        /*
+        if (_real && _fuir.clazzAsString(cl).startsWith("uf.call"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "  FROM "+from + dev.flang.util.Terminal.RESET);
+            if (from instanceof Call fc)
+              for (var k : ((Instance) fc._instance)._fields.keySet())
+                {
+                  System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "  FIELDS "+
+                                     _fuir.clazzAsString(k)+" => "+
+                                     ((Instance) fc._instance)._fields.get(k)+ dev.flang.util.Terminal.RESET);
+                  var i2 = (Instance) ((Instance) fc._instance)._fields.get(k);
+                  for (var k2 : i2._fields.keySet())
+                    {
+                      System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "    FIELDS "+
+                                         _fuir.clazzAsString(k2)+" => "+
+                                         i2._fields.get(k2)+ dev.flang.util.Terminal.RESET);
+                      var i3 = (Instance) i2._fields.get(k2);
+                      for (var k3 : i3._fields.keySet())
+                        {
+                          System.out.println(dev.flang.util.Terminal.BOLD_BLACK + "    FIELDS "+
+                                             _fuir.clazzAsString(k3)+" => "+
+                                             i3._fields.get(k3)+ dev.flang.util.Terminal.RESET);
+                        }
+                    }
+                }
+
+            System.out.println(dev.flang.util.Terminal.BOLD_PURPLE + "GROUP "+g + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        if (_real && _fuir.clazzAsString(cl).startsWith("instate_helper unit e"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_PURPLE + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_PURPLE + "GROUP "+g + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        if (_real && _fuir.clazzAsString(cl).equals("(instate_helper unit e).call_code.call"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_GREEN + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        if (_real && _fuir.clazzAsString(cl).equals("e.type.instate#4 unit"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_RED + "NEW CALL "+r + dev.flang.util.Terminal.RESET);
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + _fuir.sitePos(site).show()+ dev.flang.util.Terminal.RESET);
+          }
+        */
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
         e = r;
         var rf = r;
         wasChanged(() -> "DFA.newCall to " + rf);
+        if (false) if (_fuir.clazzAsString(e._cc).equals("(list u8).as_array"))
+          {
+            System.out.println("NEW CALL: "+r);
+          }
+        if (false) if (_fuir.clazzAsString(e._cc).equals("a#1"))
+          {
+            System.out.println(dev.flang.util.Terminal.BOLD_BLUE + "NEW: "+e +
+                               dev.flang.util.Terminal.RESET);
+          }
         analyzeNewCall(r);
       }
     else
       {
         e.mergeWith(args);
       }
+    if (from != null)
+      {
+        e._group.calledFrom(from._group);
+      }
     return e;
+  }
+
+
+  Call findCallWithWiderEnv(int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
+  {
+    Call result = null;
+    if (env != null && JOIN_CALLS_WITH_WIDER_ENV)
+      {
+        var k = callQuickHash(cl, site, tvalue, null /* env */);
+        if (k != -1)
+          {
+            result = _callsQuick.get(k);
+          }
+      }
+    return result;
   }
 
 
@@ -3113,6 +3816,22 @@ public class DFA extends ANY
     return e;
   }
 
+  SourcePosition effectTypePosition(int ecl)
+  {
+    // NYI: declarationPos may be equal for two effects declared in different modules, so we have to compare the modules as well!
+    var res = _fuir.clazzDeclarationPos(ecl);
+    if (res == null)   // NYI: Check if this can be replaced by check(res != null)!
+      {
+        var cd = _fuir.clazzCode(ecl);
+        check
+          (cd != FUIR.NO_SITE && _fuir.withinCode(cd));
+        res = _fuir.sitePos(cd);
+      }
+    if (POSTCONDITIONS) ensure
+      (res != null);
+    return res;
+  }
+
 
   /**
    * Helper for newEnv without quick caching.
@@ -3127,6 +3846,10 @@ public class DFA extends ANY
    */
   private Env newEnv2(Env env, int ecl, Value ev)
   {
+    if (env != null)
+      {
+        env = env.filterPos(effectTypePosition(ecl));
+      }
     var newEnv = new Env(this, env, ecl, ev);
     var e = _envs.get(newEnv);
     if (e == null)

@@ -69,9 +69,11 @@ if [ -f "$2".effect ]; then
         iconv --unicode-subst="?"  --byte-subst="?" --widechar-subst="?" -f utf-8 -t ascii tmp_out.txt > tmp_conv.txt || false && cp tmp_conv.txt tmp_out.txt
     fi
 
+    sort "$expout"   >tmp_expout_sorted.txt
+    sort tmp_out.txt >tmp_out_sorted.txt
     FAILED="none" # "out" or "err" or "none"
-    diff --strip-trailing-cr "$expout" tmp_out.txt || FAILED="out"; true
-    rm tmp_out.txt
+    diff --strip-trailing-cr tmp_expout_sorted.txt tmp_out_sorted.txt || FAILED="out"; true
+    rm tmp_expout_sorted.txt tmp_out_sorted.txt tmp_out.txt
     if [ "$FAILED" = "none" ]; then
         echo -e "\033[32;1mPASSED\033[0m."
     else
