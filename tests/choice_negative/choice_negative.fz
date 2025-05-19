@@ -90,12 +90,12 @@ choice_negative is
 
   nofields5 is
     A (x i32) is
-    B : A(3) is
+    B : A 3 is
     C : B, choice i32 String bool is # 17. should flag an error: choice type must not have any fields
 
   nofields6 is
     A (x i32) is
-    B : A(3) is
+    B : A 3 is
     C : choice i32 String bool, B is # 18. should flag an error: choice type must not have any fields
 
   args1 is
