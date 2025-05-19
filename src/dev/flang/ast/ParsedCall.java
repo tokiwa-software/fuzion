@@ -455,7 +455,6 @@ public class ParsedCall extends Call
             (typeForInferencing() == null ||
              !typeForInferencing().isFunctionType())       )
           {
-            System.out.println("partial Infix: "+isPartialInfix(expectedType));
             l = applyPartially(res, context, expectedType);
           }
       }
