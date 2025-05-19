@@ -32,32 +32,15 @@
 #      `server.accept`
 #
 module:public server(
-  state outcome i32,
-  p protocol.val
+  sock i32
 ) : effect
 is
-
-  # get the last error that occurred
-  #
-  public last_error outcome unit => state.bind (_ -> unit)
-
-
-  # is the server running?
-  #
-  public is_active bool =>
-    state.ok
 
 
   # close server, stop listening on port
   #
-  public close unit =>
-    _ := state.bind d->
-      (match fuzion.sys.net.close d
-        unit =>
-          server (error "not initialized") nil
-        error error =>
-          server error nil
-      ).replace
+  public redef finally =>
+    check (fuzion.sys.net.close sock).ok
 
 
   # accept new TCP connection
@@ -67,50 +50,64 @@ is
   # NYI: accept that returns a Future and does not block
   #
   public accept outcome net.connection =>
-    state.bind net.connection d->
-      match fuzion.sys.net.accept d
-        desc i32 =>
-          net.connections.add desc
-          net.connection desc
-        e error =>
-          # NYI we may not need to close server on every error...
-          (server e nil).replace
-          e
+    fuzion.sys.net.accept sock
+      .bind desc->
+        net.connections.add desc
+        net.connection desc
 
 
-  # open new server bound to the any address listening on port
-  # closes currently installed server
+  # short-hand to open new server bound to the any address
+  # with a default backlog.
   #
   # NYI blocking / none blocking
   #
-  public type.start(f net.family.val, p net.protocol.val, port u16) outcome unit =>
+  public type.start(T type, f net.family.val, p net.protocol.val, port u16, code ()->T) outcome T =>
 
-    any_addr := (
+    any_addr => (
       match f
         net.family.ipv4 => "0.0.0.0"
         net.family.ipv6 => "0:0:0:0:0:0:0:0"
     )
 
-    net.server.start f p any_addr port
+    net.server.start T f p any_addr port code
 
 
-  # open new server bound to addr listening on port
-  # closes currently installed server
+  # short-hand to open new server with a default backlog
   #
   # NYI blocking / none blocking
   #
-  public type.start(f net.family.val, p net.protocol.val, addr String, port u16) outcome unit =>
-    net.server.close
-
+  public type.start(T type, f net.family.val, p net.protocol.val, addr String, port u16, code ()->T) =>
     backlog := 10
-    s := net.socket_type.by_protocol p
+    net.server.start T f p addr port backlog code
 
-    # bind to port
+
+  # open new server
+  #
+  # NYI blocking / none blocking
+  #
+  public type.start(
+    # the result type of the code that is run while server is active
+    T type,
+    # the network family the server uses
+    f net.family.val,
+    # the network protocol the server uses
+    p net.protocol.val,
+    # the address the server binds to
+    addr String,
+    # the port the server is listening on
+    port u16,
+    # the backlog, (pending connections to keep in queue)
+    backlog i32,
+    # the code to be run while server is active
+    code ()->T) outcome T
+  =>
+
+    s => net.socket_type.by_protocol p
+
     (fuzion.sys.net.bind f.as_num s.as_num p.as_num addr port)
       .bind i32 sd->
         match p
           net.protocol.tcp =>
-            # listen
             listen_res := fzE_listen sd backlog
             if listen_res != 0
               _ := fuzion.sys.net.close sd
@@ -120,12 +117,5 @@ is
           * =>
             sd
       .bind desc->
-        (net.server desc p).replace
-
-
-# get currently installed server from env
-#
-public server server =>
-  if !server.is_instated
-    (server (error "not initialized") nil).default
-  server.env
+        net.server desc
+          .instate_self code
