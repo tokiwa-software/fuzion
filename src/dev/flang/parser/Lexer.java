@@ -133,7 +133,7 @@ public class Lexer extends SourceFile
     t_error,       // erroneous input
     t_ws,          // whitespace
     t_comment,     // comment
-    t_op,          // operators +, -, *, /, ., |, etc.
+    t_op,          // operators +, -, *, /, .., |, etc.
     t_comma,       // ,
     t_lparen,      // (
     t_rparen,      // )
@@ -141,6 +141,7 @@ public class Lexer extends SourceFile
     t_rbrace,      // }
     t_lbracket,    // [
     t_rbracket,    // ]
+    t_period,      // .
     t_semicolon,   // ;
     t_question,    // ?
     t_numliteral,  // 123
@@ -311,6 +312,7 @@ public class Lexer extends SourceFile
             {
             case t_op                : result = "operator"                                   ; break;
             case t_comma             : result = "comma ','"                                  ; break;
+            case t_period            : result = "period '.'"                                 ; break;
             case t_lparen            : result = "left parenthesis '('"                       ; break;
             case t_rparen            : result = "right parenthesis ')'"                      ; break;
             case t_lbrace            : result = "left curly brace '{'"                       ; break;
@@ -349,27 +351,29 @@ public class Lexer extends SourceFile
    * Private code point classes
    */
   private static final byte K_UNKNOWN =  0;
-  private static final byte K_OP      =  1;  // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
+  private static final byte K_OP      =  1;  // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^';
   private static final byte K_WS      =  2;  // spaces, tabs, lf, cr, ...
   private static final byte K_SLASH   =  3;  // '/', introducing a comment or an operator.
   private static final byte K_SHARP   =  4;  // '#', introducing a comment or an operator.
   private static final byte K_COMMA   =  5;  // ','
-  private static final byte K_LPAREN  =  6;  // '('  round brackets or parentheses
-  private static final byte K_RPAREN  =  7;  // ')'
-  private static final byte K_LBRACE  =  8;  // '{'  curly brackets or braces
-  private static final byte K_RBRACE  =  9;  // '}'
-  private static final byte K_LBRACK  = 10;  // '['  square brackets
-  private static final byte K_RBRACK  = 11;  // ']'
-  private static final byte K_SEMI    = 12;  // ';'
-  private static final byte K_DIGIT   = 13;  // '0'..'9'
-  private static final byte K_LETTER  = 14;  // 'A'..'Z', 'a'..'z', mathematical letter
-  private static final byte K_GRAVE   = 15;  // '`'  backtick
-  private static final byte K_DQUOTE  = 16;  // '"'
-  private static final byte K_SQUOTE  = 17;  // '''
-  private static final byte K_BACKSL  = 18;  // '\\'
-  private static final byte K_NUMERIC = 19;  // mathematical digit
-  private static final byte K_EOF     = 20;  // end-of-file
-  private static final byte K_ERROR   = 21;  // an error occurred
+  private static final byte K_PERIOD  =  6;  // ','
+  private static final byte K_LPAREN  =  7;  // '('  round brackets or parentheses
+  private static final byte K_RPAREN  =  8;  // ')'
+  private static final byte K_LBRACE  =  9;  // '{'  curly brackets or braces
+  private static final byte K_RBRACE  = 10;  // '}'
+  private static final byte K_LBRACK  = 11;  // '['  square brackets
+  private static final byte K_RBRACK  = 12;  // ']'
+  private static final byte K_SEMI    = 13;  // ';'
+  private static final byte K_DIGIT   = 14;  // '0'..'9'
+  private static final byte K_QUESTN  = 15;  // '?'
+  private static final byte K_LETTER  = 16;  // 'A'..'Z', 'a'..'z', mathematical letter
+  private static final byte K_GRAVE   = 17;  // '`'  backtick
+  private static final byte K_DQUOTE  = 18;  // '"'
+  private static final byte K_SQUOTE  = 19;  // '''
+  private static final byte K_BACKSL  = 20;  // '\\'
+  private static final byte K_NUMERIC = 21;  // mathematical digit
+  private static final byte K_EOF     = 22;  // end-of-file
+  private static final byte K_ERROR   = 23;  // an error occurred
 
 
   /**
@@ -391,12 +395,12 @@ public class Lexer extends SourceFile
     K_WS      /* SP  */, K_OP      /* !   */, K_DQUOTE  /* "   */, K_SHARP   /* #   */,
     K_OP      /* $   */, K_OP      /* %   */, K_OP      /* &   */, K_SQUOTE  /* '   */,
     K_LPAREN  /* (   */, K_RPAREN  /* )   */, K_OP      /* *   */, K_OP      /* +   */,
-    K_COMMA   /* ,   */, K_OP      /* -   */, K_OP      /* .   */, K_SLASH   /* /   */,
+    K_COMMA   /* ,   */, K_OP      /* -   */, K_PERIOD  /* .   */, K_SLASH   /* /   */,
     // 3…
     K_DIGIT   /* 0   */, K_DIGIT   /* 1   */, K_DIGIT   /* 2   */, K_DIGIT   /* 3   */,
     K_DIGIT   /* 4   */, K_DIGIT   /* 5   */, K_DIGIT   /* 6   */, K_DIGIT   /* 7   */,
     K_DIGIT   /* 8   */, K_DIGIT   /* 9   */, K_OP      /* :   */, K_SEMI    /* ;   */,
-    K_OP      /* <   */, K_OP      /* =   */, K_OP      /* >   */, K_OP      /* ?   */,
+    K_OP      /* <   */, K_OP      /* =   */, K_OP      /* >   */, K_QUESTN  /* ?   */,
     // 4…
     K_OP      /* @   */, K_LETTER  /* A   */, K_LETTER  /* B   */, K_LETTER  /* C   */,
     K_LETTER  /* D   */, K_LETTER  /* E   */, K_LETTER  /* F   */, K_LETTER  /* G   */,
@@ -775,6 +779,8 @@ public class Lexer extends SourceFile
           {
           case K_OP      :
           case K_COMMA   :
+          case K_PERIOD  :
+          case K_QUESTN  :
           case K_LPAREN  :
           case K_RPAREN  :
           case K_LBRACE  :
@@ -1468,17 +1474,14 @@ OPERATOR  : ( '!'
             )+
           ;
           */
-          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
+          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^';
             {
     /*
     // tag::fuzion_rule_LEXR_OPER1[]
 A Fuzion operator code point starts with a xref:fuzion_op[Fuzion operator code point].
     // end::fuzion_rule_LEXR_OPER1[]
-    // tag::fuzion_rule_LEXR_OPER2[]
-A single code point 0x003F '?' is not an operator.
-    // end::fuzion_rule_LEXR_OPER2[]
     */
-              token = skipOp(p == '?' ? Token.t_question : Token.t_op);
+              token = skipOp(Token.t_op);
               break;
             }
           /**
@@ -1534,6 +1537,29 @@ COMMA       : ','
           case K_COMMA   :   // ','
             {
               token = Token.t_comma;
+              break;
+            }
+    /*
+    // tag::fuzion_rule_LEXR_OPER2[]
+A single code point 0x002E '.' or 0x003F '?' is not an operator.
+    // end::fuzion_rule_LEXR_OPER2[]
+    */
+          /**
+PERIOD      : '.'
+            ;
+          */
+          case K_PERIOD  :   // '.'
+            {
+              token = skipOp(Token.t_period);
+              break;
+            }
+          /**
+QUESTION  : '?'
+          ;
+          */
+          case K_QUESTN  :   // '?'
+            {
+              token = skipOp(Token.t_question);
               break;
             }
           /**
@@ -2441,7 +2467,11 @@ A Fuzion operator may contain one or several codepoints that are xref:fuzion_op[
     // end::fuzion_rule_LEXR_OPER3[]
     */
     int p = curCodePoint();
-    while (kind(p) == K_OP || kind(p) == K_SHARP || kind(p) == K_SLASH)
+    while ((((1 << K_OP     |
+              1 << K_SHARP  |
+              1 << K_SLASH  |
+              1 << K_PERIOD |
+              1 << K_QUESTN   ) >> kind(p)) & 1) != 0)
       {
         res = Token.t_op;
         nextCodePoint();

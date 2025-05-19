@@ -2,12 +2,12 @@
 --CURDIR--/reg_issue4348.fz:31:46: error 1: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found left parenthesis '('
   say ((T : property.orderable): res.zip res.(drop 1)  (<=) |> .reduce true (&&))
 ---------------------------------------------^
-While parsing: name, parse stack: name (twice), call (twice), callTail, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call (twice), callTail, call (twice), call0, callOrFeatOrThis, term, opTail (twice), opExpr, operatorExpr, klammer, bracketTerm, term, opTail, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+While parsing: name, parse stack: name (twice), call, dotCall, callTail, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, dotCall, callTail, call, call0, callOrFeatOrThis, term, opsTail, opExpr, operatorExpr, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/reg_issue4348.fz:32:46: error 2: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found left parenthesis '('
   say ((T : property.orderable): res.zip res.(drop 1)  (a,b -> { say "$a $b {a <= b}"; a<=b }) |> .reduce true (&&))
 ---------------------------------------------^
-While parsing: name, parse stack: name (twice), call (twice), callTail, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call (twice), callTail, call (twice), call0, callOrFeatOrThis, term, opTail (twice), opExpr, operatorExpr, klammer, bracketTerm, term, opTail, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+While parsing: name, parse stack: name (twice), call, dotCall, callTail, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, dotCall, callTail, call, call0, callOrFeatOrThis, term, opsTail, opExpr, operatorExpr, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 2 errors.

@@ -99,7 +99,7 @@ In call to          : 'typeinference_for_args_negative.a4'
 expected formal type: 'String'
 actual type found   : 'bool'
 assignable to       : 'bool'
-for value assigned  : '='
+for value assigned  : '" world!"=" monde!"'
 To solve this, you could change the type of the target 'b' to 'bool' or convert the type of the assigned value to 'String'.
 
 
