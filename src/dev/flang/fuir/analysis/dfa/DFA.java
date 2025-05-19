@@ -2062,7 +2062,7 @@ public class DFA extends ANY
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
           var ignore = cl._dfa.newCall(call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
-          return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
+          return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl._cc), NO_SITE, cl._context);
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
@@ -2175,6 +2175,7 @@ public class DFA extends ANY
       });
     put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.java.create_jvm", cl -> Value.UNIT);
+    put("fuzion.java.destroy_jvm", cl -> Value.UNIT);
     put("fuzion.java.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
     put("fuzion.java.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
   }

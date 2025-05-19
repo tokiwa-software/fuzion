@@ -50,6 +50,14 @@ void * fzE_malloc_safe(size_t size);
 
 
 /**
+ * explicitly free allocated memory.
+ *
+ * NOTE: must only be called once per ptr!
+ */
+void fzE_free(void * ptr);
+
+
+/**
  * Securely zero memory.
  * Specifically does not use memset since this can
  * be optimized away.
@@ -372,16 +380,14 @@ void fzE_init(void);
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-// NYI: UNDER DEVELOPMENT: result type should be pointer
-int64_t fzE_thread_create(void *(*code)(void *),
+void * fzE_thread_create(void *(*code)(void *),
                           void *restrict);
 
 /**
  * Join with a running thread.
  */
 // NYI: UNDER DEVELOPMENT:  add return value
-// NYI: UNDER DEVELOPMENT: arg type should be pointer
-void fzE_thread_join(int64_t thrd);
+void fzE_thread_join(void * thrd);
 
 /**
  * Global lock

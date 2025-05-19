@@ -96,15 +96,6 @@ public class Intrinsics extends ANY
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
 
-  /**
-   * This contains all started threads.
-   */
-  private static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
-     @Override
-     protected boolean close(Thread f) {return true;};
-   };
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -400,6 +391,7 @@ public class Intrinsics extends ANY
           return new JavaRef(res);
         });
     putUnsafe("fuzion.java.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    putUnsafe("fuzion.java.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
@@ -471,11 +463,13 @@ public class Intrinsics extends ANY
                              (() -> executor.callOnNewInstance(NO_SITE, cc, args.get(1), new List<>())));
           t.setDaemon(true);
           t.start();
-          return new i64Value(_startedThreads_.add(t));
+          // NYI: CLEANUP: should not use javaObjectToInstance
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+          return JavaInterface.javaObjectToInstance(t, resultClazz);
         });
     put("fuzion.sys.thread.join0", (executor, innerClazz) -> args ->
         {
-          var thread = _startedThreads_.get(args.get(1).i64Value());
+          var thread = ((Thread) ((JavaRef) args.get(1))._javaRef);
           var result = false;
           do
             {
@@ -490,14 +484,6 @@ public class Intrinsics extends ANY
                 }
             }
           while (!result);
-
-          // NYI: comment, fridi:
-          // Furthermore, remove should probably not be called by join, but either by
-          // the Thread itself or by some cleanup mechanism that removes terminated
-          // threads, either when new threads are started or by a system thread that
-          // joins and removes threads that are about to terminate.
-          _startedThreads_.remove(args.get(1).i64Value());
-
           return Value.EMPTY_VALUE;
         });
 
