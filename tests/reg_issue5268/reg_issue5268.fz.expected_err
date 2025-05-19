@@ -4,7 +4,7 @@
 -----------------^
 Feature not found: 'prefix *' (no arguments)
 Target feature: 'i32'
-In call: '*'
+In call: '*2'
 
 
 --CURDIR--/reg_issue5268.fz:38:18: error 2: Could not find called feature
@@ -12,7 +12,7 @@ In call: '*'
 -----------------^
 Feature not found: 'prefix *' (no arguments)
 Target feature: 'i32'
-In call: '*'
+In call: '*2'
 
 
 --CURDIR--/reg_issue5268.fz:41:35: error 3: Could not find called feature
@@ -20,7 +20,7 @@ In call: '*'
 ----------------------------------^
 Feature not found: 'prefix *' (3 arguments)
 Target feature: 'i32'
-In call: '*'
+In call: '*2'
 
 
 --CURDIR--/reg_issue5268.fz:42:35: error 4: Could not find called feature
@@ -28,7 +28,7 @@ In call: '*'
 ----------------------------------^
 Feature not found: 'prefix *' (3 arguments)
 Target feature: 'i32'
-In call: '*'
+In call: '*2'
 
 
 --CURDIR--/reg_issue5268.fz:36:18: error 5: Could not find called feature
