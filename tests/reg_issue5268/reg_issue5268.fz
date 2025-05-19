@@ -1,0 +1,61 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5268
+#
+# -----------------------------------------------------------------------
+
+# test partial application to a prefix operator when the number of actuals
+# in the target function is not one as expected
+#
+reg_issue5268 =>
+
+  q  ()->bool => *2                       # 1. should flag an error: 0 actual args, expected 1
+  q1 ()->bool => *2                       # 2. should flag an error: 0 actual args, expected 1
+  r  ()->bool := *2                       # 3. should flag an error: 0 actual args, expected 1
+  r1 ()->bool := *2                       # 4. should flag an error: 0 actual args, expected 1
+  s  (unit, f64, String)->bool => *2      # 5. should flag an error: 3 actual args, expected 1
+  s1 (unit, f64, String)->bool => *2      # 6. should flag an error: 3 actual args, expected 1
+  t  (unit, f64, String)->bool := *2      # 7. should flag an error: 3 actual args, expected 1
+  t1 (unit, f64, String)->bool := *2      # 8. should flag an error: 3 actual args, expected 1
+  u  (i32)->bool => %%2                   # should work
+  u1 (i32)->bool => %%2                   # should work
+  v  (i32)->bool := %%2                   # should work
+  v1 (i32)->bool := %%2                   # should work
+  i32.prefix ! => val ^ 0x5555_5555
+  w  ()->i32 => !0x5555_aaaa              # should work
+  w1 ()->i32 => !0x5555_aaaa              # should work
+  x  ()->i32 := !0x5555_aaaa              # should work
+  x1 ()->i32 := !0x5555_aaaa              # should work
+  i32.prefix !?!(a unit, b f64, c String) => ($a).byte_length ^ b.exponent ^ c.codepoint_length ^ val
+  y  (unit,f64,String)->i32 => !?!4711    # should work
+  y1 (unit,f64,String)->i32 => !?!4711    # should work
+  z  (unit,f64,String)->i32 := !?!4711    # should work
+  z1 (unit,f64,String)->i32 := !?!4711    # should work
+
+  say q1
+  say r1
+  say (s1 unit 3.14 "hi")
+  say (t1 unit 3.14 "hi")
+  say (u1 42)
+  say (v1 42)
+  say w1()
+  say x1()
+  say (y1 unit 3.14 "hi")
+  say (z1 unit 3.14 "hi")

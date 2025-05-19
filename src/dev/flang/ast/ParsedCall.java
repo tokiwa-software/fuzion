@@ -455,6 +455,7 @@ public class ParsedCall extends Call
             (typeForInferencing() == null ||
              !typeForInferencing().isFunctionType())       )
           {
+            System.out.println("partial Infix: "+isPartialInfix(expectedType));
             l = applyPartially(res, context, expectedType);
           }
       }
@@ -497,9 +498,10 @@ public class ParsedCall extends Call
 
 
   /**
-   * After propagateExpectedType: if type inference up until now has figured
-   * out that a Lazy feature is expected, but the current expression is not
-   * a Lazy feature, then wrap this expression in a Lazy feature.
+   * After propagateExpectedType: if type inference up until now has figured out
+   * that a Lazy or Function feature is expected, but the current expression is
+   * not a Lazy or Function feature, then wrap this expression in a Lazy or
+   * Function feature.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -507,6 +509,8 @@ public class ParsedCall extends Call
    * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
+   *
+   * @return the resulting Lazy of Function feature
    */
   Expr applyPartially(Resolution res, Context context, AbstractType t)
   {
@@ -521,11 +525,10 @@ public class ParsedCall extends Call
             pns.add(Partial.argName(pos()));
           }
         _actuals = _actuals.size() == 0 ? new List<>() : _actuals;
-        if (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
+        if (n == 1 && _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
           { // -v ==> x->x-v   -- swap target and first actual:
             if (CHECKS) check
-              (Errors.any() || n == 1,
-               Errors.any() || _actuals.size() == 0,
+              (Errors.any() || _actuals.size() == 0,
                _target != Universe.instance);
 
             _actuals.add(_target);

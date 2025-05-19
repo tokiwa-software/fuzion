@@ -1,0 +1,65 @@
+
+--CURDIR--/reg_issue5268.fz:31:18: error 1: Could not find called feature
+  r  ()->bool := *2                       # 3. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*'
+
+
+--CURDIR--/reg_issue5268.fz:32:18: error 2: Could not find called feature
+  r1 ()->bool := *2                       # 4. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*'
+
+
+--CURDIR--/reg_issue5268.fz:35:35: error 3: Could not find called feature
+  t  (unit, f64, String)->bool := *2      # 7. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*'
+
+
+--CURDIR--/reg_issue5268.fz:36:35: error 4: Could not find called feature
+  t1 (unit, f64, String)->bool := *2      # 8. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*'
+
+
+--CURDIR--/reg_issue5268.fz:30:18: error 5: Could not find called feature
+  q1 ()->bool => *2                       # 2. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*2'
+
+
+--CURDIR--/reg_issue5268.fz:34:35: error 6: Could not find called feature
+  s1 (unit, f64, String)->bool => *2      # 6. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*2'
+
+
+--CURDIR--/reg_issue5268.fz:29:18: error 7: Could not find called feature
+  q  ()->bool => *2                       # 1. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*2'
+
+
+--CURDIR--/reg_issue5268.fz:33:35: error 8: Could not find called feature
+  s  (unit, f64, String)->bool => *2      # 5. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*2'
+
+8 errors.
