@@ -514,11 +514,10 @@ visiFlag    : "private" colon "module"
    * Parse qualified name
    *
 qual        : namequal
-            | type dot namequal
+            | "type" dot namequal
             ;
 namequal    : name
             | name dot qual
-            ;
             ;
    */
   List<ParsedName> qual(boolean mayBeAtMinIndent)
@@ -1852,7 +1851,7 @@ opsOpt      : ops
       {
         ops(oe);
       }
-    if (oe.size() != 1 || isTermPrefix(oe.size() > 0) || isDot())
+    if (oe.size() != 1 || isTermPrefix(true))
       {
         oe.add(term());
         result = opsTail(oe);
@@ -1860,8 +1859,7 @@ opsOpt      : ops
       }
     else
       {
-        result = new Partial(oe.op(0)._pos,
-                             oe.op(0)._text);
+        result = new Partial(sourceRange(pos), oe.op(0)._text);
       }
     return result;
   }
@@ -1909,7 +1907,7 @@ opsTerms    : ops
     while (current() == Token.t_op)
       {
         var spaceBeforeLastOperator = ops(oe);
-        if (isTermPrefix(true) || spaceBeforeLastOperator && isDot())
+        if (isTermPrefix(spaceBeforeLastOperator))
           {
             oe.add(term());
           }
@@ -2205,14 +2203,15 @@ stringTermB : '}any chars&quot;'
 
 
   /**
-   * Check if the current position starts a term.  Does not change the position
+   * Check if the current position starts a term that is not a loop.  Does not change the position
    * of the parser.
    *
-   * @param inOperatorExpression true if this term is in an operator expression.
+   * @param mayBeDotCall true if this may be a `dotCall` (which is forbidden
+   * in opExpr after operator stuck at previous operand like `(x)++ .bla`.
    *
    * @return true iff the next token(s) start a term.
    */
-  boolean isTermPrefix(boolean inOperatorExpression)
+  boolean isTermPrefix(boolean mayBeDotCall)
   {
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
@@ -2224,10 +2223,11 @@ stringTermB : '}any chars&quot;'
       case t_match     : return true;
       case t_for       :
       case t_do        :
-      case t_while     : return !inOperatorExpression;
+      case t_while     : return false;
       default          :
         return
-          isStartedString(current())
+          mayBeDotCall && isDot()
+          || isStartedString(current())
           || isNamePrefix()      // Matches call
           || isAnonymousPrefix() // matches anonymous inner feature declaration
           ;
