@@ -2141,7 +2141,7 @@ fragment
 BIN_DIGITS  : BIN_DIGIT BIN_DIGITS
             |
             ;
-BIN_TAIL    : "." BIN_DIGITS
+BIN_TAIL    : ".0b" BIN_DIGITS
             ;
 OCT_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
             ;
@@ -2155,7 +2155,7 @@ fragment
 OCT_DIGITS  : OCT_DIGIT OCT_DIGITS
             |
             ;
-OCT_TAIL    : "." OCT_DIGITS
+OCT_TAIL    : ".0o" OCT_DIGITS
             ;
 DEC_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
             ;
@@ -2169,7 +2169,8 @@ fragment
 DEC_DIGITS  : DEC_DIGIT DEC_DIGITS
             |
             ;
-DEC_TAIL    : "." DEC_DIGITS
+DEC_TAIL    : "."   DEC_DIGITS
+            | ".0d" DEC_DIGITS
             ;
 HEX_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
             | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
@@ -2185,7 +2186,7 @@ fragment
 HEX_DIGITS  : HEX_DIGIT HEX_DIGITS
             |
             ;
-HEX_TAIL    : "." HEX_DIGITS
+HEX_TAIL    : ".0x" HEX_DIGITS
             ;
      */
     Digits(int firstDigit, boolean allowDot, boolean negative)
@@ -2283,6 +2284,24 @@ HEX_TAIL    : "." HEX_DIGITS
           var fd = f.curCodePoint();
           if (isDigit(fd))
             {
+              // match base prefix (base prefix must be repeated after dot in floating point literal)
+              if (b != null)
+                {
+                  nextCodePoint();
+                  var ok = matchBasePrefix('0', b);
+                  nextCodePoint();
+                  if (ok)
+                    {
+                      switch (b)
+                        {
+                          case Base.bin -> matchBasePrefix('b', b);
+                          case Base.oct -> matchBasePrefix('o', b);
+                          case Base.dec -> matchBasePrefix('d', b);
+                          case Base.hex -> matchBasePrefix('x', b);
+                        };
+                    }
+                }
+
               nextCodePoint();
               d = curCodePoint();
               while (isDigit(d))
@@ -2303,6 +2322,28 @@ HEX_TAIL    : "." HEX_DIGITS
           _hasError = true;
         }
       _digits = digits.toString();
+    }
+
+    /**
+     * Match the current code point against the expected base prefix character
+     * and create an error if the don't match
+     *
+     * @param c the expected base prefix character
+     * @param b the expected base of the num literal
+     * @return true iff c matched current code point and no error was created
+     */
+    boolean matchBasePrefix(Character c, Base b)
+    {
+      var result = true;
+      if (curCodePoint() != c)
+        {
+          result = false;
+          Errors.error(null, sourcePos(bytePos()), "Base prefix must be repeated after dot in floating point literal",
+                       "Expected '" + c + "' but found '"
+                       + new String(Character.toChars(curCodePoint()))
+                       + "' in " + b._name + " floating point number. Base prefixes in integer and fractional part must be the same.");
+        }
+      return result;
     }
 
     void checkAndAppendDigit(StringBuilder digits, int d)

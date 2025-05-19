@@ -1,0 +1,202 @@
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:56:15: error 1: Broken numeric literal, expected anything but a letter following a numeric literal.
+  _ f64 := 0.0d1                #  1. should flag an error: no prefix expected
+--------------^
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:56:15: error 2: Syntax error: expected semicolon ';', found identifier 'd1'
+  _ f64 := 0.0d1                #  1. should flag an error: no prefix expected
+--------------^
+While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:57:16: error 3: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0b0.1                #  2. should flag an error: prefix missing
+---------------^
+Expected '0' but found '1' in binary floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:58:16: error 4: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0o0.1                #  3. should flag an error: prefix missing
+---------------^
+Expected '0' but found '1' in octal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:59:16: error 5: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0d0.1                #  4. should flag an error: prefix missing
+---------------^
+Expected '0' but found '1' in decimal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:60:16: error 6: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0x0.1                #  5. should flag an error: prefix missing
+---------------^
+Expected '0' but found '1' in hex floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:62:15: error 7: Broken numeric literal, expected anything but a letter following a numeric literal.
+  _ f64 := 2.0d71828            #  6. should flag an error: no prefix expected
+--------------^
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:62:15: error 8: Syntax error: expected semicolon ';', found identifier 'd71828'
+  _ f64 := 2.0d71828            #  6. should flag an error: no prefix expected
+--------------^
+While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:63:19: error 9: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0b101.010            #  7. should flag an error: prefix missing
+------------------^
+Expected 'b' but found '1' in binary floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:64:16: error 10: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0o7.567              #  8. should flag an error: prefix missing
+---------------^
+Expected '0' but found '5' in octal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:65:16: error 11: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0d2.71828            #  9. should flag an error: prefix missing
+---------------^
+Expected '0' but found '7' in decimal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:66:25: error 12: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0xabba_affee.cafe    # 10. should flag an error: prefix missing
+------------------------^
+Expected '0' but found 'c' in hex floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:68:16: error 13: Broken numeric literal, expected anything but a letter following a numeric literal.
+  _ f64 := -2.0d71828           # 11. should flag an error: no prefix expected
+---------------^
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:68:16: error 14: Syntax error: expected semicolon ';', found identifier 'd71828'
+  _ f64 := -2.0d71828           # 11. should flag an error: no prefix expected
+---------------^
+While parsing: semicolon or flat line break, parse stack: semiOrFlatLF, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:69:20: error 15: Base prefix must be repeated after dot in floating point literal
+  _ f64 := -0b101.010           # 12. should flag an error: prefix missing
+-------------------^
+Expected 'b' but found '1' in binary floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:70:17: error 16: Base prefix must be repeated after dot in floating point literal
+  _ f64 := -0o7.567             # 13. should flag an error: prefix missing
+----------------^
+Expected '0' but found '5' in octal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:71:17: error 17: Base prefix must be repeated after dot in floating point literal
+  _ f64 := -0d2.71828           # 14. should flag an error: prefix missing
+----------------^
+Expected '0' but found '7' in decimal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:72:26: error 18: Base prefix must be repeated after dot in floating point literal
+  _ f64 := -0xabba_affee.cafe   # 15. should flag an error: prefix missing
+-------------------------^
+Expected '0' but found 'c' in hex floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:74:18: error 19: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0b10.0o1             # 16. should flag an error: non matching prefixes
+-----------------^
+Expected 'b' but found 'o' in binary floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:75:18: error 20: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0b10.0d1             # 17. should flag an error: non matching prefixes
+-----------------^
+Expected 'b' but found 'd' in binary floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:76:18: error 21: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0b10.0x1             # 18. should flag an error: non matching prefixes
+-----------------^
+Expected 'b' but found 'x' in binary floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:78:18: error 22: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0o10.0b1             # 19. should flag an error: non matching prefixes
+-----------------^
+Expected 'o' but found 'b' in octal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:79:18: error 23: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0o10.0d1             # 20. should flag an error: non matching prefixes
+-----------------^
+Expected 'o' but found 'd' in octal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:80:18: error 24: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0o10.0x1             # 21. should flag an error: non matching prefixes
+-----------------^
+Expected 'o' but found 'x' in octal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:82:18: error 25: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0d10.0b1             # 22. should flag an error: non matching prefixes
+-----------------^
+Expected 'd' but found 'b' in decimal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:83:18: error 26: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0d10.0o1             # 23. should flag an error: non matching prefixes
+-----------------^
+Expected 'd' but found 'o' in decimal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:84:18: error 27: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0d10.0x1             # 24. should flag an error: non matching prefixes
+-----------------^
+Expected 'd' but found 'x' in decimal floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:86:18: error 28: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0x10.0b1             # 25. should flag an error: non matching prefixes
+-----------------^
+Expected 'x' but found 'b' in hex floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:87:18: error 29: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0x10.0o1             # 26. should flag an error: non matching prefixes
+-----------------^
+Expected 'x' but found 'o' in hex floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:88:18: error 30: Base prefix must be repeated after dot in floating point literal
+  _ f64 := 0x10.0d1             # 27. should flag an error: non matching prefixes
+-----------------^
+Expected 'x' but found 'd' in hex floating point number. Base prefixes in integer and fractional part must be the same.
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:56:15: error 31: Could not find called feature
+  _ f64 := 0.0d1                #  1. should flag an error: no prefix expected
+--------------^^
+Feature not found: 'd1' (no arguments)
+Target feature: 'reg_issue5199_float_base_prefix'
+In call: 'd1'
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:62:15: error 32: Could not find called feature
+  _ f64 := 2.0d71828            #  6. should flag an error: no prefix expected
+--------------^^^^^^
+Feature not found: 'd71828' (no arguments)
+Target feature: 'reg_issue5199_float_base_prefix'
+In call: 'd71828'
+
+
+--CURDIR--/reg_issue5199_float_base_prefix.fz:68:16: error 33: Could not find called feature
+  _ f64 := -2.0d71828           # 11. should flag an error: no prefix expected
+---------------^^^^^^
+Feature not found: 'd71828' (no arguments)
+Target feature: 'reg_issue5199_float_base_prefix'
+In call: 'd71828'
+
+33 errors.
