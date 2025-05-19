@@ -46,6 +46,7 @@ import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Block;
@@ -638,15 +639,15 @@ part of the (((inner features))) declarations of the corresponding
     inner.visit(new FeatureVisitor()
       {
         private Stack<Expr> _scope = new Stack<>();
-        @Override public void actionBefore(AbstractCase c)
+        @Override public void actionBefore(AbstractCase c, AbstractMatch m)
         {
           _scope.push(c.code());
-          super.actionBefore(c);
+          super.actionBefore(c, m);
         }
-        @Override public void actionAfter(AbstractCase c)
+        @Override public void actionAfter(AbstractCase c, AbstractMatch m)
         {
           _scope.pop();
-          super.actionAfter(c);
+          super.actionAfter(c, m);
         }
         @Override public void actionBefore(Block b)
         {
@@ -1345,11 +1346,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
                 stacks.get(0).pop();
               }
           }
-          public void actionBefore(AbstractCase c)
+          @Override public void actionBefore(AbstractCase c, AbstractMatch m)
           {
             stacks.get(0).push(c.code());
           }
-          public void  actionAfter(AbstractCase c)
+          @Override public void  actionAfter(AbstractCase c, AbstractMatch m)
           {
             stacks.get(0).pop();
           }
@@ -1838,9 +1839,9 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         {
           private Stack<Object> stack = new Stack<Object>();
           @Override public void actionBefore(Block b) { if (b._newScope) { stack.push(b); } }
-          @Override public void actionBefore(AbstractCase c) { stack.push(c); }
+          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { stack.push(c); }
           @Override public void actionAfter(Block b)  { if (b._newScope) { stack.pop(); } }
-          @Override public void actionAfter (AbstractCase c) { stack.pop(); }
+          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { stack.pop(); }
           @Override public Expr action(Feature fd, AbstractFeature outer) {
             if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
               {
