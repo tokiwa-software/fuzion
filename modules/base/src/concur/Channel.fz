@@ -1,0 +1,48 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion concur.Channel
+#
+# -----------------------------------------------------------------------
+
+/*public Iterator(T type) ref is
+  public has_next option T => abstract
+*/
+
+
+public Channel(T type/*, buf_size i32*/) ref /* : Iterator T */ /* Send_Only_Channel, Receive_Only_Channel */is
+
+  cnd := concur.sync.condition.new.val # NYI: error handling
+  # NYI free/dispose cnd
+  bq := Blocking_Queue T cnd
+
+  public infix <- (to T) bool
+  =>
+    bq.enqueue to
+
+  public close unit =>
+    bq.is_closed.write true
+
+
+  public /*redef*/ has_next option T =>
+    bq.dequeue
+
+
+  public type.select(ch array (Channel T)) option T =>
+    panic "NYI"
