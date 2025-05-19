@@ -26,6 +26,12 @@
 #
 reg_issue5268 =>
 
+  # the test cases are all declared twice with only the second version being
+  # actually called below.
+  #
+  # The reason is that the fact that there was an actual call had an effect on the
+  # errors that were produced before #5268 was fixed.
+  #
   q  ()->bool => *2                       # 1. should flag an error: 0 actual args, expected 1
   q1 ()->bool => *2                       # 2. should flag an error: 0 actual args, expected 1
   r  ()->bool := *2                       # 3. should flag an error: 0 actual args, expected 1
@@ -49,6 +55,8 @@ reg_issue5268 =>
   z  (unit,f64,String)->i32 := !?!4711    # should work
   z1 (unit,f64,String)->i32 := !?!4711    # should work
 
+  # call the test cases
+  #
   say q1
   say r1
   say (s1 unit 3.14 "hi")
