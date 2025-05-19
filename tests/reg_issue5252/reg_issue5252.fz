@@ -30,18 +30,19 @@ reg_issue5252 =>
     say (f 12345)
     "infix +*+ done."
 
-  say (123++          .call 2 )
-  say (123.postfix ++ .call 3 )
-  say (123.postfix ++      (4))
-  say (123.postfix ++       5 )
-  say (123.0 +*+ _->"hi"      )
-  say (123.0 +*+ .bin         )
-#  say (123.0+*+ .hex          )    # should fail, and does so
+  say (123++          .call 2 )     # explicit call of lambda returned by `123++`: prints `14`
+  say (123.postfix ++ .call 3 )     # explicit call of lambda returned by `123++`: prints `21`
+  say (123.postfix ++      (4))     # impicit call of lambda returned by `123++`: prints `28`
+  say (123.postfix ++       5 )     # impicit call of lambda returned by `123++`: prints `35`
+  say (123.0 +*+ _->"hi"      )     # prints `hi`
+  say (123.0 +*+ .bin         )     # prints `11000000111001`
+# say (123.0+*+ .hex          )     # should fail, and does so
+# say (123++ .hex             )     # causes error. Should this be parsed as call to `postfix ++= that is then called on `.hex`?
 
   say (123.0+456)
   say (123.0 + 456)
-  say (123.0+ 456)   # should fail
-  say (123.0 +456)   # should fail
+  say (123.0+ 456)   # should this infix call that looks like postfix fail?
+  say (123.0 +456)   # should this infix call that looks like prefix fail?
 
   a := 47
   b := 11
@@ -49,20 +50,34 @@ reg_issue5252 =>
   i32.postfix - i32->i32 => x->x-val
   i32.postfix -- i32->i32 => -val
 
-  say (a-b)            # 36
-  say (a - b)          # 36
-  say (a- b)           # NYI: should print -36, does not work yet!
-#  say (a-- b)          # NYI: should print -36, does not work yet!
-  say ((a-).call b)    # -36
-  say ((a--).call b)   # -36
-  say (a -b)           #  a -11
+  say (a-b)                # prints `36`
+  say (a - b)              # prints `36`
+  say (a- b)               # prints 36`. Should this be parsed as call to `postfix -` that is then called on `b`
+# say (a-- b)              # causes error. Should this be parsed as call to `postfix --` that is then called on `b`
+  say ((a-).call b)        # prints `-36`
+  say ((a--).call b)       # prints `-36`
+  say (a -b)               # calls `a` with argument `-b`, prints `-11`
 
   f i32->i32 => 100+
   g i32->i32 => +(1000)
-#   h i32->i32 => -99   # NYI: does not work yet!
-#   i i32->i32 := -99   # NYI: does not work yet!
-  j(jf i32->i32) => say "j: {jf 123}"
-  j -999
 
   say (f  +3)  # should print 103
   say (g +33)  # should print 1033
+
+#   h i32->i32 => -99   # NYI: BUG: #5259 does not work yet!
+  i i32->i32 := -99
+  j => i
+  say (i.call 123)         # prints `24`
+  say (i 456)              # prints `357`
+  say (j.call 123)         # prints `24`
+  say (j 456)              # prints `357`
+
+  k(kf i32->i32) => say "k: {kf 123}"
+  k -999                   # print `-876`
+
+  # test cases from issue #5252
+  say ((1..) .filter %%2)  # prints `[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, …]`
+  say ( 1..  .filter %%2)  # prints `[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, …]`
+
+  i32.is_even bool => val %% 2
+  say (1..10 ∀ .is_even)   # prints `false`
