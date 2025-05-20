@@ -2282,7 +2282,7 @@ HEX_TAIL    : ".0x" HEX_DIGITS
           var f = new Lexer(Lexer.this);
           f.nextCodePoint();
           var fd = f.curCodePoint();
-          if (b == null ? isDigit(fd) : fd == '0')
+          if (kind(fd) == K_DIGIT)
             {
               // match base prefix (base prefix must be repeated after dot in floating point literal)
               if (b != null)
