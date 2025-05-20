@@ -25,5 +25,5 @@ CREATE_DB := $(shell echo "CREATE TABLE table_name (id INTEGER PRIMARY KEY, name
 
 override NAME = mod_sqlite
 override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=sqlite3
-override FUZION_C_BACKEND_OPTIONS = "-CLink=sqlite3" "-CInclude=sqlite3.h"
+override FUZION_C_BACKEND_OPTIONS = -CLink=sqlite3|-CInclude=sqlite3.h
 include ../simple.mk
