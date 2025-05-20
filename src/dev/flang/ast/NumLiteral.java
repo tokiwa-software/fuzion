@@ -844,21 +844,24 @@ public class NumLiteral extends Constant
    */
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    // if expected type is choice, examine if there is exactly one numeric
-    // constant type in choice generics, if so use that for further type
-    // propagation.
-    t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
-    if (_propagatedType == null && findConstantType(t) != null)
-      {
-        _propagatedType = t;
-      }
-    Expr result = this;
-    if (t.isFunctionTypeExcludingLazy() && (typeForInferencing() == null || t.compareTo(typeForInferencing()) != 0))
+    var result = super.propagateExpectedType(res, context, t, from);
+    if (result == this)
       {
         result = propagateExpectedTypeForPartial(res, context, t);
         if (result != this)
           {
             result = result.propagateExpectedType(res, context, t, from);
+          }
+      }
+    if (result == this)
+      {
+        // if expected type is choice, examine if there is exactly one numeric
+        // constant type in choice generics, if so use that for further type
+        // propagation.
+        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
+        if (_propagatedType == null && findConstantType(t) != null)
+          {
+            _propagatedType = t;
           }
       }
     return result;
