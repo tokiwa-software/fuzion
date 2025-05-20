@@ -21,28 +21,39 @@
 #
 # -----------------------------------------------------------------------
 
-/*public Iterator(T type) ref is
-  public has_next option T => abstract
-*/
 
-
-public Channel(T type/*, buf_size i32*/) ref /* : Iterator T */ /* Send_Only_Channel, Receive_Only_Channel */is
+# a Channel can be used to send values
+# to another thread
+#
+# NYI: UNDER DEVELOPMENT: max buf size
+public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
 
   cnd := concur.sync.condition.new.val # NYI: error handling
-  # NYI free/dispose cnd
   bq := Blocking_Queue T cnd
 
-  public infix <- (to T) bool
+
+  # send a value to this Channel
+  # returns true if sending was successful,
+  # false if not
+  #
+  public redef infix <- (to T) bool
   =>
     bq.enqueue to
 
-  public close unit =>
+
+  # close the Channel
+  #
+  # infix <- will now always return false
+  # has_next will return nil once Channel is empty
+  #
+  public redef close unit =>
     bq.is_closed.write true
+    # NYI free/dispose cnd
 
 
-  public /*redef*/ has_next option T =>
+  # returns nil when Channel is closed and empty
+  # otherwise returns the next received value
+  #
+  public redef has_next option T =>
     bq.dequeue
 
-
-  public type.select(ch array (Channel T)) option T =>
-    panic "NYI"

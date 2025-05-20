@@ -17,36 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_concur_Channel
+#  Source code of Fuzion concur.Receiving_Channel
 #
 # -----------------------------------------------------------------------
 
-lib_concur_Channel =>
+# an interface for a receive only Channel
+#
+public Receiving_Channel(T type) ref is
 
-  chan := concur.Channel u8
+  public has_next option T => abstract
 
-
-  concur.thread_pool _ 8 ()->
-
-    check concur.thread_pool.env.submit ()->
-      check chan <- 1
-      check chan <- 2
-      check chan <- 3
-
-
-    time.nano.sleep (time.duration.ms 250)
-
-
-    check concur.thread_pool.env.submit ()->
-      _ :=
-        for n := chan.has_next
-        while n.ok
-          say "received {n}"
-
-
-    time.nano.sleep (time.duration.ms 250)
-
-
-    check concur.thread_pool.env.submit ()->
-      check chan <- 9
-      chan.close
+  public type.select(ch array (Channel T)) option T =>
+    panic "NYI"
