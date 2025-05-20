@@ -871,7 +871,7 @@ public class Intrinsics extends ANY
           var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
           return CStmnt
             .seq(
-              // NYI methods where result clazz is e.g. unit, f64 etc. that does
+              // NYI: UNDER DEVELOPMENT: methods where result clazz is e.g. unit, f64 etc. that does
               // not inherit Java_Object or Java_String
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_s0",

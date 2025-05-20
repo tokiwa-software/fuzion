@@ -54,7 +54,7 @@ public class Definition
       {
         return null;
       }
-    // NYI should also include where feature is beeing redefined
+    // NYI: UNDER DEVELOPMENT: should also include where feature is beeing redefined
     var redefAbstractAndSelf = new TreeSet<>(feature.get().redefines());
     redefAbstractAndSelf.add(feature.get());
     return getDefinition(redefAbstractAndSelf.stream().collect(Collectors.toList()));

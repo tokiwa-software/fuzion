@@ -177,18 +177,18 @@ negative8 =>
   if
   c0 then "-true-" # 8. should flag an error: inconsistent indentation
   else if
-  c1 then "-false::true-" # 8a. should NYI (error does not show because of 8.) flag an error: inconsistent indentation
+  c1 then "-false::true-" # 8a. should NYI: UNDER DEVELOPMENT: (error does not show because of 8.) flag an error: inconsistent indentation
   else       "-false::false-"
 
 # errors of this test don't show up because negative8 causes parsing to stop
 # negative9 =>
 #   if true
 #       if
-#     c0 then "-true-" # 9. should NYI flag an error: inconsistent indentation
+#     c0 then "-true-" # 9. should NYI: UNDER DEVELOPMENT: flag an error: inconsistent indentation
 
 # errors of this test don't show up because negative8/negative9 causes parsing to stop
 # negative10 =>
 #   if c0 then "-true-"
 #   else
 #     if c1 then "-false::true-"
-#   else         "-false::false-"  # 10. should NYI flag an error: broken if because of indentation
+#   else         "-false::false-"  # 10. should NYI: UNDER DEVELOPMENT: flag an error: broken if because of indentation

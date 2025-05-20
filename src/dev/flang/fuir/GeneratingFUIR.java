@@ -1786,7 +1786,7 @@ public class GeneratingFUIR extends FUIR
       ac.calledFeature().selfType().isRef().no() &&
       // only features without args and no fields may be inherited
       ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
-      // no unit   // NYI we could allow units that does not contain declarations
+      // no unit   // NYI: UNDER DEVELOPMENT: we could allow units that does not contain declarations
       ac.actuals().size() > 0 &&
       ac.actuals().stream().allMatch(x -> isConst(x));
 

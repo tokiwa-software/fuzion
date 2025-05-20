@@ -246,7 +246,7 @@ public class C extends ANY
      *               it was created in.
      * @return
      */
-    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d, boolean onHeap /* NYI init "(larger)" constants only once, globally. */)
+    private Pair<CExpr, CStmnt> constData(int constCl, byte[] d, boolean onHeap /* NYI: UNDER DEVELOPMENT: init "(larger)" constants only once, globally. */)
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
@@ -264,13 +264,13 @@ public class C extends ANY
           case c_String -> new Pair<>(boxedConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4)),CStmnt.EMPTY);
           default     -> {
             if (CHECKS)
-              check(!_fuir.clazzIsRef(constCl)); // NYI currently no refs
+              check(!_fuir.clazzIsRef(constCl)); // NYI: UNDER DEVELOPMENT: currently no refs
 
             var result = _fuir.clazzIsArray(constCl)
               ? constArray(constCl, d)
               : constValue(constCl, d);
 
-            // NYI without this heap clone tests ternary and unary are failing.
+            // NYI: UNDER DEVELOPMENT: without this heap clone tests ternary and unary are failing.
             yield onHeap
               ? new Pair<>(CExpr
                               .call(CNames.HEAP_CLONE._name, new List<>(result.adrOf(), result.sizeOfExpr()))
@@ -707,7 +707,7 @@ public class C extends ANY
   private List<String> buildCommand(String name, CFile cf)
   {
     var clangVersion = getClangVersion();
-    // NYI should be clangVersion == expectedClangVersion but workflows etc. must be updated first
+    // NYI: UNDER DEVELOPMENT: should be clangVersion == expectedClangVersion but workflows etc. must be updated first
     if (_options._cCompiler == null && clangVersion < expectedClangVersion)
       {
         Errors.warning(clangVersion == -1
@@ -817,7 +817,7 @@ public class C extends ANY
         command.add("-lm");
       }
 
-      // NYI on windows link nothing
+      // NYI: UNDER DEVELOPMENT: on windows link nothing
     if (usesThreads())
       {
         command.add("-lpthread");

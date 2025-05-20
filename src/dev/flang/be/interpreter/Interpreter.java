@@ -279,7 +279,7 @@ public class Interpreter extends FUIRContext
   static boolean compareField(int thiz, int staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
-      ( // NYI : thiz.feature().isField(),
+      ( // NYI: UNDER DEVELOPMENT: : thiz.feature().isField(),
        (curValue instanceof Instance) || curValue instanceof Boxed || (curValue instanceof LValue),
        staticClazz > 0);
 

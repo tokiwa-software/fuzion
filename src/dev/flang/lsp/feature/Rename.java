@@ -75,7 +75,7 @@ public class Rename extends ANY
   }
 
 
-  // NYI check for name collisions?
+  // NYI: UNDER DEVELOPMENT: check for name collisions?
   public static Either<WorkspaceEdit, ResponseErrorException> getWorkspaceEditsOrError(
     TextDocumentPositionParams params, String newName)
   {
@@ -151,7 +151,7 @@ public class Rename extends ANY
       .map(x -> x.getKey().pos())
       .filter(x -> !x.pos().equals(featureToRename.pos()))
       .flatMap(x -> {
-        // NYI better if we had the needed and more correct info directly
+        // NYI: UNDER DEVELOPMENT: better if we had the needed and more correct info directly
         // in the AST
         return LexerTool.nextTokenOfType(SourcePositionTool.byLine(x._sourceFile, x.line()), Util.arrayToSet(new Token[]
           {
@@ -205,7 +205,7 @@ public class Rename extends ANY
       .reduce(0, (acc, item) -> item);
   }
 
-  // NYI disallow renaming of stdlib
+  // NYI: UNDER DEVELOPMENT: disallow renaming of stdlib
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
     var pos = Bridge.toSourcePosition(params);

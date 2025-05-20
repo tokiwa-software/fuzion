@@ -43,7 +43,7 @@ import dev.flang.util.SourcePosition;
 public class CallTool extends ANY
 {
 
-  // NYI this info should be part of an AbstractCall
+  // NYI: UNDER DEVELOPMENT: this info should be part of an AbstractCall
   public static final Predicate<? super AbstractCall> calledFeatureNotInternal = (c) -> {
     return !c.calledFeature().isUniverse()
       && !c.calledFeature().isBuiltInPrimitive()

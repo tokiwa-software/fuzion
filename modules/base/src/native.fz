@@ -73,7 +73,7 @@ module fzE_dir_close(dd Directory_Descriptor) i32 => native
 #
 # returns zero on success, anything else is an error.
 #
-# NYI non blocking needs some kind of polling mechanism like epoll / kqueue
+# NYI: UNDER DEVELOPMENT: non blocking needs some kind of polling mechanism like epoll / kqueue
 # probably not good enough:
 # - select "can monitor only file descriptors  numbers
 #           that  are less  than  FD_SETSIZE (1024)—an unreasonably
@@ -213,11 +213,11 @@ module fzE_stat(
 # in case an error is returned (the result of this feature is false), then the size field of
 # the meta_data array will contain the errno for the lstat call.
 #
-module fzE_lstat(path Array, meta_data Array) i32 => native # NYI behaves the same as stats in the interpreter
+module fzE_lstat(path Array, meta_data Array) i32 => native # NYI: UNDER DEVELOPMENT: behaves the same as stats in the interpreter
 
 
 # create a new process
-# NYI option to pass stdin/out/err, pwd
+# NYI: UNDER DEVELOPMENT: option to pass stdin/out/err, pwd
 #
 module fzE_process_create(
   args Array,

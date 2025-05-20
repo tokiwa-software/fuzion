@@ -585,7 +585,7 @@ struct fzE_jvm_result
   union
   {
     jvalue v0;
-    jstring v1; // NYI should probably better be jthrowable
+    jstring v1; // NYI: UNDER DEVELOPMENT: should probably better be jthrowable
   }fzChoice;
 };
 

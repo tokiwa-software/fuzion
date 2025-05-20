@@ -32,7 +32,7 @@ mmap_test =>
   f =>
     io.file.open
 
-  # NYI get actual page size
+  # NYI: UNDER DEVELOPMENT: get actual page size
   page_size := 65536
 
   say <| io.file.use unit lm testfile io.file.mode.append ()->

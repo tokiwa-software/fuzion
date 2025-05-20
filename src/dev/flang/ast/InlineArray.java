@@ -202,7 +202,7 @@ public class InlineArray extends ExprWithPos
     if (PRECONDITIONS) require
       (t != null);
 
-    // NYI see issue: #1817
+    // NYI: UNDER DEVELOPMENT: see issue: #1817
     if (Types.resolved.f_array.inheritsFrom(t.feature()) &&
         t.generics().size() == 1)
       {

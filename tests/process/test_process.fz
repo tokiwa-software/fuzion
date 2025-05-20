@@ -93,7 +93,7 @@ test_process =>
           say p2.wait
 
 
-/* NYI Too slow
+/* NYI: PERFORMANCE: Too slow
 
   test "100kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
@@ -117,7 +117,7 @@ test_process =>
           Sequence => true
           * => false
 
-    # NYI write should block here?
+    # NYI: UNDER DEVELOPMENT: write should block here?
     say (p.write_bytes (get_str 1E7).utf8)
     say "exit code: {p.wait}"
   */

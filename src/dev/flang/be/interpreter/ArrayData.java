@@ -253,7 +253,7 @@ public class ArrayData extends Value
               memSegment.set(ValueLayout.ADDRESS, j * 8, (MemorySegment)arr[j].toNative());
             }
         }
-        else throw new Error("NYI copyToMemSegment: " + _array.getClass());
+        else throw new Error("NYI: UNDER DEVELOPMENT: copyToMemSegment: " + _array.getClass());
       }
   }
 
@@ -285,7 +285,7 @@ public class ArrayData extends Value
         else if (_array instanceof double [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_DOUBLE, i); }
         else if (_array instanceof boolean[] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BOOLEAN, i); }
         else if (_array instanceof Value  [] arr) { /* NYI: UNDER DEVELOPMENT */ }
-        else throw new Error("NYI set: " + _array.getClass());
+        else throw new Error("NYI: UNDER DEVELOPMENT: set: " + _array.getClass());
       }
   }
 }

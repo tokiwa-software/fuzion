@@ -162,7 +162,7 @@ struct fzE_jvm_result
   union
   {
     jvalue v0;
-    jstring v1; // NYI should probably better be jthrowable
+    jstring v1; // NYI: UNDER DEVELOPMENT: should probably better be jthrowable
   }fzChoice;
 };
 
@@ -418,7 +418,7 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
       }
       break;
     default:
-      // NYI array
+      // NYI: UNDER DEVELOPMENT: array
       printf("unhandled %c", *sig);
       exit(EXIT_FAILURE);
       break;
@@ -440,7 +440,7 @@ fzE_jvm_result fzE_jvm_not_found(jstring jstr)
 // convert a 0-terminated utf8-bytes array to a jstring.
 jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 {
-  // NYI we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
+  // NYI: UNDER DEVELOPMENT: we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
   // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
   char outstr[4*byte_length];
   utf8_to_mod_utf8(utf8_bytes, outstr);

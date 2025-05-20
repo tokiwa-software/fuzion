@@ -59,7 +59,7 @@ is
   # short-hand to open new server bound to the any address
   # with a default backlog.
   #
-  # NYI blocking / none blocking
+  # NYI: UNDER DEVELOPMENT: blocking / none blocking
   #
   public type.start(T type, f net.family.val, p net.protocol.val, port u16, code ()->T) outcome T =>
 
@@ -74,7 +74,7 @@ is
 
   # short-hand to open new server with a default backlog
   #
-  # NYI blocking / none blocking
+  # NYI: UNDER DEVELOPMENT: blocking / none blocking
   #
   public type.start(T type, f net.family.val, p net.protocol.val, addr String, port u16, code ()->T) =>
     backlog := 10
@@ -83,7 +83,7 @@ is
 
   # open new server
   #
-  # NYI blocking / none blocking
+  # NYI: UNDER DEVELOPMENT: blocking / none blocking
   #
   public type.start(
     # the result type of the code that is run while server is active

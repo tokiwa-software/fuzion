@@ -1928,7 +1928,7 @@ public abstract class Expr extends ByteCode
 
     return new Expr()
       {
-        // NYI checkcasts where isRedundant=true should
+        // NYI: UNDER DEVELOPMENT: checkcasts where isRedundant=true should
         // not be present in the first place...
         // isRedundant is set to true if the checkcast
         // checks for the exact same type that is on the stack.

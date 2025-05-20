@@ -141,7 +141,7 @@ is
   =>
     check_and_replace
 
-    # NYI hack because using array as argument does not work
+    # NYI: UNDER DEVELOPMENT: hack because using array as argument does not work
     d := s.as_array
 
     if d.length.as_i64 > available

@@ -73,7 +73,7 @@ public class ParserTool extends ANY
   /**
    * maps temporary files which are fed to the parser to their original uri.
    */
-  // NYI fix memory leak
+  // NYI: UNDER DEVELOPMENT: fix memory leak
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
   private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 1;
@@ -94,7 +94,7 @@ public class ParserTool extends ANY
     Util.threadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
 
   /**
-   * NYI in the case of uri to stdlib  we need context
+   * NYI: UNDER DEVELOPMENT: in the case of uri to stdlib  we need context
    * @param uri
    * @return ParserCacheItem, empty if user starts in stdlib file and no record present yet.
    */
@@ -102,7 +102,7 @@ public class ParserTool extends ANY
   {
     var sourceText = SourceText.getText(uri);
     var result = parserCache.computeIfAbsent(uri, sourceText, key -> createParserCacheItem(uri));
-    // NYI hack! Without this the test RegressionRenameMandelbrotImage fails
+    // NYI: UNDER DEVELOPMENT: hack! Without this the test RegressionRenameMandelbrotImage fails
     // when running all tests
     Types.resolved = result.resolved();
     return result;
@@ -215,7 +215,7 @@ public class ParserTool extends ANY
   }
 
   /**
-   * NYI explain which pos are we actually returning here?
+   * NYI: UNDER DEVELOPMENT: explain which pos are we actually returning here?
    * @param feature
    * @return
    */
@@ -228,7 +228,7 @@ public class ParserTool extends ANY
       {
         return endOfFeature(feature.outer());
       }
-    // NYI replace by real end of feature once we have this information in the
+    // NYI: UNDER DEVELOPMENT: replace by real end of feature once we have this information in the
     // AST
     // NOTE: since this is a very expensive calculation and frequently used we
     // cache this
@@ -280,7 +280,7 @@ public class ParserTool extends ANY
       result = (SourcePosition) LexerTool
           .tokensFrom(result)
           .skip(1)
-          // NYI do we need to sometimes consider right brackets as well?
+          // NYI: UNDER DEVELOPMENT: do we need to sometimes consider right brackets as well?
           .filter(t -> !(t.isWhitespace()))
           // t is the first token not belonging to feature
           .map(t -> LexerTool.goLeft(t.start()))

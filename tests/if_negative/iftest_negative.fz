@@ -53,12 +53,12 @@ iftest_negative is
     if b # ok
       "Hello"
 
-  # NYI improve error message
+  # NYI: UNDER DEVELOPMENT: improve error message
   routine_negative (b bool) String =>
     if b # 5. should flag an error: Incompatible types in assignment
       "Hello"
 
-  # NYI improve error message
+  # NYI: UNDER DEVELOPMENT: improve error message
   function1 (b bool) String =>
     if b # 6. should flag an error: Incompatible types in branches of if expression
       "Hello"

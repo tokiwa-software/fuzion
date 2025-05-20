@@ -64,7 +64,7 @@ public float : numeric is
   # round floating point number
   # ties to away (0.5 => 1; -0.5 => -1; etc.)
   #
-  # NYI this could be made faster, see here:
+  # NYI: PERFORMANCE: this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
   public round float.this =>
     if float.this < float.this.zero
