@@ -41,7 +41,8 @@ module:public open(dd Directory_Descriptor,
   # close dir when de-instating effect
   #
   public redef finally unit =>
-    _ := fzE_dir_close dd
+    if fzE_dir_close dd != 0
+      fuzion.runtime.fault.cause ("io.dir.open.finally", "closing directory failed.")
 
 
 # short hand to get the currently
