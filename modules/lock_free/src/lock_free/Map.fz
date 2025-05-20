@@ -39,7 +39,7 @@
 # While CTrie is lock-free and guaranteed to make progress as a whole
 # it is not wait-free and thus no such guarantee is given per thread.
 #
-# NYI addif
+# NYI: UNDER DEVELOPMENT: addif
 #
 # glossary:
 # CTK => ctrie key
@@ -105,7 +105,7 @@ is
   pre debug: pos < array.length.as_u32
   post array.length > result.array.length
   =>
-    # NYI delete/remove should be in stdlib
+    # NYI: UNDER DEVELOPMENT: delete/remove should be in stdlib
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
     container_node (bmp ^ flag) tmp.as_array g
 
@@ -207,7 +207,7 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 
 
 # a linked list node
-# NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
+# NYI: UNDER DEVELOPMENT: instead of Sequence we should use something like the original implementation ListMap(Scala).
 list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (tuple CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
@@ -498,7 +498,7 @@ is
   # Main_Node -> container_node -> Indirection_Node -> dual x y
   dual(x, y singleton_node CTK CTV, lev u32, gen u64) =>
     d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) =>
-      # NYI why 35??
+      # NYI: UNDER DEVELOPMENT: why 35??
       if lev < 35
         xidx := ((hash0 (hash x.k)) >> lev) & 0x1f
         yidx := ((hash0 (hash y.k)) >> lev) & 0x1f

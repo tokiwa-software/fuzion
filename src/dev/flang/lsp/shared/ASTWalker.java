@@ -71,7 +71,7 @@ public class ASTWalker
   public static Stream<Entry<HasSourcePosition, AbstractFeature>> traverseFeature(AbstractFeature feature,
     boolean descend)
   {
-    // NYI heuristic to abort traverse
+    // NYI: UNDER DEVELOPMENT: heuristic to abort traverse
     // if (feature.outer() != null
     //   && feature.outer().pos()._sourceFile._fileName.startsWith(FuzionConstants.SYMBOLIC_FUZION_HOME.toString()))
     //   {

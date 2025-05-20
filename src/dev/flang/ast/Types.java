@@ -369,7 +369,7 @@ public class Types extends ANY
   /**
    * The current options as a static field.
    */
-  // NYI remove this when we have a better way of accessing current Resolution.
+  // NYI: CLEANUP: remove this when we have a better way of accessing current Resolution.
   static FuzionOptions _options;
 
 

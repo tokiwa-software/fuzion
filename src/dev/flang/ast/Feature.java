@@ -837,7 +837,7 @@ public class Feature extends AbstractFeature
               .filter(argName -> !argName.equals("_"))
               .filter(argName -> !usedNames.add(argName))
               .collect(Collectors.toSet());
-        // NYI report pos of arguments not pos of feature
+        // NYI: UNDER DEVELOPMENT: report pos of arguments not pos of feature
         AstErrors.argumentNamesNotDistinct(this, duplicateNames);
       }
   }

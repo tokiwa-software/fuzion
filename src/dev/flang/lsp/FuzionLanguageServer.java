@@ -167,8 +167,8 @@ public class FuzionLanguageServer implements LanguageServer
 
   private void initializeSemanticTokens(ServerCapabilities capabilities)
   {
-    // NYI support delta
-    // NYI support range
+    // NYI: UNDER DEVELOPMENT: support delta
+    // NYI: UNDER DEVELOPMENT: support range
     capabilities.setSemanticTokensProvider(
       new SemanticTokensWithRegistrationOptions(SemanticToken.Legend, new SemanticTokensServerFull(false), false));
   }
@@ -192,7 +192,7 @@ public class FuzionLanguageServer implements LanguageServer
 
   private void initializeCodeLens(ServerCapabilities capabilities)
   {
-    // NYI implement code lens resolve
+    // NYI: UNDER DEVELOPMENT: implement code lens resolve
     capabilities.setCodeLensProvider(new CodeLensOptions(false));
   }
 

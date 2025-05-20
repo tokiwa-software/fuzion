@@ -58,7 +58,7 @@ public class TypeTool extends ANY
     return labelNoErrorOrUndefined(type);
   }
 
-  // NYI DUCKTAPE! ensure condition sometimes fails on containsError()
+  // NYI: UNDER DEVELOPMENT: DUCKTAPE! ensure condition sometimes fails on containsError()
   // unable to reproduce unfortunately
   public static boolean containsError(AbstractType type)
   {

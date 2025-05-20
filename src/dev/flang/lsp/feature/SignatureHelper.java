@@ -110,7 +110,7 @@ public class SignatureHelper extends ANY
     var calledFeatures = consideredFeatures
       .filter(f -> featureNameMatchesCallName(f, call));
 
-    // NYI how to "intelligently" sort the signatureinfos?
+    // NYI: UNDER DEVELOPMENT: how to "intelligently" sort the signatureinfos?
     return new SignatureHelp(calledFeatures.map(f -> signatureInformation(f)).collect(Collectors.toList()), 0, 0);
   }
 

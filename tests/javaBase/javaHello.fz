@@ -100,8 +100,6 @@ javaHello : Java is
     (Java.as_java_object [java.lang.System.err])[0].println "I was printed via java."
 
 
-    # NYI: BUG: does not work yet in c-backend: mixture of say and java-println
-    # gets output mixed up. We probably need to flush before executing this?
     (Java.as_java_object [java.lang.System.out])[0].println "I was printed via java."
 
 
@@ -122,10 +120,6 @@ javaHello : Java is
     say Java.java.lang.Character_static.MAX__VALUE
     # get static field (null)
     say Java.java.lang.constant.ConstantDescs_static.CLASS__INIT__NAME
-
-
-    # NYI: BUG java.lang.IllegalAccessException: class dev.flang.be.jvm.runtime.Runtime cannot access class com.sun.security.ntlm.NTLMException
-    # say Java.com.sun.security.ntlm.NTLMException_static.AUTH__FAILED
 
 
     # "cast" TreeMap to Map and use it in a call to putAll

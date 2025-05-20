@@ -134,7 +134,7 @@ public enum Commands
         .sorted(HasSourcePositionTool.compareBySourcePosition.reversed())
         .findFirst()
         .map(m -> {
-          // NYI support indent different from two spaces
+          // NYI: UNDER DEVELOPMENT: support indent different from two spaces
           var indent = IntStream.range(0, m.pos().column() + 1).mapToObj(x -> " ").collect(Collectors.joining());
 
           var text = System.lineSeparator()
@@ -211,7 +211,7 @@ public enum Commands
 
   private static void callGraph(String arg0, String arg1)
   {
-    // NYI go to correct feature via more direct way
+    // NYI: UNDER DEVELOPMENT: go to correct feature via more direct way
     var feature = FeatureTool.selfAndDescendants(ParserTool.universe(Util.toURI(arg0)))
       .filter(f -> FeatureTool.uniqueIdentifier(f).equals(arg1))
       .findFirst()

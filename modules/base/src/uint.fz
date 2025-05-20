@@ -107,7 +107,7 @@ is
 
   # divide with remainder the two given positive ints
   # returns the quotient and the remainder
-  # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
+  # NYI: PERFORMANCE: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
   fixed divide_with_remainder (divisor uint) tuple uint uint
   pre safety: divisor > uint.zero
   =>
@@ -182,7 +182,7 @@ is
     array n (_ -> u32 0)
 
 
-  # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
+  # NYI: PERFORMANCE: make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
   public fixed redef infix *  (other uint) uint =>
     data

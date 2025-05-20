@@ -62,7 +62,7 @@ public stat(ps Stat_Handler) : effect is
   #
   public lstats(
          # the (relative or absolute) file name, using platform specific path separators
-         path String) outcome meta_data => # NYI : not sure whether to use meta_data or introduce a new feature for lstats metadata
+         path String) outcome meta_data => # NYI: UNDER DEVELOPMENT: : not sure whether to use meta_data or introduce a new feature for lstats metadata
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 4

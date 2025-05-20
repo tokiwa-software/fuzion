@@ -1390,7 +1390,7 @@ public class Runtime extends ANY
    */
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI */), arena);
+    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
     for (String library : libraries)
       {
         llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), arena));

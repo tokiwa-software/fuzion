@@ -27,7 +27,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
 
   # how many bytes are read at a time
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
-  # NYI move this to effect?
+  # NYI: UNDER DEVELOPMENT: move this to effect?
   pipe_buffer_size := 4096
 
 
@@ -129,8 +129,8 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
   =>
     (os.process.start process_and_args.first.val (process_and_args.drop 1)).bind p->
 
-      # NYI should wire pipe directly to process
-      # NYI this works only when pipes buffer is large enough for
+      # NYI: UNDER DEVELOPMENT: should wire pipe directly to process
+      # NYI: UNDER DEVELOPMENT: this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
       _ := concur.threads.spawn ()->
@@ -141,7 +141,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
               s array u8 => (write_bytes p.std_in s).ok
               * => false
 
-        # NYI error handling
+        # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in
         _ := fzE_pipe_close process.this.std_out
         _ := fzE_pipe_close process.this.std_err

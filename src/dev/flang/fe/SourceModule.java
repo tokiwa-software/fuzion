@@ -505,7 +505,7 @@ part of the (((inner features))) declarations of the corresponding
 
     if (inner.isField())
       {
-        // NYI inner.iscotype() does not work currently
+        // NYI: UNDER DEVELOPMENT: inner.iscotype() does not work currently
         if (inner._qname.getFirst().equals(FuzionConstants.TYPE_NAME))
           {
             AstErrors.typeFeaturesMustNotBeFields(inner);

@@ -49,7 +49,7 @@ public class IO
   public static final InputStream SYS_IN = System.in;
   private static PrintStream CLIENT_OUT = System.out;
   private static PrintStream CLIENT_ERR = System.err;
-  // NYI "fuzion-lsp-server" should depend on usage
+  // NYI: UNDER DEVELOPMENT: "fuzion-lsp-server" should depend on usage
   private static File tempDir =
     ErrorHandling.resultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
 

@@ -58,7 +58,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public infix * (n i32) ref : String
   pre
     n ≥ 0
-    # NYI String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
+    # NYI: UNDER DEVELOPMENT: String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
   is
     public redef utf8 Sequence u8 =>
       bytes := String.this.utf8
@@ -389,7 +389,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public substring(from, to i32) String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.byte_length
-    # NYI check if from/to are valid start/end bytes?
+    # NYI: UNDER DEVELOPMENT: check if from/to are valid start/end bytes?
   =>
     String.from_bytes (String.this.utf8.slice from to)
 

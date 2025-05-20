@@ -254,7 +254,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var result = switch (_fuir.clazzKind(cc))
       {
       case Routine :
-        // NYI change call to pass in ai as in match expression?
+        // NYI: UNDER DEVELOPMENT: change call to pass in ai as in match expression?
         var cur = callOnNewInstance(s, cc, tvalue, args);
 
         Value rres = cur;
@@ -288,7 +288,7 @@ public class Executor extends ProcessExpression<Value, Object>
       case Native:
         var mh = Linker.nativeLinker()
           .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI */), Arena.ofAuto())
+            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI: UNDER DEVELOPMENT: */), Arena.ofAuto())
               .find(_fuir.clazzNativeName(cc))
               .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
 

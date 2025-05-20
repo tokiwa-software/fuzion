@@ -156,7 +156,7 @@ public class Completion
         var set = Util.arrayToSet(validTokens);
         if (set.contains(tokenBeforeTriggerCharacter))
           {
-            // NYI better heuristic to check if we should offer infix/postfix
+            // NYI: UNDER DEVELOPMENT: better heuristic to check if we should offer infix/postfix
             // completion or types or keywords or nothing
 
             // no errors in line before pos?
@@ -174,7 +174,7 @@ public class Completion
                   .featuresInScope(pos)
                   .filter(af -> af.isConstructor() || af.isChoice())
                   .filter(af -> !af.featureName().baseName().contains(" "))
-                  // NYI consider generics
+                  // NYI: UNDER DEVELOPMENT: consider generics
                   .map(af -> TypeTool.baseName(af.selfType()))
                   .distinct()
                   .map(name -> buildCompletionItem(name, name, CompletionItemKind.TypeParameter));
@@ -271,7 +271,7 @@ public class Completion
    */
   private static String getInsertText(AbstractFeature feature)
   {
-    // NYI postfix return additional text edit
+    // NYI: UNDER DEVELOPMENT: postfix return additional text edit
     var baseNameReduced = feature
       .featureName()
       .baseName()

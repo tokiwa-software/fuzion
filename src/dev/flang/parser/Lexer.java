@@ -2977,7 +2977,7 @@ PIPE        : "|"
      * Store the indentation of multiline strings.
      * Empty if single line string.
      */
-    private Optional<Integer> _multiLineIndentation; // NYI mark as final?
+    private Optional<Integer> _multiLineIndentation; // NYI: CLEANUP: mark as final?
 
 
     /**
@@ -3190,7 +3190,7 @@ PIPE        : "|"
      * in multi line string the first character belonging
      * to the multiline string.
      *
-     * NYI cleanup: don't set multiLineIndentation here... but in constructor
+     * NYI: CLEANUP: don't set multiLineIndentation here... but in constructor
      * @return
      */
     private Optional<Integer> startOfStringContent()

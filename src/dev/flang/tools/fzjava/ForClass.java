@@ -1029,7 +1029,7 @@ class ForClass extends ANY
                                          (rt.contains(" ") ? "(" + rt + ")" : rt) + " " +
                                          fuzionString(cn) + " " +
                                          fuzionString(jn) + " " +
-                                         fuzionString(signature(fi.getType())) + "\n"));  // NYI fi.getType.getClass??
+                                         fuzionString(signature(fi.getType())) + "\n"));  // NYI: UNDER DEVELOPMENT: fi.getType.getClass??
           }
         else
           {
