@@ -804,7 +804,7 @@ public class NumLiteral extends Constant
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
-    Expr result = super.propagateExpectedTypeForPartial(res, context, t);
+    Expr result = this;
     if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
@@ -852,7 +852,16 @@ public class NumLiteral extends Constant
       {
         _propagatedType = t;
       }
-    return this;
+    Expr result = this;
+    if (t.isFunctionTypeExcludingLazy() && (typeForInferencing() == null || t.compareTo(typeForInferencing()) != 0))
+      {
+        result = propagateExpectedTypeForPartial(res, context, t);
+        if (result != this)
+          {
+            result = result.propagateExpectedType(res, context, t, from);
+          }
+      }
+    return result;
   }
 
 
