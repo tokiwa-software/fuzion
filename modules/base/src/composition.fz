@@ -105,14 +105,14 @@ public composition is
   # Bird: thrush
   # BQN: ?
   # Haskell: flip id
-  public thrush(T, U, V type, x T, f (T,U)->V) U->V => y->f x y  # NYI just `f x` with partial application should do , but does not
+  public thrush(T, U, V type, x T, f (T,U)->V) U->V => y->f x y  # NYI: UNDER DEVELOPMENT: just `f x` with partial application should do , but does not
 
   # V
   # hold a pair of arguments
   # Bird: vireo
   # BQN: ?
   # Haskell: flip . flip id
-  public vireo(T, U, V, W type, x T, y U, f (T,U,V)->W) V->W => z->f x y z  # NYI just `f x y` with partial application should do , but does not
+  public vireo(T, U, V, W type, x T, y U, f (T,U,V)->W) V->W => z->f x y z  # NYI: UNDER DEVELOPMENT: just `f x y` with partial application should do , but does not
 
   # K
   # Elementary Cancellator, first
