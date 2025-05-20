@@ -1895,9 +1895,20 @@ PLUSMINUS   : "+"
       {
         if (kind(p) == K_LETTER)
         {
+          var c = curCodePoint();
+          var possiblePrefixError = (c == 'b' || c == 'o' || c == 'd' || c == 'x')
+                                    && codePointAt(bytePos()-1) == '0'
+                                    && codePointAt(bytePos()-2) == '.';
           Errors.error(sourcePos(),
                        "Broken numeric literal, expected anything but a letter following a numeric literal.",
-                       null);
+                       possiblePrefixError
+                       ? "Fractional part must not have base prefix '0" + (char) c + "' if integer part has none."
+                       : null);
+          // skip parts of broken num literal to avoid subsequent errors
+          while (kind(curCodePoint()) == K_LETTER || kind(curCodePoint()) == K_DIGIT)
+            {
+              nextCodePoint();
+            }
         }
         yield new Literal(m);
       }};
