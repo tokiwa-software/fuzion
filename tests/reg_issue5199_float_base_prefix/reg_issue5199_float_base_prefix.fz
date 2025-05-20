@@ -35,7 +35,7 @@ reg_issue5199_float_base_prefix =>
   say 0d1.0d01.as_string # ok
   say 0x1.0x01.as_string # ok
 
-  
+
   _ i32 := 0   # ok
   _ i32 := 0b0 # ok
   _ i32 := 0o0 # ok
@@ -100,3 +100,7 @@ reg_issue5199_float_base_prefix =>
   _ f64 := 0x10.0b1             # 25. should flag an error: non matching prefixes
   _ f64 := 0x10.0o1             # 26. should flag an error: non matching prefixes
   _ f64 := 0x10.0d1             # 27. should flag an error: non matching prefixes
+
+
+  _ f64 := 0x10.0x1a0xcd        # 28. should flag an error: broken num literal
+  _ f64 := 12.30d1001010        # 29. should flag an error: broken num literal
