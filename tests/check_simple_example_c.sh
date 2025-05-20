@@ -68,7 +68,10 @@ else
     # read | separated backend options
     IFS='|' read -r -a be_options <<< "${FUZION_C_BACKEND_OPTIONS:-}"
 
+    # disable unbound variable: be_options[@]: unbound variable
+    set +u
     EXIT_CODE=$( ( (FUZION_DISABLE_ANSI_ESCAPES=true FUZION_JAVA_OPTIONS="${FUZION_JAVA_OPTIONS="-Xss${FUZION_JAVA_STACK_SIZE=5m}"} ${OPT:-}" $1 -XmaxErrors=-1 -c "${be_options[@]}" "$2" -o=testbin                && (ulimit -S -s $stack_size_limit || echo "failed setting limit via ulimit") && ./testbin) 2>tmp_err.txt | head -n 10000) > tmp_out.txt; echo $?)
+    set -u
 
     # 152 - 128 = 24 -> signal SIGXCPU
     if [ "$EXIT_CODE" -eq 152 ]; then
