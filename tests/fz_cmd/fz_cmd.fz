@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 fz_cmd is
-  _ := Java.dev.flang.tools.Fuzion.main []
+  _ := fuzion.java.jvm _ "../../classes/" ()->
+    _ := Java.dev.flang.tools.Fuzion.main []
