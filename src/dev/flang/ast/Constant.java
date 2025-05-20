@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.function.Supplier;
-
 import dev.flang.util.SourcePosition;
 
 
@@ -168,25 +166,12 @@ public abstract class Constant extends Expr
    * @param expectedType the expected type.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
-  {
-    var result = t.isFunctionType() && t.arity() == 0
-      ? new Function(_pos, NO_EXPRS, this)
-      : this;
-    if (result != this)
-      {
-        result = result.propagateExpectedType(res, context, t, from);
-      }
-    return result;
-  }
-  @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     return expectedType.isFunctionType() && expectedType.arity() == 0
-       ? new Function(_pos, NO_EXPRS, this)
-       : this;
+      ? new Function(_pos, NO_EXPRS, this)
+      : this;
   }
-
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
