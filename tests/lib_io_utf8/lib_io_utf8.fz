@@ -52,7 +52,7 @@ lib_io_utf8 =>
     say "$file exists: {f.exists file}"
 
     _ := f
-      .use file f.mode.write ()->(f.writer.write content.utf8).error
+      .use file f.mode.write ()->(f.writer.env.write content.utf8).error
       .bind (_ -> say "$file was created")
     say "$file exists: {f.exists file}"
 
@@ -96,8 +96,8 @@ lib_io_utf8 =>
     _ := io.file.delete "⚗️🧫"
     say (io.dir.make "⚗️🧫")
     say (io.dir.make "⚗️🧫")
-    _ := io.file.use "⚗️🧫/1️⃣📜" io.file.mode.write ()->(io.file.writer.write []).error
-    _ := io.file.use "⚗️🧫/2️⃣🗒️" io.file.mode.write ()->(io.file.writer.write []).error
+    _ := io.file.use "⚗️🧫/1️⃣📜" io.file.mode.write ()->(io.file.writer.env.write []).error
+    _ := io.file.use "⚗️🧫/2️⃣🗒️" io.file.mode.write ()->(io.file.writer.env.write []).error
 
     res := io.dir.use (Sequence String) "⚗️🧫" ()->
       array 3 _->io.dir.open.read.as_string

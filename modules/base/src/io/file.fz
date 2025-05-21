@@ -29,10 +29,8 @@ public file is
 
   module:public file_mutate : mutate is
 
-  public writer (io.buffered file_mutate).writer =>
-    (io.buffered file_mutate).writer.env
-  public reader (io.buffered file_mutate).reader =>
-    (io.buffered file_mutate).reader.env
+  public writer(wh io.Write_Handler, buf_size i32) : (io.buffered file_mutate).writer wh buf_size is
+  public reader(rh io.Read_Handler, buf_size i32) : (io.buffered file_mutate).reader rh buf_size is
 
   # NYI:
   # expected formal type: 'io.buffered io.this.file.this.file_mutate'

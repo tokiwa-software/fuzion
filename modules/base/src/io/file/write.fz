@@ -26,4 +26,4 @@
 #
 public write(f String, s String) outcome unit =>
   use f mode.write ()->
-    (writer.write s.utf8).error
+    (writer.env.write s.utf8).error

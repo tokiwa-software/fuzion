@@ -74,9 +74,9 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
     # install effect `open T` and run `code`
     (open fd file_name) ! ()->
       file_mutate ! ()->
-        (io.buffered file_mutate).reader (read_handler fd) 1024 ! ()->
-          (io.buffered file_mutate).writer (write_handler fd) 1024 ! ()->
+        reader (read_handler fd) 1024 ! ()->
+          writer (write_handler fd) 1024 ! ()->
             tmp := code.call
             # NYI: handle error once signature of with is changed
-            _ := (io.buffered file_mutate).writer.env.flush
+            _ := writer.env.flush
             tmp
