@@ -65,17 +65,17 @@ public class JavaInterface extends FUIRContext
       }
     catch (IllegalAccessException e)
       {
-        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("IllegalAccessException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     catch (NoSuchFieldException e)
       {
-        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("NoSuchFieldException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     return result;
@@ -95,15 +95,15 @@ public class JavaInterface extends FUIRContext
       }
     catch (IllegalAccessException e)
       {
-        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("IllegalAccessException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
       }
     catch (NoSuchFieldException e)
       {
-        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("NoSuchFieldException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
       }
   }
 
@@ -310,7 +310,7 @@ public class JavaInterface extends FUIRContext
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_static/call_constructor for class " +
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.env.call_static/call_constructor for class " +
                            clName + " calling " + (name == null ? "new " + clName : name ) + sig);
         cl = Object.class; // not reached.
       }
@@ -327,7 +327,7 @@ public class JavaInterface extends FUIRContext
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static/call_virtual/call_constructor calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_static/call_virtual/call_constructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
       }
     Object[] argz = javaRefToJavaObjects(args);

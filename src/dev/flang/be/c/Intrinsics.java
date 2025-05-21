@@ -732,21 +732,18 @@ public class Intrinsics extends ANY
         });
 
     var noJava = CStmnt.seq(
-                 CExpr.fprintfstderr("*** Set environment variable JAVA_HOME when compiling to be able to use intrinsics fuzion.java.*.\n"),
+                 CExpr.fprintfstderr("*** Set environment variable JAVA_HOME when compiling to be able to use intrinsics fuzion.jvm.*.\n"),
                  CExpr.fprintfstderr("*** Example: JAVA_HOME=/usr/lib/jvm/java-" + Version.JAVA_VERSION + "-openjdk-amd64 fz -c file.fz\n"),
                  CExpr.exit(1));
-    put("fuzion.java.Java_Object.is_null0", (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                                                       ? noJava
-                                                                                       : CExpr.call(
-                                                                                         "fzE_java_object_is_null",
-                                                                                         new List<CExpr>(outer.field(
-                                                                                           c._names.fieldName(c._fuir
-                                                                                             .lookupJavaRef(c._fuir.clazzOuterClazz(cl))))
-                                                                                           .castTo("jobject")))
-                                                                                         .cond(c._names.FZ_TRUE,
-                                                                                           c._names.FZ_FALSE)
-                                                                                         .ret());
-    put("fuzion.java.array_get"             , (c, cl, outer, in) -> {
+    put("fuzion.jvm.is_null0", (c, cl, outer, in) -> C.JAVA_HOME == null
+          ? noJava
+          : CExpr
+             .call("fzE_java_object_is_null",
+                   new List<CExpr>(A0.castTo("jobject")))
+             .cond(c._names.FZ_TRUE, c._names.FZ_FALSE)
+             .ret()
+       );
+    put("fuzion.jvm.array_get"             , (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -762,8 +759,8 @@ public class Intrinsics extends ANY
             false);
         }
     });
-    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(A0.castTo("jarray"))).ret());
-    put("fuzion.java.array_to_java_object0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(A0.castTo("jarray"))).ret());
+    put("fuzion.jvm.array_to_java_object0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -791,7 +788,7 @@ public class Intrinsics extends ANY
                 .ret();
         }
     });
-    put("fuzion.java.get_field0",
+    put("fuzion.jvm.get_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -801,7 +798,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("char *"))),
             false));
-    put("fuzion.java.get_static_field0",
+    put("fuzion.jvm.get_static_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -811,7 +808,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("char *"))),
               false));
-    put("fuzion.java.set_field0",
+    put("fuzion.jvm.set_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -821,7 +818,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("jvalue"),
                   A3.castTo("char *"))));
-    put("fuzion.java.set_static_field0",
+    put("fuzion.jvm.set_static_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -831,7 +828,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("jvalue"),
                   A3.castTo("char *"))));
-    put("fuzion.java.call_c0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -850,7 +847,7 @@ public class Intrinsics extends ANY
                     A2.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
-    put("fuzion.java.cast0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.cast0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -860,7 +857,7 @@ public class Intrinsics extends ANY
           return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr.compoundLiteral("jvalue", ".l="+A0.castTo("jobject").code()), false);
         }
     });
-    put("fuzion.java.call_s0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.call_s0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -882,7 +879,7 @@ public class Intrinsics extends ANY
                     A3.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
-    put("fuzion.java.call_v0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.call_v0", (c, cl, outer, in) -> {
       var internalArray = c._fuir.clazzArgClazz(cl, 4);
       var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
       if (C.JAVA_HOME == null)
@@ -903,7 +900,7 @@ public class Intrinsics extends ANY
                     A4.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
-    put("fuzion.java.primitive_to_java_object",
+    put("fuzion.jvm.primitive_to_java_object",
       (c, cl, outer, in) ->
         {
           if (C.JAVA_HOME == null)
@@ -924,7 +921,7 @@ public class Intrinsics extends ANY
             }
         }
     );
-    put("fuzion.java.java_string_to_string" , (c,cl,outer,in) ->
+    put("fuzion.jvm.java_string_to_string" , (c,cl,outer,in) ->
         {
           if (C.JAVA_HOME == null)
             {
@@ -941,7 +938,7 @@ public class Intrinsics extends ANY
                   .ret());
             }
         });
-      put("fuzion.java.string_to_java_object0", (c,cl,outer,in) -> {
+      put("fuzion.jvm.string_to_java_object0", (c,cl,outer,in) -> {
           var rc = c._fuir.clazzResultClazz(cl);
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
           var data          = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
@@ -959,12 +956,12 @@ public class Intrinsics extends ANY
         });
 
 
-    put("fuzion.java.create_jvm", (c,cl,outer,in) -> {
+    put("fuzion.jvm.create_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
         : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
     });
-    put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {
+    put("fuzion.jvm.destroy_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
         : CExpr.call("fzE_destroy_jvm", new List<>());

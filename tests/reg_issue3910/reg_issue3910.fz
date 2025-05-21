@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-fuzion.java.jvm ()->
+fuzion.jvm.use ()->
   _ := ((Java.java.lang.__jString.new "").getBytes "UTF8").bind i32 x->x.length

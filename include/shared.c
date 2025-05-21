@@ -218,7 +218,7 @@ JNIEnv * getJNIEnv()
 {
   if (!jvm_running)
     {
-      printf("JVM has not been started via: `fuzion.java.create_jvm0 ...`\n");
+      printf("JVM has not been started via: `fuzion.jvm.env.create_jvm0 ...`\n");
       exit(EXIT_FAILURE);
     }
   if (fzE_jni_env == NULL) {
