@@ -981,8 +981,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           "(Ljava/lang/Object;)V",
                           ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
       );
-    put("effect.type.from_env",
-        "effect.type.unsafe_from_env", (jvm, si, cc, tvalue, args) ->
+    put("effect.type.env",
+        "effect.type.unsafe_env", (jvm, si, cc, tvalue, args) ->
       {
         var ecl = jvm._fuir.clazzResultClazz(cc); // type
         var rt = jvm._types.resultType(ecl);

@@ -60,7 +60,7 @@ public effect is
 
   # get this effect from env
   #
-  public type.from_env effect.this => intrinsic
+  public type.env effect.this => intrinsic
 
 
   # set default effect in the current context to this if none is
@@ -249,7 +249,7 @@ public effect is
   public type.get_if_instated option effect.this
   =>
     if effect.this.is_instated
-      unsafe_from_env
+      unsafe_env
     else
       nil
 
@@ -258,7 +258,7 @@ public effect is
   # in case static analysis fails to verify that `effect.this` is
   # actually instated.
   #
-  type.unsafe_from_env effect.this => intrinsic
+  type.unsafe_env effect.this => intrinsic
 
 
   # --------------------  replacing effect instances  --------------------

@@ -4,7 +4,7 @@
 ----^^^^^^
 Callchain that lead to this point:
 
-effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' at {base.fum}/mutate/array.fz:106:5:
+effect environment '--empty--' for call to 'reg_issue348.type.m.type.env' at {base.fum}/mutate/array.fz:106:5:
     LM.env.array length data unit
 ----^^^^^^
 effect environment '--empty--' for call to '(mutate.type.array.type reg_issue348.a).new#3 reg_issue348.m' at --CURDIR--/reg_issue348.fz:33:10:

@@ -1422,7 +1422,6 @@ callTail    : indexCall callTail
    * @param target the target of the call
    *
 dotCall     : dot call   callTail
-            | dot "env"  callTail
             | dot "type" callTail
             | dot "this" callTail
             | dot select callTail
@@ -1431,21 +1430,7 @@ dotCall     : dot call   callTail
   Expr dotCall(Expr target)
   {
     Expr result;
-    if (skip(Token.t_env))
-      {
-        AbstractType t = target.asParsedType();
-        if (t == null)
-          {
-            AstErrors.noValidLHSInExpresssion(target, ".env");
-            t = Types.t_ERROR;
-            result = Call.ERROR;
-          }
-        else
-          {
-            result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), target), new ParsedName(sourceRange(target.pos()), "from_env")));
-          }
-      }
-    else if (skip(Token.t_type))
+    if (skip(Token.t_type))
       {
         AbstractType t = target.asParsedType();
         if (t == null)

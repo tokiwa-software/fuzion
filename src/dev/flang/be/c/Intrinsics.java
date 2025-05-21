@@ -711,8 +711,8 @@ public class Intrinsics extends ANY
               };
         });
 
-    put("effect.type.from_env",
-        "effect.type.unsafe_from_env",
+    put("effect.type.env",
+        "effect.type.unsafe_env",
       (c, cl, outer, in) ->
         {
           var ecl = c._fuir.clazzResultClazz(cl); // type
