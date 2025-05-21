@@ -758,6 +758,7 @@ public class C extends ANY
           );
 
         command.addAll("-O3");
+        command.addAll("-mavx");
       }
 
     command.addAll(
