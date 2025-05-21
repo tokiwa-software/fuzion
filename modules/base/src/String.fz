@@ -791,6 +791,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
     (io.buffered LM).writer.env.write utf8
 
 
+  # returns a zero terminated array of
+  # the bytes of this String
+  #
+  public as_c_string array u8 =>
+    (String.this + codepoint 0).utf8.as_array
+
+
+
   # monoid of strings with infix + operation.
   #
   public type.concat Monoid String =>

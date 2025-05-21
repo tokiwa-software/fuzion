@@ -123,9 +123,6 @@ public clang is
 
     check !(ffi.is_null idx)
 
-    String.as_c_string =>
-      (String.this + codepoint 0).utf8.as_array
-
     # NYI: DFA mark value arg fields as read/written
     cxc := CXCursor 0 0 ffi.null ffi.null ffi.null
     cxs := CXString ffi.null 0 0

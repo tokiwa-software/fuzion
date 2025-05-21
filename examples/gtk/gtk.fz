@@ -31,9 +31,6 @@ g_signal_connect_data(F type: Function unit Native_Ref Native_Ref, app Native_Re
 g_application_run(app Native_Ref, argc i32, argv Native_Ref) i32 => native
 g_object_unref(app Native_Ref) unit => native
 
-String.as_c_string =>
-  (String.this + codepoint 0).utf8.as_array
-
 
 gtk =>
 
