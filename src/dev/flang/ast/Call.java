@@ -2804,46 +2804,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   *
-   * @param from for error output: if non-null, produces a String describing
-   * where the expected type came from.
-   *
-   * @return either this or a new Expr that replaces this and produces the
-   * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the expression that reads the field.
-   */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
-  {
-    Expr r = this;
-    if (t.isFunctionTypeExcludingLazy()         &&
-        !_wasImplicitImmediateCall &&
-        _type != Types.t_ERROR     &&
-        (_type == null || !_type.isFunctionType()))
-      {
-        r = propagateExpectedTypeForPartial(res, context, t);
-        if (r != this)
-          {
-            var r2 = r.propagateExpectedType(res, context, t, from);
-            if (CHECKS) check
-              (r == r2);
-          }
-      }
-    return r;
-  }
-
-
-  /**
    * During type inference: Wrap expressions that are assigned to lazy actuals
    * in functions.
    *
