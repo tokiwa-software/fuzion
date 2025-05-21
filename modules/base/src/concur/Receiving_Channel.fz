@@ -27,5 +27,5 @@ public Receiving_Channel(T type) ref is
 
   public has_next option T => abstract
 
-  public type.select(ch array (Channel T)) option T =>
-    panic "NYI"
+  # public type.select(ch array (Channel T)) option T =>
+  #   panic "NYI"
