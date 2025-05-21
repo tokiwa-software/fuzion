@@ -21,9 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-CREATE_DB := $(shell echo "CREATE TABLE table_name (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE); INSERT INTO table_name (name, email) VALUES ('Mario', 'admin@example.com');" | sqlite3 test.db > /dev/null 2> /dev/null || true)
+override NAME = mod_wolfssl
 
-override NAME = mod_sqlite
-override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=sqlite3
-override FUZION_C_BACKEND_OPTIONS = -CLink=sqlite3|-CInclude=sqlite3.h
+FUZION_OPTIONS = -modules=wolfssl
+
+export DYLD_FALLBACK_LIBRARY_PATH ?= /opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/
+
+override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=wolfssl
+override FUZION_C_BACKEND_OPTIONS = -CLink=wolfssl|-CInclude=wolfssl/options.h wolfssl/ssl.h|-CFlags=-DWC_NO_HARDEN
+
 include ../simple.mk

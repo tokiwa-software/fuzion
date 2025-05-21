@@ -749,43 +749,46 @@ public class C extends ANY
           "-Wextra",
           "-Wpedantic",
           "-Wformat=2",
-          "-Wno-unused-parameter",
-          "-Wno-unused-but-set-parameter", // needed for #1777
           "-Wshadow",
           "-Wwrite-strings",
           "-Wold-style-definition",
           "-Wredundant-decls",
           "-Wnested-externs",
-          "-Wmissing-include-dirs",
-          // NYI: UNDER DEVELOPMENT:
-          "-Wno-strict-prototypes",
-          // NYI: UNDER DEVELOPMENT:
-          "-Wno-gnu-empty-initializer",
-          // NYI: UNDER DEVELOPMENT:
-          "-Wno-zero-length-array",
-          "-Wno-trigraphs",
-          "-Wno-gnu-empty-struct",
-          "-Wno-unused-variable",
-          "-Wno-unused-label",
-          "-Wno-unused-function",
-          // used when casting jobject to e.g. u16
-          "-Wno-pointer-to-int-cast",
-          // clang >= 19:
-          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/linux' [-Werror,-Wmissing-include-dirs]
-          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
-          "-Wno-missing-include-dirs",
-          // allow infinite recursion
-          "-Wno-infinite-recursion",
-          // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
-          "-Wno-incompatible-function-pointer-types"
+          "-Wmissing-include-dirs"
           );
 
-        if (_options._cCompiler == null && clangVersion >= 13)
-          {
-            command.addAll("-Wno-unused-but-set-variable");
-          }
-
         command.addAll("-O3");
+      }
+
+    command.addAll(
+        "-Wno-unused-parameter",
+        "-Wno-unused-but-set-parameter", // needed for #1777
+        // NYI: UNDER DEVELOPMENT:
+        "-Wno-strict-prototypes",
+        // NYI: UNDER DEVELOPMENT:
+        "-Wno-gnu-empty-initializer",
+        // NYI: UNDER DEVELOPMENT:
+        "-Wno-zero-length-array",
+        "-Wno-trigraphs",
+        "-Wno-gnu-empty-struct",
+        "-Wno-unused-variable",
+        "-Wno-unused-label",
+        "-Wno-unused-function",
+        // used when casting jobject to e.g. u16
+        "-Wno-pointer-to-int-cast",
+        // clang >= 19:
+        // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/linux' [-Werror,-Wmissing-include-dirs]
+        // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
+        "-Wno-missing-include-dirs",
+        // allow infinite recursion
+        "-Wno-infinite-recursion",
+        // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
+        "-Wno-incompatible-function-pointer-types"
+        );
+
+    if (_options._cCompiler == null && clangVersion >= 13)
+      {
+        command.addAll("-Wno-unused-but-set-variable");
       }
 
     if(_options._useBoehmGC)

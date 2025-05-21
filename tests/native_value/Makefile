@@ -30,5 +30,5 @@ export C_INCLUDE_PATH = /usr/lib/llvm-$(CLANG_VERSION)/include:/opt/homebrew/opt
 export DYLD_FALLBACK_LIBRARY_PATH ?= /opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/
 
 override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=clang
-override FUZION_C_BACKEND_OPTIONS = "-CLink=clang" "-CInclude=clang-c/Index.h"
+override FUZION_C_BACKEND_OPTIONS = -CLink=clang|-CInclude=clang-c/Index.h
 include ../simple.mk
