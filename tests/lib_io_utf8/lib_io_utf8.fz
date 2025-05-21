@@ -28,11 +28,11 @@ lib_io_utf8 =>
 
   say "Tests from lib_io_file/fileiotest.fz using unicode:\n"
 
-  _ := lm ! ()->file_io_utf8
+  file_io_utf8
 
   say "\n\nTests from lib_io_dir/lib_io_dir.fz using unicode:\n"
 
-  _ := lm ! ()->dir_io_utf8
+  dir_io_utf8
 
   file_io_utf8 =>
 
@@ -52,14 +52,14 @@ lib_io_utf8 =>
     say "$file exists: {f.exists file}"
 
     _ := f
-      .use unit lm file f.mode.write ()->((io.buffered lm).writer.env.write content.utf8).error
+      .use file f.mode.write ()->(f.writer.write content.utf8).error
       .bind (_ -> say "$file was created")
     say "$file exists: {f.exists file}"
 
     say "stat resolve=true : $file size is {(f.stat file true).val.size}"
     say "stat resolve=false: $file size is {(f.stat file false).val.size}"
 
-    _ := f.use unit lm file f.mode.read ()->
+    _ := f.use file f.mode.read ()->
       f.open.seek ()->
         say  f.seek.env.file_position
         say (f.seek.env.seek 1)
@@ -67,7 +67,7 @@ lib_io_utf8 =>
         say (f.seek.env.seek 0)
 
 
-    _ := f.use (array u8) lm file f.mode.read ()->(io.buffered lm).read_fully
+    _ := f.use file f.mode.read ()->(io.buffered f.file_mutate).read_fully
       .bind bytes->
         filecontent := String.from_bytes bytes
         say "file content bytes: $bytes"
@@ -96,8 +96,8 @@ lib_io_utf8 =>
     _ := io.file.delete "⚗️🧫"
     say (io.dir.make "⚗️🧫")
     say (io.dir.make "⚗️🧫")
-    _ := io.file.use unit lm "⚗️🧫/1️⃣📜" io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
-    _ := io.file.use unit lm "⚗️🧫/2️⃣🗒️" io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
+    _ := io.file.use "⚗️🧫/1️⃣📜" io.file.mode.write ()->(io.file.writer.write []).error
+    _ := io.file.use "⚗️🧫/2️⃣🗒️" io.file.mode.write ()->(io.file.writer.write []).error
 
     res := io.dir.use (Sequence String) "⚗️🧫" ()->
       array 3 _->io.dir.open.read.as_string

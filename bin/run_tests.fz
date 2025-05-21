@@ -111,20 +111,16 @@ String.prefix !! =>
 
 append_line(mtx concur.sync.mutex, dest String, str String) =>
 
-  lm : mutate is
-  lm ! ()->
-    mtx.synchronized ()->
-      check (io.file.use unit lm $dest io.file.mode.append ()->
-              check ("$str\n".write_to lm).ok).ok
+  mtx.synchronized ()->
+    check (io.file.use $dest io.file.mode.append ()->
+            check ("$str\n".write_to io.file.file_mutate).ok).ok
 
 
 # read file f fully
 #
 read_file_fully(f String) outcome String =>
-  lm : mutate is
-  lm ! ()->
-    io.file.use _ lm f io.file.mode.read ()->
-      String.from_bytes (io.buffered lm).read_fully
+  io.file.use f io.file.mode.read ()->
+    String.from_bytes (io.buffered io.file.file_mutate).read_fully
 
 
 is_windows =>
