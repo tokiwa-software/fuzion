@@ -83,9 +83,9 @@ add_simple_test =>
             exit 1
 
           _ := io.dir.make "tests/$test"
-          _ := io.file.use unit lm "tests/$test/$test.fz" io.file.mode.write ()->
-                ((io.buffered lm).writer.env.write ((header test)+(test_body test)).utf8).error
-          _ := io.file.use unit lm "tests/$test/Makefile" io.file.mode.write ()->
-                ((io.buffered lm).writer.env.write ((header "Makefile")+(makefile_body test)).utf8).error
+          _ := io.file.use "tests/$test/$test.fz" io.file.mode.write ()->
+                (io.file.writer.write ((header test)+(test_body test)).utf8).error
+          _ := io.file.use "tests/$test/Makefile" io.file.mode.write ()->
+                (io.file.writer.write ((header "Makefile")+(makefile_body test)).utf8).error
 
         io.end_of_file => exit 1

@@ -21,10 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-lm : mutate is
-
-_ := lm ! ()->mmap_test
-
 mmap_test =>
 
   testfile := "testfile"
@@ -35,13 +31,13 @@ mmap_test =>
   # NYI: UNDER DEVELOPMENT: get actual page size
   page_size := 65536
 
-  say <| io.file.use unit lm testfile io.file.mode.append ()->
+  say <| io.file.use testfile io.file.mode.append ()->
 
-    (io.buffered lm).writer.env.write (array u8 page_size i->0)
+    io.file.writer.write (array u8 page_size i->0)
       .error.get
-    (io.buffered lm).writer.env.write "hello!".utf8
+    io.file.writer.write "hello!".utf8
       .error.get
-    (io.buffered lm).writer.env.flush
+    io.file.writer.flush
       .get
 
     offset := page_size.as_i64
@@ -55,7 +51,7 @@ mmap_test =>
     say <| f.mmap offset (i64 7) ()->
 
 
-  say <| io.file.use String lm testfile io.file.mode.read ()->
-    String.from_bytes ((io.buffered lm).read_fully.drop page_size)
+  say <| io.file.use testfile io.file.mode.read ()->
+    String.from_bytes ((io.buffered io.file.file_mutate).read_fully.drop page_size)
 
   say (io.file.delete testfile)

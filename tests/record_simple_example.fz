@@ -80,10 +80,8 @@ String.prefix !! =>
 
 write_to_file(dest String, data String) =>
   _ := io.file.delete dest
-  lm : mutate is
-  lm ! ()->
-    check (io.file.use unit lm dest io.file.mode.write ()->
-      check (data.write_to lm).ok).ok
+  check (io.file.use dest io.file.mode.write ()->
+    check (data.write_to io.file.file_mutate).ok).ok
 
 
 
