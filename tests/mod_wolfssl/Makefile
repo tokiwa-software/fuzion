@@ -23,6 +23,8 @@
 
 override NAME = mod_wolfssl
 
+CREATE_KEY := $(shell openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/C=DE/ST=BW/L=Karlsruhe/O=Tokiwa/OU=CompanySectionName/CN=tokiwa.software" 2> /dev/null)
+
 FUZION_OPTIONS = -modules=wolfssl
 
 export DYLD_FALLBACK_LIBRARY_PATH ?= /opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/
