@@ -61,7 +61,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils sqlite shellcheck llvm
+          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils sqlite shellcheck llvm wolfssl
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: xcode-select # to have libclang available

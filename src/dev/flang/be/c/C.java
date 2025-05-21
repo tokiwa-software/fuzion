@@ -34,6 +34,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -748,43 +749,46 @@ public class C extends ANY
           "-Wextra",
           "-Wpedantic",
           "-Wformat=2",
-          "-Wno-unused-parameter",
-          "-Wno-unused-but-set-parameter", // needed for #1777
           "-Wshadow",
           "-Wwrite-strings",
           "-Wold-style-definition",
           "-Wredundant-decls",
           "-Wnested-externs",
-          "-Wmissing-include-dirs",
-          // NYI: UNDER DEVELOPMENT:
-          "-Wno-strict-prototypes",
-          // NYI: UNDER DEVELOPMENT:
-          "-Wno-gnu-empty-initializer",
-          // NYI: UNDER DEVELOPMENT:
-          "-Wno-zero-length-array",
-          "-Wno-trigraphs",
-          "-Wno-gnu-empty-struct",
-          "-Wno-unused-variable",
-          "-Wno-unused-label",
-          "-Wno-unused-function",
-          // used when casting jobject to e.g. u16
-          "-Wno-pointer-to-int-cast",
-          // clang >= 19:
-          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/linux' [-Werror,-Wmissing-include-dirs]
-          // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
-          "-Wno-missing-include-dirs",
-          // allow infinite recursion
-          "-Wno-infinite-recursion",
-          // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
-          "-Wno-incompatible-function-pointer-types"
+          "-Wmissing-include-dirs"
           );
 
-        if (_options._cCompiler == null && clangVersion >= 13)
-          {
-            command.addAll("-Wno-unused-but-set-variable");
-          }
-
         command.addAll("-O3");
+      }
+
+    command.addAll(
+        "-Wno-unused-parameter",
+        "-Wno-unused-but-set-parameter", // needed for #1777
+        // NYI: UNDER DEVELOPMENT:
+        "-Wno-strict-prototypes",
+        // NYI: UNDER DEVELOPMENT:
+        "-Wno-gnu-empty-initializer",
+        // NYI: UNDER DEVELOPMENT:
+        "-Wno-zero-length-array",
+        "-Wno-trigraphs",
+        "-Wno-gnu-empty-struct",
+        "-Wno-unused-variable",
+        "-Wno-unused-label",
+        "-Wno-unused-function",
+        // used when casting jobject to e.g. u16
+        "-Wno-pointer-to-int-cast",
+        // clang >= 19:
+        // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/linux' [-Werror,-Wmissing-include-dirs]
+        // clang: error: no such include directory: 'C:/Program Files/OpenJDK/jdk-21.0.2/include/darwin' [-Werror,-Wmissing-include-dirs]
+        "-Wno-missing-include-dirs",
+        // allow infinite recursion
+        "-Wno-infinite-recursion",
+        // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
+        "-Wno-incompatible-function-pointer-types"
+        );
+
+    if (_options._cCompiler == null && clangVersion >= 13)
+      {
+        command.addAll("-Wno-unused-but-set-variable");
       }
 
     if(_options._useBoehmGC)
@@ -2107,30 +2111,32 @@ public class C extends ANY
         res.add(CExpr.decl(isNativeValue ? _fuir.clazzNativeName(rc) : _types.clazz(rc), tmp));
       }
 
-    switch (_fuir.getSpecialClazz(rc))
+    res.add(switch (_fuir.getSpecialClazz(rc))
       {
-        case
-          c_i8, c_i16, c_i32, c_i64, c_u8,
-          c_u16, c_u32, c_u64, c_f32, c_f64: { res.add(tmp.assign(call)); break; }
+        case c_i8 , c_i16, c_i32, c_i64, c_u8,
+             c_u16, c_u32, c_u64, c_f32, c_f64:
+          {
+            yield tmp.assign(call);
+          }
         case c_String:
           {
             var str = new CIdent("str");
-            res.add(CStmnt.seq(
+            yield CStmnt.seq(
               CExpr.decl("char*", str, call),
-              tmp.assign(boxedConstString(str, CExpr.call("strlen", new List<>(str))))
-                ));
-            break;
+              tmp.assign(boxedConstString(str, CExpr.call("strlen", new List<>(str)))));
           }
-        case c_bool: { res.add(tmp.assign(call.cond(_names.FZ_TRUE, _names.FZ_FALSE))); break; }
+        case c_bool:
+          {
+            yield tmp.assign(call.cond(_names.FZ_TRUE, _names.FZ_FALSE));
+          }
         default:
           {
             var x = _fuir.clazzIsRef(rc)
               ? call.castTo("void *")
               : call;
-            res.add(resultsInUnit ? x : tmp.assign(x));
-            break;
+            yield resultsInUnit ? x : tmp.assign(x);
           }
-      };
+      });
 
     for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
       {
@@ -2147,7 +2153,66 @@ public class C extends ANY
                   : tmp.ret());
       }
 
+    addSizeOfValueTypeAsserts(cl, res, rc, !resultsInUnit && isNativeValue);
+
     return CStmnt.seq(res);
+  }
+
+
+  /**
+   * add asserts to check that value type sizes match
+   * e.g.: assert(sizeof(CXCursor)==sizeof(fzT_5CXCursor));
+   *
+   * @param cl
+   * @param res
+   * @param rc
+   * @param isNativeValueResult
+   */
+  private void addSizeOfValueTypeAsserts(int cl, List<CStmnt> res, int rc, boolean isNativeValueResult)
+  {
+    var complexValues = new TreeSet<Integer>();
+
+    for (var i = 0; i < _fuir.clazzArgCount(cl); i++)
+      {
+        var at = _fuir.clazzArgClazz(cl, i);
+        var c = _fuir.lookupCall(at);
+        var isComplexValue = c != NO_CLAZZ
+          // 1. pass as function pointer
+          ? false
+          : _fuir.clazzIsRef(at)
+          // 2. pass as ref
+          ? false
+          // 3. pass as value
+          : (_fuir.clazzIsArray(at)
+              // 3.1 array, we need to get field internal_array.data
+              ? false
+              // 3.2 plain value
+              : _fuir.getSpecialClazz(at) != SpecialClazzes.c_NOT_FOUND
+                ? false
+                : true);
+        if (isComplexValue)
+          {
+            complexValues.add(at);
+          }
+      }
+
+    if (isNativeValueResult)
+      {
+        complexValues.add(rc);
+      }
+
+    res.addAll(complexValues
+      .stream()
+      .map(x ->
+        new CStmnt() {
+          @Override void code(CString sb) {
+            var e = CExpr
+              .sizeOfType(_fuir.clazzNativeName(x))
+              .eq(CExpr.sizeOfType(_types.clazz(x)));
+            sb.append("assert("  + e.code() + ")");
+          };
+        })
+      .iterator());
   }
 
 
