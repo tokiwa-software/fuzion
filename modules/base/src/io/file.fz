@@ -26,3 +26,16 @@
 # file -- a unit type that contains effects related to file I/O
 #
 public file is
+
+  module:public file_mutate : mutate is
+
+  public writer (io.buffered file_mutate).writer =>
+    (io.buffered file_mutate).writer.env
+  public reader (io.buffered file_mutate).reader =>
+    (io.buffered file_mutate).reader.env
+
+  # NYI:
+  # expected formal type: 'io.buffered io.this.file.this.file_mutate'
+  # actual type found   : 'io.buffered io.file.this.file_mutate'
+  # public buffered io.buffered file_mutate =>
+  #   io.buffered file_mutate
