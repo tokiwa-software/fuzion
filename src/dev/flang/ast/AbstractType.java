@@ -392,6 +392,23 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * the types may still be or depend on generic parameters.
    *
    * @param actual the actual type.
+   *
+   * @param context the source code context where this Type is used
+   */
+  boolean isAssignableFromWithoutTaggingAndWithoutBoxing(AbstractType actual, Context context)
+  {
+    return actual.isVoid()
+         || !isChoice() && isAssignableFrom(actual, context)
+         || isChoiceAssignableFrom(actual);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this without tagging. This performs static type checking, i.e.,
+   * the types may still be or depend on generic parameters.
+   *
+   * @param actual the actual type.
    */
   public boolean isAssignableFromWithoutTagging(AbstractType actual)
   {
@@ -1282,8 +1299,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return this.isVoid()
       || other.isVoid()
-      ||    !this .isAssignableFromWithoutTagging(other, context)
-         && !other.isAssignableFromWithoutTagging(this , context);
+      ||    !this .isAssignableFromWithoutTaggingAndWithoutBoxing(other, context)
+         && !other.isAssignableFromWithoutTaggingAndWithoutBoxing(this , context);
   }
 
 
