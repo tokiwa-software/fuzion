@@ -1807,13 +1807,14 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the outer clazz of this corresponding feature {@code o}.
    */
+  // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
   private Clazz findOuter(AbstractType o)
   {
     /* starting with feature(), follow outer references
      * until we find o.
      */
     var of = o.feature();
-    var isValue = o.isValue();
+    var isValue = !o.isRef() && !of.isRef();
     var isThisValue = o.isThisType() && o.isRef() != of.isRef() && isValue;
     var res = this;
     var i = feature();
