@@ -227,7 +227,7 @@ public class Call extends AbstractCall
    *
    * @param n the name of the called feature
    */
-  Call(SourcePosition pos, String n)
+  public Call(SourcePosition pos, String n)
   {
     this(pos, null, n);
   }

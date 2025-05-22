@@ -63,6 +63,12 @@ public class Parser extends Lexer
 
 
   /**
+   * quick-and-dirty hack for unique ids for temporary features
+   */
+  static private long id = 0;
+
+
+  /**
    * Different kinds of opening / closing brackets
    */
   static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
@@ -310,7 +316,7 @@ field       : returnType
         eff == UnresolvedType.NONE &&
         inh.isEmpty())
       {
-        p = implFldOrRout(hasType, (n.size() > 1) ? i : -1);
+        p = implFldOrRout(hasType, l, (n.size() > 1) ? i : -1);
       }
     else
       {
@@ -2833,8 +2839,8 @@ nextValue   : COMMA exprInLine
       }
     else
       {
-        p1 =        implFldInit(hasType, -1);
-        p2 = forked.implFldInit(hasType, -1);
+        p1 =        implFldInit(hasType, null, -1);
+        p2 = forked.implFldInit(hasType, null, -1);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
@@ -3366,7 +3372,7 @@ implFldOrRout   : implRout           // may start at min indent
                 |
                 ;
    */
-  Impl implFldOrRout(boolean hasType, int select)
+  Impl implFldOrRout(boolean hasType, List<Feature> l, int select)
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
@@ -3381,7 +3387,7 @@ implFldOrRout   : implRout           // may start at min indent
       }
     else if (isOperator(true, ":="))
       {
-        return implFldInit(hasType, select);
+        return implFldInit(hasType, l, select);
       }
     else
       {
@@ -3397,7 +3403,7 @@ implFldOrRout   : implRout           // may start at min indent
 implFldInit : ":=" operatorExpr      // may start at min indent
             ;
    */
-  Impl implFldInit(boolean hasType, int select)
+  Impl implFldInit(boolean hasType, List<Feature> l, int select)
   {
     SourcePosition pos = tokenSourcePos();
     if (!skip(true, ":="))
@@ -3414,7 +3420,31 @@ implFldInit : ":=" operatorExpr      // may start at min indent
       }
     else
       {
-        var s = new Select(pos, operatorExpr(), null, select);
+        String tmpName;
+
+        if (CHECKS) check
+          (l != null);
+
+        if (l.size() == 0)
+          {
+            tmpName = FuzionConstants.DESTRUCTURE_PREFIX + id++;
+
+            l.add(new Feature(pos,
+                              Visi.PRIV,
+                              0,
+                              NoType.INSTANCE,
+                              new List<>(tmpName),
+                              new List<>(),
+                              Function.NO_CALLS,
+                              Contract.EMPTY_CONTRACT,
+                              new Impl(pos, operatorExpr(), Impl.Kind.FieldDef)));
+          }
+        else
+          {
+            tmpName = l.getFirst().featureName().baseName();
+          }
+
+        var s = new Select(pos, new Call(pos, tmpName), null, select);
         return new Impl(pos,
                         s,
                         hasType ? Impl.Kind.FieldInit

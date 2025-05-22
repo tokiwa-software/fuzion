@@ -46,7 +46,7 @@ public class Function extends AbstractLambda
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<AbstractCall> NO_CALLS = new List<>();
+  public static final List<AbstractCall> NO_CALLS = new List<>();
 
 
   /*-------------------------  static variables -------------------------*/
