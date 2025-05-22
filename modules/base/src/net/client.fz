@@ -30,9 +30,9 @@
 #
 #     net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
 #       .bind c->
-#         net.connections.with unit mutate c ()->
+#         net.connections.with _ mutate c ()->
 #           say net.channel.env.get_peer_address
-#           say ((io.buffered lm).writer.write [0,1,2]).bytes_written
+#           say ((io.buffered mutate).writer.write [0,1,2]).bytes_written
 #
 # Blocks until connection is establised.
 # NYI: UNDER DEVELOPMENT: blocking / none blocking
