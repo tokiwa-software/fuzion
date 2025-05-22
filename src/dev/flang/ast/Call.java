@@ -2639,7 +2639,11 @@ public class Call extends AbstractCall
       {
         _type = Types.t_ERROR;
       }
-    var result = fixAssociativity(res, context);
+    Call result = null;
+    if (_calledFeature != null)
+      {
+        result = fixAssociativity(res, context);
+      }
     if (result == null)
       {
         if (_calledFeature != null)
