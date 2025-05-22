@@ -481,11 +481,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     var target_type = this  .remove_type_parameter_used_for_this_type_in_cotype();
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_cotype();
-    var result =
-      target_type.compareTo(actual_type          ) == 0 ||
-      actual_type.isVoid() ||
-      target_type == Types.t_ERROR                      ||
-      actual_type == Types.t_ERROR;
+    var result = target_type.compareTo(actual_type) == 0
+              || actual_type.isVoid();
     if (!result && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
       {
         if (actual_type.isGenericArgument())
