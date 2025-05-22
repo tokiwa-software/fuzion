@@ -1912,6 +1912,8 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
+    t = replaceThisType(t);
+
     // error handling for replacing {@code .this} types of {@code ref} types in a call result, see #4273
     var err = new List<Consumer<AbstractCall>>();
     var ft = t; // final variant of t to be used in lambda
