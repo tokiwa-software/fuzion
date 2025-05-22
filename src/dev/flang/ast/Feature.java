@@ -1807,7 +1807,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (Errors.any() || t != null);
-        if (t != null && t.isRef().noOrDontKnow())
+        if (t != null && !t.isRef())
           {
             if (t.compareToIgnoreOuter(selfType()) == 0)
               {

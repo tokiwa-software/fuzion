@@ -699,7 +699,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (selfType != null,
-       Errors.any() || selfType.isRef().yes() == isRef(),
+       Errors.any() || selfType.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || selfType.feature() == this);
 
@@ -1076,7 +1076,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef().yes() == isRef(),
+       Errors.any() || result.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this,
        result.feature().generics().sizeMatches(result.generics()));
@@ -1892,6 +1892,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
              Types.resolved.numericTypes.contains(rt)
              || Types.resolved.legalNativeResultTypes.contains(rt)
              || !rt.isGenericArgument() && rt.feature().mayBeNativeValue());
+  }
+
+
+  public TypeMode defaultTypeMode()
+  {
+    return isRef() ? TypeMode.RefType : TypeMode.ValueType;
   }
 
 
