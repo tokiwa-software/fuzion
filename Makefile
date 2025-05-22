@@ -125,7 +125,7 @@ MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
-MOD_UUID               = $(BUILD_DIR)/modules/uuid.fum
+MOD_UUID              = $(BUILD_DIR)/modules/uuid.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
 

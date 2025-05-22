@@ -824,7 +824,7 @@ catch_precondition is
       .try   ()->(say " OK {f.call}")
       .catch s->(say " FAILED $s")
 
-                                                          #  inherted 1    inherited 2   pre else
+                                                          #  inherited 1    inherited 2   pre else
   yak "c111.f1 1: should be ok "; tst (()->(c111.f1 1))   #  none          none          none
   yak "c111.f1 0: should be ok "; tst (()->(c111.f1 0))   #  none          none          none
   yak "c111.f2 1: should be ok "; tst (()->(c111.f2 1))   #  x > 0         x > 0         none
@@ -930,7 +930,7 @@ catch_precondition is
   yak "c171.f7 1: should be ok "; tst (()->(c171.f7 1))   #  x > 0; false  x > 0; true   none
   yak "c171.f7 0: should fail  "; tst (()->(c171.f7 0))   #  x > 0; false  x > 0; true   none
 
-                                                          #  inherted 1    inherited 2   pre else
+                                                          #  inherited 1    inherited 2   pre else
   yak "c112.f1 1: should be ok "; tst (()->(c112.f1 1))   #  none          none          x > 0
   yak "c112.f1 0: should be ok "; tst (()->(c112.f1 0))   #  none          none          x > 0
   yak "c112.f2 1: should be ok "; tst (()->(c112.f2 1))   #  x > 0         x > 0         x > 0
@@ -1036,7 +1036,7 @@ catch_precondition is
   yak "c172.f7 1: should be ok "; tst (()->(c172.f7 1))   #  x > 0; false  x > 0; true   x > 0
   yak "c172.f7 0: should fail  "; tst (()->(c172.f7 0))   #  x > 0; false  x > 0; true   x > 0
 
-                                                          #  inherted 1    inherited 2   pre else
+                                                          #  inherited 1    inherited 2   pre else
   yak "c115.f1 1: should be ok "; tst (()->(c115.f1 1))   #  none          none          false
   yak "c115.f1 0: should be ok "; tst (()->(c115.f1 0))   #  none          none          false
   yak "c115.f2 1: should be ok "; tst (()->(c115.f2 1))   #  x > 0         x > 0         false
