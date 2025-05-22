@@ -265,7 +265,7 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
-   * Add call at beginnig of application
+   * Add call at beginning of application
    * to initialize the fuzion runtime system
    */
   private void addRuntimeInitCall()

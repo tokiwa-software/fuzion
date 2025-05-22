@@ -21,15 +21,15 @@
 #
 # -----------------------------------------------------------------------
 
-# less -- unit feature to denote the result of a comparion
+# less -- unit feature to denote the result of a comparison
 #
 public less is
 
-# greater -- unit feature to denote the result of a comparion
+# greater -- unit feature to denote the result of a comparison
 #
 public greater is
 
-# equal -- unit feature to denote the result of a comparion
+# equal -- unit feature to denote the result of a comparison
 #
 public equal is
 
