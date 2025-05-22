@@ -28,11 +28,12 @@
 #
 # Minimal example:
 #
-#     net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
-#       .bind c->
-#         net.connections.with _ mutate c ()->
-#           say net.channel.env.get_peer_address
-#           say ((io.buffered mutate).writer.write [0,1,2]).bytes_written
+#     mutate ! ()->
+#       _ := net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
+#         .bind c->
+#           c.with _ mutate ()->
+#             say net.channel.env.get_peer_address
+#             say ((io.buffered mutate).writer.env.write [0,1,2]).bytes_written
 #
 # Blocks until connection is established.
 # NYI: UNDER DEVELOPMENT: blocking / none blocking
