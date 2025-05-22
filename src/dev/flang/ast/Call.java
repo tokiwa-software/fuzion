@@ -162,7 +162,7 @@ public class Call extends AbstractCall
   /**
    * Static type of this call. Set during resolveTypes().
    */
-  private AbstractType _type;
+  protected AbstractType _type;
 
 
   /**

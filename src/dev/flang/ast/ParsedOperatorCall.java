@@ -174,9 +174,11 @@ public class ParsedOperatorCall extends ParsedCall
         _resolvedFor = null;
         _calledFeature = null;
         _resolvedFormalArgumentTypes = null;
+        _type = null;
         b_plus_c._resolvedFor = null;
         b_plus_c._calledFeature = null;
         b_plus_c._resolvedFormalArgumentTypes = null;
+        b_plus_c._type = null;
         result = resolveTypes(res, context);
       }
     return result;
