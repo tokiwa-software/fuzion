@@ -2290,7 +2290,7 @@ public class Call extends AbstractCall
               .choiceGenerics(context)
               .stream()
               .filter(x -> !x.dependsOnGenerics())
-              .anyMatch(x -> x.isAssignableFrom(actualType, context));
+              .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context));
 
             if (!directlyAssignable)
               {

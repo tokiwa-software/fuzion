@@ -437,7 +437,7 @@ public class AstErrors extends ANY
         else
           {
             var assignableTo = new TreeSet<String>();
-            frmlT.isAssignableFrom(actlT, assignableTo, context);
+            frmlT.isAssignableFrom(actlT, context, false, true, assignableTo);
             for (var ts : assignableTo)
               {
                 assignableToSB
@@ -447,7 +447,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && frmlT.asRef().isAssignableFrom(actlT, context))
+        if (remedy == null && frmlT.asRef().isAssignableFromWithoutBoxing(actlT, context))
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
@@ -2032,7 +2032,7 @@ public class AstErrors extends ANY
       {
         error(value.pos(),
               "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
-              .filter(cg -> cg.isAssignableFrom(value.type(), Context.NONE))
+              .filter(cg -> cg.isAssignableFromWithoutBoxing(value.type(), Context.NONE))
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))
               );

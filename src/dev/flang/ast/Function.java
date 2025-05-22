@@ -489,7 +489,7 @@ public class Function extends AbstractLambda
         // clause.
         if (CHECKS) check
           (Errors.any() || _inheritsCall == inheritsCall2,
-           _type == null || _type.isAssignableFrom(_call.type()));
+           _type == null || _type.isAssignableFromDirectly(_call.type()));
       }
   }
 
