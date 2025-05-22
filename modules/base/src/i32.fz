@@ -114,11 +114,11 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
 
 
   # casting bit representation to unsigned
-  public redef low8bits    u8   => cast_to_u32.low8bits    # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
-  public low16bits   u16  => cast_to_u32.low16bits   # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
-  public cast_to_u32  u32  => intrinsic              # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
-  public cast_to_u64  u64  => cast_to_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
-  public cast_to_u128 u128 => cast_to_u32.as_u128    # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_0000_0000_0000_0000_edcb_a988
+  public redef low8bits  u8 => cast_to_u32.low8bits   # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
+  public low16bits      u16 => cast_to_u32.low16bits  # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
+  public cast_to_u32    u32 => intrinsic              # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
+  public cast_to_u64    u64 => cast_to_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
+  public cast_to_u128  u128 => cast_to_u32.as_u128    # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_0000_0000_0000_0000_edcb_a988
 
   # conversion to float
   public as_f64 f64 => intrinsic

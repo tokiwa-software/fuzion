@@ -98,7 +98,7 @@ public class Types extends ANY
 
   /**
    * Dummy name used for type t_FORWARD_CYCLIC which is used to
-   * indicate a forward or cylic type inference.
+   * indicate a forward or cyclic type inference.
    */
   private static final String FORWARD_CYCLIC_NAME = "FORWARD_CYCLIC";
 

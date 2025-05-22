@@ -434,7 +434,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * type of this Expr. Since LibraryFature is no longer an expression, this
+   * type of this Expr. Since LibraryFeature is no longer an expression, this
    * will cause an error.
    *
    * NYI: CLEANUP: AbstractFeature should best not inherit from Expr. Instead,

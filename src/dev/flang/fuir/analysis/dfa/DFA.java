@@ -1394,7 +1394,7 @@ public class DFA extends ANY
 
 
   /**
-   * When using two-pased DFA, is this the first phase to find required effects,
+   * When using two-phased DFA, is this the first phase to find required effects,
    * or the real phase?
    */
   boolean _real;

@@ -478,7 +478,7 @@ public class Call extends AbstractCall
       ? result.selfOrConstraint(context)
       : result.selfOrConstraint(res, context);
 
-    // NYI: CLEANUP: the whole method should proably be moved to sth. like Expr.effectiveType
+    // NYI: CLEANUP: the whole method should probably be moved to sth. like Expr.effectiveType
     if (result != null && result != Types.t_ERROR && target().isTypeAsValueCall() && !result.feature().isCotype())
       {
         result = (res != null

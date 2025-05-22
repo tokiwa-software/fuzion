@@ -175,7 +175,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params)
   {
-    return Computation.cancellableComputation(() -> DocumentHighlights.getHightlights(params), "document highlight", 5000);
+    return Computation.cancellableComputation(() -> DocumentHighlights.getHighlights(params), "document highlight", 5000);
   }
 
   @Override

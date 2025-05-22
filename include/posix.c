@@ -136,7 +136,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
     return errno == 0
       // end reached
       ? 0
-      // some error occured
+      // some error occurred
       : -1;
   }
   else {

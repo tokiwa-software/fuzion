@@ -75,7 +75,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
   /**
    * CallGroup this call is part of, i.e., the set of calls with the same effect
-   * environment abstraction durign DFA analysis.
+   * environment abstraction during DFA analysis.
    */
   final CallGroup _group;
 
