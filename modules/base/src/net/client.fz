@@ -29,7 +29,7 @@
 # Minimal example:
 #
 #     mutate ! ()->
-#       _:=net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
+#       _ := net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
 #         .bind c->
 #           c.with _ mutate ()->
 #             say net.channel.env.get_peer_address
