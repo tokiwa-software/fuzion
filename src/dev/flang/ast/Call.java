@@ -1006,7 +1006,7 @@ public class Call extends AbstractCall
   private boolean isOperatorCall()
   {
     return
-      _name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) ||
+      _name.startsWith(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX) ||
       _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX) ||
       _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX);
   }
@@ -2514,7 +2514,7 @@ public class Call extends AbstractCall
    * However, moving an expression into a lambda or a lazy value will change its
    * context and resolve will have to be repeated.
    */
-  private Context _resolvedFor;
+  protected Context _resolvedFor;
 
 
   /**
@@ -2639,27 +2639,57 @@ public class Call extends AbstractCall
       {
         _type = Types.t_ERROR;
       }
-    else if (_calledFeature != null)
+    var result = fixAssociativity(res, context);
+    if (result == null)
       {
-        resolveGenerics(res, context);
-        propagateForPartial(res, context);
-        if (needsToInferTypeParametersFromArgs())
+        if (_calledFeature != null)
           {
-            inferGenericsFromArgs(res, context);
-            for (var r : _whenInferredTypeParameters)
+            resolveGenerics(res, context);
+            propagateForPartial(res, context);
+            if (needsToInferTypeParametersFromArgs())
               {
-                r.run();
+                inferGenericsFromArgs(res, context);
+                for (var r : _whenInferredTypeParameters)
+                  {
+                    r.run();
+                  }
               }
+            inferFormalArgTypesFromActualArgs();
+            setActualResultType(res, context);
+            resolveFormalArgumentTypes(res, context);
           }
-        inferFormalArgTypesFromActualArgs();
-        setActualResultType(res, context);
-        resolveFormalArgumentTypes(res, context);
-      }
-    resolveTypesOfActuals(res, context);
+        resolveTypesOfActuals(res, context);
 
-    return isErroneous(res)
-      ? resolveTypesErrorResult()
-      : resolveTypesSuccessResult(res, context);
+        result = isErroneous(res)
+          ? resolveTypesErrorResult()
+          : resolveTypesSuccessResult(res, context);
+      }
+    return result;
+  }
+
+
+  /**
+   * In case this is a parsed infix operator call, fix the associativity: the
+   * parser produces and AST assuming all infix operators are right associative
+   * (which is wrong for most operators).  This call rotates the operators
+   * accordingly if needed, i.e., changing
+   *
+   *    a - «b + c»
+   *
+   * into
+   *
+   *    «a - b» + c
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return null in case nothing was done, otherwise the fully resolved new
+   * call with fixed associativity.
+   */
+  Call fixAssociativity(Resolution res, Context context)
+  {
+    return null;
   }
 
 

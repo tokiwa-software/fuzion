@@ -1179,6 +1179,15 @@ A post-condition of a feature that does not redefine an inherited feature must s
         result.addAll(lookup0(outer, prefixName, use, traverseOuter, hidden));
         result.addAll(lookup0(outer, postfxName, use, traverseOuter, hidden));
       }
+    else if (name.startsWith(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX))
+      {
+        var op = name.substring(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX.length());
+        var infixLeftName  = FuzionConstants.INFIX_OPERATOR_PREFIX + op;
+        var infixRightName = FuzionConstants.INFIX_RIGHT_OPERATOR_PREFIX + op;
+        result = new List<>();
+        result.addAll(lookup0(outer, infixLeftName, use, traverseOuter, hidden));
+        result.addAll(lookup0(outer, infixRightName, use, traverseOuter, hidden));
+      }
     else
       {
         result = lookup0(outer, name, use, traverseOuter, hidden);

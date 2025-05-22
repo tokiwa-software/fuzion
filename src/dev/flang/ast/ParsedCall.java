@@ -58,7 +58,7 @@ public class ParsedCall extends Call
   /**
    * The name of the called feature as produced by the parser.
    */
-  private final ParsedName _parsedName;
+  protected ParsedName _parsedName;
 
 
   /**
@@ -288,7 +288,8 @@ public class ParsedCall extends Call
                                   outer);
             Expr t1 = new Call(pos(), new Current(pos(), outer), tmp);
             Expr t2 = new Call(pos(), new Current(pos(), outer), tmp);
-            var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _actuals)
+            var c = _actuals;
+            ParsedCall movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), c)
               {
                 boolean isChainedBoolRHS() { return true; }
               };
@@ -296,14 +297,46 @@ public class ParsedCall extends Call
             Expr as = new Assign(res, pos(), tmp, b, context);
             t1         = res.resolveType(t1     , context);
             as         = res.resolveType(as     , context);
-            var result = res.resolveType(movedTo, context);
+            while (c.getLast() instanceof ParsedCall lastArg &&
+                   lastArg.isOperatorCall(false) &&
+                   lastArg.isValidOperatorInChainedBoolean())
+              {
+                String tmpName2 = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
+                var tmp2 = new Feature(res,
+                                       pos(),
+                                       Visi.PRIV,
+                                       b.type(),
+                                       tmpName2,
+                                       outer);
+                Expr t21 = new Call(pos(), new Current(pos(), outer), tmp2);
+                Expr t22 = new Call(pos(), new Current(pos(), outer), tmp2);
+                var c2 = lastArg._actuals.getLast();
+                ParsedCall movedTo2 = new ParsedCall(t22, new ParsedName(pos(), lastArg.name()), new List<>(c2))
+                  {
+                    boolean isChainedBoolRHS() { return true; }
+                  };
+                lastArg._movedTo = movedTo2;
+                var b2 = lastArg._actuals.size() == 1 ? lastArg._target : lastArg._actuals.get(0);
+                var lhs = new Call(lastArg.pos(), _target, new List<>(), new List<>(movedTo), Types.resolved.f_bool_AND);
+                Expr as2 = new Assign(res, pos(), tmp2, b2, context);
+                t21         = res.resolveType(t21     , context);
+                as2         = res.resolveType(as2     , context);
+                movedTo._actuals.set(movedTo._actuals.size()-1,
+                                     new Block(new List<Expr>(as2, t21)));
+
+                c = lastArg._actuals;
+                _target = lhs;
+                movedTo = movedTo2;
+              }
             cb._actuals.set(cb._actuals.size()-1,
                             new Block(new List<Expr>(as, t1)));
-            _actuals = new List<Expr>(result);
+            _actuals = new List<Expr>(movedTo);
             _calledFeature = Types.resolved.f_bool_AND;
             _resolvedFormalArgumentTypes  = null;  // _calledFeature changed, so formal arg types must be resolved again
             _pendingError = null;
             _name = _calledFeature.featureName().baseName();
+            var result = res.resolveType(movedTo, context);
+            _actuals = new List<Expr>(result);
           }
       }
   }
@@ -340,16 +373,16 @@ public class ParsedCall extends Call
   private boolean isValidOperatorInChainedBoolean()
   {
     return
-      _name.equals("infix <") ||
-      _name.equals("infix >") ||
-      _name.equals("infix ≤") ||
-      _name.equals("infix ≥") ||
-      _name.equals("infix <=") ||
-      _name.equals("infix >=") ||
-      _name.equals("infix =") ||
-      _name.equals("infix !=") ||
-      // && is used to chain the calls together.
-      _name.equals("infix &&");
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "!=") ||
+      // && is used to chain the calls together, needed for longer chains like `a < b < c < d`.
+      _name.equals(FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");
   }
 
 
@@ -547,8 +580,8 @@ public class ParsedCall extends Call
           {
             _name =
               _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX)
-              ? /* -v ==> x->x-v */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX .length())
-              : /* v- ==> x->v-x */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
+              ? /* -v ==> x->x-v */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX .length())
+              : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
         _resolvedFormalArgumentTypes  = null;

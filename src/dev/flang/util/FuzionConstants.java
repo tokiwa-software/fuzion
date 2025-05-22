@@ -225,6 +225,8 @@ public class FuzionConstants extends ANY
    */
   public static final String PREFIX_OPERATOR_PREFIX = "prefix ";
   public static final String INFIX_OPERATOR_PREFIX = "infix ";
+  public static final String INFIX_RIGHT_OPERATOR_PREFIX = "infix_right ";
+  public static final String INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX = "infix/infix_right ";
   public static final String POSTFIX_OPERATOR_PREFIX = "postfix ";
 
 

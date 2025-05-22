@@ -143,8 +143,17 @@ class OpExpr extends ANY
                   }
                 if (isExpr(i-1) && isExpr(i+1))  // an infix operator
                     {
-                      if (precedence(i, Kind.infix) >  pmax && isLeftToRight(i) ||   // a left-to-right infix operator
-                          precedence(i, Kind.infix) >= pmax && isRightToLeft(i)    ) // a right-to-left infix operator
+                      //                      if (precedence(i, Kind.infix) >  pmax && isLeftToRight(i) ||   // a left-to-right infix operator
+                      //                          precedence(i, Kind.infix) >= pmax && isRightToLeft(i)    ) // a right-to-left infix operator
+
+                      // we parse everything with right associativity for now:
+                      //
+                      //   a-b+c ==> a-(b+c)
+                      //
+                      // This will be fixed during Call.resolveTypes once the
+                      // arity of the first operator `-` is known and, if it
+                      // left associativy, will be changed to `(a-b)+c`.
+                      if (precedence(i, Kind.infix) >= pmax)
                         {
                           max = i;
                           pmax = precedence(i, Kind.infix);
@@ -199,7 +208,7 @@ class OpExpr extends ANY
           { // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_OPERATOR_PREFIX + op._text), e2);
+            Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), op._text, pmax, e2);
             _els.remove(max+1);
             _els.remove(max);
             _els.set(max-1, e);
@@ -210,14 +219,14 @@ class OpExpr extends ANY
             Expr e =
               (op._text.equals("+") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("+", op._pos) :
               (op._text.equals("-") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("-", op._pos) :
-              new ParsedOperatorCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text));
+              new ParsedOperatorCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text), op._text, pmax);
             _els.remove(max+1);
             _els.set(max, e);
           }
         else
           { // postfix op:
             Expr e1 = expr(max-1);
-            Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text));
+            Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text), op._text, pmax);
             _els.remove(max);
             _els.set(max-1, e);
           }

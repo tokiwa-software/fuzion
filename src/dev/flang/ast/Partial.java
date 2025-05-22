@@ -217,7 +217,7 @@ public class Partial extends AbstractLambda
             var b = argName(pos());
             args.add(b);
             actuals.add(b);
-            op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
+            op = FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _op;
           }
         _function = new Function(pos(),
                                  args,
