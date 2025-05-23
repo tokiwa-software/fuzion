@@ -2672,13 +2672,13 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @param refinedResultType the refined result type
    */
-  void setRefinedResultType(Resolution res, AbstractType refinedResultType)
+  void setRefinedResultType(Resolution res, Context context, AbstractType refinedResultType)
   {
     if (CHECKS) check
       // we must not patch result type later, because then
       // result type of result field etc. is also already set.
       (!state().atLeast(State.RESOLVING_SUGAR1),
-      _resultType == null || refinedResultType.isAssignableFrom(_resultType));
+      _resultType == null || refinedResultType.isAssignableFrom(_resultType, context));
 
     _resultType = refinedResultType;
   }
