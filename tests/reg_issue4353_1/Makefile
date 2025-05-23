@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue4353
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-Sequence.unzip2(A type)
-pre
-  T : tuple A
-=>
-  map x->x.values.0
-
-say ([tuple 42].unzip2 i32)
+override NAME = reg_issue4353_1
+include ../simple.mk

@@ -29,6 +29,7 @@ package dev.flang.fuir;
 import java.util.Map;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 
 import dev.flang.util.Errors;
@@ -112,6 +113,12 @@ public class FuirErrors extends AstErrors
           "instantiated at " + instantiatedAt.pos().show() + "\n" +
           abstracts + "\n" +
           "Callchain that lead to this point:\n\n" + context);
+  }
+
+
+  public static void unmetTypeContraint(SourcePosition pos, AbstractType tp, Clazz constraint)
+  {
+    error(pos, "Actual type parameter " + s(tp) + " does not satisfy constraint " + s(constraint._type), "");
   }
 
 }
