@@ -1250,8 +1250,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return this.isVoid()
       || other.isVoid()
-      ||    !this .isAssignableFromWithoutTagging(other, context)
-         && !other.isAssignableFromWithoutTagging(this , context);
+      ||    !this .isAssignableFrom(other, context, false, false, null)
+         && !other.isAssignableFrom(this , context, false, false, null);
   }
 
 
