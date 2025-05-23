@@ -140,7 +140,7 @@ public class ParsedCall extends Call
    */
   boolean isInfixPipe(boolean parenthesesAllowed)
   {
-    return isOperatorCall(parenthesesAllowed) && name().equals("infix |") && _actuals.size() == 1;
+    return isOperatorCall(parenthesesAllowed) && name().equals(FuzionConstants.INFIX_PIPE) && _actuals.size() == 1;
   }
 
 
@@ -200,25 +200,42 @@ public class ParsedCall extends Call
           {
             if (tt != null && isInfixPipe(true))   // choice type syntax sugar: 'tt | arg'
               {
-                var l2 = new List<AbstractType>();
-                if (target instanceof ParsedCall tc && tc.isInfixPipe(false))
-                  { // tt is `x | y` in  'x | y | arg',
-                    // but not `(x | y)`!
-                    l2.addAll(tt.generics());
-                  }
-                else
-                  { // `tt | arg` where `tt` is not itself `x | y`
-                    l2.add(tt);
-                  }
-                l2.addAll(l);
-                l = l2;
-                name = "choice";
+                l = new List<AbstractType>();
+                getInfixPipeArgs(l);
+                name = FuzionConstants.CHOICE_NAME;
                 tt = null;
               }
             result = new ParsedType(pos(), name, l, tt);
           }
       }
     return result;
+  }
+
+
+  /**
+   * For a ParsedCall `x | y | z`, add the corresponding types of `x`, `y` and
+   * `z` to `l`.
+   *
+   * Note that the AST produced by the parser uses right associative operators,
+   * so this is `x | «y | z»`.
+   *
+   * @param l list of types.
+   */
+  private void getInfixPipeArgs(List<AbstractType> l)
+  {
+    l.add(target().asParsedType());
+    var next = _actuals.get(0);
+    if (next instanceof ParsedCall ac &&
+        // cur is `y | z` in  '... | x | y | z',
+        // but not `x | (y | z)`!
+        ac.isInfixPipe(false))
+      {
+        ac.getInfixPipeArgs(l);
+      }
+    else
+      {
+        l.add(next.asParsedType());
+      }
   }
 
 

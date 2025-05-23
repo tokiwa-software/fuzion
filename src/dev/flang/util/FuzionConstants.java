@@ -229,6 +229,16 @@ public class FuzionConstants extends ANY
   public static final String INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX = "infix/infix_right ";
   public static final String POSTFIX_OPERATOR_PREFIX = "postfix ";
 
+  /**
+   * Infix operator parsed for choice type syntax sugar `i32 | unit | bool`
+   */
+  public static final String INFIX_PIPE = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "|";
+
+  /**
+   * Name of the feature that defines choice types.
+   */
+  public static final String CHOICE_NAME = "choice";
+
 
   /**
    * An operator that should match both, prefix and postfix operators. This is

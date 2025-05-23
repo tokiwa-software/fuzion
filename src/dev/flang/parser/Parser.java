@@ -3497,7 +3497,7 @@ boundType   : onetype ( PIPE onetype ) *
           {
             l.add(onetype());
           }
-        result = new ParsedType(result.pos(), "choice", l, null);
+        result = new ParsedType(result.pos(), FuzionConstants.CHOICE_NAME, l, null);
       }
     return result;
   }
