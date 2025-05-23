@@ -122,7 +122,7 @@ public class ParsedOperatorCall extends ParsedCall
    * @return a non-empty list containing either just `name` or the list of
    * possible names that would match the given operator name.
    */
-  static List<String> lookupNames(String name)
+  public static List<String> lookupNames(String name)
   {
     var result = new List<String>();
     if (name.startsWith(FuzionConstants.UNARY_OPERATOR_PREFIX))
