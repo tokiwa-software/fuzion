@@ -1,5 +1,5 @@
 
-{base.fum}/fuzion/java.fz:303:7: error 1: Actual type parameter 'codepoint' does not satisfy constraint 'java_primitive'
+{base.fum}/fuzion/jvm.fz:224:7: error 1: Actual type parameter 'codepoint' does not satisfy constraint 'java_primitive'
       T : java_primitive
 ------^^^^^^^^^^^^^^^^^^
 
