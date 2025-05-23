@@ -401,14 +401,14 @@ field       : returnType
    */
   boolean skipFeaturePrefix()
   {
-    if (!skipQual())
+    do
       {
-        return false;
+        if (!skipQual())
+          {
+            return false;
+          }
       }
-    if (skipComma())
-      {
-        return true;
-      }
+    while (skipComma());
     switch (skipFormArgsNotActualArgs())
       {
       case formal: return true;
@@ -1939,7 +1939,7 @@ klammerLambd: tuple lambda
                        () -> {
                          do
                            {
-                             tupleElements.add(operatorExpr());
+                             tupleElements.add(block());
                            }
                          while (skipComma());
                          return Void.TYPE;
