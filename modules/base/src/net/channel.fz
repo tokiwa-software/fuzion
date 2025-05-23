@@ -47,23 +47,3 @@ is
   # get the peer's port (tcp)
   public get_peer_port outcome u16 =>
     fzE_get_peer_port desc
-
-
-
-# helper feature to create a read handler
-# for a given descriptor
-#
-module read_handler(desc i32) : io.Read_Handler is
-  public redef read(count i32) choice (array u8) io.end_of_file error =>
-    match fuzion.sys.net.read desc count.as_i64
-      a array => a
-      e error => e
-
-
-
-# helper feature to create a read handler
-# for a given descriptor
-#
-module write_handler(desc i32) : io.Write_Handler is
-  public redef write(data Sequence u8) outcome unit =>
-    fuzion.sys.net.write desc data.as_array
