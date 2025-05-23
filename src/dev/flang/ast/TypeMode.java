@@ -20,20 +20,37 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of enum RefOrVal
+ * Source of enum TypeMode
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
+
 /**
- * Is this type explicitly a reference or a value type, or whatever the
- * underlying feature is?
+ * for specifying the mode of a type.
+ * May be one of "ThisType", "RefType" or "ValueType".
  */
-enum RefOrVal
-  {
-    Boxed,                  // this is boxed value type or an explicit reference type
-    Value,                  // this is an explicit value type
-    LikeUnderlyingFeature,  // this is ref or value as declared for the underlying feature
-    ThisType,               // this is the type of feature().this.type, i.e., it may be an heir type
+public enum TypeMode {
+
+  ThisType(0x00),
+  RefType(0x01),
+  ValueType(0x02);
+
+  public int num;
+
+  TypeMode(int num) {
+      this.num = num;
   }
+
+  public static TypeMode fromInt(int num)
+  {
+    return switch (num) {
+      case 0x00 -> TypeMode.ThisType;
+      case 0x01 -> TypeMode.RefType;
+      case 0x02 -> TypeMode.ValueType;
+      default   -> throw new Error("Illegal TypeMode: " + num);
+    };
+  }
+
+}

@@ -71,7 +71,7 @@ public class Box extends Expr
     if (PRECONDITIONS) require
       (value != null,
        !frmlT.containsUndefined(false),
-       frmlT.isGenericArgument() || frmlT.isThisType() || value.type().isRef().noOrDontKnow() || value.isCallToOuterRef(),
+       frmlT.isGenericArgument() || frmlT.isThisType() || !value.type().isRef() || value.isCallToOuterRef(),
        !(value instanceof Box));
 
     this._value = value;

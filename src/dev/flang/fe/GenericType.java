@@ -31,13 +31,13 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
+import dev.flang.ast.TypeMode;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -153,25 +153,6 @@ public class GenericType extends LibraryType
   }
 
 
-  /**
-   * A parametric type is not considered a ref type even it the actual type
-   * might very well be a ref.
-   */
-  public YesNo isRef()
-  {
-    return _isBoxed ? YesNo.yes : YesNo.no;
-  }
-
-
-  /**
-   * isThisType
-   */
-  public boolean isThisType()
-  {
-    return false;
-  }
-
-
   public AbstractType outer()
   {
     if (CHECKS) check
@@ -197,6 +178,16 @@ public class GenericType extends LibraryType
   public AbstractType asThis()
   {
     throw new Error("GenericType.asThis() not defined");
+  }
+
+
+  /**
+   * The mode of the type: ThisType, RefType or ValueType.
+   */
+  @Override
+  public TypeMode mode()
+  {
+    return _isBoxed ? TypeMode.RefType : TypeMode.ValueType;
   }
 
 }
