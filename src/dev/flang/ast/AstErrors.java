@@ -1669,7 +1669,7 @@ public class AstErrors extends ANY
   static void choiceMustNotBeRef(SourcePosition pos)
   {
     error(pos,
-          "choice feature must not be ref",
+          "Choice feature must not be ref",
           "A choice feature must be a value type since it is not constructed ");
   }
 
