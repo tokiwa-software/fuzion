@@ -830,6 +830,17 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
+  /**
+   * Source text for this Expr. This is used in error message: It takes the
+   * source code at `sourceRange()`. Only for artifical expressions, this should
+   * probably be redefined to create more useful text.
+   */
+  public String sourceText()
+  {
+    return sourceRange().sourceText();
+  }
+
+
 }
 
 /* end of file */

@@ -1,0 +1,48 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5263
+#
+# -----------------------------------------------------------------------
+
+# this produces an error after partial application that was difficult to
+# understand
+#
+reg_issue5263 =>
+
+  # the original code from #5263. This code will no longer produce an error
+  # when right-associative operators are supported (#4253)
+  #
+  say <| .byte_length <| "hi"    # 1. should flag an error, at least for now
+
+
+  # for this test to still work once #4253 is fixed, here is our own
+  # operator that will always be left-associative:
+  #
+  infix |<| (sink T->R, source T) R => source |> sink
+  say |<| .byte_length |<| "hi"  # 2. should flag an error
+
+  # and finally implicit application with more arguments
+  #
+  f(g (i32, f64)->unit) => g 32 3.14
+
+  q(a Any, b String, c i32, d f64) => say "$a $b $c $d"
+  f (q "hi" "ho")
+  f (q "hi" "ho" 32)             # 3. should flag an error
+  f (q Any)                      # 4. should flag an error
