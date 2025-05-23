@@ -391,9 +391,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  public boolean isAssignableFromWithoutTagging(AbstractType cg)
+  public boolean isAssignableFromWithoutTagging(AbstractType actual)
   {
-    return isAssignableFromWithoutTagging(cg, Context.NONE);
+    return isAssignableFromWithoutTagging(actual, Context.NONE);
   }
 
 
