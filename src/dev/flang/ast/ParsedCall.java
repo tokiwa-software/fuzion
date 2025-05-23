@@ -152,7 +152,7 @@ public class ParsedCall extends Call
    */
   boolean isInfixArrow()
   {
-    return isOperatorCall(true) && name().equals("infix ->") && _actuals.size() == 1;
+    return isOperatorCall(true) && name().equals(FuzionConstants.INFIX_ARROW) && _actuals.size() == 1;
   }
 
 
@@ -223,7 +223,16 @@ public class ParsedCall extends Call
    */
   private void getInfixPipeArgs(List<AbstractType> l)
   {
-    l.add(target().asParsedType());
+    var t = target();
+    var tt = t.asParsedType();
+    if (t instanceof ParsedCall pc && pc.isInfixPipe(false))
+      {
+        l.addAll(tt.generics());
+      }
+    else
+      {
+        l.add(tt);
+      }
     var next = _actuals.get(0);
     if (next instanceof ParsedCall ac &&
         // cur is `y | z` in  '... | x | y | z',

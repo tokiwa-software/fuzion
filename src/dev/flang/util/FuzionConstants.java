@@ -239,6 +239,11 @@ public class FuzionConstants extends ANY
    */
   public static final String CHOICE_NAME = "choice";
 
+  /**
+   * Infix operator parsed for function type `a.b->c`
+   */
+  public static final String INFIX_ARROW = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "->";
+
 
   /**
    * An operator that should match both, prefix and postfix operators. This is
