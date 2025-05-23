@@ -479,7 +479,7 @@ public class Call extends AbstractCall
    *
    * @return the type of the target.
    */
-  private AbstractType targetType(Resolution res, Context context)
+  protected AbstractType targetType(Resolution res, Context context)
   {
     _target = res.resolveType(_target, context);
     _targetType =
@@ -3193,6 +3193,11 @@ public class Call extends AbstractCall
       Expr boxAndTag(AbstractType frmlT, Context context)
       {
         return this;
+      }
+      @Override
+      protected AbstractType targetType(Resolution res, Context context)
+      {
+        return Types.t_ERROR;
       }
       public void setSourceRange(SourceRange r)
       { // do not change the source position if there was an error.
