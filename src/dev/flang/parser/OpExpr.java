@@ -56,12 +56,6 @@ class OpExpr extends ANY
 
 
   /**
-   * Initial characters of operators that bind to the right.
-   */
-  private static final String RIGHT_TO_LEFT_CHARS = "^";
-
-
-  /**
    * List of freshly parsed operators and expressions.
    */
   private final ArrayList<Object> _els = new ArrayList<>();
@@ -143,17 +137,18 @@ class OpExpr extends ANY
                   }
                 if (isExpr(i-1) && isExpr(i+1))  // an infix operator
                     {
-                      //                      if (precedence(i, Kind.infix) >  pmax && isLeftToRight(i) ||   // a left-to-right infix operator
-                      //                          precedence(i, Kind.infix) >= pmax && isRightToLeft(i)    ) // a right-to-left infix operator
-
                       // we parse everything with right associativity for now:
                       //
-                      //   a-b+c ==> a-(b+c)
+                      //   a-b+c ==> a - «b + c»
                       //
                       // This will be fixed during Call.resolveTypes once the
                       // arity of the first operator `-` is known and, if it
-                      // left associativy, will be changed to `(a-b)+c`.
-                      if (precedence(i, Kind.infix) >= pmax)
+                      // left associative, this will be changed to `«a - b» + c`.
+                      //
+                      // a prefix operator will have precedence, i.e., `-a-b-c` will be parsed as `«-a» - «b - c»`,
+                      // while `x-a-b-c` will be `x - «a - «b - c»»`
+                      if (precedence(i, Kind.infix) >  pmax ||
+                          precedence(i, Kind.infix) == pmax && !isExpr(max+1))
                         {
                           max = i;
                           pmax = precedence(i, Kind.infix);
@@ -322,32 +317,6 @@ class OpExpr extends ANY
 
 
   /**
-   * check if index i is an operator with left-to-right execution order
-   *
-   * @param i an integer value
-   *
-   * @return true iff isOp(i) and the operator at index i is handled left-to-right
-   */
-  private boolean isLeftToRight(int i)
-  {
-    return isOp(i) && isLeftToRight(op(i));
-  }
-
-
-  /**
-   * check if index i is an operator with right-to-left execution order
-   *
-   * @param i an integer value
-   *
-   * @return true iff isOp(i) and the operator at index i is handled right-to-left
-   */
-  private boolean isRightToLeft(int i)
-  {
-    return isOp(i) && isRightToLeft(op(i));
-  }
-
-
-  /**
    * show (only for debugging)
    */
   private void show()
@@ -435,23 +404,6 @@ class OpExpr extends ANY
       this.postfix = postfix;
     }
 
-  }
-
-  /**
-   * Does the given operator bind to the left?
-   */
-  private boolean isLeftToRight(Operator op)
-  {
-    return !isRightToLeft(op);
-  }
-
-  /**
-   * Does the given operator bind to the right?
-   */
-  private boolean isRightToLeft(Operator op)
-  {
-    char c = op._text.charAt(0);
-    return RIGHT_TO_LEFT_CHARS.indexOf(c) >= 0;
   }
 
 }
