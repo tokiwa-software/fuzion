@@ -1894,7 +1894,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
              || !rt.isGenericArgument() && rt.feature().mayBeNativeValue());
   }
 
-
+  /**
+   * @return RefType if Feature is a reference otherwise ValueType
+   */
   public TypeMode defaultTypeMode()
   {
     return isRef() ? TypeMode.RefType : TypeMode.ValueType;
