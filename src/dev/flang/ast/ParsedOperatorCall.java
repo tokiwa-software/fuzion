@@ -109,6 +109,41 @@ public class ParsedOperatorCall extends ParsedCall
   }
 
 
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * For a given feature name, check if it is an operator call that has to be
+   * looked up under different actual names. If so, return all the actual names.
+   *
+   * This is used for infix operators that might be `infix` or `infix_right` and
+   * for unary operators that might be `prefix` or `postfix`.
+   *
+   * @return a non-empty list containing either just `name` or the list of
+   * possible names that would match the given operator name.
+   */
+  static List<String> lookupNames(String name)
+  {
+    var result = new List<String>();
+    if (name.startsWith(FuzionConstants.UNARY_OPERATOR_PREFIX))
+      {
+        var op = name.substring(FuzionConstants.UNARY_OPERATOR_PREFIX.length());
+        result.add(FuzionConstants.PREFIX_OPERATOR_PREFIX  + op);
+        result.add(FuzionConstants.POSTFIX_OPERATOR_PREFIX + op);
+      }
+    else if (name.startsWith(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX))
+      {
+        var op = name.substring(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX.length());
+        result.add(FuzionConstants.INFIX_OPERATOR_PREFIX + op);
+        result.add(FuzionConstants.INFIX_RIGHT_OPERATOR_PREFIX + op);
+      }
+    else
+      {
+        result.add(name);
+      }
+    return result;
+  }
+
   /*-----------------------------  methods  -----------------------------*/
 
 

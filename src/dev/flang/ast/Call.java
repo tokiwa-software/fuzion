@@ -742,13 +742,14 @@ public class Call extends AbstractCall
   private void triggerFeatureNotFoundError(Resolution res, List<FeatureAndOuter> fos, AbstractFeature tf)
   {
     var calledName = FeatureName.get(_name, _actuals.size());
+    var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, _actuals.size()));
     AstErrors.calledFeatureNotFound(this,
                                     calledName,
                                     tf,
                                     _target,
                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                         (FeatureName fn) -> false,
-                                                                        (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                                                         (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
                                     hiddenCandidates(res, tf, calledName));
   }
 
