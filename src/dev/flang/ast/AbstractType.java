@@ -1088,7 +1088,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (f != null,
        actualGenerics != null,
-       Errors.any() || !isOpenGeneric() || (select >= 0));
+       Errors.any() || !isOpenGeneric() || (select >= 0) || actualGenerics.isEmpty());
 
     var result = this;
     if (result.isGenericArgument())
