@@ -129,7 +129,7 @@ is
     old_contents := contents.get.as_array
     contents <- LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil
     for tup in (old_contents.filter o->o??) do
-      (ok, ov) := tup.get
+      ok, ov := tup.get
       store (idx ok) ok ov false
 
 
@@ -142,7 +142,7 @@ is
         contents.get[at] := (k, v) # insert new key value pair
         if update_size then load <- load.get + 1
       t tuple =>
-        (ek, _) := t
+        ek, _ := t
         if ek = k                 # no conflict, but remapping of k
           contents.get[at] := (k, v)
         else                      # conflict
@@ -173,7 +173,7 @@ is
       match contents.get[at]
         nil     => nil
         t tuple =>
-          (ek, v) := t
+          ek, v := t
           if ek = k
             v
           else
@@ -191,7 +191,7 @@ is
       match contents.get[del_idx]
         nil => nil
         t tuple =>
-          (ek, v) := t
+          ek, v := t
           if ek = k
             contents.get[del_idx] := nil
             load <- load.get - 1
@@ -208,7 +208,7 @@ is
       match contents.get[next_idx]
         nil     => # done
         t tuple =>
-          (ek, _) := t
+          ek, _ := t
 
           if (
             # not having passed array end: move elements saved at a larger index

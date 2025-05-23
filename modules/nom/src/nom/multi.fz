@@ -46,7 +46,7 @@ module multi is
       n>0
   =>
     parser I I (Sequence O) input->
-      (rest, acc) := (1..n)
+      rest, acc := (1..n)
         .reduce (input, (Sequence O).type.empty) r,t->
           match p.call r.0
             s success =>
