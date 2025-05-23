@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -1803,7 +1805,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o).feature();
+    var of = handDown(o, NO_SELECT, false).feature();
     var res = this;
     var i = feature();
     while (i != null && i != of)
@@ -1906,6 +1908,23 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz handDown(AbstractType t, int select)
   {
+    return handDown(t, select, true);
+  }
+
+
+  /**
+   * Hand down the given type along the given inheritance chain and along all
+   * inheritance chains of outer clazzes such that it has the actual type
+   * parameters in this clazz.
+   *
+   * @param t the original type
+   *
+   * @param select in case t is an open generic, the variant of the actual type
+   * that is to be chosen. NO_SELECT otherwise.
+   *
+   */
+  private Clazz handDown(AbstractType t, int select, boolean addErrorIfCallResult)
+  {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
@@ -1974,7 +1993,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var ac = handDown(res._type.generics().get(0));
         res = ac.typeClazz();
       }
-    if (err.size() > 0)
+    if (err.size() > 0 && addErrorIfCallResult)
       {
         res._showErrorIfCallResult_ = err.get(0);
       }
