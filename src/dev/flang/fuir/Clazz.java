@@ -306,6 +306,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!type.dependsOnGenericsNoOuter(),
        !type.containsThisType(),
+       // NYI: UNDER DEVELOPMENT: currently not possible because of type_as_value and `Type.infix :`
+       //  !type.feature().isTypeParameter(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
        type != Types.t_ERROR,
        // outer clazzes of fields must be values
@@ -1787,36 +1789,33 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Find outer clazz of this corresponding to feature {@code o}.
+   * Find outer clazz of this corresponding to this-type {@code o}.
    *
-   * @param o the outer feature whose clazz we are searching for.
+   * @param o the this-type whose clazz we are searching for.
    *
-   * @return the outer clazz of this corresponding feature {@code o}.
+   * @return the outer clazz of this corresponding this-type {@code o}.
    */
   private Clazz findOuter(AbstractType o)
   {
+    if (PRECONDITIONS) require
+      (o.isThisType());
+
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = o.feature();
-    var isValue = o.isRef().noOrDontKnow();
-    var isThisValue = o.isThisType() && o.isRef().yes() != of.isRef() && isValue;
+    var of = handDown(o).feature();
     var res = this;
     var i = feature();
-    while (
-      // direct match
-      i != null && i != of
-      // via inheritance (in values)
-      && !((isThisValue  ? i.isRef() : isValue) && i.inheritsFrom(of)) // see #1391 and #1628 for when this can be the case.
-          )
+    while (i != null && i != of)
       {
-        res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
-                               : res._outer;
-        i = (LibraryFeature) i.outer();
+        res = res.outerRef() != null
+          ? res.outerRef().resultClazz()
+          : res._outer;
+        i = (LibraryFeature) res.feature();
       }
 
     if (CHECKS) check
-      (Errors.any() || i == of || i != null && i.inheritsFrom(of) && isValue);
+      (Errors.any() || i == of);
 
     return i == null ? _fuir.error() : res;
   }
