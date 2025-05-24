@@ -298,73 +298,72 @@ public class ParsedCall extends Call
   @Override
   protected void findChainedBooleans(Resolution res, Context context)
   {
-    var cb = chainedBoolTarget(res, context);
-    if (cb != null && _actuals.size() == 1)
+    var ab = chainedBoolTarget(res, context);
+    if (ab != null && _actuals.size() == 1)
       {
-        var b = res.resolveType(cb._actuals.getLast(), context);
+        var b = res.resolveType(ab._actuals.getLast(), context);
         if (b.typeForInferencing() != Types.t_ERROR)
           {
-            var outer = context.outerFeature();
-            String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
-            var tmp = new Feature(res,
-                                  pos(),
-                                  Visi.PRIV,
-                                  b.type(),
-                                  tmpName,
-                                  outer);
-            Expr t1 = new Call(pos(), new Current(pos(), outer), tmp);
-            Expr t2 = new Call(pos(), new Current(pos(), outer), tmp);
-            var c = _actuals;
-            ParsedCall movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), c)
+            ab = chainBool(res, context, ab, b);
+            var cur = _actuals.getLast();
+            while (cur instanceof ParsedCall pcur &&
+                   pcur.isOperatorCall(cur == this) &&
+                   pcur.isValidOperatorInChainedBoolean())
               {
-                boolean isChainedBoolRHS() { return true; }
-              };
-            this._movedTo = movedTo;
-            Expr as = new Assign(res, pos(), tmp, b, context);
-            t1         = res.resolveType(t1     , context);
-            as         = res.resolveType(as     , context);
-            while (c.getLast() instanceof ParsedCall lastArg &&
-                   lastArg.isOperatorCall(false) &&
-                   lastArg.isValidOperatorInChainedBoolean())
-              {
-                String tmpName2 = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
-                var tmp2 = new Feature(res,
-                                       pos(),
-                                       Visi.PRIV,
-                                       b.type(),
-                                       tmpName2,
-                                       outer);
-                Expr t21 = new Call(pos(), new Current(pos(), outer), tmp2);
-                Expr t22 = new Call(pos(), new Current(pos(), outer), tmp2);
-                var c2 = lastArg._actuals.getLast();
-                ParsedCall movedTo2 = new ParsedCall(t22, new ParsedName(pos(), lastArg.name()), new List<>(c2))
-                  {
-                    boolean isChainedBoolRHS() { return true; }
-                  };
-                lastArg._movedTo = movedTo2;
-                var b2 = lastArg._actuals.size() == 1 ? lastArg._target : lastArg._actuals.get(0);
-                var lhs = new Call(lastArg.pos(), _target, new List<>(), new List<>(movedTo), Types.resolved.f_bool_AND);
-                Expr as2 = new Assign(res, pos(), tmp2, b2, context);
-                t21         = res.resolveType(t21     , context);
-                as2         = res.resolveType(as2     , context);
-                movedTo._actuals.set(movedTo._actuals.size()-1,
-                                     new Block(new List<Expr>(as2, t21)));
-
-                c = lastArg._actuals;
-                _target = lhs;
-                movedTo = movedTo2;
+                b = _target;
+                _target = new Call(cur.pos(), _target, new List<>(), new List<>(ab), Types.resolved.f_bool_AND);
+                ab = pcur.chainBool(res, context, ab, b);
+                cur = pcur._actuals.getLast();
               }
-            cb._actuals.set(cb._actuals.size()-1,
-                            new Block(new List<Expr>(as, t1)));
-            _actuals = new List<Expr>(movedTo);
+            _actuals = new List<Expr>(ab);
             _calledFeature = Types.resolved.f_bool_AND;
             _resolvedFormalArgumentTypes  = null;  // _calledFeature changed, so formal arg types must be resolved again
             _pendingError = null;
             _name = _calledFeature.featureName().baseName();
-            var result = res.resolveType(movedTo, context);
+            var result = res.resolveType(ab, context);
             _actuals = new List<Expr>(result);
           }
       }
+  }
+
+
+  /**
+   * For a chained boolean `a < b < c < d < e`, perform the chaining of one element `a < b < c`
+   *
+   * @param res Resolution instance
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param ab the expression `a < b`, will be changed into `a < { tmp := b; tmp }`
+   *
+   * @param b the expression `b`.
+   *
+   * @return the right hand side of the chaining `tmp < c`
+   */
+  private ParsedCall chainBool(Resolution res, Context context, Call ab, Expr b)
+  {
+    var outer = context.outerFeature();
+    String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
+    var tmp = new Feature(res,
+                          pos(),
+                          Visi.PRIV,
+                          b.type(),
+                          tmpName,
+                          outer);
+    Expr t1 = new Call(pos(), new Current(pos(), outer), tmp);
+    Expr t2 = new Call(pos(), new Current(pos(), outer), tmp);
+    var c = _actuals.getLast();
+    ParsedCall movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), new List<>(c))
+      {
+        boolean isChainedBoolRHS() { return true; }
+      };
+    _movedTo = movedTo;
+    Expr as = new Assign(res, pos(), tmp, b, context);
+    t1         = res.resolveType(t1     , context);
+    as         = res.resolveType(as     , context);
+    ab._actuals.set(ab._actuals.size()-1,
+                    new Block(new List<Expr>(as, t1)));
+    return movedTo;
   }
 
 
