@@ -201,6 +201,7 @@ public class Lexer extends SourceFile
     t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),
+    t_infix_right("infix_right"),
     t_prefix("prefix"),
     t_postfix("postfix"),
     t_ternary("ternary"),

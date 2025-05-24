@@ -58,6 +58,7 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Function;
+import dev.flang.ast.ParsedOperatorCall;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
@@ -1169,19 +1170,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
-    List<FeatureAndOuter> result;
-    if (name.startsWith(FuzionConstants.UNARY_OPERATOR_PREFIX))
+    List<FeatureAndOuter> result = new List<>();
+    for (var n : ParsedOperatorCall.lookupNames(name))
       {
-        var op = name.substring(FuzionConstants.UNARY_OPERATOR_PREFIX.length());
-        var prefixName = FuzionConstants.PREFIX_OPERATOR_PREFIX + op;
-        var postfxName = FuzionConstants.POSTFIX_OPERATOR_PREFIX + op;
-        result = new List<>();
-        result.addAll(lookup0(outer, prefixName, use, traverseOuter, hidden));
-        result.addAll(lookup0(outer, postfxName, use, traverseOuter, hidden));
-      }
-    else
-      {
-        result = lookup0(outer, name, use, traverseOuter, hidden);
+        result.addAll(lookup0(outer, n, use, traverseOuter, hidden));
       }
     return result;
   }

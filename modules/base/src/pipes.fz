@@ -146,7 +146,7 @@ public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)
 # a six-tuple is large enough for two 3-D coordinates, so let's stop here for now....
 
 
-# infix <| -- backwards pipe with one argument
+# infix_right <| -- backwards pipe with one argument
 #
 # This operation is seldom useful, it is provided only for reasons of symmetry with |>.
 # Instead of
@@ -159,11 +159,11 @@ public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <| (A, R type, f A->R, a A) R =>
+public infix_right <| (A, R type, f A->R, a A) R =>
   f a
 
 
-# infix <|| -- backwards pipe with a two-tuple argument, destructuring the tuple into arguments
+# infix_right <|| -- backwards pipe with a two-tuple argument, destructuring the tuple into arguments
 #
 # This allows destructuring of tuples as actual arguments: instead of
 #
@@ -182,11 +182,11 @@ public infix <| (A, R type, f A->R, a A) R =>
 #
 # .
 #
-public infix <|| (A, B, R type, f (A,B)->R, a (A,B)) R =>
+public infix_right <|| (A, B, R type, f (A,B)->R, a (A,B)) R =>
   a ||> f
 
 
-# infix <||| -- backwards pipe with a three-tuple argument, destructuring the tuple into arguments
+# infix_right <||| -- backwards pipe with a three-tuple argument, destructuring the tuple into arguments
 #
 # This allows destructuring of 3-tuples as actual arguments: instead of
 #
@@ -202,11 +202,11 @@ public infix <|| (A, B, R type, f (A,B)->R, a (A,B)) R =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) R =>
+public infix_right <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) R =>
   a |||> f
 
 
-# infix <|||| -- backwards pipe with a four-tuple argument, destructuring the tuple into arguments
+# infix_right <|||| -- backwards pipe with a four-tuple argument, destructuring the tuple into arguments
 #
 # This allows destructuring of 4-tuples as actual arguments: instead of
 #
@@ -222,11 +222,11 @@ public infix <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) R =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) R =>
+public infix_right <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) R =>
   a ||||> f
 
 
-# infix <||||| -- backwards pipe with a five-tuple argument, destructuring the tuple into arguments
+# infix_right <||||| -- backwards pipe with a five-tuple argument, destructuring the tuple into arguments
 #
 # This allows destructuring of 5-tuples as actual arguments: instead of
 #
@@ -242,11 +242,11 @@ public infix <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) R =>
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E)) R =>
+public infix_right <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E)) R =>
   a |||||> f
 
 
-# infix <|||||| -- backwards pipe with a six-tuple argument, destructuring the tuple into arguments
+# infix_right <|||||| -- backwards pipe with a six-tuple argument, destructuring the tuple into arguments
 #
 # This allows destructuring of 6-tuples as actual arguments: instead of
 #
@@ -262,7 +262,7 @@ public infix <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E)) R =
 #
 # which often correponds more naturally to the data flow through the code.
 #
-public infix <|||||| (A, B, C, D, E, F, R type, f (A,B,C,D,E,F)->R, a (A,B,C,D,E,F)) R =>
+public infix_right <|||||| (A, B, C, D, E, F, R type, f (A,B,C,D,E,F)->R, a (A,B,C,D,E,F)) R =>
   a ||||||> f
 
 

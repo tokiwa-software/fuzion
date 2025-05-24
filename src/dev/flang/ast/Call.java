@@ -162,7 +162,7 @@ public class Call extends AbstractCall
   /**
    * Static type of this call. Set during resolveTypes().
    */
-  private AbstractType _type;
+  protected AbstractType _type;
 
 
   /**
@@ -479,7 +479,7 @@ public class Call extends AbstractCall
    *
    * @return the type of the target.
    */
-  private AbstractType targetType(Resolution res, Context context)
+  protected AbstractType targetType(Resolution res, Context context)
   {
     _target = res.resolveType(_target, context);
     _targetType =
@@ -742,13 +742,14 @@ public class Call extends AbstractCall
   private void triggerFeatureNotFoundError(Resolution res, List<FeatureAndOuter> fos, AbstractFeature tf)
   {
     var calledName = FeatureName.get(_name, _actuals.size());
+    var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, _actuals.size()));
     AstErrors.calledFeatureNotFound(this,
                                     calledName,
                                     tf,
                                     _target,
                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                         (FeatureName fn) -> false,
-                                                                        (AbstractFeature f) -> f.featureName().equalsBaseName(calledName)),
+                                                                         (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
                                     hiddenCandidates(res, tf, calledName));
   }
 
@@ -1006,7 +1007,7 @@ public class Call extends AbstractCall
   private boolean isOperatorCall()
   {
     return
-      _name.startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) ||
+      _name.startsWith(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX) ||
       _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX) ||
       _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX);
   }
@@ -2514,7 +2515,7 @@ public class Call extends AbstractCall
    * However, moving an expression into a lambda or a lazy value will change its
    * context and resolve will have to be repeated.
    */
-  private Context _resolvedFor;
+  protected Context _resolvedFor;
 
 
   /**
@@ -2639,27 +2640,61 @@ public class Call extends AbstractCall
       {
         _type = Types.t_ERROR;
       }
-    else if (_calledFeature != null)
+    Call result = null;
+    if (_calledFeature != null)
       {
-        resolveGenerics(res, context);
-        propagateForPartial(res, context);
-        if (needsToInferTypeParametersFromArgs())
-          {
-            inferGenericsFromArgs(res, context);
-            for (var r : _whenInferredTypeParameters)
-              {
-                r.run();
-              }
-          }
-        inferFormalArgTypesFromActualArgs();
-        setActualResultType(res, context);
-        resolveFormalArgumentTypes(res, context);
+        result = fixAssociativity(res, context);
       }
-    resolveTypesOfActuals(res, context);
+    if (result == null)
+      {
+        if (_calledFeature != null)
+          {
+            resolveGenerics(res, context);
+            propagateForPartial(res, context);
+            if (needsToInferTypeParametersFromArgs())
+              {
+                inferGenericsFromArgs(res, context);
+                for (var r : _whenInferredTypeParameters)
+                  {
+                    r.run();
+                  }
+              }
+            inferFormalArgTypesFromActualArgs();
+            setActualResultType(res, context);
+            resolveFormalArgumentTypes(res, context);
+          }
+        resolveTypesOfActuals(res, context);
 
-    return isErroneous(res)
-      ? resolveTypesErrorResult()
-      : resolveTypesSuccessResult(res, context);
+        result = isErroneous(res)
+          ? resolveTypesErrorResult()
+          : resolveTypesSuccessResult(res, context);
+      }
+    return result;
+  }
+
+
+  /**
+   * In case this is a parsed infix operator call, fix the associativity: the
+   * parser produces and AST assuming all infix operators are right associative
+   * (which is wrong for most operators).  This call rotates the operators
+   * accordingly if needed, i.e., changing
+   *
+   *    a - «b + c»
+   *
+   * into
+   *
+   *    «a - b» + c
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return null in case nothing was done, otherwise the fully resolved new
+   * call with fixed associativity.
+   */
+  Call fixAssociativity(Resolution res, Context context)
+  {
+    return null;
   }
 
 
@@ -3118,6 +3153,11 @@ public class Call extends AbstractCall
       Expr boxAndTag(AbstractType frmlT, Context context)
       {
         return this;
+      }
+      @Override
+      protected AbstractType targetType(Resolution res, Context context)
+      {
+        return Types.t_ERROR;
       }
       public void setSourceRange(SourceRange r)
       { // do not change the source position if there was an error.

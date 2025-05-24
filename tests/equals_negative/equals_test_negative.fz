@@ -42,7 +42,7 @@ equals_test_negative is
   b1 := equals_test_b 42
   b2 := equals_test_b 42
 
-  say "b1.infix = b2 is {b1.infix = b2}"    # 2. should flag an error: equals_test_b does not implement equality
+  say "b1.infix = b2 is {b1 = b2}"          # 2. should flag an error: equals_test_b does not implement equality
 
   c1 := equals_test_c 42
   c2 := equals_test_c 42

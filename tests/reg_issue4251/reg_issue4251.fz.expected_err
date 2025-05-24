@@ -2,13 +2,13 @@
 --CURDIR--/reg_issue4251.fz:26:6: error 1: Different count of arguments needed when calling feature
 (say <| (.map **2)) <| (2..10:2)
 -----^^
-Feature not found: 'infix <|' (3 arguments)
+Feature not found: 'infix/infix_right <|' (3 arguments)
 Target feature: 'universe'
 In call: '(say <| (.map **2))'
-To solve this, you might change the actual number of arguments to match the feature 'infix <|'  (2 type arguments, 2 value arguments) at {base.fum}/pipes.fz:162:8:
-public infix <| (A, R type, f A->R, a A) R =>
--------^^^^^^^^
-To call 'infix <|' you must provide 4 arguments. The type arguments may be omitted or `_` may be used in place of a type argument.
+To solve this, you might change the actual number of arguments to match the feature 'infix_right <|'  (2 type arguments, 2 value arguments) at {base.fum}/pipes.fz:162:8:
+public infix_right <| (A, R type, f A->R, a A) R =>
+-------^^^^^^^^^^^^^^
+To call 'infix_right <|' you must provide 4 arguments. The type arguments may be omitted or `_` may be used in place of a type argument.
 
 
 one error.

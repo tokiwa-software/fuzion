@@ -236,7 +236,7 @@ public class Types extends ANY
       t_codepoint               = universe.get(mod, "codepoint", 1).selfType();
       f_id                      = universe.get(mod, "id", 2);
       f_void                    = universe.get(mod, "void", 0);
-      f_choice                  = universe.get(mod, "choice", 1);
+      f_choice                  = universe.get(mod, FuzionConstants.CHOICE_NAME, 1);
       f_TRUE                    = universe.get(mod, "true_", 0);
       f_FALSE                   = universe.get(mod, "false_", 0);
       f_true                    = universe.get(mod, "true", 0);

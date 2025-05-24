@@ -590,6 +590,7 @@ name        : IDENT                            // all parts of name must be in s
                           next();
                           break;
           case t_infix  :
+          case t_infix_right:
           case t_prefix :
           case t_postfix: result = opName(mayBeAtMinIndent, ignoreError);  break;
           case t_ternary:
@@ -686,14 +687,15 @@ name        : IDENT                            // all parts of name must be in s
   {
     switch (current(mayBeAtMinIndent))
       {
-      case t_ident  :
-      case t_infix  :
-      case t_prefix :
-      case t_postfix:
-      case t_ternary:
-      case t_index  :
-      case t_set    : return true;
-      default       : return false;
+      case t_ident      :
+      case t_infix      :
+      case t_infix_right:
+      case t_prefix     :
+      case t_postfix    :
+      case t_ternary    :
+      case t_index      :
+      case t_set        : return true;
+      default           : return false;
       }
   }
 
@@ -717,9 +719,10 @@ name        : IDENT                            // all parts of name must be in s
   /**
    * Parse opName
    *
-opName      : "infix"   OPERATOR
-            | "prefix"  OPERATOR
-            | "postfix" OPERATOR
+opName      : "infix"       OPERATOR
+            | "infix_right" OPERATOR
+            | "prefix"      OPERATOR
+            | "postfix"     OPERATOR
             ;
    *
    * @param ignoreError to not report an error but just return
@@ -736,7 +739,7 @@ opName      : "infix"   OPERATOR
     String res = operatorOrError();
     if (!ignoreError || res != Errors.ERROR_STRING)
       {
-        match(Token.t_op, "infix/prefix/postfix name");
+        match(Token.t_op, "infix/infix_right/prefix/postfix name");
         res = inPrePost + " " + res;
       }
     return new ParsedName(sourceRange(pos), res);
@@ -3494,7 +3497,7 @@ boundType   : onetype ( PIPE onetype ) *
           {
             l.add(onetype());
           }
-        result = new ParsedType(result.pos(), "choice", l, null);
+        result = new ParsedType(result.pos(), FuzionConstants.CHOICE_NAME, l, null);
       }
     return result;
   }
