@@ -211,21 +211,27 @@ public class ParsedOperatorCall extends ParsedCall
         var t = _target    ; _target     = b_plus_c            ; b_plus_c._target     = t;
         var p = _parsedName; _parsedName = b_plus_c._parsedName; b_plus_c._parsedName = p;
         var n = _name      ; _name       = b_plus_c._name      ; b_plus_c._name       = n;
-        _resolvedFor = null;
-        _actualsResolvedFor = null;
-        _calledFeature = null;
-        _resolvedFormalArgumentTypes = null;
-        _type = null;
-        b_plus_c._resolvedFor = null;
-        b_plus_c._actualsResolvedFor = null;
-        b_plus_c._calledFeature = null;
-        b_plus_c._resolvedFormalArgumentTypes = null;
-        b_plus_c._type = null;
+        forceFreshResolve();
+        b_plus_c.forceFreshResolve();
         result = resolveTypes(res, context);
       }
     return result;
   }
 
+
+  /**
+   * Force this call to be resolved again. This is required if _target or
+   * _actuals have changed or the _name/_parsedName was changed such that a
+   * different feature will be found.
+   */
+  void forceFreshResolve()
+  {
+    _resolvedFor = null;
+    _actualsResolvedFor = null;
+    _calledFeature = null;
+    _resolvedFormalArgumentTypes = null;
+    _type = null;
+  }
 
 }
 
