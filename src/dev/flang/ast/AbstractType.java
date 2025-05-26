@@ -1125,7 +1125,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (f != null,
        actualGenerics != null,
-       Errors.any() || !isOpenGeneric() || (select >= 0));
+       Errors.any() || !isOpenGeneric() || (select >= 0) || actualGenerics.isEmpty());
 
     var result = this;
     if (result.isGenericArgument())
@@ -2396,6 +2396,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType selfOrConstraint(Resolution res, Context context)
   {
     return (isGenericArgument() ? genericArgument().constraint(res, context) : this);
+  }
+
+
+  public AbstractType applyToGenerics(java.util.function.Function<AbstractType, AbstractType> f)
+  {
+    var result = this;
+    if (!isGenericArgument())
+      {
+        var g = generics();
+        var ng = g.map(f);
+        if (ng != g)
+          {
+            result = ResolvedNormalType.create(this, ng, unresolvedGenerics(), outer());
+          }
+      }
+    return result;
   }
 
 
