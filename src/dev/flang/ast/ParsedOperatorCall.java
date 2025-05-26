@@ -53,7 +53,12 @@ public class ParsedOperatorCall extends ParsedCall
   /*-----------------------------  fields  ------------------------------*/
 
 
+  /**
+   * operator precedence, used to check the need to fix associativity once
+   * the actual infix or infix_right operator is known.
+   */
   public final int _precedence;
+
 
   /**
    * Has this been put into parentheses? If so, it may no longer be used as
