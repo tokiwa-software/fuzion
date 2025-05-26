@@ -2358,6 +2358,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  public AbstractType applyToGenerics(java.util.function.Function<AbstractType, AbstractType> f)
+  {
+    var result = this;
+    if (!isGenericArgument())
+      {
+        var g = generics();
+        var ng = g.map(f);
+        if (ng != g)
+          {
+            result = ResolvedNormalType.create(this, ng, unresolvedGenerics(), outer());
+          }
+      }
+    return result;
+  }
+
+
 }
 
 /* end of file */
