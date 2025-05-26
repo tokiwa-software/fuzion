@@ -148,7 +148,7 @@ class OpExpr extends ANY
                       // a prefix operator will have precedence, i.e., `-a-b-c` will be parsed as `«-a» - «b - c»`,
                       // while `x-a-b-c` will be `x - «a - «b - c»»`
                       if (precedence(i, Kind.infix) >  pmax ||
-                          precedence(i, Kind.infix) == pmax && !isExpr(max+1))
+                          precedence(i, Kind.infix) == pmax && !(!isExpr(max-1) && isExpr(max+1)))
                         {
                           max = i;
                           pmax = precedence(i, Kind.infix);
