@@ -212,10 +212,12 @@ public class ParsedOperatorCall extends ParsedCall
         var p = _parsedName; _parsedName = b_plus_c._parsedName; b_plus_c._parsedName = p;
         var n = _name      ; _name       = b_plus_c._name      ; b_plus_c._name       = n;
         _resolvedFor = null;
+        _actualsResolvedFor = null;
         _calledFeature = null;
         _resolvedFormalArgumentTypes = null;
         _type = null;
         b_plus_c._resolvedFor = null;
+        b_plus_c._actualsResolvedFor = null;
         b_plus_c._calledFeature = null;
         b_plus_c._resolvedFormalArgumentTypes = null;
         b_plus_c._type = null;
