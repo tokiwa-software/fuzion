@@ -720,11 +720,11 @@ public abstract class Expr extends ANY implements HasSourcePosition
          */
         return frmlT;
       }
-    else if (t.isRef().yes() && !isCallToOuterRef())
+    else if (t.isRef() && !isCallToOuterRef())
       {
         return null;
       }
-    else if (frmlT.isRef().yes())
+    else if (frmlT.isRef())
       {
         return frmlT;
       }

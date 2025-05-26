@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Set;
 
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.YesNo;
@@ -60,7 +59,7 @@ public class ResolvedNormalType extends ResolvedType
    * defining a ref type or not, false to keep the underlying feature's
    * ref/value status.
    */
-  RefOrVal _refOrVal;
+  private final TypeMode _typeMode;
 
 
   /**
@@ -144,7 +143,7 @@ public class ResolvedNormalType extends ResolvedType
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    return create(g, ug, o, t.feature(), refOrVal(t), fixOuterThisType);
+    return create(g, ug, o, t.feature(), t.mode(), fixOuterThisType);
   }
 
 
@@ -162,7 +161,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
   {
-    return create(g, ug, o, f, RefOrVal.LikeUnderlyingFeature, true);
+    return create(g, ug, o, f, f.defaultTypeMode(), true);
   }
 
 
@@ -178,22 +177,21 @@ public class ResolvedNormalType extends ResolvedType
    * @param f if this type corresponds to a feature, then this is the
    * feature, otherwise null.
    *
-   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
+   * @param typeMode true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
   private ResolvedNormalType(List<AbstractType> g,
                             List<AbstractType> ug,
                             AbstractType o,
                             AbstractFeature f,
-                            RefOrVal refOrVal,
+                            TypeMode typeMode,
                             boolean fixOuterThisType)
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
-       Types.resolved == null
-         || f.compareTo(Types.resolved.f_void) != 0
-         || refOrVal == RefOrVal.LikeUnderlyingFeature);
+       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g)
+       /* NYI: Types.resolved == null
+         || f.compareTo(Types.resolved.f_void) != 0*/);
 
     this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();
@@ -204,7 +202,7 @@ public class ResolvedNormalType extends ResolvedType
         // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
         // outer types. Is it possible to not create asThisType() in This.java
         // in the first place?
-        o = ResolvedNormalType.create(ot, RefOrVal.LikeUnderlyingFeature);
+        o = ResolvedNormalType.create(ot, ot.feature().defaultTypeMode());
       }
 
     if (o == null && f != null)
@@ -218,7 +216,7 @@ public class ResolvedNormalType extends ResolvedType
 
     this._outer = o;
     this._feature = f;
-    this._refOrVal = refOrVal;
+    this._typeMode = typeMode;
 
     if (POSTCONDITIONS) ensure
       (_feature == null /* artificial built in type */
@@ -233,7 +231,7 @@ public class ResolvedNormalType extends ResolvedType
                                     List<AbstractType> ug,
                                     AbstractType o,
                                     AbstractFeature f,
-                                    RefOrVal refOrVal,
+                                    TypeMode typeMode,
                                     boolean fixOuterThisType)
   {
     if (f == Types.f_ERROR ||
@@ -243,7 +241,7 @@ public class ResolvedNormalType extends ResolvedType
       }
     else
       {
-        return new ResolvedNormalType(g, ug, o, f, refOrVal, fixOuterThisType);
+        return new ResolvedNormalType(g, ug, o, f, typeMode, fixOuterThisType);
       }
   }
 
@@ -253,18 +251,17 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param original the original value type
    *
-   * @param refOrVal must be UnresolvedType.RefOrVal.Boxed or UnresolvedType.RefOrVal.Val
+   * @param typeMode must be TypeMode.RefType or TypeMode.ValueType
    */
-  private ResolvedNormalType(ResolvedNormalType original, RefOrVal refOrVal)
+  private ResolvedNormalType(ResolvedNormalType original, TypeMode typeMode)
   {
     if (PRECONDITIONS) require
-      (refOrVal != original._refOrVal,
+      (mode() != original.mode(),
        Types.resolved == null
          || !original.isVoid()
-         || refOrVal == RefOrVal.LikeUnderlyingFeature
       );
 
-    this._refOrVal           = refOrVal;
+    this._typeMode           = typeMode;
     this._generics           = original._generics;
     this._unresolvedGenerics = original._unresolvedGenerics;
     this._outer              = original._outer;
@@ -278,9 +275,9 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * Instantiate a new ResolvedNormalType and return its unique instance.
    */
-  public static ResolvedNormalType create(ResolvedNormalType original, RefOrVal refOrVal)
+  public static ResolvedNormalType create(ResolvedNormalType original, TypeMode typeMode)
   {
-    return new ResolvedNormalType(original, refOrVal);
+    return new ResolvedNormalType(original, typeMode);
   }
 
 
@@ -295,7 +292,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   private ResolvedNormalType(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
-    this._refOrVal          = original._refOrVal;
+    this._typeMode          = original._typeMode;
     if (original._generics.isEmpty())
       {
         this._generics          = original._generics;
@@ -313,8 +310,10 @@ public class ResolvedNormalType extends ResolvedType
         this._generics.freeze();
       }
     this._unresolvedGenerics = original._unresolvedGenerics;
-    this._outer             = (original._outer instanceof ResolvedNormalType ot) ? ot.clone(originalOuterFeature) : original._outer;
-    this._feature           = original._feature;
+    this._outer              = (original._outer instanceof ResolvedNormalType ot)
+      ? ot.clone(originalOuterFeature)
+      : original._outer;
+    this._feature            = original._feature;
 
     if (POSTCONDITIONS) ensure
       (feature().generics().sizeMatches(generics()));
@@ -352,30 +351,12 @@ public class ResolvedNormalType extends ResolvedType
    */
   protected ResolvedNormalType()
   {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, RefOrVal.LikeUnderlyingFeature, false);
+    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeMode.ValueType, false);
   }
 
 
   /*-------------------------  static methods  --------------------------*/
 
-
-  /**
-   * Helper to extract {@code RefOrVal} from given type.
-   *
-   * @param t a type, must not be generic argument.
-   */
-  private static RefOrVal refOrVal(AbstractType t)
-  {
-    return
-      t instanceof ResolvedNormalType tt              ? tt._refOrVal                   :
-      (t.isRef() == YesNo.yes) == t.feature().isRef() ? RefOrVal.LikeUnderlyingFeature :
-      switch(t.isRef())
-        {
-          case YesNo.no -> RefOrVal.Value;
-          case YesNo.yes -> RefOrVal.Boxed;
-          case YesNo.dontKnow -> RefOrVal.ThisType;
-        };
-  }
 
 
   /**
@@ -399,15 +380,29 @@ public class ResolvedNormalType extends ResolvedType
       }
     else
       {
-        result = ResolvedNormalType.create(t.generics(), t.unresolvedGenerics(), o, t.feature(),
-                                        refOrVal(t),
-                                        false);
+        result = ResolvedNormalType.create(t.generics(),
+                                           t.unresolvedGenerics(),
+                                           o,
+                                           t.feature(),
+                                           t.mode(),
+                                           false);
       }
     return result;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+
+  /**
+   * The mode of the type: ThisType, RefType or ValueType.
+   */
+  @Override
+  public TypeMode mode()
+  {
+    return _typeMode;
+  }
 
 
   /**
@@ -428,9 +423,9 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asRef()
   {
     AbstractType result = this;
-    if (isRef().noOrDontKnow() && !isVoid() && this != Types.t_ERROR)
+    if (!isRef() && !isVoid() && this != Types.t_ERROR)
       {
-        result = ResolvedNormalType.create(this, RefOrVal.Boxed);
+        result = ResolvedNormalType.create(this, TypeMode.RefType);
       }
     return result;
   }
@@ -445,7 +440,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (!isThisType() && this != Types.t_ERROR && this != Types.t_ADDRESS && !feature().isUniverse())
       {
-        result = ResolvedNormalType.create(this, RefOrVal.ThisType);
+        result = ResolvedNormalType.create(this, TypeMode.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
@@ -463,43 +458,13 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asValue()
   {
     AbstractType result = this;
-    if (isRef().yesOrDontKnow() && this != Types.t_ERROR)
+    if (!isValue() && this != Types.t_ERROR)
       {
-        result = ResolvedNormalType.create(this, RefOrVal.Value);
+        result = ResolvedNormalType.create(this, TypeMode.ValueType);
       }
     return result;
   }
 
-
-  /**
-   * isRef
-   */
-  @Override
-  public YesNo isRef()
-  {
-    var r = _isRef;
-    if (r == null)
-      {
-        r = switch (this._refOrVal)
-          {
-          case Boxed                -> YesNo.yes;
-          case Value                -> YesNo.no;
-          case LikeUnderlyingFeature-> feature().isRef() ? YesNo.yes : YesNo.no;
-          case ThisType             -> YesNo.dontKnow;
-          };
-        this._isRef = r;
-      }
-    return r;
-  }
-
-
-  /**
-   * isThisType
-   */
-  public boolean isThisType()
-  {
-    return this._refOrVal == RefOrVal.ThisType;
-  }
 
 
   /**
@@ -607,7 +572,7 @@ public class ResolvedNormalType extends ResolvedType
         {
           if (_resolved == null)
             {
-              _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), _refOrVal, false, false);
+              _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), mode(), false, false);
             }
           return _resolved;
         }

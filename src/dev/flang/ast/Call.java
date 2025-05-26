@@ -1122,7 +1122,7 @@ public class Call extends AbstractCall
     return (_calledFeature instanceof Feature f)
       && f.isAnonymousInnerFeature()
       && f.inherits().getFirst().typeForInferencing() != null
-      && f.inherits().getFirst().typeForInferencing().isRef() == YesNo.yes
+      && f.inherits().getFirst().typeForInferencing().isRef()
       ? f.inherits().getFirst().typeForInferencing()
       : _type;
   }
@@ -2928,7 +2928,7 @@ public class Call extends AbstractCall
         while (o != null && !o.isGenericArgument())
           {
             o = o.outer();
-            if (o != null && o.isRef() == YesNo.yes && !o.feature().isRef())
+            if (o != null && o.isRef() && !o.feature().isRef())
               {
                 AstErrors.illegalCallResultType(this, _type, o);
                 o = null;

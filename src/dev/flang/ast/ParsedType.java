@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
 
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -75,9 +76,9 @@ public class ParsedType extends UnresolvedType
    *
    * @param outer outer type or null if unqualified.
    *
-   * @param rov UnresolvedType.RefOrVal.Boxed or UnresolvedType.RefOrVal.LikeUnderlyingFeature
+   * @param rov UnresolvedType.TypeMode.Boxed or UnresolvedType.TypeMode.LikeUnderlyingFeature
    */
-  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, RefOrVal rov)
+  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, Optional<TypeMode> rov)
   {
     super(pos, name, generics, outer, rov);
   }
@@ -115,7 +116,7 @@ public class ParsedType extends UnresolvedType
    */
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
-    return new ParsedType(_pos, name(), g2, o2, _refOrVal);
+    return new ParsedType(_pos, name(), g2, o2, _typeMode);
   }
 
 
@@ -154,7 +155,7 @@ public class ParsedType extends UnresolvedType
     return
       outer() == null      &&
       generics().isEmpty() &&
-      _refOrVal == RefOrVal.LikeUnderlyingFeature;
+      _typeMode.isEmpty();
   }
 
 

@@ -31,11 +31,10 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
+import dev.flang.ast.TypeMode;
 
 import dev.flang.util.List;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -58,12 +57,9 @@ public class NormalType extends LibraryType
 
 
   /**
-   * Is this a value, ref or this type?  This is one of the Constants
-   * FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
-   * FuzionConstants.MIR_FILE_TYPE_IS_REF, or
-   * FuzionConstants.MIR_FILE_TYPE_IS_THIS.
+   * Is this a value, ref or this type?
    */
-  int _valRefOrThis;
+  TypeMode _typeMode;
 
 
   /**
@@ -94,14 +90,14 @@ public class NormalType extends LibraryType
   NormalType(LibraryModule mod,
              int at,
              AbstractFeature feature,
-             int valRefOrThis,
+             TypeMode typeMode,
              List<AbstractType> generics,
              AbstractType outer)
   {
     super(mod, at);
 
     this._feature = feature;
-    this._valRefOrThis = valRefOrThis;
+    this._typeMode = typeMode;
     this._generics = generics;
     this._generics.freeze();
     this._outer = outer;
@@ -147,7 +143,7 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _feature, _valRefOrThis, g2, o2);
+    return new NormalType(_libModule, _at, _feature, _typeMode, g2, o2);
   }
 
 
@@ -181,35 +177,14 @@ public class NormalType extends LibraryType
     throw new Error("genericArgument() is not defined for NormalType");
   }
 
-
   /**
-   * A normal type may be an explicit ref type.
+   * The mode of the type: ThisType, RefType or ValueType.
    */
-  public YesNo isRef()
+  @Override
+  public TypeMode mode()
   {
-    return switch (_valRefOrThis)
-      {
-      case FuzionConstants.MIR_FILE_TYPE_IS_VALUE -> YesNo.no;
-      case FuzionConstants.MIR_FILE_TYPE_IS_REF   -> YesNo.yes;
-      case FuzionConstants.MIR_FILE_TYPE_IS_THIS  -> YesNo.dontKnow;
-      default -> throw new Error("unexpected NormalType._valRefOrThis: "+_valRefOrThis);
-      };
+    return _typeMode;
   }
-
-  /**
-   * isThisType
-   */
-  public boolean isThisType()
-  {
-    return switch (_valRefOrThis)
-      {
-      case FuzionConstants.MIR_FILE_TYPE_IS_VALUE -> false;
-      case FuzionConstants.MIR_FILE_TYPE_IS_REF   -> false;
-      case FuzionConstants.MIR_FILE_TYPE_IS_THIS  -> true;
-      default -> throw new Error("unexpected NormalType._valRefOrThis: "+_valRefOrThis);
-      };
-  }
-
 
   public AbstractType outer()
   {
@@ -222,7 +197,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        result = isRef().yes() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeMode.RefType, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -233,7 +208,7 @@ public class NormalType extends LibraryType
     var result = _asValue;
     if (result == null)
       {
-        result = isRef().no() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
+        result = isValue() ? this :  new NormalType(_libModule, _at, _feature, TypeMode.ValueType, _generics, _outer);
         _asValue = result;
       }
     return result;
@@ -250,7 +225,7 @@ public class NormalType extends LibraryType
           }
         else
           {
-            result = new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_THIS, _generics, _outer);
+            result = new NormalType(_libModule, _at, _feature, TypeMode.ThisType, _generics, _outer);
           }
         _asThis = result;
       }
