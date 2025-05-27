@@ -713,12 +713,16 @@ public list(T type, h T, t Lazy (list T)) list T =>
 #
 #   0 : [1,2,3,4].as_list
 #
+# or
+#
+#   0 : 1 : 2 : 3 : 4 : nil
+#
 # or to create lists by recursion, e.g., a an endless list containing
 # integer 1 repeatedly is
 #
 #   ones => 1 : ones
 #
-public infix : (A type, h A, t Lazy (list A)) list A=>
+public infix_right : (A type, h A, t Lazy (list A)) list A=>
   list h t
 
 
