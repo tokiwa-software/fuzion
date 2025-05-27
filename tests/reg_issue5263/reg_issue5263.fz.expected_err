@@ -1,6 +1,6 @@
 
 --CURDIR--/reg_issue5263.fz:32:7: error 1: Different count of arguments needed when calling feature
-  say <| .byte_length <| "hi"    # 1. should flag an error
+  say <| .byte_length <| "hi"    # 1. should flag an error, at least for now
 ------^^
 Feature not found: 'infix <|' (3 arguments)
 Target feature: 'universe'
