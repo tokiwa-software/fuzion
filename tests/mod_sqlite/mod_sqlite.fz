@@ -89,14 +89,6 @@ sqlite_database(db Native_Ref) : Database is
       error "could not open database"
 
 
-
-# helper to convert fuzion String to a c-string with \0 byte at end.
-#
-String.as_c_string =>
-  (String.this + codepoint 0).utf8.as_array
-
-
-
 # definition of a database API
 #
 public Database ref is

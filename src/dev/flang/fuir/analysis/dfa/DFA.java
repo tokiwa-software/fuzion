@@ -2133,23 +2133,23 @@ public class DFA extends ANY
                           */
         );
 
-    put("fuzion.java.Java_Object.is_null0"  , cl ->
+    put("fuzion.jvm.is_null0"  , cl ->
         {
           cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
           return cl._dfa.bool();
         });
-    put("fuzion.java.array_get"             , cl ->
+    put("fuzion.jvm.array_get"             , cl ->
         {
           cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
           return wrappedJavaObject(cl);
         });
-    put("fuzion.java.array_length"          , cl ->
+    put("fuzion.jvm.array_length"          , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
         return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
       }
     );
-    put("fuzion.java.array_to_java_object0" , cl ->
+    put("fuzion.jvm.array_to_java_object0" , cl ->
         {
           var data = fuir(cl).lookup_fuzion_sys_internal_array_data  (fuir(cl).clazzArgClazz(cl._cc,0));
           var len  = fuir(cl).lookup_fuzion_sys_internal_array_length(fuir(cl).clazzArgClazz(cl._cc,0));
@@ -2157,7 +2157,7 @@ public class DFA extends ANY
           cl._dfa.readField(len);
           return Value.UNKNOWN_JAVA_REF;
         });
-    put("fuzion.java.get_field0"            , cl ->
+    put("fuzion.jvm.get_field0"            , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl._cc);
         var jobj = wrappedJavaObject(cl);
@@ -2169,15 +2169,15 @@ public class DFA extends ANY
           }
         return jobj;
       });
-    put("fuzion.java.set_field0"            , cl ->
+    put("fuzion.jvm.set_field0"            , cl ->
       {
         return Value.UNIT;
       });
-    put("fuzion.java.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.java.create_jvm", cl -> Value.UNIT);
-    put("fuzion.java.destroy_jvm", cl -> Value.UNIT);
-    put("fuzion.java.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
-    put("fuzion.java.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
+    put("fuzion.jvm.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
+    put("fuzion.jvm.create_jvm", cl -> Value.UNIT);
+    put("fuzion.jvm.destroy_jvm", cl -> Value.UNIT);
+    put("fuzion.jvm.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
+    put("fuzion.jvm.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
   }
 
 
@@ -2241,7 +2241,7 @@ public class DFA extends ANY
 
 
   static {
-    put("fuzion.java.call_c0"               , cl ->
+    put("fuzion.jvm.call_c0"               , cl ->
       {
         var cc = cl._cc;
         var fuir = fuir(cl);
@@ -2249,7 +2249,7 @@ public class DFA extends ANY
         cl._dfa.readField(data);
         return outcomeJavaResult(cl);
       });
-    put("fuzion.java.call_s0"               , cl ->
+    put("fuzion.jvm.call_s0"               , cl ->
       {
         var cc = cl._cc;
         var fuir = fuir(cl);
@@ -2257,7 +2257,7 @@ public class DFA extends ANY
         cl._dfa.readField(data);
         return outcomeJavaResult(cl);
       });
-    put("fuzion.java.call_v0"               , cl ->
+    put("fuzion.jvm.call_v0"               , cl ->
       {
         var cc = cl._cc;
         var fuir = fuir(cl);
@@ -2265,8 +2265,8 @@ public class DFA extends ANY
         cl._dfa.readField(data);
         return outcomeJavaResult(cl);
       });
-    put("fuzion.java.cast0", cl -> outcomeJavaResult(cl));
-    put("fuzion.java.get_static_field0"     , cl ->
+    put("fuzion.jvm.cast0", cl -> outcomeJavaResult(cl));
+    put("fuzion.jvm.get_static_field0"     , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl._cc);
         var jobj = wrappedJavaObject(cl);
@@ -2278,7 +2278,7 @@ public class DFA extends ANY
           }
         return jobj;
       });
-    put("fuzion.java.set_static_field0"     , cl ->
+    put("fuzion.jvm.set_static_field0"     , cl ->
       {
 
         return Value.UNIT;

@@ -472,7 +472,19 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    return this;
+    Expr result = this;
+    if (t.isFunctionTypeExcludingLazy()         &&
+        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
+        typeForInferencing() != Types.t_ERROR     &&
+        (typeForInferencing() == null || !typeForInferencing().isFunctionType()))
+      {
+        result = propagateExpectedTypeForPartial(res, context, t);
+        if (result != this)
+          {
+            result = result.propagateExpectedType(res, context, t, from);
+          }
+      }
+    return result;
   }
 
 
@@ -708,11 +720,11 @@ public abstract class Expr extends ANY implements HasSourcePosition
          */
         return frmlT;
       }
-    else if (t.isRef().yes() && !isCallToOuterRef())
+    else if (t.isRef() && !isCallToOuterRef())
       {
         return null;
       }
-    else if (frmlT.isRef().yes())
+    else if (frmlT.isRef())
       {
         return frmlT;
       }
@@ -815,6 +827,17 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public boolean isBoxed()
   {
     return false;
+  }
+
+
+  /**
+   * Source text for this Expr. This is used in error message: It takes the
+   * source code at `sourceRange()`. Only for artifical expressions, this should
+   * probably be redefined to create more useful text.
+   */
+  public String sourceText()
+  {
+    return sourceRange().sourceText();
   }
 
 

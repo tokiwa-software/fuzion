@@ -143,9 +143,6 @@ ex =>
 
   check !(ffi.is_null idx)
 
-  String.as_c_string =>
-    (String.this + codepoint 0).utf8.as_array
-
   header_file := "./fz.h"
 
 

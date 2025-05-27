@@ -157,7 +157,7 @@ public class AstErrors extends ANY
   }
   static String s(Expr e)
   {
-    return expr(e.sourceRange().sourceText());
+    return expr(e.sourceText());
   }
   static String s(AbstractAssign a)
   {
@@ -470,7 +470,7 @@ public class AstErrors extends ANY
           }
         else
           {
-            remedy = frmlT.isRef().no() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
+            remedy = frmlT.isValue() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
                         "To solve this you could:\n" + //
                             (frmlT.isChoice() ? "" : "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n") +
                             "  • change the type of the target " + ss(target) + " to " + s(actlT) + ", or\n" +
@@ -1225,6 +1225,31 @@ public class AstErrors extends ANY
   }
 
   /**
+   * If call is a partial application, suggest to use an explicit lambda expression
+   */
+  static String solutionPartialApplication(Call call)
+  {
+    var solution = "";
+    var c = call.actuals().stream().filter(x->x instanceof Partial.PartialArg).count();
+    if (c > 0)
+      {
+        var args = new StringBuilder();
+        for (var i = 0; i<c; i++)
+          {
+            if (i>0)
+              {
+                args.append(",");
+              }
+            args.append("a"+i);
+          }
+        solution = "This call was created automatically by partial application. "+
+          "To solve this, you might want to use an explicit lambda expression of "+
+          "the form " + code("( " + args + " -> ..code using " + args + "..)") + ".";
+      }
+    return solution;
+  }
+
+  /**
    * If name is FuzionConstants.RESULT_NAME and argcount is 0, return text that suggests
    * declaring a return type in the outer feature. Otherwise, return "".
    */
@@ -1324,6 +1349,7 @@ public class AstErrors extends ANY
           : !candidatesArgCountMismatch.isEmpty()
           ? "Different count of arguments needed when calling feature"
           : "Could not find called feature";
+        var solution0 = solutionPartialApplication(call);
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseNameHuman(),
                                                           calledName.argCount());
         var solution2 = solutionWrongArgumentNumber(candidatesArgCountMismatch);
@@ -1334,7 +1360,8 @@ public class AstErrors extends ANY
               "Feature not found: " + sbnf(calledName) + "\n" +
               "Target feature: " + s(targetFeature) + "\n" +
               "In call: " + s(call) + "\n" +
-              (solution1 != "" ? solution1 :
+              (solution0 != "" ? solution0 :
+               solution1 != "" ? solution1 :
                solution2 != "" ? solution2 :
                solution3 != "" ? solution3 :
                solution4 != "" ? solution4 :

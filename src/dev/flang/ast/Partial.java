@@ -43,6 +43,49 @@ public class Partial extends AbstractLambda
 {
 
 
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Call used to access automatically generated arguments in partial call, i.e,
+   * if you do
+   *
+   *   f (i32,i32)->i32 => (+)
+   *
+   * this will be converted into
+   *
+   *   f (i32,i32)->i32 => pa1,pa2 -> pa1 + pa2
+   *
+   * Then the two calls `pa1` and `pa2` on the right hand side will be done
+   * using `PartialArg`. This is used in AstErrors to decide if a call is an
+   * automatically generated partial call.
+   */
+  static class PartialArg extends ParsedCall
+  {
+    PartialArg(SourcePosition pos)
+    {
+      super(new ParsedName(pos, argName()));
+    }
+
+    @Override
+    public AbstractType asType()
+    {
+      return null;
+    }
+
+    /**
+     * The source text produced by Expr.sourceText would be the original call,
+     * i.e., `+`, which is very confusing, so we create a verbose text with the
+     * actual argument name here.
+     */
+    @Override
+    public String sourceText()
+    {
+      return "partial application argument " + argName();
+    }
+  }
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -112,14 +155,7 @@ public class Partial extends AbstractLambda
    */
   static ParsedCall argName(SourcePosition pos)
   {
-    return new ParsedCall(new ParsedName(pos, argName()))
-      {
-        @Override
-        public AbstractType asType()
-        {
-          return null;
-        }
-      };
+    return new PartialArg(pos);
   }
 
 

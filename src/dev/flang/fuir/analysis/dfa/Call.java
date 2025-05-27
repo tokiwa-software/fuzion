@@ -371,7 +371,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                 args.add(_dfa.newInstance(_dfa._fuir.clazzArgClazz(call, j), FUIR.NO_SITE, _context));
               }
             var ignore = _dfa
-              .newCall(call, FUIR.NO_SITE, this._args.get(i).value(), args, null /* env */, _context)
+              .newCall(call, FUIR.NO_SITE, this._args.get(i).value(), args, _env /* NYI: UNDER DEVELOPMENT: assumption  here is that callback is not used after this call completes */, _context)
               .result();
           }
       }
