@@ -2,7 +2,7 @@
 --CURDIR--/reg_issue4251.fz:26:6: error 1: Different count of arguments needed when calling feature
 (say <| (.map **2)) <| (2..10:2)
 -----^^
-Feature not found: 'infix <|' (3 arguments)
+Feature not found: 'infix/infix_right <|' (3 arguments)
 Target feature: 'universe'
 In call: '(say <| (.map **2))'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.

@@ -1,24 +1,15 @@
 
---CURDIR--/reg_issue5263.fz:32:7: error 1: Different count of arguments needed when calling feature
-  say <| .byte_length <| "hi"    # 1. should flag an error, at least for now
-------^^
-Feature not found: 'infix <|' (3 arguments)
-Target feature: 'universe'
-In call: '<|'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
-
-
---CURDIR--/reg_issue5263.fz:39:7: error 2: Different count of arguments needed when calling feature
-  say |<| .byte_length |<| "hi"  # 2. should flag an error
-------^^^
-Feature not found: 'infix |<|' (3 arguments)
+--CURDIR--/reg_issue5263.fz:39:24: error 1: Different count of arguments needed when calling feature
+  say |<| .byte_length |<| "hi"  # 1. should flag an error
+-----------------------^^^
+Feature not found: 'infix/infix_right |<|' (3 arguments)
 Target feature: 'reg_issue5263'
 In call: '|<|'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 
---CURDIR--/reg_issue5263.fz:47:6: error 3: Different count of arguments needed when calling feature
-  f (q "hi" "ho" 32)             # 3. should flag an error
+--CURDIR--/reg_issue5263.fz:47:6: error 2: Different count of arguments needed when calling feature
+  f (q "hi" "ho" 32)             # 2. should flag an error
 -----^
 Feature not found: 'q' (5 arguments)
 Target feature: 'reg_issue5263.λ.call'
@@ -26,12 +17,12 @@ In call: '(q "hi" "ho" 32)'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1 -> ..code using a0,a1..)'.
 
 
---CURDIR--/reg_issue5263.fz:48:6: error 4: Different count of arguments needed when calling feature
-  f (q Any)                      # 4. should flag an error
+--CURDIR--/reg_issue5263.fz:48:6: error 3: Different count of arguments needed when calling feature
+  f (q Any)                      # 3. should flag an error
 -----^
 Feature not found: 'q' (3 arguments)
 Target feature: 'reg_issue5263.λ.call'
 In call: '(q Any)'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1 -> ..code using a0,a1..)'.
 
-4 errors.
+3 errors.

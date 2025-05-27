@@ -1380,8 +1380,8 @@ public class AstErrors extends ANY
 
     if (call._targetOf_forErrorSolutions != null
      && call._targetOf_forErrorSolutions.name() != null
-     && call._targetOf_forErrorSolutions.name().startsWith("infix ->")
-     && call._targetOf_forErrorSolutions.name().length() > "infix ->".length())
+     && call._targetOf_forErrorSolutions.name().startsWith(FuzionConstants.INFIX_ARROW)
+     && call._targetOf_forErrorSolutions.name().length() > FuzionConstants.INFIX_ARROW.length())
       {
         solution = "Lambda operator is part of infix operator here:" + System.lineSeparator() +
           call._targetOf_forErrorSolutions.pos().show() + System.lineSeparator() +

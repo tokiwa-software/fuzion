@@ -17,32 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue5263
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# this produces an error after partial application that was difficult to
-# understand
-#
-reg_issue5263 =>
-
-  # the original code from #5263. This code will no longer produce an error
-  # when right-associative operators are supported (#4253)
-  #
-  say <| .byte_length <| "hi"    # since we have infix_right, this is ok.
-
-
-  # for this test to still work once #4253 is fixed, here is our own
-  # operator that will always be left-associative:
-  #
-  infix |<| (sink T->R, source T) R => source |> sink
-  say |<| .byte_length |<| "hi"  # 1. should flag an error
-
-  # and finally implicit application with more arguments
-  #
-  f(g (i32, f64)->unit) => g 32 3.14
-
-  q(a Any, b String, c i32, d f64) => say "$a $b $c $d"
-  f (q "hi" "ho")
-  f (q "hi" "ho" 32)             # 2. should flag an error
-  f (q Any)                      # 3. should flag an error
+override NAME = reg_issue4253_infix_assiciativity
+include ../simple.mk
