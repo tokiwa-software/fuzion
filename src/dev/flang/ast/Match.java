@@ -315,8 +315,7 @@ public class Match extends AbstractMatch
   {
     if (_type == null)
       {
-        var t = typeFromCases();
-        _type = t != Types.t_ERROR ? t : null;
+        _type = typeFromCases(false);
       }
     return _type;
   }
@@ -334,12 +333,8 @@ public class Match extends AbstractMatch
   {
     if (_type == null)
       {
-        _type = typeFromCases();
-        if (_type == null)
-          {
-            _type = Types.t_ERROR;
-          }
-        else if (_type == Types.t_ERROR)
+        _type = typeFromCases(false);
+        if (_type == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(
               pos(),
@@ -347,6 +342,10 @@ public class Match extends AbstractMatch
                 (kind() == Kind.Plain ? "cases of match" : "branches of if") +
                 " expression",
               casesForType());
+          }
+        else if (_type == null)
+          {
+            _type = typeFromCases(true);
           }
       }
     if (POSTCONDITIONS) ensure
@@ -359,10 +358,13 @@ public class Match extends AbstractMatch
   /**
    * Helper routine for typeForInferencing to determine the
    * type of this if expression on demand, i.e., as late as possible.
+   *
+   * @param urgent true if we really need a type and an error should be produced
+   * if we can't get one.
    */
-  private AbstractType typeFromCases()
+  private AbstractType typeFromCases(boolean urgent)
   {
-    return Expr.union(new List<>(casesForType()), Context.NONE);
+    return Expr.union(new List<>(casesForType()), Context.NONE, urgent);
   }
 
 

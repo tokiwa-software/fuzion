@@ -48,3 +48,15 @@ reg_issue1015 =>
   # minimalistic example that worked before #1015 was fixed
   j := () -> "unit"
   say j
+
+  # inline array of lambdas
+  a := [(()->nil), (()->nil)]
+  say (type_of a)
+
+  # if/else of lambdas
+  b := if true then ()->true else ()->false
+  say (type_of b)  # this will produce `bool` since the type `Lazy bool` is unwrapped
+
+  # match of lambdas
+  c := match (3%%7) true_ => { ()->true  }; false_ => ()->false
+  say (type_of c)  # this will produce `bool` since the type `Lazy bool` is unwrapped
