@@ -510,11 +510,12 @@ visibility_negative is
   visi6
 
   visi7 =>
-    _ := ()->"x is "+x1+""   # 272. should flag an error: feature used before it is declared
+    x0 := ()->"x is "+x1+""   # ok, usage in a lambda before declaration is ok
     x1 := 2;            f ()->String:= ()->"x1 is "+x1+""
     x2 := x1*x1*x1*x1;  g ()->String:= ()->"x2 is "+x2+""
     x3 := x2.as_string; h ()->String:= ()->"x3 is "+x3+""
     x4 := x3 * 5;       i ()->String:= ()->"x4 is "+x4+""
+    chck (x0     = "x1 is 2") "x1 is 2"
     chck (f.call = "x is 2") "x is 2"
     chck (g.call = "x is 16") "x is 16"
     chck (h.call = "x is 16") "x is 16"
