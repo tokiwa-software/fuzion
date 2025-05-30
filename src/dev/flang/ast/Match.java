@@ -331,26 +331,15 @@ public class Match extends AbstractMatch
   @Override
   public AbstractType type()
   {
-    if (_type == null)
+    if (typeForInferencing() == null)
       {
-        _type = typeFromCases(false);
-        if (_type == Types.t_ERROR)
-          {
-            new IncompatibleResultsOnBranches(
-              pos(),
-              "Incompatible types in " +
-                (kind() == Kind.Plain ? "cases of match" : "branches of if") +
-                " expression",
-              casesForType());
-          }
-        else if (_type == null)
-          {
-            _type = typeFromCases(true);
-          }
+        _type = typeFromCases(true);
       }
+
     if (POSTCONDITIONS) ensure
       (_type != null,
        _type != Types.t_UNDEFINED);
+
     return _type;
   }
 
@@ -364,7 +353,17 @@ public class Match extends AbstractMatch
    */
   private AbstractType typeFromCases(boolean urgent)
   {
-    return Expr.union(new List<>(casesForType()), Context.NONE, urgent);
+    var result = Expr.union(new List<>(casesForType()), Context.NONE, urgent);
+    if (result == Types.t_ERROR)
+      {
+        new IncompatibleResultsOnBranches
+          (pos(),
+           "Incompatible types in " +
+           (kind() == Kind.Plain ? "cases of match" : "branches of if") +
+           " expression",
+           casesForType());
+      }
+    return result;
   }
 
 
