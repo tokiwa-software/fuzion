@@ -1,7 +1,7 @@
 hello
 7
-instance[reg_issue1015.λ]
-instance[reg_issue1015.λ]
+unit
+unit
 Type of 'array (Nullary nil)'
 Type of 'Nullary bool'
 Type of 'Nullary bool'
