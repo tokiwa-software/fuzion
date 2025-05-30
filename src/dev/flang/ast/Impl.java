@@ -546,7 +546,7 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs, Context.NONE);
+    var result = Expr.union(exprs, Context.NONE, urgent);
     if (urgent)
       {
         if (_initialCalls.size() == 0)
@@ -577,6 +577,8 @@ public class Impl extends ANY
             AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
           }
       }
+    if (POSTCONDITIONS) ensure
+      (!urgent || result != null);
 
     return result;
   }

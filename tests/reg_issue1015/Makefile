@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue929
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue929 =>
-
-  # NYI: UNDER DEVELOPMENT: #5311, needs support for nullary-lambda inference incl. cylces
-  fibs => 0 : fibs.zip 1:()->fibs (+) .as_list
-  fib(n i32) => (fibs().drop n).first
-
-  fib 12 |> say
+override NAME = reg_issue1015
+include ../simple.mk

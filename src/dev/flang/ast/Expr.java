@@ -186,10 +186,15 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param exprs the expression to unionize
    *
-   * @return the union of exprs result type, null if
-   * no expression can be inferred yet.
+   * @param context the source code context where this Expr is used
+   *
+   * @param urgent true if we really need a type and an error should be produced
+   * if we do not get one.
+   *
+   * @return the union of exprs result type, null if no expression can be
+   * inferred yet, Types.resolved.t_void if exprs.isEmpty() && urgent.
    */
-  static AbstractType union(List<Expr> exprs, Context context)
+  static AbstractType union(List<Expr> exprs, Context context, boolean urgent)
   {
     AbstractType t = Types.resolved.t_void;
 
@@ -230,9 +235,28 @@ public abstract class Expr extends ANY implements HasSourcePosition
           }
       }
 
-    return foundType
-      ? result
-      : null;
+    // Third pass:
+    // In case we have not found any type yet, but we need one, force a type
+    if (urgent && !foundType)
+      {
+        for (var e : exprs)
+          {
+            var et = e.type();
+            if (et != null)
+              {
+                foundType = true;
+                result = result.union(et, context);
+              }
+          }
+      }
+
+    result = foundType || urgent ? result : null;
+
+    if (POSTCONDITIONS) check
+      (!urgent ||                     result != null,
+       !urgent || !exprs.isEmpty() || result == Types.resolved.t_void);
+
+    return result;
   }
 
 

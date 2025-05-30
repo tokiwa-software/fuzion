@@ -125,9 +125,38 @@ public class InlineArray extends ExprWithPos
   @Override
   AbstractType typeForInferencing()
   {
+    return type(false);
+  }
+
+
+  /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
+   */
+  @Override
+  public AbstractType type()
+  {
+    return type(true);
+  }
+
+
+  /**
+   * type of this inline array.
+   *
+   * @param urgent true iff we really need a type and an error should be
+   * produced if we can't get one.
+   *
+   * @return this Expr's type or null if !urgent and it is not known
+   * yet. t_ERROR if urgent and type is not known.
+   */
+  private AbstractType type(boolean urgent)
+  {
     if (_type == null && !_elements.isEmpty())
       {
-        var t = Expr.union(_elements, Context.NONE);
+        var t = Expr.union(_elements, Context.NONE, urgent);
         if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),
@@ -142,6 +171,10 @@ public class InlineArray extends ExprWithPos
               : ResolvedNormalType.create(Types.resolved.f_array,
                                           new List<>(t));
           }
+      }
+    else if (_type == null && urgent)
+      {
+        _type = super.type();
       }
     return _type;
   }

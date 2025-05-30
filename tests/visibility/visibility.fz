@@ -261,10 +261,12 @@ visibility is
   visi6
 
   visi7 =>
+    e  := ()->"x is "+x1+""   # ok, usage in a lambda before declaration is ok
     x0 := 2;            f () -> String := () -> "x is "+x0+""
     x1 := x0*x0*x0*x0;  g () -> String := () -> "x is "+x1+""
     x2 := x1.as_string; h () -> String := () -> "x is "+x2+""
     x3 := x2 * 5;       i () -> String := () -> "x is "+x3+""
+    chck (e()      = "x is 16") "x is 16"
     chck (f.call() = "x is 2") "x is 2"
     chck (g.call() = "x is 16") "x is 16"
     chck (h.call() = "x is 16") "x is 16"

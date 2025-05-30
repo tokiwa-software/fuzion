@@ -24,8 +24,10 @@
 test_ambig is
 
   if true
-    _ := 42
+    x := 42
+    ignore x
 
   if true
-    _ := 007
-    _ := ()->x # type inference nullary lambda expression: issue #1015
+    x := 007
+    f := ()->x # type inference nullary lambda expression: issue #1015
+    ignore f
