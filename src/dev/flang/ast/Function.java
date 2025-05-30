@@ -485,7 +485,7 @@ public class Function extends AbstractLambda
             // nothing to offer.
             _resultTypeLastResort = ()->
               {
-                var f = Types.resolved.f_Lazy;
+                var f = Types.resolved.f_Nullary;
                 var t_undef = ResolvedNormalType.create(f, new List<>(Types.t_UNDEFINED));
                 var t_res = propagateTypeAndInferResult(res,
                                                         context,

@@ -1,7 +1,7 @@
 hello
 7
-unit
-unit
-Type of 'array (Lazy nil)'
-Type of 'bool'
-Type of 'bool'
+instance[reg_issue1015.λ]
+instance[reg_issue1015.λ]
+Type of 'array (Nullary nil)'
+Type of 'Nullary bool'
+Type of 'Nullary bool'

@@ -25,7 +25,7 @@ reg_issue1015 =>
 
   # first example of #1015
   f := () -> say "hello"
-  f
+  f()
 
   # second example of #1015
   test_ambig is
