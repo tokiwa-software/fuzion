@@ -225,7 +225,24 @@ public class FuzionConstants extends ANY
    */
   public static final String PREFIX_OPERATOR_PREFIX = "prefix ";
   public static final String INFIX_OPERATOR_PREFIX = "infix ";
+  public static final String INFIX_RIGHT_OPERATOR_PREFIX = "infix_right ";
+  public static final String INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX = "infix/infix_right ";
   public static final String POSTFIX_OPERATOR_PREFIX = "postfix ";
+
+  /**
+   * Infix operator parsed for choice type syntax sugar `i32 | unit | bool`
+   */
+  public static final String INFIX_PIPE = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "|";
+
+  /**
+   * Name of the feature that defines choice types.
+   */
+  public static final String CHOICE_NAME = "choice";
+
+  /**
+   * Infix operator parsed for function type `a.b->c`
+   */
+  public static final String INFIX_ARROW = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "->";
 
 
   /**
@@ -466,14 +483,6 @@ public class FuzionConstants extends ANY
    * Flag OR'ed to kind for features with postcondition feature
    */
   public static final int MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE = 0x800;
-
-
-  /**
-   * For a type, the value of the valRefOrThis byte:
-   */
-  public static final int MIR_FILE_TYPE_IS_VALUE = 0x00;
-  public static final int MIR_FILE_TYPE_IS_REF   = 0x01;
-  public static final int MIR_FILE_TYPE_IS_THIS  = 0x02;
 
 
   /**

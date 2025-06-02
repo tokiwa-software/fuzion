@@ -21,6 +21,7 @@ In call: '*2'
 Feature not found: 'prefix *' (3 arguments)
 Target feature: 'i32'
 In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 
 
 --CURDIR--/reg_issue5268.fz:42:35: error 4: Could not find called feature
@@ -29,6 +30,7 @@ In call: '*2'
 Feature not found: 'prefix *' (3 arguments)
 Target feature: 'i32'
 In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 
 
 --CURDIR--/reg_issue5268.fz:36:18: error 5: Could not find called feature
@@ -45,6 +47,7 @@ In call: '*2'
 Feature not found: 'prefix *' (3 arguments)
 Target feature: 'i32'
 In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 
 
 --CURDIR--/reg_issue5268.fz:35:18: error 7: Could not find called feature
@@ -61,5 +64,6 @@ In call: '*2'
 Feature not found: 'prefix *' (3 arguments)
 Target feature: 'i32'
 In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
 
 8 errors.
