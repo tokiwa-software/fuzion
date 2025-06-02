@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
+
 import dev.flang.util.SourcePosition;
 
 /**
@@ -58,8 +60,8 @@ public class BuiltInType extends ParsedType
   BuiltInType(boolean ref, String n)
   {
     super(SourcePosition.builtIn, n, NONE, null,
-          ref ? RefOrVal.Boxed
-              : RefOrVal.LikeUnderlyingFeature);
+          ref ? Optional.of(TypeMode.RefType)
+              : Optional.empty());
   }
 
 }

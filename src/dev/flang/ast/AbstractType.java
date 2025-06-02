@@ -135,19 +135,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Is this type denoting a reference type?
-   *
-   * yes = reference
-   * no  = value
-   * dontKnow = this-type and not known if boxed or not.
+   * The mode of the type: ThisType, RefType or ValueType.
    */
-  public abstract YesNo isRef();
-
-
-  /**
-   * Is this a this-type?
-   */
-  public abstract boolean isThisType();
+  public abstract TypeMode mode();
 
 
   /**
@@ -238,6 +228,32 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isChoice()
   {
     return !isGenericArgument() && feature().isChoice();
+  }
+
+
+  /**
+   * Is this a ref-type?
+   */
+  public boolean isRef()
+  {
+    return mode() == TypeMode.RefType;
+  }
+
+
+  /**
+   * Is this a value-type?
+   */
+  public boolean isValue()
+  {
+    return mode() == TypeMode.ValueType;
+  }
+
+  /**
+   * Is this a this-type?
+   */
+  public boolean isThisType()
+  {
+    return mode() == TypeMode.ThisType;
   }
 
 
@@ -429,12 +445,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     var target_type = this  .remove_type_parameter_used_for_this_type_in_cotype();
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_cotype();
-    var result =
-      target_type.compareTo(actual_type          ) == 0 ||
-      actual_type.isVoid() ||
-      target_type == Types.t_ERROR                      ||
-      actual_type == Types.t_ERROR;
-    if (!result && !target_type.isGenericArgument() && isRef().yes() && actual_type.isRef().yes())
+    var result = target_type.compareTo(actual_type) == 0
+              || actual_type.isVoid();
+    if (!result && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
       {
         if (actual_type.isGenericArgument())
           {
@@ -484,7 +497,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!isGenericArgument() && feature() != null || Errors.any());
 
     boolean result = false;
-    if (!isGenericArgument() && isRef().noOrDontKnow() && feature().isChoice())
+    if (!isGenericArgument() && !isRef() && feature().isChoice())
       {
         for (var t : choiceGenerics(context))
           {
@@ -1190,7 +1203,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         var g = choiceGenerics(context);
         if (CHECKS) check
-          (Errors.any() || isRef().noOrDontKnow());
+          (Errors.any() || !isRef());
 
         int i1 = 0;
         for (var t1 : g)
@@ -1483,9 +1496,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = artificialBuiltInID() - other.artificialBuiltInID();
           }
-        if (result == 0 && isRef().yes() ^ other.isRef().yes())
+        if (result == 0 && isRef() ^ other.isRef())
           {
-            result = isRef().yes() ? -1 : 1;
+            result = isRef() ? -1 : 1;
           }
         if (result == 0 && isThisType() ^ other.isThisType())
           {
@@ -1496,6 +1509,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             result = genericArgument().compareTo(other.genericArgument());
           }
       }
+
+    if (POSTCONDITIONS) ensure
+      (result != 0 || mode() == other.mode());
+
     return result;
   }
 
@@ -1585,7 +1602,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
         )
       {
-        if (foundRef != null && tt.isRef().yes())
+        if (foundRef != null && tt.isRef())
           {
             foundRef.accept(this, tt);
           }
@@ -1856,7 +1873,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var tf = tp.outer();
         if (tf.isCotype() && tp == tf.arguments().get(0))
           { // generic used for `abc.this.type` in `abc.type` by `abc.this.type`.
-            result = result.isRef().yes()
+            result = result.isRef()
               ? tf.cotypeOrigin().selfType().asThis().asRef()
               : tf.cotypeOrigin().selfType().asThis();
           }
@@ -2018,7 +2035,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = ga.toLongString(context) + (isRef().yes() ? " (boxed)" : "");
+        result = ga.toLongString(context) + (isRef() ? " (boxed)" : "");
       }
     else
       {
@@ -2050,7 +2067,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
 
         result = outer
-              + (!isThisType() && isRef().yes() != feature().isRef() ? (isRef().yes() ? "ref " : "value ") : "" )
+              + (!isThisType() && isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "" )
               + fname;
         if (isThisType())
           {

@@ -154,16 +154,6 @@ public class ResolvedParametricType extends ResolvedType
     return _generic;
   }
 
-  /**
-   * A parametric type is not considered a ref type even it the actual type
-   * might very well be a ref.
-   */
-  public YesNo isRef()
-  {
-    return _isBoxed ? YesNo.yes : YesNo.no;
-  }
-
-
 
   public AbstractType outer()
   {
@@ -214,6 +204,16 @@ public class ResolvedParametricType extends ResolvedType
       {
         genericArgument().typeParameter().resultType().usedFeatures(s);
       }
+  }
+
+
+  /**
+   * The mode of the type: ThisType, RefType or ValueType.
+   */
+  @Override
+  public TypeMode mode()
+  {
+    return _isBoxed ? TypeMode.RefType : TypeMode.ValueType;
   }
 
 

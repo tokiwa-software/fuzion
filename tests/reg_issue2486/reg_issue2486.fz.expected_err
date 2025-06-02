@@ -2,7 +2,7 @@
 --CURDIR--/reg_issue2486.fz:26:10: error 1: Could not find called feature
   a <- a + u32.one
 ---------^
-Feature not found: 'infix +' (one argument)
+Feature not found: 'infix/infix_right +' (one argument)
 Target feature: 'mutate.new'
 In call: '+'
 
