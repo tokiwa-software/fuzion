@@ -81,6 +81,14 @@ public class Function extends AbstractLambda
 
 
   /**
+   * In case `type()` is called and we have not received a type via
+   * `propagateExpectedType`, this will be called. This is currently set by
+   * `resolveTypes` to handle cases like `()->true`.
+   */
+  Runnable _resultTypeLastResort = ()->{};
+
+
+  /**
    * For a function that declares a new anonymous feature, these are the generic
    * arguments to Function/Routine the anonymous feature inherits from. This
    * will be used put the correct return type in case of a fun declaration using
@@ -462,6 +470,31 @@ public class Function extends AbstractLambda
       {
         // do not do anything yet, we are waiting for propagateExpectedType to
         // tell us what we are.
+        if (_names.isEmpty())
+          {
+            // However, if we do not need the propagated argument types because
+            // there are no arguments, we can resolve the type.
+            //
+            // But we cannot do this immediately, since we might still gain
+            // information from propagateExpectedType such as the numeric result
+            // type in `()->42` or the actual type for tagging the result of
+            // `()->nil` if this is supposed to result in, e.g., option.
+            //
+            // So we create a Runnable to do this that is to be called when the
+            // going get's tough during a call to `type()` if we still have
+            // nothing to offer.
+            _resultTypeLastResort = ()->
+              {
+                var f = Types.resolved.f_Nullary;
+                var t_undef = ResolvedNormalType.create(f, new List<>(Types.t_UNDEFINED));
+                var t_res = propagateTypeAndInferResult(res,
+                                                        context,
+                                                        t_undef,
+                                                        true,
+                                                        ()->"type from nullary lambda `()->expr`");
+                _type = ResolvedNormalType.create(f, new List<>(t_res));
+              };
+          }
       }
     else
       {
@@ -507,6 +540,10 @@ public class Function extends AbstractLambda
 
     if (_type == null)
       {
+        _resultTypeLastResort.run();
+      }
+    if (_type == null)
+      {
         if (_expr.type() != Types.t_ERROR || !Errors.any())
           {
             AstErrors.noTypeInferenceFromLambda(pos());
@@ -536,9 +573,6 @@ public class Function extends AbstractLambda
     // we should probably have replaced Function already...
     return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
       ? Types.t_ERROR
-      // we have a lambda with no args and the expr type is inferrable
-      : _type == null && _names.isEmpty() && _expr.typeForInferencing() != null
-      ? ResolvedNormalType.create(Types.resolved.f_Lazy, new List<>(_expr.typeForInferencing()))
       : _type;
   }
 

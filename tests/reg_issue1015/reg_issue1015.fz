@@ -17,14 +17,46 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue929
+#  Source code of Fuzion test reg_issue1015
 #
 # -----------------------------------------------------------------------
 
-reg_issue929 =>
+reg_issue1015 =>
 
-  # NYI: UNDER DEVELOPMENT: #5311, needs support for nullary-lambda inference incl. cylces
-  fibs => 0 : fibs.zip 1:()->fibs (+) .as_list
-  fib(n i32) => (fibs().drop n).first
+  # first example of #1015
+  f := () -> say "hello"
+  f()
 
-  fib 12 |> say
+  # second example of #1015
+  test_ambig is
+
+    if true
+      x := 42
+      ignore x
+
+    if true
+      x := 007
+      h := ()->x
+      say h()
+
+  _ := test_ambig
+
+  # minimalistic example
+  i := () -> unit
+  say i()
+
+  # minimalistic example that worked before #1015 was fixed
+  j := () -> "unit"
+  say j()
+
+  # inline array of lambdas
+  a := [(()->nil), (()->nil)]
+  say (type_of a) # `array (Nullary nil)`
+
+  # if/else of lambdas
+  b := if true then ()->true else ()->false
+  say (type_of b)  # `Nullary bool`
+
+  # match of lambdas
+  c := match (3%%7) true_ => { ()->true  }; false_ => ()->false
+  say (type_of c)  # `Nullary bool`
