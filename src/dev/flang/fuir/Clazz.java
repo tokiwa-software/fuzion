@@ -1982,13 +1982,14 @@ class Clazz extends ANY implements Comparable<Clazz>
                     t = handDownThroughInheritsCalls(t, select, inh);
                   }
                 t = t.applyTypeParsLocally(child._type, select);
+                t = t.replace_this_type_by_actual_outer(child._type, foundRef);
               }
             else
               {
                 // NYI: UNDER DEVELOPMENT: This currently cannot be done during
                 // the first pass of the loop, need to check why (most likely it
                 // performs something that is in conflict with the call to
-                // {@code t.replace_this_type(parentf, childf, foundRef)} a few lines
+                // {@code t.replace_inherited_this_type(parentf, childf, foundRef)} a few lines
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,
                                                          foundRef);
