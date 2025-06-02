@@ -474,7 +474,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = asThis().compareTo(actual.asThis()) == 0;
       }
-    if (!result && allowBoxing && !actual_type.isRef().yes())
+    if (!result && allowBoxing && !actual_type.isRef())
       {
         result = isAssignableFrom(actual.asRef(), context, allowBoxing, allowTagging, assignableTo);
       }
