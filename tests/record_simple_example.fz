@@ -129,6 +129,6 @@ if type_ != "effect"
   cur_dir := (!!"../_cur_dir.sh").out.trim
   write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
 else
-  write_to_file "$file.effect" res.err
+  write_to_file "$file.effect" res.out
 
 say "RECORDED $file"
