@@ -61,7 +61,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
       fuzion.sys.fileio.write desc bytes.as_array
 
 
-  mode_num i32 /* NYI: UNDER DEVELOPMENT: type inference */ :=
+  mode_num :=
     match m
       mode.read => 0
       mode.write => 1
@@ -69,10 +69,7 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
     # install effect `open T` and run `code`
-    ((open fd file_name) ! ()->
-          (io.buffered LM).reader (read_handler fd) 1024 ! ()->
-            (io.buffered LM).writer (write_handler fd) 1024 ! ()->
-              tmp := code.call
-              # NYI: handle error once signature of with is changed
-              _ := (io.buffered LM).writer.env.flush
-              tmp)
+    (open fd file_name) ! ()->
+      (io.buffered LM).reader (read_handler fd) 1024 ! ()->
+        (io.buffered LM).writer (write_handler fd) 1024 ! ()->
+          code.call
