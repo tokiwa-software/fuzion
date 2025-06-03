@@ -27,10 +27,22 @@
 #
 public file is
 
+  # the mutate effect that is used
+  # for reading/writing to file
+  #
   module:public file_mutate : mutate is
 
+
+  # short hand to get the writer instance
+  # for the opened file of type file.this
+  #
   public writer (io.buffered file_mutate).writer =>
     (io.buffered file_mutate).writer.env
+
+
+  # short hand to get the reader instance
+  # for the opened file of type file.this
+  #
   public reader (io.buffered file_mutate).reader =>
     (io.buffered file_mutate).reader.env
 
