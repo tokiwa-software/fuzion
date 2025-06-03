@@ -41,7 +41,7 @@ fileiotests =>
   say "$file exists: {f.exists file}"
 
   _ := f
-    .use file f.mode.write ()->(f.writer.env.write content.utf8).error
+    .use file f.mode.write ()->(f.writer.write content.utf8).error
     .bind (_ -> say "$file was created")
   say "$file exists: {f.exists file}"
 

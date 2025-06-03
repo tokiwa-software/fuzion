@@ -34,7 +34,7 @@ public file is
   public reader (io.buffered file_mutate).reader =>
     (io.buffered file_mutate).reader.env
 
-  # NYI:
+  # NYI: BUG:
   # expected formal type: 'io.buffered io.this.file.this.file_mutate'
   # actual type found   : 'io.buffered io.file.this.file_mutate'
   # public buffered io.buffered file_mutate =>
