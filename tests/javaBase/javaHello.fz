@@ -36,7 +36,7 @@ javaHello : Java is
     panic.instate unit (panic (msg -> say msg; panic.abort) unit) fun _->unit
 
 
-  fuzion.java.jvm ()->
+  fuzion.jvm.use ()->
 
     # we can call code in Java package directly using fully
     # qualified class names
@@ -76,14 +76,14 @@ javaHello : Java is
 
     # convert fuzion arrays to java arrays
     # array with primitives
-    arr_bool := fuzion.java.array_to_java_object [false, true, false, true]
-    arr_i8   := fuzion.java.array_to_java_object [i8.zero, i8.one, i8.min, i8.max]
-    arr_i16  := fuzion.java.array_to_java_object [i16.zero, i16.one, i16.min, i16.max]
-    arr_u16  := fuzion.java.array_to_java_object [u16.zero, u16.one, u16.min, u16.max]
-    arr_i32  := fuzion.java.array_to_java_object [i32.zero, i32.one, i32.min, i32.max]
-    arr_i64  := fuzion.java.array_to_java_object [i64.zero, i64.one, i64.min, i64.max]
-    arr_f32  := fuzion.java.array_to_java_object [f32.zero, f32.one, f32.π, f32.max]
-    arr_f64  := fuzion.java.array_to_java_object [f64.zero, f64.one, f64.π, f64.max]
+    arr_bool := fuzion.jvm.env.array_to_java_object [false, true, false, true]
+    arr_i8   := fuzion.jvm.env.array_to_java_object [i8.zero, i8.one, i8.min, i8.max]
+    arr_i16  := fuzion.jvm.env.array_to_java_object [i16.zero, i16.one, i16.min, i16.max]
+    arr_u16  := fuzion.jvm.env.array_to_java_object [u16.zero, u16.one, u16.min, u16.max]
+    arr_i32  := fuzion.jvm.env.array_to_java_object [i32.zero, i32.one, i32.min, i32.max]
+    arr_i64  := fuzion.jvm.env.array_to_java_object [i64.zero, i64.one, i64.min, i64.max]
+    arr_f32  := fuzion.jvm.env.array_to_java_object [f32.zero, f32.one, f32.π, f32.max]
+    arr_f64  := fuzion.jvm.env.array_to_java_object [f64.zero, f64.one, f64.π, f64.max]
 
 
     say arr_bool
@@ -130,7 +130,7 @@ javaHello : Java is
       tm := Java.java.util.TreeMap.new
       _ := tm.put jstr jstr
 
-      util_map := fuzion.java.cast Java.java.util.Map tm
+      util_map := fuzion.jvm.env.cast Java.java.util.Map tm
 
       tm2 := Java.java.util.TreeMap.new
       _ := exception (outcome Java.java.util.Map) unit ()->
@@ -145,7 +145,7 @@ javaHello : Java is
     test_casting_fail =>
       jstr => java.lang.__jString.new "my jstr"
 
-      util_map := fuzion.java.cast Java.java.util.Map jstr
+      util_map := fuzion.jvm.env.cast Java.java.util.Map jstr
 
       tm2 := Java.java.util.TreeMap.new
       _ := exception (outcome Java.java.util.Map) unit ()->
@@ -161,4 +161,4 @@ javaHello : Java is
       say (Java.java.util.ArrayList.new_I -7)
 
 
-    say (fuzion.java.null (fuzion.java.Java_String))
+    say (fuzion.jvm.env.null (fuzion.java.Java_String))

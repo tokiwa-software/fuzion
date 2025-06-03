@@ -979,22 +979,22 @@ public class C extends ANY
   private boolean linkJVM()
   {
     return JAVA_HOME != null
-      && Stream.of("fuzion.java.Java_Object.is_null0",
-                    "fuzion.java.array_get",
-                    "fuzion.java.array_length",
-                    "fuzion.java.array_to_java_object0",
-                    "fuzion.java.get_field0",
-                    "fuzion.java.set_field0",
-                    "fuzion.java.get_static_field0",
-                    "fuzion.java.set_static_field0",
-                    "fuzion.java.call_c0",
-                    "fuzion.java.call_s0",
-                    "fuzion.java.call_v0",
-                    "fuzion.java.primitive_to_java_object",
-                    "fuzion.java.java_string_to_string",
-                    "fuzion.java.string_to_java_object0",
-                    "fuzion.java.fuzion.java.create_jvm",
-                    "fuzion.java.fuzion.java.destroy_jvm")
+      && Stream.of( "fuzion.jvm.is_null0",
+                    "fuzion.jvm.array_get",
+                    "fuzion.jvm.array_length",
+                    "fuzion.jvm.array_to_java_object0",
+                    "fuzion.jvm.get_field0",
+                    "fuzion.jvm.set_field0",
+                    "fuzion.jvm.get_static_field0",
+                    "fuzion.jvm.set_static_field0",
+                    "fuzion.jvm.call_c0",
+                    "fuzion.jvm.call_s0",
+                    "fuzion.jvm.call_v0",
+                    "fuzion.jvm.primitive_to_java_object",
+                    "fuzion.jvm.java_string_to_string",
+                    "fuzion.jvm.string_to_java_object0",
+                    "fuzion.jvm.create_jvm",
+                    "fuzion.jvm.destroy_jvm")
       .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
