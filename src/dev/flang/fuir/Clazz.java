@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -306,6 +308,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!type.dependsOnGenericsNoOuter(),
        !type.containsThisType(),
+       // NYI: UNDER DEVELOPMENT: currently not possible because of type_as_value and `Type.infix :`
+       //  !type.feature().isTypeParameter(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
        type != Types.t_ERROR,
        // outer clazzes of fields must be values
@@ -1801,37 +1805,51 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Find outer clazz of this corresponding to feature {@code o}.
+   * Find outer clazz of this corresponding to this-type {@code o}.
    *
-   * @param o the outer feature whose clazz we are searching for.
+   * @param o the this-type whose clazz we are searching for.
    *
-   * @return the outer clazz of this corresponding feature {@code o}.
+   * @return the outer clazz of this corresponding this-type {@code o}.
    */
   // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
   private Clazz findOuter(AbstractType o)
   {
+    if (PRECONDITIONS) require
+      (o.isThisType());
+
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = o.feature();
-    var isValue = !o.isRef() && !of.isRef();
-    var isThisValue = o.isThisType() && o.isRef() != of.isRef() && isValue;
+    var of = handDown(o, NO_SELECT, (t1,t2)->{}).feature();
     var res = this;
     var i = feature();
-    while (
-      // direct match
-      i != null && i != of
-      // via inheritance (in values)
-      && !((isThisValue  ? i.isRef() : isValue) && i.inheritsFrom(of)) // see #1391 and #1628 for when this can be the case.
-          )
+    while (i != null && i != of)
       {
-        res =  i.hasOuterRef() ? res.lookup(i.outerRef()).resultClazz()
-                               : res._outer;
-        i = (LibraryFeature) i.outer();
+        res = res.outerRef() != null
+          ? res.outerRef().resultClazz()
+          : res._outer;
+
+        i = res == null
+          ? null
+          : (LibraryFeature) res.feature();
+      }
+
+    // NYI: BUG: handDown does not handle nestedinheritance correctly, test/covariance
+    if (i == null)
+      {
+        res = this;
+        i = feature();
+        while (i != null && i != of)
+          {
+            res = i.hasOuterRef()
+              ? res.lookup(i.outerRef()).resultClazz()
+              : res._outer;
+            i = (LibraryFeature) i.outer();
+          }
       }
 
     if (CHECKS) check
-      (Errors.any() || i == of || i != null && i.inheritsFrom(of) && isValue);
+      (Errors.any() || i == of);
 
     return i == null ? _fuir.error() : res;
   }
@@ -1922,16 +1940,45 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz handDown(AbstractType t, int select)
   {
-    if (PRECONDITIONS) require
-      (t != null,
-       Errors.any() || t != Types.t_ERROR,
-       Errors.any() || (t.isOpenGeneric() == (select >= 0)));
-
     // error handling for replacing {@code .this} types of {@code ref} types in a call result, see #4273
     var err = new List<Consumer<AbstractCall>>();
     var ft = t; // final variant of t to be used in lambda
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
       { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
+
+    t = handDown(t, select, foundRef);
+
+    var res = _fuir.type2clazz(t);
+    if (res.feature().isCotype())
+      {
+        var ac = handDown(res._type.generics().get(0));
+        res = ac.typeClazz();
+      }
+    if (err.size() > 0)
+      {
+        res._showErrorIfCallResult_ = err.get(0);
+      }
+    return res;
+  }
+
+
+  /**
+   * Hand down the given type along the given inheritance chain and along all
+   * inheritance chains of outer clazzes such that it has the actual type
+   * parameters in this clazz.
+   *
+   * @param t the original type
+   *
+   * @param select in case t is an open generic, the variant of the actual type
+   * that is to be chosen. NO_SELECT otherwise.
+   *
+   */
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || t != Types.t_ERROR,
+       Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
     for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
       {
@@ -1964,13 +2011,16 @@ class Clazz extends ANY implements Comparable<Clazz>
                     t = handDownThroughInheritsCalls(t, select, inh);
                   }
                 t = t.applyTypeParsLocally(child._type, select);
+                // NYI: BUG: we should not need
+                // replace_this_type_by_actual_outer and replace_this_type_by_actual_outer2
+                t = t.replace_this_type_by_actual_outer(child._type, foundRef);
               }
             else
               {
                 // NYI: UNDER DEVELOPMENT: This currently cannot be done during
                 // the first pass of the loop, need to check why (most likely it
                 // performs something that is in conflict with the call to
-                // {@code t.replace_this_type(parentf, childf, foundRef)} a few lines
+                // {@code t.replace_inherited_this_type(parentf, childf, foundRef)} a few lines
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,
                                                          foundRef);
@@ -1983,18 +2033,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         if (CHECKS) check
           (Errors.any() || (child == null) == (parent == null));
       }
-
-    var res = _fuir.type2clazz(t);
-    if (res.feature().isCotype())
-      {
-        var ac = handDown(res._type.generics().get(0));
-        res = ac.typeClazz();
-      }
-    if (err.size() > 0)
-      {
-        res._showErrorIfCallResult_ = err.get(0);
-      }
-    return res;
+    return t;
   }
 
 
