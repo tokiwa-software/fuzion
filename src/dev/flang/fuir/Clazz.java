@@ -1833,6 +1833,8 @@ class Clazz extends ANY implements Comparable<Clazz>
           ? null
           : (LibraryFeature) res.feature();
       }
+
+    // NYI: BUG: handDown does not handle nestedinheritance correctly, test/covariance
     if (i == null)
       {
         res = this;
