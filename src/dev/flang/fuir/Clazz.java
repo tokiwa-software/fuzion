@@ -1820,7 +1820,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o, NO_SELECT, false).feature();
+    var of = handDown(o, NO_SELECT, (t1,t2)->{}).feature();
     var res = this;
     var i = feature();
     while (i != null && i != of)
@@ -1828,7 +1828,22 @@ class Clazz extends ANY implements Comparable<Clazz>
         res = res.outerRef() != null
           ? res.outerRef().resultClazz()
           : res._outer;
-        i = (LibraryFeature) res.feature();
+
+        i = res == null
+          ? null
+          : (LibraryFeature) res.feature();
+      }
+    if (i == null)
+      {
+        res = this;
+        i = feature();
+        while (i != null && i != of)
+          {
+            res = i.hasOuterRef()
+              ? res.lookup(i.outerRef()).resultClazz()
+              : res._outer;
+            i = (LibraryFeature) i.outer();
+          }
       }
 
     if (CHECKS) check
@@ -1923,7 +1938,25 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private Clazz handDown(AbstractType t, int select)
   {
-    return handDown(t, select, true);
+    // error handling for replacing {@code .this} types of {@code ref} types in a call result, see #4273
+    var err = new List<Consumer<AbstractCall>>();
+    var ft = t; // final variant of t to be used in lambda
+    BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
+      { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
+
+    t = handDown(t, select, foundRef);
+
+    var res = _fuir.type2clazz(t);
+    if (res.feature().isCotype())
+      {
+        var ac = handDown(res._type.generics().get(0));
+        res = ac.typeClazz();
+      }
+    if (err.size() > 0)
+      {
+        res._showErrorIfCallResult_ = err.get(0);
+      }
+    return res;
   }
 
 
@@ -1938,18 +1971,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that is to be chosen. NO_SELECT otherwise.
    *
    */
-  private Clazz handDown(AbstractType t, int select, boolean addErrorIfCallResult)
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
-
-    // error handling for replacing {@code .this} types of {@code ref} types in a call result, see #4273
-    var err = new List<Consumer<AbstractCall>>();
-    var ft = t; // final variant of t to be used in lambda
-    BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
-      { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
     for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
       {
@@ -2002,18 +2029,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         if (CHECKS) check
           (Errors.any() || (child == null) == (parent == null));
       }
-
-    var res = _fuir.type2clazz(t);
-    if (res.feature().isCotype())
-      {
-        var ac = handDown(res._type.generics().get(0));
-        res = ac.typeClazz();
-      }
-    if (err.size() > 0 && addErrorIfCallResult)
-      {
-        res._showErrorIfCallResult_ = err.get(0);
-      }
-    return res;
+    return t;
   }
 
 
