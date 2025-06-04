@@ -72,7 +72,7 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
     effects array Effect := [
-     file_mutate
+     file_mutate,
      (open fd file_name),
      (io.buffered file_mutate).reader (read_handler fd) 1024,
      (io.buffered file_mutate).writer (write_handler fd) 1024]
