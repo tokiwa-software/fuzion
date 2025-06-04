@@ -24,8 +24,6 @@
 test_process =>
 
 
-  lm : mutate is
-
 
   # create string of given byte size
   get_str(byte_size i32) =>
@@ -48,49 +46,44 @@ test_process =>
       _ := p.write_string "Hello from the other side."
       # closing input so cat knows we are done and must write to standard out
       say p.wait
-      _ := lm ! ()->
-        _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+      _ := p.with_out ()->
+        say (p.out.read_string 1E9).val
 
 
 
   test "read stdout of process" ()->
     (os.process.start "echo" ["eecchhoo"]).bind p->
-      _ := lm ! ()->
-        _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+      _ := p.with_out ()->
+        say (p.out.read_string 1E9).val
 
 
 
   test "pass environment variable" ()->
     (os.process.start "printenv" [] (container.map_of [("MYENVVAR", "content")])).bind p->
-      _ := lm ! ()->
-        _ := p.with_out unit lm ()->
-          out := ((io.buffered lm).read_string 1E9)
-            .val
-            .split "\n"
-            # for some reason on windows/msys these are included, even though we want empty env...
-            .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
-          say (String.join out)
+      _ := p.with_out ()->
+        out := (p.out.read_string 1E9)
+          .val
+          .split "\n"
+          # for some reason on windows/msys these are included, even though we want empty env...
+          .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
+        say (String.join out)
 
 
 
   test "feed output of process 1 to process 2" ()->
     (os.process.start "echo" ["'feed me to cat'"]).bind p->
       (p | ["cat"]).bind p2->
-        _ := lm ! ()->
-          _ := p2.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).val
+        _ := p2.with_out ()->
+          say (p.out.read_string 1E9).val
 
 
 
   test "1kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E3)]).bind p->
       (p | ["cat"]).bind p2->
-        _ := lm ! ()->
-          _ := p2.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).val.byte_length
-          say p2.wait
+        _ := p2.with_out ()->
+          say (p.out.read_string 1E9).val.byte_length
+        say p2.wait
 
 
 /* NYI: PERFORMANCE: Too slow

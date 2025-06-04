@@ -64,17 +64,15 @@ envir_vars :=
 record_process(p os.process,
       # the command, for error messages
       cmd String) process_result =>
-  lm : mutate is
-  lm ! ()->
-    match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-      e error => panic "failed reading stdout from $cmd, error is: $e"
-      out String =>
-        match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-          e error => panic "failed reading stderr from $cmd, error is: $e"
-          err String =>
-            match p.wait
-              e error => panic "failed waiting for $cmd, error is: $e"
-              ec u32 => process_result out err ec
+  match p.with_out ()->p.out.read_string
+    e error => panic "failed reading stdout from $cmd, error is: $e"
+    out String =>
+      match p.with_err ()->p.err.read_string
+        e error => panic "failed reading stderr from $cmd, error is: $e"
+        err String =>
+          match p.wait
+            e error => panic "failed waiting for $cmd, error is: $e"
+            ec u32 => process_result out err ec
 
 # execute this Sequence of process+args
 #
@@ -89,18 +87,16 @@ Sequence.prefix ! =>
 #
 String.infix | (seq Sequence String) =>
 
-  lm : mutate is
-  lm ! ()->
-    match os.process.start seq.first.val (seq.drop 1) envir_vars
-      e error => panic "failed executing $seq, error is $e"
-      p os.process =>
-        _ := p.with_in unit lm ()->
-          # NYI: ambiguous result type:
-          # _ := write_to lm
-          _ := (io.buffered lm).writer.env.write String.this.utf8
-          _ := (io.buffered lm).writer.env.flush
-          _ := p.close_in
-        record_process p seq.as_string
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
+    e error => panic "failed executing $seq, error is $e"
+    p os.process =>
+      _ := p.with_in ()->
+        # NYI: ambiguous result type:
+        # _ := write_to lm
+        _ := p.stdin.writer.write String.this.utf8
+        _ := p.stdin.writer.flush
+        _ := p.close_in
+      record_process p seq.as_string
 
 
 # execute this string by splitting at all whitespaces
@@ -120,7 +116,7 @@ append_line(mtx concur.sync.mutex, dest String, str String) =>
 #
 read_file_fully(f String) outcome String =>
   io.file.use f io.file.mode.read ()->
-    String.from_bytes io.file.read_fully
+    io.file.read_string
 
 
 is_windows =>

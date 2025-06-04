@@ -35,7 +35,14 @@
 #      while l??
 #        say "$i: $l"
 #
-public stdin : has_reader is
+public stdin : has_reader reader_mutate is
+
+  # the mutate effect that is used
+  # for reading
+  #
+  public reader_mutate : mutate is
+
+
 
   # infix variant instate_self
   #

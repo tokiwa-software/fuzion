@@ -51,15 +51,15 @@ webserver_native is
 
   accept_connection(n i32) =>
     net.server.env.accept.bind c->
-      _ := c.with unit mutate ()->
+      _ := c ! ()->
         say "accepted connection:"
 
-        match (io.buffered mutate).read_line
+        match c.read_line
           str String => say str
           * =>
 
         send200(data String) =>
-          _ := (io.buffered mutate).writer.env
+          _ := c.writer
             .write """
               HTTP/1.1 200 OK
               Connection: close
@@ -69,7 +69,7 @@ webserver_native is
 
               {data}
             """.utf8.as_array
-          (io.buffered mutate).writer.env.flush
+          c.writer.flush
 
         _ := send200 "<html>Hello Fuzion $n!</html>"
 

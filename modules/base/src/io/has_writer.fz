@@ -30,7 +30,7 @@ public has_writer is
   # the mutate effect that is used
   # for reading/writing to file
   #
-  module:public writer_mutate : mutate is
+  public writer_mutate : mutate is
 
 
   # short hand to get the writer instance

@@ -23,8 +23,6 @@
 
 reg_issue4486 =>
 
-  LM : mutate is
-
   test_strings array (String) :=
     ["",
     " ",
@@ -46,26 +44,32 @@ reg_issue4486 =>
         io.end_of_file
 
 
+  my_reader(input String) : io.has_reader reader_mutate is
+
+    public reader_mutate : mutate is
+
+    infix ! (R type, code ()->R) R =>
+      reader_mutate ! ()->
+        (io.buffered reader_mutate).reader (read_handler input) 1024 ! code
+
+
   for input in test_strings do
 
     say "input: '{input.replace "\n" "\\n"}'"
 
-    LM ! ()->
-      b := io.buffered LM
-      b.reader (read_handler input) 1024 ! ()->
-        for l := b.read_line
-            i in 1..
-        while l??
-          say "  using read_line:  $i: '$l'"
+    r := my_reader input
+    r ! ()->
+      for l := r.read_line
+          i in 1..
+      while l??
+        say "  using read_line:  $i: '$l'"
 
     say ""
 
-    LM ! ()->
-      b := io.buffered LM
-      b.reader (read_handler input) 1024 ! ()->
-        for l in b.read_lines
-            i in 1..
-        do
-          say "  using read_lines: $i: '$l'"
+    r ! ()->
+      for l in r.read_lines
+          i in 1..
+      do
+        say "  using read_lines: $i: '$l'"
 
     say ""

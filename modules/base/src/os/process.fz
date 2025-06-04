@@ -98,20 +98,31 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
           r+bw
 
 
-  # install buffered reader for reading from stdout of process
-  # and run `f`.
-  public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_out_read_handler) pipe_buffer_size ! f
+
+  public out   : io.has_reader reader_mutate is
+    public reader_mutate : mutate is
+  public err   : io.has_reader reader_mutate is
+    public reader_mutate : mutate is
+  public stdin : io.has_writer is
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
-  public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_err_read_handler) pipe_buffer_size ! f
+  public with_out(T type, f () -> outcome T) outcome T =>
+    out.reader_mutate ! ()->
+      (io.buffered out.reader_mutate).reader (std_out_read_handler) pipe_buffer_size ! f
 
 
-  public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered LM).writer std_in_write_handler pipe_buffer_size ! f
+  # install buffered reader for reading from stdout of process
+  # and run `f`.
+  public with_err(T type, f () -> outcome T) outcome T =>
+    err.reader_mutate ! ()->
+      (io.buffered err.reader_mutate).reader (std_err_read_handler) pipe_buffer_size ! f
+
+
+  public with_in(T type, f () -> T) outcome T =>
+    stdin.writer_mutate ! ()->
+      (io.buffered stdin.writer_mutate).writer std_in_write_handler pipe_buffer_size ! f
 
 
   # write string to stdin of child process

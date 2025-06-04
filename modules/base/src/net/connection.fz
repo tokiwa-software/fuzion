@@ -21,7 +21,14 @@
 #
 # -----------------------------------------------------------------------
 
-module:public connection(desc i32) is
+module:public connection(desc i32) : io.has_reader reader_mutate, io.has_writer is
+
+  # the mutate effect that is used
+  # for reading
+  #
+  public reader_mutate : mutate is
+
+
 
   # close connection manually.
   # note that connections are closed automatically
@@ -33,7 +40,7 @@ module:public connection(desc i32) is
 
   # this installs reader, writer and channel for the given connection
   #
-  public with(T type, LM type : mutate, fn ()->T) T
+  public infix ! (R type, code ()->R) R
   =>
 
 
@@ -54,19 +61,19 @@ module:public connection(desc i32) is
       public redef write(data Sequence u8) outcome unit =>
         fuzion.sys.net.write desc data.as_array
 
+    reader_mutate ! ()->
+      writer_mutate ! ()->
+        (io.buffered reader_mutate).reader read_handler 1024 ! ()->
+          (io.buffered writer_mutate).writer write_handler 1024 ! ()->
+            (net.channel desc) ! code
 
-    (io.buffered LM).reader read_handler 1024 ! ()->
-      (io.buffered LM).writer write_handler 1024 ! ()->
-        (net.channel desc) ! ()->
-          fn.call
 
 
   # this installs reader, writer and channel for the given connection
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
-  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) concur.Future (outcome T)
+  public in_thread_pool(R type, TP type : concur.thread_pool, fn ()->R) concur.Future (outcome R)
   =>
-    TP.env.submit (outcome T) ()->
-      lm ! ()->
-        with T LM fn
+    TP.env.submit (outcome R) ()->
+      infix ! fn

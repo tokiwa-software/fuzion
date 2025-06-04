@@ -23,22 +23,16 @@
 
 mod_wolfssl =>
 
-  # this lm is used for the raw netwok connection
-  #
-  net_lm : mutate is
-
   # this lm is used for reader/writer of the ssl connection
   #
-  ssl_lm: mutate is
+  ssl_lm : mutate is
 
-  net_lm ! ()->
-
-    match net.client net.family.ipv4 net.protocol.tcp "fuzion-lang.dev" 443
-      error => exit 1
-      c net.connection =>
-        c.with _ net_lm ()->
-          ssl_lm ! ()->
-            wolfssl _ net_lm ssl_lm ()->
-              check ("GET / HTTP/1.1\r\nHost: fuzion-lang.dev\r\n\r\n".write_to ssl_lm).error.ok
-              check (io.buffered ssl_lm).writer.env.flush.ok
-              say (io.buffered ssl_lm).read_line
+  match net.client net.family.ipv4 net.protocol.tcp "fuzion-lang.dev" 443
+    error => exit 1
+    c net.connection =>
+      c ! ()->
+        ssl_lm ! ()->
+          wolfssl _ net.connection.reader_mutate net.connection.writer_mutate ssl_lm ()->
+            check ("GET / HTTP/1.1\r\nHost: fuzion-lang.dev\r\n\r\n".write_to ssl_lm).error.ok
+            check (io.buffered ssl_lm).writer.env.flush.ok
+            say (io.has_reader ssl_lm).read_line

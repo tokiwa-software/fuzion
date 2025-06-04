@@ -37,14 +37,14 @@ wolfSSL_Cleanup unit => native
 
 
 # NYI define effect
-public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, LM2 =>
+public wolfssl(T type, READER type : mutate, WRITER type : mutate, SSL_MUTATE type: mutate, code ()->T) T ! READER, WRITER, SSL_MUTATE =>
 
 
   my_IORecv : Function i32 Native_Ref Native_Ref i32 Native_Ref is
     public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
-      match (io.buffered LM).reader.env.read sz
+      match (io.buffered READER).reader.env.read sz
         a array =>
-          (io.buffered LM).reader.env.discard sz
+          (io.buffered READER).reader.env.discard sz
           x := (min sz a.count)
           _ := memcpy buf a x
           x
@@ -54,8 +54,8 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
   my_IOSend : Function i32 Native_Ref Native_Ref i32 Native_Ref is
     public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
       arr := ffi.from_native_array u8 buf sz
-      check ((io.buffered LM).writer.env.write arr).error.ok
-      check (io.buffered LM).writer.env.flush.ok
+      check ((io.buffered WRITER).writer.env.write arr).error.ok
+      check (io.buffered WRITER).writer.env.flush.ok
       sz
 
 
@@ -92,8 +92,8 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
         error "error writing to ssl connection."
 
 
-  r := ((io.buffered LM2).reader wolf_ssl_read_handler 1E2) ! ()->
-    (io.buffered LM2).writer wolf_ssl_writer_handler 1E2 ! ()->
+  r := ((io.buffered SSL_MUTATE).reader wolf_ssl_read_handler 1E2) ! ()->
+    (io.buffered SSL_MUTATE).writer wolf_ssl_writer_handler 1E2 ! ()->
       code.call
 
 
