@@ -52,6 +52,6 @@ mmap_test =>
 
 
   say <| io.file.use testfile io.file.mode.read ()->
-    String.from_bytes ((io.buffered io.file.file_mutate).read_fully.drop page_size)
+    String.from_bytes (io.file.read_fully.drop page_size)
 
   say (io.file.delete testfile)

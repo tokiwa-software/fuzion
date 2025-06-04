@@ -30,8 +30,8 @@ add_simple_test =>
   lm : mutate is
   lm ! ()->
 
-    _ := (io.stdin.reader lm).instate_self unit ()->
-      match (io.buffered lm).read_line
+    _ := io.stdin ! ()->
+      match io.stdin.read_line
         test String =>
 
           header(name String) => """

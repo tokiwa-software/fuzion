@@ -27,55 +27,35 @@
 # short-hand to return an io.reader with a read handler
 # allowing to read from stdin.
 #
-# usage example using a local mutate instance:
+# usage example:
 #
-#  LM : mutate is
-#  LM ! ()->
-#    io.stdin.reader LM ! ()->
-#      for l := (io.buffered LM).read_line
+#    io.stdin ! ()->
+#      for l := io.stdin.read_line
 #          i in 1..
 #      while l??
 #        say "$i: $l"
 #
-# usage example using read_lines:
-#
-# for l in io.stdin.read_lines
-#     i in 1..
-# do
-#   say "$i: $l"
-#
-# NYI: UNDER DEVELOPMENT: It would be good to move features reader, read_fully,
-# etc. to a parent feature and have other features, e.g., for reading files, inherit
-# from that feature as well.
-#
-public stdin is
+public stdin : has_reader is
 
-  # create a reader for stdin using the given local mutate instance
+  # infix variant instate_self
   #
-  public reader (LM type : mutate) (buffered LM).reader =>
-    (buffered LM).reader stdin_read_handler 1024
+  # use it like this:
+  #
+  #     effect_instance ! ()->code
+  #
+  public infix !(# result type
+                 R type,
 
-  # read all of stdin in an array of u8 bytes using
-  # io.buffered.read_fully.
-  #
-  public read_fully array u8 =>
-    M : mutate is
-    M ! ()->
-      reader M ! (buffered M).read_fully
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+  =>
+    # NYI: Do we need some way to specify effect dependencies?
+    #
+    reader_mutate ! ()->
+      ((buffered reader_mutate).reader stdin_read_handler 1024) ! code
 
-  # read all of stdin in an array of String using
-  # io.buffered.read_lines.
-  #
-  public read_lines array String =>
-    M : mutate is
-    M ! ()->
-      reader M ! (buffered M).read_lines
 
-  # read all of stdin in a single String using
-  # String.from_bytes on the result of read_fully.
-  #
-  public read_string String =>
-    String.from_bytes read_fully
 
 # Read handler for stdin
 #

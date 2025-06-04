@@ -17,19 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature file
+#  Source code of Fuzion standard library feature has_writer
 #
-#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# file -- a unit type that contains effects related to file I/O
-#
-public file : has_reader, has_writer is
+
+public has_writer is
 
 
-  # NYI: BUG:
-  # expected formal type: 'io.buffered io.this.file.this.file_mutate'
-  # actual type found   : 'io.buffered io.file.this.file_mutate'
-  # public buffered io.buffered file_mutate =>
-  #   io.buffered file_mutate
+  # the mutate effect that is used
+  # for reading/writing to file
+  #
+  module:public writer_mutate : mutate is
+
+
+  # short hand to get the writer instance
+  # for the opened file of type file.this
+  #
+  public writer (io.buffered writer_mutate).writer =>
+    (io.buffered writer_mutate).writer.env
