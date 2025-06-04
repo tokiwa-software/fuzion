@@ -23,6 +23,30 @@
 #
 # -----------------------------------------------------------------------
 
+
+# NYI: BUG: move to file Effect.fz
+#
+# Effect -- interface to an effect
+#
+/* NYI: module:public? */
+public Effect ref is
+
+
+  # infix variant instate_self
+  #
+  # use it like this:
+  #
+  #     effect_instance ! ()->code
+  #
+  public infix !(# result type
+                 R type,
+
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+  => abstract
+
+
 # effect -- abstract parent feature for effects
 #
 # effect provides a means to perform effectful operations.  Instances
