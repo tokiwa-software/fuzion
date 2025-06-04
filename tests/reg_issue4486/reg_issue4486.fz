@@ -46,7 +46,7 @@ reg_issue4486 =>
 
   my_reader(input String) : io.has_reader reader_mutate is
 
-    public reader_mutate : mutate is
+    reader_mutate : mutate is
 
     infix ! (R type, code ()->R) R =>
       reader_mutate ! ()->
