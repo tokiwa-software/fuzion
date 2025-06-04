@@ -64,3 +64,10 @@ public Any ref is
   # difference to `dynamic_type`.
   #
   public type.type_value Type => Any.this.type
+
+
+
+  # NYI: UNDER DEVELOPMENT: is this useful or is `id` enough?
+  #
+  public type.from(instance Any.this) Any.this =>
+    instance
