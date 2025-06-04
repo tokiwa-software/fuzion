@@ -3444,7 +3444,7 @@ implFldInit : ":=" operatorExpr      // may start at min indent
             tmpName = l.getFirst().featureName().baseName();
           }
 
-        var s = new Select(pos, new Call(pos, tmpName), null, select);
+        var s = new Select(pos, null, tmpName, select, true);
         return new Impl(pos,
                         s,
                         hasType ? Impl.Kind.FieldInit
