@@ -2,13 +2,13 @@
 --CURDIR--/select_clause_negative.fz:30:11: error 1: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found operator '-'
   say (a. -1)   # should flag an error:
 ----------^
-While parsing: name, parse stack: name (twice), call (twice), callTail, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, klammer, bracketTerm, term, opTail, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+While parsing: name, parse stack: name (twice), call, dotCall, callTail, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/select_clause_negative.fz:32:12: error 2: Syntax error: expected identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name, found operator '-'
   say (a . -1)  # should flag an error:
 -----------^
-While parsing: name, parse stack: name (twice), call (twice), callTail, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, klammer, bracketTerm, term, opTail, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call (twice), call0, callOrFeatOrThis, term, opTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+While parsing: name, parse stack: name (twice), call, dotCall, callTail, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/select_clause_negative.fz:34:9: error 3: Selector must be in the range of 0..1 for 2 actual type parameters given for the open type parameter type
@@ -37,8 +37,8 @@ Type of called feature: 'i32'
 --CURDIR--/select_clause_negative.fz:28:8: error 6: Could not find called feature
   say a.-1      # should flag an error:
 -------^^
-Feature not found: 'infix .-' (one argument)
+Feature not found: 'infix/infix_right .-' (one argument)
 Target feature: 'tuple'
-In call: '.-'
+In call: 'a.-1'
 
 6 errors.

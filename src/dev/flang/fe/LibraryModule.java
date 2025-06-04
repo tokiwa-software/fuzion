@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
+import dev.flang.ast.TypeMode;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
@@ -525,7 +526,7 @@ public class LibraryModule extends Module implements MirModule
               }
             var outer = type(typeOuterPos(at));
             result = new NormalType(this, at, feature,
-                                    typeValRefOrThis(at),
+                                    TypeMode.fromInt(typeValRefOrThis(at)),
                                     generics, outer);
           }
         _libraryTypes.put(at, result);

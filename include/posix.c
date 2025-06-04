@@ -297,7 +297,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
   if(con_res == -1)
   {
-    // NYI do we want to try another address in addr_info->ai_next?
+    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
     fzE_close(result[0]);
     result[0] = errno;
   }
@@ -524,7 +524,7 @@ void fzE_init()
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void *(*code)(void *),
+void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
 #ifdef FUZION_ENABLE_THREADS
@@ -539,12 +539,11 @@ int64_t fzE_thread_create(void *(*code)(void *),
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  // NYI: BUG: free pt
-  return (int64_t)pt;
+  return pt;
 #else
   printf("You discovered a severe bug. (fzE_thread_join)");
   exit(EXIT_FAILURE);
-  return -1;
+  return NULL;
 #endif
 }
 
@@ -552,7 +551,7 @@ int64_t fzE_thread_create(void *(*code)(void *),
 /**
  * Join with a running thread.
  */
-void fzE_thread_join(int64_t thrd)
+void fzE_thread_join(void * thrd)
 {
 #ifdef FUZION_ENABLE_THREADS
 #ifdef GC_THREADS
@@ -560,6 +559,7 @@ void fzE_thread_join(int64_t thrd)
 #else
   pthread_join(*(pthread_t *)thrd, NULL);
 #endif
+  fzE_free(thrd);
 #endif
 }
 
@@ -592,8 +592,8 @@ void fzE_unlock()
 }
 
 
-// NYI make this thread safe
-// NYI option to pass stdin,stdout,stderr
+// NYI: UNDER DEVELOPMENT: make this thread safe
+// NYI: UNDER DEVELOPMENT: option to pass stdin,stdout,stderr
 // zero on success, -1 error
 int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result)
 {
@@ -730,7 +730,7 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI do we need to flush?
+// NYI: UNDER DEVELOPMENT: do we need to flush?
   return set_last_error(close((int) desc));
 }
 

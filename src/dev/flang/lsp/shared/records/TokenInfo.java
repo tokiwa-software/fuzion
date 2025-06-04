@@ -39,8 +39,8 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.State;
 import dev.flang.ast.Feature;
-import dev.flang.lsp.enums.TokenModifier; // NYI remove dependency
-import dev.flang.lsp.enums.TokenType; // NYI remove dependency
+import dev.flang.lsp.enums.TokenModifier; // NYI: UNDER DEVELOPMENT: remove dependency
+import dev.flang.lsp.enums.TokenType; // NYI: UNDER DEVELOPMENT: remove dependency
 import dev.flang.lsp.shared.ASTWalker;
 import dev.flang.lsp.shared.CallTool;
 import dev.flang.lsp.shared.FeatureTool;
@@ -202,7 +202,7 @@ public class TokenInfo extends ANY
       })
       .map(item -> new EntryEqualByKey<Integer, HasSourcePosition>(
         TokenInfo.keyOf(item instanceof AbstractFeature af ? FeatureTool.bareNamePosition(af): item.pos()), item))
-      // NYI which are the duplicates here? Can we do better in selecting the
+      // NYI: UNDER DEVELOPMENT: which are the duplicates here? Can we do better in selecting the
       // 'right' ones?
       .distinct()
       .collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue()));
@@ -320,7 +320,7 @@ public class TokenInfo extends ANY
       case t_ident :
         return getItem()
           .map(TokenInfo::tokenType)
-          // NYI check if all cases are considered
+          // NYI: UNDER DEVELOPMENT: check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
       case t_error :
       case t_ws :
@@ -405,12 +405,12 @@ public class TokenInfo extends ANY
     return tokenType(ac.calledFeature());
   }
 
-  // NYI this should be done differently
+  // NYI: UNDER DEVELOPMENT: this should be done differently
   // how can we find the feature/call of an ident token more quickly?
   private Optional<HasSourcePosition> getItem()
   {
     return Optional.empty();
-    // NYI Too slow!
+    // NYI: UNDER DEVELOPMENT: Too slow!
     // var key = KeyOf(start);
     // if (!Pos2Items().containsKey(key))
     //   {
@@ -420,10 +420,10 @@ public class TokenInfo extends ANY
     //   .get(key));
   }
 
-  // NYI move this somewhere better
+  // NYI: UNDER DEVELOPMENT: move this somewhere better
   public static Integer keyOf(SourcePosition pos)
   {
-    // NYI better key
+    // NYI: UNDER DEVELOPMENT: better key
     return pos.line() * 1000 + pos.column();
   }
 

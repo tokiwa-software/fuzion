@@ -58,7 +58,7 @@ public class ParsedCall extends Call
   /**
    * The name of the called feature as produced by the parser.
    */
-  private final ParsedName _parsedName;
+  protected ParsedName _parsedName;
 
 
   /**
@@ -140,7 +140,7 @@ public class ParsedCall extends Call
    */
   boolean isInfixPipe(boolean parenthesesAllowed)
   {
-    return isOperatorCall(parenthesesAllowed) && name().equals("infix |") && _actuals.size() == 1;
+    return isOperatorCall(parenthesesAllowed) && name().equals(FuzionConstants.INFIX_PIPE) && _actuals.size() == 1;
   }
 
 
@@ -152,7 +152,7 @@ public class ParsedCall extends Call
    */
   boolean isInfixArrow()
   {
-    return isOperatorCall(true) && name().equals("infix ->") && _actuals.size() == 1;
+    return isOperatorCall(true) && name().equals(FuzionConstants.INFIX_ARROW) && _actuals.size() == 1;
   }
 
 
@@ -200,25 +200,51 @@ public class ParsedCall extends Call
           {
             if (tt != null && isInfixPipe(true))   // choice type syntax sugar: 'tt | arg'
               {
-                var l2 = new List<AbstractType>();
-                if (target instanceof ParsedCall tc && tc.isInfixPipe(false))
-                  { // tt is `x | y` in  'x | y | arg',
-                    // but not `(x | y)`!
-                    l2.addAll(tt.generics());
-                  }
-                else
-                  { // `tt | arg` where `tt` is not itself `x | y`
-                    l2.add(tt);
-                  }
-                l2.addAll(l);
-                l = l2;
-                name = "choice";
+                l = new List<AbstractType>();
+                getInfixPipeArgs(l);
+                name = FuzionConstants.CHOICE_NAME;
                 tt = null;
               }
             result = new ParsedType(pos(), name, l, tt);
           }
       }
     return result;
+  }
+
+
+  /**
+   * For a ParsedCall `x | y | z`, add the corresponding types of `x`, `y` and
+   * `z` to `l`.
+   *
+   * Note that the AST produced by the parser uses right associative operators,
+   * so this is `x | «y | z»`.
+   *
+   * @param l list of types.
+   */
+  private void getInfixPipeArgs(List<AbstractType> l)
+  {
+    var t = target();
+    var tt = t.asParsedType();
+    if (t instanceof ParsedCall pc && pc.isInfixPipe(false))
+      {
+        l.addAll(tt.generics());
+      }
+    else
+      {
+        l.add(tt);
+      }
+    var next = _actuals.get(0);
+    if (next instanceof ParsedCall ac &&
+        // cur is `y | z` in  '... | x | y | z',
+        // but not `x | (y | z)`!
+        ac.isInfixPipe(false))
+      {
+        ac.getInfixPipeArgs(l);
+      }
+    else
+      {
+        l.add(next.asParsedType());
+      }
   }
 
 
@@ -272,63 +298,70 @@ public class ParsedCall extends Call
   @Override
   protected void findChainedBooleans(Resolution res, Context context)
   {
-    var cb = chainedBoolTarget(res, context);
-    if (cb != null && _actuals.size() == 1)
+    var ab = chainedBoolTarget(res, context);
+    if (ab != null && _actuals.size() == 1)
       {
-        var b = res.resolveType(cb._actuals.getLast(), context);
-        if (b.typeForInferencing() != Types.t_ERROR)
+        ab = chainBool(res, context, ab, ab._actuals.getLast());
+        var cur = this;
+        while (ab != ERROR &&
+               cur._actuals.getLast() instanceof ParsedCall pcur &&
+               pcur.isOperatorCall(cur == this) &&
+               pcur.isValidOperatorInChainedBoolean() &&
+               ab._actuals.getLast() instanceof ParsedOperatorCall bpc)
           {
-            var outer = context.outerFeature();
-            String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
-            var tmp = new Feature(res,
-                                  pos(),
-                                  Visi.PRIV,
-                                  b.type(),
-                                  tmpName,
-                                  outer);
-            Expr t1 = new Call(pos(), new Current(pos(), outer), tmp);
-            Expr t2 = new Call(pos(), new Current(pos(), outer), tmp);
-            var movedTo = new ParsedCall(t2, new ParsedName(pos(), name()), _actuals)
-              {
-                boolean isChainedBoolRHS() { return true; }
-              };
-            this._movedTo = movedTo;
-            Expr as = new Assign(res, pos(), tmp, b, context);
-            t1         = res.resolveType(t1     , context);
-            as         = res.resolveType(as     , context);
-            var result = res.resolveType(movedTo, context);
-            cb._actuals.set(cb._actuals.size()-1,
-                            new Block(new List<Expr>(as, t1)));
-            _actuals = new List<Expr>(result);
-            _calledFeature = Types.resolved.f_bool_AND;
-            _resolvedFormalArgumentTypes  = null;  // _calledFeature changed, so formal arg types must be resolved again
-            _pendingError = null;
-            _name = _calledFeature.featureName().baseName();
+            _target = new Call(cur.pos(), _target, new List<>(), new List<>(ab), Types.resolved.f_bool_AND);
+            ab = pcur.chainBool(res, context, ab, bpc._target);
+            cur = pcur;
           }
+        _actuals = new List<Expr>(ab);
+        _calledFeature = Types.resolved.f_bool_AND;
+        _resolvedFormalArgumentTypes  = null;  // _calledFeature changed, so formal arg types must be resolved again
+        _pendingError = null;
+        _name = _calledFeature.featureName().baseName();
+        var result = res.resolveType(ab, context);
+        _actuals = new List<Expr>(result);
       }
   }
 
 
   /**
-   * Predicate that is true if this call is the result of pushArgToTemp in a
-   * chain of boolean operators.  This is used for longer chains such as
+   * For a chained boolean `a < b < c < d < e`, perform the chaining of one element `a < b < c`
    *
-   * <pre>
-   *   {@code a < b <= c < d }
-   * </pre>
+   * @param res Resolution instance
    *
-   * which is first converted into
+   * @param context the source code context where this Call is used
    *
-   * <pre>
-   *   {@code (a < {t1 := b; t1} && t1 <= c) < d}
-   * </pre>
+   * @param ab the expression `a < b`, will be changed into `a < { tmp := b; tmp }`
    *
-   * where this returns {@code true} for the call {@code t1 <= c}, that in the next steps
-   * needs to get {@code c} stored into a temporary variable as well.
+   * @param b the expression `b`.
+   *
+   * @return the right hand side of the chaining `tmp < c`
    */
-  boolean isChainedBoolRHS()
+  private Call chainBool(Resolution res, Context context, Call ab, Expr b)
   {
-    return false;
+    var result = ERROR;
+    b = res.resolveType(b, context);
+    if (b.typeForInferencing() != Types.t_ERROR)
+      {
+        var outer = context.outerFeature();
+        var tmp = new Feature(res,
+                              pos(),
+                              Visi.PRIV,
+                              b.type(),
+                              FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++),
+                              outer);
+        Expr t1 = new Call(pos(), new Current(pos(), outer), tmp);
+        Expr t2 = new Call(pos(), new Current(pos(), outer), tmp);
+        var c = _actuals.getLast();
+        result = new ParsedCall(t2, new ParsedName(pos(), name()), new List<>(c));
+        _movedTo = result;
+        Expr as = new Assign(res, pos(), tmp, b, context);
+        t1 = res.resolveType(t1, context);
+        as = res.resolveType(as, context);
+        ab._actuals.set(ab._actuals.size()-1,
+                        new Block(new List<Expr>(as, t1)));
+      }
+    return result;
   }
 
 
@@ -340,16 +373,16 @@ public class ParsedCall extends Call
   private boolean isValidOperatorInChainedBoolean()
   {
     return
-      _name.equals("infix <") ||
-      _name.equals("infix >") ||
-      _name.equals("infix ≤") ||
-      _name.equals("infix ≥") ||
-      _name.equals("infix <=") ||
-      _name.equals("infix >=") ||
-      _name.equals("infix =") ||
-      _name.equals("infix !=") ||
-      // && is used to chain the calls together.
-      _name.equals("infix &&");
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "!=") ||
+      // && is used to chain the calls together, needed for longer chains like `a < b < c < d`.
+      _name.equals(FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");
   }
 
 
@@ -387,9 +420,7 @@ public class ParsedCall extends Call
         pc.isValidOperatorInChainedBoolean() &&
         pc.isOperatorCall(false))
       {
-        result = (pc._actuals.get(0) instanceof ParsedCall acc && acc.isChainedBoolRHS())
-          ? acc
-          : pc;
+        result = pc;
       }
     return result;
   }
@@ -497,9 +528,10 @@ public class ParsedCall extends Call
 
 
   /**
-   * After propagateExpectedType: if type inference up until now has figured
-   * out that a Lazy feature is expected, but the current expression is not
-   * a Lazy feature, then wrap this expression in a Lazy feature.
+   * After propagateExpectedType: if type inference up until now has figured out
+   * that a Lazy or Function feature is expected, but the current expression is
+   * not a Lazy or Function feature, then wrap this expression in a Lazy or
+   * Function feature.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -507,6 +539,8 @@ public class ParsedCall extends Call
    * @param context the source code context where this Expr is used
    *
    * @param t the type this expression is assigned to.
+   *
+   * @return the resulting Lazy of Function feature
    */
   Expr applyPartially(Resolution res, Context context, AbstractType t)
   {
@@ -521,11 +555,10 @@ public class ParsedCall extends Call
             pns.add(Partial.argName(pos()));
           }
         _actuals = _actuals.size() == 0 ? new List<>() : _actuals;
-        if (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
+        if (n == 1 && _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX))
           { // -v ==> x->x-v   -- swap target and first actual:
             if (CHECKS) check
-              (Errors.any() || n == 1,
-               Errors.any() || _actuals.size() == 0,
+              (Errors.any() || _actuals.size() == 0,
                _target != Universe.instance);
 
             _actuals.add(_target);
@@ -545,8 +578,8 @@ public class ParsedCall extends Call
           {
             _name =
               _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX)
-              ? /* -v ==> x->x-v */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX .length())
-              : /* v- ==> x->v-x */ FuzionConstants.INFIX_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
+              ? /* -v ==> x->x-v */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX .length())
+              : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
         _resolvedFormalArgumentTypes  = null;

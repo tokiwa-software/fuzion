@@ -52,7 +52,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <namedpipeapi.h>
 
 #ifdef FUZION_ENABLE_THREADS
-// NYI remove POSIX imports
+// NYI: UNDER DEVELOPMENT: remove POSIX imports
 #include <pthread.h>
 #endif
 
@@ -94,7 +94,7 @@ int64_t fzE_last_error(void){
     : last_error;
 }
 
-// NYI missing set_last_error, see posix.c
+// NYI: UNDER DEVELOPMENT: missing set_last_error, see posix.c
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -336,7 +336,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
   if(con_res == -1)
   {
-    // NYI do we want to try another address in addr_info->ai_next?
+    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
     fzE_close(result[0]);
     result[0] = fzE_net_error();
   }
@@ -614,7 +614,7 @@ void fzE_init()
   pthread_mutexattr_t attr;
   fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
-            // NYI #1646 setprotocol returns EINVAL on windows.
+            // NYI: UNDER DEVELOPMENT: #1646 setprotocol returns EINVAL on windows.
             // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
   assert(res);
@@ -629,7 +629,7 @@ void fzE_init()
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void *(*code)(void *),
+void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
 #ifdef FUZION_ENABLE_THREADS
@@ -644,12 +644,11 @@ int64_t fzE_thread_create(void *(*code)(void *),
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  // NYI free pt
-  return (int64_t)pt;
+  return pt;
 #else
   printf("You discovered a severe bug. (fzE_thread_join)");
   exit(EXIT_FAILURE);
-  return -1;
+  return NULL;
 #endif
 }
 
@@ -657,7 +656,7 @@ int64_t fzE_thread_create(void *(*code)(void *),
 /**
  * Join with a running thread.
  */
-void fzE_thread_join(int64_t thrd)
+void fzE_thread_join(void * thrd)
 {
 #ifdef FUZION_ENABLE_THREADS
 #ifdef GC_THREADS
@@ -665,6 +664,7 @@ void fzE_thread_join(int64_t thrd)
 #else
   pthread_join(*(pthread_t *)thrd, NULL);
 #endif
+  fzE_free(thrd);
 #endif
 }
 
@@ -891,7 +891,7 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI do we need to flush?
+// NYI: UNDER DEVELOPMENT: do we need to flush?
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;

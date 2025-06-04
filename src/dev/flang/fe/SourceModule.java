@@ -46,6 +46,7 @@ import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Block;
@@ -57,6 +58,7 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Function;
+import dev.flang.ast.ParsedOperatorCall;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.State;
@@ -264,7 +266,7 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
-   * Add call at beginnig of application
+   * Add call at beginning of application
    * to initialize the fuzion runtime system
    */
   private void addRuntimeInitCall()
@@ -504,7 +506,7 @@ part of the (((inner features))) declarations of the corresponding
 
     if (inner.isField())
       {
-        // NYI inner.iscotype() does not work currently
+        // NYI: UNDER DEVELOPMENT: inner.iscotype() does not work currently
         if (inner._qname.getFirst().equals(FuzionConstants.TYPE_NAME))
           {
             AstErrors.typeFeaturesMustNotBeFields(inner);
@@ -638,15 +640,15 @@ part of the (((inner features))) declarations of the corresponding
     inner.visit(new FeatureVisitor()
       {
         private Stack<Expr> _scope = new Stack<>();
-        @Override public void actionBefore(AbstractCase c)
+        @Override public void actionBefore(AbstractCase c, AbstractMatch m)
         {
           _scope.push(c.code());
-          super.actionBefore(c);
+          super.actionBefore(c, m);
         }
-        @Override public void actionAfter(AbstractCase c)
+        @Override public void actionAfter(AbstractCase c, AbstractMatch m)
         {
           _scope.pop();
-          super.actionAfter(c);
+          super.actionAfter(c, m);
         }
         @Override public void actionBefore(Block b)
         {
@@ -1168,19 +1170,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
-    List<FeatureAndOuter> result;
-    if (name.startsWith(FuzionConstants.UNARY_OPERATOR_PREFIX))
+    List<FeatureAndOuter> result = new List<>();
+    for (var n : ParsedOperatorCall.lookupNames(name))
       {
-        var op = name.substring(FuzionConstants.UNARY_OPERATOR_PREFIX.length());
-        var prefixName = FuzionConstants.PREFIX_OPERATOR_PREFIX + op;
-        var postfxName = FuzionConstants.POSTFIX_OPERATOR_PREFIX + op;
-        result = new List<>();
-        result.addAll(lookup0(outer, prefixName, use, traverseOuter, hidden));
-        result.addAll(lookup0(outer, postfxName, use, traverseOuter, hidden));
-      }
-    else
-      {
-        result = lookup0(outer, name, use, traverseOuter, hidden);
+        result.addAll(lookup0(outer, n, use, traverseOuter, hidden));
       }
     return result;
   }
@@ -1345,11 +1338,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
                 stacks.get(0).pop();
               }
           }
-          public void actionBefore(AbstractCase c)
+          @Override public void actionBefore(AbstractCase c, AbstractMatch m)
           {
             stacks.get(0).push(c.code());
           }
-          public void  actionAfter(AbstractCase c)
+          @Override public void  actionAfter(AbstractCase c, AbstractMatch m)
           {
             stacks.get(0).pop();
           }
@@ -1838,9 +1831,9 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         {
           private Stack<Object> stack = new Stack<Object>();
           @Override public void actionBefore(Block b) { if (b._newScope) { stack.push(b); } }
-          @Override public void actionBefore(AbstractCase c) { stack.push(c); }
+          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { stack.push(c); }
           @Override public void actionAfter(Block b)  { if (b._newScope) { stack.pop(); } }
-          @Override public void actionAfter (AbstractCase c) { stack.pop(); }
+          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { stack.pop(); }
           @Override public Expr action(Feature fd, AbstractFeature outer) {
             if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
               {

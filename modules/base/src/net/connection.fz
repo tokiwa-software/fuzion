@@ -31,27 +31,32 @@ module:public connection(desc i32) is
     fuzion.sys.net.close desc
 
 
-  # is the connection still active?
-  #
-  public is_active bool =>
-    true # NYI
-
-
   # this installs reader, writer and channel for the given connection
   #
   public with(T type, LM type : mutate, fn ()->T) T
-  pre is_active
   =>
-    with0 T LM fn
 
 
-  # helper feature, without precondition `is_active`
-  # to make this usable from any thread
-  #
-  with0(T type, LM type : mutate, fn ()->T)
-  =>
-    (io.buffered LM).reader (read_handler desc) 1024 ! ()->
-      (io.buffered LM).writer (write_handler desc) 1024 ! ()->
+    # helper feature to create a read handler
+    # for a given descriptor
+    #
+    read_handler : io.Read_Handler is
+      public redef read(count i32) choice (array u8) io.end_of_file error =>
+        match fuzion.sys.net.read desc count.as_i64
+          a array => a
+          e error => e
+
+
+    # helper feature to create a read handler
+    # for a given descriptor
+    #
+    write_handler : io.Write_Handler is
+      public redef write(data Sequence u8) outcome unit =>
+        fuzion.sys.net.write desc data.as_array
+
+
+    (io.buffered LM).reader read_handler 1024 ! ()->
+      (io.buffered LM).writer write_handler 1024 ! ()->
         (net.channel desc) ! ()->
           fn.call
 
@@ -61,8 +66,7 @@ module:public connection(desc i32) is
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
   public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) concur.Future (outcome T)
-  pre is_active
   =>
     TP.env.submit (outcome T) ()->
       lm ! ()->
-        with0 T LM fn
+        with T LM fn

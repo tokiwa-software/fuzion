@@ -40,7 +40,7 @@ import dev.flang.lsp.shared.records.ComputationPerformance;
 public class Concurrency
 {
 
-  // NYI for now we have to run most things more or less sequentially
+  // NYI: UNDER DEVELOPMENT: for now we have to run most things more or less sequentially
   // this is mainly because there is statically held artifacts in Types.java
   private static ExecutorService executor = Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());
 

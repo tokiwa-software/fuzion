@@ -29,7 +29,7 @@
 # For more information see the original repository: https://github.com/ulfjack/ryu
 # and the paper: https://dl.acm.org/citation.cfm?doid=3296979.3192369
 #
-# NYI lacks documentation
+# NYI: UNDER DEVELOPMENT: lacks documentation
 #
 public ryū(public T type : float) is
 

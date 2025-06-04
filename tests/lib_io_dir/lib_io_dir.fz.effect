@@ -1,8 +1,8 @@
-io.Err
+io.file.delete
 fuzion.runtime.pre_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
-io.file.delete
+io.Err
 io.dir.make
 io.Out
 fuzion.runtime.post_fault

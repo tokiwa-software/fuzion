@@ -63,7 +63,7 @@ public class QueryAST extends ANY
       .or(() -> constant(params));
   }
 
-  // NYI motivate/explain this heuristic
+  // NYI: UNDER DEVELOPMENT: motivate/explain this heuristic
   private static Optional<AbstractFeature> findTargetFeatureInAST(SourcePosition params)
   {
     var leftToken = LexerTool.tokensAt(LexerTool.goLeft(params)).left();
@@ -99,7 +99,7 @@ public class QueryAST extends ANY
       .findFirst();
   }
 
-  // NYI motivate/explain this heuristic
+  // NYI: UNDER DEVELOPMENT: motivate/explain this heuristic
   private static Optional<? extends AbstractFeature> constant(SourcePosition params)
   {
     return ASTWalker.traverse(params)
@@ -125,7 +125,7 @@ public class QueryAST extends ANY
       .left()
       .token();
     return targetFeature(params)
-      // NYI this should be simplified
+      // NYI: UNDER DEVELOPMENT: this should be simplified
       .map(tf -> tokenBeforeDot == Token.t_type && !tf.isCotype() ? tf.cotype() : tf)
       .map(tf -> candidates(tf)
         // filter infix, prefix, postfix features
@@ -204,7 +204,7 @@ public class QueryAST extends ANY
   /**
    * @param params
    * @return
-   * NYI currently ununsed.
+   * NYI: UNDER DEVELOPMENT: currently ununsed.
    * Can we use this without beeing annoying?
    */
   public static Stream<AbstractFeature> completionsAt(SourcePosition params)
@@ -273,7 +273,7 @@ public class QueryAST extends ANY
   {
     return featureDefinedAt(params)
       .or(() -> findFeatureInAST(params))
-      // NYI workaround for not having positions of all types in
+      // NYI: UNDER DEVELOPMENT: workaround for not having positions of all types in
       // the AST currently
       .or(() -> featureAtFuzzy(params))
       .or(() -> {
@@ -331,7 +331,7 @@ public class QueryAST extends ANY
       .filter(x -> params.line() == x.pos().line())
       .filter(x -> {
         var start = x.pos().column();
-        // NYI should work most of the time but there might be additional
+        // NYI: UNDER DEVELOPMENT: should work most of the time but there might be additional
         // whitespace?
         var end = start + Util.codepointCount(x.featureName().baseName());
         return start <= params.column() && params.column() <= end;
@@ -349,7 +349,7 @@ public class QueryAST extends ANY
     return LexerTool.identOrOperatorTokenAt(params)
       .flatMap(token -> QueryAST.featuresInScope(params)
         .filter(f -> f.featureName().baseName().equals(token.text()))
-        // NYI we could be better here if we considered approximate
+        // NYI: UNDER DEVELOPMENT: we could be better here if we considered approximate
         // argcount
         .findFirst());
   }

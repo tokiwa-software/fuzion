@@ -41,7 +41,7 @@ public now (p () -> time.date_time) : effect is
   # this default handler fills the result with the UTC time of
   # the current system.
   #
-  # NYI since Fuzion does not properly support datetimes with
+  # NYI: UNDER DEVELOPMENT: since Fuzion does not properly support datetimes with
   # timezones, these results need to be handled with care.
   #
   type.default_now ()->time.date_time => () ->

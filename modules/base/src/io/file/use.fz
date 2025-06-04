@@ -32,19 +32,22 @@ public mode is
 
   module:public val : choice mode.read mode.write append is
 
-
-
-# this opens a file with the given mode and installs
-# effect (open T) to be used in `code()`.
+# this opens a file with the given mode.
+# on success it instates effects:
+#
+# file.this.open,
+# (io.buffered file.this.file_mutate).reader and
+# (io.buffered file.this.file_mutate).writer.
+#
+# These can then be used in `code()`.
 #
 # usage example:
 #
-#     use some_type file_name mode.read ()->
-#       match (open some_type).read
-#         e error => e
-#         a array => String.from_bytes a
+#     my_file : io.file is
+#     _ := my_file.use file_name mode.read ()->
+#       say (io.buffered my_file.file_mutate).read_lines
 #
-public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
   # definition of read handler for file
   #
@@ -61,18 +64,16 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
       fuzion.sys.fileio.write desc bytes.as_array
 
 
-  mode_num i32 /* NYI: UNDER DEVELOPMENT: type inference */ :=
+  mode_num :=
     match m
       mode.read => 0
       mode.write => 1
       mode.append => 2
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
-    # install effect `open T` and run `code`
-    ((open fd file_name) ! ()->
-          (io.buffered LM).reader (read_handler fd) 1024 ! ()->
-            (io.buffered LM).writer (write_handler fd) 1024 ! ()->
-              tmp := code.call
-              # NYI: handle error once signature of with is changed
-              _ := (io.buffered LM).writer.env.flush
-              tmp)
+    file_mutate ! ()->
+      # install effect `open T` and run `code`
+      (open fd file_name) ! ()->
+        (io.buffered file_mutate).reader (read_handler fd) 1024 ! ()->
+          (io.buffered file_mutate).writer (write_handler fd) 1024 ! ()->
+            code.call

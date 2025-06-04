@@ -837,7 +837,7 @@ public class Feature extends AbstractFeature
               .filter(argName -> !argName.equals("_"))
               .filter(argName -> !usedNames.add(argName))
               .collect(Collectors.toSet());
-        // NYI report pos of arguments not pos of feature
+        // NYI: UNDER DEVELOPMENT: report pos of arguments not pos of feature
         AstErrors.argumentNamesNotDistinct(this, duplicateNames);
       }
   }
@@ -1807,7 +1807,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         if (CHECKS) check
           (Errors.any() || t != null);
-        if (t != null && t.isRef().noOrDontKnow())
+        if (t != null && !t.isRef())
           {
             if (t.compareToIgnoreOuter(selfType()) == 0)
               {
@@ -2610,7 +2610,7 @@ A ((Choice)) declaration must not contain a result type.
 
     return Types.resolved != null
       ? this == Types.resolved.f_choice
-      : (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
+      : (featureName().baseName().equals(FuzionConstants.CHOICE_NAME) && featureName().argCount() == 1 && outer().isUniverse());
   }
 
 

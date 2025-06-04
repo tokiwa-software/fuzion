@@ -96,15 +96,6 @@ public class Intrinsics extends ANY
 
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
 
-  /**
-   * This contains all started threads.
-   */
-  private static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
-     @Override
-     protected boolean close(Thread f) {return true;};
-   };
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -310,16 +301,16 @@ public class Intrinsics extends ANY
           System.exit(rc);
           return Value.EMPTY_VALUE;
         });
-    put("fuzion.java.Java_Object.is_null0", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.is_null0", (executor, innerClazz) -> args ->
         {
           Object thiz = ((JavaRef)args.get(1))._javaRef;
           return new boolValue(thiz == null);
         });
-    putUnsafe("fuzion.java.get_static_field0",
-        "fuzion.java.get_field0"      , (executor, innerClazz) ->
+    putUnsafe("fuzion.jvm.get_static_field0",
+        "fuzion.jvm.get_field0"      , (executor, innerClazz) ->
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
-          var statique = in.equals("fuzion.java.get_static_field0");
+          var statique = in.equals("fuzion.jvm.get_static_field0");
           int resultClazz = executor.fuir().clazzActualGeneric(innerClazz, 0);
           return args ->
             {
@@ -329,11 +320,11 @@ public class Intrinsics extends ANY
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
-    putUnsafe("fuzion.java.set_static_field0",
-        "fuzion.java.set_field0"      , (executor, innerClazz) ->
+    putUnsafe("fuzion.jvm.set_static_field0",
+        "fuzion.jvm.set_field0"      , (executor, innerClazz) ->
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
-          var statique = in.equals("fuzion.java.set_static_field0");
+          var statique = in.equals("fuzion.jvm.set_static_field0");
           return args ->
             {
               String clazz = !statique ? null : (String) ((JavaRef) args.get(1))._javaRef;
@@ -344,13 +335,13 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             };
         });
-    putUnsafe("fuzion.java.call_v0",
-        "fuzion.java.call_s0",
-        "fuzion.java.call_c0", (executor, innerClazz) ->
+    putUnsafe("fuzion.jvm.call_v0",
+        "fuzion.jvm.call_s0",
+        "fuzion.jvm.call_c0", (executor, innerClazz) ->
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
-          var virtual     = in.equals("fuzion.java.call_v0");
-          var constructor = in.equals("fuzion.java.call_c0");
+          var virtual     = in.equals("fuzion.jvm.call_v0");
+          var constructor = in.equals("fuzion.jvm.call_c0");
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return args ->
             {
@@ -371,17 +362,17 @@ public class Intrinsics extends ANY
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
-    putUnsafe("fuzion.java.cast0", (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.jvm.cast0", (executor, innerClazz) -> args ->
         {
           var arg = ((JavaRef) args.get(1))._javaRef;
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(arg, null, resultClazz);
         });
-    putUnsafe("fuzion.java.array_length",  (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.jvm.array_length",  (executor, innerClazz) -> args ->
         {
           return new i32Value(Array.getLength(((JavaRef) args.get(1))._javaRef));
         });
-    putUnsafe("fuzion.java.array_get", (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.jvm.array_get", (executor, innerClazz) -> args ->
         {
           var arr = ((JavaRef) args.get(1))._javaRef;
           var ix  = args.get(2).i32Value();
@@ -389,7 +380,7 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    putUnsafe("fuzion.java.array_to_java_object0", (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.jvm.array_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
@@ -399,20 +390,21 @@ public class Intrinsics extends ANY
             ._array;
           return new JavaRef(res);
         });
-    putUnsafe("fuzion.java.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
-    putUnsafe("fuzion.java.string_to_java_object0", (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    putUnsafe("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    putUnsafe("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
           return new JavaRef(utf8ByteArrayDataToString(argzData));
         });
-    putUnsafe("fuzion.java.java_string_to_string", (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.jvm.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) ((JavaRef)args.get(1))._javaRef;
           return Interpreter.boxedConstString(javaString == null ? "--null--" : javaString);
         });
-    putUnsafe("fuzion.java.primitive_to_java_object", (executor, innerClazz) -> args ->
+    putUnsafe("fuzion.jvm.primitive_to_java_object", (executor, innerClazz) -> args ->
         {
           var res =  switch (executor.fuir().getSpecialClazz(executor.fuir().clazzActualGeneric(innerClazz, 0)))
           {
@@ -471,11 +463,13 @@ public class Intrinsics extends ANY
                              (() -> executor.callOnNewInstance(NO_SITE, cc, args.get(1), new List<>())));
           t.setDaemon(true);
           t.start();
-          return new i64Value(_startedThreads_.add(t));
+          // NYI: CLEANUP: should not use javaObjectToInstance
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+          return JavaInterface.javaObjectToInstance(t, resultClazz);
         });
     put("fuzion.sys.thread.join0", (executor, innerClazz) -> args ->
         {
-          var thread = _startedThreads_.get(args.get(1).i64Value());
+          var thread = ((Thread) ((JavaRef) args.get(1))._javaRef);
           var result = false;
           do
             {
@@ -490,14 +484,6 @@ public class Intrinsics extends ANY
                 }
             }
           while (!result);
-
-          // NYI: comment, fridi:
-          // Furthermore, remove should probably not be called by join, but either by
-          // the Thread itself or by some cleanup mechanism that removes terminated
-          // threads, either when new threads are started or by a system thread that
-          // joins and removes threads that are about to terminate.
-          _startedThreads_.remove(args.get(1).i64Value());
-
           return Value.EMPTY_VALUE;
         });
 

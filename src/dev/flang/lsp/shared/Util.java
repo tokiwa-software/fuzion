@@ -87,7 +87,7 @@ public class Util
   */
   public static boolean isStdLib(URI uri)
   {
-    // NYI develop better heuristic to figure out if we are editing standard library.
+    // NYI: UNDER DEVELOPMENT: develop better heuristic to figure out if we are editing standard library.
     // return uri.toString().startsWith(SourceText.FuzionHome.toUri().toString());
     return uri.toString().contains("/lib/");
   }

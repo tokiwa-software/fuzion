@@ -88,7 +88,7 @@ public class Tag extends ExprWithPos
             .stream()
             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
             .count() == 1
-        // NYI why is value.type() sometimes unit
+        // NYI: UNDER DEVELOPMENT: why is value.type() sometimes unit
         // even though none of the choice elements is unit
         || value.type().compareTo(Types.resolved.t_unit) == 0
        );

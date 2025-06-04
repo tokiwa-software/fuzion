@@ -81,7 +81,7 @@ module net is
       if res.as_i64 = max_bytes
         buff.as_array
       else
-        # NYI there should be a way to use a slice of internal_array to init array
+        # NYI: UNDER DEVELOPMENT: there should be a way to use a slice of internal_array to init array
         array u8 res (idx -> buff[idx])
     else
       error "error reading from socket: {res}"

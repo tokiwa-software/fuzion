@@ -42,7 +42,7 @@ public class ExprTool extends ANY
 
   /**
    * A heuristic to figure out where the given expr ends.
-   * NYI use Parser to figure out the end of expression.
+   * NYI: UNDER DEVELOPMENT: use Parser to figure out the end of expression.
    * @param expr
    * @return
    */
@@ -65,7 +65,7 @@ public class ExprTool extends ANY
   }
 
 
-  // NYI parser should give us this info
+  // NYI: UNDER DEVELOPMENT: parser should give us this info
   static Optional<SourcePosition> lambdaOpeningBracePosition(Expr expr)
   {
     if (PRECONDITIONS)

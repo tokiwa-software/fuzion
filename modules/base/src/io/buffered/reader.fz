@@ -101,9 +101,7 @@ is
 
   # discard complete buffer
   #
-  # NYI naming this feature discard leads to error: Duplicate feature declaration
-  #
-  public discard_all unit
+  public discard unit
   =>
     discard buf_size
 
@@ -167,9 +165,9 @@ pre debug: n >= 0
     next_bytes Sequence u8 := (reader.read ? outcome => []   | a array => a), rest ++ (reader.read ? outcome => [] | a array => a)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
-    # we trigger a `discard_all` and remember what we read so far via `rest`.
+    # we trigger a `discard` and remember what we read so far via `rest`.
     # this is necesarry e.g. for stdin where we read one byte at a time.
-    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.discard_all; next_bytes else []
+    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.discard; next_bytes else []
     codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
     res Sequence String    := next_codepoints, res ++ next_codepoints
   while !is_eof && codepoint_count < n
@@ -217,7 +215,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
               false
             nil =>
               add_to_res a
-              reader.discard_all
+              reader.discard
               true
 
     ref : String is

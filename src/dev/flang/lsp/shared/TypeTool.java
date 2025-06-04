@@ -58,7 +58,7 @@ public class TypeTool extends ANY
     return labelNoErrorOrUndefined(type);
   }
 
-  // NYI DUCKTAPE! ensure condition sometimes fails on containsError()
+  // NYI: UNDER DEVELOPMENT: DUCKTAPE! ensure condition sometimes fails on containsError()
   // unable to reproduce unfortunately
   public static boolean containsError(AbstractType type)
   {
@@ -87,12 +87,12 @@ public class TypeTool extends ANY
 
     if (type.isGenericArgument())
       {
-        return baseName(type) + (type.isRef().yes() ? " (boxed)": "");
+        return baseName(type) + (type.isRef() ? " (boxed)": "");
       }
     else if (type.outer() != null)
       {
-        return (type.isRef().yes() && (type.feature() == null || !type.feature().isRef()) ? "ref "
-                    : !type.isRef().yes() && type.feature() != null && type.feature().isRef() ? "value "
+        return (type.isRef() && (type.feature() == null || !type.feature().isRef()) ? "ref "
+                    : !type.isRef() && type.feature() != null && type.feature().isRef() ? "value "
                     : "")
           + (type.feature() == null
                                           ? baseName(type)

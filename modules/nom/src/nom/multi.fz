@@ -26,7 +26,7 @@ module multi is
           match (parse s1.rest)
             s2 success I (Sequence O) => success s2.rest [s1.out]++s2.out
             error => panic "invalid state, many0 must always succeed."
-        # NYI type inference should infer correct type of empty array
+        # NYI: UNDER DEVELOPMENT: type inference should infer correct type of empty array
         error => success input (Sequence O).type.empty
     parser I _ _ (input -> parse input)
 
@@ -69,7 +69,7 @@ module multi is
           match (many0 (sequence.preceded p_sep p_value)).call s1.rest
             s2 success => success s2.rest [s1.out]++s2.out
             error      => panic "invalid state, many0 always succeeds"
-        # NYI type inference should infer correct type of empty array
+        # NYI: UNDER DEVELOPMENT: type inference should infer correct type of empty array
         error => success input (Sequence O).type.empty
     parser I _ _ (input -> parse input)
 

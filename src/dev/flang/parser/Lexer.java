@@ -133,7 +133,7 @@ public class Lexer extends SourceFile
     t_error,       // erroneous input
     t_ws,          // whitespace
     t_comment,     // comment
-    t_op,          // operators +, -, *, /, ., |, etc.
+    t_op,          // operators +, -, *, /, .., |, etc.
     t_comma,       // ,
     t_lparen,      // (
     t_rparen,      // )
@@ -141,6 +141,7 @@ public class Lexer extends SourceFile
     t_rbrace,      // }
     t_lbracket,    // [
     t_rbracket,    // ]
+    t_period,      // .
     t_semicolon,   // ;
     t_question,    // ?
     t_numliteral,  // 123
@@ -200,6 +201,7 @@ public class Lexer extends SourceFile
     t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),
+    t_infix_right("infix_right"),
     t_prefix("prefix"),
     t_postfix("postfix"),
     t_ternary("ternary"),
@@ -311,6 +313,7 @@ public class Lexer extends SourceFile
             {
             case t_op                : result = "operator"                                   ; break;
             case t_comma             : result = "comma ','"                                  ; break;
+            case t_period            : result = "period '.'"                                 ; break;
             case t_lparen            : result = "left parenthesis '('"                       ; break;
             case t_rparen            : result = "right parenthesis ')'"                      ; break;
             case t_lbrace            : result = "left curly brace '{'"                       ; break;
@@ -349,27 +352,29 @@ public class Lexer extends SourceFile
    * Private code point classes
    */
   private static final byte K_UNKNOWN =  0;
-  private static final byte K_OP      =  1;  // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
+  private static final byte K_OP      =  1;  // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^';
   private static final byte K_WS      =  2;  // spaces, tabs, lf, cr, ...
   private static final byte K_SLASH   =  3;  // '/', introducing a comment or an operator.
   private static final byte K_SHARP   =  4;  // '#', introducing a comment or an operator.
   private static final byte K_COMMA   =  5;  // ','
-  private static final byte K_LPAREN  =  6;  // '('  round brackets or parentheses
-  private static final byte K_RPAREN  =  7;  // ')'
-  private static final byte K_LBRACE  =  8;  // '{'  curly brackets or braces
-  private static final byte K_RBRACE  =  9;  // '}'
-  private static final byte K_LBRACK  = 10;  // '['  square brackets
-  private static final byte K_RBRACK  = 11;  // ']'
-  private static final byte K_SEMI    = 12;  // ';'
-  private static final byte K_DIGIT   = 13;  // '0'..'9'
-  private static final byte K_LETTER  = 14;  // 'A'..'Z', 'a'..'z', mathematical letter
-  private static final byte K_GRAVE   = 15;  // '`'  backtick
-  private static final byte K_DQUOTE  = 16;  // '"'
-  private static final byte K_SQUOTE  = 17;  // '''
-  private static final byte K_BACKSL  = 18;  // '\\'
-  private static final byte K_NUMERIC = 19;  // mathematical digit
-  private static final byte K_EOF     = 20;  // end-of-file
-  private static final byte K_ERROR   = 21;  // an error occurred
+  private static final byte K_PERIOD  =  6;  // ','
+  private static final byte K_LPAREN  =  7;  // '('  round brackets or parentheses
+  private static final byte K_RPAREN  =  8;  // ')'
+  private static final byte K_LBRACE  =  9;  // '{'  curly brackets or braces
+  private static final byte K_RBRACE  = 10;  // '}'
+  private static final byte K_LBRACK  = 11;  // '['  square brackets
+  private static final byte K_RBRACK  = 12;  // ']'
+  private static final byte K_SEMI    = 13;  // ';'
+  private static final byte K_DIGIT   = 14;  // '0'..'9'
+  private static final byte K_QUESTN  = 15;  // '?'
+  private static final byte K_LETTER  = 16;  // 'A'..'Z', 'a'..'z', mathematical letter
+  private static final byte K_GRAVE   = 17;  // '`'  backtick
+  private static final byte K_DQUOTE  = 18;  // '"'
+  private static final byte K_SQUOTE  = 19;  // '''
+  private static final byte K_BACKSL  = 20;  // '\\'
+  private static final byte K_NUMERIC = 21;  // mathematical digit
+  private static final byte K_EOF     = 22;  // end-of-file
+  private static final byte K_ERROR   = 23;  // an error occurred
 
 
   /**
@@ -391,12 +396,12 @@ public class Lexer extends SourceFile
     K_WS      /* SP  */, K_OP      /* !   */, K_DQUOTE  /* "   */, K_SHARP   /* #   */,
     K_OP      /* $   */, K_OP      /* %   */, K_OP      /* &   */, K_SQUOTE  /* '   */,
     K_LPAREN  /* (   */, K_RPAREN  /* )   */, K_OP      /* *   */, K_OP      /* +   */,
-    K_COMMA   /* ,   */, K_OP      /* -   */, K_OP      /* .   */, K_SLASH   /* /   */,
+    K_COMMA   /* ,   */, K_OP      /* -   */, K_PERIOD  /* .   */, K_SLASH   /* /   */,
     // 3…
     K_DIGIT   /* 0   */, K_DIGIT   /* 1   */, K_DIGIT   /* 2   */, K_DIGIT   /* 3   */,
     K_DIGIT   /* 4   */, K_DIGIT   /* 5   */, K_DIGIT   /* 6   */, K_DIGIT   /* 7   */,
     K_DIGIT   /* 8   */, K_DIGIT   /* 9   */, K_OP      /* :   */, K_SEMI    /* ;   */,
-    K_OP      /* <   */, K_OP      /* =   */, K_OP      /* >   */, K_OP      /* ?   */,
+    K_OP      /* <   */, K_OP      /* =   */, K_OP      /* >   */, K_QUESTN  /* ?   */,
     // 4…
     K_OP      /* @   */, K_LETTER  /* A   */, K_LETTER  /* B   */, K_LETTER  /* C   */,
     K_LETTER  /* D   */, K_LETTER  /* E   */, K_LETTER  /* F   */, K_LETTER  /* G   */,
@@ -775,6 +780,8 @@ public class Lexer extends SourceFile
           {
           case K_OP      :
           case K_COMMA   :
+          case K_PERIOD  :
+          case K_QUESTN  :
           case K_LPAREN  :
           case K_RPAREN  :
           case K_LBRACE  :
@@ -1468,17 +1475,14 @@ OPERATOR  : ( '!'
             )+
           ;
           */
-          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
+          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^';
             {
     /*
     // tag::fuzion_rule_LEXR_OPER1[]
 A Fuzion operator code point starts with a xref:fuzion_op[Fuzion operator code point].
     // end::fuzion_rule_LEXR_OPER1[]
-    // tag::fuzion_rule_LEXR_OPER2[]
-A single code point 0x003F '?' is not an operator.
-    // end::fuzion_rule_LEXR_OPER2[]
     */
-              token = skipOp(p == '?' ? Token.t_question : Token.t_op);
+              token = skipOp(Token.t_op);
               break;
             }
           /**
@@ -1534,6 +1538,29 @@ COMMA       : ','
           case K_COMMA   :   // ','
             {
               token = Token.t_comma;
+              break;
+            }
+    /*
+    // tag::fuzion_rule_LEXR_OPER2[]
+A single code point 0x002E '.' or 0x003F '?' is not an operator.
+    // end::fuzion_rule_LEXR_OPER2[]
+    */
+          /**
+PERIOD      : '.'
+            ;
+          */
+          case K_PERIOD  :   // '.'
+            {
+              token = skipOp(Token.t_period);
+              break;
+            }
+          /**
+QUESTION  : '?'
+          ;
+          */
+          case K_QUESTN  :   // '?'
+            {
+              token = skipOp(Token.t_question);
               break;
             }
           /**
@@ -1895,9 +1922,20 @@ PLUSMINUS   : "+"
       {
         if (kind(p) == K_LETTER)
         {
+          var c = curCodePoint();
+          var possiblePrefixError = (c == 'b' || c == 'o' || c == 'd' || c == 'x')
+                                    && codePointAt(bytePos()-1) == '0'
+                                    && codePointAt(bytePos()-2) == '.';
           Errors.error(sourcePos(),
                        "Broken numeric literal, expected anything but a letter following a numeric literal.",
-                       null);
+                       possiblePrefixError
+                       ? "Fractional part must not have base prefix '0" + (char) c + "' if integer part has none."
+                       : null);
+          // skip parts of broken num literal to avoid subsequent errors
+          while (kind(curCodePoint()) == K_LETTER || kind(curCodePoint()) == K_DIGIT)
+            {
+              nextCodePoint();
+            }
         }
         yield new Literal(m);
       }};
@@ -2141,7 +2179,7 @@ fragment
 BIN_DIGITS  : BIN_DIGIT BIN_DIGITS
             |
             ;
-BIN_TAIL    : "." BIN_DIGITS
+BIN_TAIL    : ".0b" BIN_DIGITS
             ;
 OCT_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
             ;
@@ -2155,7 +2193,7 @@ fragment
 OCT_DIGITS  : OCT_DIGIT OCT_DIGITS
             |
             ;
-OCT_TAIL    : "." OCT_DIGITS
+OCT_TAIL    : ".0o" OCT_DIGITS
             ;
 DEC_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
             ;
@@ -2169,7 +2207,8 @@ fragment
 DEC_DIGITS  : DEC_DIGIT DEC_DIGITS
             |
             ;
-DEC_TAIL    : "." DEC_DIGITS
+DEC_TAIL    : "."   DEC_DIGITS
+            | ".0d" DEC_DIGITS
             ;
 HEX_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
             | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
@@ -2185,7 +2224,7 @@ fragment
 HEX_DIGITS  : HEX_DIGIT HEX_DIGITS
             |
             ;
-HEX_TAIL    : "." HEX_DIGITS
+HEX_TAIL    : ".0x" HEX_DIGITS
             ;
      */
     Digits(int firstDigit, boolean allowDot, boolean negative)
@@ -2281,8 +2320,26 @@ HEX_TAIL    : "." HEX_DIGITS
           var f = new Lexer(Lexer.this);
           f.nextCodePoint();
           var fd = f.curCodePoint();
-          if (isDigit(fd))
+          if (kind(fd) == K_DIGIT)
             {
+              // match base prefix (base prefix must be repeated after dot in floating point literal)
+              if (b != null)
+                {
+                  nextCodePoint();
+                  var ok = matchBasePrefix('0', b);
+                  nextCodePoint();
+                  if (ok)
+                    {
+                      switch (b)
+                        {
+                          case Base.bin -> matchBasePrefix('b', b);
+                          case Base.oct -> matchBasePrefix('o', b);
+                          case Base.dec -> matchBasePrefix('d', b);
+                          case Base.hex -> matchBasePrefix('x', b);
+                        };
+                    }
+                }
+
               nextCodePoint();
               d = curCodePoint();
               while (isDigit(d))
@@ -2303,6 +2360,28 @@ HEX_TAIL    : "." HEX_DIGITS
           _hasError = true;
         }
       _digits = digits.toString();
+    }
+
+    /**
+     * Match the current code point against the expected base prefix character
+     * and create an error if the don't match
+     *
+     * @param c the expected base prefix character
+     * @param b the expected base of the num literal
+     * @return true iff c matched current code point and no error was created
+     */
+    boolean matchBasePrefix(Character c, Base b)
+    {
+      var result = true;
+      if (curCodePoint() != c)
+        {
+          result = false;
+          Errors.error(null, sourcePos(bytePos()), "Base prefix must be repeated after dot in floating point literal",
+                       "Expected '" + c + "' but found '"
+                       + new String(Character.toChars(curCodePoint()))
+                       + "' in " + b._name + " floating point number. Base prefixes in integer and fractional part must be the same.");
+        }
+      return result;
     }
 
     void checkAndAppendDigit(StringBuilder digits, int d)
@@ -2441,7 +2520,11 @@ A Fuzion operator may contain one or several codepoints that are xref:fuzion_op[
     // end::fuzion_rule_LEXR_OPER3[]
     */
     int p = curCodePoint();
-    while (kind(p) == K_OP || kind(p) == K_SHARP || kind(p) == K_SLASH)
+    while ((((1 << K_OP     |
+              1 << K_SHARP  |
+              1 << K_SLASH  |
+              1 << K_PERIOD |
+              1 << K_QUESTN   ) >> kind(p)) & 1) != 0)
       {
         res = Token.t_op;
         nextCodePoint();
@@ -2947,7 +3030,7 @@ PIPE        : "|"
      * Store the indentation of multiline strings.
      * Empty if single line string.
      */
-    private Optional<Integer> _multiLineIndentation; // NYI mark as final?
+    private Optional<Integer> _multiLineIndentation; // NYI: CLEANUP: mark as final?
 
 
     /**
@@ -3160,7 +3243,7 @@ PIPE        : "|"
      * in multi line string the first character belonging
      * to the multiline string.
      *
-     * NYI cleanup: don't set multiLineIndentation here... but in constructor
+     * NYI: CLEANUP: don't set multiLineIndentation here... but in constructor
      * @return
      */
     private Optional<Integer> startOfStringContent()

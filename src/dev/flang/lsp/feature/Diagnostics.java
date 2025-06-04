@@ -68,7 +68,7 @@ public enum Diagnostics
 
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
-    // NYI check names of type arguments
+    // NYI: UNDER DEVELOPMENT: check names of type arguments
     return Util.concatStreams(
       errors(uri),
       warnings(uri),

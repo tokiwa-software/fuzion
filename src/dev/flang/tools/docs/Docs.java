@@ -264,7 +264,7 @@ public class Docs extends ANY
    * @param af
    * @return
    */
-  // NYI we want to ignore most but not all fields
+  // NYI: UNDER DEVELOPMENT: we want to ignore most but not all fields
   // but how to distinguish?
   private static boolean ignoreFeature(AbstractFeature af, boolean ignoreVisibility)
   {

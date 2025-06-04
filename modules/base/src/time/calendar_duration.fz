@@ -61,7 +61,7 @@ is
 
   # this duration and another one combined
   #
-  # NYI overflow handling
+  # NYI: UNDER DEVELOPMENT: overflow handling
   #
   public infix + (other calendar_duration) calendar_duration =>
     calendar_duration
@@ -76,7 +76,7 @@ is
 
   # this duration multiplied by n
   #
-  # NYI overflow handling
+  # NYI: UNDER DEVELOPMENT: overflow handling
   #
   public infix * (n u64) calendar_duration =>
     calendar_duration

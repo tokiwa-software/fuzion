@@ -49,16 +49,19 @@ jvm:
 	cat $(STDIN) | ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
-	cat $(STDIN) | ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | $(FUZION) ../record_simple_example.fz any "$(FUZION_RUN)" $(FILE)
+
+record_int:
+	cat $(STDIN) | $(FUZION) ../record_simple_example.fz int "$(FUZION_RUN)" $(FILE)
 
 record_c:
-	cat $(STDIN) | ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | $(FUZION) ../record_simple_example.fz c "$(FUZION_RUN)" $(FILE)
 
 record_jvm:
-	cat $(STDIN) | ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | $(FUZION) ../record_simple_example.fz jvm "$(FUZION_RUN)" $(FILE)
 
 effect:
 	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
 
 record_effect: $(FUZION_DEPENDENCIES)
-	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../record_simple_example.fz effect "$(FUZION_RUN)" $(FILE)

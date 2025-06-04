@@ -496,10 +496,10 @@ public class Html extends ANY
       }
 
     var content = features.map(af ->
-      // NYI summary tag must not contain div
+      // NYI: UNDER DEVELOPMENT: summary tag must not contain div
       "<details id='" + htmlID(af)
       + "' $0><summary>$1</summary><div class='fd-comment'>$2</div>$3</details>"
-        // NYI rename fd-private?
+        // NYI: UNDER DEVELOPMENT: rename fd-private?
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
         .replace("$1", summary(af, outer))
         .replace("$2", Util.commentOf(af))

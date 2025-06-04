@@ -58,7 +58,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public infix * (n i32) ref : String
   pre
     n ≥ 0
-    # NYI String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
+    # NYI: UNDER DEVELOPMENT: String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
   is
     public redef utf8 Sequence u8 =>
       bytes := String.this.utf8
@@ -184,10 +184,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # parse this string as an int value of arbitrary size
   #
-  public parse_int        outcome int => parse_int int(10)
-  public parse_int_binary outcome int => parse_int int(2)
-  public parse_int_octal  outcome int => parse_int int(8)
-  public parse_int_hex    outcome int => parse_int int(16)
+  public parse_int        outcome int => parse_int (int 10)
+  public parse_int_binary outcome int => parse_int (int 2)
+  public parse_int_octal  outcome int => parse_int (int 8)
+  public parse_int_hex    outcome int => parse_int (int 16)
   public parse_int (base int) outcome int
     pre (int 1) < base ≤ int 36
   =>
@@ -389,7 +389,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public substring(from, to i32) String
     pre
       debug: 0 ≤ from ≤ to ≤ String.this.byte_length
-    # NYI check if from/to are valid start/end bytes?
+    # NYI: UNDER DEVELOPMENT: check if from/to are valid start/end bytes?
   =>
     String.from_bytes (String.this.utf8.slice from to)
 
@@ -789,6 +789,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public write_to(LM type : mutate) (io.buffered LM).writer.write_result ! (io.buffered LM).writer
   =>
     (io.buffered LM).writer.env.write utf8
+
+
+  # returns a zero terminated array of
+  # the bytes of this String
+  #
+  public as_c_string array u8 =>
+    (String.this + codepoint 0).utf8.as_array
+
 
 
   # monoid of strings with infix + operation.
