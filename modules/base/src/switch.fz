@@ -200,6 +200,14 @@ is
       b B => b
 
 
+  # get A or cause an `exception T`
+  #
+  public or_cause(T type, e B->error) A =>
+    match switch.this
+      a A => a
+      b B => (exception T).env.cause (e b)
+
+
   # converts switch to a string
   #
   public redef as_string String =>

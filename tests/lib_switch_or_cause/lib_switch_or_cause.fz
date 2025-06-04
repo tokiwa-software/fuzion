@@ -17,25 +17,38 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test lib_switch_or_cause
 #
 # -----------------------------------------------------------------------
 
-lib_io_dir =>
+lib_switch_or_cause =>
 
-  path := "test_path_😀"
-  file1 := "$path/file1_😀"
-  file2 := "$path/file2_😀"
+  res := exception unit _ ()->
+    "GET 200 ..."
+      .split
+      .nth 1
+      .or_cause unit x->(error "first line of response malformed $x")
+      .parse_i32
+      .or_cause unit x->(error "status not a number? $x")
 
-  _ := io.file.delete file1
-  _ := io.file.delete file2
-  _ := io.file.delete path
-  say (io.dir.make path)
-  say (io.dir.make path)
-  _ := io.file.use unit file1 io.file.mode.write ()->(io.file.writer.write []).error
-  _ := io.file.use unit file2 io.file.mode.write ()->(io.file.writer.write []).error
+  say res
 
-  res := io.dir.use (Sequence String) path ()->
-    array 3 _->io.dir.open.read.as_string
+  res2 := exception unit _ ()->
+    "GET200.."
+      .split
+      .nth 1
+      .or_cause unit x->(error "first line of response malformed $x")
+      .parse_i32
+      .or_cause unit x->(error "status not a number? $x")
 
-  res.val.sort.for_each say
+  say res2
+
+  res3 := exception unit _ ()->
+    "GET ME .."
+      .split
+      .nth 1
+      .or_cause unit x->(error "first line of response malformed $x")
+      .parse_i32
+      .or_cause unit x->(error "status not a number? $x")
+
+  say res3
