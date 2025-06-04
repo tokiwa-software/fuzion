@@ -414,7 +414,7 @@ public class Function extends AbstractLambda
                 result = frmlRt.applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
                 if (result.isChoice() && result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
                   {
-                    _feature.setRefinedResultType(res, result);
+                    _feature.setRefinedResultType(res, context, result);
                   }
               }
           }
@@ -423,7 +423,7 @@ public class Function extends AbstractLambda
                  && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {
             result = ResolvedNormalType.create(lmbdRt.generics(), Call.NO_GENERICS, frmlRt.outer(), frmlRt.feature());
-            _feature.setRefinedResultType(res, result);
+            _feature.setRefinedResultType(res, context, result);
           }
       }
     return result;
@@ -522,7 +522,7 @@ public class Function extends AbstractLambda
         // clause.
         if (CHECKS) check
           (Errors.any() || _inheritsCall == inheritsCall2,
-           _type == null || _type.isAssignableFrom(_call.type()));
+           _type == null || _type.isAssignableFromDirectly(_call.type()));
       }
   }
 

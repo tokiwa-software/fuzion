@@ -1690,7 +1690,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (!t1.isAssignableFromWithoutBoxing(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
+        else if (!t1.isAssignableFromDirectly(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
@@ -1706,7 +1706,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         if (CHECKS) check
           (Errors.any() || rt != Types.t_ERROR);
 
-        if (!Types.resolved.t_unit.isAssignableFrom(rt) && rt != Types.t_ERROR)
+        if (!Types.resolved.t_unit.isAssignableFromDirectly(rt) && rt != Types.t_ERROR)
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }
