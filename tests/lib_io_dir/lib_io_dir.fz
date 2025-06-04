@@ -21,10 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-lm : mutate is
-
-_ := lm ! ()->lib_io_dir
-
 lib_io_dir =>
 
   path := "test_path_😀"
@@ -36,8 +32,8 @@ lib_io_dir =>
   _ := io.file.delete path
   say (io.dir.make path)
   say (io.dir.make path)
-  _ := io.file.use unit lm file1 io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
-  _ := io.file.use unit lm file2 io.file.mode.write ()->((io.buffered lm).writer.env.write []).error
+  _ := io.file.use unit file1 io.file.mode.write ()->(io.file.writer.write []).error
+  _ := io.file.use unit file2 io.file.mode.write ()->(io.file.writer.write []).error
 
   res := io.dir.use (Sequence String) path ()->
     array 3 _->io.dir.open.read.as_string
