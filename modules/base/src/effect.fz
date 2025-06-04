@@ -52,7 +52,7 @@
 # normally, after a call to an operation that results in an abort or when
 # a surrounding effect is aborted.
 #
-public effect is
+public effect : Effect is
 
 
   # --------------------  effect intrinsics  --------------------
@@ -218,7 +218,8 @@ public effect is
   #
   #     effect_instance ! ()->code
   #
-  public infix !(# result type
+  public redef infix !(
+                 # result type
                  R type,
 
                  # the code to execute with `e` instated.

@@ -54,11 +54,13 @@ module:public connection(desc i32) is
       public redef write(data Sequence u8) outcome unit =>
         fuzion.sys.net.write desc data.as_array
 
+    effects array Effect := [
+     (io.buffered LM).reader read_handler 1024,
+     (io.buffered LM).writer write_handler 1024,
+     (net.channel desc)
+    ]
 
-    (io.buffered LM).reader read_handler 1024 ! ()->
-      (io.buffered LM).writer write_handler 1024 ! ()->
-        (net.channel desc) ! ()->
-          fn.call
+    effects.instate_all fn
 
 
   # this installs reader, writer and channel for the given connection

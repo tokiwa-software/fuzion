@@ -174,6 +174,24 @@ public Sequence(public T type) ref : property.countable is
   public infix ! (f T -> unit) unit => for_each f
 
 
+  # instate all effects in this
+  # Sequence then run code
+  #
+  public instate_all(
+    # result type
+    R type,
+    # the code to execute with `e` instated.
+    code () -> R
+  ) R
+  pre T : Effect
+  =>
+    match as_list
+      nil => code.call
+      c Cons =>
+        c.head ! ()->
+          c.tail.instate_all code
+
+
   # apply 'f' to each element 'e' as long as 'f e'
   #
   public for_while(f T -> bool) unit =>

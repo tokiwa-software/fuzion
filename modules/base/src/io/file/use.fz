@@ -68,8 +68,9 @@ public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> out
       mode.append => 2
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
-    # install effect `open T` and run `code`
-    (open fd file_name) ! ()->
-      (io.buffered LM).reader (read_handler fd) 1024 ! ()->
-        (io.buffered LM).writer (write_handler fd) 1024 ! ()->
-          code.call
+    effects array Effect := [
+     (open fd file_name),
+     (io.buffered LM).reader (read_handler fd) 1024,
+     (io.buffered LM).writer (write_handler fd) 1024]
+
+    effects.instate_all code
