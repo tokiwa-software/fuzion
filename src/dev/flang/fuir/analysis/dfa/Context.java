@@ -166,6 +166,38 @@ public interface Context
   default String contextString()       { return contextString(false); }
 
 
+
+  /**
+   * Check the context if it contains an effect of clazz `cl` instantiated at
+   * `site`.
+   *
+   * @param cl a clazz
+   *
+   * @param site a site that contains a constructor call to `cl`
+   *
+   * @return in case the context contains an environment with an instance of
+   * `cl` created at `site` instated, then return that existing instance.
+   * Return null otherwise.
+   */
+  default Instance findEffect(int cl, int site)
+  {
+    var e = env();
+    if (e != null)
+      {
+        var r = e.find(cl, site);
+        if (r != null)
+          {
+            return r;
+          }
+      }
+    if (this instanceof Call cc)
+      {
+        return cc._context.findEffect(cl, site);
+      }
+    return null;
+  }
+
+
 }
 
 /* end of file */

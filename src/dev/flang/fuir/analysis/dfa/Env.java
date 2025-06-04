@@ -26,8 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import dev.flang.util.ANY;
+import dev.flang.fuir.FUIR;
 
+import dev.flang.util.ANY;
+import dev.flang.util.SourcePosition;
+
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Env represents the set of effects installed in a given environment
@@ -186,6 +193,151 @@ public class Env extends ANY implements Comparable<Env>
   /*-----------------------------  methods  -----------------------------*/
 
 
+  static int compare(Set<Integer> which, Env a, Env b)
+  {
+    var res = 0;
+    if (which != null)
+    for (var e : which)
+      {
+        if (a != b)
+          {
+            var av = a != null ? a.get(e) : null;
+            var bv = b != null ? b.get(e) : null;
+            if (res == 0 && av != null && bv != null)
+              {
+                res = Value.envCompare(av, bv);
+              }
+            else if (av != bv && av == null)
+              {
+                res = -1;
+              }
+            else if (av != bv && bv == null)
+              {
+                res = +1;
+              }
+
+          }
+      }
+    return res;
+  }
+
+
+  Env filterCallGroup(CallGroup cg)
+  {
+    var o = _outer;
+    var res = o == null ? null : o.filterCallGroup(cg);
+    var ce = _dfa._effectsRequiredByClazz.get(cg._cc);
+    if (ce != null && ce.contains(_effectType) ||
+        cg._usedEffects.contains(_effectType))
+      {
+        if (o != _outer)
+          {
+            res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+          }
+        else
+          {
+            res = this;
+          }
+      }
+    return res;
+  }
+
+
+  Env filterPos(SourcePosition pos, SourcePosition pos_new)
+  {
+    var res = _outer == null ? null : _outer.filterPos(pos, pos_new);
+    var cd =_dfa._fuir.clazzCode(_effectType);
+    var p = cd == FUIR.NO_SITE || !_dfa._fuir.withinCode(cd)
+      ? _dfa._fuir.clazzDeclarationPos(_effectType)
+      : _dfa._fuir.sitePos(cd);
+    var p_new = _dfa.effectTypePosition(_effectType);
+    var cmp2 = p_new.compareTo(pos_new) != 0;
+    /*
+    var cmp1 = (p != pos && (p == null || p.compareTo(pos) != 0));
+    if (cmp1 != cmp2)
+      {
+        dev.flang.util.Debug.uprintln("Difference for "+_dfa._fuir.clazzAsString(_effectType)+
+                           "\n  pos: "+(pos == null ? "--": pos.show()) +
+                           "\n  p: "+(p == null ? "--": p.show()) +
+                           "\n  pos_new: "+(pos_new == null ? "--": pos_new.show()) +
+                           "\n  p_new: "+(p_new == null ? "--": p_new.show())
+                                   );
+      }
+    */
+    // if (p != pos && (p == null || p.compareTo(pos) != 0))
+    if (cmp2)
+      {
+        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+      }
+    else
+      {
+        // System.out.println("FILTER "+_dfa._fuir.clazzAsString(_effectType)+" pos is "+p.show()+"\n filtering pos "+pos.show());
+      }
+    return res;
+  }
+  Env filterPos(SourcePosition pos)
+  {
+    var res = _outer == null ? null : _outer.filterPos(pos);
+    var p = _dfa.effectTypePosition(_effectType);
+    var cmp = p.compareTo(pos) != 0;
+    if (cmp)
+      {
+        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+      }
+    return res;
+  }
+  Env filterX(Set<Integer> which)
+  {
+    var res = _outer == null ? null : _outer.filterX(which);
+    if (which.contains(_effectType))
+      {
+        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
+      }
+    return res;
+  }
+
+  /**
+   * Check the environment if it contains an effect of clazz `cl` instantiated at
+   * `site`.
+   *
+   * @param cl a clazz
+   *
+   * @param site a site that contains a constructor call to `cl`
+   *
+   * @return in case the context contains an environment with an instance of
+   * `cl` created at `site` instated, then return that existing instance.
+   * Return null otherwise.
+   */
+  Instance find(int cl, int site)
+  {
+    if (cl == _effectType)
+      {
+        if (_actualEffectValues instanceof Instance ai && ai._site == site)
+          {
+            return ai;
+          }
+        else if (_actualEffectValues instanceof ValueSet avs)
+          {
+            for (var av : avs._componentsArray)
+              {
+                if (av instanceof Instance ai && ai._site == site)
+                  {
+                    return ai;
+                  }
+              }
+          }
+      }
+    return null;
+  }
+
+
+  Value get(int ecl)
+  {
+    var i = Arrays.binarySearch(_types, ecl);
+    return i >= 0 ? _initialEffectValues[i] : null;
+  }
+
+
   /**
    * Compare two Env instances that may be null.
    */
@@ -275,10 +427,20 @@ public class Env extends ANY implements Comparable<Env>
    */
   Value getActualEffectValues(int ecl)
   {
-    return
-      _effectType == ecl  ? _actualEffectValues :
-      _outer      != null ? _outer.getActualEffectValues(ecl)
-                          : _dfa._defaultEffects.get(ecl);
+    if (_dfa._real)
+      return
+        _effectType == ecl  ? _actualEffectValues :
+        _outer      != null ? _outer.getActualEffectValues(ecl)
+                            : _dfa._defaultEffects.get(ecl);
+    else
+      {
+        var e1 = _dfa._preEffectValues.get(ecl);
+        var e2 = _dfa._defaultEffects.get(ecl);
+        return
+          e1 == null ? e2 :
+          e2 == null ? e1 : e1.join(_dfa,e2,ecl);
+      }
+
   }
 
 
@@ -321,6 +483,17 @@ public class Env extends ANY implements Comparable<Env>
     else
       {
         _dfa.replaceDefaultEffect(ecl, e);
+      }
+  }
+
+  TreeSet<Env> _propagateAbort = new TreeSet<>();
+
+
+  void propagateAbort(Env e)
+  {
+    if (e != this)
+      {
+        _propagateAbort.add(e);
       }
   }
 
