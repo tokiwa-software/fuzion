@@ -64,3 +64,9 @@ public Any ref is
   # difference to `dynamic_type`.
   #
   public type.type_value Type => Any.this.type
+
+
+  public type.from(a Any.this) Any.this =>
+    a
+
+

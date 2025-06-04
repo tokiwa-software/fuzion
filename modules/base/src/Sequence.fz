@@ -183,12 +183,12 @@ public Sequence(public T type) ref : property.countable is
     # the code to execute with `e` instated.
     code () -> R
   ) R
-  pre T : Effect
+  pre T : Lazy Effect
   =>
     match as_list
       nil => code.call
       c Cons =>
-        c.head ! ()->
+        c.head.call ! ()->
           c.tail.instate_all code
 
 

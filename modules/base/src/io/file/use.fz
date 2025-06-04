@@ -71,10 +71,10 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
       mode.append => 2
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
-    effects array Effect := [
-     file_mutate,
-     (open fd file_name),
-     (io.buffered file_mutate).reader (read_handler fd) 1024,
-     (io.buffered file_mutate).writer (write_handler fd) 1024]
-
-    effects.instate_all code
+    [
+     (Lazy Effect).from (()->file_mutate),
+     (Lazy Effect).from ()->(open fd file_name),
+     (Lazy Effect).from ()->((io.buffered file_mutate).reader (read_handler fd) 1024),
+     (Lazy Effect).from ()->((io.buffered file_mutate).writer (write_handler fd) 1024)
+    ]
+      .instate_all code
