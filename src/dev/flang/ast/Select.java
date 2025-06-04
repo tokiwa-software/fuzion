@@ -60,7 +60,8 @@ public class Select extends Call {
    * @param select for selecting a open type parameter field, this gives the
    * index '.0', '.1', etc. NO_SELECT for none.
    *
-   * @param whether to enable access to value arguments via select
+   * @param allowValueArgumentAccess whether to enable access to value arguments
+   * via select
    */
   public Select(SourcePosition pos, Expr target, String name, int select, boolean allowValueArgumentAccess)
   {
