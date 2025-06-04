@@ -1,0 +1,17 @@
+
+--CURDIR--/reg_issue5018.fz:25:15: error 1: Failed to infer actual type parameters
+f => effect ! id ()->""
+--------------^^
+In call to 'id', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/reg_issue5018.fz:31:20: error 2: Failed to infer actual type parameters
+g unit => effect ! id ()->
+-------------------^^
+In call to 'id', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+2 errors.

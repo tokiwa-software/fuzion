@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -53,11 +54,18 @@ public class ParsedOperatorCall extends ParsedCall
 
 
   /**
+   * operator precedence, used to check the need to fix associativity once
+   * the actual infix or infix_right operator is known.
+   */
+  public final int _precedence;
+
+
+  /**
    * Has this been put into parentheses? If so, it may no longer be used as
    * chained boolean {@code (a < b) < c}, but it may still used as partial call
    * {@code l.map (+x)}.
    */
-  private boolean _inParentheses = false;
+  boolean _inParentheses = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -69,10 +77,15 @@ public class ParsedOperatorCall extends ParsedCall
    * @param target the target of the call.
    *
    * @param name the name of the called feature
+   *
+   * @param op the plain operator, i.e., `+` instead of `infix/infix_right +`.
+   *
+   * @param precedence the operator precedence
    */
-  public ParsedOperatorCall(Expr target, ParsedName name)
+  public ParsedOperatorCall(Expr target, ParsedName name, String op, int precedence)
   {
     super(target, name);
+    _precedence = precedence;
   }
 
 
@@ -85,15 +98,56 @@ public class ParsedOperatorCall extends ParsedCall
    *
    * @param name the name of the called feature
    *
+   * @param op the plain operator, i.e., `+` instead of `infix/infix_right +`.
+   *
+   * @param precedence the operator precedence
+   *
    * @param rhs the right hand side
    */
-  public ParsedOperatorCall(Expr target, ParsedName name, Expr rhs)
+  public ParsedOperatorCall(Expr target, ParsedName name, String op, int precedence, Expr rhs)
   {
     super(target, name, new List<>(rhs));
     if (PRECONDITIONS) require
       (rhs != Universe.instance);
+
+    _precedence = precedence;
   }
 
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * For a given feature name, check if it is an operator call that has to be
+   * looked up under different actual names. If so, return all the actual names.
+   *
+   * This is used for infix operators that might be `infix` or `infix_right` and
+   * for unary operators that might be `prefix` or `postfix`.
+   *
+   * @return a non-empty list containing either just `name` or the list of
+   * possible names that would match the given operator name.
+   */
+  public static List<String> lookupNames(String name)
+  {
+    var result = new List<String>();
+    if (name.startsWith(FuzionConstants.UNARY_OPERATOR_PREFIX))
+      {
+        var op = name.substring(FuzionConstants.UNARY_OPERATOR_PREFIX.length());
+        result.add(FuzionConstants.PREFIX_OPERATOR_PREFIX  + op);
+        result.add(FuzionConstants.POSTFIX_OPERATOR_PREFIX + op);
+      }
+    else if (name.startsWith(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX))
+      {
+        var op = name.substring(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX.length());
+        result.add(FuzionConstants.INFIX_OPERATOR_PREFIX + op);
+        result.add(FuzionConstants.INFIX_RIGHT_OPERATOR_PREFIX + op);
+      }
+    else
+      {
+        result.add(name);
+      }
+    return result;
+  }
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -118,6 +172,65 @@ public class ParsedOperatorCall extends ParsedCall
   public void putInParentheses()
   {
     _inParentheses = true;
+  }
+
+
+  /**
+   * In case this is a parsed infix operator call, fix the associativity: the
+   * parser produces and AST assuming all infix operators are right associative
+   * (which is wrong for most operators).  This call rotates the operators
+   * accordingly if needed, i.e., changing
+   *
+   *    a - «b + c»
+   *
+   * into
+   *
+   *    «a - b» + c
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return null in case nothing was done, otherwise the fully resolved new
+   * call with fixed associativity.
+   */
+  @Override
+  Call fixAssociativity(Resolution res, Context context)
+  {
+    Call result = null;
+    if (isOperatorCall(true) && // outer may be in parentheses `(a - «b + c»)`
+        _calledFeature.featureName().baseName().startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) &&
+        (_actuals.size() == 1 || _actuals.size() == 2) &&
+        _actuals.get(_actuals.size()-1) instanceof ParsedOperatorCall b_plus_c &&
+        b_plus_c.isOperatorCall(false) && // next may not be in parentheses `a - (b + c)` should stay unchanged while `a - «b + c»` should become `(a - b) + c`.
+        b_plus_c._precedence == _precedence)
+      { // we need left associativity, so we swap this and b_plus_c:
+        var b = b_plus_c._target;
+        _actuals = _actuals.setOrClone(_actuals.size()-1, b);
+        var a = _actuals   ; _actuals    = b_plus_c._actuals   ; b_plus_c._actuals    = a;
+        var t = _target    ; _target     = b_plus_c            ; b_plus_c._target     = t;
+        var p = _parsedName; _parsedName = b_plus_c._parsedName; b_plus_c._parsedName = p;
+        var n = _name      ; _name       = b_plus_c._name      ; b_plus_c._name       = n;
+        forceFreshResolve();
+        b_plus_c.forceFreshResolve();
+        result = resolveTypes(res, context);
+      }
+    return result;
+  }
+
+
+  /**
+   * Force this call to be resolved again. This is required if _target or
+   * _actuals have changed or the _name/_parsedName was changed such that a
+   * different feature will be found.
+   */
+  void forceFreshResolve()
+  {
+    _resolvedFor = null;
+    _actualsResolvedFor = null;
+    _calledFeature = null;
+    _resolvedFormalArgumentTypes = null;
+    _type = null;
   }
 
 }

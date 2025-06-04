@@ -52,16 +52,21 @@ record_process(p os.process,
       # the command, for error messages
       cmd String) process_result =>
   lm : mutate is
-  lm ! ()->
-    match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-      e error => panic "failed reading stdout from $cmd, error is: $e"
-      out String =>
-        match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-          e error => panic "failed reading stderr from $cmd, error is: $e"
-          err String =>
-            match p.wait
-              e error => panic "failed waiting for $cmd, error is: $e"
-              ec u32 => process_result out err ec
+  (concur.thread_pool 2 ()->
+      fout := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stdout from $cmd, error is: $e"
+            out String => out
+      ferr := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stderr from $cmd, error is: $e"
+            err String => err
+      match p.wait
+        e error => panic "failed waiting for $cmd, error is: $e"
+        ec u32 => process_result fout.get ferr.get ec)
+    .get
 
 # execute this Sequence of process+args
 #
@@ -80,10 +85,8 @@ String.prefix !! =>
 
 write_to_file(dest String, data String) =>
   _ := io.file.delete dest
-  lm : mutate is
-  lm ! ()->
-    check (io.file.use unit lm dest io.file.mode.write ()->
-      check (data.write_to lm).ok).ok
+  check (io.file.use dest io.file.mode.write ()->
+    check (data.write_to io.file.file_mutate).ok).ok
 
 
 
@@ -124,6 +127,6 @@ if type_ != "effect"
   cur_dir := (!!"../_cur_dir.sh").out.trim
   write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
 else
-  write_to_file "$file.effect" res.err
+  write_to_file "$file.effect" res.out
 
 say "RECORDED $file"

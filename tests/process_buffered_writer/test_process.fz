@@ -37,7 +37,6 @@ test_process =>
       _ := lm ! ()->
         _ := p.with_in unit lm ()->
           _ := (io.buffered lm).writer.env.write "Hello, World!\n".utf8.as_array
-          _ := (io.buffered lm).writer.env.flush
         say p.wait
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val

@@ -77,6 +77,7 @@ To solve this, you could change the type of the target 'f' to 'i32' or convert t
 Feature not found: 'postfix *' (one argument)
 Target feature: 'i32'
 In call: '3.postfix*'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 
 --CURDIR--/partial_application_negative.fz:77:38: error 9: Different count of arguments needed when calling feature
@@ -85,7 +86,7 @@ In call: '3.postfix*'
 Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map'  (one type argument, one value argument) at {base.fum}/Sequence.fz:379:10:
+To solve this, you might change the actual number of arguments to match the feature 'map'  (one type argument, one value argument) at {base.fum}/Sequence.fz:393:10:
   public map(B type, f T->B) Sequence B =>
 ---------^^^
 To call 'map' you must provide 2 arguments. The type arguments may be omitted or `_` may be used in place of a type argument.
