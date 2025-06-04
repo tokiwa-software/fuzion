@@ -356,7 +356,7 @@ choice_mix is
            say ""
 
     # check that pipe also works as operator:
-    (1..10) ! yak
+    (1..10).for_each yak
     say ""
   alternatives1
 
