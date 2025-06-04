@@ -108,7 +108,7 @@ Embedding a choice type in itself would result in an infinitely large type.
 Faulty type parameter: 'choice_negative.this.cyclic1.this.A'
 
 
---CURDIR--/choice_negative.fz:35:5: error 17: choice feature must not be ref
+--CURDIR--/choice_negative.fz:35:5: error 17: Choice feature must not be ref
     A ref : choice A i32 String is  # 1a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
@@ -121,7 +121,7 @@ Embedding a choice type in itself would result in an infinitely large type.
 Faulty type parameter: 'choice_negative.this.cyclic3.this.A'
 
 
---CURDIR--/choice_negative.fz:41:5: error 19: choice feature must not be ref
+--CURDIR--/choice_negative.fz:41:5: error 19: Choice feature must not be ref
     A ref : choice i32 A String is  # 2a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
@@ -134,7 +134,7 @@ Embedding a choice type in itself would result in an infinitely large type.
 Faulty type parameter: 'choice_negative.this.cyclic5.this.A'
 
 
---CURDIR--/choice_negative.fz:47:5: error 21: choice feature must not be ref
+--CURDIR--/choice_negative.fz:47:5: error 21: Choice feature must not be ref
     A ref : choice i32 String A is  # 3a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
