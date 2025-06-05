@@ -25,6 +25,10 @@
 
 ########### Extensions ###############
 
+# used for protecting spaces when splitting command string
+#
+protected_space := "😀"
+
 # stores the results of a process
 #
 process_result(out String, err String, exit_code u32) is
@@ -106,7 +110,7 @@ Sequence.prefix ! =>
 # execute this string by splitting at all whitespaces
 #
 String.prefix !! =>
-  !split
+  !(split.map (.replace protected_space " "))
 
 
 write_to_file(dest String, data String) =>
@@ -192,11 +196,11 @@ else
     # if !(!!"ulimit -S -t $cpu_time_limit").ok
     #   say "failed setting limit via ulimit"
 
-    # NYI
-    backend_options := ""
+    backend_options(x) =>
+      String.join ((((envir.vars.get x).val "").replace " " protected_space).split "|") " "
 
     if be = "c"
-      compile := !!"$fz_run -XmaxErrors=-1 -c {backend_options} $file -o=testbin"
+      compile := !!"$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin"
       if compile.ok
         run := !!"./testbin"
 
@@ -208,14 +212,14 @@ else
         write_to_file "tmp_out.txt" compile.out
         write_to_file "tmp_err.txt" compile.err
     else if be = "jvm"
-      run := !!"$fz_run -XmaxErrors=-1 -jvm {backend_options} $file"
+      run := !!"$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file"
 
       check_exit_code run
 
       write_to_file "tmp_out.txt" run.out
       write_to_file "tmp_err.txt" run.err
     else if be = "int"
-      run := !!"$fz_run -XmaxErrors=-1 -interpreter {backend_options} $file"
+      run := !!"$fz_run -XmaxErrors=-1 -interpreter $file"
 
       check_exit_code run
 
