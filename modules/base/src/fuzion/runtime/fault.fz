@@ -39,7 +39,7 @@ is
   # install default fault handler
   type.install_default =>
     (new kind_and_msg->
-      (kind, msg) := kind_and_msg
+      kind, msg := kind_and_msg
       fuzion.sys.fatal_fault kind msg
     ).default
 

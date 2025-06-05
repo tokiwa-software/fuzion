@@ -320,9 +320,9 @@ visibility is
 
     red(color rgb | rgba | cmyk) =>
       match color
-        v rgb  => (r,_,_  ) := v; r
-        v rgba => (R,_,_,A) := v; R*A/255
-        v cmyk => (c,_,_,k) := v; (255-c)*(255-k)/255
+        v rgb  => r,_,_   := v; r
+        v rgba => R,_,_,A := v; R*A/255
+        v cmyk => c,_,_,k := v; (255-c)*(255-k)/255
 
     white   := rgb 255 255 255
     magenta := cmyk 0 255 0 0

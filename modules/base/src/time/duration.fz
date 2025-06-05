@@ -89,13 +89,13 @@ is
   # and at most 4 decimal digits followed by a time unit string.
   #
   public redef as_string String =>
-    (f,u,_) := for
-                 x := units.unit_names.first.get, n0
-                 # NYI: BUG: : name n leads to duplicate feature declaration
-                 n0 in units.unit_names.drop 1
-                 nf := n0.0
-               while (!(nf = 0 || nanos / nf < 10)) else
-                 x
+    f,u,_ := for
+               x := units.unit_names.first.get, n0
+               # NYI: BUG: : name n leads to duplicate feature declaration
+               n0 in units.unit_names.drop 1
+               nf := n0.0
+             while (!(nf = 0 || nanos / nf < 10)) else
+               x
     n := $(nanos / f)
     " "*(max 0 4-n.byte_length) + n + u
 
