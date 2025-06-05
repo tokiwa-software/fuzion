@@ -346,7 +346,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  boolean isAssignableFrom(AbstractType actual, Context context)
+  YesNo isAssignableFrom(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, context, true, true, null);
   }
@@ -357,7 +357,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  boolean isAssignableFromWithoutTagging(AbstractType actual, Context context)
+  YesNo isAssignableFromWithoutTagging(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, context, true, false, null);
   }
@@ -372,7 +372,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  boolean isAssignableFromWithoutBoxing(AbstractType actual, Context context)
+  YesNo isAssignableFromWithoutBoxing(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, context, false, true, null);
   }
@@ -383,7 +383,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  public boolean isAssignableFromWithoutTagging(AbstractType actual)
+  public YesNo isAssignableFromWithoutTagging(AbstractType actual)
   {
     return isAssignableFromWithoutTagging(actual, Context.NONE);
   }
@@ -394,29 +394,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
-  public boolean isAssignableFromDirectly(AbstractType actual)
+  public YesNo isAssignableFromDirectly(AbstractType actual)
   {
     return isAssignableFrom(actual, Context.NONE, false, false, null);
-  }
-
-
-  /**
-   * Check if a value of static type actual can be assigned to a field of static
-   * type this.  This performs static type checking, i.e., the types may still
-   * be or depend on generic parameters.
-   *
-   * In case any of the types involved are or contain t_ERROR, this returns
-   * true. This is convenient to avoid the creation of follow-up errors in this
-   * case.
-   *
-   * @param actual the actual type.
-   *
-   * @param context the source code context where this Type is used
-   */
-  boolean isAssignableFromOrContainsError(AbstractType actual, Context context)
-  {
-    return
-      containsError() || actual.containsError() || isAssignableFromWithoutBoxing(actual, context);
   }
 
 
@@ -431,13 +411,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param assignableTo in case we want to show all types actual is assignable
    * to in an error message, this collects the types converted to strings.
+   *
+   * @return
+   *  - yes      if assignable
+   *  - no       if not assignable
+   *  - dontKnow if contains error
    */
-  boolean isAssignableFrom(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<String> assignableTo)
+  YesNo isAssignableFrom(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<String> assignableTo)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
-       actual.isGenericArgument() || actual.feature() != null || Errors.any(),
-       Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
+       actual.isGenericArgument() || actual.feature() != null || Errors.any());
 
     if (assignableTo != null)
       {
@@ -445,9 +429,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     var target_type = this  .remove_type_parameter_used_for_this_type_in_cotype();
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_cotype();
-    var result = target_type.compareTo(actual_type) == 0
-              || actual_type.isVoid();
-    if (!result && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
+    var result = AbstractType.isArtificialType(this) || AbstractType.isArtificialType(actual)
+        ? YesNo.dontKnow
+        : YesNo.fromBool(target_type.compareTo(actual_type) == 0 || actual_type.isVoid());
+    if (result.no() && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
       {
         if (actual_type.isGenericArgument())
           {
@@ -458,27 +443,38 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             for (var p: actual_type.feature().inherits())
               {
                 var pt = actual_type.actualType(p.type(), context).asRef();
-                if (isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo))
-                  {
-                    result = true;
-                  }
+                result = isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
+                // until result != no
+                if (!result.no()) { break; }
               }
           }
       }
-    if (!result && allowTagging && target_type.isChoice() && !isThisTypeInCotype())
+    if (result.no() && allowTagging && target_type.isChoice() && !isThisTypeInCotype())
       {
-        result = target_type.isChoiceMatch(actual_type, context);
+        result = YesNo.fromBool(target_type.isChoiceMatch(actual_type, context));
       }
     // NYI: UNDER DEVELOPMENT: probably unsound!
-    if (!result && isChoice() && actual.isChoice())
+    if (result.no() && isChoice() && actual.isChoice())
       {
-        result = asThis().compareTo(actual.asThis()) == 0;
+        result = YesNo.fromBool(asThis().compareTo(actual.asThis()) == 0);
       }
-    if (!result && allowBoxing && !actual_type.isRef())
+    if (result.no() && allowBoxing && !actual_type.isRef())
       {
         result = isAssignableFrom(actual.asRef(), context, false, allowTagging, assignableTo);
       }
     return result;
+  }
+
+
+  /**
+   * check if t is an artificial type like t_ERROR
+   *
+   * @param t
+   * @return
+   */
+  private static boolean isArtificialType(AbstractType t)
+  {
+    return t instanceof ArtificialBuiltInType;
   }
 
 
@@ -503,7 +499,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (CHECKS) check
               (Errors.any() || t != null);
-            result = result || t != null && t.isAssignableFromWithoutBoxing(actual, context);
+            result = result || t != null && t.isAssignableFromWithoutBoxing(actual, context).yes();
           }
       }
     return result;
@@ -1239,8 +1235,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return this.isVoid()
       || other.isVoid()
-      ||    !this .isAssignableFrom(other, context, false, false, null)
-         && !other.isAssignableFrom(this , context, false, false, null);
+      ||    this .isAssignableFrom(other, context, false, false, null).no()
+         && other.isAssignableFrom(this , context, false, false, null).no();
   }
 
 
@@ -1401,15 +1397,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       that == null                                 ? Types.t_ERROR     :
       this.isVoid()                                ? that              :
       that.isVoid()                                ? this              :
-      this.isAssignableFrom(that, context)         ? this :
-      that.isAssignableFrom(this, context)         ? that : Types.t_ERROR;
+      this.isAssignableFrom(that, context).yes()   ? this :
+      that.isAssignableFrom(this, context).yes()   ? that : Types.t_ERROR;
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_ERROR     ||
        this.isVoid() && result == that ||
        that.isVoid() && result == this ||
-       result.isAssignableFrom(this, context) &&
-       result.isAssignableFrom(that, context));
+       result.isAssignableFrom(this, context).yes() &&
+       result.isAssignableFrom(that, context).yes());
 
     return result;
   }

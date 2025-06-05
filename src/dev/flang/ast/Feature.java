@@ -2678,7 +2678,7 @@ A ((Choice)) declaration must not contain a result type.
       // we must not patch result type later, because then
       // result type of result field etc. is also already set.
       (!state().atLeast(State.RESOLVING_SUGAR1),
-      _resultType == null || refinedResultType.isAssignableFrom(_resultType, context));
+      _resultType == null || refinedResultType.isAssignableFrom(_resultType, context).yes());
 
     _resultType = refinedResultType;
   }

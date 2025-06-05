@@ -60,6 +60,11 @@ public enum YesNo
     return this != YesNo.yes;
   }
 
+  public static YesNo fromBool(boolean b)
+  {
+    return b ? YesNo.yes : YesNo.no;
+  }
+
 }
 
 
