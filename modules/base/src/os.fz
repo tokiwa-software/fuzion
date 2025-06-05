@@ -22,4 +22,7 @@
 # -----------------------------------------------------------------------
 
 
+# os -- unit feature to group features that relate to
+# operating system specific things like starting processes
+#
 public os is

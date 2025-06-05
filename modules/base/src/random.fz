@@ -205,6 +205,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   #
   type.random_seed_env_var => "FUZION_RANDOM_SEED"
 
+
   # create the default random handler depending on the environment settings
   #
   type.default =>
@@ -224,6 +225,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
     # initialize with large numbers XORed with nano time
     #
     simple_random_handler (u64 77777777777777 ^ fzE_nanotime) 98765432109876543
+
 
   # create a time-seeded handler for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good
