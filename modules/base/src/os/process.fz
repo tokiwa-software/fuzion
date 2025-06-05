@@ -103,7 +103,8 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
     public reader_mutate : mutate is
   public err   : io.has_reader reader_mutate is
     public reader_mutate : mutate is
-  public stdin : io.has_writer is
+  public stdin : io.has_writer writer_mutate is
+    public writer_mutate : mutate is
 
 
   # install buffered reader for reading from stdout of process

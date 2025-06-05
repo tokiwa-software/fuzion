@@ -21,13 +21,18 @@
 #
 # -----------------------------------------------------------------------
 
-module:public connection(desc i32) : io.has_reader reader_mutate, io.has_writer is
+module:public connection(desc i32) : io.has_reader reader_mutate, io.has_writer writer_mutate is
 
   # the mutate effect that is used
   # for reading
   #
   public reader_mutate : mutate is
 
+
+  # the mutate effect that is used
+  # for reading/writing to file
+  #
+  public writer_mutate : mutate is
 
 
   # close connection manually.

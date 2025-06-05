@@ -25,7 +25,7 @@
 
 # file -- a unit type that contains effects related to file I/O
 #
-public file : has_reader reader_mutate, has_writer is
+public file : has_reader reader_mutate, has_writer writer_mutate is
 
   # the mutate effect that is used
   # for reading
@@ -33,6 +33,10 @@ public file : has_reader reader_mutate, has_writer is
   public reader_mutate : mutate is
 
 
+  # the mutate effect that is used
+  # for reading/writing to file
+  #
+  public writer_mutate : mutate is
 
 
   # NYI: BUG:

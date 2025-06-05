@@ -24,17 +24,11 @@
 # -----------------------------------------------------------------------
 
 
-public has_writer is
-
-
-  # the mutate effect that is used
-  # for reading/writing to file
-  #
-  public writer_mutate : mutate is
+public has_writer(LM type : mutate) is
 
 
   # short hand to get the writer instance
   # for the opened file of type file.this
   #
-  public writer (io.buffered writer_mutate).writer =>
-    (io.buffered writer_mutate).writer.env
+  public writer (io.buffered LM).writer =>
+    (io.buffered LM).writer.env
