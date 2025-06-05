@@ -63,12 +63,6 @@ public class Parser extends Lexer
 
 
   /**
-   * quick-and-dirty hack for unique ids for temporary features
-   */
-  static private long id = 0;
-
-
-  /**
    * Different kinds of opening / closing brackets
    */
   static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
@@ -3421,30 +3415,15 @@ implFldInit : ":=" operatorExpr      // may start at min indent
       }
     else
       {
-        String tmpName;
-
         if (CHECKS) check
           (l != null);
 
         if (l.size() == 0)
           {
-            tmpName = FuzionConstants.DESTRUCTURE_PREFIX + id++;
-
-            l.add(new Feature(pos,
-                              Visi.PRIV,
-                              0,
-                              NoType.INSTANCE,
-                              new List<>(tmpName),
-                              new List<>(),
-                              Function.NO_CALLS,
-                              Contract.EMPTY_CONTRACT,
-                              new Impl(pos, operatorExpr(), Impl.Kind.FieldDef)));
-          }
-        else
-          {
-            tmpName = l.getFirst().featureName().baseName();
+            l.add(Feature.destructure(pos, operatorExpr()));
           }
 
+        var tmpName = l.getFirst().featureName().baseName();
         var s = new Select(pos, null, tmpName, select, true);
         result = new Impl(pos,
                           s,
