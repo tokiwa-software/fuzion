@@ -36,8 +36,8 @@ public mode is
 # on success it instates effects:
 #
 # file.this.open,
-# (io.buffered file.this.file_mutate).reader and
-# (io.buffered file.this.file_mutate).writer.
+# (io.buffered file.this.reader_mutate).reader and
+# (io.buffered file.this.writer_mutate).writer.
 #
 # These can then be used in `code()`.
 #
@@ -45,7 +45,7 @@ public mode is
 #
 #     my_file : io.file is
 #     _ := my_file.use file_name mode.read ()->
-#       say (io.buffered my_file.file_mutate).read_lines
+#       say my_file.read_lines
 #
 public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
@@ -71,9 +71,10 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
       mode.append => 2
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
-    file_mutate ! ()->
-      # install effect `open T` and run `code`
-      (open fd file_name) ! ()->
-        (io.buffered file_mutate).reader (read_handler fd) 1024 ! ()->
-          (io.buffered file_mutate).writer (write_handler fd) 1024 ! ()->
-            code.call
+    reader_mutate ! ()->
+      writer_mutate ! ()->
+        # install effect `open T` and run `code`
+        (open fd file_name) ! ()->
+          (io.buffered reader_mutate).reader (read_handler fd) 1024 ! ()->
+            (io.buffered writer_mutate).writer (write_handler fd) 1024 ! ()->
+              code.call
