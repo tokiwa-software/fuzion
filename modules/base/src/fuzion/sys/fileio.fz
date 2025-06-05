@@ -39,7 +39,7 @@ module fileio is
     res := fzE_file_read fd arr.data len
 
     if res < -1
-      error "unspecified read error: {res}"
+      error "failed reading, error: {res}"
     else if res < 0
       []
     else
@@ -54,7 +54,7 @@ module fileio is
                         path String) outcome i64 =>
     md := fuzion.sys.internal_array_init i64 4
     if fzE_stat (fuzion.sys.c_string path) md.data = 0 then md[0]
-    else error "error getting file size"
+    else error "error getting file size for: $path"
 
 
   # writes the content of an array of bytes to a file opened as fd
@@ -65,7 +65,7 @@ module fileio is
     res := fzE_file_write fd content.internal_array.data content.length
 
     if res < 0
-      error "write error: {res}"
+      error "failed writing, error: {res}"
 
 
   # wrapper for fzE_file_flush
@@ -129,7 +129,7 @@ module fileio is
     if open_results[0] = 0
       res
     else
-      error "error number: {open_results[0]}"
+      error "failed opening file, error number: {open_results[0]}"
 
 
   # Closes an IO source using an i64 representing the source handler (file descriptor)
@@ -140,7 +140,7 @@ module fileio is
                fd File_Descriptor) outcome unit =>
     closing_result := fzE_file_close fd
     if closing_result != 0
-      error "error number: $closing_result"
+      error "failed closing file, error number: $closing_result"
 
 
   # seek offset in the stream represented by fd
@@ -154,7 +154,7 @@ module fileio is
               offset i64) outcome unit =>
     res := fzE_file_seek fd offset
     if res = -1
-      error "error number: {res}"
+      error "failed seeking file, error number: {res}"
 
 
   # returns the current file-pointer offset as an outcome i64,
@@ -166,7 +166,7 @@ module fileio is
                        fd File_Descriptor) outcome i64 =>
     res := fzE_file_position fd
     if res = -1
-      error "error number: {res}"
+      error "failed getting position in file, error number: {res}"
     else
       res
 
@@ -182,4 +182,4 @@ module fileio is
     if open_results[0] = 0
       res
     else
-      error "error number: {open_results[0]}"
+      error "failed opening directory, error number: {open_results[0]}"
