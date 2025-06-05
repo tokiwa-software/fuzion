@@ -310,13 +310,13 @@ field       : returnType
         eff == UnresolvedType.NONE &&
         inh.isEmpty())
       {
-        p = implFldOrRout(hasType, l, (n.size() > 1) ? i : -1);
+        p = implFldOrRout(hasType, l, (n.size() > 1) ? i : FuzionConstants.NO_SELECT);
       }
     else
       {
         if (n.size() > 1)
           {
-            AstErrors.illegalMultipleFeatureDeclaration(pos, n);
+            AstErrors.destructuringNonFields(pos, n);
           }
 
         p = implRout(hasType);
@@ -3372,9 +3372,9 @@ implFldOrRout   : implRout           // may start at min indent
         currentAtMinIndent() == Token.t_is     ||
         isOperator(true, "=>"))
       {
-        if (select != -1)
+        if (select != FuzionConstants.NO_SELECT)
           {
-            AstErrors.illegalMultipleFeatureDeclaration(tokenSourcePos(), null);
+            AstErrors.destructuringNonFields(tokenSourcePos(), null);
           }
 
         return implRout(hasType);
@@ -3406,7 +3406,7 @@ implFldInit : ":=" operatorExpr      // may start at min indent
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
 
-    if (select < 0)
+    if (select == FuzionConstants.NO_SELECT)
       {
         result = new Impl(pos,
                           operatorExpr(), // block()?

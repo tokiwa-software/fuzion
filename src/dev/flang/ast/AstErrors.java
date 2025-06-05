@@ -192,6 +192,10 @@ public class AstErrors extends ANY
   {
     return sn2((names.map2(n->n._name)));
   }
+  static String sqpn(List<List<ParsedName>> names) // names as list "`a.b.c`, `k.l.m`, `x.y.z`"
+  {
+    return sn2((names.map2(pn->pn.map2(n->n._name).stream().collect(Collectors.joining(".")))));
+  }
   static String sv(AbstractFeature f)
   {
     return s(f.visibility()) + " " + s(f);
@@ -1876,11 +1880,12 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void illegalMultipleFeatureDeclaration(SourcePosition pos, List<List<ParsedName>> names)
+  public static void destructuringNonFields(SourcePosition pos, List<List<ParsedName>> names)
   {
     error(pos,
-          "Illegal multiple feature declaration",
-          "Multiple feature declaration can only be used for fields.");
+          "Destructuring is only possible for fields.",
+          "Cannot destructure from a routine" +  (names == null ? "."
+                                                                : " into " + sqpn(names) + "."));
   }
 
   static void illegalResultType(AbstractFeature f, ReturnType rt)
