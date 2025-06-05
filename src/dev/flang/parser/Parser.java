@@ -3406,6 +3406,7 @@ implFldInit : ":=" operatorExpr      // may start at min indent
   Impl implFldInit(boolean hasType, List<Feature> l, int select)
   {
     SourcePosition pos = tokenSourcePos();
+    Impl result;
     if (!skip(true, ":="))
       {
         syntaxError(tokenPos(), "':='", "implFldInit");
@@ -3413,10 +3414,10 @@ implFldInit : ":=" operatorExpr      // may start at min indent
 
     if (select < 0)
       {
-        return new Impl(pos,
-                        operatorExpr(), // block()?
-                        hasType ? Impl.Kind.FieldInit
-                                : Impl.Kind.FieldDef);
+        result = new Impl(pos,
+                          operatorExpr(), // block()?
+                          hasType ? Impl.Kind.FieldInit
+                                  : Impl.Kind.FieldDef);
       }
     else
       {
@@ -3445,11 +3446,12 @@ implFldInit : ":=" operatorExpr      // may start at min indent
           }
 
         var s = new Select(pos, null, tmpName, select, true);
-        return new Impl(pos,
-                        s,
-                        hasType ? Impl.Kind.FieldInit
-                                : Impl.Kind.FieldDef);
+        result = new Impl(pos,
+                          s,
+                          hasType ? Impl.Kind.FieldInit
+                                  : Impl.Kind.FieldDef);
       }
+    return result;
   }
 
 
