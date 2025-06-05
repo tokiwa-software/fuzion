@@ -185,7 +185,7 @@ public abstract class AbstractMatch extends ExprWithPos
                 AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
               }
           }
-        else if (!Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context))
+        else if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
           {
             if (kind() == Kind.Contract)
               {

@@ -2719,7 +2719,7 @@ public class GeneratingFUIR extends FUIR
         for (int tix = 0; tix < nt; tix++)
           {
             var t = f != null ? f.resultType() : ts.get(tix);
-            if (t.isAssignableFromWithoutTagging(cg))
+            if (t.isAssignableFromWithoutTagging(cg).yes())
               {
                 resultL.add(tag);
               }

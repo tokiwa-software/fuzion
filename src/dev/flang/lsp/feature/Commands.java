@@ -142,7 +142,7 @@ public enum Commands
               .type()
               .choiceGenerics()
               .stream()
-              .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFromDirectly(cg)))
+              .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFromDirectly(cg).yes()))
               .map(t -> indent + CaseConverter.toSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.label(t) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 

@@ -2291,7 +2291,7 @@ public class Call extends AbstractCall
               .choiceGenerics(context)
               .stream()
               .filter(x -> !x.dependsOnGenerics())
-              .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context));
+              .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
 
             if (!directlyAssignable)
               {
@@ -2984,7 +2984,7 @@ public class Call extends AbstractCall
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (CHECKS) check
                   (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && !frmlT.isAssignableFromWithoutTagging(actl.type(), context))
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFromWithoutTagging(actl.type(), context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }

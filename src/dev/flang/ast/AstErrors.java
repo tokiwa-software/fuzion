@@ -429,7 +429,7 @@ public class AstErrors extends ANY
             assignableToSB
               .append("assignable to       : ")
               .append(st(actlT.asRef().toString(true)));
-            if (frmlT.isAssignableFromOrContainsError(actlT, context))
+            if (!frmlT.isAssignableFromWithoutBoxing(actlT, context).no())
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
               }
@@ -447,7 +447,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && frmlT.asRef().isAssignableFromWithoutBoxing(actlT, context))
+        if (remedy == null && frmlT.asRef().isAssignableFromWithoutBoxing(actlT, context).yes())
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
@@ -2059,7 +2059,7 @@ public class AstErrors extends ANY
       {
         error(value.pos(),
               "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
-              .filter(cg -> cg.isAssignableFromWithoutBoxing(value.type(), Context.NONE))
+              .filter(cg -> cg.isAssignableFromWithoutBoxing(value.type(), Context.NONE).yes())
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))
               );
