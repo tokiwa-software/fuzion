@@ -66,12 +66,16 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   int _uniqueCallId = -1;
 
+  final boolean _real;
+
 
   /**
    * The DFA instance we are working with.
    */
   final DFA _dfa;
 
+
+  final CallGroup _group;
 
   /**
    * The clazz this is calling.
@@ -147,43 +151,37 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Create Call
    *
-   * @param dfa the DFA instance we are analyzing with
-   *
-   * @param cc called clazz
-   *
-   * @param site the call site, -1 if unknown (from intrinsic or program entry
-   * point)
-   *
-   * @param target is the target value of the call
+   * @param group the call group containing the clazz, site and target
    *
    * @param args are the actual arguments passed to the call
    *
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, int site, Value target, List<Val> args, Env env, Context context)
+  public Call(CallGroup group,  List<Val> args, Env env, Context context)
   {
-    _dfa = dfa;
-    _cc = cc;
-    _site = site;
-    _target = target;
+    _real = group._dfa._real;
+    _group = group;
+    _dfa = group._dfa;
+    _cc = group._cc;
+    _site = group._site;
+    _target = group._target;
     _args = args;
     _env = env;
     _context = context;
 
-    if (dfa._fuir.isConstructor(cc))
+    if (_dfa._fuir.isConstructor(_cc))
       {
         /* a constructor call returns current as result, so it always escapes together with all outer references! */
-        dfa.escapes(cc);
-        var or = dfa._fuir.clazzOuterRef(cc);
+        _dfa.escapes(_cc);
+        var or = _dfa._fuir.clazzOuterRef(_cc);
         while (or != NO_CLAZZ)
           {
-            var orr = dfa._fuir.clazzResultClazz(or);
-            dfa.escapes(orr);
-            or = dfa._fuir.clazzOuterRef(orr);
+            var orr = _dfa._fuir.clazzResultClazz(or);
+            _dfa.escapes(orr);
+            or = _dfa._fuir.clazzOuterRef(orr);
           }
       }
-
   }
 
 
@@ -205,11 +203,32 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public int compareTo(Call other)
   {
-    return
-      _cc         != other._cc                        ? Integer.compare(_cc        , other._cc        ) :
-      _target._id != other._target._id                ? Integer.compare(_target._id, other._target._id) :
-      _dfa.siteSensitive(_cc) && _site != other._site ? Integer.compare(_site      , other._site      ) :
-      Env.compare(env(), other.env());
+    var res = _group.compareTo(other._group);
+    if (res == 0 && _dfa._real)
+      {
+        if (DFA.COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED)
+          {
+            if (false)
+              {
+                var which = new TreeSet<Integer>();
+                which.addAll(_group._usedEffects);
+                which.addAll(other._group._usedEffects);
+                res = Env.compare(which, env(), other.env());
+              }
+            else
+              {
+                res = Env.compare(_real
+                                  ? _dfa._effectsRequiredByClazz.get(_cc)
+                                  : _group._usedEffects,
+                                  env(), other.env());
+              }
+          }
+        else
+          {
+            res = Env.compare(env(), other.env());
+          }
+      }
+    return res;
   }
 
 
@@ -222,7 +241,11 @@ public class Call extends ANY implements Comparable<Call>, Context
       _cc         != other._cc            ? "cc different" :
       _target._id != other._target._id    ? "target different" :
       _site       != other._site          ? "site different" :
-      Env.compare(env(), other.env())== 0 ? "env different" : "not different";
+      Env.compare(_real
+                  ? _dfa._effectsRequiredByClazz.get(_cc)
+                  : _group._usedEffects,
+                  env(), other.env())!= 0 ? "env different" + " env1: "+env()+ " env2: "+other.env() + " used "+_group.usedEffectsAsString() +" req "+_group.requiredEffectsAsString()
+                                          : "not different";
   }
 
 
@@ -371,7 +394,7 @@ public class Call extends ANY implements Comparable<Call>, Context
                 args.add(_dfa.newInstance(_dfa._fuir.clazzArgClazz(call, j), FUIR.NO_SITE, _context));
               }
             var ignore = _dfa
-              .newCall(call, FUIR.NO_SITE, this._args.get(i).value(), args, _env /* NYI: UNDER DEVELOPMENT: assumption  here is that callback is not used after this call completes */, _context)
+              .newCall(this, call, FUIR.NO_SITE, this._args.get(i).value(), args, _env /* NYI: UNDER DEVELOPMENT: assumption  here is that callback is not used after this call completes */, _context)
               .result();
           }
       }
@@ -535,10 +558,33 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value getEffectCheck(int ecl)
   {
+    _group.needsEffect(ecl);
     return
       _env != null ? _env.getActualEffectValues(ecl)
                    : _dfa._defaultEffects.get(ecl);
   }
+  Value getEffectCheck2(int ecl)
+  {
+    Value result;
+    if (_dfa._real)
+      {
+        result = getEffectCheck(ecl);
+        if (result == null && _dfa._reportResults)
+          {
+            DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(_site),
+                                             _dfa._fuir.clazzAsString(ecl),
+                                             this);
+            _dfa._missingEffects.put(ecl, ecl);
+          }
+      }
+    else
+      {
+        result = getEffectCheck(ecl); // NYI: needed only for the side-effect
+        result = _dfa._preEffectValues.get(ecl);
+      }
+    return result;
+  }
+
 
 
   /**
@@ -556,6 +602,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value getEffectForce(int s, int ecl)
   {
+    _group.needsEffect(ecl);
     var result = getEffectCheck(ecl);
     if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(_cc).equals("effect.type.unsafe_from_env"))
       {
@@ -580,10 +627,21 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void replaceEffect(int ecl, Value e)
   {
+    if (!_dfa._reportResults)
+      {
+        // make sure it is known that effect ecl is required here, but do not
+        // report an error if it is not since we have our own error below:
+        var ignore = getEffectCheck2(ecl);
+      }
+
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
-        Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
-               + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+        if (_dfa._reportResults)
+          {
+            // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
+            Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
+                         + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+          }
       }
     if (_env != null)
       {
