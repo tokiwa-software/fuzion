@@ -247,19 +247,10 @@ public class DFA extends ANY
      */
     Val access(int s, Val tvalue, List<Val> args)
     {
-      Val res = null;
+      var resa = new Val[1];
       var tv = tvalue.value();
-      if (tv instanceof ValueSet tvalues)
-        {
-          for (var t : tvalues._componentsArray)
-            {
-              res = accessSingleTarget(s, t, args, res, tvalue);
-            }
-        }
-      else
-        {
-          res = accessSingleTarget(s, tvalue.value(), args, res, tvalue);
-        }
+      tv.forAll(t -> resa[0] = accessSingleTarget(s, t, args, resa[0], tvalue));
+      var res = resa[0];
       if (res != null &&
           tvalue instanceof EmbeddedValue &&
           !_fuir.clazzIsRef(_fuir.accessTargetClazz(s)) &&
@@ -1072,6 +1063,9 @@ public class DFA extends ANY
    * that could have any value allowed by the numeric type.
    */
   List<NumericValue> _numericValuesAny = new List<>();
+
+
+  List<Instance> _oneInstanceOfClazz = new List<>();
 
 
   /**
@@ -2547,13 +2541,26 @@ public class DFA extends ANY
       {
         r = NumericValue.create(DFA.this, cl);
       }
-    else if(_fuir.clazzIs(cl, SpecialClazzes.c_bool))
+    else if (_fuir.clazzIs(cl, SpecialClazzes.c_bool))
       {
         r = bool();
       }
     else
       {
-        if (_fuir.clazzIsRef(cl))
+        if (onlyOneInstance(cl))
+          {
+            var cnum = _fuir.clazzId2num(cl);
+            var a = _oneInstanceOfClazz.getIfExists(cnum);
+            if (a == null)
+              {
+                var ni = new Instance(this, cl, site, context);
+                makeUnique(ni);
+                _oneInstanceOfClazz.force(cnum, ni);
+                a = ni;
+              }
+            r = a;
+          }
+        else if (_fuir.clazzIsRef(cl))
           {
             var vc = _fuir.clazzAsValue(cl);
             check(!_fuir.clazzIsRef(vc));
@@ -2818,7 +2825,42 @@ public class DFA extends ANY
     return res;
   }
 
+
+  static boolean ONLY_ONE_INSTANCE  = !false;
+
   static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = !false;
+
+
+  List<Boolean> _onlyOneInstance = new List<>();
+
+
+  boolean onlyOneInstance(int clazz)
+  {
+    if (!ONLY_ONE_INSTANCE) return false;
+    var cnum = _fuir.clazzId2num(clazz);
+    var b = _onlyOneInstance.getIfExists(cnum);
+    if (b == null)
+      {
+        // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
+        // this should be something generic instead, e.g.
+        //
+        //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
+        //
+        b = switch (_fuir.clazzAsString(clazz))
+          {
+          case
+          "list u8",
+          "codepoint",
+          "Sequence u8",
+          "array u8",
+          "fuzion.sys.internal_array u8" -> true;
+          default -> false;
+          };
+        _onlyOneInstance.force(cnum, b);
+      }
+    return b;
+  }
+
 
   /**
    * Create new SysArray instance of the given element values and element clazz.
@@ -3331,6 +3373,10 @@ public class DFA extends ANY
    */
   private Env newEnv2(Env env, int ecl, Value ev)
   {
+    if (env != null)
+      {
+        env = env.filterPos(effectTypePosition(ecl));
+      }
     var newEnv = new Env(this, env, ecl, ev);
     var e = _envs.get(newEnv);
     if (e == null)
