@@ -169,8 +169,9 @@ is
   # create immutable array from this
   #
   public redef as_array universe.array T =>
+    s := start.get
     array buffered.as_i32 i->
-      data[(mod_length (start.get + i.as_i64)).as_i32]
+      data[(mod_length (s + i.as_i64)).as_i32]
 
 
   # create a list from this array
