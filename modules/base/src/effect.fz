@@ -166,7 +166,6 @@ public effect is
   =>
     e.check_depletion
     x := instate_helper R effect.this e code def
-    instate0 e x.call_code x.call_def
     x.res.get
 
 
@@ -389,7 +388,7 @@ public effect is
   module check_depletion =>
 
 
-# instante helper to hold the result of the effect
+# instate helper to hold the result of the effect
 #
 instate_helper(# result type
                R type,
@@ -410,6 +409,8 @@ instate_helper(# result type
   # to reduce complexity of the `instate0` intrinsic.  We
   # collect the result in this field
   res := option R nil
+
+  ET.instate0 e call_code call_def
 
   # wrapper to call `code` and store result in 'res`
   call_code : Function unit is
