@@ -137,12 +137,12 @@ generics_negative is
 
 
   features_from_separate_source_file is
-    public hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
+    hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
     qwerty.uiop.asdfg                                       # 42. should flag an error: missing generic argument to qwerty
-    public asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
-    public asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
-    public uiop (qwerty i32).uiop := (qwerty i32).uiop
-    public qwert qwerty i32 := qwerty i32
+    asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
+    asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
+    uiop (qwerty i32).uiop := (qwerty i32).uiop
+    qwert qwerty i32 := qwerty i32
     set hjkl := qwert.uiop.asdfg.hjkl                       # 44. should flag an error: missing actual argument to hjkl
     set asdfg1 := uiop.asdfg
     set asdfg2 := uiop.asdfg
