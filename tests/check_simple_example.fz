@@ -83,9 +83,13 @@ envir_vars :=
 
 # helper to get out, err, exit_code from started process
 #
-record_process(p os.process,
+record_process(
+      p os.process,
       # the command, for error messages
-      cmd String) process_result =>
+      cmd String,
+      # feed .stdin file to executed process?
+      feed_stdin bool
+) process_result =>
   lm : mutate is
   (concur.thread_pool 2 ()->
       fout := concur.thread_pool.env.submit _ ()->
@@ -98,6 +102,13 @@ record_process(p os.process,
           match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
             e error => panic "failed reading stderr from $cmd, error is: $e"
             err String => err
+
+      stdin_file := "$file.stdin"
+      if feed_stdin && io.file.exists stdin_file
+        lm ! ()->
+          _ := p.with_in unit lm ()->
+            _ := (io.buffered lm).writer.env.write (read_file_fully stdin_file).val.utf8
+
       match p.wait
         e error => panic "failed waiting for $cmd, error is: $e"
         ec u32 => process_result fout.get ferr.get ec)
@@ -105,17 +116,27 @@ record_process(p os.process,
 
 # execute this Sequence of process+args
 #
-Sequence.prefix ! =>
+Sequence.excecute(
+  # feed .stdin file to executed process?
+  feed_stdin bool
+) =>
   seq := map x->x.as_string
   match os.process.start seq.first.val (seq.drop 1) envir_vars
     e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => record_process p Sequence.this.as_string
-
+    p os.process => record_process p Sequence.this.as_string feed_stdin
 
 # execute this string by splitting at all whitespaces
 #
-String.prefix !! =>
-  !(split.map (.replace protected_space " "))
+String.excecute(
+  # feed .stdin file to executed process?
+  feed_stdin bool
+) =>
+  (split.map (.replace protected_space " ")).excecute feed_stdin
+
+# execute this string by splitting at all whitespaces
+#
+String.excecute =>
+  String.this.excecute false
 
 # write data to file dest
 #
@@ -130,6 +151,11 @@ copy(src, dest String) =>
   contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).val
   write_to_file dest contents
 
+# read file f fully
+#
+read_file_fully(f String) outcome String =>
+  io.file.use f io.file.mode.read ()->
+    String.from_bytes (io.buffered io.file.file_mutate).read_fully
 
 ############################################################################
 
@@ -160,27 +186,27 @@ check_exit_code(run process_result) =>
 # like loop4, preandcall19 etc.
 #
 clean_err(f String) =>
-  check (!!"sed -i s#.*/#--CURDIR--/# $f").ok
+  check "sed -i s#.*/#--CURDIR--/# $f".excecute.ok
   # line numbers
-  check (!!"sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f").ok
+  check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".excecute.ok
   # lambdas
-  check (!!"sed -E -i s/#fun[0-9]+/fun/g $f").ok
-  check (!!"sed -E -i s/INTERN_fun[0-9]+/fun/g $f").ok
+  check "sed -E -i s/#fun[0-9]+/fun/g $f".excecute.ok
+  check "sed -E -i s/INTERN_fun[0-9]+/fun/g $f".excecute.ok
   # loops
-  check (!!"sed -E -i s/#loop[0-9]+/loop/g $f").ok
-  check (!!"sed -E -i s/INTERN_loop[0-9]+/loop/g $f").ok
+  check "sed -E -i s/#loop[0-9]+/loop/g $f".excecute.ok
+  check "sed -E -i s/INTERN_loop[0-9]+/loop/g $f".excecute.ok
   # preconditions
-  check (!!"sed -E -i s/#pre[0-9]+/pre/g $f").ok
-  check (!!"sed -E -i s/INTERN_pre[0-9]+/pre/g $f").ok
+  check "sed -E -i s/#pre[0-9]+/pre/g $f".excecute.ok
+  check "sed -E -i s/INTERN_pre[0-9]+/pre/g $f".excecute.ok
   # pre bools
-  check (!!"sed -E -i s/#prebool[0-9]+/prebool/g $f").ok
-  check (!!"sed -E -i s/INTERN_prebool[0-9]+/prebool/g $f").ok
+  check "sed -E -i s/#prebool[0-9]+/prebool/g $f".excecute.ok
+  check "sed -E -i s/INTERN_prebool[0-9]+/prebool/g $f".excecute.ok
   # pre bools
-  check (!!"sed -E -i s/#preandcall[0-9]+/preandcall/g $f").ok
-  check (!!"sed -E -i s/INTERN_preandcall[0-9]+/preandcall/g $f").ok
+  check "sed -E -i s/#preandcall[0-9]+/preandcall/g $f".excecute.ok
+  check "sed -E -i s/INTERN_preandcall[0-9]+/preandcall/g $f".excecute.ok
   # postconditions
-  check (!!"sed -E -i s/#post[0-9]+/post/g $f").ok
-  check (!!"sed -E -i s/INTERN_post[0-9]+/post/g $f").ok
+  check "sed -E -i s/#post[0-9]+/post/g $f".excecute.ok
+  check "sed -E -i s/INTERN_post[0-9]+/post/g $f".excecute.ok
 
 
 # delete temporary files
@@ -210,16 +236,16 @@ else
     delete_tmp_files
 
     # NYI:
-    # if !(!!"ulimit -S -t $cpu_time_limit").ok
+    # if !"ulimit -S -t $cpu_time_limit".excecute.ok
     #   say "failed setting limit via ulimit"
 
     backend_options(x) =>
       String.join ((((envir.vars.get x).val "").replace " " protected_space).split "|") " "
 
     if be = "c"
-      compile := !!"$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin"
+      compile := "$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin".excecute
       if compile.ok
-        run := !!"./testbin"
+        run := "./testbin".excecute true
 
         check_exit_code run
 
@@ -229,21 +255,21 @@ else
         write_to_file "tmp_out.txt" compile.out
         write_to_file "tmp_err.txt" compile.err
     else if be = "jvm"
-      run := !!"$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file"
+      run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".excecute true
 
       check_exit_code run
 
       write_to_file "tmp_out.txt" run.out
       write_to_file "tmp_err.txt" run.err
     else if be = "int"
-      run := !!"$fz_run -XmaxErrors=-1 -interpreter $file"
+      run := "$fz_run -XmaxErrors=-1 -interpreter $file".excecute true
 
       check_exit_code run
 
       write_to_file "tmp_out.txt" run.out
       write_to_file "tmp_err.txt" run.err
     else if be = "effect"
-      run := !!"$fz_run -XmaxErrors=-1 -effects $file"
+      run := "$fz_run -XmaxErrors=-1 -effects $file".excecute
 
       check_exit_code run
 
@@ -251,14 +277,14 @@ else
     else
       panic "backend unknown: $be"
 
-    out := !!"diff --strip-trailing-cr {exp_out} tmp_out.txt"
+    out := "diff --strip-trailing-cr {exp_out} tmp_out.txt".excecute
 
     err :=
       if be != "effect"
         copy exp_err exp_err_cleaned
         clean_err "tmp_err.txt"
         clean_err exp_err_cleaned
-        !!"diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt"
+        "diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt".excecute
       else
         process_result.empty_success
 
