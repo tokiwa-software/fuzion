@@ -1451,10 +1451,6 @@ public class Call extends AbstractCall
       {
         result = Types.resolved.t_void; // a recursive call will not return and execute further
       }
-    else if (!genericSizesMatch())
-      {
-        result = Types.t_ERROR;
-      }
     else
       {
         _recursiveResolveType = true;
@@ -2658,6 +2654,10 @@ public class Call extends AbstractCall
                   {
                     r.run();
                   }
+              }
+            if (!genericSizesMatch())
+              {
+                setToErrorState();
               }
             inferFormalArgTypesFromActualArgs();
             setActualResultType(res, context);
