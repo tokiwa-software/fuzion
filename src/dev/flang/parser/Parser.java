@@ -1925,7 +1925,7 @@ klammerLambd: tuple lambda
                                 && currentAtMinIndent() != Token.t_eof)
                            {
                             b[0] = true;
-                            tupleElements.add(operatorExpr(false));
+                            tupleElements.add(operatorExpr());
                            }
                          return Void.TYPE;
                        },
