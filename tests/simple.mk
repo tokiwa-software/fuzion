@@ -74,7 +74,7 @@ c: $(FUZION_DEPENDENCIES) ../check_simple_example
 	$(ENV) ../check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
 
 effect: $(FUZION_DEPENDENCIES) ../check_simple_example
-	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: $(FUZION_DEPENDENCIES)
 	$(ENV) $(FUZION) ../record_simple_example.fz any "$(FUZION_RUN)" $(FILE)
