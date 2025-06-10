@@ -1888,6 +1888,13 @@ public class AstErrors extends ANY
                                                                 : " into " + sqpn(names) + "."));
   }
 
+  static void destructuringOutOfBounds(SourcePosition pos, AbstractFeature f, int select)
+  {
+    error(pos,
+          "Destructuring access to non-existing value argument.",
+          "Tried accessing value argument number " + select + " of feature " + s(f) + " which only has " + f.valueArguments().size() + " value arguments");
+  }
+
   static void illegalResultType(AbstractFeature f, ReturnType rt)
   {
     error(f.pos(),

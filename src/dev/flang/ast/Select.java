@@ -221,9 +221,15 @@ public class Select extends Call {
       }
     else if (_allowValueArgumentAccess && _calledFeature != null)
       {
-        // NYI: HACK: add some sanity checks
-        var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-        result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).featureName().baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+        if (select() < at.feature().valueArguments().size())
+          {
+            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).featureName().baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+          }
+        else
+          {
+            AstErrors.destructuringOutOfBounds(pos(), at.feature(), select());
+          }
       }
     else
       {
