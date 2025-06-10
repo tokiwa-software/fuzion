@@ -625,14 +625,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
     var result = this;
     var t = type();
 
-    if (!t.isVoid() && (frmlT.isAssignableFrom(t, context)))
+    if (!t.isVoid() && frmlT.isAssignableFrom(t, context).yes())
       {
         var rt = needsBoxing(frmlT, context);
         if (rt != null)
           {
             result = new Box(result, rt);
           }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type(), context))
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type(), context).yes())
           {
             result = tag(frmlT, result, context);
             if (CHECKS) check
@@ -646,7 +646,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
         || result.needsBoxing(frmlT, context) == null
-        || !frmlT.isAssignableFrom(t, context));
+        || frmlT.isAssignableFrom(t, context).no());
 
     return result;
   }
@@ -686,7 +686,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     else if (frmlT
              .choiceGenerics(context)
               .stream()
-             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
+             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context).yes())
               .count() > 1)
       {
         AstErrors.ambiguousAssignmentToChoice(frmlT, value);
@@ -698,7 +698,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     else if (frmlT
               .choiceGenerics(context)
               .stream()
-             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type(), context)))
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type(), context).yes()))
       {
         return new Tag(value, frmlT, context);
       }
@@ -712,7 +712,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
         var cgs = frmlT
           .choiceGenerics(context)
           .stream()
-          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(value.type(), context))
+          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(value.type(), context).yes())
           .collect(Collectors.toList());
 
         if (cgs.size() > 1)
@@ -761,12 +761,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
     else
       {
         if (frmlT.isChoice() &&
-            !frmlT.isAssignableFromWithoutBoxing(t , context) &&
-             frmlT.isAssignableFrom(t, context))
+            frmlT.isAssignableFromWithoutBoxing(t , context).no() &&
+             frmlT.isAssignableFrom(t, context).yes())
           { // we do both, box and then tag:
             for (var cg : frmlT.choiceGenerics(context))
               {
-                if (cg.isAssignableFrom(t, context))
+                if (cg.isAssignableFrom(t, context).yes())
                   {
                     return cg;
                   }
@@ -797,7 +797,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   {
     var t = type();
     return this != Call.ERROR && t != Types.t_ERROR
-      && !expectedType.isAssignableFromWithoutBoxing(t, context)
+      && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
       && allInherited(t.feature())
@@ -805,7 +805,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
-                    && expectedType.isAssignableFromWithoutBoxing(c.actualTypeParameters().get(0).applyTypePars(t), context))
+                    && expectedType.isAssignableFromWithoutBoxing(c.actualTypeParameters().get(0).applyTypePars(t), context).yes())
       ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
       : this;
   }

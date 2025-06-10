@@ -337,7 +337,7 @@ public class InlineArray extends ExprWithPos
 
     for (var e : _elements)
       {
-        if (!elementType.isAssignableFromWithoutBoxing(e.type(), context))
+        if (elementType.isAssignableFromWithoutBoxing(e.type(), context).no())
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e, context);
           }
