@@ -82,7 +82,7 @@ is
   #
   # performance is O(log size).
   #
-  public redef index [] (k OK) option V=>
+  public redef index [] (k OK) option V =>
     sorted_indices
       .find_by_comparator (i -> ks[i] ⋄ k)
       .bind i->sorted_entries[i].val
