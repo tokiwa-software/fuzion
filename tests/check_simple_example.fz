@@ -34,6 +34,9 @@ protected_space := "😀"
 process_result(out String, err String, exit_code u32) is
   ok => exit_code = 0
 
+  type.empty_success =>
+    process_result "" "" 0
+
 # specified environment variables as key,value array
 #
 envir_var_kv := [
@@ -114,13 +117,15 @@ Sequence.prefix ! =>
 String.prefix !! =>
   !(split.map (.replace protected_space " "))
 
-
+# write data to file dest
+#
 write_to_file(dest String, data String) =>
   _ := io.file.delete dest
   check (io.file.use dest io.file.mode.write ()->
     check (data.write_to io.file.file_mutate).ok).ok
 
-
+# write file from src to dest
+#
 copy(src, dest String) =>
   contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).val
   write_to_file dest contents
@@ -134,6 +139,8 @@ cpu_time_limit   := 120
 stack_size_limit := 1024
 
 
+# check exit code for validity
+#
 check_exit_code(run process_result) =>
   # 152 - 128 = 24 -> signal SIGXCPU
   if run.exit_code = 152
@@ -149,6 +156,9 @@ check_exit_code(run process_result) =>
     exit 1
 
 
+# clean error output from random names
+# like loop4, preandcall19 etc.
+#
 clean_err(f String) =>
   check (!!"sed -i s#.*/#--CURDIR--/# $f").ok
   # line numbers
@@ -173,6 +183,8 @@ clean_err(f String) =>
   check (!!"sed -E -i s/INTERN_post[0-9]+/post/g $f").ok
 
 
+# delete temporary files
+#
 delete_tmp_files =>
   _ := io.file.delete "tmp_out.txt"
   _ := io.file.delete "tmp_err.txt"
@@ -183,11 +195,14 @@ delete_tmp_files =>
 be     := envir.args[1]
 fz_run := envir.args[2]
 file   := envir.args[3]
-exp_out := if io.file.exists "$file.expected_out_$be" then "$file.expected_out_$be" else "$file.expected_out"
+exp_out := if be = "effect"
+             "$file.effect"
+           else
+             if io.file.exists "$file.expected_out_$be" then "$file.expected_out_$be" else "$file.expected_out"
 exp_err := if io.file.exists "$file.expected_err_$be" then "$file.expected_err_$be" else "$file.expected_err"
 exp_err_cleaned := "$exp_err.cleaned"
 
-if io.file.exists "$file.skip"
+if io.file.exists "$file.skip" || (be = "effect" && !(io.file.exists "$file.effect"))
     say "SKIP $file"
 else
     yak "RUN $file "
@@ -227,25 +242,35 @@ else
 
       write_to_file "tmp_out.txt" run.out
       write_to_file "tmp_err.txt" run.err
+    else if be = "effect"
+      run := !!"$fz_run -XmaxErrors=-1 -effects $file"
+
+      check_exit_code run
+
+      write_to_file "tmp_out.txt" run.out
     else
       panic "backend unknown: $be"
 
-
-    copy exp_err exp_err_cleaned
-
-    clean_err "tmp_err.txt"
-    clean_err exp_err_cleaned
-
     out := !!"diff --strip-trailing-cr {exp_out} tmp_out.txt"
-    err := !!"diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt"
+
+    err :=
+      if be != "effect"
+        copy exp_err exp_err_cleaned
+        clean_err "tmp_err.txt"
+        clean_err exp_err_cleaned
+        !!"diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt"
+      else
+        process_result.empty_success
 
     delete_tmp_files
 
     if !out.ok
       say "{"*** FAILED".bold.red} out on $file"
+      say out.out
       exit 1
     else if !err.ok
       say "{"*** FAILED".bold.red} err on $file"
+      say err.out
       exit 1
     else
       say "{"PASSED".bold.green}."
