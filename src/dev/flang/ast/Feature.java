@@ -406,6 +406,11 @@ public class Feature extends AbstractFeature
    */
   static long underscoreId = 0;
 
+  /**
+   * Quick-and-dirty way to generate unique names for destructure temporary features.
+   */
+  static long uniqueDestructureFeatureId = 0;
+
 
   /**
    * Constructor for universe
@@ -473,6 +478,28 @@ public class Feature extends AbstractFeature
           return true;
         }
       };
+  }
+
+
+  /**
+   * Create a temporary feature for destructuring
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param e the expression that is used in the field definition implementation
+   */
+  public static Feature destructure(SourcePosition pos,
+                                    Expr e)
+  {
+    return new Feature(pos,
+                       Visi.PRIV,
+                       0,
+                       NoType.INSTANCE,
+                       new List<String>(FuzionConstants.DESTRUCTURE_PREFIX + (uniqueDestructureFeatureId++)),
+                       new List<>(),
+                       Function.NO_CALLS,
+                       Contract.EMPTY_CONTRACT,
+                       new Impl(pos, e, Impl.Kind.FieldDef));
   }
 
 
@@ -1462,7 +1489,6 @@ public class Feature extends AbstractFeature
     @Override public void         actionBefore(Call            c) {        c.tryResolveTypeCall(res,   _context); }
     @Override public Call         action      (Call            c) { return c.resolveTypes      (res,   _context); }
     @Override public Expr         action      (DotType         d) { return d.resolveTypes      (res,   _context); }
-    @Override public Expr         action      (Destructure     d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
       if (f.isExtensionFeature() && f.outer() != null)

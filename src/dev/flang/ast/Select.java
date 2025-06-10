@@ -45,6 +45,36 @@ public class Select extends Call {
   private Call _currentlyResolving;
 
 
+  private boolean _allowValueArgumentAccess;
+
+
+  /**
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param target the target of the call, null if none.
+   *
+   * @param name the name of the called feature,
+   *             null on partial application, e.g.:
+   *               say ([(3,4),(5,6)].map (.1) .sum)
+   *
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. NO_SELECT for none.
+   *
+   * @param allowValueArgumentAccess whether to enable access to value arguments
+   * via select
+   */
+  public Select(SourcePosition pos, Expr target, String name, int select, boolean allowValueArgumentAccess)
+  {
+    super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null);
+
+    if (PRECONDITIONS) require
+      (select >= 0,
+       target != Call.ERROR);
+
+    _allowValueArgumentAccess = allowValueArgumentAccess;
+  }
+
+
   /**
    * @param pos the sourcecode position, used for error messages.
    *
@@ -59,11 +89,7 @@ public class Select extends Call {
    */
   public Select(SourcePosition pos, Expr target, String name, int select)
   {
-    super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null);
-
-    if (PRECONDITIONS) require
-      (select >= 0,
-       target != Call.ERROR);
+    this(pos, target, name, select, false);
   }
 
 
@@ -191,6 +217,18 @@ public class Select extends Call {
           {
             var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
             result = new Call(pos(), selectTarget, f.featureName().baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
+          }
+      }
+    else if (_allowValueArgumentAccess && _calledFeature != null)
+      {
+        if (select() < at.feature().valueArguments().size())
+          {
+            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).featureName().baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+          }
+        else
+          {
+            AstErrors.destructuringOutOfBounds(pos(), at.feature(), select());
           }
       }
     else

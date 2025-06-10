@@ -92,7 +92,7 @@ install_default =>
       env_var_strings := env_vars
         .items
         .map x->
-          (k, v) := x
+          k, v := x
           "$k=$v"
         .as_array
 
