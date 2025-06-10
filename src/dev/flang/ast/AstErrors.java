@@ -295,59 +295,6 @@ public class AstErrors extends ANY
   }
 
 
-  public static void featureOfMustInherit(SourcePosition pos, SourcePosition ofPos)
-  {
-    error(pos,
-          "Feature declaration that is implemented using " + code("of") + " must have inherit clause. ",
-          "Feature implementation starting at " + ofPos.show() + "\n" +
-          "To solve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
-  }
-
-
-  public static void featureOfMustContainOnlyDeclarations(Expr e, SourcePosition ofPos)
-  {
-    error(e.pos(),
-          "Feature implementation using " + code("of") + " must contain only feature declarations. ",
-          "Declaration started at " + ofPos.show() + "\n"
-          );
-  }
-
-
-  public static void featureOfMustContainOnlyUnqualifiedNames(Feature f, SourcePosition ofPos)
-  {
-    error(f.pos(),
-          "Feature implementation using " + code("of") + " must contain only unqualified declarations. ",
-          "Qualified feature name " + sqn(f._qname) + " is not permitted.\n" +
-          "Declaration started at " + ofPos.show() + "\n" +
-          "To solve this, you may replace the qualified name " + sqn(f._qname) + " by an unqualified name such as " +
-          ss(f._qname.size() > 0 ? f._qname.getLast() : "feature_name") + ".\n");
-  }
-
-
-  public static void featureOfMustNotHaveFormalGenerics(Feature f, SourcePosition ofPos)
-  {
-    error(f.pos(),
-          "Feature implementation using " + code("of") + " must contain only features without type parameters. ",
-          "Type parameters " + s(f.generics()) + " is not permitted.\n" +
-          "Declaration started at " + ofPos.show() + "\n" +
-          "To solve this, you may remove the type parameters " + s(f.generics()) + ".\n");
-  }
-
-
-  public static void featureOfMustContainOnlyConstructors(Feature f, SourcePosition ofPos)
-  {
-    error(f.pos(),
-          "Feature implementation using " + code("of") + " must contain only constructors. ",
-          "Feature " + sqn(f._qname) + " is not a constructor.\n" +
-          "Declaration started at " + ofPos.show() + "\n" +
-          (f.impl()._kind == Impl.Kind.RoutineDef
-           ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
-              "ensure that the code results in a value of type " + st(FuzionConstants.UNIT_NAME) + " " +
-              "in the declaration of " + sqn(f._qname) + ".\n")
-           : ("To solve this, you may remove the return type " + s(f.returnType()) + " " +
-              "from the declaration of " + sqn(f._qname) + ".\n")));
-  }
-
 
   /**
    * Create an error message for a declaration of a feature using
