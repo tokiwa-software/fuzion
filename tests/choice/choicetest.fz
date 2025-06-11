@@ -31,10 +31,10 @@ choicetest is
   Yellow ref : Light is
   Green  ref : Light is
 
-  _ Light := Red
-  _ Light := Green
+  l1 Light := Red
+  l2 Light := Green
 
-  say "l1 is Red, l2 is Green"
+  say "l1 is $l1, l2 is $l2"
 
   # using choice-type
   Penny   is

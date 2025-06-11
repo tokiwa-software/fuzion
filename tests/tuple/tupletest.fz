@@ -84,10 +84,10 @@ tupletest is
   two12a, two12b       :=               (4,2); p "two12 is $two12a, $two12b" # two-tuple using destructure and tuple syntax sugar
   public two16a i32 := 42
   public two16b i32 := 42
-  public two17a i32 := 42
-  public two17b i32 := 42
-  public two18a i32 := 42
-  public two18b i32 := 42
+  two17a i32 := 42
+  two17b i32 := 42
+  two18a i32 := 42
+  two18b i32 := 42
   chck (two2.values.0=4 && two2.values.1=2) "two2"
   chck (two3.values.0=4 && two3.values.1=2) "two3"
   chck (two9.values.0=4 && two9.values.1=2) "two9"
