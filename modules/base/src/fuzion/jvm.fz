@@ -34,8 +34,6 @@ private:public jvm : effect is
   # short-hand to for jvm with no additional class path
   #
   public type.use(T type, code ()->T) T =>
-    # NYI: BUG: java.lang.Error: require-condition1 failed: AbstractType.java:875 "(Errors.any() || f.generics().sizeMatches(actualGenerics), Errors.any() || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());"
-    # fuzion.jvm.jvm "" code
     fuzion.jvm.use T "" code
 
 
