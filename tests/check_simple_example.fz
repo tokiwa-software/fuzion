@@ -27,7 +27,7 @@
 
 # used for protecting spaces when splitting command string
 #
-protected_space := "😀"
+protected_space := codepoint codepoint.not_a_character.as_list.first.val
 
 # stores the results of a process
 #
