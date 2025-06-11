@@ -30,6 +30,7 @@ JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
+FZ_BOOTSTRAP = java -Xss5m --enable-preview --enable-native-access=ALL-UNNAMED --class-path "$(BUILD_DIR)/classes" -Dfile.encoding=UTF-8 -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.Fuzion
 FZ = $(BUILD_DIR)/bin/fz
 FZJAVA = $(BUILD_DIR)/bin/fzjava
 CLASSES_DIR = $(BUILD_DIR)/classes
@@ -652,17 +653,17 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	rm -f $@.tmp.pdf
 	touch $@
 
-$(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS)
-	mkdir -p $(@D)
-	cp -rf $(FZ_SRC)/bin/fz $@
-	chmod +x $@
+$(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(MOD_BASE) $(BUILD_DIR)/include
+	$(FZ_BOOTSTRAP) -c -o=fz $(FZ_SRC)/bin/fz.fz
+	mkdir -p $(BUILD_DIR)/bin
+	mv fz $(FZ)
 
-$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
+$(MOD_BASE): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
 	rm -rf $(@D)/base
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/base $(@D)
-	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -saveModule=$@ -XenableSetKeyword
-	$(FZ) -XXcheckIntrinsics
+	$(FZ_BOOTSTRAP) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -saveModule=$@ -XenableSetKeyword
+	$(FZ_BOOTSTRAP) -XXcheckIntrinsics
 
 # keep make from deleting $(MOD_BASE) on ctrl-C:
 .PRECIOUS: $(MOD_BASE)

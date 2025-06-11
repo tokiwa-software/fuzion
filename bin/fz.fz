@@ -1,0 +1,177 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion launcher fz
+#
+# -----------------------------------------------------------------------
+
+########### Extensions ###############
+
+# used for protecting spaces when splitting command string
+#
+protected_space := codepoint codepoint.not_a_character.as_list.first.val
+protected_new_line := codepoint (codepoint.not_a_character.drop 1).as_list.first.val
+
+# stores the results of a process
+#
+process_result(out String, err String, exit_code u32) is
+  ok => exit_code = 0
+
+  type.empty_success =>
+    process_result "" "" 0
+
+# helper to get out, err, exit_code from started process
+#
+record_process(
+      p os.process,
+      # the command, for error messages
+      cmd String
+) process_result =>
+  lm : mutate is
+  (concur.thread_pool process_result /*NYI: why type par necessary? */ 2 ()->
+      fout := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stdout from $cmd, error is: $e"
+            out String => out
+      ferr := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stderr from $cmd, error is: $e"
+            err String => err
+
+      # NYI: UNDER DEVELOPMENT: ugly nesting
+      lm_stdin : mutate is
+      lm_stdin ! ()->
+        lm ! ()->
+          _ := p.with_in unit lm ()->
+            (io.stdin.reader lm_stdin) ! ()->
+              _ :=
+                for bytes := (io.buffered lm_stdin).read_bytes 4096
+                while bytes.count > 0
+                do
+                  _ := (io.buffered lm).writer.env.write bytes
+
+      match p.wait
+        e error => panic "failed waiting for $cmd, error is: $e"
+        ec u32 => process_result fout.get ferr.get ec)
+    .get
+
+# execute this Sequence of process+args
+#
+Sequence.excecute =>
+  seq := map x->x.as_string
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
+    e error => panic "failed executing {Sequence.this}, error is $e"
+    p os.process => record_process p Sequence.this.as_string
+
+# execute this string by splitting at all whitespaces
+#
+String.excecute =>
+  ((split.map (.replace protected_space " ")).map (.replace protected_new_line "\n")).excecute
+
+# write data to file dest
+#
+write_to_file(dest String, data String) =>
+  _ := io.file.delete dest
+  check (io.file.use dest io.file.mode.write ()->
+    check (data.write_to io.file.file_mutate).ok).ok
+
+# write file from src to dest
+#
+copy(src, dest String) =>
+  contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).val
+  write_to_file dest contents
+
+# read file f fully
+#
+read_file_fully(f String) outcome String =>
+  io.file.use f io.file.mode.read ()->
+    String.from_bytes (io.buffered io.file.file_mutate).read_fully
+
+############################################################################
+
+
+fuzion_cmd := envir.args[0]
+fuzion_bin := "{(envir.vars.get "PWD").get}/build/bin" # NYI cwd
+
+fuzion_home := (envir.vars.get "FUZION_HOME").get "$fuzion_bin/.."
+fuzion_java := (envir.vars.get "FUZION_JAVA").get "java"
+fuzion_java_additional_classpath String := (envir.vars.get "FUZION_JAVA_ADDITIONAL_CLASSPATH").bind(x -> ":$x").get ""
+# windows (msys2) does not seem to like trailing colons in the class path
+fuzion_java_classpath := ((envir.vars.get "FUZION_JAVA_CLASSPATH").get "$fuzion_home/classes") + fuzion_java_additional_classpath
+fuzion_java_stack_size := (envir.vars.get "FUZION_JAVA_STACK_SIZE").get "5m"
+fuzion_java_options := (envir.vars.get "FUZION_JAVA_OPTIONS").get "-Xss$fuzion_java_stack_size"
+fuzion_java_additional_options := (envir.vars.get "FUZION_JAVA_ADDITIONAL_OPTIONS").get "--enable-preview --enable-native-access=ALL-UNNAMED"
+
+# specified environment variables as key,value array
+#
+envir_var_kv := [
+  # "PATH",
+  "LANG",
+  "JAVA_HOME",
+  "POSTCONDITIONS",
+  "PRECONDITIONS",
+  "dev_flang_tools_serializeFUIR",
+  "CPATH",
+  "LIBRARY_PATH",
+  "FUZION_CLANG_INSTALLED_DIR",
+  "OS",
+  "FUZION_HOME",
+  "FUZION_JAVA",
+  "FUZION_JAVA_STACK_SIZE",
+  "FUZION_JAVA_OPTIONS",
+  "FUZION_JVM_BACKEND_OPTIONS",
+  "FUZION_C_BACKEND_OPTIONS",
+  "FUZION_RANDOM_SEED",
+  # set in simple.mk
+  # "LD_LIBRARY_PATH",
+  # "DYLD_FALLBACK_LIBRARY_PATH",
+  "C_INCLUDE_PATH",
+  "LANGUAGE",
+  "TERM"
+].map k->
+  (envir.vars.get k).bind v->
+    (k,v)
+ .filter o->o.ok
+ .map o->o.val
+ .as_array
+
+# envir vars as map
+#
+envir_vars :=
+  (container.ordered_map
+    (envir_var_kv
+      .map x->x.0
+      .as_array)
+    (envir_var_kv
+      .map x->x.1
+      .as_array))
+  .add "PATH" ((envir.vars.get "PATH").bind(x -> "$x:$fuzion_home/lib").get "$fuzion_home/lib")
+  .add "LD_LIBRARY_PATH" ((envir.vars.get "LD_LIBRARY_PATH").bind(x -> "$x:$fuzion_home/lib").get "$fuzion_home/lib")
+  .add "DYLD_FALLBACK_LIBRARY_PATH" ((envir.vars.get "DYLD_FALLBACK_LIBRARY_PATH").bind(x -> "$x:$fuzion_home/lib").get "$fuzion_home/lib")
+
+command := """
+  $fuzion_java $fuzion_java_options $fuzion_java_additional_options --class-path $fuzion_java_classpath -Dline.separator=$protected_new_line -Dfile.encoding=UTF-8 -Dfuzion.home=$fuzion_home -Dfuzion.command=$fuzion_cmd dev.flang.tools.Fuzion {(envir.args.drop 1).as_string " "}"""
+res := command.excecute
+
+io.out.print res.out
+io.err.print res.err
+
+exit res.exit_code.as_u8
