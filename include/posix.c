@@ -49,6 +49,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  // mkdir
 #include <sys/wait.h>
+#include <signal.h>
 #include <unistd.h>     // close
 #include <time.h>
 #include <assert.h>
@@ -931,4 +932,9 @@ void * fzE_file_stderr(void) { return stderr; }
 int32_t fzE_file_flush(void * file)
 {
   return fflush(file) == 0 ? 0 : -1;
+}
+
+int fzE_send_signal(int64_t pid, int sig)
+{
+  return kill(pid, sig);
 }

@@ -58,9 +58,9 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   #
   wait0(p os.process) outcome u32 =>
     _ := fzE_pipe_close p.std_in = 0
-    r := fzE_process_wait p.id
+    r := fzE_process_wait p.pid
     if r<0
-      error "Waiting for process with id {p.id} was unsuccessful."
+      error "Waiting for process with id {p.pid} was unsuccessful."
     else
       # NYI: UNDER DEVELOPMENT: close these:
       # check fzE_pipe_close p.std_out = 0

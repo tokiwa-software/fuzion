@@ -1,0 +1,90 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature signal
+#
+# -----------------------------------------------------------------------
+
+# hangup detected
+#
+public sig_hup is
+
+# interrupt
+#
+public sig_int is
+
+# quit
+#
+public sig_quit is
+
+# illegal instruction
+#
+public sig_ill is
+
+# trace/breakpoint trap
+#
+public sig_trap is
+
+# abort
+#
+public sig_abrt is
+
+# arithmetic error
+#
+public sig_fpe is
+
+# kill
+#
+public sig_kill is
+
+# invalid memory reference
+#
+public sig_segv is
+
+# broken pipe
+#
+public sig_pipe is
+
+# alarm, timer signal
+#
+public sig_alrm is
+
+# terminate
+#
+public sig_term is
+
+
+# definition of signals that can be sent to a process
+#
+public signal : choice sig_hup sig_int sig_quit sig_ill sig_trap sig_abrt sig_fpe sig_kill sig_segv sig_pipe sig_alrm sig_term is
+
+  module as_i32 i32 =>
+    match signal.this
+      sig_hup  => 1
+      sig_int  => 2
+      sig_quit => 3
+      sig_ill  => 4
+      sig_trap => 5
+      sig_abrt => 6
+      sig_fpe  => 8
+      sig_kill => 9
+      sig_segv => 11
+      sig_pipe => 13
+      sig_alrm => 14
+      sig_term => 15
