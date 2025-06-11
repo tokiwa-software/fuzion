@@ -67,7 +67,7 @@ lib_io_utf8 =>
         say (f.seek.env.seek 0)
 
 
-    _ := f.use file f.mode.read ()->(io.buffered f.file_mutate).read_fully
+    _ := f.use file f.mode.read ()->f.read_fully
       .bind bytes->
         filecontent := String.from_bytes bytes
         say "file content bytes: $bytes"

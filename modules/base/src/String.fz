@@ -791,6 +791,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
     (io.buffered LM).writer.env.write utf8
 
 
+  # NYI: BUG:
+  # public write(WRITER type: io.has_writer) (io.buffered WRITER.LM).writer.write_result ! (io.buffered WRITER.LM).writer
+  # =>
+  #   (io.buffered WRITER.LM).writer.env.write utf8
+
+
+
   # returns a zero terminated array of
   # the bytes of this String
   #

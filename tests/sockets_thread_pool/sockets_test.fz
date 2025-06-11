@@ -23,8 +23,6 @@
 
 sockets_test is
 
-  lm : mutate is
-
 
   # server handles one connection at a time
   #
@@ -36,14 +34,14 @@ sockets_test is
 
     accept =>
       (net.server.env.accept.bind c->
-        sc := c.in_thread_pool unit concur.thread_pool lm lm ()->
+        sc := c.in_thread_pool unit concur.thread_pool ()->
           chan => net.channel.env
 
           say_silent "$protocol/$family-server, accepted connection"
           say_silent chan.get_peer_address
           say_silent chan.get_peer_port
 
-          rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
+          rr := c.read_line_while (s -> !s.is_empty)
 
           say_silent "$protocol/$family-server, read lines: >{rr}<"
 
@@ -53,10 +51,10 @@ sockets_test is
               res := "received: {rr.as_string}\n\n"
 
               w =>
-                x := ((io.buffered lm).writer.env.write res.utf8.as_array).error
+                x := (c.writer.write res.utf8.as_array).error
 
                 match x
-                  unit => (io.buffered lm).writer.env.flush
+                  unit => c.writer.flush
                   error => x
 
               match w
@@ -91,7 +89,7 @@ sockets_test is
         say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
       c net.connection =>
 
-        res := c.in_thread_pool String concur.thread_pool lm lm ()->
+        res := c.in_thread_pool String concur.thread_pool ()->
 
             chan => net.channel.env
 
@@ -100,15 +98,15 @@ sockets_test is
               + "Client: {sockets_test.client.this.num}\n\n")
 
             w =>
-              _ := (io.buffered lm).writer.env.write req.utf8.as_array
-              _ := (io.buffered lm).writer.env.flush
+              _ := c.writer.write req.utf8.as_array
+              _ := c.writer.flush
 
             str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
 
             match protocol
               net.protocol.tcp =>
 
-                rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
+                rr := c.read_line_while (s -> !s.is_empty)
 
                 str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
 
