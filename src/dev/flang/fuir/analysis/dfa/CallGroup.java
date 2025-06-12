@@ -221,6 +221,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
       }
   }
 
+
   void saveEffects()
   {
     if (PRECONDITIONS) require
@@ -285,6 +286,18 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
       {
         usedAndMayHaveXXX(ecl);
         //        _dfa.instanceNeedsEffects(_cc).add(ecl);
+
+        _target.forAll(v ->
+                       {
+                         if (v instanceof RefValue rv)
+                           {
+                             v = rv._original;
+                           }
+                         if (v instanceof Instance iv && iv._group != null)
+                           {
+                             iv._group.needsEffect(ecl);
+                           }
+                       });
 
         if (false)
           if (_dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))

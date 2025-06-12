@@ -3186,6 +3186,19 @@ public class DFA extends ANY
           }
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
+        if (r._instance instanceof Instance riv)
+          {
+            riv._group = g;
+          }
+        else if (r._instance instanceof RefValue rv && rv._original instanceof Instance riv)
+          {
+            riv._group = g;
+          }
+        else
+          {
+            if (CHECKS) check
+              (false);
+          }
         e = r;
         var rf = r;
         wasChanged(() -> "DFA.newCall to " + rf);

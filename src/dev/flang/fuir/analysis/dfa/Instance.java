@@ -89,6 +89,9 @@ public class Instance extends Value
   final int _site;
 
 
+  CallGroup _group;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 

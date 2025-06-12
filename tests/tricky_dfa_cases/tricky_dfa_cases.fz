@@ -1,0 +1,142 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test tricky_dfa_cases
+#
+# -----------------------------------------------------------------------
+
+# a collection of cases that are tricky for the DFA analysis for different reasons:
+
+
+# ------ case 1 ------
+
+# first, we access an effect via a lambda that is passed as a function argument and called
+# via the outer ref of an inner instance.
+#
+test1(s ()->unit) =>
+  inner is
+    x => s()
+  inner.x
+
+# call test1 passing a lambda that does not need an effect
+test1 ()->
+  say "test1 not depending on `an_effect1`"
+
+# an effect to be used in the tests
+an_effect1 : effect is
+
+# call test1 passing a lambda that does need an effect
+an_effect1 ! ()->
+  test1 ()->
+    _ := an_effect1.env
+    say "test1 depending on `an_effect`"
+
+
+# ------ case 2 ------
+
+
+# now, we access an effect via a lambda that is passed as a function argument of
+# a function that returns in inner instance that provides a feature `x` to call
+# the lambda
+#
+test2(s ()->unit) =>
+  inner is
+    x => s()
+  inner
+
+# call test1 passing a lambda that does not need an effect
+test2 ()->
+    say "test2 not depending on `an_effect2`"
+    unit
+  .x
+
+# an effect to be used in the tests
+an_effect2 : effect is
+
+# call test1 passing a lambda that does need an effect
+an_effect2 ! ()->
+  test2 ()->
+      _ := an_effect2.env
+      say "test2 depending on `an_effect2`"
+    .x
+
+
+# ------ case 3 ------
+
+
+# now, the same scenario, but with one more intermediate function that passes the
+# lambda and inner result through.
+#
+test3a(s ()->unit) =>
+  inner is
+    x => s()
+  inner
+
+test3b(s ()->unit) =>
+  test3a s
+
+# call test1 passing a lambda that does not need an effect
+test3b ()->
+    say "test3 not depending on `an_effect3`"
+    unit
+  .x
+
+# an effect to be used in the tests
+an_effect3 : effect is
+
+# call test3b passing a lambda that does need an effect
+an_effect3 ! ()->
+  test3b ()->
+      _ := an_effect3.env
+      say "test3 depending on `an_effect3`"
+    .x
+
+
+# ------ case 4 ------
+
+
+# same as test3, but all wrapped into an outer feature `test4`
+
+test4 is
+
+  test4a(s ()->unit) =>
+    inner is
+      x => s()
+    inner
+
+  test4b(s ()->unit) =>
+    test4a s
+
+  # call test1 passing a lambda that does not need an effect
+  test4b ()->
+      say "test4 not depending on `an_effect4`"
+      unit
+    .x
+
+  # an effect to be used in the tests
+  an_effect4 : effect is
+
+  # call test1 passing a lambda that does need an effect
+  an_effect4 ! ()->
+    test4b ()->
+        _ := an_effect4.env
+        say "test4 depending on `an_effect4`"
+      .x
+
+test4 |> ignore
