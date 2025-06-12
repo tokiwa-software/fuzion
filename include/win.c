@@ -141,7 +141,7 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   }
 }
 
-int fzE_dir_read(intptr_t * dir, void * result) {
+int fzE_dir_read(intptr_t * dir, int8_t * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
   while ((res = FindNextFileW(d->handle, &d->findData)) &&
@@ -947,7 +947,7 @@ void * fzE_mtx_init() {
 #endif
 }
 
-int32_t fzE_mtx_lock(void *mtx) {
+int32_t fzE_mtx_lock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -955,7 +955,7 @@ int32_t fzE_mtx_lock(void *mtx) {
 #endif
 }
 
-int32_t fzE_mtx_trylock(void *mtx) {
+int32_t fzE_mtx_trylock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -963,7 +963,7 @@ int32_t fzE_mtx_trylock(void *mtx) {
 #endif
 }
 
-int32_t fzE_mtx_unlock(void *mtx) {
+int32_t fzE_mtx_unlock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -971,7 +971,7 @@ int32_t fzE_mtx_unlock(void *mtx) {
 #endif
 }
 
-void fzE_mtx_destroy(void *mtx) {
+void fzE_mtx_destroy(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
   // NYI: free(mtx);
@@ -988,7 +988,7 @@ void * fzE_cnd_init() {
 #endif
 }
 
-int32_t fzE_cnd_signal(void *cnd) {
+int32_t fzE_cnd_signal(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
 #else
@@ -996,7 +996,7 @@ int32_t fzE_cnd_signal(void *cnd) {
 #endif
 }
 
-int32_t fzE_cnd_broadcast(void *cnd) {
+int32_t fzE_cnd_broadcast(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
 #else
@@ -1004,7 +1004,7 @@ int32_t fzE_cnd_broadcast(void *cnd) {
 #endif
 }
 
-int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -1012,7 +1012,7 @@ int32_t fzE_cnd_wait(void *cnd, void *mtx) {
 #endif
 }
 
-void fzE_cnd_destroy(void *cnd) {
+void fzE_cnd_destroy(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_cond_destroy((pthread_cond_t *)cnd);
   // NYI: free(cnd);
@@ -1045,7 +1045,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
  * result[5] = sec
  * result[6] = nanosec;
  */
-void fzE_date_time(void * result)
+void fzE_date_time(int32_t * result)
 {
   time_t rawtime;
   LARGE_INTEGER counter;

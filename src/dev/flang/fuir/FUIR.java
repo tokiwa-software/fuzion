@@ -1513,7 +1513,18 @@ public abstract class FUIR extends IR
    */
   public boolean clazzIsArray(int cl)
   {
+    // NYI: UNDER DEVELOPMENT: get rid of string comparison
     return clazzOriginalName(cl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(cl);
+  }
+
+
+  /**
+   * Is {@code cl} an Array?
+   */
+  public boolean clazzIsArrayRef(int cl)
+  {
+    // NYI: UNDER DEVELOPMENT: get rid of string comparison
+    return clazzOriginalName(cl).compareTo("Array") == 0 && isConstructor(cl);
   }
 
 
