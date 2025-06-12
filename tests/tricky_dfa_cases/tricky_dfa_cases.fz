@@ -140,3 +140,20 @@ test4 is
       .x
 
 test4 |> ignore
+
+
+# ------ case 5 ------
+
+
+# smallest case I could produce to justify a workaround in `fuzion.java.Java_String.utf8`
+
+test5(s String) =>
+  # string concatenation somehow triggers missing effect warning:
+  _ := s+(codepoint 10)
+
+# call `test5` without the need for effects
+test5 "a"
+
+# call `test5` without the need for `fuzion.jvm` effect
+fuzion.jvm.use ()->
+  test5 Java.java.lang.__jString.new
