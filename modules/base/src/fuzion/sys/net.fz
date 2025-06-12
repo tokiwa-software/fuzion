@@ -68,7 +68,7 @@ module net is
     if res
       arr[0]
     else
-      error "net.connect failed (host=$host,port=$port), error number: {arr[0]}"
+      error "net.connect failed (host=$host, port=$port), error number: {arr[0]}"
 
 
   # read a maximum of max_bytes from descriptor, wrapper for read native
