@@ -34,13 +34,6 @@ public vars (p Vars_Handler) : effect is
     p.get v
 
 
-  # If set, get the environment variable corresponding to v.
-  # Otherwise, return default
-  #
-  public get(v String, default String) String =>
-    (get v).or_else get.this.default
-
-
   # install default instance of vars
   #
   type.install_default =>
