@@ -1,0 +1,507 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature http
+#
+# -----------------------------------------------------------------------
+
+# NYI: TODO: comment
+#
+# HTTP/1.1 as defined in
+# * HTTP/1.1        https://datatracker.ietf.org/doc/html/rfc9112
+# * HTTP Semantics  https://datatracker.ietf.org/doc/html/rfc9110
+# * HTTP Caching    https://datatracker.ietf.org/doc/html/rfc9111
+#
+#
+public http is
+
+
+  # need to be able to create new map with additional element without specifying the concrete map implementation
+  container.Map.add(k K, v V) container.Map K V
+    pre K : property.orderable
+  =>
+    orig := container.ordered_map K V keys values
+    orig.add k v
+
+
+
+  public dummy_req  => http.request_msg http.get "/dummy_req/content" 1 1 (container.ordered_map String String .empty .add "Host" "example.com") nil
+  public dummy_resp => http.response_msg dummy_req 1 1 900 "DUMMY" (container.ordered_map String String .empty )"".utf8
+
+
+  crlf => "\r\n"
+
+
+
+  # create and send http request
+  #
+  public request(method http.req_method,
+                url String,
+                headers option (container.Map String String),
+                body option (Sequence u8)) outcome http.response_msg
+  =>
+
+    # NYI: OPTIMIZATION:
+    url_lo := url.lower_case
+    secure := url_lo.starts_with "https://"
+    url_new := url_lo.starts_with "https://" ? url.substring 8
+                                             : url_lo.starts_with "http://" ? url.substring 7 : url
+
+    # create request object from URL, ...
+    url_split := url_new.split_n "/" 1
+
+    host := url_split[0]
+
+    tmp_headers := headers.or_else (container.ordered_map String String .empty) .add "Host" host
+    # NYI: BUG: body might need encoding
+    new_headers := body ? nil => tmp_headers | * => tmp_headers.add "content-length" body.val.count.as_string
+    location := "/" + (url_split.count = 2 ? url_split[1] : "")
+
+
+    # NYI: UNDER DEVELOPMENT: how to choose version?
+    req_msg := http.request_msg method location 1 1 new_headers body
+
+    say "request created:\n\n$req_msg" # FIXME: remove debug code
+
+    net_lm : mutate is
+    net_lm ! ()->
+
+      yak "\nmaking request..." # FIXME: remove debug code
+
+      match net.client net.family.ipv4 net.protocol.tcp host (secure ? u16 443 : u16 80)
+        error => exit 1
+        c net.connection =>
+          c.with _ net_lm ()->
+            check ((io.buffered net_lm).writer.env.write req_msg.bytes).error.ok
+            check (io.buffered net_lm).writer.env.flush.ok
+
+            say " [OK]" # FIXME: remove debug code
+            http.parse_response net_lm req_msg
+
+
+
+  # create and send http response
+  #
+  public response(NET_LM type : mutate, c net.connection, req request_msg, status_code i32, headers option (container.Map String String), body option (Sequence u8))
+    pre debug: 100 <= status_code < 1000
+  =>
+
+    tmp_headers := headers.or_else (container.ordered_map String String .empty)
+    # NYI: BUG: body might need encoding
+    new_headers := body ? nil => tmp_headers | * => tmp_headers.add "content-length" body.val.count.as_string
+
+    res_msg := response_msg req 1 1 status_code "" new_headers body
+
+    say "response created:\n\n$res_msg" # FIXME: remove debug code
+
+    yak "\nsending response..." # FIXME: remove debug code
+
+    c.with _ NET_LM ()->
+      check ((io.buffered NET_LM).writer.env.write res_msg.bytes).error.ok
+      check (io.buffered NET_LM).writer.env.flush.ok
+
+    say " [OK]" # FIXME: remove debug code
+
+
+
+  public get(url String) outcome http.response_msg =>
+    get url nil
+
+  public get(url String, headers option (container.Map String String) /* NYI:, url_param, ...*/) outcome http.response_msg =>
+    request http.get url headers nil
+
+  public head(url String) outcome http.response_msg =>
+    head url nil
+
+  public head(url String, headers option (container.Map String String) /* NYI:, url_param, ...*/) outcome http.response_msg =>
+    request http.head url headers nil
+
+  public post_r(url String, data Sequence u8) outcome http.response_msg =>
+    post_r url nil data
+
+  public post_r(url String, headers option (container.Map String String), data Sequence u8 /* NYI:, url_param, ...*/) outcome http.response_msg =>
+    request http.post_r url headers data
+
+
+
+  private:public Message ref is
+    version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
+
+    # header fields with original capitalization preserved
+    fields_orig container.Map String String => abstract
+
+    # header fields with all lower case
+    fields container.Map String String => abstract
+
+    fields_str String =>
+      fields_orig.items.map kv->
+                         k, v := kv
+                         "$k: $v" + crlf
+        .as_string ""
+
+    public has_field(name String) bool =>
+      fields.has name.lower_case
+
+    public get_field(name String) option String =>
+      fields[name.lower_case]
+
+    public bytes Sequence u8 => abstract
+
+    public redef as_string String => String.from_bytes bytes
+
+
+
+  private:public request_msg(method http.req_method, location String, version_major i32, version_minor i32,
+                header_fields container.Map String String, body option (Sequence u8)) : Message
+    # pre debug: dict.contains "Host"  # NYI: how to handle case insensitivity?
+  is
+
+    redef fields_orig => header_fields
+
+    redef fields => container.map_of (header_fields.items.map tup->{k,v:=tup; (k.lower_case, v)}).as_array
+
+    request_line String => "$method $location {version_str version_major version_minor}" + crlf
+
+    public redef bytes Sequence u8 =>
+      (request_line + fields_str + crlf).utf8 ++ (body.or_else "".utf8)
+
+
+  public get is
+  public head is
+  public post_r is
+  public put is
+  public delete is
+  public connect is
+  public options is
+  public trace is
+  public patch is
+
+  public req_method : choice http.get http.head http.post_r http.put http.delete
+                             http.connect http.options http.trace http.patch, property.equatable is
+
+    public fixed redef type.equality(a, b http.req_method) bool =>
+      match a
+        http.get     => b ? http.get     => true | * => false
+        http.head    => b ? http.head    => true | * => false
+        http.post_r  => b ? http.post_r  => true | * => false
+        http.put     => b ? http.put     => true | * => false
+        http.delete  => b ? http.delete  => true | * => false
+        http.connect => b ? http.connect => true | * => false
+        http.options => b ? http.options => true | * => false
+        http.trace   => b ? http.trace   => true | * => false
+        http.patch   => b ? http.patch   => true | * => false
+
+    public redef as_string =>
+      match req_method.this
+        http.get     => "GET"
+        http.head    => "HEAD"
+        http.post_r  => "POST"
+        http.put     => "PUT"
+        http.delete  => "DELETE"
+        http.connect => "CONNECT"
+        http.options => "OPTIONS"
+        http.trace   => "TRACE"
+        http.patch   => "PATCH" # NYI: is this part of HTTP 1.1
+
+
+
+  private:public response_msg(req request_msg,
+                              version_major i32, version_minor i32, status_code i32, reason_phrase String, # status line
+                              header_fields container.Map String String, body option (Sequence u8)) : Message is
+
+    redef fields_orig container.Map String String => header_fields
+
+    status_line String =>
+      "{version_str version_major version_minor} $status_code $reason_phrase$crlf"
+
+    public redef bytes Sequence u8 =>
+      (status_line + fields_str + crlf).utf8 ++ (body.or_else (Sequence u8).empty)
+
+
+
+  public parse_request(LM type: mutate) request_msg =>
+
+    # NYI: must parse header as superset of ASCII
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-2
+
+    # GET /images/logo.png HTTP/1.1
+
+    # request line
+    rl := match next_line LM
+            io.end_of_file => panic "unexpected end of file"
+            s String => s.split " "
+
+    if rl.count != 3 then panic "broken request line"
+
+    method http.req_method :=
+      if      rl[0] = "GET"     then http.get
+      else if rl[0] = "HEAD"    then http.head
+      else if rl[0] = "POST"    then http.post_r
+      else if rl[0] = "PUT"     then http.put
+      else if rl[0] = "DELETE"  then http.delete
+      else if rl[0] = "CONNECT" then http.connect
+      else if rl[0] = "OPTIONS" then http.options
+      else if rl[0] = "TRACE"   then http.trace
+      else if rl[0] = "PATCH"   then http.patch
+      else                           panic "unsupported request method"
+
+    target := rl[1]
+
+    if !rl[2].starts_with "HTTP/" then panic "unsupported protocol {rl[2]}"
+
+    ver := rl[2].substring 5 .split_n "." 1
+
+    major := ver[0].parse_i32.get
+    minor := ver.count = 1 ? 0 : ver[1].parse_i32.get
+
+    tmp_parsed_fields := parse_header_fields LM
+
+    header_fields :=
+      if target.starts_with "/"
+        tmp_parsed_fields
+      else
+        t1 := target.starts_with "http" ? (target.split_n "//" 1)[1] : target
+        host := (t1.split_n "/" 1)[0]
+        tmp_parsed_fields.add "Host" host
+
+    # NYI: BUG: body of requests currently ignored
+    #
+    # The presence of a message body in a request is signaled by a Content-Length or Transfer-Encoding header field. Request message framing is independent of method semantics.
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-6-4
+    #
+    body option (Sequence u8) => nil
+
+    request_msg method target major minor header_fields body
+
+
+  # Although the line terminator for the start-line and fields is the sequence CRLF,
+  # a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR.
+  # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-3
+  #
+  next_line(LM type : mutate) => (io.buffered LM).read_delimiter "\n".utf8[0] true
+
+
+
+  public parse_response(LM type : mutate, req http.request_msg) http.response_msg =>
+
+    # HTTP/1.1 200 OK
+
+    # status line
+    sl := match next_line LM
+            io.end_of_file => panic "unexpected end of file"
+            s String =>
+              # In the interest of robustness, a server that is expecting to receive and parse a request-line SHOULD ignore at least one empty line (CRLF) received prior to the request-line.
+              # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-6
+              raw_sl := s.starts_with crlf ? s.substring 2 : s
+              raw_sl.split_n " " 2
+
+    if sl.count != 3 then panic "broken status line"
+
+    if !sl[0].starts_with "HTTP/" then panic "not a HTTP message"
+
+    # When a major version of HTTP does not define any minor versions, the minor version "0" is implied. The "0" is used when referring to that protocol within elements that require a minor version identifier.
+    # https://datatracker.ietf.org/doc/html/rfc9110#section-2.5-6
+    ver := sl[0].substring 5 .split "." .map s->s.parse_i32.val
+    if ver.count > 2 then panic "broken version '$ver'"
+    major := ver[0]
+    minor := ver.count > 1 ? ver[1] : 0
+
+    code := sl[1].parse_i32.val
+
+    reason := sl[2]
+
+    header_fields := parse_header_fields LM
+
+    # NYI: UNDER DEVELOPMENT: parse body based on length attribute or encoding type etc.
+    # NYI: UNDER DEVELOPMENT: make this lazy
+    #
+    # The presence of a message body in a response, as detailed in Section 6.3, depends on both the request method to which it is responding and the response status code. This corresponds to when response content is allowed by HTTP semantics (Section 6.4.1 of [HTTP]).
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-6-5
+    #
+    body option (Sequence u8) =>
+      if (100 <= code < 200 # Informational
+          || code = 204     # No Content
+          || code = 304     # Not Modified
+          || req.method = http.head) # responses to HEAD requests must not contain body data
+      then
+        nil
+      else if (200 <= code < 300)
+
+        # Any 2xx (Successful) response to a CONNECT request implies that the connection will become a tunnel immediately after the empty line that concludes the header fields. A client MUST ignore any Content-Length or Transfer-Encoding header fields received in such a message.
+        # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.2
+
+        # NYI: BUG: TODO: implement this
+        nil
+
+      else if header_fields.has "transfer-encoding"
+        panic "NYI: UNDER DEVELOPMENT: transfer encoding not yet supported"
+      else if header_fields.has "content-length"
+        length i32 := header_fields["content-length"].val.parse_i32.val
+        content Sequence u8 := (io.buffered LM).read_bytes length
+        (content.count = length) ? content : (panic "actual content length {content.count} does not match specified content-length: $length")
+      else
+        # NYI: BUG: might be wrong to read body here
+
+        # If this is a request message and none of the above are true, then the message body length is zero (no message body is present).
+        # Otherwise, this is a response message without a declared message body length, so the message body length is determined by the number of octets received prior to the server closing the connection.
+        # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.7
+
+        (io.buffered LM).read_fully
+
+    http.response_msg req major minor code reason header_fields body
+
+
+
+  parse_header_fields(LM type : mutate) container.Map String String =>
+
+    lm : mutate is
+    lm ! ()->
+
+      fields := container.mutable_tree_map lm String String .empty
+
+      _ :=
+        for cur := match next_line LM
+                      io.end_of_file => panic "unexpected end of file"
+                      s String => s
+        while cur != ""
+        do
+
+          # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or ...
+          # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
+          if cur.starts_with " " then panic "whitespace between start line and header field"
+
+          parts := cur.split_n ":" 1
+          if parts.count != 2 then panic "broken header field '$cur'"
+          fields.put parts[0].lower_case parts[1].trim
+
+      fields.as_map
+
+
+
+/*
+NYI: TODO:
+
+
+Request target: authority-form
+https://datatracker.ietf.org/doc/html/rfc9112#name-authority-form
+
+Request target: asterisk-form
+https://datatracker.ietf.org/doc/html/rfc9112#name-asterisk-form
+
+Reconstructing the Target URI
+https://datatracker.ietf.org/doc/html/rfc9112#name-reconstructing-the-target-u
+
+Obsolete Line Folding
+https://datatracker.ietf.org/doc/html/rfc9112#name-obsolete-line-folding
+
+Transfer-Encoding
+https://datatracker.ietf.org/doc/html/rfc9112#name-transfer-encoding
+also: https://datatracker.ietf.org/doc/html/rfc9112#name-message-body-length
+
+Transfer Codings
+https://datatracker.ietf.org/doc/html/rfc9112#name-transfer-codings
+
+Missing, everything from 8 and up
+https://datatracker.ietf.org/doc/html/rfc9112#name-handling-incomplete-message
+
+
+
+
+When a server listening only for HTTP request messages, or processing what appears from the start-line to be an HTTP request message, receives a sequence of octets that does not match the HTTP-message grammar aside from the robustness exceptions listed above, the server SHOULD respond with a 400 (Bad Request) response and close the connection.
+https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-9
+
+HTTP does not place a predefined limit on the length of a request-line, as described in Section 2.3 of [HTTP]. A server that receives a method longer than any that it implements SHOULD respond with a 501 (Not Implemented) status code. A server that receives a request-target longer than any URI it wishes to parse MUST respond with a 414 (URI Too Long) status code (see Section 15.5.15 of [HTTP]). Various ad hoc limitations on request-line length are found in practice. It is RECOMMENDED that all HTTP senders and recipients support, at a minimum, request-line lengths of 8000 octets.
+https://datatracker.ietf.org/doc/html/rfc9112#section-3-4
+
+Recipients of an invalid request-line SHOULD respond with either a 400 (Bad Request) error or a 301 (Moved Permanently) redirect with the request-target properly encoded. A recipient SHOULD NOT attempt to autocorrect and then process the request without a redirect, since the invalid request-line might be deliberately crafted to bypass security filters along the request chain.
+https://datatracker.ietf.org/doc/html/rfc9112#section-3.2-4
+
+A client MUST send a Host header field (Section 7.2 of [HTTP]) in all HTTP/1.1 request messages. If the target URI includes an authority component, then a client MUST send a field value for Host that is identical to that authority component, excluding any userinfo subcomponent and its "@" delimiter (Section 4.2 of [HTTP]). If the authority component is missing or undefined for the target URI, then a client MUST send a Host header field with an empty field value.
+https://datatracker.ietf.org/doc/html/rfc9112#section-3.2-5
+
+A server MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request message that lacks a Host header field and to any request message that contains more than one Host header field line or a Host header field with an invalid field value.
+https://datatracker.ietf.org/doc/html/rfc9112#section-3.2-6
+
+
+A server MUST reject, with a response status code of 400 (Bad Request), any received request message that contains whitespace between a header field name and colon. A proxy MUST remove any such whitespace from a response message before forwarding the message downstream.
+https://datatracker.ietf.org/doc/html/rfc9112#section-5.1-2
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+  # TEST
+
+  public test =>
+    say "\nHTTP TEST"
+
+
+    say "\nCREATE REQUEST:\n"
+    my_req http.request_msg := (http.request_msg http.get "/docs/base" 2 0
+                                                 (container.map_of [("Host", "fuzion-lang.dev"),
+                                                                    ("User-Agent", "Fuzion HTTP Module"),
+                                                                    ("DNT", $"1")])
+                                                 nil)
+
+    say my_req
+
+
+    say "\nCREATE RESPONSE:\n"
+
+    my_resp http.response_msg := http.response_msg my_req 2 0 200 "OK"
+                                                   (container.map_of [("content-type", "text/html"),
+                                                                      ("server", "FuzionWebServer v0.016"),
+                                                                      ("x-frame-options", "DENY")])
+                                                   "  <body>\n    <p>Hello World!</p>\n  </body>".utf8
+    say my_resp
+
+
+    say "\n\nPARSE REQUEST:\n"
+
+    req_path := "/home/simon/playground/http/http_req.txt"
+
+
+    parse_req :=
+      io.file.use _ req_path io.file.mode.read ()->
+        req := http.parse_request io.file.file_mutate
+
+        say req
+        req
+    _:=parse_req
+
+
+    say "\n\nPARSE RESPONSE:\n"
+
+    resp_path := "/home/simon/playground/http/http_resp.txt"
+
+
+    _ := io.file.use _ resp_path io.file.mode.read ()->
+      resp := http.parse_response io.file.file_mutate my_req
+
+      say resp
+
+    unit
