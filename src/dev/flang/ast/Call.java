@@ -642,81 +642,53 @@ public class Call extends AbstractCall
        ? res.state(outer.outer()).atLeast(State.RESOLVING_DECLARATIONS)
        : res.state(outer)        .atLeast(State.RESOLVING_DECLARATIONS)));
 
-    var targetVoid = false;
     AbstractFeature targetFeature = null;
+
     if (_calledFeature == null)
       {
         targetFeature = targetFeature(res, context);
         if (CHECKS) check
           (Errors.any() || targetFeature != Types.f_ERROR);
-        targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != outer;
-        if (targetVoid || targetFeature == Types.f_ERROR)
-          {
-            _calledFeature = Types.f_ERROR;
-          }
       }
+
+    var targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != outer;
+    if (targetVoid || targetFeature == Types.f_ERROR)
+      {
+        setToErrorState0();
+      }
+
     if (_calledFeature == null && targetFeature != null)
       {
         res.resolveDeclarations(targetFeature);
-        var found = findOnTarget(res, targetFeature, true);
-        var fos = found.v0();
-        var fo  = found.v1();
-        if (fo != null &&
-            !isSpecialWrtArgs(fo._feature) &&
-            fo._feature != Types.f_ERROR &&
-            _generics.isEmpty() &&
-            _actuals.size() != fo._feature.valueArguments().size() &&
-            !fo._feature.hasOpenGenericsArgList(res))
-          {
-            splitOffTypeArgs(res, fo._feature, outer);
-          }
+        var fo = findOnTarget(res, targetFeature, true).v1();
         if (fo != null)
           {
-            _calledFeature = fo._feature;
-            if (_target == null)
-              {
-                _target = fo.target(pos(), res, context);
-                _targetFrom = fo;
-              }
+            splitOffTypeArgs(res, fo._feature, outer);
+            setCalledFeatureAndTarget(res, context, fo);
           }
-
-        if (_calledFeature == null &&                 // nothing found, so flag error
-            (Types.resolved == null ||                // may happen when building bad base.fum
-             targetFeature != Types.resolved.f_void)) // but allow to call anything on void
-          {
-            if (_target != null && _target.typeForInferencing() != null && !_target.typeForInferencing().isGenericArgument() && _target.typeForInferencing().feature().inheritsFrom(Types.resolved.f_auto_unwrap))
-              {
-                _target = new ParsedCall(_target, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context);
-                return loadCalledFeatureUnlessTargetVoid(res, context);
-              }
-            var tf = targetFeature;
-            _pendingError = ()->
-              {
-                if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
-                  { // give a more specific error when trying to call a choice feature
-                    AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
-                  }
-                else
-                  {
-                    triggerFeatureNotFoundError(res, fos, tf);
-                  }
-              };
-          }
-
       }
+
+    if (_calledFeature == null && mayUnwrapTarget())
+      {
+        _target = new ParsedCall(_target, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context);
+        var ignore = loadCalledFeatureUnlessTargetVoid(res, context);
+      }
+
+    if (needsPendingError(targetFeature))
+      {
+        addPendingError(res, targetFeature);
+      }
+
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
         resolveTypesOfActuals(res, context);
         findChainedBooleans(res, context);
       }
+
     // !isInheritanceCall: see issue #2153
     if (_calledFeature == null && !isInheritanceCall())
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
         findOperatorOnOuter(res, context);
-      }
-    if (_calledFeature == Types.f_ERROR)
-      {
-        _actuals = new List<>();
       }
 
     resolveTypesOfActuals(res, context);
@@ -728,6 +700,60 @@ public class Call extends AbstractCall
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
+  }
+
+
+  /**
+   * set _calledFeature and _target fields according to `fo`
+   */
+  private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
+  {
+    _calledFeature = fo._feature;
+    if (_target == null)
+      {
+        _target = fo.target(pos(), res, context);
+        _targetFrom = fo;
+      }
+  }
+
+
+  /**
+   * Do we need to add a pending error to this call?
+   */
+  private boolean needsPendingError(AbstractFeature targetFeature)
+  {
+    return _calledFeature == null &&                  // nothing found, so flag error
+           (Types.resolved == null ||                 // may happen when building bad base.fum
+            targetFeature != Types.resolved.f_void);  // but allow to call anything on void
+  }
+
+
+  /**
+   * Add a pending error to this call to be called later (or never).
+   */
+  private void addPendingError(Resolution res, AbstractFeature targetFeature)
+  {
+    _pendingError = ()->
+      {
+        var fos = findOnTarget(res, targetFeature, true).v0();
+        if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
+          { // give a more specific error when trying to call a choice feature
+            AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
+          }
+        else
+          {
+            triggerFeatureNotFoundError(res, fos, targetFeature);
+          }
+      };
+  }
+
+
+  /**
+   * Is the target of this call _unwrapable_, i.e. result type inheriting from auto_unwrap?
+   */
+  private boolean mayUnwrapTarget()
+  {
+    return _target != null && _target.typeForInferencing() != null && !_target.typeForInferencing().isGenericArgument() && _target.typeForInferencing().feature().inheritsFrom(Types.resolved.f_auto_unwrap);
   }
 
 
@@ -1045,7 +1071,7 @@ public class Call extends AbstractCall
    * @return true iff ff may be the called feature due to the special cases
    * listed above.
    */
-  private boolean isSpecialWrtArgs(AbstractFeature ff)
+  protected boolean isSpecialWrtArgs(AbstractFeature ff)
   {
     /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
     return ff.arguments().size()==0;
