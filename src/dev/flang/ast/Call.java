@@ -28,14 +28,12 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.ListIterator;
-import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
-import dev.flang.util.YesNo;
 import dev.flang.util.Pair;
 
 
