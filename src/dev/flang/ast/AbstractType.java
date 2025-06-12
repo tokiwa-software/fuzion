@@ -599,7 +599,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var og = i2.next();
         if (call != null)
           {
-            var tt = call.targetType();
+            var tt = call.targetType(context);
             if (CHECKS) check
               (tt != null);
 

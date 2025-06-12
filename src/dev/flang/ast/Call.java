@@ -122,18 +122,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Result of `targetType(Resolution, Context)` to be used after resolution.
-   */
-  protected AbstractType _targetType;
-
-  /**
-   * Type of the target of this call, set during type resolution. `null` if not
-   * set yet.
-   */
-  AbstractType targetType() { return _targetType; }
-
-
-  /**
    * Since _target will be replaced during phases RESOLVING_DECLARATIONS or
    * RESOLVING_TYPES we keep a copy of the original.  We will need the original
    * later to check if there is an ambiguity between the found called feature
@@ -482,17 +470,25 @@ public class Call extends AbstractCall
   protected AbstractType targetType(Resolution res, Context context)
   {
     _target = res.resolveType(_target, context);
-    _targetType =
-      // NYI: CLEANUP: For a type parameter, the feature result type is abused
-      // and holds the type parameter constraint.  As a consequence, we have to
-      // fix this here and set the type of the target explicitly here.
-      //
-      // Would be better if AbstractFeature.resultType() would do this for us:
+    return targetType(context);
+  }
+
+
+  /**
+   * Type of the target of this call.
+   */
+  AbstractType targetType(Context context)
+  {
+    // NYI: CLEANUP: For a type parameter, the feature result type is abused
+    // and holds the type parameter constraint.  As a consequence, we have to
+    // fix this here and set the type of the target explicitly here.
+    //
+    // Would be better if AbstractFeature.resultType() would do this for us:
+    return
       _target instanceof Call tc &&
       targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.type()
-                                       : targetTypeOrConstraint(res, context);
-    return _targetType;
+                                        : _target.type().selfOrConstraint(context);
   }
 
 
