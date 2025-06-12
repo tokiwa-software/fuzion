@@ -684,6 +684,11 @@ public class Call extends AbstractCall
             (Types.resolved == null ||                // may happen when building bad base.fum
              targetFeature != Types.resolved.f_void)) // but allow to call anything on void
           {
+            if (_target != null && _target.typeForInferencing() != null && !_target.typeForInferencing().isGenericArgument() && _target.typeForInferencing().feature().inheritsFrom(Types.resolved.f_auto_unwrap))
+              {
+                _target = new ParsedCall(_target, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context);
+                return loadCalledFeatureUnlessTargetVoid(res, context);
+              }
             var tf = targetFeature;
             _pendingError = ()->
               {
