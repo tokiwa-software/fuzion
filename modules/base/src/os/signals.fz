@@ -17,40 +17,58 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature signal
+#  Source code of Fuzion standard library feature signals
 #
 # -----------------------------------------------------------------------
 
-
-# definition of signals that can be sent to a process
+# signals -- unit feature to group signals
 #
-public signal
-  : choice
-      signals.hangup
-      signals.interrupt
-      signals.quit
-      signals.illegal_instruction
-      signals.trap
-      signals.abort
-      signals.arithmetic_error
-      signals.kill
-      signals.invalid_memory_reference
-      signals.broken_pipe
-      signals.alarm
-      signals.terminate
-is
+public signals is
 
-  module as_i32 i32 =>
-    match signal.this
-      signals.hangup  => 1
-      signals.interrupt  => 2
-      signals.quit => 3
-      signals.illegal_instruction  => 4
-      signals.trap => 5
-      signals.abort => 6
-      signals.arithmetic_error  => 8
-      signals.kill => 9
-      signals.invalid_memory_reference => 11
-      signals.broken_pipe => 13
-      signals.alarm => 14
-      signals.terminate => 15
+  # hangup detected
+  #
+  public hangup is
+
+  # interrupt
+  #
+  public interrupt is
+
+  # quit
+  #
+  public quit is
+
+  # illegal instruction
+  #
+  public illegal_instruction is
+
+  # trace/breakpoint trap
+  #
+  public trap is
+
+  # abort
+  #
+  public abort is
+
+  # arithmetic error (fpe)
+  #
+  public arithmetic_error is
+
+  # kill
+  #
+  public kill is
+
+  # invalid memory reference (segv)
+  #
+  public invalid_memory_reference is
+
+  # broken pipe
+  #
+  public broken_pipe is
+
+  # alarm, timer signal
+  #
+  public alarm is
+
+  # terminate (term)
+  #
+  public terminate is
