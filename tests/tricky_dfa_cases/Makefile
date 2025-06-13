@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = tricky_dfa_cases
+FUZION_OPTIONS = -modules=java.base
 include ../simple.mk
