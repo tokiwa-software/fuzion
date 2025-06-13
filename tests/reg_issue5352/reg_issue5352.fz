@@ -38,5 +38,5 @@ reg_issue5352 =>
   # same thing, but using an empty block right way
   q ({})
 
-  # same thing, but using an empty block right way
+  # using a non-empty block with a side effect
   q ({_ := ignore (say "this should run")})
