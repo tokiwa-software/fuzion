@@ -193,6 +193,7 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
+                clazzDeclarationPos(cl).bytePos(),
                 lookupJavaRef(cl)
                 );
           }
