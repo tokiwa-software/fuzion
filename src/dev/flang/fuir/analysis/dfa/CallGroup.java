@@ -295,7 +295,8 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
                            }
                          if (v instanceof Instance iv && iv._group != null)
                            {
-                             iv._group.needsEffect(ecl);
+                             if (false)
+                               iv._group.needsEffect(ecl);
                            }
                        });
 
