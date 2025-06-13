@@ -654,7 +654,7 @@ public class Call extends AbstractCall
     var targetVoid = Types.resolved != null && targetFeature == Types.resolved.f_void && targetFeature != outer;
     if (targetVoid || targetFeature == Types.f_ERROR)
       {
-        setToErrorState0();
+        setDefunct();
       }
 
     if (_calledFeature == null && targetFeature != null)
@@ -704,6 +704,18 @@ public class Call extends AbstractCall
 
 
   /**
+   * set this Call to defunct since its target is void
+   */
+  private void setDefunct()
+  {
+    _calledFeature = Types.f_ERROR;
+    _actuals = new List<>();
+    _generics = new List<>();
+    _type = Types.t_ERROR;
+  }
+
+
+  /**
    * set _calledFeature and _target fields according to `fo`
    */
   private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
@@ -733,9 +745,10 @@ public class Call extends AbstractCall
    */
   private void addPendingError(Resolution res, AbstractFeature targetFeature)
   {
+    // NYI: UNDER DEVELOPMENT: why can we not run this inside the lambda?, test typeinference_negative fails
+    var fos = findOnTarget(res, targetFeature, true).v0();
     _pendingError = ()->
       {
-        var fos = findOnTarget(res, targetFeature, true).v0();
         if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
           { // give a more specific error when trying to call a choice feature
             AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
