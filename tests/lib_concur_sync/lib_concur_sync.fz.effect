@@ -7,6 +7,6 @@ fuzion.runtime.pre_fault
 io.Err
 io.Out
 unique_id
+time.nano
 fuzion.runtime.post_fault
 panic
-time.nano
