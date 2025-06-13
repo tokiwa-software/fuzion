@@ -224,7 +224,7 @@ main =>
     .filter (x -> !x.is_blank)
     .as_array
 
-  (ok, skipped, failed) := results_content
+  ok, skipped, failed := results_content
     .reduce (0,0,0) (r, t)->
       if t.ends_with "ok"
         (r.0+1, r.1, r.2)

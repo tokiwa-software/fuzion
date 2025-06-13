@@ -54,7 +54,7 @@ private:module Mapped_Memory ref is
 # calls on this value are permitted, not even `p.as_string`, this will lead to
 # undefined behaviour.
 #
-private:module Array /* NYI: UNDER DEVELOPMENT: (ET type)*/ ref is
+private:module Array(ET type) ref is
 
 
 # a type denoting a (started) thread

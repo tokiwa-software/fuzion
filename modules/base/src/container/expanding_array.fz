@@ -194,7 +194,7 @@ is
       # bulk expand by all elements of `s`
       expand s.count ()->
         for e in s.indexed do
-          (i,v) := e
+          i, v := e
           container.expanding T .env.put length+i v
 
     else

@@ -406,6 +406,11 @@ public class Feature extends AbstractFeature
    */
   static long underscoreId = 0;
 
+  /**
+   * Quick-and-dirty way to generate unique names for destructure temporary features.
+   */
+  static long uniqueDestructureFeatureId = 0;
+
 
   /**
    * Constructor for universe
@@ -473,6 +478,28 @@ public class Feature extends AbstractFeature
           return true;
         }
       };
+  }
+
+
+  /**
+   * Create a temporary feature for destructuring
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param e the expression that is used in the field definition implementation
+   */
+  public static Feature destructure(SourcePosition pos,
+                                    Expr e)
+  {
+    return new Feature(pos,
+                       Visi.PRIV,
+                       0,
+                       NoType.INSTANCE,
+                       new List<String>(FuzionConstants.DESTRUCTURE_PREFIX + (uniqueDestructureFeatureId++)),
+                       new List<>(),
+                       Function.NO_CALLS,
+                       Contract.EMPTY_CONTRACT,
+                       new Impl(pos, e, Impl.Kind.FieldDef));
   }
 
 
@@ -1462,7 +1489,6 @@ public class Feature extends AbstractFeature
     @Override public void         actionBefore(Call            c) {        c.tryResolveTypeCall(res,   _context); }
     @Override public Call         action      (Call            c) { return c.resolveTypes      (res,   _context); }
     @Override public Expr         action      (DotType         d) { return d.resolveTypes      (res,   _context); }
-    @Override public Expr         action      (Destructure     d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
       if (f.isExtensionFeature() && f.outer() != null)
@@ -2076,6 +2102,7 @@ A ((Choice)) declaration must not contain a result type.
           // NYI: BUG: check if array element type is valid
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
           || !at.isGenericArgument() && at.feature().mayBeNativeValue()
+          || !at.isGenericArgument() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()
           )
         )
       {
@@ -2109,13 +2136,11 @@ A ((Choice)) declaration must not contain a result type.
     // might be fully resolved yet.
     if (Types.resolved.legalNativeArgumentTypes.isEmpty())
       {
-        var ptr = Types.resolved.f_fuzion_sys_array_data.resultType();
         var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0), null).selfType();
         var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
         var mm = res._module.lookupFeature(res.universe, FeatureName.get("Mapped_Memory", 0), null).selfType();
         var nr = res._module.lookupFeature(res.universe, FeatureName.get("Native_Ref", 0), null).selfType();
         Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
-        Types.resolved.legalNativeResultTypes.add(ptr);
         Types.resolved.legalNativeResultTypes.add(fd);
         Types.resolved.legalNativeResultTypes.add(dd);
         Types.resolved.legalNativeResultTypes.add(mm);
@@ -2123,7 +2148,6 @@ A ((Choice)) declaration must not contain a result type.
         Types.resolved.legalNativeResultTypes.add(Types.resolved.t_unit);
         Types.resolved.legalNativeResultTypes.add(Types.resolved.t_bool);
         Types.resolved.legalNativeArgumentTypes.addAll(Types.resolved.numericTypes);
-        Types.resolved.legalNativeArgumentTypes.add(ptr);
         Types.resolved.legalNativeArgumentTypes.add(fd);
         Types.resolved.legalNativeArgumentTypes.add(dd);
         Types.resolved.legalNativeArgumentTypes.add(mm);
@@ -2672,13 +2696,13 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @param refinedResultType the refined result type
    */
-  void setRefinedResultType(Resolution res, AbstractType refinedResultType)
+  void setRefinedResultType(Resolution res, Context context, AbstractType refinedResultType)
   {
     if (CHECKS) check
       // we must not patch result type later, because then
       // result type of result field etc. is also already set.
       (!state().atLeast(State.RESOLVING_SUGAR1),
-      _resultType == null || refinedResultType.isAssignableFrom(_resultType) || refinedResultType.isAssignableFrom(_resultType.asRef()));
+      _resultType == null || refinedResultType.isAssignableFrom(_resultType, context).yes());
 
     _resultType = refinedResultType;
   }

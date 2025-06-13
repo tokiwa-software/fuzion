@@ -329,7 +329,7 @@ public class Block extends AbstractBlock
   Block assignToField(Resolution res, Context context, Feature r)
   {
     Expr resExpr = removeResultExpression();
-    if (resExpr == null && r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
+    if (resExpr == null && r.resultType().isAssignableFromWithoutBoxing(Types.resolved.t_unit, context).yes())
       {
         resExpr = new Call(pos(), FuzionConstants.UNIT_NAME)
           .resolveTypes(res, context);

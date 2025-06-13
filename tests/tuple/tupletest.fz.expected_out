@@ -14,10 +14,7 @@ nothing7 is instance[tuple]
 nothing8 is instance[tuple]
 nothing9 is instance[tuple]
 one2 is 42
-one10 is 42
-one12 is 42
 PASSED: one2
-PASSED: one10
 two2 is 4, 2
 two3 is 4, 2
 two9 is 4, 2

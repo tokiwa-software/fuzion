@@ -153,22 +153,6 @@ public abstract class AbstractAssign extends Expr
    */
   void resolveTypes(Resolution res, Context context)
   {
-    resolveTypes(res, context, null);
-  }
-
-
-  /**
-   * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this assignment is used
-   *
-   * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure expression.
-   */
-  void resolveTypes(Resolution res, Context context, Destructure destructure)
-  {
   }
 
 
@@ -286,7 +270,7 @@ public abstract class AbstractAssign extends Expr
           (Errors.any() || frmlT != Types.t_ERROR,
            Errors.any() || _value.type() != Types.t_ERROR);
 
-        if (_value.type() != Types.t_ERROR && !frmlT.isAssignableFromWithoutBoxing(_value.type(), context))
+        if (_value.type() != Types.t_ERROR && frmlT.isAssignableFromWithoutBoxing(_value.type(), context).no())
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value, context);
           }

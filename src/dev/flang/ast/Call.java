@@ -28,14 +28,12 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.ListIterator;
-import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
-import dev.flang.util.YesNo;
 import dev.flang.util.Pair;
 
 
@@ -119,18 +117,6 @@ public class Call extends AbstractCall
   protected Expr _target;
   public Expr target() { return _target; }
   private FeatureAndOuter _targetFrom = null;
-
-
-  /**
-   * Result of `targetType(Resolution, Context)` to be used after resolution.
-   */
-  protected AbstractType _targetType;
-
-  /**
-   * Type of the target of this call, set during type resolution. `null` if not
-   * set yet.
-   */
-  AbstractType targetType() { return _targetType; }
 
 
   /**
@@ -482,17 +468,25 @@ public class Call extends AbstractCall
   protected AbstractType targetType(Resolution res, Context context)
   {
     _target = res.resolveType(_target, context);
-    _targetType =
-      // NYI: CLEANUP: For a type parameter, the feature result type is abused
-      // and holds the type parameter constraint.  As a consequence, we have to
-      // fix this here and set the type of the target explicitly here.
-      //
-      // Would be better if AbstractFeature.resultType() would do this for us:
+    return targetType(context);
+  }
+
+
+  /**
+   * Type of the target of this call.
+   */
+  AbstractType targetType(Context context)
+  {
+    // NYI: CLEANUP: For a type parameter, the feature result type is abused
+    // and holds the type parameter constraint.  As a consequence, we have to
+    // fix this here and set the type of the target explicitly here.
+    //
+    // Would be better if AbstractFeature.resultType() would do this for us:
+    return
       _target instanceof Call tc &&
       targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
       calledFeature().isConstructor()  ? _target.type()
-                                       : targetTypeOrConstraint(res, context);
-    return _targetType;
+                                        : _target.type().selfOrConstraint(context);
   }
 
 
@@ -1451,10 +1445,6 @@ public class Call extends AbstractCall
       {
         result = Types.resolved.t_void; // a recursive call will not return and execute further
       }
-    else if (!genericSizesMatch())
-      {
-        result = Types.t_ERROR;
-      }
     else
       {
         _recursiveResolveType = true;
@@ -2291,7 +2281,7 @@ public class Call extends AbstractCall
               .choiceGenerics(context)
               .stream()
               .filter(x -> !x.dependsOnGenerics())
-              .anyMatch(x -> x.isAssignableFrom(actualType, context));
+              .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
 
             if (!directlyAssignable)
               {
@@ -2659,6 +2649,10 @@ public class Call extends AbstractCall
                     r.run();
                   }
               }
+            if (!genericSizesMatch())
+              {
+                setToErrorState();
+              }
             inferFormalArgTypesFromActualArgs();
             setActualResultType(res, context);
             resolveFormalArgumentTypes(res, context);
@@ -2984,7 +2978,7 @@ public class Call extends AbstractCall
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (CHECKS) check
                   (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && !frmlT.isAssignableFromWithoutTagging(actl.type(), context))
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFromWithoutTagging(actl.type(), context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }

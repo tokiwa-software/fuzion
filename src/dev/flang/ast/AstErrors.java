@@ -192,6 +192,10 @@ public class AstErrors extends ANY
   {
     return sn2((names.map2(n->n._name)));
   }
+  static String sqpn(List<List<ParsedName>> names) // names as list "`a.b.c`, `k.l.m`, `x.y.z`"
+  {
+    return sn2((names.map2(pn->pn.map2(n->n._name).stream().collect(Collectors.joining(".")))));
+  }
   static String sv(AbstractFeature f)
   {
     return s(f.visibility()) + " " + s(f);
@@ -295,59 +299,6 @@ public class AstErrors extends ANY
   }
 
 
-  public static void featureOfMustInherit(SourcePosition pos, SourcePosition ofPos)
-  {
-    error(pos,
-          "Feature declaration that is implemented using " + code("of") + " must have inherit clause. ",
-          "Feature implementation starting at " + ofPos.show() + "\n" +
-          "To solve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
-  }
-
-
-  public static void featureOfMustContainOnlyDeclarations(Expr e, SourcePosition ofPos)
-  {
-    error(e.pos(),
-          "Feature implementation using " + code("of") + " must contain only feature declarations. ",
-          "Declaration started at " + ofPos.show() + "\n"
-          );
-  }
-
-
-  public static void featureOfMustContainOnlyUnqualifiedNames(Feature f, SourcePosition ofPos)
-  {
-    error(f.pos(),
-          "Feature implementation using " + code("of") + " must contain only unqualified declarations. ",
-          "Qualified feature name " + sqn(f._qname) + " is not permitted.\n" +
-          "Declaration started at " + ofPos.show() + "\n" +
-          "To solve this, you may replace the qualified name " + sqn(f._qname) + " by an unqualified name such as " +
-          ss(f._qname.size() > 0 ? f._qname.getLast() : "feature_name") + ".\n");
-  }
-
-
-  public static void featureOfMustNotHaveFormalGenerics(Feature f, SourcePosition ofPos)
-  {
-    error(f.pos(),
-          "Feature implementation using " + code("of") + " must contain only features without type parameters. ",
-          "Type parameters " + s(f.generics()) + " is not permitted.\n" +
-          "Declaration started at " + ofPos.show() + "\n" +
-          "To solve this, you may remove the type parameters " + s(f.generics()) + ".\n");
-  }
-
-
-  public static void featureOfMustContainOnlyConstructors(Feature f, SourcePosition ofPos)
-  {
-    error(f.pos(),
-          "Feature implementation using " + code("of") + " must contain only constructors. ",
-          "Feature " + sqn(f._qname) + " is not a constructor.\n" +
-          "Declaration started at " + ofPos.show() + "\n" +
-          (f.impl()._kind == Impl.Kind.RoutineDef
-           ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
-              "ensure that the code results in a value of type " + st(FuzionConstants.UNIT_NAME) + " " +
-              "in the declaration of " + sqn(f._qname) + ".\n")
-           : ("To solve this, you may remove the return type " + s(f.returnType()) + " " +
-              "from the declaration of " + sqn(f._qname) + ".\n")));
-  }
-
 
   /**
    * Create an error message for a declaration of a feature using
@@ -429,7 +380,7 @@ public class AstErrors extends ANY
             assignableToSB
               .append("assignable to       : ")
               .append(st(actlT.asRef().toString(true)));
-            if (frmlT.isAssignableFromOrContainsError(actlT, context))
+            if (!frmlT.isAssignableFromWithoutBoxing(actlT, context).no())
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
               }
@@ -437,7 +388,7 @@ public class AstErrors extends ANY
         else
           {
             var assignableTo = new TreeSet<String>();
-            frmlT.isAssignableFrom(actlT, assignableTo, context);
+            frmlT.isAssignableFrom(actlT, context, false, true, assignableTo);
             for (var ts : assignableTo)
               {
                 assignableToSB
@@ -447,7 +398,7 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && frmlT.asRef().isAssignableFrom(actlT, context))
+        if (remedy == null && frmlT.asRef().isAssignableFromWithoutBoxing(actlT, context).yes())
           {
             remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
           }
@@ -1696,7 +1647,7 @@ public class AstErrors extends ANY
   static void choiceMustNotBeRef(SourcePosition pos)
   {
     error(pos,
-          "choice feature must not be ref",
+          "Choice feature must not be ref",
           "A choice feature must be a value type since it is not constructed ");
   }
 
@@ -1876,35 +1827,19 @@ public class AstErrors extends ANY
       }
   }
 
-  static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<ParsedName> names)
+  public static void destructuringNonFields(SourcePosition pos, List<List<ParsedName>> names)
   {
     error(pos,
-          "Destructuring not possible for value whose type is a type parameter.",
-          "Type of expression is " + s(t) + "\n" +
-          "Cannot destructure value of type parameter type into (" + spn(names) + ")");
+          "Destructuring is only possible for fields.",
+          "Cannot destructure from a routine" +  (names == null ? "."
+                                                                : " into " + sqpn(names) + "."));
   }
 
-  static void destructuringRepeatedEntry(SourcePosition pos, String n, int count)
+  static void destructuringOutOfBounds(SourcePosition pos, AbstractFeature f, int select)
   {
     error(pos,
-          "Repeated entry in destructuring",
-          "Variable " + ss(n) + " appears " + StringHelpers.times(count) + ".");
-  }
-
-
-  static void destructuringMisMatch(SourcePosition pos, List<String> fieldNames, List<ParsedName> names)
-  {
-    int fn = fieldNames.size();
-    int nn = names.size();
-    error(pos,
-          "Destructuring mismatch between number of visible fields and number of target variables.",
-          "Found " + ((fn == 0) ? "no visible argument fields" :
-                      (fn == 1) ? "one visible argument field" :
-                      "" + fn + " visible argument fields"     ) + " " + sn(fieldNames) + "\n" +
-          (nn == 0 ? "while there are no destructuring variables" :
-           nn == 1 ? "while there is one destructuring variable: " + spn(names)
-                   : "while there are " + nn + " destructuring variables: " + spn(names)) + ".\n"
-          );
+          "Destructuring access to non-existing value argument.",
+          "Tried accessing value argument number " + select + " of feature " + s(f) + " which only has " + f.valueArguments().size() + " value arguments");
   }
 
   static void illegalResultType(AbstractFeature f, ReturnType rt)
@@ -2059,7 +1994,7 @@ public class AstErrors extends ANY
       {
         error(value.pos(),
               "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
-              .filter(cg -> cg.isAssignableFrom(value.type(), Context.NONE))
+              .filter(cg -> cg.isAssignableFromWithoutBoxing(value.type(), Context.NONE).yes())
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))
               );

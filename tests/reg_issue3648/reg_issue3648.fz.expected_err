@@ -6,16 +6,4 @@ In call to 'reg_issue3648.b', no actual type parameters are given and inference 
 Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
-
---CURDIR--/reg_issue3648.fz:29:8: error 2: Incompatible types when passing argument in a call
-  say (type_as_value (Node i32))
--------^^^^^^^^^^^^^
-Actual type for argument #1 's' does not match expected type.
-In call to          : 'say'
-expected formal type: 'Any'
-actual type found   : 'reg_issue3648.type.Node.type i32'
-assignable to       : 'reg_issue3648.type.Node.type i32'
-for value assigned  : '(type_as_value (Node i32))'
-To solve this, you could change the type of the target 's' to 'reg_issue3648.type.Node.type i32' or convert the type of the assigned value to 'Any'.
-
-2 errors.
+one error.

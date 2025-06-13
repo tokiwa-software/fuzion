@@ -35,13 +35,13 @@ FILE = $(NAME).fz
 all: jvm c int
 
 int:
-	$(FUZION) -noBackend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -noBackend $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
 
 jvm:
-	$(FUZION) -classes $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -classes $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
 
 c:
-	$(FUZION) -c $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -c $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
 
 effect:
 	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
