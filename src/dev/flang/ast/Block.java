@@ -394,6 +394,23 @@ public class Block extends AbstractBlock
 
 
   /**
+   * @see Expr.propagateExpectedTypeForPartial
+   */
+  @Override
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
+  {
+    var r = resultExpression();
+    return
+      r != null                        ? r.propagateExpectedTypeForPartial(res, context, expectedType) :
+      expectedType
+        .isFunctionTypeExcludingLazy() ? // r == null means we have an empty block. If assigned
+                                         // to a function, we try to partially apply this:
+                                         new Function(pos(), NO_EXPRS, this)
+                                       : this;
+  }
+
+
+  /**
    * check that each expression in this block
    * results in either unit or void.
    */
