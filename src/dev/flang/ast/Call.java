@@ -746,7 +746,9 @@ public class Call extends AbstractCall
   private void addPendingError(Resolution res, AbstractFeature targetFeature)
   {
     // NYI: UNDER DEVELOPMENT: why can we not run this inside the lambda?, test typeinference_negative fails
-    var fos = findOnTarget(res, targetFeature, true).v0();
+    var fos = targetFeature == null
+      ? new List<FeatureAndOuter>()
+      : findOnTarget(res, targetFeature, true).v0();
     _pendingError = ()->
       {
         if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
