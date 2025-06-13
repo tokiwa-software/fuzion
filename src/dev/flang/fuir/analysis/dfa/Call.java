@@ -66,8 +66,6 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   int _uniqueCallId = -1;
 
-  final boolean _real;
-
 
   /**
    * The DFA instance we are working with.
@@ -160,7 +158,6 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public Call(CallGroup group,  List<Val> args, Env env, Context context)
   {
-    _real = group._dfa._real;
     _group = group;
     _dfa = group._dfa;
     _cc = group._cc;
@@ -199,6 +196,26 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * Compare the environments of this Call with that of other, taking into
+   * account only the actually required effects.
+   *
+   * @param other another call
+   *
+   * @return the result of the version of Env.compare() that was used, -1, 0, or
+   * +1.
+   */
+  int envCompare(Call other)
+  {
+    return DFA.COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED
+      ? Env.compare(_dfa._real
+                    ? _dfa._effectsRequiredByClazz.get(_cc)
+                    : _group._usedEffects,
+                    env(), other.env())
+      : Env.compare(env(), other.env());
+  }
+
+
+  /**
    * Compare this to another Call.
    */
   public int compareTo(Call other)
@@ -206,27 +223,7 @@ public class Call extends ANY implements Comparable<Call>, Context
     var res = _group.compareTo(other._group);
     if (res == 0 && _dfa._real)
       {
-        if (DFA.COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED)
-          {
-            if (false)
-              {
-                var which = new TreeSet<Integer>();
-                which.addAll(_group._usedEffects);
-                which.addAll(other._group._usedEffects);
-                res = Env.compare(which, env(), other.env());
-              }
-            else
-              {
-                res = Env.compare(_real
-                                  ? _dfa._effectsRequiredByClazz.get(_cc)
-                                  : _group._usedEffects,
-                                  env(), other.env());
-              }
-          }
-        else
-          {
-            res = Env.compare(env(), other.env());
-          }
+        res = envCompare(other);
       }
     return res;
   }
@@ -238,14 +235,13 @@ public class Call extends ANY implements Comparable<Call>, Context
   String compareToWhy(Call other)
   {
     return
-      _cc         != other._cc            ? "cc different" :
-      _target._id != other._target._id    ? "target different" :
-      _site       != other._site          ? "site different" :
-      Env.compare(_real
-                  ? _dfa._effectsRequiredByClazz.get(_cc)
-                  : _group._usedEffects,
-                  env(), other.env())!= 0 ? "env different" + " env1: "+env()+ " env2: "+other.env() + " used "+_group.usedEffectsAsString() +" req "+_group.requiredEffectsAsString()
-                                          : "not different";
+      _cc         != other._cc         ? "cc different" :
+      _target._id != other._target._id ? "target different" :
+      _site       != other._site       ? "site different" :
+      envCompare(other) != 0           ? "env different" + " env1: "+env()+ " env2: "+other.env() +
+                                         " used " + _group.usedEffectsAsString() +
+                                         " req " + _group.requiredEffectsAsString()
+                                       : "not different";
   }
 
 

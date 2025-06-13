@@ -1279,7 +1279,8 @@ public class DFA extends ANY
   public void dfa()
   {
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
-    findFixPoint(false);
+    _real = false;
+    findFixPoint();
 
     for (var k : _callGroupsQuick.keySet())
       {
@@ -1306,20 +1307,26 @@ public class DFA extends ANY
     _instancesForSite = new List<>();
     _unitCalls = new IntMap<>();
 
-    findFixPoint(true);
+    _real = true;
+    findFixPoint();
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
   }
 
+
+  /**
+   * When using two-pased DFA, is this the first phase to find required effects,
+   * or the real phase?
+   */
   boolean _real;
+
 
   /**
    * Iteratively perform data flow analysis until a fix point is reached.
    */
-  void findFixPoint(boolean real)
+  void findFixPoint()
   {
-    _real = real;
     var cnt = 0;
     do
       {
@@ -1362,7 +1369,7 @@ public class DFA extends ANY
           }
       }
 
-    if (real)
+    if (_real)
       {
         _reportResults = true;
         iteration();
@@ -2826,39 +2833,44 @@ public class DFA extends ANY
   }
 
 
-  static boolean ONLY_ONE_INSTANCE  = !false;
+  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = true;
 
-  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = !false;
 
+
+  static boolean ONLY_ONE_INSTANCE  = true;
 
   List<Boolean> _onlyOneInstance = new List<>();
 
 
   boolean onlyOneInstance(int clazz)
   {
-    if (!ONLY_ONE_INSTANCE) return false;
-    var cnum = _fuir.clazzId2num(clazz);
-    var b = _onlyOneInstance.getIfExists(cnum);
-    if (b == null)
+    var result = false;
+    if (ONLY_ONE_INSTANCE)
       {
-        // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
-        // this should be something generic instead, e.g.
-        //
-        //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
-        //
-        b = switch (_fuir.clazzAsString(clazz))
+        var cnum = _fuir.clazzId2num(clazz);
+        var b = _onlyOneInstance.getIfExists(cnum);
+        if (b == null)
           {
-          case
-          "list u8",
-          "codepoint",
-          "Sequence u8",
-          "array u8",
-          "fuzion.sys.internal_array u8" -> true;
-          default -> false;
-          };
-        _onlyOneInstance.force(cnum, b);
+            // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
+            // this should be something generic instead, e.g.
+            //
+            //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
+            //
+            b = switch (_fuir.clazzAsString(clazz))
+              {
+              case
+              "list u8",
+              "codepoint",
+              "Sequence u8",
+              "array u8",
+              "fuzion.sys.internal_array u8" -> true;
+              default -> false;
+              };
+            _onlyOneInstance.force(cnum, b);
+          }
+        result = b;
       }
-    return b;
+    return result;
   }
 
 
