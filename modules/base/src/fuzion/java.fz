@@ -42,7 +42,6 @@ public java is
       fuzion.jvm.env.is_null0 java_ref
 
 
-
     # NYI: UNDER DEVELOPMENT:
     # redef as_string String =>
     #   call_virtual "java.lang.Object" "toString" "()Ljava.lang.String;" Java_Object.this []
