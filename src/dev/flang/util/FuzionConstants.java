@@ -427,6 +427,12 @@ public class FuzionConstants extends ANY
   public static final String MODULE_FILE_SUFFIX = ".fum";
 
 
+  /**
+   * Name of feature to call for unwrapping.
+   */
+  public static final String UNWRAP = "unwrap";
+
+
   /*-----------------  special values used in MIR file  -----------------*/
 
 
@@ -558,6 +564,8 @@ public class FuzionConstants extends ANY
    * heirs.
    */
   public static final int MODIFIER_FIXED        = 0x02;
+
+
   static { if (CHECKS) check(modifierToString(MODIFIER_FIXED).trim().equals("fixed")); }
 
 

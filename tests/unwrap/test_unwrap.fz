@@ -36,7 +36,5 @@ test_unwrap =>
       say2 a
       say2 b
 
-      e := 0+a+b
-      # NYI: UNDER DEVELOPMENT: Feature not found: 'infix +' (one argument), Target feature: 'mutate.new'
-      # e := a+b+c+d
+      e := a+b
       say2 e
