@@ -403,3 +403,6 @@ module fzE_null Native_Ref => native
 
 
 module fzE_is_null(p Native_Ref) i32 => native
+
+
+module fzE_send_signal(pid i64, signal i32) i32 => native

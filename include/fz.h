@@ -759,5 +759,7 @@ void * fzE_null(void);
  */
 int fzE_is_null(void * p);
 
+int fzE_send_signal(int64_t pid, int sig);
+
 
 #endif /* fz.h  */

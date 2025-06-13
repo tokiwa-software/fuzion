@@ -23,7 +23,7 @@
 
 # type denoting a started process
 #
-module:public process(module id, std_in, std_out, std_err i64) : property.orderable is
+module:public process(public pid i64, module std_in, std_out, std_err i64) : property.orderable is
 
   # how many bytes are read at a time
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
@@ -160,7 +160,13 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
   #
   public wait outcome u32 =>
     # NYI: process should be ref?
-    os.processes.wait (os.process id std_in std_out std_err)
+    os.processes.wait (os.process pid std_in std_out std_err)
+
+
+  # send signal to processm
+  #
+  public send_signal(sig signal) outcome unit=>
+    fzE_send_signal pid sig.as_i32 = 0 ? unit : error "error sending signal to process $pid: $fzE_last_error"
 
 
   # start a process with name, arguments and environment variables
@@ -183,13 +189,13 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
 
   # equality
   #
-  public fixed redef type.equality(a, b process.this) bool => a.id = b.id
+  public fixed redef type.equality(a, b process.this) bool => a.pid = b.pid
 
 
   # lteq
   #
   public fixed redef type.lteq(a, b process.this) bool =>
-    a.id <= b.id
+    a.pid <= b.pid
 
 
 

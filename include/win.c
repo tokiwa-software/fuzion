@@ -1120,3 +1120,9 @@ int32_t fzE_file_flush(void *file)
 void * fzE_file_stdin (void) { return GetStdHandle(STD_INPUT_HANDLE); }
 void * fzE_file_stdout(void) { return GetStdHandle(STD_OUTPUT_HANDLE); }
 void * fzE_file_stderr(void) { return GetStdHandle(STD_ERROR_HANDLE); }
+
+int fzE_send_signal(int64_t pid, int sig)
+{
+  // windows does not have signals
+  return -1;
+}
