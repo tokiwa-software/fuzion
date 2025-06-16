@@ -219,7 +219,9 @@ delete_tmp_files =>
 
 
 be     := envir.args[1]
-fz_run := envir.args[2]
+# bash -c is necessary since windows CreateProcess
+# can not execute bash scripts directly
+fz_run := envir.args[2].replace "../../bin/fz" "bash -c \$PWD/../../bin/fz{protected_space}\$@ dummy"
 file   := envir.args[3]
 exp_out := if be = "effect"
              "$file.effect"
