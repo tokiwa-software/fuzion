@@ -2055,6 +2055,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
         @Override public Expr         action(Function       f) { return f.checkTypes();                         }
+        @Override public void         action(Tag            t) {        t.checkTypes(_context);                 }
       });
 
     res._module.checkTypes(this);
