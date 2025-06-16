@@ -49,6 +49,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  // mkdir
 #include <sys/wait.h>
+#include <signal.h>
 #include <unistd.h>     // close
 #include <time.h>
 #include <assert.h>
@@ -58,6 +59,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include "fz.h"
+
+
+static_assert(SIGHUP == 1, "signal definition different than expected");
+static_assert(SIGINT == 2, "signal definition different than expected");
+static_assert(SIGQUIT == 3, "signal definition different than expected");
+static_assert(SIGILL == 4, "signal definition different than expected");
+static_assert(SIGTRAP == 5, "signal definition different than expected");
+static_assert(SIGABRT == 6, "signal definition different than expected");
+static_assert(SIGFPE == 8, "signal definition different than expected");
+static_assert(SIGKILL == 9, "signal definition different than expected");
+static_assert(SIGSEGV == 11, "signal definition different than expected");
+static_assert(SIGPIPE == 13, "signal definition different than expected");
+static_assert(SIGALRM == 14, "signal definition different than expected");
+static_assert(SIGTERM == 15, "signal definition different than expected");
+
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
@@ -931,4 +947,9 @@ void * fzE_file_stderr(void) { return stderr; }
 int32_t fzE_file_flush(void * file)
 {
   return fflush(file) == 0 ? 0 : -1;
+}
+
+int fzE_send_signal(int64_t pid, int sig)
+{
+  return kill(pid, sig);
 }

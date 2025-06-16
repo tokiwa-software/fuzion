@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature signal
+#
+# -----------------------------------------------------------------------
+
+
+# definition of signals that can be sent to a process
+#
+public signal
+  : choice
+      signals.hangup
+      signals.interrupt
+      signals.quit
+      signals.illegal_instruction
+      signals.trap
+      signals.abort
+      signals.arithmetic_error
+      signals.kill
+      signals.invalid_memory_reference
+      signals.broken_pipe
+      signals.alarm
+      signals.terminate
+is
+
+  module as_i32 i32 =>
+    match signal.this
+      signals.hangup  => 1
+      signals.interrupt  => 2
+      signals.quit => 3
+      signals.illegal_instruction  => 4
+      signals.trap => 5
+      signals.abort => 6
+      signals.arithmetic_error  => 8
+      signals.kill => 9
+      signals.invalid_memory_reference => 11
+      signals.broken_pipe => 13
+      signals.alarm => 14
+      signals.terminate => 15
