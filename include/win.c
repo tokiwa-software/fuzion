@@ -156,7 +156,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
     assert (sizeNeeded != 0);
     assert(sizeNeeded >= 0 && sizeNeeded<1024); // NYI:
 
-    int len = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, result, sizeNeeded, NULL, NULL) - 1;
+    int len = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, (void *)result, sizeNeeded, NULL, NULL) - 1;
 
     return len == 0
       ? -1
