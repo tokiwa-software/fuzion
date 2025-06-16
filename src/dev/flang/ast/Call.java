@@ -2856,25 +2856,6 @@ public class Call extends AbstractCall
                                                             context,
                                                             formalType,
                                                             () -> "formal argument type in call to " + AstErrors.s(_calledFeature)));
-
-    if (_target != null)
-      {
-        // This informs target that it is used which may
-        // - e.g. for if- and match-expressions -
-        // lead to these expressions adding a result field via
-        // `addFieldForResult`.
-        // This result field is then the target of the call.
-        //
-        // NYI: CLEANUP: there should be another mechanism, for
-        // adding missing result fields instead of misusing
-        // `propagateExpectedType`.
-        //
-        var t = _target.typeForInferencing();
-        if (t != null)
-          {
-            _target = _target.propagateExpectedType(res, context, t, null);
-          }
-      }
   }
 
 

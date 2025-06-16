@@ -1954,6 +1954,13 @@ A ((Choice)) declaration must not contain a result type.
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
           });
 
+        /**
+         * Add result fields for match expressions
+         */
+        visit(new ContextVisitor(context()) {
+            @Override public Expr action(Match m) { return m.addResultField(res, _context); }
+          });
+
         /*
          * extra pass to automatically wrap values into 'Lazy'
          * or unwrap values inheriting {@code unwrap}

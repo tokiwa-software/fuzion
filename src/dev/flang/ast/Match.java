@@ -124,14 +124,15 @@ public class Match extends AbstractMatch
     var os = _subject;
     var ns = _subject.visit(v, outer);
     if (CHECKS) check
+      // check that subject does not change while visiting
       (os == _subject);
     _subject = ns;
-    v.action(this);
+    v.action((AbstractMatch)this);
     for (var c: cases())
       {
         c.visit(v, this, outer);
       }
-    return this;
+    return v.action(this);
   }
 
 
@@ -241,11 +242,16 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    // NYI: CLEANUP: there should be another mechanism, for
-    // adding missing result fields instead of misusing
-    // `propagateExpectedType`.
-    //
-    return addFieldForResult(res, context, t);
+    // NYI: does not hold?
+    // if (CHECKS)
+    //   check(_type == null || _type.compareTo(t) == 0);
+    _type = t;
+    for (var ac: cases())
+      {
+        var c = (Case) ac;
+        c._code = c._code.propagateExpectedType(res, context, t, from);
+      }
+    return this;
   }
 
 
@@ -259,9 +265,10 @@ public class Match extends AbstractMatch
    *
    * @param t the type to use for the result field
    */
-  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  Expr addResultField(Resolution res, Context context)
   {
     Expr result = this;
+    var t = type();
     if (!t.isVoid())
       {
         var pos = pos();
