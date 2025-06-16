@@ -1,0 +1,238 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature for HTTP messages:
+#  * Message
+#  * request_msg,
+#  * req_method
+#  * response_msg,
+#  * parse_request,
+#  * parse_response
+#
+# -----------------------------------------------------------------------
+
+
+# HTTP message, can be a request or a response
+#
+public Message ref is
+  module version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
+
+  # the start line of the message, for requests it is the request line, for responses the status line
+  public start_line String => abstract
+
+  # header fields with all lower case
+  public fields container.Map String String => abstract
+
+  module fields_str String =>
+    fields.items.map kv->
+                        k, v := kv
+                        "$k: $v" + crlf
+      .as_string ""
+
+  # checks if the header contains the field
+  public has_field(name String) bool =>
+    fields.has name.lower_case
+
+  # returns the fields value, if the field exists in the header
+  public get_field(name String) option String =>
+    fields[name.lower_case]
+
+  # NYI: can only be called once
+  # body of the message, if it has one
+  # public body option (Sequence u8) => abstract
+  public body io.Read_Handler => abstract
+
+  # NYI: can only be called once
+  # the whole message as a sequence of bytes
+  public bytes Sequence u8 =>
+    # NYI BUG, read fully
+    (start_line + fields_str + crlf).utf8 ++ (match (body.read 1E6)
+                                                a array u8 => a
+                                                * => [])
+
+  # String representation of the message header
+  public redef as_string String => start_line + fields_str + crlf
+
+  # NYI: can only be called once
+  # String representation of the message header
+  public as_string_with_body String => start_line + fields_str + crlf
+
+
+
+# Although the line terminator for the start-line and fields is the sequence CRLF,
+# a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR.
+# https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-3
+#
+module next_line(LM type : mutate) => (io.buffered LM).read_delimiter "\n".utf8[0] true
+
+
+
+module parse_header_fields(LM type : mutate) outcome (container.Map String String) =>
+
+  exception unit (container.Map String String) ()->
+
+    cause(s String) void =>
+      (exception unit).env.cause (error s)
+
+    lm : mutate is
+    lm ! ()->
+
+      fields := container.mutable_tree_map lm String String .empty
+
+      _ :=
+        for cur := match next_line LM
+                      io.end_of_file => cause "unexpected end of input"
+                      s String => s
+        while cur != ""
+        do
+
+          # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it
+          # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
+          if cur.starts_with " " then cause "whitespace between start line and header field"
+
+          parts := cur.split_n ":" 1
+          if parts.count != 2 then cause "broken header field '$cur'"
+          fields.put parts[0].lower_case parts[1].trim
+
+      fields.as_map
+
+
+module:public body_reader(
+  # mutate effect from which to read
+  LM type : mutate,
+  # size that should be read if known, -1 to read until connection closes
+  reader_size i32) : io.Read_Handler is
+
+    remaining := mut reader_size
+
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
+
+      if remaining.get = 0
+        io.end_of_file
+      else
+        # TODO: read
+        content Sequence u8 := (io.buffered LM).read_bytes count
+
+        # TODO: check if smaller than expected and remaining should have been sufficient
+        res choice (array u8) io.end_of_file error :=
+          if content.count != count && reader_size >= 0 && remaining.get - count >= 0
+            error "input closed after {content.count} bytes, but specified content-length: $reader_size"
+          else
+            content.count > 0 ? content.as_array : io.end_of_file
+
+        # TODO: decrease remaining
+        if reader_size >= 0
+          new_remaining := remaining.get - count
+          remaining <- (new_remaining >= 0 ? new_remaining : 0)
+
+        # TODO: return byte array
+        res
+
+
+
+# module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome (option (Sequence u8)) =>
+module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome io.Read_Handler =>
+  exception unit io.Read_Handler ()->
+
+    cause(s String) void =>
+      (exception unit).env.cause (error s)
+
+    # If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length.
+    # Such a message might indicate an attempt to perform request smuggling (Section 11.2) or response splitting (Section 11.1) and ought to be handled as an error.
+    # An intermediary that chooses to forward the message MUST first remove the received Content-Length field and process the Transfer-Encoding (as described below) prior to forwarding the message downstream.
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.3
+    if header_fields.has "transfer-encoding" && header_fields.has "content-length"
+      cause "request header contains both 'transfer-encoding' and 'content-length' field"
+
+    else if header_fields.has "transfer-encoding"
+
+      transfer_encodings := header_fields["transfer-encoding"].val.split "," .map (.trim)
+
+      # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
+      if transfer_encodings.last.val = "chunked"
+        panic "NYI: UNDER DEVELOPMENT: chunked transfer encoding not yet supported"
+        # TODO: read chunks, this should probably be done lazy
+
+      # If a Transfer-Encoding header field is present in a response and the chunked transfer coding is not the final encoding, the message body length is determined by reading the connection until it is closed by the server.
+      else if !is_req
+        # option (Sequence u8) (io.buffered LM).read_fully
+        body_reader LM -1
+
+      # If a Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding, the message body length cannot be determined reliably; the server MUST respond with the 400 (Bad Request) status code and then close the connection.
+      else
+        cause "400 bad request, Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding"
+
+    else if header_fields.has "content-length"
+      match header_fields["content-length"].val.parse_i32
+        error =>
+
+          # NYI: UNDER DEVELOPMENT: implement recovery
+          # unless the field value can be successfully parsed as a comma-separated list (Section 5.6.1 of [HTTP]), all values in the list are valid, and all values in the list are the same (in which case, the message is processed with that single value used as the Content-Length field value)
+
+          cause "invalid value for field content-length"
+
+        length i32 =>
+          # content Sequence u8 := (io.buffered LM).read_bytes length
+          # (content.count = length) ? option content : (cause "input closed after {content.count} bytes, but specified content-length: $length")
+          body_reader LM length
+
+
+    # If this is a request message and none of the above are true, then the message body length is zero (no message body is present).
+    # Otherwise, this is a response message without a declared message body length, so the message body length is determined by the number of octets received prior to the server closing the connection.
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.7
+    else
+      # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
+      body_reader LM (is_req ? 0 : -1)
+
+
+/*
+NYI: TODO:
+
+- [ ] Transfer encoding: implement reading chunked message
+- [ ] Anpassungen für andere HTTP Versionen -> wie sinnvoll unterteilen und voneinander abgrenzen?
+
+
+
+Reconstructing the Target URI
+https://datatracker.ietf.org/doc/html/rfc9112#name-reconstructing-the-target-u
+
+Obsolete Line Folding
+https://datatracker.ietf.org/doc/html/rfc9112#name-obsolete-line-folding
+
+Transfer-Encoding
+https://datatracker.ietf.org/doc/html/rfc9112#name-transfer-encoding
+also: https://datatracker.ietf.org/doc/html/rfc9112#name-message-body-length
+
+Transfer Codings
+https://datatracker.ietf.org/doc/html/rfc9112#name-transfer-codings
+
+Missing, everything from 8 and up
+https://datatracker.ietf.org/doc/html/rfc9112#name-handling-incomplete-message
+
+
+
+
+HTTP does not place a predefined limit on the length of a request-line, as described in Section 2.3 of [HTTP]. A server that receives a method longer than any that it implements SHOULD respond with a 501 (Not Implemented) status code. A server that receives a request-target longer than any URI it wishes to parse MUST respond with a 414 (URI Too Long) status code (see Section 15.5.15 of [HTTP]). Various ad hoc limitations on request-line length are found in practice. It is RECOMMENDED that all HTTP senders and recipients support, at a minimum, request-line lengths of 8000 octets.
+https://datatracker.ietf.org/doc/html/rfc9112#section-3-4
+
+A client MUST send a Host header field (Section 7.2 of [HTTP]) in all HTTP/1.1 request messages. If the target URI includes an authority component, then a client MUST send a field value for Host that is identical to that authority component, excluding any userinfo subcomponent and its "@" delimiter (Section 4.2 of [HTTP]). If the authority component is missing or undefined for the target URI, then a client MUST send a Host header field with an empty field value.
+https://datatracker.ietf.org/doc/html/rfc9112#section-3.2-5
+
+
+*/

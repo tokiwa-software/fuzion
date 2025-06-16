@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature response_msg
+#  * Message
+#  * request_msg,
+#  * req_method
+#  * response_msg,
+#  * parse_request,
+#  * parse_response
+#
+# -----------------------------------------------------------------------
+
+
+# HTTP response message
+#
+public response_msg(
+  # the request message for which this response was generated
+  public req option (request_msg),
+  # the major version
+  public version_major i32,
+  # the minor version
+  public version_minor i32,
+  # the status code of the response
+  public status_code i32,
+  # the reason-phrase of the response
+  public reason_phrase String,
+  header_fields container.Map String String,
+  # the body of the response
+  # (
+  # public redef body option (Sequence u8)) : Message
+  public redef body io.Read_Handler) : Message
+is
+  # the start line of the message, for a response this is also called status line
+  public redef start_line => status_line
+
+  # the status line of the response message
+  public status_line String =>
+    "{version_str version_major version_minor} $status_code $reason_phrase$crlf"
+
+  # header fields with all lower case
+  public redef fields := container.map_of (header_fields.items.map tup->{k,v:=tup; (k.lower_case, v)}).as_array
