@@ -1717,7 +1717,7 @@ public class Call extends AbstractCall
             t = tf.selfType().applyTypePars(tf, tg);
           }
       }
-    else if (_calledFeature == Types.resolved.f_type_as_value)
+    else if (isTypeAsValueCall())
       {
         t = _generics.get(0);
         // we are using `.this.type` inside a type feature, see #2295
