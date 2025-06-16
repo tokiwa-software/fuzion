@@ -870,6 +870,15 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
+  /**
+   * Is this expression a call to `type_as_value`?
+   */
+  boolean isTypeAsValueCall()
+  {
+    return false;
+  }
+
+
 }
 
 /* end of file */

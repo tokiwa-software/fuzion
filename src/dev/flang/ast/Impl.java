@@ -649,8 +649,13 @@ public class Impl extends ANY
       (!urgent || result != null);
 
     return result != null &&
-           result.isTypeType() &&
-           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_type_as_value)
+           result.isCotypeType() &&
+           /**
+            * this allows code like:
+            * p := codepoint.type
+            * p.some_type_feature
+            */
+           !_expr.isTypeAsValueCall()
       ? Types.resolved.f_Type.selfType()
       : result;
   }

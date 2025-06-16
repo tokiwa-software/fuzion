@@ -500,20 +500,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Is this the type of a type feature, e.g., the type of {@code (list i32).type}.
-   * Will return false for an instance of Type for which this is
-   * still unknown since {@code Type.resolve()} was not called yet.
-   *
-   * This is redefined here since {@code feature} might still be null while this type
-   * was not resolved yet.
-   */
-  boolean isTypeType()
-  {
-    return _feature != null && _feature.isCotype();
-  }
-
-
-  /**
    * outer type, after type resolution. This provides the whole chain of types
    * until Types.resolved.universe.selfType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
