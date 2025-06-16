@@ -76,9 +76,6 @@ public class Tag extends ExprWithPos
   {
     super(value.pos());
 
-    // NYI: Move to check types phase
-    taggedType.checkChoice(value.pos(), context);
-
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
@@ -92,6 +89,7 @@ public class Tag extends ExprWithPos
         // even though none of the choice elements is unit
         || value.type().compareTo(Types.resolved.t_unit) == 0
        );
+
     this._value = value;
     this._taggedType = taggedType;
     this._tagNum = (int)_taggedType
@@ -169,6 +167,15 @@ public class Tag extends ExprWithPos
   {
     super.visitExpressions(v);
     _value.visitExpressions(v);
+  }
+
+
+  /**
+   * check the tagged type of this Tag.
+   */
+  public void checkTypes(Context context)
+  {
+    _taggedType.checkChoice(_value.pos(), context);
   }
 
 
