@@ -187,3 +187,8 @@ is
           equal   => m
 
     binary_search 0 length-1
+
+
+  # is this Sequence sorted?
+  #
+  public redef is_sorted => true

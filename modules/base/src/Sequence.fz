@@ -1468,6 +1468,19 @@ public Sequence(public T type) ref : property.countable is
   => fold T.product
 
 
+  # is this Sequence sorted?
+  #
+  public is_sorted bool
+    pre
+      T : property.orderable
+  =>
+    # NYI: BUG: does not work
+    # zip (drop 1) (T.lteq)
+    #   .fold bool.all
+    zip (drop 1) (x,y)->x<=y
+      .fold bool.all
+
+
   # create an empty Sequence
   #
   public fixed type.empty Sequence T =>
