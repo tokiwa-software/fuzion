@@ -250,7 +250,7 @@ public class Html extends ANY
       {
         String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
                               + htmlEncodedBasename(af.outer()) + "</a>";
-        return "&nbsp;&nbsp;<div class='fd-parent'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
+        return "<div class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
           .replace("$0", anchorParent);
       }
   }
@@ -286,7 +286,7 @@ public class Html extends ANY
 
     return redefs.isEmpty()
             ? ""
-            : "&nbsp;&nbsp;<div class='fd-parent'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
+            : "<div class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
               .replace("$0", (redefs.stream()
                                     .map(f->"<a class='' href='" + featureAbsoluteURL(f) + "'>" +
                                               htmlEncodedQualifiedName(f) + "</a>")
@@ -302,7 +302,7 @@ public class Html extends ANY
   private String annotateAbstract(AbstractFeature af)
   {
     return af.isAbstract()
-             ? "&nbsp;&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
+             ? "<div class='fd-parent ml-10' title='An abstract feature is a feature declared using ⇒ abstract. " +
                "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
              : "";
   }
@@ -316,7 +316,7 @@ public class Html extends ANY
   private String annotatePrivateConstructor(AbstractFeature af)
   {
     return af.visibility().eraseTypeVisibility() != Visi.PUB && af.isConstructor()
-             ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
+             ? "<div class='fd-parent ml-10' title='This feature can not be called to construct a new instance of itself, " +
                "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
              : "";
   }
@@ -333,7 +333,7 @@ public class Html extends ANY
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
     return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
-             ? "&nbsp;&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
+             ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
                "which are abstract.'>[Contains abstract features]</div>"
              : "";
   }
@@ -349,7 +349,7 @@ public class Html extends ANY
     var afModule = libModule(af);
 
     // don't add annotation for features of own module
-    return afModule == lm ? "" : "&nbsp;<div class='fd-parent'>[Module " + afModule.name() + "]</div>";
+    return afModule == lm ? "" : "<div class='fd-parent ml-10'>[Module " + afModule.name() + "]</div>";
   }
 
   private boolean isVisible(AbstractFeature af)

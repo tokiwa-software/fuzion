@@ -65,6 +65,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-left: .2em;
 }
 
+.ml-10{
+  margin-left: 1em;
+}
+
 .container{
   padding: 15px;
 }
