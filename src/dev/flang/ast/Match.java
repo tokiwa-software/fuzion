@@ -211,10 +211,9 @@ public class Match extends AbstractMatch
         c._code = c._code.assignToField(res, context, r);
       }
 
-    var s = subject().propagateExpectedType(res, context, subject().type(), null);
     return new AbstractMatch(pos()) {
       @Override public List<AbstractCase> cases() { return _cases; }
-      @Override public Expr subject() { return s; }
+      @Override public Expr subject() { return _subject; }
     };
   }
 
@@ -246,6 +245,7 @@ public class Match extends AbstractMatch
     // if (CHECKS)
     //   check(_type == null || _type.compareTo(t) == 0);
     _type = t;
+    _subject = _subject.propagateExpectedType(res, context, subject().type(), null);
     for (var ac: cases())
       {
         var c = (Case) ac;
