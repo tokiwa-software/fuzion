@@ -270,7 +270,7 @@ public abstract class AbstractAssign extends Expr
           (Errors.any() || frmlT != Types.t_ERROR,
            Errors.any() || _value.type() != Types.t_ERROR);
 
-        if (_value.type() != Types.t_ERROR && frmlT.isAssignableFromWithoutBoxing(_value.type(), context).no())
+        if (_value.type() != Types.t_ERROR && frmlT.isAssignableFromDirectly(_value.type()).no())
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value, context);
           }
