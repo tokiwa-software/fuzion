@@ -1331,7 +1331,6 @@ run_tests_jar: run_tests_jar_build
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -rf fuzion_generated_clazzes
 	find $(FZ_SRC) -name "*~" -type f -exec rm {} \;
 
 .PHONY: release
