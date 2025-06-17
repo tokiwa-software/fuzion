@@ -153,6 +153,16 @@ public abstract class AbstractMatch extends ExprWithPos
 
 
   /**
+   * Some Expressions do not produce a result, e.g., a Block
+   * whose last expression is not an expression that produces a result.
+   */
+  @Override public boolean producesResult()
+  {
+    return false;
+  }
+
+
+  /**
    * where this match came from.
    * used only for better error messages.
    */

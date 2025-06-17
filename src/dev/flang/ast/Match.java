@@ -67,18 +67,15 @@ public class Match extends AbstractMatch
   /**
    * The subject under investigation here.
    */
-  Expr _subject;
+  private Expr _subject;
   public Expr subject() { return _subject; }
 
 
   /**
    * The list of cases in this match expression
    */
-  final List<AbstractCase> _cases;
+  private final List<AbstractCase> _cases;
   public List<AbstractCase> cases() { return _cases; }
-
-
-  private boolean _assignedToField = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -121,19 +118,21 @@ public class Match extends AbstractMatch
    *
    * @return this.
    */
-  public Match visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var os = _subject;
     var ns = _subject.visit(v, outer);
     if (CHECKS) check
+      // check that subject does not change while visiting
       (os == _subject);
     _subject = ns;
-    v.action(this);
+    v.action((AbstractMatch)this);
     for (var c: cases())
       {
         c.visit(v, this, outer);
       }
-    return this;
+    return v.action(this);
   }
 
 
@@ -204,15 +203,18 @@ public class Match extends AbstractMatch
    * that performs the assignment to r.
    */
   @Override
-  Match assignToField(Resolution res, Context context, Feature r)
+  Expr assignToField(Resolution res, Context context, Feature r)
   {
     for (var ac: cases())
       {
         var c = (Case) ac;
         c._code = c._code.assignToField(res, context, r);
       }
-    _assignedToField = true;
-    return this;
+
+    return new AbstractMatch(pos()) {
+      @Override public List<AbstractCase> cases() { return _cases; }
+      @Override public Expr subject() { return _subject; }
+    };
   }
 
 
@@ -239,11 +241,17 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    // NYI: CLEANUP: there should be another mechanism, for
-    // adding missing result fields instead of misusing
-    // `propagateExpectedType`.
-    //
-    return addFieldForResult(res, context, t);
+    // NYI: does not hold?
+    // if (CHECKS)
+    //   check(_type == null || _type.compareTo(t) == 0);
+    _type = t;
+    _subject = _subject.propagateExpectedType(res, context, subject().type(), null);
+    for (var ac: cases())
+      {
+        var c = (Case) ac;
+        c._code = c._code.propagateExpectedType(res, context, t, from);
+      }
+    return this;
   }
 
 
@@ -257,9 +265,10 @@ public class Match extends AbstractMatch
    *
    * @param t the type to use for the result field
    */
-  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  Expr addResultField(Resolution res, Context context)
   {
     Expr result = this;
+    var t = type();
     if (!t.isVoid())
       {
         var pos = pos();
@@ -279,27 +288,12 @@ public class Match extends AbstractMatch
 
 
   /**
-   * This will trigger addFieldForResult in some cases, e.g.:
-   * `match (if true then true else true) * =>`
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   */
-  void addFieldsForSubject(Resolution res, Context context)
-  {
-    _subject = subject().propagateExpectedType(res, context, subject().type(), null);
-  }
-
-
-  /**
    * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
   @Override public boolean producesResult()
   {
-    return !_assignedToField;
+    return true;
   }
 
 
