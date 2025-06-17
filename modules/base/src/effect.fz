@@ -233,8 +233,8 @@ public effect is
   #
   #     effect_type <- effect_instance ! code
   #
-  public type.infix <- (E type : effect, e E) effect0 E =>
-    effect0 e
+  public type.infix <- (E type : effect, e E) effect_to_be_instated E =>
+    effect_to_be_instated e
 
 
 
@@ -421,11 +421,13 @@ instate_helper(# result type
 
 
 
-# a constructor for holding an effect type and instance
+# a constructor for holding an effect type and instance that is to be instated
 #
-# this allows defining operators
+# this allows defining operators to instate effects like
 #
-public effect0(E type : effect, e E) is
+#     effect_type <- effect_instance ! code
+#
+private:public effect_to_be_instated(E type : effect, e E) is
 
 
   # infix variant of effect.instate
