@@ -434,10 +434,14 @@ public class Html extends ANY
 
     // Fields
     var fields =  new List<AbstractFeature>();
-    fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-    var normalArguments = outer.arguments().clone();
-    normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
-    fields.addAll(normalArguments);
+    // it's not possible to get an instance of a function feature, so no fields can not be accessed from outside
+    if (!signatureWithArrow(outer))
+      {
+        fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
+        var normalArguments = outer.arguments().clone();
+        normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
+        fields.addAll(normalArguments);
+      }
 
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
@@ -449,11 +453,15 @@ public class Html extends ANY
 
     // Functions
     var allFunctions = new TreeSet<AbstractFeature>();
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    allFunctions.removeIf(f->f.isConstructor());
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+    // it's not possible to get an instance of a function feature, so no features can be called on it
+    if (!signatureWithArrow(outer))
+      {
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+        allFunctions.removeIf(f->f.isConstructor());
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+      }
 
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
     var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
