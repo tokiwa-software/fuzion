@@ -1207,7 +1207,20 @@ public abstract class Expr extends ByteCode
    */
   public static Expr stringconst(String s)
   {
-    return new LoadConst()
+    return stringconst(s, false);
+  }
+
+
+  /**
+   * Load a java.lang.String constant given by a Java string
+   *
+   * @param needsStackMapFrame output a StackMapFrame, sometimes needed since
+   * code might be unreachable, i.e. after a goto
+   */
+  public static Expr stringconst(String s, boolean needsStackMapFrame)
+  {
+    var label = new Label();
+    var strConst = new LoadConst()
       {
         public String toString() { return "String constant '" + s + "'"; }
         public JavaType type()   { return JAVA_LANG_STRING;              }
@@ -1215,10 +1228,22 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          if (needsStackMapFrame)
+            {
+              // save stack and locals at branch
+              smt.stacks.put(label._posFinal, clone(stack));
+              smt.locals.add(new Pair<>(label._posFinal, locals.clone()));
+
+              // add frames at branch and jump position.
+              smt.stackMapFrames.add(new StackMapFullFrame(smt, label._posFinal));
+            }
+
           stack.push(new VerificationType(type().className(), (cf)->cpEntry(cf).index()));
         }
       };
+    return label.andThen(strConst);
   }
+
 
   /**
    * Load a java.lang.String constant given by utf8 encoded bytes
