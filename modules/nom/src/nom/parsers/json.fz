@@ -118,7 +118,7 @@ public json =>
           v Sequence =>
             if (v.first "#") = "+" then 1.0 else -1.0
 
-    parser_signed_digit := tuple2 parser_sign parser_whole
+    parser_signed_digit := parsers.this.tuple2 parser_sign parser_whole
 
     parser_exponent :=  many_m_n 0 1 (preceded (alt [tag "e", tag "E"]) parser_signed_digit)
       .map f64 x->
@@ -126,7 +126,7 @@ public json =>
           nil => 1.0
           v tuple => 10.0 ** (v.0*v.1)
 
-    (tuple4 parser_minus parser_whole parser_fraction parser_exponent)
+    (parsers.this.tuple4 parser_minus parser_whole parser_fraction parser_exponent)
       .map json_value x->
         sign, whole, fraction, exponent := x
         sign*(whole+fraction)*exponent
