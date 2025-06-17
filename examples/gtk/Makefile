@@ -24,7 +24,15 @@
 # To run this example, you must install gtk libs.
 # e.g.: apt-get install libgtk-4-dev
 
-jvm:
+
+.PHONY: jvm c compile test
+
+# Test if gtk4 and pkg-config are installed
+test:
+	@command -v pkg-config >/dev/null 2>&1 || { echo >&2 "Error: pkg-config is not installed."; exit 1; }
+	@pkg-config --exists gtk4 || { echo >&2 "Error: gtk4 is not found via pkg-config."; exit 1; }
+
+jvm: test
 	../../bin/fz -jvm \
 		-JLibraries="$(shell pkg-config --libs gtk4 | sed 's/-l//g')" \
 		./gtk.fz
@@ -32,7 +40,7 @@ jvm:
 c: compile
 	./gtk_ex
 
-compile:
+compile: test
 	../../bin/fz -c \
 		-CFlags="$(shell pkg-config --cflags gtk4) -Wno-incompatible-function-pointer-types" \
 		-CInclude=gtk/gtk.h \
