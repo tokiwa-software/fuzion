@@ -27,11 +27,11 @@
 # cells.
 #
 # handles is a state monad.  It provides features to create several
-# handles that refer to modifiable value and features to 'get', 'put' or
-# 'update' this value.
+# handles that refer to modifiable value and features to `get`, `put` or
+# `update` this value.
 #
 # an example of using handles is shown below, handle (singular) is an
-# alias to initialize a new handle with the given initial value. handle0 T
+# alias to initialize a new handle with the given initial value. `handle_id T`
 # is the type that allows passing around handles.
 #
 #     ex_handles is
@@ -39,7 +39,7 @@
 #
 #       say hdl.get
 #
-#       x(h handle0 i32) unit =>
+#       x(h handle_id i32) unit =>
 #         b := hdl.put 17
 #         say b
 #         say hdl.get
@@ -78,7 +78,7 @@ is
 
   # create a new instance with one additional handle
   #
-  # the new handle can be accessed by 'result.last'
+  # the new handle can be accessed by `result.last`
   #
   public new (
     # initial value referred to by the new handle
@@ -91,18 +91,18 @@ is
     handles v na mode.next
 
 
-  # has one element been created using 'new'?
+  # has one element been created using `new`?
   #
   public has_last bool => count > 0
 
 
-  # return the last handle that was created by 'new'
+  # return the last handle that was created by `new`
   #
-  public last handle0 T
+  public last handle_id T
     pre
       debug: has_last
   =>
-    handle0 T count-1
+    handle_id T count-1
 
 
   # a one-way feature to create a new handle and update the monad
@@ -112,7 +112,7 @@ is
   public create (
     # initial value referred to by the new handle
     w T
-    ) handle0 T
+    ) handle_id T
   =>
     (new w).last
 
@@ -120,8 +120,8 @@ is
   # get the value referred to by a given handle
   #
   public get (
-    # a handle created by 'new'
-    h handle0 T
+    # a handle created by `new`
+    h handle_id T
     ) T
   =>
     ar[h.x]
@@ -130,10 +130,10 @@ is
   # create a new instance with new value referred to by a given handle
   #
   public put (
-    # a handle created by 'new'
-    h handle0 T,
+    # a handle created by `new`
+    h handle_id T,
 
-    # the new value to be stored with 'h'
+    # the new value to be stored with `h`
     w T) handles T X
   =>
     handles v (ar.put h.x w) mode.next
@@ -143,8 +143,8 @@ is
   # updated.
   #
   public update (
-    # a handle created by 'new'
-    h handle0 T,
+    # a handle created by `new`
+    h handle_id T,
 
     # function calculating the new value from the old value
     f T->T
@@ -157,7 +157,7 @@ is
   # updated.
   #
   update0 (
-    # a handle created by 'new'
+    # a handle created by `new`
     x i32,
 
     # function calculating the new value from the old value
@@ -194,9 +194,9 @@ public handles(T type) handles T unit =>
 # type of the reference to the cell that holds a value of type T which can be updated
 # using the handles interface
 #
-private:public handle0(
+private:public handle_id(
   T type,
-  # the index in 'handles.ar'
+  # the index in `handles.ar`
   x i32
   )
 is
@@ -232,4 +232,4 @@ handles_type(T type) is
 #
 # this uses the handles instance from the current environment
 #
-public handle(T type, v T) handle0 T => (handles T).create v
+public handle(T type, v T) handle_id T => (handles T).create v
