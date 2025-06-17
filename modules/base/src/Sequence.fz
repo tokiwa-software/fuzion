@@ -1474,10 +1474,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : property.orderable
   =>
-    # NYI: BUG: does not work
-    # zip (drop 1) (T.lteq)
-    #   .fold bool.all
-    zip (drop 1) (x,y)->x<=y
+    zip (drop 1) (T.lteq)
       .fold bool.all
 
 

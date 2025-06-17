@@ -1494,7 +1494,20 @@ public class Call extends AbstractCall
     else
       {
         _recursiveResolveType = true;
-        result = _calledFeature.resultTypeIfPresentUrgent(res, urgent);
+        /**
+         * The following enables
+         * calling type feature on type parameter:
+         *
+         *  Sequence.is_sorted bool
+         *    pre
+         *      T : property.orderable
+         *  =>
+         *    zip (drop 1) (T.lteq)
+         *      .fold bool.all
+         */
+        result = _calledFeature.isTypeParameter() && context.constraintFor(_calledFeature) != null
+          ?  context.constraintFor(_calledFeature)
+          : _calledFeature.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
         if (result == Types.t_FORWARD_CYCLIC)
