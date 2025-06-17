@@ -1835,11 +1835,17 @@ public class AstErrors extends ANY
                                                                 : " into " + sqpn(names) + "."));
   }
 
-  static void destructuringOutOfBounds(SourcePosition pos, AbstractFeature f, int select)
+  static void destructuringMisMatch(SourcePosition pos, int fn, int nn)
   {
     error(pos,
-          "Destructuring access to non-existing value argument.",
-          "Tried accessing value argument number " + select + " of feature " + s(f) + " which only has " + f.valueArguments().size() + " value arguments");
+          "Destructuring mismatch between number of visible fields and number of target variables.",
+          "Found " + ((fn == 0) ? "no visible argument fields" :
+                      (fn == 1) ? "one visible argument field" :
+                      "" + fn + " visible argument fields"     ) + "\n" +
+          (nn == 0 ? "while there are no destructuring variables" :
+           nn == 1 ? "while there is one destructuring variable"
+                   : "while there are " + nn + " destructuring variables.\n")
+          );
   }
 
   static void illegalResultType(AbstractFeature f, ReturnType rt)
