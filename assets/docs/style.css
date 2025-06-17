@@ -61,6 +61,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-right: .5em;
 }
 
+.ml-2{
+  margin-left: .2em;
+}
+
 .container{
   padding: 15px;
 }
@@ -136,8 +140,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-anchor-sign{
-  color: rgba(0,0,0,0.6);
+  color: rgba(0,0,0,0.3);
   opacity: 0;
+  margin-left: .3em;
 }
 
 .fd summary:hover .fd-anchor-sign{

@@ -210,7 +210,6 @@ public class Html extends ANY
     return
       "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
         + "<div class='d-flex flex-wrap word-break-break-word'>"
-          + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
           + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
             + anchor(af)
             + arguments(af)
@@ -226,6 +225,7 @@ public class Html extends ANY
             + annotateContainsAbstract(af)
             + annotatePrivateConstructor(af)
             + annotateModule(af)
+            + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>"
             // fills remaining space
             + "<div class='flex-grow-1'></div>"
           + "</div>"
@@ -361,7 +361,7 @@ public class Html extends ANY
 
 
   private String anchor(AbstractFeature af) {
-    return "<div class='font-weight-600'>"
+    return "<div class='font-weight-600 ml-2'>"
             + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
             + (noFeatureLink(af) ? "" : "</a>")
