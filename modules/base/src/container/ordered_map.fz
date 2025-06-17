@@ -38,7 +38,8 @@ public ordered_map(
            k0 Sequence OK,
            v0 Sequence V) : container.Map OK V
 pre
-  k0.count = v0.count
+  debug: k0.count = v0.count
+  debug: k0.unique.count = k0.count
 is
 
   ks := k0.as_array
