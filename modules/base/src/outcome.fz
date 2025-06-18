@@ -31,14 +31,14 @@
 # Several error conditions are needed if there are several very different
 # reasons for an operation to fail, e.g.
 #
-#   get_data (u User, t Type) outcome data IO_Error Permission_Error is
-#     if u.allowed_to_access T
-#       (read_file t.file_name)?
-#     else
-#       Permission_Error u, t
+#     get_data (u User, t Type) outcome data IO_Error Permission_Error is
+#       if u.allowed_to_access T
+#         (read_file t.file_name)?
+#       else
+#         Permission_Error u, t
 #
-#   read_file t Type outcome data IO_Error is
-#     [..]
+#     read_file t Type outcome data IO_Error is
+#       [..]
 #
 # Note that 'outcome data IO_Error' is not assignment compatible with
 # 'outcome data IO_Error Permission_Error', it has to be unwrapped first.
@@ -125,10 +125,10 @@ is
 #
 # Using this enables to write
 #
-#   o := outcome x
+#     o := outcome x
 #
 # instead of
 #
-#   o outcome TypeOfX := x
+#     o outcome TypeOfX := x
 #
 public outcome(T type, o outcome T) outcome T => o

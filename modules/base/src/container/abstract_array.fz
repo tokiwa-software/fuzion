@@ -77,8 +77,8 @@ public abstract_array
   # a sequence of all valid indices to access this array. Useful e.g., for
   # `for`-loops:
   #
-  #   for i in arr.indices do
-  #     say arr[i]
+  #     for i in arr.indices do
+  #       say arr[i]
   #
   public indices interval i32 => 0..length-1
 

@@ -26,13 +26,13 @@
 #
 # To start this webserver, use:
 #
-#   fz webserver_native.fz
+#     fz webserver_native.fz
 #
 # Alternatively, compile it using the C backend and run the resulting
 # executable:
 #
-#   fz -c webserver_native.fz
-#   ./webserver
+#     fz -c webserver_native.fz
+#     ./webserver
 #
 webserver_native is
 

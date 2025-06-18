@@ -214,10 +214,10 @@ is
 #
 # Using this enables to write
 #
-#   o := option x
+#     o := option x
 #
 # instead of
 #
-#   o option TypeOfX := x
+#     o option TypeOfX := x
 #
 public option(T type, o option T) option T => o
