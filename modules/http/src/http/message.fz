@@ -37,7 +37,7 @@ public Message ref is
   public start_line String => abstract
 
   # header fields with all lower case
-  public fields container.Map String String => abstract
+  public fields http.case_insensitive_map => abstract
 
   module fields_str String =>
     fields.items.map kv->
@@ -47,11 +47,11 @@ public Message ref is
 
   # checks if the header contains the field
   public has_field(name String) bool =>
-    fields.has name.lower_case
+    fields.has name
 
   # returns the fields value, if the field exists in the header
   public get_field(name String) option String =>
-    fields[name.lower_case]
+    fields[name]
 
   # NYI: can only be called once
   # body of the message, if it has one
@@ -83,9 +83,9 @@ module next_line(LM type : mutate) => (io.buffered LM).read_delimiter "\n".utf8[
 
 
 
-module parse_header_fields(LM type : mutate) outcome (container.Map String String) =>
+module parse_header_fields(LM type : mutate) outcome http.case_insensitive_map =>
 
-  exception unit (container.Map String String) ()->
+  exception unit http.case_insensitive_map ()->
 
     cause(s String) void =>
       (exception unit).env.cause (error s)
@@ -108,9 +108,10 @@ module parse_header_fields(LM type : mutate) outcome (container.Map String Strin
 
           parts := cur.split_n ":" 1
           if parts.count != 2 then cause "broken header field '$cur'"
+          # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
           fields.put parts[0].lower_case parts[1].trim
 
-      fields.as_map
+      http.case_insensitive_map.from_map fields.as_map
 
 
 module:public body_reader(

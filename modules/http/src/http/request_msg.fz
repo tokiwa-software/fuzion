@@ -47,7 +47,7 @@ is
 
   public redef start_line => request_line
 
-  public redef fields := container.map_of (header_fields.items.map tup->{k,v:=tup; (k.lower_case, v)}).as_array
+  public redef fields := http.case_insensitive_map.from_map header_fields
 
 
 
