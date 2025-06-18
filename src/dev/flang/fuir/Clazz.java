@@ -624,7 +624,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     t = replaceThisTypeForCotype(t);
     if (t.isThisType())
       {
-        t = findOuter(t)._type;
+        check(false);
+        t = findOuter(t);
       }
     return t.applyToGenericsAndOuter(g -> replaceThisType(g));
   }
@@ -1509,7 +1510,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (isChoice())
       {
         result = new List<>();
-        for (var t : actualGenerics(feature().choiceGenerics()))
+        for (var t : actualGenerics(replaceThis(feature().choiceGenerics())))
           {
             result.add(_fuir.newClazz(t));
           }
@@ -1520,6 +1521,32 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     return result;
+  }
+
+
+
+  public List<AbstractType> replaceThis(List<AbstractType> actualTypeParameters)
+  {
+    return actualTypeParameters.map(atp -> replaceThis(atp));
+  }
+
+  private AbstractType replaceThis(AbstractType t)
+  {
+    t = replaceThisTypeForCotype(t);
+    if (t.isThisType())
+      {
+        AbstractFeature f = feature();
+        var res = this;
+        while(f != t.feature())
+          {
+            f = f.outer();
+            res = res.outerRef() != null
+              ? res.outerRef().resultClazz()
+              : res._outer;
+          }
+        t = res._type;
+      }
+    return t.applyToGenericsAndOuter(g -> replaceThis(g));
   }
 
 
@@ -1758,7 +1785,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
         var oc = _outer;
         var tclazz  = _fuir.clazz(call.target(), oc, inh);
-        var typePars = actualGenerics(call.actualTypeParameters());
+        var typePars = actualGenerics(replaceThis(call.actualTypeParameters()));
         check(call.isInheritanceCall());
         o = tclazz.lookupCall(call, typePars);
       }
@@ -1812,7 +1839,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return the outer clazz of this corresponding this-type {@code o}.
    */
   // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
-  private Clazz findOuter(AbstractType o)
+  private AbstractType findOuter(AbstractType o)
   {
     if (PRECONDITIONS) require
       (o.isThisType());
@@ -1822,17 +1849,14 @@ class Clazz extends ANY implements Comparable<Clazz>
      */
     var of = handDown(o, NO_SELECT, (t1,t2)->{}).feature();
     var res = this;
-    var i = feature();
-    while (i != null && i != of)
+    while (res != null && (LibraryFeature) res.feature() != of)
       {
         res = res.outerRef() != null
           ? res.outerRef().resultClazz()
           : res._outer;
-
-        i = res == null
-          ? null
-          : (LibraryFeature) res.feature();
       }
+
+    var i = res.feature();
 
     // NYI: BUG: handDown does not handle nestedinheritance correctly, test/covariance
     if (i == null)
@@ -1851,7 +1875,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (CHECKS) check
       (Errors.any() || i == of);
 
-    return i == null ? _fuir.error() : res;
+    return (i == null ? _fuir.error() : res)._type;
   }
 
 
