@@ -585,15 +585,23 @@ public class Html extends ANY
     var codeLines = new ArrayList<String>();
     var resultLines = new ArrayList<String>();
 
-    s.lines().forEach(l ->
+
+    String prevLine = "not empty";
+    boolean inCodeblock = false;
+
+    for (var l : s.lines().collect(Collectors.toList()))
       {
-        if (l.startsWith("    "))
+        if (l.startsWith("    ") && (prevLine.isBlank() || inCodeblock))
           {
+            inCodeblock = true;
+
             /* code comment */
             codeLines.add(l);
           }
         else if (l.isBlank())
           {
+            inCodeblock = false;
+
             /* avoid adding lots of line breaks after code comments */
             if (codeLines.isEmpty())
               {
@@ -602,6 +610,8 @@ public class Html extends ANY
           }
         else
           {
+            inCodeblock = false;
+
             addCodeLines(name, codeNo, codeLines, resultLines);
 
             /* treat as normal line */
@@ -609,7 +619,8 @@ public class Html extends ANY
 
             resultLines.add(replacedLine);
           }
-      });
+        prevLine = l;
+      }
 
     addCodeLines(name, codeNo, codeLines, resultLines);
 
