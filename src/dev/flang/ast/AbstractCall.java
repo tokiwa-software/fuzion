@@ -217,6 +217,84 @@ public abstract class AbstractCall extends Expr
 
 
   /**
+   * Replace occurrences of this.type in formal arg type depending on
+   * the target of the call.
+   *
+   * @param argType the formal type to be adjusted.
+   *
+   * @return a type derived from t where {@code this.type} is replaced by actual types
+   * from the call's target where this is possible.
+   */
+  public AbstractType adjustArgTypeForTarget(AbstractType argType)
+  {
+    return adjustThisTypeForTarget(argType, true, null, Context.NONE);
+  }
+
+
+  /**
+   * Replace occurrences of this.type in formal arg or result type depending on
+   * the target of the call.
+   *
+   * @param t the formal type to be adjusted.
+   *
+   * @param arg true if {@code t} is the type of an argument, false if {@code t} is the result type
+   *
+   * @param calledOrArg the declared argument (if arg == true) or the called feature (otherwise).
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return a type derived from t where {@code this.type} is replaced by actual types
+   * from the call's target where this is possible.
+   */
+  AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
+  {
+    /**
+     * For a call {@code T.f} on a type parameter whose result type contains
+     * {@code this.type}, make sure we replace the implicit type parameter to
+     * {@code this.type}.
+     *
+     * example:
+     *
+     *   equatable is
+     *
+     *     type.equality(a, b equatable.this.type) bool is abstract
+     *
+     *   equals(T type : equatable, x, y T) => T.equality x y
+     *
+     * For the call {@code T.equality x y}, we must replace the formal argument type
+     * for {@code a} (and {@code b}) by {@code T}.
+     */
+    var target = target();
+    var tt = target().type();
+    if (target instanceof Call tc &&
+        tc.calledFeature().isTypeParameter() &&
+        !tt.isGenericArgument())
+      {
+        t = t.replace_type_parameter_used_for_this_type_in_cotype
+          (tt.feature(),
+           tc);
+      }
+    if (!calledFeature().isOuterRef())
+      {
+        var t0 = t;
+        var declF = calledFeature().outer();
+        if (!tt.isGenericArgument() && declF != tt.feature())
+          {
+            var heir = tt.feature();
+            t = t.replace_inherited_this_type(declF, heir,
+                                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
+          }
+        var inner = ResolvedNormalType.newType(calledFeature().selfType(),
+                                               target().type());
+        t = t.replace_this_type_by_actual_outer(inner,
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
+                                                context);
+      }
+    return t;
+  }
+
+
+  /**
    * This call as a human readable string
    */
   public String toString()

@@ -201,11 +201,6 @@ public class Resolution extends ANY
   final LinkedList<Feature> forSyntacticSugar2 = new LinkedList<>();
 
   /**
-   * List of features scheduled for boxing
-   */
-  final LinkedList<Feature> forBoxing = new LinkedList<>();
-
-  /**
    * List of features scheduled for second pass of type checking
    */
   final LinkedList<Feature> forCheckTypes = new LinkedList<>();
@@ -337,25 +332,12 @@ public class Resolution extends ANY
 
 
   /**
-   * Add a feature to the set of features schedule for boxing
-   */
-  void scheduleForBoxing(Feature f)
-  {
-    if (PRECONDITIONS) require
-      (f.state() == State.RESOLVED_SUGAR2);
-
-    forBoxing.add(f);
-  }
-
-
-
-  /**
    * Add a feature to the set of features schedule for type checking
    */
   void scheduleForCheckTypes(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == State.BOXED);
+      (f.state() == State.RESOLVED_SUGAR2);
 
     forCheckTypes.add(f);
   }
@@ -462,12 +444,6 @@ public class Resolution extends ANY
             if (DEBUG) sayDebug("resolve syntax sugar 2: " + f);
             f.resolveSyntacticSugar2(this);
           }
-      }
-    else if (!forBoxing.isEmpty())
-      {
-        Feature f = forBoxing.removeFirst();
-        if (DEBUG) sayDebug("resolve boxing: " + f);
-        f.box(this);
       }
     else if (!forCheckTypes.isEmpty())
       {
