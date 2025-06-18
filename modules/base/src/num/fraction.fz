@@ -86,11 +86,11 @@ is
 
   # equality
   #
-  public fixed redef type.equality(a, b num.fraction B) bool =>
+  public fixed redef type.equality(a, b fraction.this) bool =>
     (a - b).numerator.is_zero
 
 
   # total order
   #
-  public fixed redef type.lteq(a, b num.fraction B) bool =>
+  public fixed redef type.lteq(a, b fraction.this) bool =>
     (a - b).numerator.sign ≤ 0

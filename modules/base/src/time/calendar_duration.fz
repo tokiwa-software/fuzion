@@ -138,7 +138,7 @@ is
 
   # total order
   #
-  public fixed redef type.lteq(a, b time.calendar_duration) bool =>
+  public fixed redef type.lteq(a, b calendar_duration.this) bool =>
     helper(mappers Sequence (time.calendar_duration->u64)) =>
       if mappers.is_empty
         true

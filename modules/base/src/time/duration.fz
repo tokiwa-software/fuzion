@@ -102,7 +102,7 @@ is
 
   # total order
   #
-  public fixed redef type.lteq(a, b time.duration) bool =>
+  public fixed redef type.lteq(a, b duration.this) bool =>
     u64.type.lteq a.nanos b.nanos
 
 

@@ -129,10 +129,7 @@ is
 
   # equality
   #
-  # NYI: BUG: #4676 this could be
-  # public redef type.equality(a, b Set.this)
-  #
-  public fixed redef type.equality(a, b container.Set E) bool
+  public fixed redef type.equality(a, b Set.this) bool
   pre else
     debug: a.finite != trit.no
     debug: b.finite != trit.no

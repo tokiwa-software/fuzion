@@ -116,28 +116,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a Feature that can be called, this will be
-   * set to the abstract type referring to the instance, i.e., the actual value
-   * by be _selfType or the _selfType of any heir feature of this or the self
-   * type of this after it was inherited by any different outer type.
-   *
-   * For a feature a.b.c, _thisType is a.this.type.b.this.type.c.this.type.
-   */
-  private AbstractType _thisType = null;
-
-
-  /**
-   * For a Feature that can be called, this will be
-   * set to the abstract type referring to the instance.  Unlike _thisType, this
-   * does not permit this to be replaced by an inherited feature, but any outer
-   * feature might be.
-   *
-   * For a feature a.b.c, _thisTypeFixed is a.this.type.b.this.type.c.
-   */
-  private AbstractType _thisTypeFixed = null;
-
-
-  /**
    * cached result of valueArguments();
    */
   private List<AbstractFeature> _valueArguments = null;
@@ -725,27 +703,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public AbstractType thisType(boolean innerFixed)
   {
-    AbstractType result = innerFixed ? _thisTypeFixed : _thisType;
-
-    if (result == null)
-      {
-        result = selfType();
-        var of = outer();
-        if (!isUniverse() && of != null && !of.isUniverse())
-          {
-            result = ResolvedNormalType.newType(result, of.thisType());
-          }
-        if (innerFixed)
-          {
-            _thisTypeFixed = result;
-          }
-        else
-          {
-            result = result.asThis();
-            _thisType = result;
-          }
-      }
-    return result;
+    var of = outer();
+    return innerFixed
+      ? (of == null ? selfType() : ResolvedNormalType.newType(selfType(), of.thisType()))
+      : selfType().asThis();
   }
 
 

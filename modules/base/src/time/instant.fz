@@ -43,10 +43,10 @@ module:public instant (val u64) : property.orderable is
 
   # do two given instants represent the same moment in time?
   #
-  public fixed redef type.equality(a, b time.instant) bool => a.val = b.val
+  public fixed redef type.equality(a, b instant.this) bool => a.val = b.val
 
 
   # check whether an instant happened before or at the same moment in time
   # as another instant
   #
-  public fixed redef type.lteq(a, b time.instant) bool => a.val ≤ b.val
+  public fixed redef type.lteq(a, b instant.this) bool => a.val ≤ b.val

@@ -225,7 +225,7 @@ public class NormalType extends LibraryType
           }
         else
           {
-            result = new NormalType(_libModule, _at, _feature, TypeMode.ThisType, _generics, _outer);
+            result = new NormalType(_libModule, _at, _feature, TypeMode.ThisType, _generics, _outer == null ? null : _outer.asThis());
           }
         _asThis = result;
       }

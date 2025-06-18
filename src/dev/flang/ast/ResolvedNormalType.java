@@ -91,13 +91,6 @@ public class ResolvedNormalType extends ResolvedType
   AbstractFeature _feature;
 
 
-  /**
-   * Cached result of isRef(). Even though this function looks harmless, it is
-   * surprisingly performance critical.
-   */
-  YesNo _isRef;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -119,31 +112,7 @@ public class ResolvedNormalType extends ResolvedType
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    return create(t, g, ug, o, false);
-  }
-
-
-  /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
-   *
-   * @param t the original type
-   *
-   * @param g the actual generic arguments that replace t.generics (resolved)
-   *
-   * @param ug the actual generic arguments that replace t.generics (unresolved)
-   *
-   * @param o the actual outer type, or null, that replaces t.outer
-   *
-   * @param fixOuterThisType NYI: CLEANUP: #737, see below, unclear why this is needed.
-   */
-  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o, boolean fixOuterThisType)
-  {
-    if (PRECONDITIONS) require
-      ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
-        t == Types.t_ERROR || (t.outer() == null) == (o == null));
-
-    return create(g, ug, o, t.feature(), t.mode(), fixOuterThisType);
+    return create(g, ug, o, t.feature(), t.mode());
   }
 
 
@@ -161,7 +130,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
   {
-    return create(g, ug, o, f, f.defaultTypeMode(), true);
+    return create(g, ug, o, f, f.defaultTypeMode());
   }
 
 
@@ -184,26 +153,22 @@ public class ResolvedNormalType extends ResolvedType
                             List<AbstractType> ug,
                             AbstractType o,
                             AbstractFeature f,
-                            TypeMode typeMode,
-                            boolean fixOuterThisType)
+                            TypeMode typeMode)
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
        || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g)
        /* NYI: Types.resolved == null
-         || f.compareTo(Types.resolved.f_void) != 0*/);
+         || f.compareTo(Types.resolved.f_void) != 0*/
+       );
+
+    o = typeMode == TypeMode.ThisType && o != null
+      ? o.asThis()
+      : o;
 
     this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
-
-    if (fixOuterThisType && o instanceof ResolvedNormalType ot && ot.isThisType())
-      {
-        // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
-        // outer types. Is it possible to not create asThisType() in This.java
-        // in the first place?
-        o = ResolvedNormalType.create(ot, ot.feature().defaultTypeMode());
-      }
 
     if (o == null && f != null)
       {
@@ -231,8 +196,7 @@ public class ResolvedNormalType extends ResolvedType
                                     List<AbstractType> ug,
                                     AbstractType o,
                                     AbstractFeature f,
-                                    TypeMode typeMode,
-                                    boolean fixOuterThisType)
+                                    TypeMode typeMode)
   {
     if (f == Types.f_ERROR ||
         g.stream().anyMatch(x -> x == Types.t_ERROR))
@@ -241,7 +205,7 @@ public class ResolvedNormalType extends ResolvedType
       }
     else
       {
-        return new ResolvedNormalType(g, ug, o, f, typeMode, fixOuterThisType);
+        return new ResolvedNormalType(g, ug, o, f, typeMode);
       }
   }
 
@@ -264,7 +228,9 @@ public class ResolvedNormalType extends ResolvedType
     this._typeMode           = typeMode;
     this._generics           = original._generics;
     this._unresolvedGenerics = original._unresolvedGenerics;
-    this._outer              = original._outer;
+    this._outer              = typeMode == TypeMode.ThisType && original._outer != null
+                                 ? original._outer.asThis()
+                                 : original._outer;
     this._feature            = original._feature;
 
     if (POSTCONDITIONS) ensure
@@ -351,7 +317,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   protected ResolvedNormalType()
   {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeMode.ValueType, false);
+    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeMode.ValueType);
   }
 
 
@@ -384,8 +350,7 @@ public class ResolvedNormalType extends ResolvedType
                                            t.unresolvedGenerics(),
                                            o,
                                            t.feature(),
-                                           t.mode(),
-                                           false);
+                                           t.mode());
       }
     return result;
   }
