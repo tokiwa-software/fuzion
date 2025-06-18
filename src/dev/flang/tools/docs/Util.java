@@ -78,7 +78,7 @@ public class Util
     var commentLines = new ArrayList<String>();
 
     // NYI: OPTIMIZATION: use lexer to retrieve comments
-    while (line > 0 && af.pos()._sourceFile.line(line).matches("^\\s*#.*"))
+    while (line > 0 && af.pos()._sourceFile.line(line).matches("^\\s*#.*\\n"))
       {
         commentLines.add(af.pos()._sourceFile.line(line));
         line = line - 1;
