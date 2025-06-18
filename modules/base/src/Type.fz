@@ -69,31 +69,31 @@ module:public Type ref is
   # The result of this is a compile-time constant that can be used to specialize
   # code for a particular type.
   #
-  #   is_of_integer_type(n T : numeric) => T : integer
-  #   say (is_of_integer_type 1234)    # true
-  #   say (is_of_integer_type 3.14)    # false
+  #     is_of_integer_type(n T : numeric) => T : integer
+  #     say (is_of_integer_type 1234)    # true
+  #     say (is_of_integer_type 3.14)    # false
   #
   # it is most useful in conjunction preconditions or `if` statements as in
   #
-  #   pair(a,b T) is
-  #     same
-  #       pre T : property.equatable
-  #   =>
-  #     a = b
+  #     pair(a,b T) is
+  #       same
+  #         pre T : property.equatable
+  #     =>
+  #       a = b
   #
   # or
   #
-  #   val(n T) is
+  #     val(n T) is
   #
-  #     # check if T is numeric, if so
-  #     # return true if n > zero,
-  #     # return nil if T is not numeric
-  #     #
-  #     more_than_zero option bool =>
-  #       if T : numeric then
-  #         n > T.zero
-  #       else
-  #         nil
+  #       # check if T is numeric, if so
+  #       # return true if n > zero,
+  #       # return nil if T is not numeric
+  #       #
+  #       more_than_zero option bool =>
+  #         if T : numeric then
+  #           n > T.zero
+  #         else
+  #           nil
   #
   public infix : (T type) bool =>
 
@@ -138,7 +138,7 @@ public type_as_value(T type) Type => T
 #
 # examples:
 #
-#   `type_of "bla"` is `String`
-#   `type_of (panic "***")` will terminate
+#     `type_of "bla"` is `String`
+#     `type_of (panic "***")` will terminate
 #
 public type_of(T type, _ Lazy T) Type => T

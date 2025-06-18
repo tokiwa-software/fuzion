@@ -49,9 +49,10 @@ module:public open(fd File_Descriptor,
   # note: offset+size must not exceed size of file
   #
   # example usage:
-  # _ := io.file.use unit "/some_file" io.file.mode.append ()->
-  #   io.file.open.mmap (i64 0) (i64 100) ()->
-  #     io.file.open.mmap[99] := 42
+  #
+  #     _ := io.file.use unit "/some_file" io.file.mode.append ()->
+  #       io.file.open.mmap (i64 0) (i64 100) ()->
+  #         io.file.open.mmap[99] := 42
   #
   public mmap(R type, offset i64, size i64, code ()->R) outcome R
   pre safety: offset % 4096 = 0 # NYI: UNDER DEVELOPMENT: get real page size instead of 4096.

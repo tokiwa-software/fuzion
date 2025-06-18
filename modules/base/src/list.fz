@@ -577,16 +577,16 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # elements all combinations of elements of this list and
   # all elements of 'b' iterating of 'b' repeatedly as follows
   #
-  #   list.this[0]  , b[0]
-  #   list.this[0]  , b[1]
-  #   list.this[0]  , b[2]
-  #   list.this[0]  , ...
-  #   list.this[0]  , b.last
-  #   list.this[1]  , b[0]
-  #   list.this[1]  , b[1]
-  #   list.this[1]  , ...
-  #   ...           , ...
-  #   list.this.last, b.last
+  #     list.this[0]  , b[0]
+  #     list.this[0]  , b[1]
+  #     list.this[0]  , b[2]
+  #     list.this[0]  , ...
+  #     list.this[0]  , b.last
+  #     list.this[1]  , b[0]
+  #     list.this[1]  , b[1]
+  #     list.this[1]  , ...
+  #     ...           , ...
+  #     list.this.last, b.last
   #
   public combine_list(U, V type, b Sequence U, f (A,U)->V)  Sequence V =>
     flat_map x->(b.map y->(f x y))
@@ -597,7 +597,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # Keep the order of elements unchanged.
   #
   # ex.
-  #   [1,2,2,3,2,2,2,4].dedup_list = [1,2,3,2,4]
+  #
+  #     [1,2,2,3,2,2,2,4].dedup_list = [1,2,3,2,4]
   #
   public dedup_list list A
     pre
@@ -614,8 +615,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # Keep the order of elements unchanged.
   #
   # ex.
-  #   [4,2,2,6,2,1,2,4].dedup_list (a,b -> a%2=b%2) = [4,1,2]
-  #   [4,2,2,6,2,1,2,4].dedup_list (<=) = [4,2,1]
+  #
+  #     [4,2,2,6,2,1,2,4].dedup_list (a,b -> a%2=b%2) = [4,1,2]
+  #     [4,2,2,6,2,1,2,4].dedup_list (<=) = [4,2,1]
   #
   public dedup_list(by (A,A) -> bool) list A
     pre
@@ -633,7 +635,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # Other languages call this 'distinct', e.g. Java, C# or Kotlin
   #
   # ex.
-  #   [4,1,2,2,3,2,2,2,4].unique_list = [4, 1, 2, 3]
+  #
+  #     [4,1,2,2,3,2,2,2,4].unique_list = [4, 1, 2, 3]
   #
   public unique_list list A
     pre
@@ -711,16 +714,16 @@ public list(T type, h T, t Lazy (list T)) list T =>
 #
 # This is convenient to append an element before a list as in
 #
-#   0 : [1,2,3,4].as_list
+#     0 : [1,2,3,4].as_list
 #
 # or
 #
-#   0 : 1 : 2 : 3 : 4 : nil
+#     0 : 1 : 2 : 3 : 4 : nil
 #
 # or to create lists by recursion, e.g., an endless list containing
 # integer 1 repeatedly can be created as follows
 #
-#   ones => 1 : ones
+#     ones => 1 : ones
 #
 public infix_right : (A type, h A, t Lazy (list A)) list A=>
   list h t
@@ -733,19 +736,19 @@ public infix_right : (A type, h A, t Lazy (list A)) list A=>
 #
 # Ex1: the identity can be used to repeat the same element
 #
-#   1 :: x->x
+#     1 :: x->x
 #
 # will create 1,1,1,1,...
 #
 # Ex2: To create a list of all integers, use
 #
-#   0 :: +1
+#     0 :: +1
 #
 # which will produce 0,1,2,3,4,5,...
 #
 # Ex3: The call
 #
-#   1 :: p->p+p
+#     1 :: p->p+p
 #
 # will produce the powers of two: 1,2,4,8,16,32,...
 #

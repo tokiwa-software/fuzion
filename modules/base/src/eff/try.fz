@@ -27,14 +27,14 @@
 #
 # This feature allows Java-like try-catch syntax for fallible
 #
-#   res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE ()->
-#             code
-#          .catch s->
-#             handle failure condition `s`
+#     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE ()->
+#               code
+#            .catch s->
+#               handle failure condition `s`
 #
 # or even
 #
-#   res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
+#     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
 #
 public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
 

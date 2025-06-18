@@ -29,20 +29,20 @@
 #
 # usage example using a local mutate instance:
 #
-#  LM : mutate is
-#  LM ! ()->
-#    io.stdin.reader LM ! ()->
-#      for l := (io.buffered LM).read_line
-#          i in 1..
-#      while l??
-#        say "$i: $l"
+#     LM : mutate is
+#     LM ! ()->
+#       io.stdin.reader LM ! ()->
+#         for l := (io.buffered LM).read_line
+#             i in 1..
+#         while l??
+#           say "$i: $l"
 #
 # usage example using read_lines:
 #
-# for l in io.stdin.read_lines
-#     i in 1..
-# do
-#   say "$i: $l"
+#     for l in io.stdin.read_lines
+#         i in 1..
+#     do
+#       say "$i: $l"
 #
 # NYI: UNDER DEVELOPMENT: It would be good to move features reader, read_fully,
 # etc. to a parent feature and have other features, e.g., for reading files, inherit
