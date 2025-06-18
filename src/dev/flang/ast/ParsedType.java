@@ -75,8 +75,6 @@ public class ParsedType extends UnresolvedType
    * @param generics list of type parameters
    *
    * @param outer outer type or null if unqualified.
-   *
-   * @param rov UnresolvedType.TypeMode.Boxed or UnresolvedType.TypeMode.LikeUnderlyingFeature
    */
   ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, Optional<TypeMode> rov)
   {

@@ -1639,69 +1639,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Replace occurrences of this.type in formal arg or result type depending on
-   * the target of the call.
-   *
-   * @param t the formal type to be adjusted.
-   *
-   * @param arg true if {@code t} is the type of an argument, false if {@code t} is the result type
-   *
-   * @param calledOrArg the declared argument (if arg == true) or the called feature (otherwise).
-   *
-   * @param context the source code context where this Call is used
-   *
-   * @return a type derived from t where {@code this.type} is replaced by actual types
-   * from the call's target where this is possible.
-   */
-  private AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
-  {
-    /**
-     * For a call {@code T.f} on a type parameter whose result type contains
-     * {@code this.type}, make sure we replace the implicit type parameter to
-     * {@code this.type}.
-     *
-     * example:
-     *
-     *   equatable is
-     *
-     *     type.equality(a, b equatable.this.type) bool is abstract
-     *
-     *   equals(T type : equatable, x, y T) => T.equality x y
-     *
-     * For the call {@code T.equality x y}, we must replace the formal argument type
-     * for {@code a} (and {@code b}) by {@code T}.
-     */
-    var target = target();
-    var tt = target().type();
-    if (target instanceof Call tc &&
-        tc.calledFeature().isTypeParameter() &&
-        !tt.isGenericArgument())
-      {
-        t = t.replace_type_parameter_used_for_this_type_in_cotype
-          (tt.feature(),
-           tc);
-      }
-    if (!calledFeature().isOuterRef())
-      {
-        var t0 = t;
-        var declF = calledFeature().outer();
-        if (!tt.isGenericArgument() && declF != tt.feature())
-          {
-            var heir = tt.feature();
-            t = t.replace_inherited_this_type(declF, heir,
-                                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
-          }
-        var inner = ResolvedNormalType.newType(calledFeature().selfType(),
-                                               _target.type());
-        t = t.replace_this_type_by_actual_outer(inner,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
-                                                context);
-      }
-    return t;
-  }
-
-
-  /**
    * Helper function for resolveType to adjust a result type depending on the
    * kind of feature that is called.
    *
@@ -2953,40 +2890,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Boxing for actual arguments: Find actual arguments of value type that are
-   * assigned to formal argument types that are references and box them.
-   *
-   * @param context the source code context where this Call is used
-   */
-  void boxArgs(Context context)
-  {
-    if (_type != Types.t_ERROR && _resolvedFormalArgumentTypes != null)
-      {
-        int fsz = _resolvedFormalArgumentTypes.length;
-        if (_actuals.size() ==  fsz)
-          {
-            int count = 0;
-            ListIterator<Expr> i = _actuals.listIterator();
-            while (i.hasNext())
-              {
-                Expr actl = i.next();
-                var rft = _resolvedFormalArgumentTypes[count];
-                if (actl != null && rft != Types.t_ERROR)
-                  {
-                    var a = actl.boxAndTag(rft, context);
-                    if (CHECKS) check
-                      (a != null,
-                       a != Universe.instance);
-                    i.set(a);
-                  }
-                count++;
-              }
-          }
-      }
-  }
-
-
-  /**
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
    *
@@ -3037,14 +2940,10 @@ public class Call extends AbstractCall
                 var frmlT = _resolvedFormalArgumentTypes[count];
                 if (CHECKS) check
                   (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFromWithoutTagging(actl.type(), context).no())
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
-
-                if (CHECKS) check
-                  (Errors.any() || actl.type().isVoid() || actl.needsBoxing(frmlT, context) == null || actl.isBoxed());
-
                 count++;
               }
           }
@@ -3202,11 +3101,6 @@ public class Call extends AbstractCall
       }
       @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
       @Override public AbstractType type() { return Types.t_ERROR; }
-      @Override
-      Expr boxAndTag(AbstractType frmlT, Context context)
-      {
-        return this;
-      }
       @Override
       protected AbstractType targetType(Resolution res, Context context)
       {
