@@ -260,6 +260,7 @@ public class Loop extends ANY
               Block block,
               Expr untilCond,
               Block sb,
+              SourcePosition ePos,
               Expr eb0,
               Expr eb1,
               Expr eb2)
@@ -271,7 +272,7 @@ public class Loop extends ANY
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
 
-    _elsePos   = pos;  // NYI: if present, use position of "else" keyword
+    _elsePos   = ePos;
     _indexVars = iv;
     _nextValues = nv;
     block = Block.newIfNull(block);

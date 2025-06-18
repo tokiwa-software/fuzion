@@ -2684,6 +2684,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
+                                                    var ePos = tokenSourcePos();
                                                     var els1= fork().loopElseBlock();
                                                     var els2= fork().loopElseBlock();
                                                     var els =        loopElseBlock();
@@ -2701,7 +2702,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
                 syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
               }
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
+        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
       });
   }
 
