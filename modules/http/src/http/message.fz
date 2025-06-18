@@ -17,13 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature for HTTP messages:
-#  * Message
-#  * request_msg,
-#  * req_method
-#  * response_msg,
-#  * parse_request,
-#  * parse_response
+#  Source code of Fuzion standard library feature http.Message
 #
 # -----------------------------------------------------------------------
 
@@ -34,7 +28,7 @@ public Message ref is
   module version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
 
   # the start line of the message, for requests it is the request line, for responses the status line
-  public start_line String => abstract
+  module start_line String => abstract
 
   # header fields with all lower case
   public fields http.case_insensitive_map => abstract
@@ -127,22 +121,21 @@ module:public body_reader(
       if remaining.get = 0
         io.end_of_file
       else
-        # TODO: read
+        # read content
         content Sequence u8 := (io.buffered LM).read_bytes count
 
-        # TODO: check if smaller than expected and remaining should have been sufficient
+        # check if read result is smaller than expected when remaining length should have been sufficient
         res choice (array u8) io.end_of_file error :=
           if content.count != count && reader_size >= 0 && remaining.get - count >= 0
             error "input closed after {content.count} bytes, but specified content-length: $reader_size"
           else
             content.count > 0 ? content.as_array : io.end_of_file
 
-        # TODO: decrease remaining
+        # decrease remaining
         if reader_size >= 0
           new_remaining := remaining.get - count
           remaining <- (new_remaining >= 0 ? new_remaining : 0)
 
-        # TODO: return byte array
         res
 
 
@@ -168,7 +161,6 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
       # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
       if transfer_encodings.last.val = "chunked"
         panic "NYI: UNDER DEVELOPMENT: chunked transfer encoding not yet supported"
-        # TODO: read chunks, this should probably be done lazy
 
       # If a Transfer-Encoding header field is present in a response and the chunked transfer coding is not the final encoding, the message body length is determined by reading the connection until it is closed by the server.
       else if !is_req
@@ -203,12 +195,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
 
 /*
-NYI: TODO:
-
-- [ ] Transfer encoding: implement reading chunked message
-- [ ] Anpassungen für andere HTTP Versionen -> wie sinnvoll unterteilen und voneinander abgrenzen?
-
-
+NYI:
 
 Reconstructing the Target URI
 https://datatracker.ietf.org/doc/html/rfc9112#name-reconstructing-the-target-u
@@ -225,9 +212,6 @@ https://datatracker.ietf.org/doc/html/rfc9112#name-transfer-codings
 
 Missing, everything from 8 and up
 https://datatracker.ietf.org/doc/html/rfc9112#name-handling-incomplete-message
-
-
-
 
 HTTP does not place a predefined limit on the length of a request-line, as described in Section 2.3 of [HTTP]. A server that receives a method longer than any that it implements SHOULD respond with a 501 (Not Implemented) status code. A server that receives a request-target longer than any URI it wishes to parse MUST respond with a 414 (URI Too Long) status code (see Section 15.5.15 of [HTTP]). Various ad hoc limitations on request-line length are found in practice. It is RECOMMENDED that all HTTP senders and recipients support, at a minimum, request-line lengths of 8000 octets.
 https://datatracker.ietf.org/doc/html/rfc9112#section-3-4

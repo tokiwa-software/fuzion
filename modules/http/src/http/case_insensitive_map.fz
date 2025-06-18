@@ -22,7 +22,8 @@
 # -----------------------------------------------------------------------
 
 
-
+# A map with case insensitive String keys, used for the header fields in HTTP messages
+#
 private:public case_insensitive_map(internal_map container.Map String String) : container.Map String String is
 
   public redef add(k String, v String) container.Map String String => add_as_lower_case k v
