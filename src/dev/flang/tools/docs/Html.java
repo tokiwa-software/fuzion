@@ -362,7 +362,7 @@ public class Html extends ANY
 
   private String anchor(AbstractFeature af) {
     return "<div class='font-weight-600 ml-2'>"
-            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>")
+            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af, lm) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
             + (noFeatureLink(af) ? "" : "</a>")
             + "</div>";
@@ -779,6 +779,16 @@ public class Html extends ANY
   private String featureAbsoluteURL(AbstractFeature f)
   {
     return config.docsRoot() + "/" + libModule(f).name() + featureAbsoluteURL0(f) + "/";
+  }
+
+  /**
+   * the absolute URL of this feature in the given module
+   * @param module the module to which the link should point, e.g. for base module feature String there are different
+   *               pages in base (docs/base/String+(no+arguments)/) and terminal (docs/terminal/String+(no+arguments)/)
+   */
+  private String featureAbsoluteURL(AbstractFeature f, LibraryModule module)
+  {
+    return config.docsRoot() + "/" + module.name() + featureAbsoluteURL0(f) + "/";
   }
 
   private static String featureAbsoluteURL0(AbstractFeature f)
