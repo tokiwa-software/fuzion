@@ -37,7 +37,7 @@ import java.util.TreeSet;
 
 /**
  * CallGroup represents all calls that differ only by their environment, i.e.,
- * by the effects installed when thihs call is made.
+ * by the effects installed when this call is made.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -129,8 +129,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   Value _target;
 
 
-  boolean _real;
-
   TreeSet<CallGroup> _from = new TreeSet<>();
   TreeSet<CallGroup> _to   = new TreeSet<>();
 
@@ -161,7 +159,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
     if (PRECONDITIONS) require
       (!dfa._real || dfa._calledClazzesDuringPrePhase.contains(cc) || true /* NYI! */);
 
-    _real = dfa._real;
     _dfa = dfa;
     _cc = cc;
     _site = site;
@@ -187,12 +184,12 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   /**
    * For debugging: Why did {@code compareTo(other)} return a value != 0?
    */
-  String compareToWhy(Call other)
+  String compareToWhy(CallGroup other)
   {
     return
-      _cc         != other._cc            ? "cc different" :
-      _target._id != other._target._id    ? "target different" :
-      _dfa.siteSensitive(_cc) && _site  != other._site          ? "site different" : null;
+      _cc                              != other._cc         ? "cc different"     :
+      _target._id                      != other._target._id ? "target different" :
+      _dfa.siteSensitive(_cc) && _site != other._site       ? "site different"   : null;
   }
 
 
@@ -225,7 +222,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   void saveEffects()
   {
     if (PRECONDITIONS) require
-      (!_real);
+      (!_dfa._real);
 
     _dfa._calledClazzesDuringPrePhase.add(_cc);
     // var str = _dfa._fuir.clazzAsString(_cc);
@@ -246,7 +243,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   boolean requiredEffect(int ecl)
   {
     if (PRECONDITIONS) require
-      (_real);
+      (_dfa._real);
 
     var s = _dfa._clazzesThatRequireEffect.get(_cc);
     return s != null && s.contains(ecl);

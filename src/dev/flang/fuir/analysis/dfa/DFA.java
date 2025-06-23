@@ -310,9 +310,9 @@ public class DFA extends ANY
       else
         {
           var instantiatedAt = _calls.keySet().stream()
-            .filter(c -> (c._cc == _fuir.clazzAsValue(t_cl) ||  // NYI: CLEANUP would be nice if c._cc would be a ref already, should have been boxed at some point
-                          c._cc == t_cl                       ) && c._site != NO_SITE)
-            .map(c -> c._site)
+            .filter(c -> (c.calledClazz() == _fuir.clazzAsValue(t_cl) ||  // NYI: CLEANUP would be nice if c.calledClazz() would be a ref already, should have been boxed at some point
+                          c.calledClazz() == t_cl                       ) && c.site() != NO_SITE)
+            .map(c -> c.site())
             .findAny()
             .orElse(NO_SITE);
           _fuir.recordAbstractMissing(t_cl, _fuir.accessedClazz(s), instantiatedAt, _call.contextString(),
@@ -392,7 +392,7 @@ public class DFA extends ANY
                 // check if target value of new call ca causes current _call's instance to escape.
                 var or = _fuir.clazzOuterRef(cc);
                 if (original_tvalue instanceof EmbeddedValue ev && ev._instance == _call._instance &&
-                    _escapes.contains(ca._cc) &&
+                    _escapes.contains(ca.calledClazz()) &&
                     (or != NO_CLAZZ) &&
                     _fuir.clazzFieldIsAdrOfValue(or)    // outer ref is adr, otherwise target is passed by value (primitive type like u32)
                     )
@@ -450,7 +450,7 @@ public class DFA extends ANY
     @Override
     public Val outer(int s)
     {
-      return _call._target;
+      return _call.target();
     }
 
     /**
@@ -1401,8 +1401,8 @@ public class DFA extends ANY
         var counts = new IntMap<Integer>();
         for (var c : _calls.values())
           {
-            var i = counts.getOrDefault(c._cc, 0);
-            counts.put(c._cc, i+1);
+            var i = counts.getOrDefault(c.calledClazz(), 0);
+            counts.put(c.calledClazz(), i+1);
           }
         counts
           .keySet()
@@ -1423,7 +1423,7 @@ public class DFA extends ANY
                          Call prev = null;
                          for (var cc : _calls.values())
                            {
-                             if (cc._cc == c)
+                             if (cc.calledClazz() == c)
                                {
                                  System.out.println(""+i+": "+cc);
                                  if (prev != null && cc.toString().equals(prev.toString()))
@@ -1550,27 +1550,27 @@ public class DFA extends ANY
    */
   void analyze(Call c)
   {
-    if (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine)
+    if (_fuir.clazzKind(c.calledClazz()) == FUIR.FeatureKind.Routine)
       {
         var i = c._instance;
         check
-          (c._args.size() == _fuir.clazzArgCount(c._cc));
+          (c._args.size() == _fuir.clazzArgCount(c.calledClazz()));
         for (var a = 0; a < c._args.size(); a++)
           {
-            var af = _fuir.clazzArg(c._cc, a);
+            var af = _fuir.clazzArg(c.calledClazz(), a);
             var aa = c._args.get(a);
             i.setField(this, af, aa.value());
           }
 
         // copy outer ref argument to outer ref field:
-        var or = _fuir.clazzOuterRef(c._cc);
+        var or = _fuir.clazzOuterRef(c.calledClazz());
         if (or != NO_CLAZZ)
           {
-            i.setField(this, or, c._target);
+            i.setField(this, or, c.target());
           }
 
         var ai = new AbstractInterpreter2<Val>(_fuir, new Analyze(c));
-        var r = ai.processClazz(c._cc);
+        var r = ai.processClazz(c.calledClazz());
         if (r != null)
           {
             c.returns();
@@ -1610,7 +1610,7 @@ public class DFA extends ANY
   {
     if (true || cl._dfa._reportResults)
       {
-        var name = fuir(cl).clazzOriginalName(cl._cc);
+        var name = fuir(cl).clazzOriginalName(cl.calledClazz());
 
         // NYI: Proper error handling.
         Errors.error("NYI: Support for intrinsic '" + name + "' missing");
@@ -1738,22 +1738,22 @@ public class DFA extends ANY
    */
   static Value wrappedJavaObject(Call cl)
   {
-    var rc   = fuir(cl).clazzResultClazz(cl._cc);
+    var rc   = fuir(cl).clazzResultClazz(cl.calledClazz());
     return cl._dfa.newInstance(rc, NO_SITE, cl._context);
   }
 
   static
   {
-    put("Type.name"                      , cl -> cl._dfa.newConstString(fuir(cl).clazzTypeName(fuir(cl).clazzOuterClazz(cl._cc)), cl) );
+    put("Type.name"                      , cl -> cl._dfa.newConstString(fuir(cl).clazzTypeName(fuir(cl).clazzOuterClazz(cl.calledClazz())), cl) );
 
     put("concur.atomic.compare_and_swap0",  cl ->
         {
-          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl._cc));
+          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 
           if (CHECKS) check
             (fuir(cl).clazzNeedsCode(v));
 
-          var atomic    = cl._target;
+          var atomic    = cl.target();
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1).value();
           var res = atomic.callField(cl._dfa, v, cl.site(), cl);
@@ -1767,12 +1767,12 @@ public class DFA extends ANY
 
     put("concur.atomic.compare_and_set0",  cl ->
         {
-          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl._cc));
+          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 
           if (CHECKS) check
             (fuir(cl).clazzNeedsCode(v));
 
-          var atomic    = cl._target;
+          var atomic    = cl.target();
           var expected  = cl._args.get(0);
           var new_value = cl._args.get(1).value();
           var ignore = atomic.callField(cl._dfa, v, cl.site(), cl);
@@ -1792,23 +1792,23 @@ public class DFA extends ANY
 
     put("concur.atomic.read0",  cl ->
         {
-          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl._cc));
+          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 
           if (CHECKS) check
             (fuir(cl).clazzNeedsCode(v));
 
-          var atomic = cl._target;
+          var atomic = cl.target();
           return atomic.callField(cl._dfa, v, cl.site(), cl);
         });
 
     put("concur.atomic.write0", cl ->
         {
-          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl._cc));
+          var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
 
           if (CHECKS) check
             (fuir(cl).clazzNeedsCode(v));
 
-          var atomic    = cl._target;
+          var atomic    = cl.target();
           var new_value = cl._args.get(0).value();
           atomic.setField(cl._dfa, v, new_value);
           return Value.UNIT;
@@ -1826,58 +1826,58 @@ public class DFA extends ANY
 
     put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa.True() : cl._dfa.False() );
     put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa.True() : cl._dfa.False() );
-    put("debug_level"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
+    put("debug_level"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()), cl._dfa._options.fuzionDebugLevel()) );
 
-    put("fuzion.sys.args.count"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.args.count"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.std.exit"                , cl -> null );
 
     put("fuzion.sys.fatal_fault0"        , cl-> null                                                              );
 
-    put("i8.prefix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix -°"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix +°"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix +°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix +°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix +°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix *°"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix *°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix *°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix *°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.div"                         , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.div"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.div"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.div"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.mod"                         , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.mod"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.mod"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.mod"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix <<"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix <<"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix <<"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix <<"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix >>"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix >>"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix >>"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix >>"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix &"                     , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix &"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix &"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix &"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix |"                     , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix |"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix |"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix |"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i8.infix ^"                     , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i16.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i32.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
-    put("i64.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)); } );
+    put("i8.prefix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix -°"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix +°"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix +°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix +°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix +°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix *°"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix *°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix *°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix *°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.div"                         , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.div"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.div"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.div"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.mod"                         , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.mod"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.mod"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.mod"                        , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix <<"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix <<"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix <<"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix <<"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix >>"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix >>"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix >>"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix >>"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix &"                     , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix &"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix &"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix &"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix |"                     , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix |"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix |"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix |"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i8.infix ^"                     , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i16.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i32.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
+    put("i64.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
 
     put("i8.type.equality"               , cl -> cl._dfa.bool() );
     put("i16.type.equality"              , cl -> cl._dfa.bool() );
@@ -1888,50 +1888,50 @@ public class DFA extends ANY
     put("i32.type.lteq"                  , cl -> cl._dfa.bool() );
     put("i64.type.lteq"                  , cl -> cl._dfa.bool() );
 
-    put("u8.prefix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.prefix -°"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.prefix -°"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.prefix -°"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix -°"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix +°"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix +°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix +°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix +°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix *°"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix *°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix *°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix *°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.div"                         , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.div"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.div"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.div"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.mod"                         , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.mod"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.mod"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.mod"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix <<"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix <<"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix <<"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix <<"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix >>"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix >>"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix >>"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix >>"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix &"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix &"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix &"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix &"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix |"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix |"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix |"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix |"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.infix ^"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
+    put("u8.prefix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.prefix -°"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.prefix -°"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.prefix -°"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix -°"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix +°"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix +°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix +°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix +°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix *°"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix *°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix *°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix *°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.div"                         , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.div"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.div"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.div"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.mod"                         , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.mod"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.mod"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.mod"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix <<"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix <<"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix <<"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix <<"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix >>"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix >>"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix >>"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix >>"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix &"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix &"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix &"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix &"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix |"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix |"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix |"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix |"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.infix ^"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
 
     put("u8.type.equality"               , cl -> cl._dfa.bool() );
     put("u16.type.equality"              , cl -> cl._dfa.bool() );
@@ -1942,105 +1942,105 @@ public class DFA extends ANY
     put("u32.type.lteq"                  , cl -> cl._dfa.bool() );
     put("u64.type.lteq"                  , cl -> cl._dfa.bool() );
 
-    put("i8.as_i32"                      , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i16.as_i32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i32.as_i64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i64.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.as_i32"                      , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.as_i32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.as_i64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i8.cast_to_u8"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i16.cast_to_u16"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i32.cast_to_u32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("i64.cast_to_u64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u8.cast_to_i8"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.cast_to_i16"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.cast_to_i32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.cast_to_f32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.cast_to_i64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.cast_to_f64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u16.low8bits"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.low8bits"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.low8bits"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u32.low16bits"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.low16bits"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("u64.low32bits"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
+    put("i8.as_i32"                      , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i16.as_i32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i32.as_i64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i64.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.as_i32"                      , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.as_i32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.as_i64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i8.cast_to_u8"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i16.cast_to_u16"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i32.cast_to_u32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("i64.cast_to_u64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u8.cast_to_i8"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.cast_to_i16"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.cast_to_i32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.cast_to_f32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.cast_to_i64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.cast_to_f64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u16.low8bits"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.low8bits"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.low8bits"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u32.low16bits"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.low16bits"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("u64.low32bits"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
 
-    put("f32.prefix -"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.prefix -"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix +"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.infix +"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix -"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.infix -"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix *"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.infix *"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix /"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.infix /"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
+    put("f32.prefix -"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.prefix -"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.infix +"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.infix +"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.infix -"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.infix -"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.infix *"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.infix *"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.infix /"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.infix /"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f32.type.equal"                 , cl -> cl._dfa.bool() );
     put("f64.type.equal"                 , cl -> cl._dfa.bool() );
     put("f32.type.lower_than_or_equal"   , cl -> cl._dfa.bool() );
     put("f64.type.lower_than_or_equal"   , cl -> cl._dfa.bool() );
-    put("f32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.as_f32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.as_i64_lax"                 , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.cast_to_u32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.cast_to_u64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
+    put("f32.as_f64"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.as_f32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.as_i64_lax"                 , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.cast_to_u32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.cast_to_u64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
 
     put("f32.is_NaN"                     , cl -> cl._dfa.bool() );
     put("f64.is_NaN"                     , cl -> cl._dfa.bool() );
-    put("f32.square_root"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.square_root"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.exp"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.exp"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.log"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.log"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.sin"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.sin"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.cos"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.cos"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.tan"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.tan"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.asin"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.asin"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.acos"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.acos"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.atan"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.atan"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.sinh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.sinh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.cosh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.cosh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.tanh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.tanh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.type.min_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.type.max_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.type.min_positive"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.type.max"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f32.type.epsilon"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.type.min_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.type.max_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
-    put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc)) );
+    put("f32.square_root"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.square_root"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.exp"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.exp"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.log"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.log"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.sin"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.sin"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.cos"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.cos"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.tan"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.tan"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.asin"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.asin"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.acos"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.acos"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.atan"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.atan"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.sinh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.sinh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.cosh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.cosh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.tanh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.tanh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.type.min_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.type.max_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.type.min_positive"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.type.max"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f32.type.epsilon"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.type.min_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.type.max_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.type.min_positive"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.type.max"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
+    put("f64.type.epsilon"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("effect.type.from_env"           , cl ->
     {
-      var ecl = fuir(cl).clazzResultClazz(cl._cc);
+      var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
       return cl.getEffectCheck2(ecl);
     });
     put("effect.type.unsafe_from_env"    , cl ->
     {
-      var ecl = fuir(cl).clazzResultClazz(cl._cc);
+      var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
       Value result;
       if (cl._dfa._real)
         {
-          result = cl.getEffectForce(cl._site, ecl);
+          result = cl.getEffectForce(cl.site(), ecl);
         }
       else
         {
@@ -2052,7 +2052,7 @@ public class DFA extends ANY
 
     put("fuzion.sys.type.alloc"          , cl ->
         {
-          var ec = fuir(cl).clazzActualGeneric(cl._cc, 0);
+          var ec = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
           return cl._dfa.newSysArray(null, ec); // NYI: get length from args
         });
     put("fuzion.sys.type.setel"          , cl ->
@@ -2091,7 +2091,7 @@ public class DFA extends ANY
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
-          var oc = fuir(cl).clazzActualGeneric(cl._cc, 0);
+          var oc = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
           var call = fuir(cl).lookupCall(oc);
 
           if (CHECKS) check
@@ -2100,13 +2100,13 @@ public class DFA extends ANY
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
           var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
-          return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl._cc), NO_SITE, cl._context);
+          return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl.calledClazz()), NO_SITE, cl._context);
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
     put("effect.type.replace0"              , cl ->
         {
-          var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
 
           if (cl._dfa._real)
@@ -2121,7 +2121,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzAsString(cl._cc));
+                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzAsString(cl.calledClazz()));
                 }
             }
 
@@ -2129,7 +2129,7 @@ public class DFA extends ANY
         });
     put("effect.type.default0"              , cl ->
         {
-          var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
           if (cl._dfa._real)
             {
@@ -2138,7 +2138,7 @@ public class DFA extends ANY
                 {
                   cl._dfa._defaultEffects.put(ecl, new_e);
                   cl._dfa._defaultEffectContexts.put(ecl, cl);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl._cc));
+                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl.calledClazz()));
                 }
             }
           else
@@ -2148,7 +2148,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl._cc));
+                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl.calledClazz()));
                 }
             }
           return Value.UNIT;
@@ -2156,9 +2156,9 @@ public class DFA extends ANY
     put(EFFECT_INSTATE_NAME                 , cl ->
         {
           var fuir = fuir(cl);
-          var ecl      = fuir.effectTypeFromIntrinsic(cl._cc);
+          var ecl      = fuir.effectTypeFromIntrinsic(cl.calledClazz());
 
-          var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 0));
+          var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl.calledClazz(), 0));
           var finallie = fuir.lookup_static_finally(ecl);
 
           var a0 = cl._args.get(0).value();  // new effect value e
@@ -2198,7 +2198,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> EFFECT_INSTATE_NAME + " called: " + fuir(cl).clazzAsString(cl._cc));
+                  cl._dfa.wasChanged(() -> EFFECT_INSTATE_NAME + " called: " + fuir(cl).clazzAsString(cl.calledClazz()));
                 }
             }
           var aborted =
@@ -2206,13 +2206,13 @@ public class DFA extends ANY
             newEnv != null && newEnv.isAborted(ecl) ||
             cl._dfa._preEffectsAborted.contains(ecl) ||
             (cl._dfa._real ? newEnv.isAborted(ecl) : cl._dfa._preEffectsAborted.contains(ecl));
-          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl._cc, 1), aborted);
+          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl.calledClazz(), 1), aborted);
           if (aborted)
             { // default result, only if abort is ever called
               var def = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl);
               var res = def.result();
               result =
-                result != null && res != null ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl._cc)) :
+                result != null && res != null ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz())) :
                 result != null                ? result
                                               : res;
             }
@@ -2222,7 +2222,7 @@ public class DFA extends ANY
         });
     put("effect.type.abort0"                , cl ->
         {
-          var ecl = fuir(cl).effectTypeFromIntrinsic(cl._cc);
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var ev = cl.getEffectCheck2(ecl);
           if (cl._dfa._real)
             {
@@ -2239,7 +2239,7 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(fuir(cl).effectTypeFromIntrinsic(cl._cc)) != null
+    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(fuir(cl).effectTypeFromIntrinsic(cl.calledClazz())) != null
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes
@@ -2248,31 +2248,31 @@ public class DFA extends ANY
 
     put("fuzion.jvm.is_null0"  , cl ->
         {
-          cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+          cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
           return cl._dfa.bool();
         });
     put("fuzion.jvm.array_get"             , cl ->
         {
-          cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+          cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
           return wrappedJavaObject(cl);
         });
     put("fuzion.jvm.array_length"          , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
-        return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()));
       }
     );
     put("fuzion.jvm.array_to_java_object0" , cl ->
         {
-          var data = fuir(cl).lookup_fuzion_sys_internal_array_data  (fuir(cl).clazzArgClazz(cl._cc,0));
-          var len  = fuir(cl).lookup_fuzion_sys_internal_array_length(fuir(cl).clazzArgClazz(cl._cc,0));
+          var data = fuir(cl).lookup_fuzion_sys_internal_array_data  (fuir(cl).clazzArgClazz(cl.calledClazz(),0));
+          var len  = fuir(cl).lookup_fuzion_sys_internal_array_length(fuir(cl).clazzArgClazz(cl.calledClazz(),0));
           cl._dfa.readField(data);
           cl._dfa.readField(len);
           return Value.UNKNOWN_JAVA_REF;
         });
     put("fuzion.jvm.get_field0"            , cl ->
       {
-        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
         var jobj = wrappedJavaObject(cl);
         // otherwise it is a primitive like int, boolean
         if (fuir(cl).clazzIsRef(rc))
@@ -2302,7 +2302,7 @@ public class DFA extends ANY
    */
   static Value outcomeJavaResult(Call cl)
   {
-    var rc = fuir(cl).clazzResultClazz(cl._cc);
+    var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
     return outcome(cl._dfa, cl, rc, fuzionJavaResult(cl, fuir(cl).clazzChoice(rc, 0)));
   }
 
@@ -2356,7 +2356,7 @@ public class DFA extends ANY
   static {
     put("fuzion.jvm.call_c0"               , cl ->
       {
-        var cc = cl._cc;
+        var cc = cl.calledClazz();
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
         cl._dfa.readField(data);
@@ -2364,7 +2364,7 @@ public class DFA extends ANY
       });
     put("fuzion.jvm.call_s0"               , cl ->
       {
-        var cc = cl._cc;
+        var cc = cl.calledClazz();
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
         cl._dfa.readField(data);
@@ -2372,7 +2372,7 @@ public class DFA extends ANY
       });
     put("fuzion.jvm.call_v0"               , cl ->
       {
-        var cc = cl._cc;
+        var cc = cl.calledClazz();
         var fuir = fuir(cl);
         var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
         cl._dfa.readField(data);
@@ -2381,7 +2381,7 @@ public class DFA extends ANY
     put("fuzion.jvm.cast0", cl -> outcomeJavaResult(cl));
     put("fuzion.jvm.get_static_field0"     , cl ->
       {
-        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
         var jobj = wrappedJavaObject(cl);
         // otherwise it is a primitive like int, boolean
         if (fuir(cl).clazzIsRef(rc))
@@ -2399,7 +2399,7 @@ public class DFA extends ANY
 
     put("concur.sync.mtx_init"              , cl ->
       {
-        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
         var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
@@ -2408,28 +2408,28 @@ public class DFA extends ANY
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_trylock"           , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_unlock"            , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_destroy"           , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         return Value.UNIT;
       });
     put("concur.sync.cnd_init"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
-        var rc = fuir(cl).clazzResultClazz(cl._cc);
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
         var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
                        cl,
@@ -2438,35 +2438,35 @@ public class DFA extends ANY
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 1));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         return Value.UNIT;
       });
     put("native_string_length"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
-        return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl._cc));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()));
       });
     put("native_array"                      , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 0));
-        cl._dfa.readField(fuir(cl).clazzArg(cl._cc, 1));
-        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl._cc, 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
+        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl.calledClazz(), 0));
       });
   }
 
@@ -3255,12 +3255,12 @@ public class DFA extends ANY
         rec = false;
         for (var i = 0; i<cnt; i++)
           {
-            rec = rec || _newCallRecursiveAnalyzeClazzes[i] == e._cc;
+            rec = rec || _newCallRecursiveAnalyzeClazzes[i] == e.calledClazz();
           }
       }
     if (!rec)
       {
-        _newCallRecursiveAnalyzeClazzes[cnt] = e._cc;
+        _newCallRecursiveAnalyzeClazzes[cnt] = e.calledClazz();
         _newCallRecursiveAnalyzeCalls = cnt + 1;
         analyze(e);
         _newCallRecursiveAnalyzeCalls = cnt ;
