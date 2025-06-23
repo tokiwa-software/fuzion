@@ -2067,8 +2067,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        var o = outer();
-        String outer = o != null && (o.isGenericArgument() || !o.feature().isUniverse()) ? o.toStringWrapped(humanReadable) + "." : "";
         var f = feature();
         var typeType = f.isCotype();
         if (typeType)
@@ -2094,7 +2092,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               ".postcondition";
           }
 
-        result = outer
+        result = outerToString(humanReadable)
               + (!isThisType() && isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "" )
               + fname;
         if (isThisType())
@@ -2119,6 +2117,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
       }
     return result;
+  }
+
+
+  /**
+   * create String representation of the outer of this type
+   */
+  private String outerToString(boolean humanReadable)
+  {
+    var o = outer();
+    return isThisType()
+        ? (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName() + ".")
+        : o != null && (o.isGenericArgument() || !o.feature().isUniverse())
+        ? o.toStringWrapped(humanReadable) + "."
+        : "";
   }
 
 

@@ -388,7 +388,7 @@ block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:252
 block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:253:16:
         D   => false
 ---------------^^^^^
-block returns value of type 'typeinference_negative.this.typeInferencingFromMatch1.this.E' at --CURDIR--/typeinference_negative.fz:254:16:
+block returns value of type 'typeinference_negative.typeInferencingFromMatch1.this.E' at --CURDIR--/typeinference_negative.fz:254:16:
         e E => e
 ---------------^
 
@@ -414,7 +414,7 @@ block returns value of type 'String' at --CURDIR--/typeinference_negative.fz:268
 block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:269:18:
           D   => false
 -----------------^^^^^
-block returns value of type 'typeinference_negative.this.typeInferencingFromMatch2.this.E' at --CURDIR--/typeinference_negative.fz:270:18:
+block returns value of type 'typeinference_negative.typeInferencingFromMatch2.this.E' at --CURDIR--/typeinference_negative.fz:270:18:
           e E => e
 -----------------^
 
