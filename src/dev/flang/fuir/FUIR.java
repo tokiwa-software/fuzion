@@ -1629,7 +1629,7 @@ public abstract class FUIR extends IR
    *
    * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
    */
-  public final String clazzSrcFile(int cl)
+  public String clazzSrcFile(int cl)
   {
     return clazzDeclarationPos(cl)._sourceFile._fileName.toString();
   }
