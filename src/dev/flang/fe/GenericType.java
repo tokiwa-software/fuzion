@@ -29,7 +29,6 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
 import dev.flang.ast.TypeMode;
 import dev.flang.ast.UnresolvedType;
@@ -93,18 +92,6 @@ public class GenericType extends LibraryType
    * unresolved types, the source code position of its use.
    */
   public SourcePosition declarationPos() { return _generic.typeParameter().pos(); }
-
-
-  /**
-   * Dummy visit() for types.
-   *
-   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FeatureVisitor.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return this;
-  }
 
 
   /**

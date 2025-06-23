@@ -491,19 +491,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outerfeat the feature surrounding this expression.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return v.action(this);
-  }
-
-  /**
    * resolve this type, i.e., find or create the corresponding instance of
    * ResolvedType of this and all outer types and type arguments this depends on.
    *
