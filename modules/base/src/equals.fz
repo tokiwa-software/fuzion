@@ -48,9 +48,9 @@ public infix !=(T type : property.equatable, a, b T) bool => !equals a b
 #
 # This should usually be called using type inference as in
 #
-#   my_set := set_of ["A","B","C"]
-#   say <| "B" ∈ my_set
-#   say <| "D" ∈ my_set
+#     my_set := set_of ["A","B","C"]
+#     say <| "B" ∈ my_set
+#     say <| "D" ∈ my_set
 #
 public infix ∈ (T type : property.equatable,
                 a T,
@@ -63,9 +63,9 @@ public infix ∈ (T type : property.equatable,
 #
 # This should usually be called using type inference as in
 #
-#   my_set := set_of ["A","B","C"]
-#   say <| "B" ∉ my_set
-#   say <| "D" ∉ my_set
+#     my_set := set_of ["A","B","C"]
+#     say <| "B" ∉ my_set
+#     say <| "D" ∉ my_set
 #
 public infix ∉ (T type : property.equatable,
                 a T,

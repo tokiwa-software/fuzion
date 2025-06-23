@@ -71,21 +71,6 @@ public class Assign extends AbstractAssign
    */
   public Assign(SourcePosition pos, ParsedName n, Expr v)
   {
-    this(pos, n._name, v);
-  }
-
-
-  /**
-   * Constructor used be the parser
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param n the name of the assigned field
-   *
-   * @param v the value assigned to field with name n
-   */
-  Assign(SourcePosition pos, String n, Expr v)
-  {
     super(v);
 
     if (CHECKS) check
@@ -93,8 +78,8 @@ public class Assign extends AbstractAssign
        n != null,
        v != null);
 
-    this._name = n;
     this._pos = pos;
+    this._name = n._name;
   }
 
 

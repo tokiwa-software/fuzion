@@ -54,14 +54,14 @@ public fallible(ERROR type, h ERROR->void) : effect is
   #
   # This enables Java-like try-catch syntax as follows
   #
-  #   res := FALLIBLE_TYPE.try ()->
-  #             code
-  #          .catch s->
-  #             handle failure `s`
+  #     res := FALLIBLE_TYPE.try ()->
+  #               code
+  #            .catch s->
+  #               handle failure `s`
   #
   # or even
   #
-  #   res := FALLIBLE_TYPE.try code || (s->handle failure `s`)
+  #     res := FALLIBLE_TYPE.try code || (s->handle failure `s`)
   #
   # Note that the code is not executed unless `.catch` or `infix ||` is applied
   # to the result of the call to `try`.

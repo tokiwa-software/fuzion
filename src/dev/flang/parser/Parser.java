@@ -310,7 +310,7 @@ field       : returnType
         eff == UnresolvedType.NONE &&
         inh.isEmpty())
       {
-        p = implFldOrRout(hasType, l, (n.size() > 1) ? i : FuzionConstants.NO_SELECT);
+        p = implFldOrRout(hasType, l, (n.size() > 1) ? i : FuzionConstants.NO_SELECT, n.size());
       }
     else
       {
@@ -2684,6 +2684,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
+                                                    var ePos = tokenSourcePos();
                                                     var els1= fork().loopElseBlock();
                                                     var els2= fork().loopElseBlock();
                                                     var els =        loopElseBlock();
@@ -2701,7 +2702,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
                 syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
               }
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
+        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
       });
   }
 
@@ -2767,8 +2768,8 @@ nextValue   : COMMA exprInLine
       }
     else
       {
-        p1 =        implFldInit(hasType, null, -1);
-        p2 = forked.implFldInit(hasType, null, -1);
+        p1 =        implFldInit(hasType, null, -1, -1);
+        p2 = forked.implFldInit(hasType, null, -1, -1);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
@@ -3300,7 +3301,7 @@ implFldOrRout   : implRout           // may start at min indent
                 |
                 ;
    */
-  Impl implFldOrRout(boolean hasType, List<Feature> l, int select)
+  Impl implFldOrRout(boolean hasType, List<Feature> l, int select, int totalNames)
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
@@ -3315,7 +3316,7 @@ implFldOrRout   : implRout           // may start at min indent
       }
     else if (isOperator(true, ":="))
       {
-        return implFldInit(hasType, l, select);
+        return implFldInit(hasType, l, select, totalNames);
       }
     else
       {
@@ -3331,7 +3332,7 @@ implFldOrRout   : implRout           // may start at min indent
 implFldInit : ":=" operatorExpr      // may start at min indent
             ;
    */
-  Impl implFldInit(boolean hasType, List<Feature> l, int select)
+  Impl implFldInit(boolean hasType, List<Feature> l, int select, int totalNames)
   {
     SourcePosition pos = tokenSourcePos();
     Impl result;
@@ -3350,7 +3351,7 @@ implFldInit : ":=" operatorExpr      // may start at min indent
     else
       {
         if (CHECKS) check
-          (l != null);
+          (l != null, totalNames > 0);
 
         if (l.size() == 0)
           {
@@ -3358,7 +3359,7 @@ implFldInit : ":=" operatorExpr      // may start at min indent
           }
 
         var tmpName = l.getFirst().featureName().baseName();
-        var s = new Select(pos, null, tmpName, select, true);
+        var s = new Select(pos, null, tmpName, select, true, totalNames);
         result = new Impl(pos,
                           s,
                           hasType ? Impl.Kind.FieldInit

@@ -806,7 +806,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
                     && expectedType.isAssignableFromWithoutBoxing(c.actualTypeParameters().get(0).applyTypePars(t), context).yes())
-      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
+      ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
       : this;
   }
 
@@ -867,6 +867,15 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public String sourceText()
   {
     return sourceRange().sourceText();
+  }
+
+
+  /**
+   * Is this expression a call to `type_as_value`?
+   */
+  boolean isTypeAsValueCall()
+  {
+    return false;
   }
 
 

@@ -140,7 +140,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
 # Note that this value is of unit type >>false_<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := false_
+#     my_boolean := false_
 #
 # you will get a variable of type >>false_<<, it will not be possible to assign
 # >>true_<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
@@ -154,7 +154,7 @@ module:public false_ is
 # Note that this value is of unit type >>true_<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := true_
+#     my_boolean := true_
 #
 # you will get a variable of type >>true_<<, it will not be possible to assign
 # >>false_<< to it.  You can use >>true<< as an alternative to get type >>bool<<.

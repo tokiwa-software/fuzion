@@ -48,6 +48,9 @@ public class Select extends Call {
   private boolean _allowValueArgumentAccess;
 
 
+  private int _totalNames;
+
+
   /**
    * @param pos the sourcecode position, used for error messages.
    *
@@ -62,8 +65,10 @@ public class Select extends Call {
    *
    * @param allowValueArgumentAccess whether to enable access to value arguments
    * via select
+   *
+   * @param totalNames how many fields is being destructured into in total
    */
-  public Select(SourcePosition pos, Expr target, String name, int select, boolean allowValueArgumentAccess)
+  public Select(SourcePosition pos, Expr target, String name, int select, boolean allowValueArgumentAccess, int totalNames)
   {
     super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null);
 
@@ -72,6 +77,7 @@ public class Select extends Call {
        target != Call.ERROR);
 
     _allowValueArgumentAccess = allowValueArgumentAccess;
+    _totalNames = totalNames;
   }
 
 
@@ -89,7 +95,7 @@ public class Select extends Call {
    */
   public Select(SourcePosition pos, Expr target, String name, int select)
   {
-    this(pos, target, name, select, false);
+    this(pos, target, name, select, false, -1);
   }
 
 
@@ -221,14 +227,16 @@ public class Select extends Call {
       }
     else if (_allowValueArgumentAccess && _calledFeature != null)
       {
-        if (select() < at.feature().valueArguments().size())
+        var va = at.feature().valueArguments().size();
+
+        if (select() < va && _totalNames == va)
           {
             var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
             result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).featureName().baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
           }
         else
           {
-            AstErrors.destructuringOutOfBounds(pos(), at.feature(), select());
+            AstErrors.destructuringMisMatch(pos(), va, _totalNames);
           }
       }
     else

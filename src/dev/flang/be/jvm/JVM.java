@@ -1381,7 +1381,7 @@ should be avoided as much as possible.
    */
   Expr reportErrorInCode(String msg)
   {
-    return Expr.stringconst(msg)
+    return Expr.stringconst(msg, true)
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
       .andThen(Expr.endless_loop());
   }

@@ -33,11 +33,11 @@
 # Syntactic sugar of the Fuzion language permits an alternative notation
 # for choice types with actual generics as follows
 #
-#   A | B | C | ...
+#     A | B | C | ...
 #
 # which is equivalent to
 #
-#   choice A B C ...
+#     choice A B C ...
 #
 # The parser will directly convert the first notation into a choice type
 # with actual generics.
@@ -51,7 +51,7 @@
 #
 # Named choice types can be constructed through inheritance, i.e.,
 #
-#   C : choice A B is {}
+#     C : choice A B is {}
 #
 # creates a choice type of A and B with the name C.  Two named choice types
 # D and E that inherit from choice with the same actual generic arguments in
@@ -73,32 +73,32 @@
 # in degrees centigrade or degrees Fahrenheit.  So we define two wrapper
 # features
 #
-#   centigrade(degrees i32) is {}
-#   fahrenheit(degrees i32) is {}
+#     centigrade(degrees i32) is {}
+#     fahrenheit(degrees i32) is {}
 #
 # Now we define the choice type using the wrapped i32 types, which are
 # distinct:
 #
-#   has_fever(temp centigrade | fahrenheit) bool is ...
+#     has_fever(temp centigrade | fahrenheit) bool is ...
 #
 # When passing arguments to this feature, we need to wrap them accordingly:
 #
-#   has_fever (centigrade 37)
-#   has_fever (fahrenheit 99)
+#     has_fever (centigrade 37)
+#     has_fever (fahrenheit 99)
 #
 # When matching the choice type, we use the wrapper types and access the
 # argument field 'degrees' to access the i32 stored inside
 #
-#   match temp
-#     c centigrade => say "it's " + c.degrees + "°C"
-#     f fahrenheit => say "it's " + f.degrees + "°F"
+#     match temp
+#       c centigrade => say "it's " + c.degrees + "°C"
+#       f fahrenheit => say "it's " + f.degrees + "°F"
 #
 # NYI: Once Fuzion's match expression supports destructuring as well, we should
 # be able to extract the degrees directly as in
 #
-#   match temp
-#     centigrade d => say "it's " + d + "°C"
-#     fahrenheit d => say "it's " + d + "°F"
+#     match temp
+#       centigrade d => say "it's " + d + "°C"
+#       fahrenheit d => say "it's " + d + "°F"
 #
 # A choice type with no actual generic arguments is isomorphic to 'void', i.e, it
 # is a type that has an empty set of possible values.

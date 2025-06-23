@@ -448,7 +448,7 @@ public class InlineArray extends ExprWithPos
     var sys          = Types.resolved.fuzionSysCall(res, context);
     var sysArrayCall = new Call(SourcePosition.builtIn, sys, "internal_array_init",
                                 FuzionConstants.NO_SELECT, eT, argsE, null).resolveTypes(res, context);
-    var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sys.calledFeature().selfType());
+    var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sys.type());
     var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
     var sysArrayVar  = new Feature(SourcePosition.builtIn, Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
     res._module.findDeclarations(sysArrayVar, context.outerFeature());

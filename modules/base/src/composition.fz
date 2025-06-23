@@ -243,10 +243,10 @@ public composition is
   #
   # this can be used as follows:
   #
-  #   f (Lazy i32)->i32 := x->3
-  #   say <| fix i32 f
+  #     f (Lazy i32)->i32 := x->3
+  #     say <| fix i32 f
   #
-  #   g (Lazy (list i32))->list i32 := x->3:x
-  #   say <| (fix (list i32) g).take 10
+  #     g (Lazy (list i32))->list i32 := x->3:x
+  #     say <| (fix (list i32) g).take 10
   #
   fix(A type, f Lazy ((Lazy A)->A)) => f.call (fix A f)

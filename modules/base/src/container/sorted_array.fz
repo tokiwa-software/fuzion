@@ -48,9 +48,9 @@ public sorted_array
   #
   # must satisfy:
   #
-  #   for_all a,b: less_or_equal(a, b) <=> (a = b)
-  #   for_all a,b: less_or_equal(a, b) || less_or_equal(b, a)
-  #   for_all a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
+  #     for_all a,b: less_or_equal(a, b) <=> (a = b)
+  #     for_all a,b: less_or_equal(a, b) || less_or_equal(b, a)
+  #     for_all a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
   #
   less_or_equal (T, T) -> bool
 
@@ -187,3 +187,8 @@ is
           equal   => m
 
     binary_search 0 length-1
+
+
+  # is this Sequence sorted?
+  #
+  public redef is_sorted => true

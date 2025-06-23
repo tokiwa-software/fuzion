@@ -17,34 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature ignore
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# ignore -- function mapping any value to unit
-#
-# This can be used to ignore the result of an expression, e.g. the
-# instance returned by a constructor or the value returned by a fuction.
-#
-# Ex. with these features
-#
-#     hello is
-#       say "Hello!"
-#
-#     say_and_inc(x i32) i32 =>
-#       say x
-#       x+1
-#
-# the results can be ignored as follows
-#
-#     hello |> ignore
-#     (say_and_inc 42) |> ignore
-#     ignore hello
-#     ignore (say_and_inc 42)
-#     _ := hello
-#     _ := say_and_inc 42
-#
-public ignore(T type, x T) unit =>
+override NAME = reg_issue5377
+include ../simple.mk

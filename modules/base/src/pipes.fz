@@ -28,11 +28,11 @@
 #
 # This allows changing the order of function application: instead of
 #
-#   l := sum ([1,2,3,4].map **2)
+#     l := sum ([1,2,3,4].map **2)
 #
 # you can write
 #
-#   l := [1,2,3,4].map **2 |> sum
+#     l := [1,2,3,4].map **2 |> sum
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -44,18 +44,18 @@ public infix |> (A, R type, a A, f A->R) R =>
 #
 # This allows changing the order of function application: instead of
 #
-#   f(a,b i32) => a+b
-#   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1]
-#   l := l1.pairs l2
-#          .map p->{(p1,p2) := p; f p1 p2}
+#     f(a,b i32) => a+b
+#     l1 := [1,2,3,4]
+#     l2 := [4,3,2,1]
+#     l := l1.pairs l2
+#            .map p->{(p1,p2) := p; f p1 p2}
 #
 # you can write
 #
-#   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1]
-#   l := l1.pairs l2
-#          .map (p -> p ||> f)
+#     l1 := [1,2,3,4]
+#     l2 := [4,3,2,1]
+#     l := l1.pairs l2
+#            .map (p -> p ||> f)
 #
 # which often corresponds more naturally to the data flow through the code.
 #
@@ -67,15 +67,15 @@ public infix ||> (A, B, R type, a (A,B), f (A,B)->R) R =>
 #
 # This allows changing the order of function application: instead of
 #
-#   f(a,b,c i32) => a+b+c
-#   t := (1,2,3)
-#   r := f t.0 t.1 t.2
+#     f(a,b,c i32) => a+b+c
+#     t := (1,2,3)
+#     r := f t.0 t.1 t.2
 #
 # you can write
 #
-#   f(a,b,c i32) => a+b+c
-#   t := (1,2,3)
-#   r := t |||> f
+#     f(a,b,c i32) => a+b+c
+#     t := (1,2,3)
+#     r := t |||> f
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -87,15 +87,15 @@ public infix |||> (A, B, C, R type, a (A,B,C), f (A,B,C)->R) R =>
 #
 # This allows changing the order of function application: instead of
 #
-#   f(a,b,c,d i32) => a+b+c+d
-#   t := (1,2,3,4)
-#   r := f t.0 t.1 t.2 t.3
+#     f(a,b,c,d i32) => a+b+c+d
+#     t := (1,2,3,4)
+#     r := f t.0 t.1 t.2 t.3
 #
 # you can write
 #
-#   f(a,b,c,d i32) => a+b+c+d
-#   t := (1,2,3,4)
-#   r := t ||||> f
+#     f(a,b,c,d i32) => a+b+c+d
+#     t := (1,2,3,4)
+#     r := t ||||> f
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -107,15 +107,15 @@ public infix ||||> (A, B, C, D, R type, a (A,B,C,D), f (A,B,C,D)->R) R =>
 #
 # This allows changing the order of function application: instead of
 #
-#   f(a,b,c,d,e i32) => a+b+c+d+e
-#   t := (1,2,3,4,5)
-#   r := f t.0 t.1 t.2 t.3 t.4
+#     f(a,b,c,d,e i32) => a+b+c+d+e
+#     t := (1,2,3,4,5)
+#     r := f t.0 t.1 t.2 t.3 t.4
 #
 # you can write
 #
-#   f(a,b,c,d,e i32) => a+b+c+d+e
-#   t := (1,2,3,4,5)
-#   r := t |||||> f
+#     f(a,b,c,d,e i32) => a+b+c+d+e
+#     t := (1,2,3,4,5)
+#     r := t |||||> f
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -127,15 +127,15 @@ public infix |||||> (A, B, C, D, E, R type, a (A,B,C,D,E), f (A,B,C,D,E)->R) R =
 #
 # This allows changing the order of function application: instead of
 #
-#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
-#   t := (1,2,3,4,5,6)
-#   r := f t.0 t.1 t.2 t.3 t.4 t.5
+#     f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#     t := (1,2,3,4,5,6)
+#     r := f t.0 t.1 t.2 t.3 t.4 t.5
 #
 # you can write
 #
-#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
-#   t := (1,2,3,4,5,6)
-#   r := t ||||||> f
+#     f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#     t := (1,2,3,4,5,6)
+#     r := t ||||||> f
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -151,11 +151,11 @@ public infix ||||||> (A, B, C, D, E, F, R type, a (A,B,C,D,E,F), f (A,B,C,D,E,F)
 # This operation is seldom useful, it is provided only for reasons of symmetry with |>.
 # Instead of
 #
-#   l := [1,2,3,4].map **2 |> sum
+#     l := [1,2,3,4].map **2 |> sum
 #
 # you can also write
 #
-#   l := sum <| [1,2,3,4].map **2
+#     l := sum <| [1,2,3,4].map **2
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -167,18 +167,18 @@ public infix_right <| (A, R type, f A->R, a A) R =>
 #
 # This allows destructuring of tuples as actual arguments: instead of
 #
-#   f(a,b i32) => a+b
-#   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1]
-#   l := l1.pairs l2
-#          .map p->{(p1,p2) := p; f p1 p2}
+#     f(a,b i32) => a+b
+#     l1 := [1,2,3,4]
+#     l2 := [4,3,2,1]
+#     l := l1.pairs l2
+#            .map p->{(p1,p2) := p; f p1 p2}
 #
 # you can write
 #
-#   l1 := [1,2,3,4]
-#   l2 := [4,3,2,1]
-#   l := l1.pairs l2
-#          .map (p -> f <|| p)
+#     l1 := [1,2,3,4]
+#     l2 := [4,3,2,1]
+#     l := l1.pairs l2
+#            .map (p -> f <|| p)
 #
 # .
 #
@@ -190,15 +190,15 @@ public infix_right <|| (A, B, R type, f (A,B)->R, a (A,B)) R =>
 #
 # This allows destructuring of 3-tuples as actual arguments: instead of
 #
-#   f(a,b,c i32) => a+b+c
-#   t := (1,2,3)
-#   r := f t.0 t.1 t.2
+#     f(a,b,c i32) => a+b+c
+#     t := (1,2,3)
+#     r := f t.0 t.1 t.2
 #
 # you can write
 #
-#   f(a,b,c i32) => a+b+c
-#   t := (1,2,3)
-#   r := f <||| t
+#     f(a,b,c i32) => a+b+c
+#     t := (1,2,3)
+#     r := f <||| t
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -210,15 +210,15 @@ public infix_right <||| (A, B, C, R type, f (A,B,C)->R, a (A,B,C)) R =>
 #
 # This allows destructuring of 4-tuples as actual arguments: instead of
 #
-#   f(a,b,c,d i32) => a+b+c+d
-#   t := (1,2,3,4)
-#   r := f t.0 t.1 t.2 t.3
+#     f(a,b,c,d i32) => a+b+c+d
+#     t := (1,2,3,4)
+#     r := f t.0 t.1 t.2 t.3
 #
 # you can write
 #
-#   f(a,b,c,d i32) => a+b+c+d
-#   t := (1,2,3,4)
-#   r := f <|||| t
+#     f(a,b,c,d i32) => a+b+c+d
+#     t := (1,2,3,4)
+#     r := f <|||| t
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -230,15 +230,15 @@ public infix_right <|||| (A, B, C, D, R type, f (A,B,C,D)->R, a (A,B,C,D)) R =>
 #
 # This allows destructuring of 5-tuples as actual arguments: instead of
 #
-#   f(a,b,c,d,e i32) => a+b+c+d+e
-#   t := (1,2,3,4,5)
-#   r := f t.0 t.1 t.2 t.3 t.4
+#     f(a,b,c,d,e i32) => a+b+c+d+e
+#     t := (1,2,3,4,5)
+#     r := f t.0 t.1 t.2 t.3 t.4
 #
 # you can write
 #
-#   f(a,b,c,d,e i32) => a+b+c+d+e
-#   t := (1,2,3,4,5)
-#   r := f <||||| t
+#     f(a,b,c,d,e i32) => a+b+c+d+e
+#     t := (1,2,3,4,5)
+#     r := f <||||| t
 #
 # which often correponds more naturally to the data flow through the code.
 #
@@ -250,17 +250,17 @@ public infix_right <||||| (A, B, C, D, E, R type, f (A,B,C,D,E)->R, a (A,B,C,D,E
 #
 # This allows destructuring of 6-tuples as actual arguments: instead of
 #
-#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
-#   t := (1,2,3,4,5,6)
-#   r := f t.0 t.1 t.2 t.3 t.4 t.5
+#     f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#     t := (1,2,3,4,5,6)
+#     r := f t.0 t.1 t.2 t.3 t.4 t.5
 #
 # you can write
 #
-#   f(a,b,c,d,e,f i32) => a+b+c+d+e+f
-#   t := (1,2,3,4,5,6)
-#   r := f <|||||| t
+#     f(a,b,c,d,e,f i32) => a+b+c+d+e+f
+#     t := (1,2,3,4,5,6)
+#     r := f <|||||| t
 #
-# which often correponds more naturally to the data flow through the code.
+# which often corresponds more naturally to the data flow through the code.
 #
 public infix_right <|||||| (A, B, C, D, E, F, R type, f (A,B,C,D,E,F)->R, a (A,B,C,D,E,F)) R =>
   a ||||||> f

@@ -31,20 +31,20 @@
 # a result value.  These are features that typically have an outside effect
 # such as
 #
-#   println(String s) unit => ...
+#     println(String s) unit => ...
 #
 # or features that change the state of an instance such as
 #
-#   increment(delta i64) unit =>
-#     set counter := counter + delta
+#     increment(delta i64) unit =>
+#       set counter := counter + delta
 #
 # The Fuzion language implementation automatically inserts code that returns the
 # unit value as a result of these features, there is no need for an explicit unit
 # result as in
 #
-#   increment(delta i64) unit =>
-#     set counter := counter + delta
-#     unit
+#     increment(delta i64) unit =>
+#       set counter := counter + delta
+#       unit
 #
 # but it is allowed to return unit explicitly if desired.
 #
@@ -67,13 +67,13 @@
 #
 # Please note the fundamental difference between
 #
-#   red is {}
-#   red => {}
+#     red is {}
+#     red => {}
 #
 # The first declares a feature red that defines a new unit type red, the second
 # declares a feature red with result type unit, i.e., a synonym for unit as in
 #
-#   red unit => {}
+#     red unit => {}
 #
 # The memory required to store a value of unit type is 0 bits, so you can use
 # plenty without worrying about space constraints.  The Fuzion code generators

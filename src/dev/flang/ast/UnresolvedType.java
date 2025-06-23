@@ -906,7 +906,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * This is redefined here since {@code feature} might still be null while this type
    * was not resolved yet.
    */
-  boolean isTypeType()
+  @Override
+  boolean isCotypeType()
   {
     return false;
   }

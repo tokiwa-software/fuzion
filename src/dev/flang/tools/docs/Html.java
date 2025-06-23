@@ -210,7 +210,6 @@ public class Html extends ANY
     return
       "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
         + "<div class='d-flex flex-wrap word-break-break-word'>"
-          + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>§</a>"
           + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
             + anchor(af)
             + arguments(af)
@@ -226,6 +225,7 @@ public class Html extends ANY
             + annotateContainsAbstract(af)
             + annotatePrivateConstructor(af)
             + annotateModule(af)
+            + "<a class='fd-anchor-sign mr-2' href='#" + htmlID(af) + "'>¶</a>"
             // fills remaining space
             + "<div class='flex-grow-1'></div>"
           + "</div>"
@@ -250,7 +250,7 @@ public class Html extends ANY
       {
         String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
                               + htmlEncodedBasename(af.outer()) + "</a>";
-        return "&nbsp;&nbsp;<div class='fd-parent'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
+        return "<div class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
           .replace("$0", anchorParent);
       }
   }
@@ -286,7 +286,7 @@ public class Html extends ANY
 
     return redefs.isEmpty()
             ? ""
-            : "&nbsp;&nbsp;<div class='fd-parent'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
+            : "<div class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
               .replace("$0", (redefs.stream()
                                     .map(f->"<a class='' href='" + featureAbsoluteURL(f) + "'>" +
                                               htmlEncodedQualifiedName(f) + "</a>")
@@ -302,7 +302,7 @@ public class Html extends ANY
   private String annotateAbstract(AbstractFeature af)
   {
     return af.isAbstract()
-             ? "&nbsp;&nbsp;<div class='fd-parent' title='An abstract feature is a feature declared using ⇒ abstract. " +
+             ? "<div class='fd-parent ml-10' title='An abstract feature is a feature declared using ⇒ abstract. " +
                "To be able to call it, it needs to be implemented (redefined) in an heir.'>[Abstract feature]</div>"
              : "";
   }
@@ -316,7 +316,7 @@ public class Html extends ANY
   private String annotatePrivateConstructor(AbstractFeature af)
   {
     return af.visibility().eraseTypeVisibility() != Visi.PUB && af.isConstructor()
-             ? "&nbsp;<div class='fd-parent' title='This feature can not be called to construct a new instance of itself, " +
+             ? "<div class='fd-parent ml-10' title='This feature can not be called to construct a new instance of itself, " +
                "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
              : "";
   }
@@ -333,7 +333,7 @@ public class Html extends ANY
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
     return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
-             ? "&nbsp;&nbsp;<div class='fd-parent' title='This feature contains inner or inherited features " +
+             ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
                "which are abstract.'>[Contains abstract features]</div>"
              : "";
   }
@@ -349,7 +349,7 @@ public class Html extends ANY
     var afModule = libModule(af);
 
     // don't add annotation for features of own module
-    return afModule == lm ? "" : "&nbsp;<div class='fd-parent'>[Module " + afModule.name() + "]</div>";
+    return afModule == lm ? "" : "<div class='fd-parent ml-10'>[Module " + afModule.name() + "]</div>";
   }
 
   private boolean isVisible(AbstractFeature af)
@@ -361,8 +361,8 @@ public class Html extends ANY
 
 
   private String anchor(AbstractFeature af) {
-    return "<div class='font-weight-600'>"
-            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af) + "'>")
+    return "<div class='font-weight-600 ml-2'>"
+            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af, lm) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
             + (noFeatureLink(af) ? "" : "</a>")
             + "</div>";
@@ -434,10 +434,14 @@ public class Html extends ANY
 
     // Fields
     var fields =  new List<AbstractFeature>();
-    fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
-    var normalArguments = outer.arguments().clone();
-    normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
-    fields.addAll(normalArguments);
+    // it's not possible to get an instance of a function feature, so no fields can not be accessed from outside
+    if (!signatureWithArrow(outer))
+      {
+        fields.addAll(map.getOrDefault(AbstractFeature.Kind.Field, new TreeSet<AbstractFeature>()));
+        var normalArguments = outer.arguments().clone();
+        normalArguments.removeIf(a->a.isTypeParameter() || a.visibility().eraseTypeVisibility() != Visi.PUB);
+        fields.addAll(normalArguments);
+      }
 
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
@@ -449,11 +453,15 @@ public class Html extends ANY
 
     // Functions
     var allFunctions = new TreeSet<AbstractFeature>();
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    allFunctions.removeIf(f->f.isConstructor());
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
-    allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+    // it's not possible to get an instance of a function feature, so no features can be called on it
+    if (!signatureWithArrow(outer))
+      {
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+        allFunctions.removeIf(f->f.isConstructor());
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+      }
 
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
     var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
@@ -577,15 +585,23 @@ public class Html extends ANY
     var codeLines = new ArrayList<String>();
     var resultLines = new ArrayList<String>();
 
-    s.lines().forEach(l ->
+
+    String prevLine = "not empty";
+    boolean inCodeblock = false;
+
+    for (var l : s.lines().collect(Collectors.toList()))
       {
-        if (l.startsWith("    "))
+        if (l.startsWith("    ") && (prevLine.isBlank() || inCodeblock))
           {
+            inCodeblock = true;
+
             /* code comment */
             codeLines.add(l);
           }
         else if (l.isBlank())
           {
+            inCodeblock = false;
+
             /* avoid adding lots of line breaks after code comments */
             if (codeLines.isEmpty())
               {
@@ -594,6 +610,8 @@ public class Html extends ANY
           }
         else
           {
+            inCodeblock = false;
+
             addCodeLines(name, codeNo, codeLines, resultLines);
 
             /* treat as normal line */
@@ -601,7 +619,8 @@ public class Html extends ANY
 
             resultLines.add(replacedLine);
           }
-      });
+        prevLine = l;
+      }
 
     addCodeLines(name, codeNo, codeLines, resultLines);
 
@@ -760,6 +779,16 @@ public class Html extends ANY
   private String featureAbsoluteURL(AbstractFeature f)
   {
     return config.docsRoot() + "/" + libModule(f).name() + featureAbsoluteURL0(f) + "/";
+  }
+
+  /**
+   * the absolute URL of this feature in the given module
+   * @param module the module to which the link should point, e.g. for base module feature String there are different
+   *               pages in base (docs/base/String+(no+arguments)/) and terminal (docs/terminal/String+(no+arguments)/)
+   */
+  private String featureAbsoluteURL(AbstractFeature f, LibraryModule module)
+  {
+    return config.docsRoot() + "/" + module.name() + featureAbsoluteURL0(f) + "/";
   }
 
   private static String featureAbsoluteURL0(AbstractFeature f)

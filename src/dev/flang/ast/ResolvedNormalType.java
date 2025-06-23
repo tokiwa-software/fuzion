@@ -91,13 +91,6 @@ public class ResolvedNormalType extends ResolvedType
   AbstractFeature _feature;
 
 
-  /**
-   * Cached result of isRef(). Even though this function looks harmless, it is
-   * surprisingly performance critical.
-   */
-  YesNo _isRef;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -496,20 +489,6 @@ public class ResolvedNormalType extends ResolvedType
     return _feature != null
       ? _feature
       : Types.f_ERROR;
-  }
-
-
-  /**
-   * Is this the type of a type feature, e.g., the type of {@code (list i32).type}.
-   * Will return false for an instance of Type for which this is
-   * still unknown since {@code Type.resolve()} was not called yet.
-   *
-   * This is redefined here since {@code feature} might still be null while this type
-   * was not resolved yet.
-   */
-  boolean isTypeType()
-  {
-    return _feature != null && _feature.isCotype();
   }
 
 

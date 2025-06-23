@@ -153,10 +153,10 @@ public Sequence(public T type) ref : property.countable is
   #
   # example:
   #
-  # [1,2,3,4,5]
-  #   .filter is_prime
-  #   .peek say
-  #   .drop_while <10
+  #     [1,2,3,4,5]
+  #       .filter is_prime
+  #       .peek say
+  #       .drop_while <10
   #
   public peek (f T -> unit) Sequence T =>
     map x->
@@ -374,17 +374,17 @@ public Sequence(public T type) ref : property.countable is
   #
   # This is an infix operator alias of map enabling piping code like
   #
-  #   l := 1..10 | *10 | 300-
+  #     l := 1..10 | *10 | 300-
   #
   # to obtain 290,280,270,...200
   #
   # Note that map and therefore also this operator is lazy, so
   #
-  #   _ := (1..10 | say)
+  #     _ := (1..10 | say)
   #
   # will not print anything while
   #
-  #   (1..10 | say).for_each _->unit
+  #     (1..10 | say).for_each _->unit
   #
   # will print the elements since `for_each` is not lazy.
   #
@@ -407,7 +407,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex. to obtain a Sequence of differences, you may use `map_pairs (-)`:
   #
-  #   [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a
+  #     [2,3,5,7,11,13,17,19,23,29].map_pairs a,b->b-a
   #
   # results in `[1,2,2,4,2,4,2,4,6]`
   #
@@ -565,16 +565,16 @@ public Sequence(public T type) ref : property.countable is
   # elements all combinations of elements of this Sequence and
   # all elements of 'b' iterating of 'b' repeatedly as follows
   #
-  #   Sequence.this[0]  , b[0]
-  #   Sequence.this[0]  , b[1]
-  #   Sequence.this[0]  , b[2]
-  #   Sequence.this[0]  , ...
-  #   Sequence.this[0]  , b.last
-  #   Sequence.this[1]  , b[0]
-  #   Sequence.this[1]  , b[1]
-  #   Sequence.this[1]  , ...
-  #   ...               , ...
-  #   Sequence.this.last, b.last
+  #     Sequence.this[0]  , b[0]
+  #     Sequence.this[0]  , b[1]
+  #     Sequence.this[0]  , b[2]
+  #     Sequence.this[0]  , ...
+  #     Sequence.this[0]  , b.last
+  #     Sequence.this[1]  , b[0]
+  #     Sequence.this[1]  , b[1]
+  #     Sequence.this[1]  , ...
+  #     ...               , ...
+  #     Sequence.this.last, b.last
   #
   public combine(U, V type, b Sequence U, f (T,U)->V) Sequence V =>
     flat_map x->
@@ -585,19 +585,19 @@ public Sequence(public T type) ref : property.countable is
   # of this Sequence and all elements of 'b' iterating of 'b' repeatedly
   # as follows
   #
-  #   (Sequence.this[0]  , b[0]  )
-  #   (Sequence.this[0]  , b[1]  )
-  #   (Sequence.this[0]  , b[2]  )
-  #   (Sequence.this[0]  , ...   )
-  #   (Sequence.this[0]  , b.last)
-  #   (Sequence.this[1]  , b[0]  )
-  #   (Sequence.this[1]  , b[1]  )
-  #   (Sequence.this[1]  , ...   )
-  #   (...               , ...   )
-  #   (Sequence.this.last, b.last)
+  #     (Sequence.this[0]  , b[0]  )
+  #     (Sequence.this[0]  , b[1]  )
+  #     (Sequence.this[0]  , b[2]  )
+  #     (Sequence.this[0]  , ...   )
+  #     (Sequence.this[0]  , b.last)
+  #     (Sequence.this[1]  , b[0]  )
+  #     (Sequence.this[1]  , b[1]  )
+  #     (Sequence.this[1]  , ...   )
+  #     (...               , ...   )
+  #     (Sequence.this.last, b.last)
   #
   public pairs(U type, b Sequence U) Sequence ((T, U)) =>
-    combine b x,y->(x,y)
+    combine b tuple2
 
 
   # takes a transducer xf, a reducer f and an initial value
@@ -694,7 +694,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5].tuples produces [(1,2),(3,4)]
+  #     [1,2,3,4,5].tuples produces [(1,2),(3,4)]
   #
   public as_tuples Sequence (T, T)
   =>
@@ -712,7 +712,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5,6,7].tuples3 produces [(1,2,3),(4,5,6)]
+  #     [1,2,3,4,5,6,7].tuples3 produces [(1,2,3),(4,5,6)]
   #
   public as_3tuples Sequence (T, T, T)
   =>
@@ -730,7 +730,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5].tuples4 produces [(1,2,3,4)]
+  #     [1,2,3,4,5].tuples4 produces [(1,2,3,4)]
   #
   public as_4tuples Sequence (T, T, T, T)
   =>
@@ -748,7 +748,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5,6].tuples5 produces [(1,2,3,4,5)]
+  #     [1,2,3,4,5,6].tuples5 produces [(1,2,3,4,5)]
   #
   public as_5tuples Sequence (T, T, T, T, T)
   =>
@@ -766,7 +766,7 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5,6,7].tuples6 produces [(1,2,3,4,5,6)]
+  #     [1,2,3,4,5,6,7].tuples6 produces [(1,2,3,4,5,6)]
   #
   public as_6tuples Sequence (T,T, T, T, T, T)
   =>
@@ -782,10 +782,10 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5].as_tuple  produces (1,2)
-  #   [1,2].as_tuple        produces (1,2)
-  #   [1].as_tuple          breaks the pre condition
-  #   [].as_tuple           breaks the pre condition
+  #     [1,2,3,4,5].as_tuple  produces (1,2)
+  #     [1,2].as_tuple        produces (1,2)
+  #     [1].as_tuple          breaks the pre condition
+  #     [].as_tuple           breaks the pre condition
   #
   public as_tuple() (T, T)
     pre
@@ -803,11 +803,11 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5].as_3tuple  produces (1,2,3)
-  #   [1,2,3].as_3tuple      produces (1,2,3)
-  #   [1,2].as_3tuple        breaks the pre condition
-  #   [1].as_3tuple          breaks the pre condition
-  #   [].as_3tuple           breaks the pre condition
+  #     [1,2,3,4,5].as_3tuple  produces (1,2,3)
+  #     [1,2,3].as_3tuple      produces (1,2,3)
+  #     [1,2].as_3tuple        breaks the pre condition
+  #     [1].as_3tuple          breaks the pre condition
+  #     [].as_3tuple           breaks the pre condition
   #
   public as_3tuple() (T, T, T)
     pre
@@ -829,12 +829,12 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5].as_4tuple  produces (1,2,3,4)
-  #   [1,2,3,4].as_4tuple    produces (1,2,3,4)
-  #   [1,2,3].as_4tuple      breaks the pre condition
-  #   [1,2].as_4tuple        breaks the pre condition
-  #   [1].as_4tuple          breaks the pre condition
-  #   [].as_4tuple           breaks the pre condition
+  #     [1,2,3,4,5].as_4tuple  produces (1,2,3,4)
+  #     [1,2,3,4].as_4tuple    produces (1,2,3,4)
+  #     [1,2,3].as_4tuple      breaks the pre condition
+  #     [1,2].as_4tuple        breaks the pre condition
+  #     [1].as_4tuple          breaks the pre condition
+  #     [].as_4tuple           breaks the pre condition
   #
   public as_4tuple() (T, T, T, T)
     pre
@@ -859,12 +859,12 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5,6].as_5tuple  produces (1,2,3,4,5)
-  #   [1,2,3,4,5].as_5tuple    produces (1,2,3,4,5)
-  #   [1,2,3,4].as_5tuple      breaks the pre condition
-  #   [1,2,3].as_5tuple        breaks the pre condition
-  #    ...
-  #   [].as_5tuple             breaks the pre condition
+  #     [1,2,3,4,5,6].as_5tuple  produces (1,2,3,4,5)
+  #     [1,2,3,4,5].as_5tuple    produces (1,2,3,4,5)
+  #     [1,2,3,4].as_5tuple      breaks the pre condition
+  #     [1,2,3].as_5tuple        breaks the pre condition
+  #      ...
+  #     [].as_5tuple             breaks the pre condition
   #
   public as_5tuple() (T, T, T, T, T)
     pre
@@ -892,12 +892,12 @@ public Sequence(public T type) ref : property.countable is
   #
   # ex.
   #
-  #   [1,2,3,4,5,6,7].as_6tuple  produces (1,2,3,4,5,6)
-  #   [1,2,3,4,5,6].as_6tuple    produces (1,2,3,4,5,6)
-  #   [1,2,3,4,5].as_6tuple      breaks the pre condition
-  #   [1,2,3,4].as_6tuple        breaks the pre condition
-  #    ...
-  #   [].as_6tuple               breaks the pre condition
+  #     [1,2,3,4,5,6,7].as_6tuple  produces (1,2,3,4,5,6)
+  #     [1,2,3,4,5,6].as_6tuple    produces (1,2,3,4,5,6)
+  #     [1,2,3,4,5].as_6tuple      breaks the pre condition
+  #     [1,2,3,4].as_6tuple        breaks the pre condition
+  #      ...
+  #     [].as_6tuple               breaks the pre condition
   #
   public as_6tuple() (T, T, T, T, T, T)
     pre
@@ -1120,7 +1120,8 @@ public Sequence(public T type) ref : property.countable is
   # Keep the order of elements unchanged.
   #
   # ex.
-  #   [1,2,2,3,2,2,2,4].dedup = [1,2,3,2,4]
+  #
+  #     [1,2,2,3,2,2,2,4].dedup = [1,2,3,2,4]
   #
   public dedup Sequence T
     pre
@@ -1135,8 +1136,9 @@ public Sequence(public T type) ref : property.countable is
   # Keep the order of elements unchanged.
   #
   # ex.
-  #   [4,2,2,6,2,1,2,4].dedup (a,b -> a%2=b%2) = [4,1,2]
-  #   [4,2,2,6,2,1,2,4].dedup (<=) = [4,2,1]
+  #
+  #     [4,2,2,6,2,1,2,4].dedup (a,b -> a%2=b%2) = [4,1,2]
+  #     [4,2,2,6,2,1,2,4].dedup (<=) = [4,2,1]
   #
   public dedup(by (T,T) -> bool) Sequence T
     pre
@@ -1153,7 +1155,8 @@ public Sequence(public T type) ref : property.countable is
   # or `nub` (Haskell).
   #
   # ex.
-  #   [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]
+  #
+  #     [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]
   #
   public unique Sequence T
     pre
@@ -1299,11 +1302,11 @@ public Sequence(public T type) ref : property.countable is
   #
   # example: count occurrences of letters, numbers and other characters
   #
-  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #     values array codepoint := ["A", "1", "b", "?", "X", "4"]
   #
-  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #    values.group_map_reduce String i32 classify (_->1) (+)
+  #     values.group_map_reduce String i32 classify (_->1) (+)
   #
   # => {(digit => 2), (letter => 3), (other => 1)}
   #
@@ -1444,8 +1447,8 @@ public Sequence(public T type) ref : property.countable is
   #
   # This allows summing the elements of a list, as in
   #
-  #   l := [1,2,3]
-  #   say <| l.sum     # '6'
+  #     l := [1,2,3]
+  #     say <| l.sum     # '6'
   #
   #
   public sum T
@@ -1458,14 +1461,24 @@ public Sequence(public T type) ref : property.countable is
   #
   # This allows multiplying the elements of a list, as in
   #
-  #   l := [1,2,3]
-  #   say <| l.product     # '6'
+  #     l := [1,2,3]
+  #     say <| l.product     # '6'
   #
   #
   public product T
     pre
       T : numeric
   => fold T.product
+
+
+  # is this Sequence sorted?
+  #
+  public is_sorted bool
+    pre
+      T : property.orderable
+  =>
+    zip (drop 1) (T.lteq)
+      .fold bool.all
 
 
   # create an empty Sequence
