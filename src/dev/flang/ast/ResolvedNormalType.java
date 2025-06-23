@@ -450,6 +450,9 @@ public class ResolvedNormalType extends ResolvedType
    */
   public AbstractType asValue()
   {
+    if (PRECONDITIONS) require
+      (!isThisType());
+
     AbstractType result = this;
     if (!isValue() && this != Types.t_ERROR)
       {
