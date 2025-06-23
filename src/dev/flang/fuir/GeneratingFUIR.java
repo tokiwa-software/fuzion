@@ -2882,23 +2882,6 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the source file the clazz originates from.
-   *
-   * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
-   */
-  @Override
-  public String clazzSrcFile(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var c = id2clazz(cl);
-    return c.feature().pos()._sourceFile._fileName.toString();
-  }
-
-
-  /**
    * Get the source code position of the declaration of the underlying feature
    * of a given clazz.
    *

@@ -587,13 +587,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public String clazzSrcFile(int cl)
-  {
-    return _clazzes[clazzId2num(cl)].clazzSrcFile();
-  }
-
-
-  @Override
   public SourcePosition clazzDeclarationPos(int cl)
   {
     var r = _clazzes[clazzId2num(cl)];
