@@ -2403,14 +2403,14 @@ A ((Choice)) declaration must not contain a result type.
           }
         result = urgent ? Types.t_ERROR : null;
       }
+    else if (isOuterRef())
+      {
+        result = outer().outer().thisType(outer().isFixed());
+      }
     else
       {
         result = _returnType.functionReturnType();
         result = urgent && result == null ? Types.t_ERROR : result;
-      }
-    if (isOuterRef() && !outer().isFixed())
-      {
-        result = result.asThis();
       }
     if (res != null && result != null && outer() != null)
       {
