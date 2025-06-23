@@ -227,15 +227,9 @@ public class ResolvedNormalType extends ResolvedType
                                     TypeMode typeMode,
                                     boolean fixOuterThisType)
   {
-    if (f == Types.f_ERROR ||
-        g.stream().anyMatch(x -> x == Types.t_ERROR))
-      {
-        return Types.t_ERROR;
-      }
-    else
-      {
-        return new ResolvedNormalType(g, ug, o, f, typeMode, fixOuterThisType);
-      }
+    return f == Types.f_ERROR || g.contains(Types.t_ERROR)
+      ? Types.t_ERROR
+      : new ResolvedNormalType(g, ug, o, f, typeMode, fixOuterThisType);
   }
 
 

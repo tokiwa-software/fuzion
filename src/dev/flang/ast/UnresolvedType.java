@@ -543,7 +543,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     if (!tolerant && _resolved == null)
       {
-        _resolved = resolveThisType(res, outer);
+        _resolved = resolveThisTypeInCotype(res, outer);
       }
     if (_resolved == null)
       {
@@ -787,14 +787,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         generics.freeze();
       }
 
-    return
-      f == Types.f_ERROR ? Types.t_ERROR
-                         : ResolvedNormalType.create(generics,
-                                                     unresolvedGenerics,
-                                                     o,
-                                                     f,
-                                                     typeMode,
-                                                     false);
+    return ResolvedNormalType.create(generics,
+                                     unresolvedGenerics,
+                                     o,
+                                     f,
+                                     typeMode,
+                                     false);
   }
 
 
@@ -809,15 +807,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * resolve 'abc.this.type' within a type feature. If this designates a
-   * 'this.type' withing a type feature, then return the type parameter of the
+   * resolve 'abc.this.type' within a cotype. If this designates a
+   * 'this.type' withing a cotype, then return the type parameter of the
    * corresponding outer type.
    *
    * Example: if this is
    *
    *   b.this.type
    *
-   * within a type feature
+   * within a cotype
    *
    *   a.type.b.type.c.d
    *
@@ -830,7 +828,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @return null if no matching this type was found, the resolved type
    * otherwise.
    */
-  private AbstractType resolveThisType(Resolution res, AbstractFeature outerfeat)
+  private AbstractType resolveThisTypeInCotype(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
