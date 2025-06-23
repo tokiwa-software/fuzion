@@ -327,7 +327,7 @@ public class SourceModule extends Module implements SrcModule
               case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
               case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
               case Routine  :
-                if (!main.generics().list.isEmpty())
+                if (!main.generics().list().isEmpty())
                   {
                     FeErrors.mainFeatureMustNotHaveTypeArguments(main);
                   }

@@ -462,7 +462,7 @@ public class LibraryModule extends Module implements MirModule
   {
     var tp = feature(offset);
     var o = tp.outer();
-    for (var g : o.generics().list)
+    for (var g : o.generics().list())
       {
         if (g == tp)
           {

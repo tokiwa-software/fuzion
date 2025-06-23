@@ -44,25 +44,16 @@ public class FormalGenerics extends ANY
 {
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
-  /**
-   * Convenience constant for an empty formal generics instance.
-   */
-  public static final FormalGenerics NONE = new FormalGenerics(new List<>());
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
-  /**
-   * Field with type from this.type created in case fieldName != null.
-   *
-   * This is private to prevent direct access that does not take care about
-   * isOpen.
-   */
-  public final List<AbstractFeature> list;
+  private List<AbstractType> _asActuals = null;
+
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  private final AbstractFeature _feature;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -73,14 +64,21 @@ public class FormalGenerics extends ANY
    *
    * @param l the list of formal generics. May not be empty.
    */
-  public FormalGenerics(List<AbstractFeature> l)
+  public FormalGenerics(AbstractFeature f)
   {
-    list = l;
-    list.freeze();
+    this._feature = f;
+    // NYI: UNDER DEVELOPMENT: _feature.typeArguments().freeze();
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+
+  public List<AbstractFeature> list()
+  {
+    return _feature.typeArguments();
+  }
 
 
   /**
@@ -88,7 +86,7 @@ public class FormalGenerics extends ANY
    */
   public boolean isOpen()
   {
-    return !list.isEmpty() && list.getLast().isOpenTypeParameter();
+    return !list().isEmpty() && list().getLast().isOpenTypeParameter();
   }
 
 
@@ -111,11 +109,11 @@ public class FormalGenerics extends ANY
       }
     else if (isOpen())
       {
-        return (list.size()-1) <= actualGenerics.size();
+        return (list().size()-1) <= actualGenerics.size();
       }
     else
       {
-        return list.size() == actualGenerics.size();
+        return list().size() == actualGenerics.size();
       }
   }
 
@@ -175,9 +173,6 @@ public class FormalGenerics extends ANY
   }
 
 
-  private List<AbstractType> _asActuals = null;
-
-
   /**
    * Wrapper class for result of asActuals(). This is used to quickly identify
    * the generics list of formals used as actuals, e.g., in an outer reference,
@@ -193,7 +188,7 @@ public class FormalGenerics extends ANY
       // NYI: This is a bit ugly, can we avoid adding all these types
       // here?  They should never be used since AsActuals is only a
       // placeholder for the actual generics.
-      for (var g : list)
+      for (var g : list())
         {
           add(g.asGenericType());
         }
@@ -242,7 +237,7 @@ public class FormalGenerics extends ANY
     var result = _asActuals;
     if (result == null)
       {
-        if (this == FormalGenerics.NONE)
+        if (this.list().isEmpty())
           {
             result = UnresolvedType.NONE;
           }
@@ -261,17 +256,6 @@ public class FormalGenerics extends ANY
 
 
   /**
-   * Add type parameter g to this list of formal generics.
-   *
-   * @param g the new type parameter
-   */
-  FormalGenerics addTypeParameter(AbstractFeature g)
-  {
-    return new FormalGenerics(list.addAfterUnfreeze(g));
-  }
-
-
-  /**
    * Number of generic arguments expected as a text to be used in error messages
    * about wrong number of actual generic arguments.
    *
@@ -279,8 +263,8 @@ public class FormalGenerics extends ANY
    */
   public String sizeText()
   {
-    int sz = isOpen() ? list.size() - 1
-                      : list.size();
+    int sz = isOpen() ? list().size() - 1
+                      : list().size();
     return
       isOpen()    && (sz == 0) ? "any number of generic arguments"
       :  isOpen() && (sz == 1) ? "at least one generic argument"
@@ -298,8 +282,9 @@ public class FormalGenerics extends ANY
    */
   public String toString()
   {
-    return !isOpen() && list.isEmpty() ? ""
-                                       : list + (isOpen() ? "..." : "");
+    return !isOpen() && list().isEmpty()
+      ? ""
+      : list() + (isOpen() ? "..." : "");
   }
 
 }

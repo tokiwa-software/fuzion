@@ -1956,7 +1956,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (genericArgument().outer() == outerCotype.cotypeOrigin())
           {
-            result = outerCotype.generics().list.get(genericArgument().typeParameterIndex() + 1).asGenericType();
+            result = outerCotype.generics().list().get(genericArgument().typeParameterIndex() + 1).asGenericType();
           }
         else
           {
@@ -2208,7 +2208,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   static boolean checkActualTypePars(Context context, AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, Call call)
   {
     var result = true;
-    var fi = called.generics().list.iterator();
+    var fi = called.generics().list().iterator();
     var ai = actuals.iterator();
     var ui = unresolvedActuals.iterator();
     while (fi.hasNext() &&

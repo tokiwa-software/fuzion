@@ -61,7 +61,7 @@ public class FeErrors extends AstErrors
 
   public static void mainFeatureMustNotHaveTypeArguments(AbstractFeature m)
   {
-    var g = m.generics().list;
+    var g = m.generics().list();
     error(m.pos(),
           "Main feature must not have type arguments",
           "Main feature has " + StringHelpers.singularOrPlural(g.size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +

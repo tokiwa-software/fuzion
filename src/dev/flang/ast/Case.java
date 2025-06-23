@@ -306,7 +306,7 @@ public class Case extends AbstractCase
     List<AbstractType> matches = new List<>();
     int i = 0;
     t = t.resolve(res, context);
-    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.feature().generics() != FormalGenerics.NONE;
+    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && !t.feature().generics().list().isEmpty();
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());

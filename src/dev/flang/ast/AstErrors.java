@@ -630,7 +630,7 @@ public class AstErrors extends ANY
           "Wrong number of type parameters",
           "Wrong number of actual type parameters in " + detail1 + ":\n" +
           detail2 +
-          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg) + "") + "\n" +
+          "expected " + fg.sizeText() + (fg.list().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 

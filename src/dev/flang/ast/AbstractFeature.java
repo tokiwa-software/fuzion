@@ -158,7 +158,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * The formal generic arguments of this feature, cached result of generics()
    */
-  protected FormalGenerics _generics;
+  private FormalGenerics _generics;
 
 
   /**
@@ -482,7 +482,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var result = featureName();
     if (hasOpenGenericsArgList(res))
       {
-        var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
+        var argCount = arguments().size() + actualGenerics.size() - outer().generics().list().size();
         if (CHECKS) check
           (Errors.any() || argCount >= 0);
         if (argCount < 0)
@@ -615,7 +615,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     AbstractFeature o = this;
     while (o != null && !result)
       {
-        for (var g : o.generics().list)
+        for (var g : o.generics().list())
           {
             if (g.isOpenTypeParameter())
               {
@@ -1683,17 +1683,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (_generics == null)
       {
-        // Recreate FormalGenerics from typeParameters
-        // NYI: Remove, FormalGenerics should use AbstractFeature.typeArguments() instead of its own list of Generics.
-        if (typeArguments().isEmpty())
-          {
-            _generics = FormalGenerics.NONE;
-          }
-        else
-          {
-            // NYI: use this
-            _generics = new FormalGenerics(typeArguments());
-          }
+        _generics = new FormalGenerics(this);
       }
     return _generics;
   }
@@ -1964,10 +1954,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        outer().generics().sizeMatches(actuals));
 
     if (CHECKS) check
-      (outer().generics().list.getLast() == this);
+      (outer().generics().list().getLast() == this);
 
     return outer().generics().sizeMatches(actuals)
-      ? new List<>(actuals.subList(outer().generics().list.size()-1, actuals.size()).iterator())
+      ? new List<>(actuals.subList(outer().generics().list().size()-1, actuals.size()).iterator())
       : new List<AbstractType>(Types.t_ERROR);
   }
 
@@ -1995,7 +1985,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var o = outer();
     if (!isThisTypeInCotype() && o.isCotype())
       {
-        result = o.cotypeOrigin().generics().list.get(typeParameterIndex()-1);
+        result = o.cotypeOrigin().generics().list().get(typeParameterIndex()-1);
       }
     return result;
   }

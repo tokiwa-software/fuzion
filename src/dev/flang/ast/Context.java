@@ -140,7 +140,7 @@ abstract class Context extends ANY
                           x instanceof ResolvedParametricType rpt
                             ? f
                               .generics()
-                              .list
+                              .list()
                               .stream()
                               .filter(y ->
                                   y.outer().origin() == rpt.genericArgument().outer().origin() &&
