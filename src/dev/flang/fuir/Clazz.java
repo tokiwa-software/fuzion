@@ -659,7 +659,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForCotype(o);
           }
-        t = ResolvedNormalType.create(t, g, g, o, true);
+        t = ResolvedNormalType.create(t, g, g, o);
       }
     return t;
   }

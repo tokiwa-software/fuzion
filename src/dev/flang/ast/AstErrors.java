@@ -2087,20 +2087,20 @@ public class AstErrors extends ANY
   {
     var art = arg ? "argument type" : "result type";
     var tp = calledOrArg.resultTypePos();
-    error(c.pos(),
-          "Call has an ambiguous " + art + " since target of the call is a " + code("ref") + " type.",
-          "The " + art + " of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
-          "may represent a number of different actual dynamic types, the " + art + " is not clearly defined.\n"+
-          "Called feature: " + s(c.calledFeature()) + "\n" +
-          "Original " + art + ": " + s(t) +
-          (tp != null
-           ? " declared at " + tp.show()
-           : "") + "\n" +
-          "Type depending on target: " + s(from) + "\n" +
-          "Target type: " + s(to) + "\n" +
-          "To solve this, you could try to use a value type as the target type of the call" +
-          (c.calledFeature().outer().isRef() ? " " : ", e,g., " + s(c.calledFeature().outer().selfType()) + ", ") +
-          "or change the " + art + " of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
+    // error(c.pos(),
+    //       "Call has an ambiguous " + art + " since target of the call is a " + code("ref") + " type.",
+    //       "The " + art + " of this call depends on the target type.  Since the target type is a " + code("ref") + " type that " +
+    //       "may represent a number of different actual dynamic types, the " + art + " is not clearly defined.\n"+
+    //       "Called feature: " + s(c.calledFeature()) + "\n" +
+    //       "Original " + art + ": " + s(t) +
+    //       (tp != null
+    //        ? " declared at " + tp.show()
+    //        : "") + "\n" +
+    //       "Type depending on target: " + s(from) + "\n" +
+    //       "Target type: " + s(to) + "\n" +
+    //       "To solve this, you could try to use a value type as the target type of the call" +
+    //       (c.calledFeature().outer().isRef() ? " " : ", e,g., " + s(c.calledFeature().outer().selfType()) + ", ") +
+    //       "or change the " + art + " of " + s(c.calledFeature()) + " to no longer depend on " + s(from) + ".");
   }
 
 
