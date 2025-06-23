@@ -62,7 +62,7 @@ public class FormalGenerics extends ANY
    * This is private to prevent direct access that does not take care about
    * isOpen.
    */
-  public final List<Generic> list;
+  public final List<AbstractFeature> list;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -73,7 +73,7 @@ public class FormalGenerics extends ANY
    *
    * @param l the list of formal generics. May not be empty.
    */
-  public FormalGenerics(List<Generic> l)
+  public FormalGenerics(List<AbstractFeature> l)
   {
     list = l;
     list.freeze();
@@ -88,7 +88,7 @@ public class FormalGenerics extends ANY
    */
   public boolean isOpen()
   {
-    return !list.isEmpty() && list.getLast().isOpen();
+    return !list.isEmpty() && list.getLast().isOpenTypeParameter();
   }
 
 
@@ -193,9 +193,9 @@ public class FormalGenerics extends ANY
       // NYI: This is a bit ugly, can we avoid adding all these types
       // here?  They should never be used since AsActuals is only a
       // placeholder for the actual generics.
-      for (Generic g : list)
+      for (var g : list)
         {
-          add(g.type());
+          add(g.asGenericType());
         }
       freeze();
     }
@@ -265,7 +265,7 @@ public class FormalGenerics extends ANY
    *
    * @param g the new type parameter
    */
-  FormalGenerics addTypeParameter(Generic g)
+  FormalGenerics addTypeParameter(AbstractFeature g)
   {
     return new FormalGenerics(list.addAfterUnfreeze(g));
   }

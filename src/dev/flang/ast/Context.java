@@ -143,12 +143,12 @@ abstract class Context extends ANY
                               .list
                               .stream()
                               .filter(y ->
-                                  y.feature().origin() == rpt.genericArgument().feature().origin() &&
-                                  y.toString().equals(rpt.genericArgument().typeParameter().featureName().baseName())
+                                  y.outer().origin() == rpt.genericArgument().outer().origin() &&
+                                  y.toString().equals(rpt.genericArgument().featureName().baseName())
                                 )
                               .findFirst()
                               .get()
-                              .type()
+                              .asGenericType()
                             : x);
                     }
                 }
