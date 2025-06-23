@@ -2095,7 +2095,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             types.add(t);
           }
       }
-    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().formalGenerics())
+    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().outer().generics())
       {
         types = ft.genericArgument().replaceOpen(_type.generics());
       }

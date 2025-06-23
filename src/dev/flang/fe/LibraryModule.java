@@ -41,7 +41,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.Generic;
 import dev.flang.ast.TypeMode;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
@@ -459,13 +458,13 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param offset the offset of the Generic
    */
-  Generic genericArgument(int offset)
+  AbstractFeature genericArgument(int offset)
   {
     var tp = feature(offset);
     var o = tp.outer();
     for (var g : o.generics().list)
       {
-        if (g.typeParameter() == tp)
+        if (g == tp)
           {
             return g;
           }

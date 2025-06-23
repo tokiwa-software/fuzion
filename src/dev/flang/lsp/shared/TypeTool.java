@@ -73,11 +73,11 @@ public class TypeTool extends ANY
    */
   public static String label(FormalGenerics generics, boolean brief)
   {
-    if (!generics.isOpen() && generics.list.isEmpty() || brief)
+    if (!generics.isOpen() && generics.list().isEmpty() || brief)
       {
         return "";
       }
-    return " " + generics.list + (generics.isOpen() ? "... ": "");
+    return " " + generics.list() + (generics.isOpen() ? "... ": "");
   }
 
   private static String labelNoErrorOrUndefined(AbstractType type)
@@ -114,10 +114,9 @@ public class TypeTool extends ANY
    */
   public static String baseName(AbstractType t)
   {
-    var f = t.isGenericArgument()
-                                  ? t.genericArgument().typeParameter()
-                                  : t.feature();
-    return f
+    return (t.isGenericArgument()
+              ? t.genericArgument()
+              : t.feature())
       .featureName()
       .baseName();
   }

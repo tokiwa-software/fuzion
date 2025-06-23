@@ -631,7 +631,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                   {
                     if (!generics.isEmpty())
                       {
-                        AstErrors.formalGenericWithGenericArgs(pos(), this, f.asGeneric());
+                        AstErrors.formalGenericWithGenericArgs(pos(), this, f);
                       }
                     var gt = f.asGenericType();
                     if (gt.isOpenGeneric() && !(outer instanceof Feature off && off.isLastArgType(this)))
@@ -919,7 +919,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @return the Generic instance, never null.
    */
-  public Generic genericArgument()
+  public AbstractFeature genericArgument()
   {
     if (PRECONDITIONS) require
       (false);
@@ -1008,7 +1008,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         public boolean isFreeType() { return true; }
       };
     var g = outer.outer().addTypeParameter(res, tp);
-    return g.type();
+    return g.asGenericType();
   }
 
 

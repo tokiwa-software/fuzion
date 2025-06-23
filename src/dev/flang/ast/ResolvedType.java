@@ -69,7 +69,7 @@ public abstract class ResolvedType extends AbstractType
    *
    * @return the Generic instance, never null.
    */
-  public Generic genericArgument()
+  public AbstractFeature genericArgument()
   {
     if (PRECONDITIONS) require
       (false);

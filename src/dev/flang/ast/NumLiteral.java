@@ -931,21 +931,21 @@ public class NumLiteral extends Constant
         if (_originalString.equals("0"))
           {
             result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
                           new ParsedName(pos(), "zero"))
                   .resolveTypes(res, _context);
           }
         else if (_originalString.equals("1"))
           {
             result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
                           new ParsedName(pos(), "one"))
                   .resolveTypes(res, _context);
           }
         else
           {
             result = new ParsedCall(
-                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
                       new ParsedName(pos(), "from_u32"),
                       new List<>(this))
                   .resolveTypes(res, _context);
