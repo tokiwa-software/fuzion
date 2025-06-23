@@ -545,26 +545,27 @@ public class Call extends ANY implements Comparable<Call>, Context
    * Get effect of given type in this call's environment or the default if none
    * found or null if no effect in environment and also no default available.
    *
+   * Report an error if no effect found during last pass (i.e.,
+   * _dfa._reportResults is set).
+   *
+   * @param s the site that requires this effect, for error message in case
+   * _dfa._reportResults.
+   *
    * @param ecl clazz defining the effect type.
    *
    * @return null in case no effect of type ecl was found
    */
-  Value getEffectCheck(int ecl)
+  Value getEffectCheck(int s, int ecl)
   {
     _group.needsEffect(ecl);
-    return
-      _env != null ? _env.getActualEffectValues(ecl)
-                   : _dfa._defaultEffects.get(ecl);
-  }
-  Value getEffectCheck2(int ecl)
-  {
     Value result;
     if (_dfa._real)
       {
-        result = getEffectCheck(ecl);
+        result = _env != null ? _env.getActualEffectValues(ecl)
+                              : _dfa._defaultEffects.get(ecl);
         if (result == null && _dfa._reportResults)
           {
-            DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(site()),
+            DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                              _dfa._fuir.clazzAsString(ecl),
                                              this);
             _dfa._missingEffects.put(ecl, ecl);
@@ -572,37 +573,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     else
       {
-        result = getEffectCheck(ecl); // NYI: needed only for the side-effect
         result = _dfa._preEffectValues.get(ecl);
-      }
-    return result;
-  }
-
-
-
-  /**
-   * Get effect of given type in this call's environment or the default if none
-   * found or null if no effect in environment and also no default available.
-   *
-   * Report an error if no effect found during last pass (i.e.,
-   * _dfa._reportResults is set).
-   *
-   * @param s site of the code requiring the effect
-   *
-   * @param ecl clazz defining the effect type.
-   *
-   * @return null in case no effect of type ecl was found
-   */
-  Value getEffectForce(int s, int ecl)
-  {
-    _group.needsEffect(ecl);
-    var result = getEffectCheck(ecl);
-    if (result == null && _dfa._reportResults && !_dfa._fuir.clazzOriginalName(calledClazz()).equals("effect.type.unsafe_from_env"))
-      {
-        DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
-                                         _dfa._fuir.clazzAsString(ecl),
-                                         this);
-        _dfa._missingEffects.put(ecl, ecl);
       }
     return result;
   }
@@ -624,7 +595,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         // make sure it is known that effect ecl is required here, but do not
         // report an error if it is not since we have our own error below:
-        var ignore = getEffectCheck2(ecl);
+        var ignore = getEffectCheck(site(), ecl);
       }
 
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)

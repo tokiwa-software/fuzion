@@ -2032,21 +2032,12 @@ public class DFA extends ANY
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
-      return cl.getEffectCheck2(ecl);
+      return cl.getEffectCheck(cl.site(), ecl);
     });
     put("effect.type.unsafe_from_env"    , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
-      Value result;
-      if (cl._dfa._real)
-        {
-          result = cl.getEffectForce(cl.site(), ecl);
-        }
-      else
-        {
-          result = cl._dfa._preEffectValues.get(ecl);
-        }
-      return result;
+      return cl.getEffectCheck(cl.site(), ecl);
     });
 
 
@@ -2223,7 +2214,7 @@ public class DFA extends ANY
     put("effect.type.abort0"                , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
-          var ev = cl.getEffectCheck2(ecl);
+          var ev = cl.getEffectCheck(cl.site(), ecl);
           if (cl._dfa._real)
             {
               if (ev != null      /* NYI: needed? */ &&
@@ -2239,7 +2230,7 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(fuir(cl).effectTypeFromIntrinsic(cl.calledClazz())) != null
+    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz())) != null
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                           * should reconsider if handling of default effects changes
