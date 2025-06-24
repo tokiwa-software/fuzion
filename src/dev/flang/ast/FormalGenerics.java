@@ -75,7 +75,7 @@ public class FormalGenerics extends ANY
    */
   public FormalGenerics(List<AbstractFeature> l)
   {
-    list = l;
+    list = l.clone();
     list.freeze();
   }
 
@@ -298,8 +298,9 @@ public class FormalGenerics extends ANY
    */
   public String toString()
   {
-    return !isOpen() && list.isEmpty() ? ""
-                                       : list + (isOpen() ? "..." : "");
+    return !isOpen() && list.isEmpty()
+      ? ""
+      : list.map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
   }
 
 }

@@ -144,7 +144,7 @@ abstract class Context extends ANY
                               .stream()
                               .filter(y ->
                                   y.outer().origin() == rpt.genericArgument().outer().origin() &&
-                                  y.toString().equals(rpt.genericArgument().featureName().baseName())
+                                  y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
                                 )
                               .findFirst()
                               .get()

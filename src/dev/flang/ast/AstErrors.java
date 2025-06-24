@@ -143,7 +143,7 @@ public class AstErrors extends ANY
     var sl = new List<String>();
     for (var e : g)
       {
-        sl.add(s(e));
+        sl.add(sbnf(e));
       }
     return sl.toString();
   }
@@ -1490,7 +1490,7 @@ public class AstErrors extends ANY
           "Formal type parameter must not have type parameters",
           "In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
-          "Formal type parameter used " + s(generic) + "\n" +
+          "Formal type parameter used " + sbnf(generic) + "\n" +
           "Formal type parameter declared in " + generic.pos().show() + "\n");
   }
 
@@ -1508,7 +1508,7 @@ public class AstErrors extends ANY
     error(pos,
           "Illegal use of open formal type parameter type",
           "Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
-          "Open formal argument: " + s(generic) + "");
+          "Open formal argument: " + sbnf(generic) + "");
   }
 
   static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
@@ -1787,7 +1787,7 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Incompatible types found during type inference for type parameters",
-              "Types inferred for " + StringHelpers.ordinal(g.typeParameterIndex()+1) + " type parameter " + s(g) + ":\n" +
+              "Types inferred for " + StringHelpers.ordinal(g.typeParameterIndex()+1) + " type parameter " + sbnf(g) + ":\n" +
               foundAt.stream()
                  .map(p -> s(p.v1()) + " found at " + p.v0().show() + "\n")
                  .collect(Collectors.joining()));
@@ -1818,7 +1818,7 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Incompatible type parameter",
-              "formal type parameter " + s(f) + " with constraint " + s(constraint) + "\n"+
+              "formal type parameter " + sbnf(f) + " with constraint " + s(constraint) + "\n"+
               "actual type parameter " + s(g) + "\n");
       }
   }
