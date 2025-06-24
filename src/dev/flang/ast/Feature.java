@@ -2545,8 +2545,9 @@ A ((Choice)) declaration must not contain a result type.
 
     if (hasOuterRef())
       {
-        var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
-                                                  : this._outer.selfType();
+        var outerRefType = isOuterRefAdrOfValue()
+          ? this._outer.selfType().asRef()
+          : this._outer.selfType();
         _outerRef = new Feature(res,
                                 _pos,
                                 Visi.PRIV,

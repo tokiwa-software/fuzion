@@ -273,8 +273,7 @@ public class Docs extends ANY
         return false;
       }
 
-    return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().isInternal()
+    return af.featureName().isInternal()
       || af.featureName().isNameless()
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()

@@ -321,7 +321,7 @@ public class ResolvedNormalType extends ResolvedType
   public static AbstractType newType(AbstractType t, AbstractType o)
   {
     if (PRECONDITIONS) require
-      (t == Types.t_ERROR || t == Types.t_ADDRESS || (t.outer() == null) == (o == null));
+      (t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     AbstractType result;
     if (t == Types.t_ERROR ||
@@ -388,13 +388,13 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asThis()
   {
     AbstractType result = this;
-    if (!isThisType() && this != Types.t_ERROR && this != Types.t_ADDRESS && !feature().isUniverse())
+    if (!isThisType() && this != Types.t_ERROR && !feature().isUniverse())
       {
         result = ResolvedNormalType.create(this, TypeMode.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result == Types.t_ADDRESS || feature().isUniverse() || result.isThisType(),
+      (result == Types.t_ERROR || feature().isUniverse() || result.isThisType(),
        !isThisType() || result == this);
 
     return result;

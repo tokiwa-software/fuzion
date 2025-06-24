@@ -233,8 +233,7 @@ public class FeatureTool extends ANY
   public static boolean isInternal(AbstractFeature af)
   {
     // NYI: UNDER DEVELOPMENT: this is a hack!
-    return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().baseName().startsWith("@")
+    return af.featureName().baseName().startsWith("@")
       || af.featureName().baseName().equals("result")
       || af.featureName()
         .baseName()

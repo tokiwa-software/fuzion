@@ -80,13 +80,6 @@ public class Types extends ANY
   public static Resolved resolved = null;
 
   /**
-   * Dummy name used for address type Types.t_ADDRESS which is used for
-   * references to value types.
-   */
-  static final String ADDRESS_NAME = "--ADDRESS--";
-
-
-  /**
    * Dummy name used for undefined type t_UNDEFINED which is used for undefined
    * types that are expected to be replaced by the correct type during type
    * inference.  Examples are the result of union of distinct types on different
@@ -114,12 +107,8 @@ public class Types extends ANY
    * Names of internal types that are not backed by physical feature definitions.
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
-    (new TreeSet<>(Arrays.asList(ADDRESS_NAME,
-                                 UNDEFINED_NAME,
+    (new TreeSet<>(Arrays.asList(UNDEFINED_NAME,
                                  ERROR_NAME)));
-
-  /* artificial type for the address of a value type, used for outer refs to value instances */
-  public static AbstractType t_ADDRESS;
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
@@ -296,7 +285,6 @@ public class Types extends ANY
       legalNativeArgumentTypes = new TreeSet<AbstractType>();
 
       resolved = this;
-      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(
         new Feature(true) {
           FeatureName fn = FeatureName.get(UNDEFINED_NAME, 0);
@@ -385,7 +373,6 @@ public class Types extends ANY
   public static void reset(FuzionOptions options)
   {
     resolved = null;
-    t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
     _options    = options;
