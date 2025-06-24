@@ -23,8 +23,8 @@ actual type parameter 'tuple i32 i32 i32'
 --CURDIR--/reg_issues4992_5001_negative.fz:162:13: error 4: Incompatible type parameter
     (x f32).i (box i32)  # 5. should flag an error: wrong type parameter `box i32` instead of `box f32`
 ------------^
-formal type parameter 'U' with constraint 'reg_issues4992_5000.this.case7.this.box reg_issues4992_5000.case7.x.type.A'
-actual type parameter 'reg_issues4992_5000.this.case7.this.box i32'
+formal type parameter 'U' with constraint 'reg_issues4992_5000.case7.this.box reg_issues4992_5000.case7.x.type.A'
+actual type parameter 'reg_issues4992_5000.case7.this.box i32'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:64:14: error 5: Constraint for type parameter must not be a type parameter

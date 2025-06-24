@@ -6,7 +6,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'String.mysubstring.anonymous'
 Original result type: 'String.this.mysubstring.anonymous'
 Type depending on target: 'String.this'
-Target type: 'String.this.mysubstring.this.anonymous'
+Target type: 'String.mysubstring.this.anonymous'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'String.this.mysubstring', or change the result type of 'String.mysubstring.anonymous' to no longer depend on 'String.this'.
 
 one error.

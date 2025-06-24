@@ -402,28 +402,28 @@ Declared at {base.fum}/Function.fz:35:10:
     x2 (A i32 i32   ).B String bool := (A i64 bool).B String bool true  # 45. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x2'
-expected formal type: '(generics_negative.this.outerGenerics.this.A i32 i32).B String bool'
-actual type found   : '(generics_negative.this.outerGenerics.this.A i64 bool).B String bool'
-assignable to       : '(generics_negative.this.outerGenerics.this.A i64 bool).B String bool'
+expected formal type: '(generics_negative.outerGenerics.this.A i32 i32).B String bool'
+actual type found   : '(generics_negative.outerGenerics.this.A i64 bool).B String bool'
+assignable to       : '(generics_negative.outerGenerics.this.A i64 bool).B String bool'
 for value assigned  : '(A i64 bool).B String bool true'
 To solve this you could:
-  • make  '(generics_negative.this.outerGenerics.this.A i32 i32).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'generics_negative.outerGenerics.x2' to '(generics_negative.this.outerGenerics.this.A i64 bool).B String bool', or
-  • convert the type of the assigned value to '(generics_negative.this.outerGenerics.this.A i32 i32).B String bool'.
+  • make  '(generics_negative.outerGenerics.this.A i32 i32).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'generics_negative.outerGenerics.x2' to '(generics_negative.outerGenerics.this.A i64 bool).B String bool', or
+  • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 i32).B String bool'.
 
 
 --CURDIR--/generics_negative.fz:160:5: error 43: Incompatible types in assignment
     x3 (A i32 String).B String bool := x1                               # 46. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x3'
-expected formal type: '(generics_negative.this.outerGenerics.this.A i32 String).B String bool'
-actual type found   : '(generics_negative.this.outerGenerics.this.A i32 bool).B String bool'
-assignable to       : '(generics_negative.this.outerGenerics.this.A i32 bool).B String bool'
+expected formal type: '(generics_negative.outerGenerics.this.A i32 String).B String bool'
+actual type found   : '(generics_negative.outerGenerics.this.A i32 bool).B String bool'
+assignable to       : '(generics_negative.outerGenerics.this.A i32 bool).B String bool'
 for value assigned  : 'x1'
 To solve this you could:
-  • make  '(generics_negative.this.outerGenerics.this.A i32 String).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'generics_negative.outerGenerics.x3' to '(generics_negative.this.outerGenerics.this.A i32 bool).B String bool', or
-  • convert the type of the assigned value to '(generics_negative.this.outerGenerics.this.A i32 String).B String bool'.
+  • make  '(generics_negative.outerGenerics.this.A i32 String).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'generics_negative.outerGenerics.x3' to '(generics_negative.outerGenerics.this.A i32 bool).B String bool', or
+  • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 String).B String bool'.
 
 
 --CURDIR--/generics_negative.fz:176:9: error 44: Incompatible types when passing argument in a call

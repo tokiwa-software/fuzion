@@ -11,7 +11,7 @@ In call: 'a'
       redef b (f a.this -> unit) unit =>
 ---------------^
 In 'reg_issue1518.a.b' that redefines 'reg_issue1518.c.b'
-argument type is       : 'Unary unit reg_issue1518.this.a.this'
+argument type is       : 'Unary unit reg_issue1518.a.this'
 argument type should be: 'Unary unit reg_issue1518.this.a' (from 'Unary unit reg_issue1518.c.T')
 
 Original argument declared at --CURDIR--/reg_issue1518.fz:29:10:
