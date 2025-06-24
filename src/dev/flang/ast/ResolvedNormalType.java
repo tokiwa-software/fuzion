@@ -404,7 +404,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed reference variant of this type.  Return this
+   * Create a reference variant of this type.  Return this
    * in case it is a reference already.
    */
   public AbstractType asRef()
@@ -419,7 +419,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed this.type variant of this type.  Return this
+   * Create a this.type variant of this type.  Return this
    * in case it is a this.type or a choice variant already.
    */
   public AbstractType asThis()
@@ -439,7 +439,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed value variant of this type.  Return this
+   * Create a value variant of this type.  Return this
    * in case it is a value already.
    */
   public AbstractType asValue()
