@@ -1825,7 +1825,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (CHECKS) check
           (tf != null);
         result = ResolvedNormalType.create(g,
-                                           g,
                                            outer().typeType(res),
                                            tf);
       }
@@ -2045,7 +2044,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  public List<AbstractType> unresolvedGenerics() { return generics(); }
+  List<AbstractType> unresolvedGenerics() { return generics(); }
 
 
   /**

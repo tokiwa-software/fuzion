@@ -778,8 +778,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                      unresolvedGenerics,
                                      o,
                                      f,
-                                     typeMode,
-                                     false);
+                                     typeMode);
   }
 
 

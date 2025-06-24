@@ -1051,9 +1051,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
 
-    var o = isUniverse() || outer().isUniverse() ? null : outer().selfType().asThis();
+    var o = isUniverse() || outer().isUniverse() ? null : outer().selfType();
     var g = generics().asActuals();
-    var result = ResolvedNormalType.create(g, g, o, this);
+    var result = ResolvedNormalType.create(g, o, this);
 
     if (POSTCONDITIONS) ensure
       (result != null,
