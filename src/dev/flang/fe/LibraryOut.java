@@ -557,8 +557,6 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | unit          | ADDRESS                                       |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-3 | 1      | unit          | type of universe                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
@@ -585,10 +583,6 @@ class LibraryOut extends ANY
       {
         _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
         _data.writeInt(off);
-      }
-    else if (t == Types.t_ADDRESS)
-      {
-        _data.writeInt(-4);
       }
     else if (!t.isGenericArgument() && t.feature().isUniverse())
       {

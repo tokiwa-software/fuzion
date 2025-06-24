@@ -484,11 +484,7 @@ public class LibraryModule extends Module implements MirModule
     if (result == null)
       {
         var k = typeKind(at);
-        if (k == -4)
-          {
-            return Types.t_ADDRESS;
-          }
-        else if (k == -3)
+        if (k == -3)
           {
             return universe().selfType();
           }
@@ -1301,7 +1297,6 @@ Type
    |cond.     | repeat | type          | what
 
    | true     | 1      | int           | the kind of this type tk
-   | tk==-4   | 1      | unit          | ADDRESS
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
@@ -1318,8 +1313,6 @@ Type
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | unit          | ADDRESS                                       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-3 | 1      | unit          | type of universe                              |
    *   +--------+--------+---------------+-----------------------------------------------+
