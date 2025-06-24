@@ -399,22 +399,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * Create a value variant of this type.  Return this
-   * in case it is a value already.
-   */
+  @Override
   public AbstractType asValue()
   {
-    //throw new Error("asValue not available for unresolved type");
-    return this;
-    /*
-    AbstractType result = this;
-    if (isRef() && this != Types.t_ERROR)
-      {
-        result = ResolvedNormalType.create(this, TypeMode.Value);
-      }
-    return result;
-    */
+    throw new Error("asValue not available for unresolved type");
   }
 
 
