@@ -1,0 +1,32 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5394
+#
+# -----------------------------------------------------------------------
+
+private:public case_insensitive_map(internal_map container.Map String String) : container.Map String String is
+
+  module type.from_map(m container.Map String String) case_insensitive_map =>
+    map_of m.items
+
+  module type.map_of(kvs Sequence (tuple String String)) case_insensitive_map =>
+    items := m.items
+
+    case_insensitive_map (container.ordered_map (items.map (.0.lower_case)) (items.map (.1)))
