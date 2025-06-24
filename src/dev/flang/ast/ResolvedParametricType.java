@@ -96,20 +96,6 @@ public class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outerfeat the feature surrounding this expression.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return v.action(this);
-  }
-
-
-  /**
    * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.

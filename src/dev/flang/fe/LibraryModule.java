@@ -2008,7 +2008,7 @@ Match
    |cond.     | repeat | type          | what
 
 .2+| true     | 1      | int           | number of cases
-   |          | n      | Case          | cases
+              | n      | Case          | cases
 |====
 
 --asciidoc--

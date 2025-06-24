@@ -227,15 +227,9 @@ public class ResolvedNormalType extends ResolvedType
                                     TypeMode typeMode,
                                     boolean fixOuterThisType)
   {
-    if (f == Types.f_ERROR ||
-        g.stream().anyMatch(x -> x == Types.t_ERROR))
-      {
-        return Types.t_ERROR;
-      }
-    else
-      {
-        return new ResolvedNormalType(g, ug, o, f, typeMode, fixOuterThisType);
-      }
+    return f == Types.f_ERROR || g.contains(Types.t_ERROR)
+      ? Types.t_ERROR
+      : new ResolvedNormalType(g, ug, o, f, typeMode, fixOuterThisType);
   }
 
 
@@ -410,7 +404,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed reference variant of this type.  Return this
+   * Create a reference variant of this type.  Return this
    * in case it is a reference already.
    */
   public AbstractType asRef()
@@ -425,7 +419,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed this.type variant of this type.  Return this
+   * Create a this.type variant of this type.  Return this
    * in case it is a this.type or a choice variant already.
    */
   public AbstractType asThis()
@@ -445,32 +439,20 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed value variant of this type.  Return this
+   * Create a value variant of this type.  Return this
    * in case it is a value already.
    */
   public AbstractType asValue()
   {
+    if (PRECONDITIONS) require
+      (!isThisType());
+
     AbstractType result = this;
     if (!isValue() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, TypeMode.ValueType);
       }
     return result;
-  }
-
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outerfeat the feature surrounding this expression.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return v.action(this);
   }
 
 
