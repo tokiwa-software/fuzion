@@ -202,6 +202,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   private Context _contextCache;
 
 
+  /**
+   * Cached result of selfType();
+   */
+  private AbstractType _selfType = null;
+
+
   /*----------------------------  abstract methods  ----------------------------*/
 
 
@@ -695,15 +701,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
 
-    var selfType = createSelfType();
+    if (_selfType == null)
+      {
+        _selfType = createSelfType();
+      }
 
     if (POSTCONDITIONS) ensure
-      (selfType != null,
-       Errors.any() || selfType.isRef() == isRef(),
+      (_selfType != null,
+       Errors.any() || _selfType.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
-       Errors.any() || selfType.feature() == this);
+       Errors.any() || _selfType.feature() == this);
 
-    return selfType;
+    return _selfType;
   }
 
 
