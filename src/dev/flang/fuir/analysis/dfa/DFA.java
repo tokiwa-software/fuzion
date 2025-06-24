@@ -2037,7 +2037,7 @@ public class DFA extends ANY
     put("effect.type.unsafe_from_env"    , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
-      return cl.getEffectCheck(cl.site(), ecl, false);
+      return cl.getEffectCheck(cl.site(), ecl, true);
     });
 
 
