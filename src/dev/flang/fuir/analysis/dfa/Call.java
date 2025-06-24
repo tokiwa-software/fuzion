@@ -553,9 +553,12 @@ public class Call extends ANY implements Comparable<Call>, Context
    *
    * @param ecl clazz defining the effect type.
    *
+   * @param ignoreError true if error reporting for missing effect during
+   * _dfa._real phase should be suppressed.
+   *
    * @return null in case no effect of type ecl was found
    */
-  Value getEffectCheck(int s, int ecl)
+  Value getEffectCheck(int s, int ecl, boolean ignoreError)
   {
     _group.needsEffect(ecl);
     Value result;
@@ -563,7 +566,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         result = _env != null ? _env.getActualEffectValues(ecl)
                               : _dfa._defaultEffects.get(ecl);
-        if (result == null && _dfa._reportResults)
+        if (result == null && _dfa._reportResults && !ignoreError)
           {
             DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                              _dfa._fuir.clazzAsString(ecl),
@@ -595,7 +598,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         // make sure it is known that effect ecl is required here, but do not
         // report an error if it is not since we have our own error below:
-        var ignore = getEffectCheck(site(), ecl);
+        var ignore = getEffectCheck(site(), ecl, false);
       }
 
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
