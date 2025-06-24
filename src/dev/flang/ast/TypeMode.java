@@ -33,9 +33,9 @@ package dev.flang.ast;
  */
 public enum TypeMode {
 
-  ThisType(0x00),
+  ValueType(0x00),
   RefType(0x01),
-  ValueType(0x02);
+  ThisType(0x02);
 
   public int num;
 
@@ -46,9 +46,9 @@ public enum TypeMode {
   public static TypeMode fromInt(int num)
   {
     return switch (num) {
-      case 0x00 -> TypeMode.ThisType;
+      case 0x00 -> TypeMode.ValueType;
       case 0x01 -> TypeMode.RefType;
-      case 0x02 -> TypeMode.ValueType;
+      case 0x02 -> TypeMode.ThisType;
       default   -> throw new Error("Illegal TypeMode: " + num);
     };
   }
