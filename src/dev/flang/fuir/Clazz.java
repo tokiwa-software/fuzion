@@ -2197,13 +2197,13 @@ class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * For a clazz with isRef()==true, return a value version of this clazz.
-   * Returns this if it is already a value or ADDRESS.
+   * Returns this if it is already a value.
    */
   Clazz asValue()
   {
     if (_asValue == null)
       {
-        _asValue = isRef() && _type != Types.t_ADDRESS
+        _asValue = isRef()
           ? _fuir.newClazz(_outer, _type.asValue(), _select)
           : this;
       }

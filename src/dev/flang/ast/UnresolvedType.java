@@ -385,13 +385,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     return this;
     /*
     AbstractType result = this;
-    if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
+    if (!isThisType() && !isChoice() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, TypeMode.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result == Types.t_ADDRESS || result.isThisType() || result.isChoice(),
+      (result == Types.t_ERROR || result.isThisType() || result.isChoice(),
        !(isThisType() || isChoice()) || result == this);
 
     return result;

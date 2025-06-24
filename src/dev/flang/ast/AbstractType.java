@@ -1424,7 +1424,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isVoid()
   {
-    return compareTo(Types.resolved.t_void) == 0;
+    return Types.resolved != null && compareTo(Types.resolved.t_void) == 0;
   }
 
 
