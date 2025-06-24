@@ -602,7 +602,7 @@ class LibraryOut extends ANY
             if (CHECKS) check
               (t.isValue());
             _data.writeInt(-1);
-            _data.writeOffset(t.genericArgument().typeParameter());
+            _data.writeOffset(t.genericArgument());
           }
         else
           {

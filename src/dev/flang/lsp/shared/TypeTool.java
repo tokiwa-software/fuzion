@@ -114,10 +114,9 @@ public class TypeTool extends ANY
    */
   public static String baseName(AbstractType t)
   {
-    var f = t.isGenericArgument()
-                                  ? t.genericArgument().typeParameter()
-                                  : t.feature();
-    return f
+    return (t.isGenericArgument()
+              ? t.genericArgument()
+              : t.feature())
       .featureName()
       .baseName();
   }

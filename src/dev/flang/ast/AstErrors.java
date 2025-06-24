@@ -138,16 +138,12 @@ public class AstErrors extends ANY
     return st(rt instanceof RefType ? "ref" // since RefType is the default, toString() is ""
                                     : rt.toString());
   }
-  static String s(Generic g)
-  {
-    return st(g.toString());
-  }
-  static String slg(List<Generic> g)
+  static String slg(List<AbstractFeature> g)
   {
     var sl = new List<String>();
     for (var e : g)
       {
-        sl.add(s(e));
+        sl.add(sbnf(e));
       }
     return sl.toString();
   }
@@ -770,7 +766,7 @@ public class AstErrors extends ANY
     error(pos,
           "" + skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
-          "which is a type parameter declared at " + t.genericArgument().typeParameter().pos().show());
+          "which is a type parameter declared at " + t.declarationPos().show());
 
   }
 
@@ -1265,9 +1261,9 @@ public class AstErrors extends ANY
 
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
-        cf.state().atLeast(State.RESOLVED_TYPES)                &&
+        cf.state().atLeast(State.RESOLVED_TYPES)                                &&
         cf.resultType().isGenericArgument()                                     &&
-        cf.resultType().genericArgument().typeParameter() instanceof Feature tp &&
+        cf.resultType().genericArgument() instanceof Feature tp                 &&
         tp.isFreeType()                                                         &&
         tp.resultType().compareTo(Types.resolved.t_Any) == 0)
       {
@@ -1485,17 +1481,17 @@ public class AstErrors extends ANY
           "In a type >>a.b<<, the outer type >>a<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal type parameter used " + s(t.outer()) + "\n" +
-          "Formal type parameter declared in " + t.outer().genericArgument().typeParameter().pos().show() + "\n");
+          "Formal type parameter declared in " + t.outer().declarationPos().show() + "\n");
   }
 
-  static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, Generic generic)
+  static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, AbstractFeature generic)
   {
     error(pos,
           "Formal type parameter must not have type parameters",
           "In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
-          "Formal type parameter used " + s(generic) + "\n" +
-          "Formal type parameter declared in " + generic.typeParameter().pos().show() + "\n");
+          "Formal type parameter used " + sbnf(generic) + "\n" +
+          "Formal type parameter declared in " + generic.pos().show() + "\n");
   }
 
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
@@ -1507,12 +1503,12 @@ public class AstErrors extends ANY
           "" + s(t2) + "" + /* " at " + t2.pos().show() + */ "\n");
   }
 
-  static void illegalUseOfOpenFormalGeneric(SourcePosition pos, Generic generic)
+  static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
   {
     error(pos,
           "Illegal use of open formal type parameter type",
           "Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
-          "Open formal argument: " + s(generic) + "");
+          "Open formal argument: " + sbnf(generic) + "");
   }
 
   static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
@@ -1785,20 +1781,20 @@ public class AstErrors extends ANY
           "Type of " + StringHelpers.ordinal(count) + " actual argument could not be inferred at " + actual.pos().show());
   }
 
-  static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, List<Pair<SourcePosition, AbstractType>> foundAt)
+  static void incompatibleTypesDuringTypeInference(SourcePosition pos, AbstractFeature g, List<Pair<SourcePosition, AbstractType>> foundAt)
   {
     if (!any() || foundAt.stream().noneMatch(p -> p.v1() == Types.t_ERROR))
       {
         error(pos,
               "Incompatible types found during type inference for type parameters",
-              "Types inferred for " + StringHelpers.ordinal(g.index()+1) + " type parameter " + s(g) + ":\n" +
+              "Types inferred for " + StringHelpers.ordinal(g.typeParameterIndex()+1) + " type parameter " + sbnf(g) + ":\n" +
               foundAt.stream()
                  .map(p -> s(p.v1()) + " found at " + p.v0().show() + "\n")
                  .collect(Collectors.joining()));
       }
   }
 
-  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
+  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
   {
     error(pos,
           "Failed to infer actual type parameters",
@@ -1816,13 +1812,13 @@ public class AstErrors extends ANY
           "Declared at " + cf.pos().show());
   }
 
-  static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType constraint, AbstractType g)
+  static void incompatibleActualGeneric(SourcePosition pos, AbstractFeature f, AbstractType constraint, AbstractType g)
   {
     if (g != Types.t_UNDEFINED || !any())
       {
         error(pos,
               "Incompatible type parameter",
-              "formal type parameter " + s(f) + " with constraint " + s(constraint) + "\n"+
+              "formal type parameter " + sbnf(f) + " with constraint " + s(constraint) + "\n"+
               "actual type parameter " + s(g) + "\n");
       }
   }
@@ -2364,7 +2360,7 @@ public class AstErrors extends ANY
 
   public static void notAnEffect(AbstractType t, SourcePosition pos)
   {
-    var f = t.isGenericArgument() ? t.genericArgument().feature() : t.feature();
+    var f = t.isGenericArgument() ? t.genericArgument().outer() : t.feature();
     error(pos,
           "Feature " + sbnf(f) + " is not an effect.",
           "Effects required by a feature are specified with " + skw("!") + " in the signature. " +

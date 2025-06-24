@@ -48,7 +48,7 @@ public class ResolvedParametricType extends ResolvedType
   /**
    * The underlying generic:
    */
-  Generic _generic;
+  AbstractFeature _generic;
 
 
   /**
@@ -69,7 +69,7 @@ public class ResolvedParametricType extends ResolvedType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  private ResolvedParametricType(Generic generic, boolean isBoxed)
+  private ResolvedParametricType(AbstractFeature generic, boolean isBoxed)
   {
     this._generic = generic;
     this._isBoxed = isBoxed;
@@ -79,7 +79,7 @@ public class ResolvedParametricType extends ResolvedType
   /**
    * Constructor for a plain generic type.
    */
-  ResolvedParametricType(Generic generic)
+  ResolvedParametricType(AbstractFeature generic)
   {
     this(generic, false);
   }
@@ -92,7 +92,7 @@ public class ResolvedParametricType extends ResolvedType
    * The sourcecode position of the declaration point of this type, or, for
    * unresolved types, the source code position of its use.
    */
-  public SourcePosition declarationPos() { return _generic.typeParameter().pos(); }
+  public SourcePosition declarationPos() { return _generic.pos(); }
 
 
   /**
@@ -134,7 +134,7 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @return the Generic instance, never null.
    */
-  public Generic genericArgument()
+  public AbstractFeature genericArgument()
   {
     return _generic;
   }
@@ -177,7 +177,7 @@ public class ResolvedParametricType extends ResolvedType
    */
   protected void usedFeatures(Set<AbstractFeature> s)
   {
-    if (!genericArgument().typeParameter().isCoTypesThisType() &&
+    if (!genericArgument().isCoTypesThisType() &&
         /**
          * Must not be recursive definition as in:
          *
@@ -185,9 +185,9 @@ public class ResolvedParametricType extends ResolvedType
          *   fs(F type : F) =>
          * scenario1
          */
-        this != genericArgument().typeParameter().resultType())
+        this != genericArgument().resultType())
       {
-        genericArgument().typeParameter().resultType().usedFeatures(s);
+        genericArgument().resultType().usedFeatures(s);
       }
   }
 

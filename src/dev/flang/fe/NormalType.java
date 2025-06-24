@@ -29,7 +29,6 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Generic;
 import dev.flang.ast.TypeMode;
 
 import dev.flang.util.List;
@@ -159,7 +158,7 @@ public class NormalType extends LibraryType
     return _generics;
   }
 
-  public Generic genericArgument()
+  public AbstractFeature genericArgument()
   {
     throw new Error("genericArgument() is not defined for NormalType");
   }
