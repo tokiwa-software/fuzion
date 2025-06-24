@@ -1,10 +1,10 @@
 unique_id
+concur.atomic_access
 fuzion.runtime.pre_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
 io.Err
 mutate
-concur.atomic_access
 io.Out
 fuzion.runtime.post_fault
 panic
