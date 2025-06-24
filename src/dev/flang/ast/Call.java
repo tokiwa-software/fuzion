@@ -2039,17 +2039,14 @@ public class Call extends AbstractCall
                                      boolean[] conflict,
                                      List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    var cf = _calledFeature;
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
     for (var pass = 0; pass < 2; pass++)
       {
         int count = 1; // argument count, for error messages
-
         ListIterator<Expr> aargs = _actuals.listIterator();
-        var va = cf.valueArguments();
-        var vai = 0;
-        for (var frml : va)
+        for (var vai = 0; vai < _calledFeature.valueArguments().size(); vai++)
           {
+            var frml = _calledFeature.valueArguments().get(vai);
             if (CHECKS) check
               (Errors.any() || res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
 
@@ -2057,7 +2054,7 @@ public class Call extends AbstractCall
               {
                 var t = frml.resultTypeIfPresent(res);
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
-                if (g != null && g.outer() == cf && g.isOpenTypeParameter())
+                if (g != null && g.outer() == _calledFeature && g.isOpenTypeParameter())
                   {
                     if (pass == 1)
                       {
@@ -2119,7 +2116,6 @@ public class Call extends AbstractCall
               {
                 aargs.next();
               }
-            vai++;
           }
       }
   }
