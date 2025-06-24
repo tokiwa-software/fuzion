@@ -29,6 +29,8 @@ package dev.flang.fe;
 import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.ResolvedType;
 
 
@@ -82,6 +84,16 @@ public abstract class LibraryType extends ResolvedType
   protected void usedFeatures(Set<AbstractFeature> s)
   {
     // a library type has already been checked. nothing to be done.
+  }
+
+
+  /**
+   * Dummy visit() for Library types.
+   */
+  @Override
+  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  {
+    return this;
   }
 
 
