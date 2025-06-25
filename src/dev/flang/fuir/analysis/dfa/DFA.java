@@ -817,6 +817,20 @@ public class DFA extends ANY
     FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_NEW_CALL_RECURSION", 40);
 
 
+  /**
+   * Should instance of certain clazzes be joined into a single Instance for
+   * performance?  This is used to avoid large number of instances of, e.g.,
+   * `array u8` where tracking the individual instances gives no benefit.
+   */
+  static boolean ONLY_ONE_INSTANCE  = true;
+
+
+  /**
+   * Special values used in _oneInstanceOfClazz for clazzes that have several instances.
+   */
+  static final Object SEVERAL_INSTANCES = new Object();
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -923,10 +937,22 @@ public class DFA extends ANY
 
 
   /**
+   * CallGroups created during DFA analysis.
+   */
+  TreeMap<CallGroup, CallGroup> _callGroups = new TreeMap<>();
+
+
+  /**
+   * For those CallGroups whose key can be mapped to a long value, this gives a quick
+   * way to lookup that key.
+   */
+  LongMap<CallGroup> _callGroupsQuick = new LongMap<>();
+
+
+  /**
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
-  TreeMap<CallGroup, CallGroup> _callGroups = new TreeMap<>();
 
 
   /**
@@ -934,7 +960,6 @@ public class DFA extends ANY
    * way to lookup that key.
    */
   LongMap<Call> _callsQuick = new LongMap<>();
-  LongMap<CallGroup> _callGroupsQuick = new LongMap<>();
 
 
   /**
@@ -1065,7 +1090,13 @@ public class DFA extends ANY
   List<NumericValue> _numericValuesAny = new List<>();
 
 
-  List<Instance> _oneInstanceOfClazz = new List<>();
+  /**
+   * Map from clazz number (FUIR.clazzId2num) to cached single instances of a
+   * clazz.
+   *
+   * SEVERAL_INSTANCES in case there should be several instances.
+   */
+  List<Object> _oneInstanceOfClazz = new List<>();
 
 
   /**
@@ -2535,17 +2566,24 @@ public class DFA extends ANY
       }
     else
       {
-        if (onlyOneInstance(cl))
+        var cnum = _fuir.clazzId2num(cl);
+        var ao = _oneInstanceOfClazz.getIfExists(cnum);
+        if (ao == null)
           {
-            var cnum = _fuir.clazzId2num(cl);
-            var a = _oneInstanceOfClazz.getIfExists(cnum);
-            if (a == null)
+            if (onlyOneInstance(cl))
               {
                 var ni = new Instance(this, cl, site, context);
                 makeUnique(ni);
-                _oneInstanceOfClazz.force(cnum, ni);
-                a = ni;
+                ao = ni;
               }
+            else
+              {
+                ao = SEVERAL_INSTANCES;
+              }
+            _oneInstanceOfClazz.force(cnum, ao);
+          }
+        if (ao instanceof Instance a)
+          {
             r = a;
           }
         else if (_fuir.clazzIsRef(cl))
@@ -2817,41 +2855,29 @@ public class DFA extends ANY
   static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = true;
 
 
-
-  static boolean ONLY_ONE_INSTANCE  = true;
-
-  List<Boolean> _onlyOneInstance = new List<>();
-
-
+  /**
+   * Should instance of given clazz be joined into a single Instance for
+   * performance?  This is used to avoid large number of instances of, e.g.,
+   * `array u8` where tracking the individual instances gives no benefit.
+   */
   boolean onlyOneInstance(int clazz)
   {
-    var result = false;
-    if (ONLY_ONE_INSTANCE)
+    return ONLY_ONE_INSTANCE &&
+      // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
+      // this should be something generic instead, e.g.
+      //
+      //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
+      //
+      switch (_fuir.clazzAsString(clazz))
       {
-        var cnum = _fuir.clazzId2num(clazz);
-        var b = _onlyOneInstance.getIfExists(cnum);
-        if (b == null)
-          {
-            // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
-            // this should be something generic instead, e.g.
-            //
-            //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
-            //
-            b = switch (_fuir.clazzAsString(clazz))
-              {
-              case
-              "list u8",
-              "codepoint",
-              "Sequence u8",
-              "array u8",
-              "fuzion.sys.internal_array u8" -> true;
-              default -> false;
-              };
-            _onlyOneInstance.force(cnum, b);
-          }
-        result = b;
-      }
-    return result;
+      case
+        "list u8",
+        "codepoint",
+        "Sequence u8",
+        "array u8",
+        "fuzion.sys.internal_array u8" -> true;
+      default -> false;
+      };
   }
 
 
