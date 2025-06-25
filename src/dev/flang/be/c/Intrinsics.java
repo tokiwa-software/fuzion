@@ -107,15 +107,7 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
-              if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
+              if (isIntegerOrRef(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
@@ -154,15 +146,7 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
-              if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
+              if (isIntegerOrRef(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
@@ -1006,6 +990,22 @@ public class Intrinsics extends ANY
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
   }
 
+  /**
+   * Is cl an integer i8..u64 or a reference?
+   */
+  private static boolean isIntegerOrRef(C c, int cl)
+  {
+    return c._fuir.clazzIsRef(cl) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i8  ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i16 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i32 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i64 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u8  ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u16 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u32 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u64 );
+  }
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -1169,15 +1169,7 @@ public class Intrinsics extends ANY
       { // unit-type values are always equal:
         result = tmp.assign(new CIdent("true"));
       }
-    else if (c._fuir.clazzIsRef(rt) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i8  ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i16 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i32 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i64 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u8  ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u16 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u32 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u64 )    )
+    else if (isIntegerOrRef(c, rt))
       {
         result = tmp.assign(CExpr.eq(value1, value2));
       }
