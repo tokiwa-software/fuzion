@@ -26,21 +26,24 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
+import java.util.stream.Collectors;
+
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
-import dev.flang.ast.Box; // NYI: remove dependency
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
-import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -249,7 +252,7 @@ public abstract class IR extends ANY
 
     if (e instanceof AbstractAssign a)
       {
-        toStack(l, a._value);
+        toStack(l, boxAndTag(a._value, a._assignedField.resultType()));
         toStack(l, a._target);
         l.add(a);
       }
@@ -296,9 +299,10 @@ public abstract class IR extends ANY
     else if (e instanceof AbstractCall c)
       {
         toStack(l, c.target());
-        for (var a : c.actuals())
+        var fat = c.formalArgumentTypes();
+        for (int i = 0; i < c.actuals().size(); i++)
           {
-            toStack(l, a);
+            toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
           }
         l.add(c);
         if (dumpResult)
@@ -333,6 +337,177 @@ public abstract class IR extends ANY
     else
       {
         say_err("Missing handling of "+e.getClass()+" in IR.toStack");
+      }
+  }
+
+
+  /**
+   * Check if expr might need boxing or tagging and wrap this
+   * into Box()/Tag()/Tag(Box()) if this is the case.
+   *
+   * @param expr the expr to be boxed/tagged
+   *
+   * @param frmlT the formal type this value is assigned to
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @return this or an instance of Box/Tag wrapping this.
+   */
+  private static Expr boxAndTag(Expr expr, AbstractType frmlT)
+  {
+    if (PRECONDITIONS) require
+      (frmlT != null);
+
+    var result = expr;
+    var t = expr.type();
+
+    if (!t.isVoid() && frmlT.isAssignableFrom(t).yes())
+      {
+        var rt = needsBoxing(expr, frmlT);
+        if (rt != null)
+          {
+            result = new Box(result, rt);
+          }
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type()).yes())
+          {
+            result = tag(expr, frmlT, result);
+            if (CHECKS) check
+              (needsBoxing(result, frmlT) == null);
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (Errors.any()
+        || t.isVoid()
+        || frmlT.isGenericArgument()
+        || frmlT.isThisType()
+        || needsBoxing(result, frmlT) == null
+        || frmlT.isAssignableFrom(t).no());
+
+    return result;
+  }
+
+
+  /**
+   * handle tagging when assigning value to choice frmlT
+   * @param frmlT
+   * @param value
+   * @return
+   */
+  private static Expr tag(Expr expr, AbstractType frmlT, Expr value)
+  {
+    if(PRECONDITIONS) require
+      (frmlT.isChoice());
+
+    // Case 1: types are equal, no tagging necessary
+    if (frmlT.compareTo(value.type()) == 0)
+      {
+        return value;
+      }
+    // Case 1.1: types are equal, no tagging necessary
+    // NYI: BUG: soundness issue?
+    else if(value.type().isChoice() && frmlT.asThis().compareTo(value.type().asThis()) == 0)
+      {
+        return value;
+      }
+    // Case 2.1: ambiguous assignment via subtype
+    //
+    // example:
+    //
+    //  A ref is
+    //  B ref is
+    //  C ref : B, A is
+    //  t choice A B := C
+    //
+    else if (frmlT
+             .choiceGenerics()
+              .stream()
+             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes())
+              .count() > 1)
+      {
+        AstErrors.ambiguousAssignmentToChoice(frmlT, value);
+        return expr;
+      }
+    // Case 2.2: no nested tagging necessary:
+    // there is a choice generic in this choice
+    // that this value is "directly" assignable to
+    else if (frmlT
+              .choiceGenerics()
+              .stream()
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes()))
+      {
+        return new Tag(value, frmlT);
+      }
+    // Case 3: nested tagging necessary
+    // value is only assignable to choice element
+    // that itself is a choice
+    else
+      {
+        // we assign to the choice generic
+        // that expr is assignable to
+        var cgs = frmlT
+          .choiceGenerics()
+          .stream()
+          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(value.type()).yes())
+          .collect(Collectors.toList());
+
+        if (cgs.size() > 1)
+          {
+            AstErrors.ambiguousAssignmentToChoice(frmlT, value);
+          }
+
+        if (CHECKS) check
+          (Errors.any() || cgs.size() == 1);
+
+        return tag(expr, frmlT, tag(expr, cgs.get(0), value));
+      }
+  }
+
+
+  /**
+   * Is boxing needed when we assign to frmlT?
+   *
+   * @param frmlT the formal type we are assigning to.
+   *
+   * @return the type after boxing or null if boxing is not needed
+   */
+  private static AbstractType needsBoxing(Expr expr, AbstractType frmlT)
+  {
+    var t = expr.type();
+    if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
+      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
+         * could be a ref) or frmlT is this type and the underlying feature is by
+         * default a ref?
+         */
+        return frmlT;
+      }
+    else if (t.isRef() && !expr.isCallToOuterRef())
+      {
+        return null;
+      }
+    else if (frmlT.isRef())
+      {
+        return frmlT;
+      }
+    else
+      {
+        if (frmlT.isChoice() &&
+            frmlT.isAssignableFromWithoutBoxing(t).no() &&
+            frmlT.isAssignableFrom(t).yes())
+          { // we do both, box and then tag:
+            for (var cg : frmlT.choiceGenerics())
+              {
+                if (cg.isAssignableFrom(t).yes())
+                  {
+                    return cg;
+                  }
+              }
+            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
+          }
+        else
+          {
+            return null;
+          }
       }
   }
 

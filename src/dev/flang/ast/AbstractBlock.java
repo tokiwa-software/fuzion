@@ -242,17 +242,6 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * Is the result of this expression boxed?
-   */
-  @Override
-  public boolean isBoxed()
-  {
-    var resExpr = resultExpression();
-    return resExpr != null && resExpr.isBoxed();
-  }
-
-
-  /**
    * toString
    *
    * @return

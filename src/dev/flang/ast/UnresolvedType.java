@@ -270,7 +270,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param original the original value type
    *
-   * @param typeMode must be TypeMode.Boxed or TypeMode.Val
+   * @param typeMode must be TypeMode.RefType or TypeMode.ValueType
    */
   public UnresolvedType(UnresolvedType original, TypeMode typeMode)
   {

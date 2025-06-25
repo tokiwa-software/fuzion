@@ -40,18 +40,19 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+
+import dev.flang.ir.Box;
+import dev.flang.ir.Tag;
 
 import dev.flang.mir.MIR;
 
