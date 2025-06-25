@@ -576,14 +576,15 @@ public class AstErrors extends ANY
           "Was defined as loop index variable at " + f.pos().show());
   }
 
-  static void wrongNumberOfActualArguments(Call call)
+  static void wrongNumberOfActualArguments(Resolution res, Context context, Call call)
   {
-    int fsz = call._resolvedFormalArgumentTypes.length;
+    var resolvedFormalArgumentTypes = call.resolvedFormalArgumentTypes(res, context);
+    int fsz = resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : call._resolvedFormalArgumentTypes)
+    for (var t : resolvedFormalArgumentTypes)
       {
         if (CHECKS) check
           (t != null);
