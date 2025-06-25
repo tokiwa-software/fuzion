@@ -2166,16 +2166,6 @@ public class DFA extends ANY
                                     cl);
           cll._group.mayHaveEffect(ecl);
 
-          // manually propagate effects from result to cl, except for the one we
-          // have instated here:
-          for (var recl : cll._group._usedEffects)
-            {
-              if (recl != ecl)
-                {
-                  cl._group.usesEffect(recl);   // NYI: needed? Done also in CallGroup.needsEffect!
-                }
-            }
-
           var result = cll.result();
           Value ev;
           if (cl._dfa._real)
