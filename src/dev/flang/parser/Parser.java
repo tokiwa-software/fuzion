@@ -3116,7 +3116,7 @@ anonymous   : "ref"
   {
     var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
-    SourcePosition pos = tokenSourcePos();
+    SourcePosition pos = tokenSourceRange();
     if (CHECKS) check
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
@@ -3124,7 +3124,7 @@ anonymous   : "ref"
     match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
-    var ca = new Call(pos, f);
+    var ca = new Call(SourceRange.range(new List<>(pos, b)), f);
     sameLine(sl);
     setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));

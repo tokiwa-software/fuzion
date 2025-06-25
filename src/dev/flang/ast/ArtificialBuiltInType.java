@@ -99,12 +99,11 @@ public class ArtificialBuiltInType extends ResolvedNormalType
 
 
   /**
-   * outer feature, null unless this is Types.t_ADDRESS; where this is
-   * universe.selfType().
+   * outer feature, null.
    */
   public AbstractType outer()
   {
-    return this == Types.t_ADDRESS ? Types.resolved.universe.selfType() : null;
+    return null;
   }
 
 

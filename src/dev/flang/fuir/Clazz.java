@@ -659,7 +659,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForCotype(o);
           }
-        t = ResolvedNormalType.create(t, g, g, o, true);
+        t = ResolvedNormalType.create(t, g, g, o);
       }
     return t;
   }
@@ -2095,7 +2095,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             types.add(t);
           }
       }
-    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().formalGenerics())
+    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().outer().generics())
       {
         types = ft.genericArgument().replaceOpen(_type.generics());
       }
@@ -2197,13 +2197,13 @@ class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * For a clazz with isRef()==true, return a value version of this clazz.
-   * Returns this if it is already a value or ADDRESS.
+   * Returns this if it is already a value.
    */
   Clazz asValue()
   {
     if (_asValue == null)
       {
-        _asValue = isRef() && _type != Types.t_ADDRESS
+        _asValue = isRef()
           ? _fuir.newClazz(_outer, _type.asValue(), _select)
           : this;
       }

@@ -71,7 +71,7 @@ public class OuterType extends UnresolvedType
       (context != null,
        res.state(context.outerFeature()).atLeast(State.RESOLVING_DECLARATIONS));
 
-    return context.outerFeature().outer().thisType();
+    return context.outerFeature().outer().thisType(context.outerFeature().isFixed());
   }
 
 }

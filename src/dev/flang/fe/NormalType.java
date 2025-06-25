@@ -29,8 +29,6 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Generic;
 import dev.flang.ast.TypeMode;
 
 import dev.flang.util.List;
@@ -115,18 +113,6 @@ public class NormalType extends LibraryType
 
 
   /**
-   * Dummy visit() for types.
-   *
-   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FeatureVisitor.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return this;
-  }
-
-
-  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -172,7 +158,7 @@ public class NormalType extends LibraryType
     return _generics;
   }
 
-  public Generic genericArgument()
+  public AbstractFeature genericArgument()
   {
     throw new Error("genericArgument() is not defined for NormalType");
   }

@@ -29,8 +29,6 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Generic;
 import dev.flang.ast.TypeMode;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
@@ -54,7 +52,7 @@ public class GenericType extends LibraryType
   /**
    * The underlying generic:
    */
-  Generic _generic;
+  AbstractFeature _generic;
 
   /**
    * Is this generic type boxed?
@@ -68,7 +66,7 @@ public class GenericType extends LibraryType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  private GenericType(LibraryModule mod, int at, Generic generic, boolean isBoxed)
+  private GenericType(LibraryModule mod, int at, AbstractFeature generic, boolean isBoxed)
   {
     super(mod, at);
 
@@ -80,7 +78,7 @@ public class GenericType extends LibraryType
   /**
    * Constructor for a plain generic type.
    */
-  GenericType(LibraryModule mod, int at, Generic generic)
+  GenericType(LibraryModule mod, int at, AbstractFeature generic)
   {
     this(mod, at, generic, false);
   }
@@ -92,19 +90,7 @@ public class GenericType extends LibraryType
    * The sourcecode position of the declaration point of this type, or, for
    * unresolved types, the source code position of its use.
    */
-  public SourcePosition declarationPos() { return _generic.typeParameter().pos(); }
-
-
-  /**
-   * Dummy visit() for types.
-   *
-   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FeatureVisitor.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return this;
-  }
+  public SourcePosition declarationPos() { return _generic.pos(); }
 
 
   /**
@@ -147,7 +133,7 @@ public class GenericType extends LibraryType
    *
    * @return the Generic instance, never null.
    */
-  public Generic genericArgument()
+  public AbstractFeature genericArgument()
   {
     return _generic;
   }

@@ -112,31 +112,7 @@ public class ResolvedNormalType extends ResolvedType
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    return create(t, g, ug, o, false);
-  }
-
-
-  /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
-   *
-   * @param t the original type
-   *
-   * @param g the actual generic arguments that replace t.generics (resolved)
-   *
-   * @param ug the actual generic arguments that replace t.generics (unresolved)
-   *
-   * @param o the actual outer type, or null, that replaces t.outer
-   *
-   * @param fixOuterThisType NYI: CLEANUP: #737, see below, unclear why this is needed.
-   */
-  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o, boolean fixOuterThisType)
-  {
-    if (PRECONDITIONS) require
-      ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
-        t == Types.t_ERROR || (t.outer() == null) == (o == null));
-
-    return create(g, ug, o, t.feature(), t.mode(), fixOuterThisType);
+    return create(g, ug, o, t.feature(), t.mode());
   }
 
 
@@ -145,16 +121,14 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param g the actual generic arguments (resolved)
    *
-   * @param ug the actual generic arguments (unresolved)
-   *
    * @param o
    *
    * @param f if this type corresponds to a feature, then this is the
    * feature, else null.
    */
-  public static ResolvedType create(List<AbstractType> g, List<AbstractType> ug, AbstractType o, AbstractFeature f)
+  public static ResolvedType create(List<AbstractType> g, AbstractType o, AbstractFeature f)
   {
-    return create(g, ug, o, f, f.defaultTypeMode(), true);
+    return create(g, Call.NO_GENERICS, o, f, f.defaultTypeMode());
   }
 
 
@@ -177,8 +151,7 @@ public class ResolvedNormalType extends ResolvedType
                             List<AbstractType> ug,
                             AbstractType o,
                             AbstractFeature f,
-                            TypeMode typeMode,
-                            boolean fixOuterThisType)
+                            TypeMode typeMode)
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
@@ -189,14 +162,6 @@ public class ResolvedNormalType extends ResolvedType
     this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
-
-    if (fixOuterThisType && o instanceof ResolvedNormalType ot && ot.isThisType())
-      {
-        // NYI: CLEANUP: #737: Undo the asThisType() calls done in This.java for
-        // outer types. Is it possible to not create asThisType() in This.java
-        // in the first place?
-        o = ResolvedNormalType.create(ot, ot.feature().defaultTypeMode());
-      }
 
     if (o == null && f != null)
       {
@@ -224,18 +189,11 @@ public class ResolvedNormalType extends ResolvedType
                                     List<AbstractType> ug,
                                     AbstractType o,
                                     AbstractFeature f,
-                                    TypeMode typeMode,
-                                    boolean fixOuterThisType)
+                                    TypeMode typeMode)
   {
-    if (f == Types.f_ERROR ||
-        g.stream().anyMatch(x -> x == Types.t_ERROR))
-      {
-        return Types.t_ERROR;
-      }
-    else
-      {
-        return new ResolvedNormalType(g, ug, o, f, typeMode, fixOuterThisType);
-      }
+    return f == Types.f_ERROR || g.contains(Types.t_ERROR)
+      ? Types.t_ERROR
+      : new ResolvedNormalType(g, ug, o, f, typeMode);
   }
 
 
@@ -335,7 +293,7 @@ public class ResolvedNormalType extends ResolvedType
     if (PRECONDITIONS) require
       (feature.outer().isUniverse());
 
-    return create(generics, generics, null, feature);
+    return create(generics, null, feature);
   }
 
 
@@ -344,7 +302,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   protected ResolvedNormalType()
   {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeMode.ValueType, false);
+    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeMode.ValueType);
   }
 
 
@@ -363,7 +321,7 @@ public class ResolvedNormalType extends ResolvedType
   public static AbstractType newType(AbstractType t, AbstractType o)
   {
     if (PRECONDITIONS) require
-      (t == Types.t_ERROR || t == Types.t_ADDRESS || (t.outer() == null) == (o == null));
+      (t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     AbstractType result;
     if (t == Types.t_ERROR ||
@@ -377,8 +335,7 @@ public class ResolvedNormalType extends ResolvedType
                                            t.unresolvedGenerics(),
                                            o,
                                            t.feature(),
-                                           t.mode(),
-                                           false);
+                                           t.mode());
       }
     return result;
   }
@@ -410,7 +367,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed reference variant of this type.  Return this
+   * Create a reference variant of this type.  Return this
    * in case it is a reference already.
    */
   public AbstractType asRef()
@@ -425,19 +382,19 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed this.type variant of this type.  Return this
+   * Create a this.type variant of this type.  Return this
    * in case it is a this.type or a choice variant already.
    */
   public AbstractType asThis()
   {
     AbstractType result = this;
-    if (!isThisType() && this != Types.t_ERROR && this != Types.t_ADDRESS && !feature().isUniverse())
+    if (!isThisType() && this != Types.t_ERROR && !feature().isUniverse())
       {
         result = ResolvedNormalType.create(this, TypeMode.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result == Types.t_ADDRESS || feature().isUniverse() || result.isThisType(),
+      (result == Types.t_ERROR || feature().isUniverse() || result.isThisType(),
        !isThisType() || result == this);
 
     return result;
@@ -445,32 +402,20 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a Types.intern()ed value variant of this type.  Return this
+   * Create a value variant of this type.  Return this
    * in case it is a value already.
    */
   public AbstractType asValue()
   {
+    if (PRECONDITIONS) require
+      (!isThisType());
+
     AbstractType result = this;
     if (!isValue() && this != Types.t_ERROR)
       {
         result = ResolvedNormalType.create(this, TypeMode.ValueType);
       }
     return result;
-  }
-
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outerfeat the feature surrounding this expression.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return v.action(this);
   }
 
 

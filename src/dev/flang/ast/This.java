@@ -259,18 +259,7 @@ public class This extends ExprWithPos
               (Errors.any() || (or != null));
             if (or != null)
               {
-                var t = cur.outer().thisType(cur.isFixed());
-                var isAdr = cur.isOuterRefAdrOfValue();
-                Expr c = new Call(pos(), getOuter, or)
-                  {
-                    @Override
-                    AbstractType typeForInferencing()
-                    {
-                      return isAdr ? t : super.typeForInferencing();
-                    }
-                  }.resolveTypes(res, context);
-
-                getOuter = c;
+                getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
               }
             cur = cur.outer();
           }

@@ -41,7 +41,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.Generic;
 import dev.flang.ast.TypeMode;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
@@ -459,13 +458,13 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param offset the offset of the Generic
    */
-  Generic genericArgument(int offset)
+  AbstractFeature genericArgument(int offset)
   {
     var tp = feature(offset);
     var o = tp.outer();
     for (var g : o.generics().list)
       {
-        if (g.typeParameter() == tp)
+        if (g == tp)
           {
             return g;
           }
@@ -485,11 +484,7 @@ public class LibraryModule extends Module implements MirModule
     if (result == null)
       {
         var k = typeKind(at);
-        if (k == -4)
-          {
-            return Types.t_ADDRESS;
-          }
-        else if (k == -3)
+        if (k == -3)
           {
             return universe().selfType();
           }
@@ -1302,7 +1297,6 @@ Type
    |cond.     | repeat | type          | what
 
    | true     | 1      | int           | the kind of this type tk
-   | tk==-4   | 1      | unit          | ADDRESS
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
@@ -1319,8 +1313,6 @@ Type
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | unit          | ADDRESS                                       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-3 | 1      | unit          | type of universe                              |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -2009,7 +2001,7 @@ Match
    |cond.     | repeat | type          | what
 
 .2+| true     | 1      | int           | number of cases
-   |          | n      | Case          | cases
+              | n      | Case          | cases
 |====
 
 --asciidoc--

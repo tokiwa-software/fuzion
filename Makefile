@@ -1217,11 +1217,11 @@ $(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
-	asciidoctor-pdf $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REF_MANUAL_SOURCE)
+	asciidoctor-pdf --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REF_MANUAL_SOURCE)
 
 $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
-	asciidoctor $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
+	asciidoctor --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
 
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs

@@ -862,7 +862,17 @@ catch_postcondition.anonymous: --CURDIR--/catch_postcondition.fz:105:12:
 ----------^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.y.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:132:8:
   say (ref : handle_post String is
--------^
+-------^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        redef try =>
+--------^^^^^^^^^^^^
+          test i32
+----------^^^^^^^^
+        redef catch(s String) =>
+--------^^^^^^^^^^^^^^^^^^^^^^^^
+          say "*** failed: $s ***"
+----------^^^^^^^^^^^^^^^^^^^^^^^^
+          test u64
+----------^^^^^^^^
 (instate_helper String fuzion.runtime.post_fault).call_code.call: {base.fum}/effect.fz:416:18:
       set res := code()
 -----------------^^^^

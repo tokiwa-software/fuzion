@@ -91,9 +91,9 @@ public class Call extends AbstractCall
     if (_generics == NO_GENERICS && needsToInferTypeParametersFromArgs())
       {
         res = new List<>();
-        for (Generic g : _calledFeature.generics().list)
+        for (var g : _calledFeature.generics().list)
           {
-            if (!g.isOpen())
+            if (!g.isOpenTypeParameter())
               {
                 res.add(Types.t_UNDEFINED);
               }
@@ -1327,7 +1327,7 @@ public class Call extends AbstractCall
                 a = new AbstractType[] { Types.t_ERROR }; /* do not change _resolvedFormalArgumentTypes array length */
               }
           }
-        addToResolvedFormalArgumentTypes(res, argnum, a, frml);
+        addToResolvedFormalArgumentTypes(a, argnum);
         cnt = a.length;
       }
     else
@@ -1347,11 +1347,11 @@ public class Call extends AbstractCall
 
             if (frmlT.isOpenGeneric())
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
-                Generic g = frmlT.genericArgument();
-                var frmlTs = g.replaceOpen(g.feature() == _calledFeature
+                var g = frmlT.genericArgument();
+                var frmlTs = g.replaceOpen(g.outer() == _calledFeature
                                            ? _generics
                                            : heir.selfOrConstraint(res, context).generics()); // see for example #1919
-                addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
+                addToResolvedFormalArgumentTypes(frmlTs.toArray(new AbstractType[frmlTs.size()]), argnum + i);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
               }
@@ -1372,16 +1372,12 @@ public class Call extends AbstractCall
    * all the actual types the open generic is replaced by to make sure the
    * corresponding features exist.
    *
-   * @param res Resolution instance
+   * @param a the new elements to add to _resolvedFormalArgumentTypes
    *
    * @param argnum index in _resolvedFormalArgumentTypes at which we add new
    * elements
-   *
-   * @param a the new elements to add to _resolvedFormalArgumentTypes
-   *
-   * @param frml the argument whose type we are resolving.
    */
-  private void addToResolvedFormalArgumentTypes(Resolution res, int argnum, AbstractType[] a, AbstractFeature frml)
+  private void addToResolvedFormalArgumentTypes(AbstractType[] a, int argnum)
   {
     var na = new AbstractType[_resolvedFormalArgumentTypes.length - 1 + a.length];
     var j = 0;
@@ -1736,7 +1732,7 @@ public class Call extends AbstractCall
         // we are using `.this.type` inside a type feature, see #2295
         if (t.isThisTypeInCotype())
           {
-            t = t.genericArgument().feature().thisType();
+            t = t.genericArgument().outer().thisType();
           }
         else if (!t.isGenericArgument())
           {
@@ -1747,7 +1743,7 @@ public class Call extends AbstractCall
     else if (_calledFeature.isOuterRef())
       {
         var o = t.feature().outer();
-        t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType());
+        t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
@@ -1792,9 +1788,9 @@ public class Call extends AbstractCall
         if (formalTypeForPropagation.isGenericArgument())
           {
             var g = formalTypeForPropagation.genericArgument();
-            if (g.feature() == _calledFeature)
+            if (g.outer() == _calledFeature)
               { // we found a use of a generic type, so record it:
-                var t = _generics.get(g.index());
+                var t = _generics.get(g.typeParameterIndex());
                 if (t != Types.t_UNDEFINED)
                   {
                     actual = actual.propagateExpectedType(res, context, t, null);
@@ -1856,7 +1852,7 @@ public class Call extends AbstractCall
     while (last < next);
 
 
-    List<Generic> missing = missingGenerics();
+    List<AbstractFeature> missing = missingGenerics();
 
     if (!missing.isEmpty())
       {
@@ -1882,7 +1878,7 @@ public class Call extends AbstractCall
   {
     return (rt == null ||
         !rt.isGenericArgument() ||
-         rt.genericArgument().feature().outer() != _calledFeature.outer()) ||
+         rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
          _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
   }
 
@@ -1914,10 +1910,10 @@ public class Call extends AbstractCall
   {
     // replace any missing type parameters or conflicting ones with t_ERROR,
     // report errors for conflicts
-    for (Generic g : _calledFeature.generics().list)
+    for (var g : _calledFeature.generics().list)
       {
-        int i = g.index();
-        if (!g.isOpen() && (_generics.size() <= i || _generics.get(i) == Types.t_UNDEFINED) || conflict[i])
+        int i = g.typeParameterIndex();
+        if (!g.isOpenTypeParameter() && (_generics.size() <= i || _generics.get(i) == Types.t_UNDEFINED) || conflict[i])
           {
             if (CHECKS) check
               (Errors.any() || i < _generics.size());
@@ -1939,13 +1935,13 @@ public class Call extends AbstractCall
    * @return list of generic arguments
    *         which could not be inferred
    */
-  private List<Generic> missingGenerics()
+  private List<AbstractFeature> missingGenerics()
   {
-    List<Generic> missing = new List<Generic>();
-    for (Generic g : _calledFeature.generics().list)
+    List<AbstractFeature> missing = new List<>();
+    for (var g : _calledFeature.generics().list)
       {
-        int i = g.index();
-        if (!g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
+        int i = g.typeParameterIndex();
+        if (!g.isOpenTypeParameter() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
           }
@@ -1959,7 +1955,7 @@ public class Call extends AbstractCall
    *
    * @param missing the list of generics that could not be inferred
    */
-  private void reportMissingInferred(List<Generic> missing)
+  private void reportMissingInferred(List<AbstractFeature> missing)
   {
     // report missing inferred types only if there were no errors trying to find
     // the types of the actuals:
@@ -2039,17 +2035,14 @@ public class Call extends AbstractCall
                                      boolean[] conflict,
                                      List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    var cf = _calledFeature;
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
     for (var pass = 0; pass < 2; pass++)
       {
         int count = 1; // argument count, for error messages
-
         ListIterator<Expr> aargs = _actuals.listIterator();
-        var va = cf.valueArguments();
-        var vai = 0;
-        for (var frml : va)
+        for (var vai = 0; vai < _calledFeature.valueArguments().size(); vai++)
           {
+            var frml = _calledFeature.valueArguments().get(vai);
             if (CHECKS) check
               (Errors.any() || res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
 
@@ -2057,12 +2050,12 @@ public class Call extends AbstractCall
               {
                 var t = frml.resultTypeIfPresent(res);
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
-                if (g != null && g.feature() == cf && g.isOpen())
+                if (g != null && g.outer() == _calledFeature && g.isOpenTypeParameter())
                   {
                     if (pass == 1)
                       {
                         checked[vai] = true;
-                        foundAt.set(g.index(), new List<>()); // set to something not null to avoid missing argument error below
+                        foundAt.set(g.typeParameterIndex(), new List<>()); // set to something not null to avoid missing argument error below
                         while (aargs.hasNext())
                           {
                             count++;
@@ -2100,7 +2093,7 @@ public class Call extends AbstractCall
                              */
                             if (t.isGenericArgument())
                               {
-                                var tp = t.genericArgument().typeParameter();
+                                var tp = t.genericArgument();
                                 res.resolveTypes(tp);
                                 inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt, count-1);
                               }
@@ -2119,7 +2112,6 @@ public class Call extends AbstractCall
               {
                 aargs.next();
               }
-            vai++;
           }
       }
   }
@@ -2282,9 +2274,9 @@ public class Call extends AbstractCall
     else if (formalType.isGenericArgument())
       {
         var g = formalType.genericArgument();
-        if (g.feature() == _calledFeature)
+        if (g.outer() == _calledFeature)
           { // we found a use of a generic type, so record it:
-            var i = g.index();
+            var i = g.typeParameterIndex();
             if (!conflict[i])
               {
                 var gt = _generics.get(i);
@@ -2466,8 +2458,8 @@ public class Call extends AbstractCall
         else
           {
             var rg = g.genericArgument();
-            var ri = rg.index();
-            if (rg.feature() == _calledFeature && foundAt.get(ri) == null)
+            var ri = rg.typeParameterIndex();
+            if (rg.outer() == _calledFeature && foundAt.get(ri) == null)
               {
                 var rt = al.inferLambdaResultType(res, context, argumentType);
                 if (rt != null)

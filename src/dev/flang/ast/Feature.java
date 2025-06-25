@@ -2301,7 +2301,7 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @return the generic instance for ta
    */
-  Generic addTypeParameter(Resolution res, Feature ta)
+  AbstractFeature addTypeParameter(Resolution res, Feature ta)
   {
     if (PRECONDITIONS) require
       (ta.isFreeType());
@@ -2322,12 +2322,11 @@ A ((Choice)) declaration must not contain a result type.
 
     res._module.findDeclarations(ta, this);
 
-    var g = ta.asGeneric();
-    _generics = _generics.addTypeParameter(g);
+    _generics = _generics.addTypeParameter(ta);
     res._module.addTypeParameter(this, ta);
     this.whenResolvedTypes(()->res.resolveTypes(ta));
 
-    return g;
+    return ta;
   }
 
 
@@ -2403,14 +2402,14 @@ A ((Choice)) declaration must not contain a result type.
           }
         result = urgent ? Types.t_ERROR : null;
       }
+    else if (isOuterRef())
+      {
+        result = outer().outer().thisType(outer().isFixed());
+      }
     else
       {
         result = _returnType.functionReturnType();
         result = urgent && result == null ? Types.t_ERROR : result;
-      }
-    if (isOuterRef() && !outer().isFixed())
-      {
-        result = result.asThis();
       }
     if (res != null && result != null && outer() != null)
       {
@@ -2546,8 +2545,9 @@ A ((Choice)) declaration must not contain a result type.
 
     if (hasOuterRef())
       {
-        var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
-                                                  : this._outer.selfType();
+        var outerRefType = isOuterRefAdrOfValue()
+          ? this._outer.selfType().asRef()
+          : this._outer.selfType();
         _outerRef = new Feature(res,
                                 _pos,
                                 Visi.PRIV,
