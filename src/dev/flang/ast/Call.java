@@ -1327,7 +1327,7 @@ public class Call extends AbstractCall
                 a = new AbstractType[] { Types.t_ERROR }; /* do not change _resolvedFormalArgumentTypes array length */
               }
           }
-        addToResolvedFormalArgumentTypes(res, argnum, a, frml);
+        addToResolvedFormalArgumentTypes(a, argnum);
         cnt = a.length;
       }
     else
@@ -1351,7 +1351,7 @@ public class Call extends AbstractCall
                 var frmlTs = g.replaceOpen(g.outer() == _calledFeature
                                            ? _generics
                                            : heir.selfOrConstraint(res, context).generics()); // see for example #1919
-                addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
+                addToResolvedFormalArgumentTypes(frmlTs.toArray(new AbstractType[frmlTs.size()]), argnum + i);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
               }
@@ -1372,16 +1372,12 @@ public class Call extends AbstractCall
    * all the actual types the open generic is replaced by to make sure the
    * corresponding features exist.
    *
-   * @param res Resolution instance
+   * @param a the new elements to add to _resolvedFormalArgumentTypes
    *
    * @param argnum index in _resolvedFormalArgumentTypes at which we add new
    * elements
-   *
-   * @param a the new elements to add to _resolvedFormalArgumentTypes
-   *
-   * @param frml the argument whose type we are resolving.
    */
-  private void addToResolvedFormalArgumentTypes(Resolution res, int argnum, AbstractType[] a, AbstractFeature frml)
+  private void addToResolvedFormalArgumentTypes(AbstractType[] a, int argnum)
   {
     var na = new AbstractType[_resolvedFormalArgumentTypes.length - 1 + a.length];
     var j = 0;
