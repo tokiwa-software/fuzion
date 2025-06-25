@@ -203,7 +203,7 @@ class OpExpr extends ANY
           { // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), op._text, pmax, e2);
+            Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), pmax, e2);
             _els.remove(max+1);
             _els.remove(max);
             _els.set(max-1, e);
@@ -214,14 +214,14 @@ class OpExpr extends ANY
             Expr e =
               (op._text.equals("+") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("+", op._pos) :
               (op._text.equals("-") && (e2 instanceof NumLiteral i2) && op._pos.byteEndPos() == i2.pos().bytePos()) ? i2.addSign("-", op._pos) :
-              new ParsedOperatorCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text), op._text, pmax);
+              new ParsedOperatorCall(e2, new ParsedName(op._pos, FuzionConstants.PREFIX_OPERATOR_PREFIX + op._text), pmax);
             _els.remove(max+1);
             _els.set(max, e);
           }
         else
           { // postfix op:
             Expr e1 = expr(max-1);
-            Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text), op._text, pmax);
+            Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text), pmax);
             _els.remove(max);
             _els.set(max-1, e);
           }

@@ -421,7 +421,7 @@ public class NumLiteral extends Constant
     var result = _propagatedType;
     if (result == null)
       {
-        var i = hasDot() ? null : intValue(ConstantType.ct_i32);
+        var i = hasDot() ? null : intValue();
         result = i == null
           ? Types.resolved.t_f64
           : Types.resolved.t_i32;
@@ -479,19 +479,7 @@ public class NumLiteral extends Constant
    *
    * @return the integer represented by this,
    */
-  public BigInteger intValue()
-  {
-    return intValue(findConstantType(type()));
-  }
-
-
-  /**
-   * Get this value if it is an integer. In case the value is above/below
-   * +/-2^max, the result might get replaced by 2^max.
-   *
-   * @return the integer represented by this,
-   */
-  private BigInteger intValue(ConstantType ct)
+  private BigInteger intValue()
   {
     var v = _mantissa;
     var e2 = _exponent2;
@@ -716,7 +704,7 @@ public class NumLiteral extends Constant
       }
     else
       {
-        var i = intValue(ct);
+        var i = intValue();
         if (i == null)
           {
             AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
@@ -898,7 +886,7 @@ public class NumLiteral extends Constant
       }
     else
       {
-        var i = intValue(ct);
+        var i = intValue();
         var b = i.toByteArray();
         var bytes = ct._bytes;
         result = new byte[bytes];
