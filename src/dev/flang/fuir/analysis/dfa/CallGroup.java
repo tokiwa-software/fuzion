@@ -33,6 +33,7 @@ import dev.flang.util.ANY;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 
 /**
@@ -195,22 +196,8 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
   void mayHaveEffect(int ecl)
   {
-    if (false) if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic &&
-        _dfa._fuir.clazzOriginalName(_cc).equals(EFFECT_INSTATE_NAME) &&
-        _dfa._fuir.effectTypeFromIntrinsic(_cc) == ecl)
-      {
-        return;
-      }
     if (_mayHaveEffects.add(ecl))
       {
-        usedAndMayHaveXXX(ecl);
-        if (false) if (_dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm") ||
-            _dfa._fuir.clazzAsString(_cc).equals("array#3 u8"))
-            {
-              System.out.println(dev.flang.util.Terminal.BOLD_GREEN + "MAY HAVE: "+_dfa._fuir.clazzAsString(_cc)+": "+
-                                 clazzesAsString(_mayHaveEffects)+
-                                 dev.flang.util.Terminal.RESET);
-            }
         for (var t : _to)
           {
             t.mayHaveEffect(ecl);
@@ -225,16 +212,12 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
       (!_dfa._real);
 
     _dfa._calledClazzesDuringPrePhase.add(_cc);
-    // var str = _dfa._fuir.clazzAsString(_cc);
-    // var show = str.equals("i32.as_string#1.digit_as_utf8_byte#1") ||
-    //   str.equals("i32.as_string#1.digit_as_utf8_byte#1");
     for (var e : _usedEffects)
       {
         if (_mayHaveEffects.contains(e))
           {
             _dfa._clazzesThatRequireEffect.computeIfAbsent(e, k->new TreeSet<>()).add(_cc);
             _dfa._effectsRequiredByClazz.computeIfAbsent(_cc, k->new TreeSet<>()).add(e);
-            //         if (show) dev.flang.util.Debug.uprintln("FOR "+str+" ADDING "+_dfa._fuir.clazzAsString(e));
           }
       }
   }
@@ -248,26 +231,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
     var s = _dfa._clazzesThatRequireEffect.get(_cc);
     return s != null && s.contains(ecl);
   }
-  void usedAndMayHaveXXX(int ecl)
-  {
-    if (false) if (_usedEffects.contains(ecl) &&
-        _mayHaveEffects.contains(ecl))
-      {
-              System.out.println(dev.flang.util.Terminal.BOLD_PURPLE + "NEEDED-AND-MAY-HAVE: "+_dfa._fuir.clazzAsString(_cc)+": "+
-                                 _dfa._fuir.clazzAsString(ecl)+
-                                 dev.flang.util.Terminal.RESET);
-
-      }
-  }
-
-
-  String clazzesAsString(java.util.Set<Integer> s)
-  {
-    return s == null ? "{}" : s.stream().map(i->_dfa._fuir.clazzAsString(i)).collect(java.util.stream.Collectors.joining(","));
-  }
-  String usedEffectsAsString() { return clazzesAsString(_usedEffects); }
-  String mayHaveEffectsAsString() { return clazzesAsString(_mayHaveEffects); }
-  String requiredEffectsAsString() { return System.identityHashCode(this)+" cc:"+Integer.toHexString(_cc)+" "+clazzesAsString(_dfa._effectsRequiredByClazz.get(_cc)); }
 
 
   void needsEffect(int ecl)
@@ -281,111 +244,18 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
     if (_usedEffects.add(ecl))
       {
-        usedAndMayHaveXXX(ecl);
-        //        _dfa.instanceNeedsEffects(_cc).add(ecl);
-
         _target.forAll(v ->
                        {
                          if (v instanceof RefValue rv)
                            {
                              v = rv._original;
                            }
-                         if (v instanceof Instance iv && iv._group != null)
-                           {
-                             if (false)
-                               iv._group.needsEffect(ecl);
-                           }
                        });
 
-        if (false)
-          if (_dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-            if (_dfa._fuir.clazzAsString(_cc).equals("(array u8).array_cons"))
-            {
-              System.out.println(dev.flang.util.Terminal.BOLD_RED + "NEEDS: "+_dfa._fuir.clazzAsString(_cc)+": "+
-                                 clazzesAsString(_usedEffects)+
-                                 dev.flang.util.Terminal.RESET);
-              throw new Error();
-            }
-
-
-        // problem is that `array u8` constructor is called from expanding_array.as_array, while
-        // it is also called from (list u8).as_array, where it uses a lambda that require `(list u8).as_array.lm`.
-        /*
-        if (_dfa._fuir.clazzAsString(_cc).equals("(container.expanding_array u8).as_array") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println(dev.flang.util.Terminal.BOLD_RED + "################ needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this+
-                               dev.flang.util.Terminal.RESET);
-            throw new Error();
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("(container.expanding_array u8).array_cons") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println(dev.flang.util.Terminal.BOLD_RED + "<<<<<<<<<<<< needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this+
-                               dev.flang.util.Terminal.RESET);
-            throw new Error();
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("(array u8).array_cons") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println(dev.flang.util.Terminal.BOLD_RED + ">>>>>>>>>>>> needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this+
-                               dev.flang.util.Terminal.RESET);
-            throw new Error();
-          }
-            */
-        /*
-        if (_dfa._fuir.clazzAsString(_cc).equals("(list.type u8).as_array.type.lm.type.instate#4 (array u8)") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println("&&&&&&&&&&& needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
-            throw new Error();
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("(list.type u8).as_array.type.lm.type.instate#3 (array u8)") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println("%%%%%%%%%% needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
-            throw new Error();
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("(list u8).as_array.lm.instate_self#2 (array u8)") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println("!!!!!!!!!!!! needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
-            throw new Error();
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("(list u8).as_array.lm.infix !#2 (array u8)") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println("§§§§§§§§§§§§§§§ needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
-            throw new Error();
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("(list u8).as_array") &&
-            _dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm"))
-          {
-            System.out.println("============ needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
-            throw new Error();
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("fuzion.sys.c_string#1"))
-          {
-            System.out.println("+++++++++++ needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
-            if (_dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm")) throw new Error("needsEffect for c_string");
-          }
-        if (_dfa._fuir.clazzAsString(_cc).equals("u32.infix ..#1"))
-          {
-            System.out.println("********* needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
-            if (_dfa._fuir.clazzAsString(ecl).equals("(list u8).as_array.lm")) throw new Error("needsEffect for infix ..");
-          }
-        */
         _dfa.wasChanged(() -> "needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
         for (var f : _from)
           {
-            try {
             f.needsEffect(ecl);
-            } catch (Error e) {
-              // System.out.println("FROM1 "+this);
-              System.out.println("FROM1 "+_dfa._fuir.clazzAsString(_cc)+" from "+_dfa._fuir.clazzAsString(f._cc)+
-                                 " EFFECTS: "+_usedEffects.stream().map(i->_dfa._fuir.clazzAsString(i)).reduce("", (a,b)->a+","+b));
-              throw e;
-            }
           }
       }
   }
@@ -394,34 +264,10 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   {
     if (_from.add(from))
       {
-        if (_dfa._fuir.clazzAsString(from._cc).startsWith("(array u8).array_cons") &&
-            _dfa._fuir.clazzAsString(_cc).startsWith("fuzion.runtime.precondition_fault"))
+        for (var ecl : _usedEffects)
           {
-            System.out.println("A "+ _dfa._fuir.clazzAsString(_cc)+" is calledFrom  "+ _dfa._fuir.clazzAsString(from._cc));
-            Thread.dumpStack();
+            from.needsEffect(ecl);
           }
-        if (_dfa._fuir.clazzAsString(_cc).startsWith("(array u8).array_cons") &&
-            _dfa._fuir.clazzAsString(from._cc).startsWith("fuzion.runtime.precondition_fault"))
-          {
-            System.out.println("B "+ _dfa._fuir.clazzAsString(_cc)+" is calledFrom  "+ _dfa._fuir.clazzAsString(from._cc));
-            Thread.dumpStack();
-          }
-
-        // TBD: Do we need this? --Yes we do!
-        //
-        if (!false)
-          for (var ecl : _usedEffects)
-            {
-              try {
-                from.needsEffect(ecl);
-              } catch (Error e) {
-                System.out.println("FROM2 "+this+"\n"+
-                                   "  CALLED FROM "+from+"\n"+
-                                   "  Already needs "+_dfa._fuir.clazzAsString(ecl)+"\n  calledFrom("+from+")");
-                throw e;
-              }
-            }
-
 
         from._to.add(this);
         for (var ecl : from._mayHaveEffects)
@@ -432,12 +278,44 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   }
 
 
+  /**
+   * Helper for toString() to show a set of clazzes given by their ids.
+   */
+  String clazzesAsString(java.util.Set<Integer> s)
+  {
+    return s == null ? "{}" :
+      s.stream().map(_dfa._fuir::clazzAsString).collect(Collectors.joining(","));
+  }
+
+
+  /**
+   * For debugging output: the used effects.
+   */
+  String usedEffectsAsString()
+  {
+    return clazzesAsString(_usedEffects);
+  }
+
+
+  /**
+   * For debugging output: the required effects.
+   */
+  String requiredEffectsAsString()
+  {
+    return clazzesAsString(_dfa._effectsRequiredByClazz.get(_cc));
+  }
+
+
+  /**
+   * String representation, for debugging.
+   */
+  @Override
   public String toString()
   {
     return "CALLGROUP to "+_dfa._fuir.clazzAsString(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+
-      clazzesAsString(_dfa._real
-                      ? _usedEffects
-                      : _dfa._effectsRequiredByClazz.get(_cc));
+      (_dfa._real
+       ? usedEffectsAsString()
+       : requiredEffectsAsString());
   }
 
 
