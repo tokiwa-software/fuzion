@@ -262,9 +262,14 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (target() != null);
 
-    var result = target().typeForInferencing();
+    var result = res == null
+      ? target().type()
+      : target().typeForInferencing();
+
     result = result == null
       ? null
+      : res == null
+      ? result.selfOrConstraint(context)
       : result.selfOrConstraint(res, context);
 
     if (POSTCONDITIONS) ensure
@@ -509,7 +514,7 @@ public abstract class AbstractCall extends Expr
    */
   public AbstractType[] formalArgumentTypes()
   {
-    return resolvedFormalArgumentTypes(null, null);
+    return resolvedFormalArgumentTypes(null, Context.NONE);
   }
 
 
