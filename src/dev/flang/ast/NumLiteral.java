@@ -479,7 +479,7 @@ public class NumLiteral extends Constant
    *
    * @return the integer represented by this,
    */
-  private BigInteger intValue()
+  public BigInteger intValue()
   {
     var v = _mantissa;
     var e2 = _exponent2;
