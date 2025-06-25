@@ -560,7 +560,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value getEffectCheck(int s, int ecl, boolean ignoreError)
   {
-    _group.needsEffect(ecl);
+    _group.usesEffect(ecl);
     Value result;
     if (_dfa._real)
       {

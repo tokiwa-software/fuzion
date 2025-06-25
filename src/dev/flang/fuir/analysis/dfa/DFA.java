@@ -2172,7 +2172,7 @@ public class DFA extends ANY
             {
               if (recl != ecl)
                 {
-                  cl._group.needsEffect(recl);   // NYI: needed? Done also in CallGroup.needsEffect!
+                  cl._group.usesEffect(recl);   // NYI: needed? Done also in CallGroup.needsEffect!
                 }
             }
 
