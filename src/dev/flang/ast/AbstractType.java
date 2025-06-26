@@ -1463,7 +1463,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        (other instanceof ResolvedType));
 
     int result = compareToIgnoreOuter(other);
-    if (result == 0 && !isGenericArgument())
+    if (result == 0 && !isGenericArgument()
+      // NYI: BUG: this-types are not normalized currently
+      // e.g. a.b.this currently can have a.this and a as outer.
+      && !isThisType()
+    )
       {
         var to = this .outer();
         var oo = other.outer();
