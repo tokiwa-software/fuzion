@@ -403,7 +403,10 @@ public abstract class AbstractCall extends Expr
                 var g = frmlT.genericArgument();
                 var frmlTs = g.replaceOpen(g.outer() == calledFeature()
                                            ? actualTypeParameters()
-                                           : heir.selfOrConstraint(res, context).generics()); // see for example #1919
+                                           : (res == null
+                                                ? heir.selfOrConstraint(context)
+                                                : heir.selfOrConstraint(res, context)
+                                             ).generics()); // see for example #1919
                 rfat = addToResolvedFormalArgumentTypes(rfat, frmlTs.toArray(new AbstractType[frmlTs.size()]), argnum + i);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;

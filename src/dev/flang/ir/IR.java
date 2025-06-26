@@ -35,7 +35,6 @@ import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
@@ -370,7 +369,7 @@ public abstract class IR extends ANY
           }
         if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type()).yes())
           {
-            result = tag(expr, frmlT, result);
+            result = tag(result, frmlT);
             if (CHECKS) check
               (needsBoxing(result, frmlT) == null);
           }
@@ -390,25 +389,28 @@ public abstract class IR extends ANY
 
   /**
    * handle tagging when assigning value to choice frmlT
+   *
+   * @param expr
+   *
    * @param frmlT
-   * @param value
+   *
    * @return
    */
-  private static Expr tag(Expr expr, AbstractType frmlT, Expr value)
+  private static Expr tag(Expr expr, AbstractType frmlT)
   {
     if(PRECONDITIONS) require
       (frmlT.isChoice());
 
     // Case 1: types are equal, no tagging necessary
-    if (frmlT.compareTo(value.type()) == 0)
+    if (frmlT.compareTo(expr.type()) == 0)
       {
-        return value;
+        return expr;
       }
     // Case 1.1: types are equal, no tagging necessary
     // NYI: BUG: soundness issue?
-    else if(value.type().isChoice() && frmlT.asThis().compareTo(value.type().asThis()) == 0)
+    else if(expr.type().isChoice() && frmlT.asThis().compareTo(expr.type().asThis()) == 0)
       {
-        return value;
+        return expr;
       }
     // Case 2.1: ambiguous assignment via subtype
     //
@@ -422,10 +424,10 @@ public abstract class IR extends ANY
     else if (frmlT
              .choiceGenerics()
               .stream()
-             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes())
+             .filter(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes())
               .count() > 1)
       {
-        AstErrors.ambiguousAssignmentToChoice(frmlT, value);
+        Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
         return expr;
       }
     // Case 2.2: no nested tagging necessary:
@@ -434,9 +436,9 @@ public abstract class IR extends ANY
     else if (frmlT
               .choiceGenerics()
               .stream()
-             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes()))
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes()))
       {
-        return new Tag(value, frmlT);
+        return new Tag(expr, frmlT);
       }
     // Case 3: nested tagging necessary
     // value is only assignable to choice element
@@ -448,18 +450,18 @@ public abstract class IR extends ANY
         var cgs = frmlT
           .choiceGenerics()
           .stream()
-          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(value.type()).yes())
+          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(expr.type()).yes())
           .collect(Collectors.toList());
 
         if (cgs.size() > 1)
           {
-            AstErrors.ambiguousAssignmentToChoice(frmlT, value);
+            Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
           }
 
         if (CHECKS) check
           (Errors.any() || cgs.size() == 1);
 
-        return tag(expr, frmlT, tag(expr, cgs.get(0), value));
+        return tag(tag(expr, cgs.get(0)), frmlT);
       }
   }
 

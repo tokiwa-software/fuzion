@@ -27,8 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -691,6 +693,149 @@ public abstract class Expr extends ANY implements HasSourcePosition
   boolean isTypeAsValueCall()
   {
     return false;
+  }
+
+
+  // NYI: CLEANUP: move this logic to isAssignableFrom?
+  /**
+   * check if assigning this expr to frmlT might
+   * be ambigous
+   *
+   * @param frmlT
+   */
+  void checkAmbiguousAssignmentToChoice(AbstractType frmlT)
+  {
+    var t = type();
+    if (frmlT.isChoice() && !t.isVoid() && frmlT.isAssignableFrom(t).yes())
+      {
+        AbstractType boxedType = boxedType(this, frmlT);
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(boxedType).yes())
+          {
+            checkTagging(this, boxedType, frmlT);
+          }
+      }
+  }
+
+
+  /**
+   * @param expr the expr to be boxed
+   *
+   * @param frmlT the formal type
+   *
+   * @return the potentially boxed type
+   */
+  private static AbstractType boxedType(Expr expr, AbstractType frmlT)
+  {
+    var t = expr.type();
+    if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
+      {
+        return t.asRef();
+      }
+    else if (t.isRef() && !expr.isCallToOuterRef())
+      {
+        return t;
+      }
+    else if (frmlT.isRef())
+      {
+        return t.asRef();
+      }
+    else
+      {
+        if (frmlT.isChoice() &&
+            frmlT.isAssignableFromWithoutBoxing(t).no() &&
+            frmlT.isAssignableFrom(t).yes())
+          { // we do both, box and then tag:
+            for (var cg : frmlT.choiceGenerics())
+              {
+                if (cg.isAssignableFrom(t).yes())
+                  {
+                    return t.asRef();
+                  }
+              }
+            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
+          }
+        else
+          {
+            return t;
+          }
+      }
+  }
+
+
+  /**
+   * check tagging for ambiguity when assigning at to frmlT
+   *
+   * @param frmlT
+   *
+   * @return
+   */
+  private static void checkTagging(Expr expr, AbstractType at, AbstractType frmlT)
+  {
+    if(PRECONDITIONS) require
+      (frmlT.isChoice());
+
+    // Case 1: types are equal, no tagging necessary
+    if (frmlT.compareTo(at) == 0)
+      {
+        return;
+      }
+    // Case 1.1: types are equal, no tagging necessary
+    // NYI: BUG: soundness issue?
+    else if(at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
+      {
+        return;
+      }
+    // Case 2.1: ambiguous assignment via subtype
+    //
+    // example:
+    //
+    //  A ref is
+    //  B ref is
+    //  C ref : B, A is
+    //  t choice A B := C
+    //
+    else if (frmlT
+             .choiceGenerics()
+              .stream()
+             .filter(cg -> cg.isAssignableFromWithoutTagging(at).yes())
+              .count() > 1)
+      {
+        AstErrors.ambiguousAssignmentToChoice(frmlT, expr);
+        return;
+      }
+    // Case 2.2: no nested tagging necessary:
+    // there is a choice generic in this choice
+    // that this value is "directly" assignable to
+    else if (frmlT
+              .choiceGenerics()
+              .stream()
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(at).yes()))
+      {
+        return;
+      }
+    // Case 3: nested tagging necessary
+    // value is only assignable to choice element
+    // that itself is a choice
+    else
+      {
+        // we assign to the choice generic
+        // that expr is assignable to
+        var cgs = frmlT
+          .choiceGenerics()
+          .stream()
+          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(at).yes())
+          .collect(Collectors.toList());
+
+        if (cgs.size() > 1)
+          {
+            AstErrors.ambiguousAssignmentToChoice(frmlT, expr);
+          }
+
+        if (CHECKS) check
+          (Errors.any() || cgs.size() == 1);
+
+        checkTagging(expr, cgs.get(0), frmlT);
+      }
   }
 
 

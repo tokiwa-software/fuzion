@@ -2719,6 +2719,10 @@ public class Call extends AbstractCall
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
+                else
+                  {
+                    actl.checkAmbiguousAssignmentToChoice(frmlT);
+                  }
                 count++;
               }
           }

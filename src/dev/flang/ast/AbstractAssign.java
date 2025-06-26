@@ -256,6 +256,11 @@ public abstract class AbstractAssign extends Expr
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value, context);
           }
+        else
+          {
+            _value.checkAmbiguousAssignmentToChoice(frmlT);
+          }
+
 
         if (CHECKS) check
           (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName(), f) == f);
