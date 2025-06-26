@@ -166,13 +166,13 @@ public class SysArray extends Value
    * @return -1, 0, or +1 depending on whether this &lt; other, this == other or
    * this &gt; other by some order.
    */
-  public int compareTo(Comparator<Value> comp, SysArray sb)
+  public int compareTo(Comparator<Value> comp, SysArray other)
   {
-    return _elementClazz < sb._elementClazz
+    return _elementClazz < other._elementClazz
       ? -1
-      : _elementClazz > sb._elementClazz
+      : _elementClazz > other._elementClazz
       ? 1
-      : comp.compare(_elements, sb._elements);
+      : comp.compare(_elements, other._elements);
   }
 
 
