@@ -1999,7 +1999,7 @@ A ((Choice)) declaration must not contain a result type.
 
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.boxAndTagVal     (_context);           }
-            @Override public Call  action(Call           c) { c.boxArgs    (_context); return c; }
+            @Override public Call  action(Call           c) { c.boxArgs    (res, _context); return c; }
             @Override public Expr  action(InlineArray    i) { i.boxElements(_context); return i; }
             public void  action(AbstractCall c)
               {

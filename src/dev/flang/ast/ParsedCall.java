@@ -315,7 +315,6 @@ public class ParsedCall extends Call
           }
         _actuals = new List<Expr>(ab);
         _calledFeature = Types.resolved.f_bool_AND;
-        _resolvedFormalArgumentTypes  = null;  // _calledFeature changed, so formal arg types must be resolved again
         _pendingError = null;
         _name = _calledFeature.featureName().baseName();
         var result = res.resolveType(ab, context);
@@ -582,7 +581,6 @@ public class ParsedCall extends Call
               : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
-        _resolvedFormalArgumentTypes  = null;
         _pendingError = null;
         var fn = new Function(pos(),
                               pns,
