@@ -1751,20 +1751,22 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(InlineArray ia)
   {
-    return
-      !ia.type().dependsOnGenerics() &&
-      !ia.type().containsThisType() &&
+    return !ia.type().dependsOnGenerics()
+      && ia.type().containsThisType()
       // some backends have special handling for array void.
-      !ia.elementType().isVoid() &&
-      ia._elements
+      && !ia.elementType().isVoid()
+      && ia._elements
         .stream()
         .allMatch(el -> {
           var s = new List<>();
-          super.toStack(s, el);
+          // NYI: CLEANUP: unexpected sideEffect of isConst
+          toStack(s, el);
           return s
             .stream()
             .allMatch(x -> isConst(x));
-        });
+        })
+      // NYI: UNDER DEVELOPMENT: remove this restriction?
+      && ia._elements.stream().allMatch(x -> ia.elementType().isAssignableFromDirectly(x.type()).yes());
   }
 
 
