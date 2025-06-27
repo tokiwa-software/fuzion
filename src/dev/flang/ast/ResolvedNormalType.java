@@ -186,7 +186,7 @@ public class ResolvedNormalType extends ResolvedType
        /* NYI: Types.resolved == null
          || f.compareTo(Types.resolved.f_void) != 0*/);
 
-    this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
+    this._generics = ((typeMode == TypeMode.ThisType || g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
     this._generics.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
 
@@ -213,8 +213,10 @@ public class ResolvedNormalType extends ResolvedType
 
     if (POSTCONDITIONS) ensure
       (_feature == null /* artificial built in type */
+       || isThisType()
        || feature().generics().sizeMatches(generics())
-       || generics().isEmpty() /* e.g. an incomplete type in a match case */);
+       || generics().isEmpty() /* e.g. an incomplete type in a match case */,
+       !isThisType() || generics().isEmpty());
   }
 
   /**
@@ -249,13 +251,15 @@ public class ResolvedNormalType extends ResolvedType
       );
 
     this._typeMode           = typeMode;
-    this._generics           = original._generics;
+    this._generics           =          isThisType() ? UnresolvedType.NONE :
+                               original.isThisType() ? original.feature().generics().asActuals()
+                                                     : original._generics;
     this._unresolvedGenerics = original._unresolvedGenerics;
     this._outer              = original._outer;
     this._feature            = original._feature;
 
     if (POSTCONDITIONS) ensure
-      (feature().generics().sizeMatches(generics()));
+      (isThisType() || feature().generics().sizeMatches(generics()));
   }
 
 
@@ -303,7 +307,7 @@ public class ResolvedNormalType extends ResolvedType
     this._feature            = original._feature;
 
     if (POSTCONDITIONS) ensure
-      (feature().generics().sizeMatches(generics()));
+      (isThisType() || feature().generics().sizeMatches(generics()));
   }
 
 

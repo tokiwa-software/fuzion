@@ -270,7 +270,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        isChoice());
 
     var g = feature().choiceGenerics();
-    return replaceGenerics(g)
+    g = isThisType() ? g : replaceGenerics(g);
+    return g
       .map(t -> t.replace_this_type_by_actual_outer(this, context));
   }
 
@@ -692,7 +693,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (Errors.any() ||
+      (!isThisType(),
+       Errors.any() ||
        feature().generics().sizeMatches(generics()));
 
     return applyTypePars(feature(), genericsToReplace, generics());
@@ -781,7 +783,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (target != null,
        Errors.any() || !isOpenGeneric(),
-       Errors.any() || target.isGenericArgument() || target.feature().generics().sizeMatches(target.generics()));
+       Errors.any() || target.isGenericArgument() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
 
     AbstractType result;
     if (_appliedTypeParsCachedFor1 == target)
@@ -822,7 +824,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (dependsOnGenerics())
       {
         target = target.selfOrConstraint(Context.NONE);
-        result = result.applyTypePars(target.feature(), target.generics());
+        if (!target.isThisType())
+          {
+            result = result.applyTypePars(target.feature(), target.generics());
+          }
         if (target.outer() != null)
           {
             result = result.applyTypePars(target.outer());
@@ -849,7 +854,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
-       f.generics().sizeMatches(actualGenerics),
+       isThisType() || f.generics().sizeMatches(actualGenerics),
        Errors.any() || !isOpenGeneric() || genericArgument().outer().generics() != f.generics());
 
     AbstractType result;
@@ -987,9 +992,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             result = g.replace(actualGenerics);
           }
       }
-    else
+    else if (!isThisType())
       {
-        var g2 = !result.isThisType() || f == feature() ? applyTypePars(f, result.generics(), actualGenerics) : result.generics();
+        var g2 = applyTypePars(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
         g2 = cotypeActualGenerics(g2);
@@ -1474,7 +1479,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           isGenericArgument() &&  other.isGenericArgument() ?  0 :
           isGenericArgument() && !other.isGenericArgument() ? -1 :
           !isGenericArgument() && other.isGenericArgument() ? +1 : feature().compareTo(other.feature());
-        if (result == 0 && !isGenericArgument())
+        if (result == 0 && !isGenericArgument() && !isThisType() && !other.isThisType())
           {
             if (generics().size() != other.generics().size())  // this may happen for open generics lists
               {
@@ -1822,7 +1827,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var g = new List<AbstractType>(this);
-        g.addAll(generics());
+        g.addAll(isThisType() ? feature().generics().asActuals() : generics());
 
         var tf = res != null ? fot.cotype(res) : fot.cotype();
         if (CHECKS) check
