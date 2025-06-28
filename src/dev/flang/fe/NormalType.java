@@ -93,6 +93,8 @@ public class NormalType extends LibraryType
              AbstractType outer)
   {
     super(mod, at);
+    if (PRECONDITIONS) require
+      (typeMode != TypeMode.ThisType || generics.isEmpty());
 
     this._feature = feature;
     this._typeMode = typeMode;
