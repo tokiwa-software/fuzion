@@ -40,18 +40,19 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+
+import dev.flang.ir.Box;
+import dev.flang.ir.Tag;
 
 import dev.flang.mir.MIR;
 
@@ -1750,20 +1751,22 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(InlineArray ia)
   {
-    return
-      !ia.type().dependsOnGenerics() &&
-      !ia.type().containsThisType() &&
+    return !ia.type().dependsOnGenerics()
+      && ia.type().containsThisType()
       // some backends have special handling for array void.
-      !ia.elementType().isVoid() &&
-      ia._elements
+      && !ia.elementType().isVoid()
+      && ia._elements
         .stream()
         .allMatch(el -> {
           var s = new List<>();
-          super.toStack(s, el);
+          // NYI: CLEANUP: unexpected sideEffect of isConst
+          toStack(s, el);
           return s
             .stream()
             .allMatch(x -> isConst(x));
-        });
+        })
+      // NYI: UNDER DEVELOPMENT: remove this restriction?
+      && ia._elements.stream().allMatch(x -> ia.elementType().isAssignableFromDirectly(x.type()).yes());
   }
 
 
