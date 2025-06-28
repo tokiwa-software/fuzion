@@ -586,11 +586,22 @@ public class LibraryFuir extends FUIR {
     return _clazzes[clazzId2num(constCl)].inlineArrayElementClazz();
   }
 
+
   @Override
   public String clazzSrcFile(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzSrcFile();
   }
+
+
+  @Override
+  public SourcePosition clazzDeclarationPos(int cl)
+  {
+    var r = _clazzes[clazzId2num(cl)];
+    return new SourcePosition(new dev.flang.util.SourceFile(java.nio.file.Path.of(r.clazzSrcFile())),
+                              r.clazzSrcBytePos());
+  }
+
 
   @Override
   public boolean withinCode(int s)

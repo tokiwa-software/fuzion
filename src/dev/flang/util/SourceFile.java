@@ -229,10 +229,10 @@ public class SourceFile extends ANY
           }
         catch (IOException e)
           {
-            Errors.error(new SourcePosition(this, 0),
+            sf = new byte[0];
+            Errors.error(new SourcePosition(new SourceFile(fileName, sf), 0),
                          "I/O Error: " + e.getMessage(),
                          "");
-            sf = new byte[0];
           }
       }
     _bytes = sf;
