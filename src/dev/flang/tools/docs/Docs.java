@@ -374,7 +374,7 @@ public class Docs extends ANY
     // generate documentation per module
     for (var module : all_modules)
     {
-        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
+        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules, fe);
 
         mapOfDeclaredFeatures
           .keySet()
@@ -404,7 +404,7 @@ public class Docs extends ANY
       // generate overview page of modules
       var path = config.destination();
       path.toFile().mkdirs();
-      var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
+      var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules, fe);
 
       var file = new File(path.toFile(), "index.html");
       try

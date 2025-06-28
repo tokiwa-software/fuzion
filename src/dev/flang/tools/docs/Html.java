@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
+import dev.flang.fe.FrontEnd;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
 import dev.flang.tools.Tool;
@@ -56,17 +57,19 @@ public class Html extends ANY
   private final String navigation;
   private final LibraryModule lm;
   private final List<LibraryModule> libModules;
+  private final FrontEnd fe;
 
   /**
    * the constructor taking the options
    */
-  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules)
+  public Html(DocsOptions config, Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures, AbstractFeature universe, LibraryModule lm, List<LibraryModule> libModules, FrontEnd fe)
   {
     this.config = config;
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.lm = lm;
     this.libModules = libModules;
     this.navigation = navigation(universe);
+    this.fe = fe;
   }
 
 
@@ -332,7 +335,11 @@ public class Html extends ANY
     var allInner = new List<AbstractFeature>();
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
-    return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
+    return allInner.stream()
+                   // NYI: HACK: only features in the current or base module are taken into account,
+                   //            but if a module depends on another module that should be also taken into account
+                   .filter(f->isVisible(f) && f instanceof LibraryFeature lf && (lf._libModule == lm || lf._libModule == fe.baseModule()))
+                   .anyMatch(f->f.isAbstract())
              ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
                "which are abstract.'>[Contains abstract features]</div>"
              : "";
