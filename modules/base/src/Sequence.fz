@@ -302,7 +302,7 @@ public Sequence(public T type) ref : property.countable is
 
   # create a Sequence that repeats the current Sequence `n` times.
   #
-  public infix *(n i32)
+  public infix *(n i32) Sequence T
     pre
       debug: n >= 0
   =>

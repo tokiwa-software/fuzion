@@ -1,0 +1,55 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5106
+#
+# -----------------------------------------------------------------------
+
+public reg_issue5106 unit =>
+
+  public f1(x) =>        # 1. should flag an error: 2x feature/argument must have explicit type
+
+  public f2(x String) => # 2. should flag an error: feature must have explicit type
+  f2 42                  # 3. should flag an error: Incompatible types when passing argument in a call
+
+  public f3(x) =>        # 4. should flag an error: 2x feature/argument must have explicit type
+  f3 42
+
+  public f4(x) unit =>   # 5. should flag an error: feature must have explicit type
+  f4 42
+
+  public f5(x i32) unit =>  # ok
+  f5 42
+
+  public f6(x i32, y String) i32 => x  # ok
+
+  f7(x) => # ok: not public
+  f7 42
+
+  public f8 is  # ok
+
+  public f9(x) is        # 6. should flag an error: argument must have explicit type
+  _ := f9 0
+
+  public f10(x, y i32) is  # ok
+
+  f11(x, y i32) is  # ok: not public
+
+  module:public f11(x) is
+  _ := f11 0
