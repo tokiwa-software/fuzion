@@ -1715,9 +1715,8 @@ public class Call extends AbstractCall
             var t = frml.resultTypeIfPresent(res);
             if (t != null && t.isFunctionTypeExcludingLazy())
               {
-                var a = resultExpression(actual);
-                Expr l = a.propagateExpectedTypeForPartial(res, context, t);
-                if (l != a)
+                Expr l = actual.propagateExpectedTypeForPartial(res, context, t);
+                if (l != actual)
                   {
                     if (CHECKS) check
                       (l != Universe.instance);
