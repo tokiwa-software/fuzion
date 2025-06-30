@@ -76,9 +76,9 @@ public class ParsedType extends UnresolvedType
    *
    * @param outer outer type or null if unqualified.
    *
-   * @param rov UnresolvedType.TypeMode.Boxed or UnresolvedType.TypeMode.LikeUnderlyingFeature
+   * @param rov UnresolvedType.TypeKind.Boxed or UnresolvedType.TypeKind.LikeUnderlyingFeature
    */
-  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, Optional<TypeMode> rov)
+  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, Optional<TypeKind> rov)
   {
     super(pos, name, generics, outer, rov);
   }
@@ -116,7 +116,7 @@ public class ParsedType extends UnresolvedType
    */
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
-    return new ParsedType(_pos, name(), g2, o2, _typeMode);
+    return new ParsedType(_pos, name(), g2, o2, _typeKind);
   }
 
 
@@ -155,7 +155,7 @@ public class ParsedType extends UnresolvedType
     return
       outer() == null      &&
       generics().isEmpty() &&
-      _typeMode.isEmpty();
+      _typeKind.isEmpty();
   }
 
 

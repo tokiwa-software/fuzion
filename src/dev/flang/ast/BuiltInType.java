@@ -60,7 +60,7 @@ public class BuiltInType extends ParsedType
   BuiltInType(boolean ref, String n)
   {
     super(SourcePosition.builtIn, n, NONE, null,
-          ref ? Optional.of(TypeMode.RefType)
+          ref ? Optional.of(TypeKind.RefType)
               : Optional.empty());
   }
 

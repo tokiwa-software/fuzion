@@ -88,11 +88,6 @@ public class ResolvedParametricType extends ResolvedType
     return Types.f_ERROR;
   }
 
-  public boolean isGenericArgument()
-  {
-    return true;
-  }
-
 
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
@@ -168,9 +163,9 @@ public class ResolvedParametricType extends ResolvedType
    * The mode of the type: ThisType, RefType or ValueType.
    */
   @Override
-  public TypeMode mode()
+  public TypeKind kind()
   {
-    return TypeMode.ValueType;
+    return TypeKind.GenericArgument;
   }
 
 
