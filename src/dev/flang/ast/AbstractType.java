@@ -458,9 +458,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = YesNo.fromBool(asThis().compareTo(actual.asThis()) == 0);
       }
-    if (result.no() && allowBoxing && !actual_type.isRef())
+    if (result.no() && allowBoxing)
       {
-        result = isAssignableFrom(actual.asRef(), context, false, allowTagging, assignableTo);
+        if (actual.isGenericArgument())
+          {
+            result = isAssignableFrom(actual.genericArgument().constraint(context).asRef(), context, allowBoxing, allowTagging, assignableTo);
+          }
+        else if (!actual.isRef())
+          {
+            result = isAssignableFrom(actual.asRef(), context, false, allowTagging, assignableTo);
+          }
       }
     return result;
   }
@@ -671,7 +678,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        result = genericsToReplace.map(t -> t.applyTypePars(f, actualGenerics));
+        result = genericsToReplace.flatMap
+          (t -> t.isOpenGeneric() && t.genericArgument().outer().generics() == f.generics()
+                ? t.genericArgument().replaceOpen(actualGenerics)
+                : new List<>(t.applyTypePars(f, actualGenerics)));
       }
     return result;
   }
@@ -1093,7 +1103,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
           }
       }
-    else
+    else if (!result.isThisType())
       {
         var generics = result.generics();
         var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)

@@ -51,37 +51,15 @@ public class ResolvedParametricType extends ResolvedType
   AbstractFeature _generic;
 
 
-  /**
-   * Is this generic type boxed?
-   */
-  private boolean _isBoxed;
-
-
-  /**
-   * Cached result of asRef(), null if not used yet.
-   */
-  private ResolvedParametricType _asRef;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor for a generic type that might be boxed.
    */
-  private ResolvedParametricType(AbstractFeature generic, boolean isBoxed)
-  {
-    this._generic = generic;
-    this._isBoxed = isBoxed;
-  }
-
-
-  /**
-   * Constructor for a plain generic type.
-   */
   ResolvedParametricType(AbstractFeature generic)
   {
-    this(generic, false);
+    this._generic = generic;
   }
 
 
@@ -150,13 +128,7 @@ public class ResolvedParametricType extends ResolvedType
 
   public AbstractType asRef()
   {
-    if (_asRef == null)
-      {
-        _asRef = _isBoxed
-          ? this
-          : new ResolvedParametricType(_generic, true);
-      }
-    return _asRef;
+    throw new Error("ResolvedParametricType.asRef() not defined");
   }
 
   public AbstractType asValue()
@@ -198,7 +170,7 @@ public class ResolvedParametricType extends ResolvedType
   @Override
   public TypeMode mode()
   {
-    return _isBoxed ? TypeMode.RefType : TypeMode.ValueType;
+    return TypeMode.ValueType;
   }
 
 

@@ -1732,7 +1732,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
     checkDuplicateFeatures(f);
-    checkContractAccesses(f);
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
   }
@@ -2044,18 +2043,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               }
           }
       }
-  }
-
-
-  /**
-   * Check that code in contract does not access inner features apart from
-   * arguments, result field, outer refs or case fields (in case condition uses
-   * a {@code match}). Produce AstErrors if needed.
-   *
-   * @param f the feature whose contract should be checked.
-   */
-  private void checkContractAccesses(AbstractFeature f)
-  { //NYI: CLEANUP:  remove, has no effect.
   }
 
 
