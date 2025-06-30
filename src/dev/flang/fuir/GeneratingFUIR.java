@@ -1232,10 +1232,11 @@ public class GeneratingFUIR extends FUIR
                     argFields[i] = c.lookupNeeded(cfa);
                   }
               }
+            var fat = p.formalArgumentTypes();
             for (var i = 0; i < p.actuals().size(); i++)
               {
                 var a = p.actuals().get(i);
-                toStack(code, a);
+                toStack(code, boxAndTag(a, fat[i]));
                 while (inhe.size() < code.size()) { inhe.add(inh); }
                 while (_inh.size() < _allCode.size()) { _inh.add(inh); }
                 code.add(ExprKind.Current);

@@ -352,7 +352,7 @@ public abstract class IR extends ANY
    *
    * @return this or an instance of Box/Tag wrapping this.
    */
-  private static Expr boxAndTag(Expr expr, AbstractType frmlT)
+  protected static Expr boxAndTag(Expr expr, AbstractType frmlT)
   {
     if (PRECONDITIONS) require
       (frmlT != null);
