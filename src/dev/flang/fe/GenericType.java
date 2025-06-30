@@ -29,7 +29,7 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.TypeMode;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 
@@ -95,12 +95,6 @@ public class GenericType extends LibraryType
   }
 
 
-  public boolean isGenericArgument()
-  {
-    return true;
-  }
-
-
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
@@ -155,9 +149,9 @@ public class GenericType extends LibraryType
    * The mode of the type: ThisType, RefType or ValueType.
    */
   @Override
-  public TypeMode mode()
+  public TypeKind kind()
   {
-    return TypeMode.ValueType;
+    return TypeKind.GenericArgument;
   }
 
 }

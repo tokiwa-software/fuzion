@@ -1879,9 +1879,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * @return RefType if Feature is a reference otherwise ValueType
    */
-  public TypeMode defaultTypeMode()
+  public TypeKind defaultTypeKind()
   {
-    return isRef() ? TypeMode.RefType : TypeMode.ValueType;
+    return isRef() ? TypeKind.RefType : TypeKind.ValueType;
   }
 
 

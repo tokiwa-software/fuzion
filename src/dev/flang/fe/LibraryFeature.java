@@ -422,7 +422,7 @@ public class LibraryFeature extends AbstractFeature
     var o = outer();
     var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this,
-                                         defaultTypeMode(),
+                                         defaultTypeKind(),
                                          generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
