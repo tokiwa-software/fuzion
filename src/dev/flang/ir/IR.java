@@ -372,6 +372,32 @@ public abstract class IR extends ANY
               (needsBoxing(result, frmlT) == null);
           }
       }
+    // NYI: ugly special case: currently needed for code like
+    // because isAssignableFrom does not return yes without correct Context...
+    /**
+     * A ref is
+     * B ref is
+     *
+     * ab  : A, B is
+     *
+     * take_B(v B) => say "take_B: ok: {type_of v} dynamic {v.dynamic_type}"
+     *
+     * y1(v T : A) =>
+     *   y2
+     *     pre T : B
+     *   =>
+     *     take_B v
+     *
+     * y1 ab
+     */
+    else if (t.isGenericArgument() && frmlT.isRef())
+      {
+        var rt = needsBoxing(expr, frmlT);
+        if (rt != null)
+          {
+            result = new Box(result, rt);
+          }
+      }
 
     if (POSTCONDITIONS) ensure
       (Errors.any()
