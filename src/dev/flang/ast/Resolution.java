@@ -149,7 +149,7 @@ public class Resolution extends ANY
       };
   }
 
-  Feature.ResolveTypes resolveTypesFully(AbstractFeature f)
+  FeatureVisitor resolveTypesFully(AbstractFeature f)
   {
     return new Feature.ResolveTypes(this, f.context());
   }

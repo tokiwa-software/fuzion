@@ -2315,10 +2315,10 @@ public class Call extends AbstractCall
           // check if this might be a
           // left hand side of dot-type-call
           tt = ut.resolve(res, context, true);
-          tt = tt != null && tt != Types.t_ERROR ? tt.selfOrConstraint(res, context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
+          tt = tt.selfOrConstraint(res, context);
           var tf = tt.feature();
           var ttf = tf.isUniverse() ? tf : tf.cotype(res);
           res.resolveDeclarations(tf);
