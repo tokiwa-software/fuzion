@@ -54,11 +54,6 @@ public class GenericType extends LibraryType
    */
   AbstractFeature _generic;
 
-  /**
-   * Is this generic type boxed?
-   */
-  boolean _isBoxed;
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -66,22 +61,13 @@ public class GenericType extends LibraryType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  private GenericType(LibraryModule mod, int at, AbstractFeature generic, boolean isBoxed)
+  GenericType(LibraryModule mod, int at, AbstractFeature generic)
   {
     super(mod, at);
 
     this._generic = generic;
-    this._isBoxed = isBoxed;
   }
 
-
-  /**
-   * Constructor for a plain generic type.
-   */
-  GenericType(LibraryModule mod, int at, AbstractFeature generic)
-  {
-    this(mod, at, generic, false);
-  }
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -149,9 +135,7 @@ public class GenericType extends LibraryType
 
   public AbstractType asRef()
   {
-    return _isBoxed
-      ? this
-      : new GenericType(_libModule, _at, _generic, true);
+    throw new Error("GenericType.asRef() not defined");
   }
 
 
@@ -173,7 +157,7 @@ public class GenericType extends LibraryType
   @Override
   public TypeMode mode()
   {
-    return _isBoxed ? TypeMode.RefType : TypeMode.ValueType;
+    return TypeMode.ValueType;
   }
 
 }
