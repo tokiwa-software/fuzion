@@ -348,8 +348,6 @@ public abstract class IR extends ANY
    *
    * @param frmlT the formal type this value is assigned to
    *
-   * @param context the source code context where this Expr is used
-   *
    * @return this or an instance of Box/Tag wrapping this.
    */
   protected static Expr boxAndTag(Expr expr, AbstractType frmlT)
