@@ -3226,10 +3226,6 @@ public class DFA extends ANY
             // maybe two nested LongMaps?
             r = new Call(g, args, env, context);
             e = _calls.get(r);
-            if (env != null && e != null && e._env != null)
-              {
-                e._env.propagateAbort(env);
-              }
           }
       }
     if (e == null)

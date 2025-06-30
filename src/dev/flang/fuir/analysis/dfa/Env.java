@@ -265,41 +265,17 @@ public class Env extends ANY implements Comparable<Env>
   }
 
 
-  Env filterPos(SourcePosition pos, SourcePosition pos_new) // NYI: needed?
-  {
-    var res = _outer == null ? null : _outer.filterPos(pos, pos_new);
-    var cd =_dfa._fuir.clazzCode(_effectType);
-    var p = cd == FUIR.NO_SITE || !_dfa._fuir.withinCode(cd)
-      ? _dfa._fuir.clazzDeclarationPos(_effectType)
-      : _dfa._fuir.sitePos(cd);
-    var p_new = _dfa.effectTypePosition(_effectType);
-    var cmp2 = p_new.compareTo(pos_new) != 0;
-    if (cmp2)
-      {
-        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
-      }
-    return res;
-  }
-  Env filterPos(SourcePosition pos) // NYI: needed?
+  Env filterPos(SourcePosition pos)
   {
     var res = _outer == null ? null : _outer.filterPos(pos);
     var p = _dfa.effectTypePosition(_effectType);
-    var cmp = p.compareTo(pos) != 0;
-    if (cmp)
+    if (p.compareTo(pos) != 0)
       {
         res = _dfa.newEnv(res, _effectType, _actualEffectValues);
       }
     return res;
   }
-  Env filterX(Set<Integer> which) // NYI: needed?
-  {
-    var res = _outer == null ? null : _outer.filterX(which);
-    if (which.contains(_effectType))
-      {
-        res = _dfa.newEnv(res, _effectType, _actualEffectValues);
-      }
-    return res;
-  }
+
 
   /**
    * Check the environment if it contains an effect of clazz `cl` instantiated at
@@ -488,17 +464,6 @@ public class Env extends ANY implements Comparable<Env>
     else
       {
         _dfa.replaceDefaultEffect(ecl, e);
-      }
-  }
-
-  TreeSet<Env> _propagateAbort = new TreeSet<>(); // NYI: remove?
-
-
-  void propagateAbort(Env e) // NYI: remove?
-  {
-    if (e != this)
-      {
-        _propagateAbort.add(e);
       }
   }
 
