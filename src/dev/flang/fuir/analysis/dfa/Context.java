@@ -181,20 +181,17 @@ public interface Context
    */
   default Instance findEffect(int cl, int site)
   {
+    Instance result = null;
     var e = env();
     if (e != null)
       {
-        var r = e.find(cl, site);
-        if (r != null)
-          {
-            return r;
-          }
+        result = e.find(cl, site);
       }
-    if (this instanceof Call cc)
+    if (result == null && this instanceof Call cc)
       {
-        return cc._context.findEffect(cl, site);
+        result = cc._context.findEffect(cl, site);
       }
-    return null;
+    return result;
   }
 
 

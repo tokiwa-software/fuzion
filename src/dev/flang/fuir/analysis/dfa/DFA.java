@@ -1019,7 +1019,35 @@ public class DFA extends ANY
    * id, Value._envId, and they are compared differently using
    * Value.ENV_COMPARATOR to avoid env value explosion.
    */
-  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);
+  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);  TreeSet<Integer> _calledClazzesDuringPrePhase = new TreeSet<>();
+
+
+  /**
+   * During first phase that determined CallGroups, this will collect the
+   * effects that each clazz requires
+   */
+  TreeMap<Integer, TreeSet<Integer>> _clazzesThatRequireEffect = new TreeMap<>();
+
+
+  /**
+   * During first phase that determined CallGroups, this will collect what
+   * clazzes each effect is required by.
+   */
+  TreeMap<Integer, TreeSet<Integer>> _effectsRequiredByClazz = new TreeMap<>();
+
+
+  /**
+   * During first phase that determined CallGroups, this will collect the effect
+   * values for each effect type.
+   */
+  TreeMap<Integer, Value>_preEffectValues = new TreeMap<>();
+
+
+  /**
+   * During first phase that determined CallGroups, this will collect the
+   * effects that are ever aborted.
+   */
+  TreeSet<Integer> _preEffectsAborted = new TreeSet<>();
 
 
   /**
@@ -2215,9 +2243,10 @@ public class DFA extends ANY
             }
           var aborted =
             // NYI: Why check both, newEnv.isAborted and _preEffectsAborted?
-            newEnv != null && newEnv.isAborted(ecl) ||
-            cl._dfa._preEffectsAborted.contains(ecl) ||
-            (cl._dfa._real ? newEnv.isAborted(ecl) : cl._dfa._preEffectsAborted.contains(ecl));
+            // newEnv != null && newEnv.isAborted(ecl) ||
+            // cl._dfa._preEffectsAborted.contains(ecl) ||
+            (cl._dfa._real ? newEnv != null && newEnv.isAborted(ecl)
+                           : cl._dfa._preEffectsAborted.contains(ecl));
           var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl.calledClazz(), 1), aborted);
           if (aborted)
             { // default result, only if abort is ever called
@@ -2243,7 +2272,7 @@ public class DFA extends ANY
                 {
                   cl._env.aborted(ecl);
                 }
-              cl._dfa._preEffectsAborted.add(ecl);  // NYI: why here as well ?
+              //              cl._dfa._preEffectsAborted.add(ecl);  // NYI: why here as well ?
             }
           else
             {
@@ -2529,14 +2558,6 @@ public class DFA extends ANY
       default -> false;
       };
   }
-
-
-  TreeSet<Integer> _calledClazzesDuringPrePhase = new TreeSet<>();
-  TreeMap<Integer, TreeSet<Integer>> _clazzesThatRequireEffect = new TreeMap<>();
-  TreeMap<Integer, TreeSet<Integer>> _effectsRequiredByClazz = new TreeMap<>();
-
-  TreeMap<Integer, Value>_preEffectValues = new TreeMap<>();
-  TreeSet<Integer> _preEffectsAborted = new TreeSet<>();
 
 
   /**
@@ -3062,6 +3083,23 @@ public class DFA extends ANY
   }
 
 
+  /**
+   * simple hash function that maps clazz id, site, target value and env that
+   * identify a Call to a unique long.  This may fail and return -1 if no unique
+   * value can be produced.
+   *
+   * @param dfa the DFA instance
+   *
+   * @param cl a clazz id.
+   *
+   * @param site a call site
+   *
+   * @param tvalue a value used as call target
+   *
+   * @param env value used as call effect environment
+   *
+   * @return -1 or a values that is unique for the given cl/site/tvalue/env.
+   */
   long callQuickHash(int cl, int site, Value tvalue, Env env)
   {
     long k = -1;
@@ -3166,7 +3204,10 @@ public class DFA extends ANY
             _unitCalls.put(cl, null);
             _calls.remove(r);
           }
-        var k = COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED ? -1 : callQuickHash(cl, site, tvalue, env);
+        var k = COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED
+          ? -1 // NYI: quick hashing currently disabled since env should not be
+               // compared, only needed effects should be.
+          : callQuickHash(cl, site, tvalue, env);
         if (k != -1)
           {
             r = _callsQuick.get(k);
@@ -3179,11 +3220,6 @@ public class DFA extends ANY
           }
         else
           {
-            if (env != null && !true)
-              {
-                var fe = _effectsRequiredByClazz.get(cl);
-                env = fe == null ? null : env.filterX(fe);
-              }
             // TreeMap fallback in case we failed to pack the key into a long.
             //
             // NYI: OPTIMIZATION: We might find a more efficient way for this case,
@@ -3375,6 +3411,14 @@ public class DFA extends ANY
     return e;
   }
 
+
+  /**
+   * Get the source code position of the declaration of an effect type.
+   *
+   * @param ecl clazz id of an effect type
+   *
+   * @return a source code position, never null.
+   */
   SourcePosition effectTypePosition(int ecl)
   {
     // NYI: declarationPos may be equal for two effects declared in different modules, so we have to compare the modules as well!
@@ -3405,7 +3449,7 @@ public class DFA extends ANY
    */
   private Env newEnv2(Env env, int ecl, Value ev)
   {
-    if (env != null)
+    if (env != null)  // NYI: explain what this is doing!
       {
         env = env.filterPos(effectTypePosition(ecl));
       }

@@ -190,16 +190,27 @@ public class Env extends ANY implements Comparable<Env>
   }
 
 
-  /*-----------------------------  methods  -----------------------------*/
-
-
+  /**
+   * Compare two environoments by looking only at those effect values of effects
+   * in the given set of effect types
+   *
+   * NOTE: iterating the elements of `which` must be deterministic!
+   *
+   * @param which set of clazz ids of effect types to compare
+   *
+   * @param a first environemnt
+   *
+   * @param b second environment
+   *
+   * @return -1/0/+1 defining a total order while ingoring effects not in
+   * `which`.
+   */
   static int compare(Set<Integer> which, Env a, Env b)
   {
     var res = 0;
-    if (which != null)
-    for (var e : which)
+    if (a != b && which != null)
       {
-        if (a != b)
+        for (var e : which)
           {
             var av = a != null ? a.get(e) : null;
             var bv = b != null ? b.get(e) : null;
@@ -222,13 +233,24 @@ public class Env extends ANY implements Comparable<Env>
   }
 
 
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Restrict this environment to an environment containing only the effects
+   * that are required by given CallGroup.
+   *
+   * @param cg a CallGroup
+   *
+   * @return this Env stripped by any effects not required by cg.
+   */
   Env filterCallGroup(CallGroup cg)
   {
     var o = _outer;
     var res = o == null ? null : o.filterCallGroup(cg);
     var ce = _dfa._effectsRequiredByClazz.get(cg._cc);
     if (ce != null && ce.contains(_effectType) ||
-        cg._usedEffects.contains(_effectType))
+        cg._usedEffects.contains(_effectType) /* NYI: redundant with previous line? */ )
       {
         if (o != _outer)
           {
@@ -243,7 +265,7 @@ public class Env extends ANY implements Comparable<Env>
   }
 
 
-  Env filterPos(SourcePosition pos, SourcePosition pos_new)
+  Env filterPos(SourcePosition pos, SourcePosition pos_new) // NYI: needed?
   {
     var res = _outer == null ? null : _outer.filterPos(pos, pos_new);
     var cd =_dfa._fuir.clazzCode(_effectType);
@@ -252,30 +274,13 @@ public class Env extends ANY implements Comparable<Env>
       : _dfa._fuir.sitePos(cd);
     var p_new = _dfa.effectTypePosition(_effectType);
     var cmp2 = p_new.compareTo(pos_new) != 0;
-    /*
-    var cmp1 = (p != pos && (p == null || p.compareTo(pos) != 0));
-    if (cmp1 != cmp2)
-      {
-        dev.flang.util.Debug.uprintln("Difference for "+_dfa._fuir.clazzAsString(_effectType)+
-                           "\n  pos: "+(pos == null ? "--": pos.show()) +
-                           "\n  p: "+(p == null ? "--": p.show()) +
-                           "\n  pos_new: "+(pos_new == null ? "--": pos_new.show()) +
-                           "\n  p_new: "+(p_new == null ? "--": p_new.show())
-                                   );
-      }
-    */
-    // if (p != pos && (p == null || p.compareTo(pos) != 0))
     if (cmp2)
       {
         res = _dfa.newEnv(res, _effectType, _actualEffectValues);
       }
-    else
-      {
-        // System.out.println("FILTER "+_dfa._fuir.clazzAsString(_effectType)+" pos is "+p.show()+"\n filtering pos "+pos.show());
-      }
     return res;
   }
-  Env filterPos(SourcePosition pos)
+  Env filterPos(SourcePosition pos) // NYI: needed?
   {
     var res = _outer == null ? null : _outer.filterPos(pos);
     var p = _dfa.effectTypePosition(_effectType);
@@ -286,7 +291,7 @@ public class Env extends ANY implements Comparable<Env>
       }
     return res;
   }
-  Env filterX(Set<Integer> which)
+  Env filterX(Set<Integer> which) // NYI: needed?
   {
     var res = _outer == null ? null : _outer.filterX(which);
     if (which.contains(_effectType))
@@ -486,10 +491,10 @@ public class Env extends ANY implements Comparable<Env>
       }
   }
 
-  TreeSet<Env> _propagateAbort = new TreeSet<>();
+  TreeSet<Env> _propagateAbort = new TreeSet<>(); // NYI: remove?
 
 
-  void propagateAbort(Env e)
+  void propagateAbort(Env e) // NYI: remove?
   {
     if (e != this)
       {
