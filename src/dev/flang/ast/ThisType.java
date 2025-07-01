@@ -41,7 +41,8 @@ public class ThisType extends ResolvedType {
   public ThisType(AbstractFeature feature)
   {
     if (PRECONDITIONS) require
-      (feature != null);
+      (!feature.isUniverse(),
+       feature != Types.f_ERROR);
     _feature = feature;
   }
 

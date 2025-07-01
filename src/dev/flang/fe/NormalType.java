@@ -208,7 +208,7 @@ public class NormalType extends LibraryType
     var result = _asThis;
     if (result == null)
       {
-        if (isThisType())
+        if (isThisType() || feature().isUniverse())
           {
             result = this;
           }
