@@ -144,4 +144,4 @@ main =>
   antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
   # NYI: UNDER DEVELOPMENT: add option -Werror
   _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
-  !!"rm --recursive --force $tmp"
+  !!"rm -Rf $tmp"
