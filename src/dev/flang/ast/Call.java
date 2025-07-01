@@ -1387,7 +1387,12 @@ public class Call extends AbstractCall
             AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
             t = Types.t_ERROR;
           }
-        else if(tt.generics().stream().anyMatch(g -> g.isOpenGeneric()))
+        else if (tt.isThisType())
+          {
+            // NYI: UNDER DEVELOPMENT: better error for this-type target
+            AstErrors.selectorRange(pos(), 0, _calledFeature, _name, _select, AbstractCall.NO_GENERICS);
+          }
+        else if (tt.generics().stream().anyMatch(g -> g.isOpenGeneric()))
           {
             var types = tt.generics().stream().filter(g -> !g.isOpenGeneric()).collect(List.collector());
             AstErrors.selectorRange(pos(), types.size(), _calledFeature, _name, _select, types);
