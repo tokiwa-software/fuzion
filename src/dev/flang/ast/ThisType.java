@@ -30,7 +30,6 @@ package dev.flang.ast;
 import java.util.Set;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 /**
  * A this-type refers to the outer instance of its feature.
@@ -46,16 +45,8 @@ public class ThisType extends ResolvedType {
     _feature = feature;
   }
 
-  /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
   @Override
-  public SourcePosition declarationPos() { return _feature == null ? SourcePosition.notAvailable : _feature.pos(); }
-
-
-  @Override
-  public AbstractFeature feature()
+  protected AbstractFeature backingFeature()
   {
     return _feature;
   }
