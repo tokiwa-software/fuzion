@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -57,7 +56,7 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
-  List<AbstractType> _generics;
+  final List<AbstractType> _generics;
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -67,7 +66,7 @@ public class ResolvedNormalType extends ResolvedType
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  final List<AbstractType> _unresolvedGenerics;
+  private final List<AbstractType> _unresolvedGenerics;
   public final List<AbstractType> unresolvedGenerics() { return _unresolvedGenerics; }
 
 
@@ -87,7 +86,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    *
    * @param t the original type
    *
@@ -109,7 +108,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    *
    * @param g the actual generic arguments (resolved)
    *
@@ -175,7 +174,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedType create(List<AbstractType> g,
                                     List<AbstractType> ug,
@@ -216,7 +215,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, TypeKind typeKind)
   {
@@ -264,7 +263,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
