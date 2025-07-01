@@ -31,7 +31,6 @@ import java.util.Set;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -529,7 +528,8 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     // NYI: "This currently does not touch the outer features.
     //       This means that for a type like (x T).y U the visibility of x and T will be ignored, which is probably wrong."

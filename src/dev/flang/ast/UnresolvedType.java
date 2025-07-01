@@ -975,7 +975,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     throw new Error("must not be called on unresolved types.");
   }
