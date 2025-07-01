@@ -81,6 +81,13 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * A example of a call site. This is more specific than _group._site since one
+   * CallGroup may represent several Calls from different sites.
+   */
+  int _site;
+
+
+  /**
    * Arguments passed to the call.
    */
   List<Val> _args;
@@ -137,14 +144,17 @@ public class Call extends ANY implements Comparable<Call>, Context
    *
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
+   *
+   * @param site the call site
    */
-  public Call(CallGroup group,  List<Val> args, Env env, Context context)
+  public Call(CallGroup group,  List<Val> args, Env env, Context context, int site)
   {
     _group = group;
     _dfa = group._dfa;
     _args = args;
     _env = env;
     _context = context;
+    _site = site;
 
     if (_dfa._fuir.isConstructor(calledClazz()))
       {
@@ -514,7 +524,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   int site()
   {
-    return _group._site;
+    return _site;
   }
 
 

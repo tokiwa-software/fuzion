@@ -3193,7 +3193,7 @@ public class DFA extends ANY
         e = r;
         if (r == null)
           {
-            r = new Call(g, args, env, context);
+            r = new Call(g, args, env, context, site);
             _unitCalls.put(cl, r);
           }
       }
@@ -3214,7 +3214,7 @@ public class DFA extends ANY
             e = r;
             if (r == null)
               {
-                r = new Call(g, args, env, context);
+                r = new Call(g, args, env, context, site);
                 _callsQuick.put(k, r);
               }
           }
@@ -3224,7 +3224,7 @@ public class DFA extends ANY
             //
             // NYI: OPTIMIZATION: We might find a more efficient way for this case,
             // maybe two nested LongMaps?
-            r = new Call(g, args, env, context);
+            r = new Call(g, args, env, context, site);
             e = _calls.get(r);
           }
       }
