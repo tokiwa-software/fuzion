@@ -159,15 +159,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract AbstractType asThis();
 
 
-  /**
-   * traverse a resolved type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
-  protected abstract void usedFeatures(Set<AbstractFeature> s);
-
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -2419,6 +2410,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType selfOrConstraint(Resolution res, Context context)
   {
     return (isGenericArgument() ? genericArgument().constraint(res, context) : this);
+  }
+
+
+  /**
+   * traverse a resolved type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  void usedFeatures(Set<AbstractFeature> s)
+  {
+
   }
 
 }

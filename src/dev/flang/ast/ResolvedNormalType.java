@@ -530,7 +530,8 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     // NYI: "This currently does not touch the outer features.
     //       This means that for a type like (x T).y U the visibility of x and T will be ignored, which is probably wrong."
