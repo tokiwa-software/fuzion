@@ -1463,7 +1463,7 @@ public class Call extends AbstractCall
     else if (_calledFeature.isOuterRef())
       {
         var o = t.feature().outer();
-        t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
+        t = o == null || o.isUniverse() || t.isThisType() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
@@ -2020,12 +2020,15 @@ public class Call extends AbstractCall
           {
             for (int i=0; i < formalType.generics().size(); i++)
               {
-                if (i < actualType.generics().size())
+                var g = actualType.isThisType()
+                  ? actualType.feature().generics().asActuals()
+                  : actualType.generics();
+                if (i < g.size())
                   {
                     inferGeneric(res,
                                  context,
                                  formalType.generics().get(i),
-                                 actualType.generics().get(i),
+                                 g.get(i),
                                  pos, conflict, foundAt);
                   }
               }

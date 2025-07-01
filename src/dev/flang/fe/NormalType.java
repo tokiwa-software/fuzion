@@ -109,6 +109,7 @@ public class NormalType extends LibraryType
    * The sourcecode position of the declaration point of this type, or, for
    * unresolved types, the source code position of its use.
    */
+  @Override
   public SourcePosition declarationPos() { return feature().pos(); }
 
 
@@ -124,10 +125,12 @@ public class NormalType extends LibraryType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
+  @Override
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument());
+      (!isGenericArgument(),
+       !isThisType());
 
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
@@ -140,6 +143,7 @@ public class NormalType extends LibraryType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
+  @Override
   public AbstractFeature feature()
   {
     return _feature;
@@ -149,11 +153,15 @@ public class NormalType extends LibraryType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
+  @Override
   public List<AbstractType> generics()
   {
+    if (PRECONDITIONS) require
+      (!isThisType());
     return _generics;
   }
 
+  @Override
   public AbstractFeature genericArgument()
   {
     throw new Error("genericArgument() is not defined for NormalType");
@@ -168,25 +176,33 @@ public class NormalType extends LibraryType
     return _typeKind;
   }
 
+  @Override
   public AbstractType outer()
   {
     return _outer;
   }
 
-
+  @Override
   public AbstractType asRef()
   {
     var result = _asRef;
     if (result == null)
       {
-        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.RefType, _generics, _outer);
+        result = isRef()
+          ? this
+          : isThisType()
+          ? new NormalType(_libModule, _at, _feature, TypeKind.RefType, _feature.generics().asActuals(), _feature.outer().selfType().asThis())
+          : new NormalType(_libModule, _at, _feature, TypeKind.RefType, _generics, _outer);
         _asRef = result;
       }
     return result;
   }
 
+  @Override
   public AbstractType asValue()
   {
+    if (PRECONDITIONS) require
+      (!isThisType());
     var result = _asValue;
     if (result == null)
       {
@@ -196,6 +212,7 @@ public class NormalType extends LibraryType
     return result;
   }
 
+  @Override
   public AbstractType asThis()
   {
     var result = _asThis;

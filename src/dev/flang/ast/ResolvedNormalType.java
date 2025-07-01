@@ -31,7 +31,6 @@ import java.util.Set;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -65,7 +64,7 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
-  List<AbstractType> _generics;
+  final List<AbstractType> _generics;
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -95,7 +94,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    *
    * @param t the original type
    *
@@ -117,7 +116,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    *
    * @param g the actual generic arguments (resolved)
    *
@@ -155,11 +154,12 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g)
+       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
+       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
        /* NYI: Types.resolved == null
          || f.compareTo(Types.resolved.f_void) != 0*/);
 
-    this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
+    this._generics = g == null || g.isEmpty() ? UnresolvedType.NONE : g;
     this._generics.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
 
@@ -183,7 +183,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedType create(List<AbstractType> g,
                                     List<AbstractType> ug,
@@ -209,7 +209,8 @@ public class ResolvedNormalType extends ResolvedType
     if (PRECONDITIONS) require
       (kind() != original.kind(),
        Types.resolved == null
-         || !original.isVoid()
+         || !original.isVoid(),
+       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
       );
 
     this._typeKind           = typeKind;
@@ -224,7 +225,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, TypeKind typeKind)
   {
@@ -272,7 +273,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
@@ -390,7 +391,7 @@ public class ResolvedNormalType extends ResolvedType
     AbstractType result = this;
     if (!isThisType() && this != Types.t_ERROR && !feature().isUniverse())
       {
-        result = ResolvedNormalType.create(this, TypeKind.ThisType);
+        result = new ThisType(_feature);
       }
 
     if (POSTCONDITIONS) ensure

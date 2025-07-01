@@ -762,7 +762,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         generics.freeze();
       }
 
-    return ResolvedNormalType.create(generics,
+    return typeKind == TypeKind.ThisType
+      ? new ThisType(f)
+      : ResolvedNormalType.create(generics,
                                      unresolvedGenerics,
                                      o,
                                      f,
@@ -975,6 +977,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param s the features that have already been found
    */
+  @Override
   protected void usedFeatures(Set<AbstractFeature> s)
   {
     throw new Error("must not be called on unresolved types.");
