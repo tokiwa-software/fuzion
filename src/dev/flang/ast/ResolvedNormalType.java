@@ -46,13 +46,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return _feature == null ? SourcePosition.notAvailable : _feature.pos(); }
-
-
-  /**
    * Is this an explicit reference or value type?  Ref/Value to make this a
    * reference/value type independent of the type of the underlying feature
    * defining a ref type or not, false to keep the underlying feature's
@@ -427,7 +420,8 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature feature()
+  @Override
+  protected AbstractFeature backingFeature()
   {
     if (PRECONDITIONS) require
       (Errors.any() || _feature != null);

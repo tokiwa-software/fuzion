@@ -52,20 +52,6 @@ public abstract class ResolvedType extends AbstractType
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * genericArgument gives the Generic instance of a type defined by a generic
-   * argument.
-   *
-   * @return the Generic instance, never null.
-   */
-  public AbstractFeature genericArgument()
-  {
-    if (PRECONDITIONS) require
-      (false);
-
-    throw new Error();
-  }
-
 }
 
 /* end of file */
