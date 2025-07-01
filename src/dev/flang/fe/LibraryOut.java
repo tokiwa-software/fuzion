@@ -576,6 +576,9 @@ class LibraryOut extends ANY
     if (PRECONDITIONS) require
       (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
 
+    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefor typekind written _twice_
+    // clean this up and merge the two type kinds?
+
     var off = _data.offset(t);
     if (off >= 0)
       {
@@ -591,8 +594,6 @@ class LibraryOut extends ANY
         _data.addOffset(t, _data.offset());
         if (t.isGenericArgument())
           {
-            if (CHECKS) check
-              (t.isValue());
             _data.writeInt(-1);
             _data.writeOffset(t.genericArgument());
           }
@@ -600,7 +601,7 @@ class LibraryOut extends ANY
           {
             _data.writeInt(t.generics().size());
             _data.writeOffset(t.feature());
-            _data.writeByte(t.mode().num);
+            _data.writeByte(t.kind().num);
             for (var gt : t.generics())
               {
                 type(gt);

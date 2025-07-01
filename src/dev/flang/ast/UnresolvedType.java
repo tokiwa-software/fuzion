@@ -94,7 +94,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * defining a ref type or not, false to keep the underlying feature's
    * ref/value status.
    */
-  final Optional<TypeMode> _typeMode;
+  final Optional<TypeKind> _typeKind;
 
 
   /**
@@ -197,7 +197,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public UnresolvedType(UnresolvedType t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos(), t._name, g, o, t._typeMode);
+    this(t.pos(), t._name, g, o, t._typeKind);
 
     if (PRECONDITIONS) require
       (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
@@ -215,10 +215,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param o
    *
-   * @param typeMode true iff this type should be a ref type, otherwise it will be a
+   * @param typeKind true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, Optional<TypeMode> typeMode)
+  public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, Optional<TypeKind> typeKind)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -229,7 +229,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
     this._generics.freeze();
     this._outer    = o;
-    this._typeMode = typeMode;
+    this._typeKind = typeKind;
   }
 
 
@@ -270,15 +270,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param original the original value type
    *
-   * @param typeMode must be TypeMode.RefType or TypeMode.ValueType
+   * @param typeKind must be TypeKind.RefType or TypeKind.ValueType
    */
-  public UnresolvedType(UnresolvedType original, TypeMode typeMode)
+  public UnresolvedType(UnresolvedType original, TypeKind typeKind)
   {
     if (PRECONDITIONS) require
-      (original._typeMode.isEmpty() || typeMode != original._typeMode.get());
+      (original._typeKind.isEmpty() || typeKind != original._typeKind.get());
 
     this._pos               = original._pos;
-    this._typeMode          = Optional.of(typeMode);
+    this._typeKind          = Optional.of(typeKind);
     this._name              = original._name;
     this._generics          = original._generics;
     this._outer             = original._outer;
@@ -297,7 +297,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   UnresolvedType(UnresolvedType original, AbstractFeature originalOuterFeature)
   {
     this._pos               = original._pos;
-    this._typeMode          = original._typeMode;
+    this._typeKind          = original._typeKind;
     this._name              = original._name;
     if (original._generics.isEmpty())
       {
@@ -333,7 +333,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     if (res == null ||
         !_generics.isEmpty() ||
-        !_typeMode.isEmpty())
+        !_typeKind.isEmpty())
       {
         res = null;
       }
@@ -369,7 +369,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
-        result = ResolvedNormalType.create(this, TypeMode.Boxed);
+        result = ResolvedNormalType.create(this, TypeKind.Boxed);
       }
       return result;*/
   }
@@ -387,7 +387,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     AbstractType result = this;
     if (!isThisType() && !isChoice() && this != Types.t_ERROR)
       {
-        result = ResolvedNormalType.create(this, TypeMode.ThisType);
+        result = ResolvedNormalType.create(this, TypeKind.ThisType);
       }
 
     if (POSTCONDITIONS) ensure
@@ -456,16 +456,16 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           + (outer == "" ||
              outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
                                                          : outer + ".")
-          + (_typeMode.map(tm ->
-              tm == TypeMode.RefType   ? "ref "  :
-              tm == TypeMode.ValueType ? "value "
+          + (_typeKind.map(tm ->
+              tm == TypeKind.RefType   ? "ref "  :
+              tm == TypeKind.ValueType ? "value "
                                        : "").orElse(""))
           + _name;
       }
     else
       {
         result =
-          (_typeMode.orElse(TypeMode.ValueType) == TypeMode.RefType ? "ref "
+          (_typeKind.orElse(TypeKind.ValueType) == TypeKind.RefType ? "ref "
                                                                     : "")
           + _name;
       }
@@ -625,7 +625,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                       {
                         o = fo._outer.thisType(fo.isNextInnerFixed());
                       }
-                    _resolved = finishResolve(res, context, this, this, f, generics, generics(), o, _typeMode.orElse(f.defaultTypeMode()), _ignoreActualTypePars, tolerant);
+                    _resolved = finishResolve(res, context, this, this, f, generics, generics(), o, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
                   }
               }
           }
@@ -656,7 +656,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                   {
                     o = fo._outer.thisType(fo.isNextInnerFixed());
                   }
-                _resolved = finishResolve(res, context, this, this, f, generics, null, o, _typeMode.orElse(f.defaultTypeMode()), _ignoreActualTypePars, tolerant);
+                _resolved = finishResolve(res, context, this, this, f, generics, null, o, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
               }
           }
       }
@@ -679,7 +679,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * Perform the last steps of resolve() for a normal type (not a type
    * parameter).
    *
-   *  - if typeMode is ThisType, set generics to the formal generics used as
+   *  - if typeKind is ThisType, set generics to the formal generics used as
    *    actual.
    *
    *  - otherwise, resolve the formal generics and check that their number
@@ -705,7 +705,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param o the resolved outer type
    *
-   * @param typeMode Select the type variant: value, boxed, thisType
+   * @param typeKind Select the type variant: value, boxed, thisType
    *
    * @param ignoreActualTypePars if true no errors will be reported in case the
    * number of actual type parameters does not match the formal type parameters.
@@ -722,7 +722,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                     List<AbstractType> generics,
                                     List<AbstractType> unresolvedGenerics,
                                     AbstractType o,
-                                    TypeMode typeMode,
+                                    TypeKind typeKind,
                                     boolean ignoreActualTypePars,
                                     boolean tolerant)
   {
@@ -730,7 +730,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     if (!ignoreActualTypePars)
       {
-        if (typeMode == TypeMode.ThisType && generics.isEmpty())
+        if (typeKind == TypeKind.ThisType && generics.isEmpty())
           {
             generics = f.generics().asActuals();
           }
@@ -766,7 +766,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                      unresolvedGenerics,
                                      o,
                                      f,
-                                     typeMode);
+                                     typeKind);
   }
 
 
@@ -840,21 +840,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
        (_outer instanceof UnresolvedType ot                   &&
         !ot.isThisType()                            &&
         ot.isMatchingCotype(outerfeat.outer())   )    );
-  }
-
-
-  /**
-   * isGenericArgument
-   *
-   * @return
-   */
-  public boolean isGenericArgument()
-  {
-    if (false)  // NYI: if findGenerics and resolve would be done in the same phase we could throw this error here:
-      {
-        throw new Error("isGenericArgument not known for unresolved type");
-      }
-    return false;
   }
 
 
@@ -1008,11 +993,11 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * The mode of the type: ThisType, RefType or ValueType.
    */
   @Override
-  public TypeMode mode()
+  public TypeKind kind()
   {
-    return _typeMode
+    return _typeKind
       // NYI: UNDER DEVELOPMENT: always correct?
-      .orElse(TypeMode.ValueType);
+      .orElse(TypeKind.ValueType);
   }
 
 

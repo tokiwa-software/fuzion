@@ -29,7 +29,7 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.TypeMode;
+import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -57,7 +57,7 @@ public class NormalType extends LibraryType
   /**
    * Is this a value, ref or this type?
    */
-  TypeMode _typeMode;
+  TypeKind _typeKind;
 
 
   /**
@@ -88,14 +88,14 @@ public class NormalType extends LibraryType
   NormalType(LibraryModule mod,
              int at,
              AbstractFeature feature,
-             TypeMode typeMode,
+             TypeKind typeKind,
              List<AbstractType> generics,
              AbstractType outer)
   {
     super(mod, at);
 
     this._feature = feature;
-    this._typeMode = typeMode;
+    this._typeKind = typeKind;
     this._generics = generics;
     this._generics.freeze();
     this._outer = outer;
@@ -129,7 +129,7 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _feature, _typeMode, g2, o2);
+    return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
 
 
@@ -145,10 +145,6 @@ public class NormalType extends LibraryType
     return _feature;
   }
 
-  public boolean isGenericArgument()
-  {
-    return false;
-  }
 
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
@@ -167,9 +163,9 @@ public class NormalType extends LibraryType
    * The mode of the type: ThisType, RefType or ValueType.
    */
   @Override
-  public TypeMode mode()
+  public TypeKind kind()
   {
-    return _typeMode;
+    return _typeKind;
   }
 
   public AbstractType outer()
@@ -183,7 +179,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeMode.RefType, _generics, _outer);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.RefType, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -194,7 +190,7 @@ public class NormalType extends LibraryType
     var result = _asValue;
     if (result == null)
       {
-        result = isValue() ? this :  new NormalType(_libModule, _at, _feature, TypeMode.ValueType, _generics, _outer);
+        result = isValue() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.ValueType, _generics, _outer);
         _asValue = result;
       }
     return result;
@@ -211,7 +207,7 @@ public class NormalType extends LibraryType
           }
         else
           {
-            result = new NormalType(_libModule, _at, _feature, TypeMode.ThisType, _generics, _outer);
+            result = new NormalType(_libModule, _at, _feature, TypeKind.ThisType, _generics, _outer);
           }
         _asThis = result;
       }

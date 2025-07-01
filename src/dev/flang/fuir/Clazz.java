@@ -722,11 +722,11 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   boolean isRef()
   {
-    return switch (_type.mode())
+    return switch (_type.kind())
       {
       case RefType -> true;
       case ValueType -> false;
-      case ThisType -> throw new Error("unexpected this type");
+      default -> throw new Error("unexpected this type");
       };
   }
 

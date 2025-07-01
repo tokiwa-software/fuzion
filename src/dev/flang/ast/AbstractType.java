@@ -95,12 +95,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Is this type a generic argument (true) or false backed by a feature (false)?
-   */
-  public abstract boolean isGenericArgument();
-
-
-  /**
    * For a resolved normal type, return the underlying feature.
    *
    * Requires that this is resolved and !isGenericArgument().
@@ -137,17 +131,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * The mode of the type: ThisType, RefType or ValueType.
    */
-  public abstract TypeMode mode();
+  public abstract TypeKind kind();
 
 
   /**
    * This type as a reference.
+   *
+   * Requires !isGenericArgument().
    */
   public abstract AbstractType asRef();
 
 
   /**
    * This type as a value.
+   *
+   * Requires !isGenericArgument().
    */
   public abstract AbstractType asValue();
 
@@ -232,11 +230,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Is this type a generic argument (true) or false backed by a feature (false)?
+   */
+  public boolean isGenericArgument()
+  {
+    return kind() == TypeKind.GenericArgument;
+  }
+
+
+  /**
    * Is this a ref-type?
    */
   public boolean isRef()
   {
-    return mode() == TypeMode.RefType;
+    return kind() == TypeKind.RefType;
   }
 
 
@@ -245,7 +252,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isValue()
   {
-    return mode() == TypeMode.ValueType;
+    return kind() == TypeKind.ValueType;
   }
 
   /**
@@ -253,7 +260,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isThisType()
   {
-    return mode() == TypeMode.ThisType;
+    return kind() == TypeKind.ThisType;
   }
 
 
@@ -482,9 +489,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = YesNo.fromBool(asThis().compareTo(actual.asThis()) == 0);
       }
-    if (result.no() && allowBoxing && !actual_type.isRef())
+    if (result.no() && allowBoxing)
       {
-        result = isAssignableFrom(actual.asRef(), context, false, allowTagging, assignableTo);
+        if (actual.isGenericArgument())
+          {
+            result = isAssignableFrom(actual.genericArgument().constraint(context).asRef(), context, allowBoxing, allowTagging, assignableTo);
+          }
+        else if (!actual.isRef())
+          {
+            result = isAssignableFrom(actual.asRef(), context, false, allowTagging, assignableTo);
+          }
       }
     return result;
   }
@@ -695,7 +709,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        result = genericsToReplace.map(t -> t.applyTypePars(f, actualGenerics));
+        result = genericsToReplace.flatMap
+          (t -> t.isOpenGeneric() && t.genericArgument().outer().generics() == f.generics()
+                ? t.genericArgument().replaceOpen(actualGenerics)
+                : new List<>(t.applyTypePars(f, actualGenerics)));
       }
     return result;
   }
@@ -1117,7 +1134,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
           }
       }
-    else
+    else if (!result.isThisType())
       {
         var generics = result.generics();
         var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
@@ -1543,7 +1560,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
 
     if (POSTCONDITIONS) ensure
-      (result != 0 || mode() == other.mode());
+      (result != 0 || kind() == other.kind());
 
     return result;
   }

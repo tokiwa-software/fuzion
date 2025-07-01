@@ -53,17 +53,6 @@ public abstract class ResolvedType extends AbstractType
 
 
   /**
-   * isGenericArgument
-   *
-   * @return
-   */
-  public boolean isGenericArgument()
-  {
-    return false;
-  }
-
-
-  /**
    * genericArgument gives the Generic instance of a type defined by a generic
    * argument.
    *
