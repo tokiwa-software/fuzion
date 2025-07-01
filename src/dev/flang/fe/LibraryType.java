@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -74,17 +73,6 @@ public abstract class LibraryType extends ResolvedType
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * traverse a type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
-  protected void usedFeatures(Set<AbstractFeature> s)
-  {
-    // a library type has already been checked. nothing to be done.
-  }
 
 
   /**

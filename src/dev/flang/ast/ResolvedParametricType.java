@@ -142,7 +142,8 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     if (!genericArgument().isCoTypesThisType() &&
         /**
