@@ -32,6 +32,9 @@ import java.util.Set;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
+/**
+ * A this-type refers to the outer instance of its feature.
+ */
 public class ThisType extends ResolvedType {
 
   private final AbstractFeature _feature;

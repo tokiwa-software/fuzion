@@ -179,6 +179,9 @@ public class NormalType extends LibraryType
   @Override
   public AbstractType outer()
   {
+    // NYI: UNDER DEVELOPMENT:
+    // if (PRECONDITIONS)
+    //   require(!isThisType());
     return _outer;
   }
 
