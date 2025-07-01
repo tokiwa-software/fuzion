@@ -833,10 +833,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (dependsOnGenerics())
       {
         target = target.selfOrConstraint(Context.NONE);
-        result = result.applyTypePars(target.feature(), target.isThisType() ? target.feature().generics().asActuals() : target.generics());
-        if (target.outer() != null)
+        if (target.isThisType())
           {
-            result = result.applyTypePars(target.outer());
+            result = result.applyTypePars(target.feature(), target.feature().generics().asActuals());
+            // see #659 for when this is relevant
+            result = result.applyTypePars(target.feature().outer().thisType());
+          }
+        else
+          {
+            result = result.applyTypePars(target.feature(), target.generics());
+            if (target.outer() != null)
+              {
+                result = result.applyTypePars(target.outer());
+              }
           }
       }
     return result;
