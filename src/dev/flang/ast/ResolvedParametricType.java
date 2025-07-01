@@ -67,29 +67,6 @@ public class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return _generic.pos(); }
-
-
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isGenericArgument().
-   */
-  public AbstractFeature feature()
-  {
-    if (CHECKS) check
-      (Errors.any());
-
-    return Types.f_ERROR;
-  }
-
-
-  /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
   public List<AbstractType> generics()
@@ -107,7 +84,7 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @return the Generic instance, never null.
    */
-  public AbstractFeature genericArgument()
+  public AbstractFeature backingFeature()
   {
     return _generic;
   }
