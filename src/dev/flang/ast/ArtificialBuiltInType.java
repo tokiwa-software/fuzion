@@ -76,14 +76,6 @@ public class ArtificialBuiltInType extends ResolvedNormalType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  @Override
-  public SourcePosition declarationPos() { return SourcePosition.builtIn; }
-
-
-  /**
    * resolve artificial types t_ERROR, etc.
    *
    * @param feat a dummy feature like universe or Types.f_ERROR.
