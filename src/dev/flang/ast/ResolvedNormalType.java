@@ -381,14 +381,14 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asThis()
   {
     AbstractType result = this;
-    if (!isThisType() && this != Types.t_ERROR && !feature().isUniverse())
+    if (isNormalType() && this != Types.t_ERROR && !feature().isUniverse())
       {
         result = new ThisType(_feature);
       }
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_ERROR || feature().isUniverse() || result.isThisType(),
-       !isThisType() || result == this);
+       isNormalType() || result == this);
 
     return result;
   }
@@ -401,7 +401,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asValue()
   {
     if (PRECONDITIONS) require
-      (!isThisType());
+      (isNormalType());
 
     AbstractType result = this;
     if (!isValue() && this != Types.t_ERROR)

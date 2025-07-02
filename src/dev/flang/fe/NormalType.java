@@ -32,11 +32,12 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
  * A NormalType is a LibraryType that is not a type parameter.
+ *
+ * NYI: CLEANUP: split out into this-type and normal-type?
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -121,8 +122,7 @@ public class NormalType extends LibraryType
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument(),
-       !isThisType());
+      (isNormalType());
 
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
@@ -149,7 +149,7 @@ public class NormalType extends LibraryType
   public List<AbstractType> generics()
   {
     if (PRECONDITIONS) require
-      (!isThisType());
+      (isNormalType());
     return _generics;
   }
 
@@ -168,7 +168,7 @@ public class NormalType extends LibraryType
   {
     // NYI: UNDER DEVELOPMENT:
     // if (PRECONDITIONS)
-    //   require(!isThisType());
+    //   require(isNormalType());
     return _outer;
   }
 
@@ -192,7 +192,7 @@ public class NormalType extends LibraryType
   public AbstractType asValue()
   {
     if (PRECONDITIONS) require
-      (!isThisType());
+      (isNormalType());
     var result = _asValue;
     if (result == null)
       {

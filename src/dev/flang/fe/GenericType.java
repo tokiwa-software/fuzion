@@ -31,11 +31,9 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
-import dev.flang.ast.Types;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**

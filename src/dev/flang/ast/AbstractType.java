@@ -745,7 +745,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (!isThisType(),
+      (isNormalType(),
        Errors.any() ||
        feature().generics().sizeMatches(generics()));
 
@@ -1054,9 +1054,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             result = g.replace(actualGenerics);
           }
       }
-    else if (!result.isThisType())
+    else if (result.isNormalType())
       {
-        var g2 = !result.isThisType() || f == feature() ? applyTypePars(f, result.generics(), actualGenerics) : result.generics();
+        var g2 = applyTypePars(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
 
         g2 = cotypeActualGenerics(g2);
@@ -1906,6 +1906,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * Create typeType of the outer of this type.
+   * In case this is a this-type, the typeType of the features outer.
+   *
+   * @param res Resolution instance used to resolve the type feature that might
+   * need to be created.
+   */
   private AbstractType outerTypeType(Resolution res)
   {
     return isThisType()
@@ -2185,7 +2192,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
 
         result = outerToString(humanReadable)
-              + (!isThisType() && isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "" )
+              + (isNormalType() && isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "" )
               + fname;
         if (isThisType())
           {
@@ -2195,7 +2202,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = result + ".type";
           }
-        if (!isThisType())
+        if (isNormalType())
           {
             var skip = typeType;
             for (var g : generics())
