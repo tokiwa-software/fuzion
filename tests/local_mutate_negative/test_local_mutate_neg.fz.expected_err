@@ -19,4 +19,8 @@ effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum' at -
 effect environment '--empty--' for call to 'test_local_mutate_neg'
 effect environment '--empty--' at program entry
 
+To fix this, you should make sure that an effect for type 'test_local_mutate_neg.test_sum.sum#1.m' is instated along all call paths to this effect use.
+
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+
 one error.
