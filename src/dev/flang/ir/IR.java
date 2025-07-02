@@ -447,9 +447,9 @@ public abstract class IR extends ANY
     //
     else if (frmlT
              .choiceGenerics()
-              .stream()
+             .stream()
              .filter(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes())
-              .count() > 1)
+             .count() > 1)
       {
         Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
         return expr;
@@ -458,8 +458,8 @@ public abstract class IR extends ANY
     // there is a choice generic in this choice
     // that this value is "directly" assignable to
     else if (frmlT
-              .choiceGenerics()
-              .stream()
+             .choiceGenerics()
+             .stream()
              .anyMatch(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes()))
       {
         return new Tag(expr, frmlT);
