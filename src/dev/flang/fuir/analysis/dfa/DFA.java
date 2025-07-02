@@ -831,6 +831,19 @@ public class DFA extends ANY
   static final Object SEVERAL_INSTANCES = new Object();
 
 
+  /**
+   * Set this to get detailed effect environments.
+   *
+   * NYI: UNDER DEVELOPMENT: This is currently needed for tests/tricky_dfa_cases.
+   *
+   * To enable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true
+   */
+  static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
+  static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, false);
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -2873,9 +2886,6 @@ public class DFA extends ANY
   }
 
 
-  static boolean COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED = true;
-
-
   /**
    * Should instance of given clazz be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
@@ -3204,10 +3214,11 @@ public class DFA extends ANY
             _unitCalls.put(cl, null);
             _calls.remove(r);
           }
-        var k = COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED
-          ? -1 // NYI: quick hashing currently disabled since env should not be
+        var k = TRACE_ALL_EFFECT_ENVS
+          ? callQuickHash(cl, site, tvalue, env)
+          : -1 // NYI: quick hashing currently disabled since env should not be
                // compared, only needed effects should be.
-          : callQuickHash(cl, site, tvalue, env);
+          ;
         if (k != -1)
           {
             r = _callsQuick.get(k);

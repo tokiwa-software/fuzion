@@ -208,7 +208,11 @@ public class Env extends ANY implements Comparable<Env>
   static int compare(Set<Integer> which, Env a, Env b)
   {
     var res = 0;
-    if (a != b && which != null)
+    if (DFA.TRACE_ALL_EFFECT_ENVS)
+      {
+        res = compare(a, b);
+      }
+    else if (a != b && which != null)
       {
         for (var e : which)
           {
@@ -249,7 +253,8 @@ public class Env extends ANY implements Comparable<Env>
     var o = _outer;
     var res = o == null ? null : o.filterCallGroup(cg);
     var ce = _dfa._effectsRequiredByClazz.get(cg._cc);
-    if (ce != null && ce.contains(_effectType) ||
+    if (DFA.TRACE_ALL_EFFECT_ENVS ||
+        ce != null && ce.contains(_effectType) ||
         cg._usedEffects.contains(_effectType) /* NYI: redundant with previous line? */ )
       {
         if (o != _outer)

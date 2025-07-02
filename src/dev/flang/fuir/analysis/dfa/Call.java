@@ -195,12 +195,12 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   int envCompare(Call other)
   {
-    return DFA.COMPARE_ONLY_ENV_EFFECTS_THAT_ARE_NEEDED
-      ? Env.compare(_dfa._real
+    return DFA.TRACE_ALL_EFFECT_ENVS
+      ? Env.compare(env(), other.env())
+      : Env.compare(_dfa._real
                     ? _dfa._effectsRequiredByClazz.get(calledClazz())
                     : _group._usedEffects,
-                    env(), other.env())
-      : Env.compare(env(), other.env());
+                    env(), other.env());
   }
 
 
