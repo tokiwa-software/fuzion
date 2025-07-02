@@ -40,7 +40,6 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
-import dev.flang.be.jvm.runtime.Any;
 import dev.flang.lsp.enums.Transport;
 import dev.flang.lsp.shared.Concurrency;
 import dev.flang.lsp.shared.Context;

@@ -33,12 +33,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
 import dev.flang.ast.Call;
 import dev.flang.ast.Constant;
 import dev.flang.ast.StrConst;

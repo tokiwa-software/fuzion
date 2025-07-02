@@ -31,11 +31,9 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
-import dev.flang.ast.Types;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -43,7 +41,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class GenericType extends LibraryType
+class GenericType extends LibraryType
 {
 
 
@@ -73,29 +71,6 @@ public class GenericType extends LibraryType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return _generic.pos(); }
-
-
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isGenericArgument().
-   */
-  public AbstractFeature feature()
-  {
-    if (CHECKS) check
-      (Errors.any());
-
-    return Types.f_ERROR;
-  }
-
-
-  /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
   public List<AbstractType> generics()
@@ -113,7 +88,8 @@ public class GenericType extends LibraryType
    *
    * @return the Generic instance, never null.
    */
-  public AbstractFeature genericArgument()
+  @Override
+  protected AbstractFeature backingFeature()
   {
     return _generic;
   }

@@ -86,22 +86,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /*--------------------------  abstract methods  --------------------------*/
 
 
-
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
+   * The feature backing the type.
    */
-  public abstract SourcePosition declarationPos();
-
-
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * Requires that this is resolved and !isGenericArgument().
-   *
-   * @return the underlying feature.
-   */
-  public abstract AbstractFeature feature();
+  protected abstract AbstractFeature backingFeature();
 
 
   /**
@@ -110,14 +98,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Requires that this is resolved and !isGenericArgument().
    */
   public abstract List<AbstractType> generics();
-
-
-  /**
-   * For a resolved parametric type return the generic.
-   *
-   * Requires that this is resolved and isGenericArgument().
-   */
-  public abstract AbstractFeature genericArgument();
 
 
   /**
@@ -132,6 +112,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * The mode of the type: ThisType, RefType or ValueType.
    */
   public abstract TypeKind kind();
+
+
+  // NYI: CLEANUP: implement asRef/asValue/asThis generically
 
 
   /**
@@ -159,16 +142,59 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract AbstractType asThis();
 
 
-  /**
-   * traverse a resolved type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
-   */
-  protected abstract void usedFeatures(Set<AbstractFeature> s);
-
-
-
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The sourcecode position of the declaration point of this type, or, for
+   * unresolved types, the source code position of its use.
+   */
+  public SourcePosition declarationPos()
+  {
+    return backingFeature().pos();
+  }
+
+
+  /**
+   * For a resolved normal type, return the underlying feature.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   *
+   * @return the underlying feature.
+   */
+  public AbstractFeature feature()
+  {
+    if (PRECONDITIONS) require
+      (!(this instanceof UnresolvedType),
+       !isGenericArgument());
+
+    var result = backingFeature();
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
+  /**
+   * For a resolved parametric type return the generic.
+   *
+   * Requires that this is resolved and isGenericArgument().
+   */
+  public AbstractFeature genericArgument()
+  {
+    if (PRECONDITIONS) require
+      (!(this instanceof UnresolvedType),
+       isGenericArgument());
+
+    var result = backingFeature();
+
+    if (POSTCONDITIONS) ensure
+      (result.isTypeParameter());
+
+    return result;
+  }
 
 
 
@@ -2440,6 +2466,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType selfOrConstraint(Resolution res, Context context)
   {
     return (isGenericArgument() ? genericArgument().constraint(res, context) : this);
+  }
+
+
+  /**
+   * traverse a resolved type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
+  void usedFeatures(Set<AbstractFeature> s)
+  {
+
   }
 
 }

@@ -85,6 +85,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * The sourcecode position of the declaration point of this type, or, for
    * unresolved types, the source code position of its use.
    */
+  @Override
   public SourcePosition declarationPos() { return _pos.pos(); }
 
 
@@ -843,16 +844,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isGenericArgument().
-   */
-  public AbstractFeature feature()
+  @Override
+  protected AbstractFeature backingFeature()
   {
-    throw new Error("feature not available for unresolved type");
+    throw new Error("backingFeature not available for unresolved type");
   }
 
 
@@ -867,21 +862,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   boolean isCotypeType()
   {
     return false;
-  }
-
-
-  /**
-   * genericArgument gives the Generic instance of a type defined by a generic
-   * argument.
-   *
-   * @return the Generic instance, never null.
-   */
-  public AbstractFeature genericArgument()
-  {
-    if (PRECONDITIONS) require
-      (false);
-
-    throw new Error();
   }
 
 
@@ -975,7 +955,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     throw new Error("must not be called on unresolved types.");
   }

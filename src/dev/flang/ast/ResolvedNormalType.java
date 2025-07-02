@@ -30,8 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -47,13 +45,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return _feature == null ? SourcePosition.notAvailable : _feature.pos(); }
-
-
-  /**
    * Is this an explicit reference or value type?  Ref/Value to make this a
    * reference/value type independent of the type of the underlying feature
    * defining a ref type or not, false to keep the underlying feature's
@@ -65,7 +56,7 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
-  List<AbstractType> _generics;
+  final List<AbstractType> _generics;
   public final List<AbstractType> generics() { return _generics; }
 
 
@@ -75,7 +66,7 @@ public class ResolvedNormalType extends ResolvedType
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  final List<AbstractType> _unresolvedGenerics;
+  private final List<AbstractType> _unresolvedGenerics;
   public final List<AbstractType> unresolvedGenerics() { return _unresolvedGenerics; }
 
 
@@ -95,7 +86,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    *
    * @param t the original type
    *
@@ -117,7 +108,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    *
    * @param g the actual generic arguments (resolved)
    *
@@ -183,7 +174,7 @@ public class ResolvedNormalType extends ResolvedType
   }
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedType create(List<AbstractType> g,
                                     List<AbstractType> ug,
@@ -224,7 +215,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, TypeKind typeKind)
   {
@@ -272,7 +263,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType and return its unique instance.
+   * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
   {
@@ -426,7 +417,8 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature feature()
+  @Override
+  protected AbstractFeature backingFeature()
   {
     if (PRECONDITIONS) require
       (Errors.any() || _feature != null);
@@ -529,7 +521,8 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     // NYI: "This currently does not touch the outer features.
     //       This means that for a type like (x T).y U the visibility of x and T will be ignored, which is probably wrong."

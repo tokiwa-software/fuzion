@@ -32,7 +32,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -40,7 +39,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NormalType extends LibraryType
+class NormalType extends LibraryType
 {
 
 
@@ -106,13 +105,6 @@ public class NormalType extends LibraryType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return feature().pos(); }
-
-
-  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -140,7 +132,8 @@ public class NormalType extends LibraryType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature feature()
+  @Override
+  protected AbstractFeature backingFeature()
   {
     return _feature;
   }
@@ -154,10 +147,6 @@ public class NormalType extends LibraryType
     return _generics;
   }
 
-  public AbstractFeature genericArgument()
-  {
-    throw new Error("genericArgument() is not defined for NormalType");
-  }
 
   /**
    * The mode of the type: ThisType, RefType or ValueType.
