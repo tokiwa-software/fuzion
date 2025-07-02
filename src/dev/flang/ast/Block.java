@@ -331,8 +331,7 @@ public class Block extends AbstractBlock
     Expr resExpr = removeResultExpression();
     if (resExpr == null && r.resultType().isAssignableFromWithoutBoxing(Types.resolved.t_unit, context).yes())
       {
-        resExpr = new Call(pos(), FuzionConstants.UNIT_NAME)
-          .resolveTypes(res, context);
+        resExpr = Types.resolved.unitCall(res, context);
       }
     if (resExpr != null)
       {
@@ -387,7 +386,7 @@ public class Block extends AbstractBlock
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
-        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
+        _expressions.add(Types.resolved.unitCall(res, context));
       }
     return this;
   }
