@@ -37,11 +37,9 @@ import dev.flang.util.List;
 /**
  * A NormalType is a LibraryType that is not a type parameter.
  *
- * NYI: CLEANUP: split out into this-type and normal-type?
- *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NormalType extends LibraryType
+class NormalType extends LibraryType
 {
 
 
@@ -95,6 +93,9 @@ public class NormalType extends LibraryType
   {
     super(mod, at);
 
+    if (PRECONDITIONS) require
+      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType);
+
     this._feature = feature;
     this._typeKind = typeKind;
     this._generics = generics;
@@ -121,9 +122,6 @@ public class NormalType extends LibraryType
   @Override
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
-    if (PRECONDITIONS) require
-      (isNormalType());
-
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
 
@@ -148,8 +146,6 @@ public class NormalType extends LibraryType
   @Override
   public List<AbstractType> generics()
   {
-    if (PRECONDITIONS) require
-      (isNormalType());
     return _generics;
   }
 
@@ -166,9 +162,6 @@ public class NormalType extends LibraryType
   @Override
   public AbstractType outer()
   {
-    // NYI: UNDER DEVELOPMENT:
-    // if (PRECONDITIONS)
-    //   require(isNormalType());
     return _outer;
   }
 
@@ -178,11 +171,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        result = isRef()
-          ? this
-          : isThisType()
-          ? new NormalType(_libModule, _at, _feature, TypeKind.RefType, _feature.generics().asActuals(), _feature.outer().selfType().asThis())
-          : new NormalType(_libModule, _at, _feature, TypeKind.RefType, _generics, _outer);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.RefType, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -191,8 +180,6 @@ public class NormalType extends LibraryType
   @Override
   public AbstractType asValue()
   {
-    if (PRECONDITIONS) require
-      (isNormalType());
     var result = _asValue;
     if (result == null)
       {
@@ -208,13 +195,13 @@ public class NormalType extends LibraryType
     var result = _asThis;
     if (result == null)
       {
-        if (isThisType() || feature().isUniverse())
+        if (feature().isUniverse())
           {
             result = this;
           }
         else
           {
-            result = new NormalType(_libModule, _at, _feature, TypeKind.ThisType, _generics, _outer);
+            result = new ThisType(_libModule, _at, _feature);
           }
         _asThis = result;
       }

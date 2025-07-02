@@ -41,7 +41,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class GenericType extends LibraryType
+class GenericType extends LibraryType
 {
 
 

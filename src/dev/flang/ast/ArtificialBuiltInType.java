@@ -35,7 +35,7 @@ package dev.flang.ast;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ArtificialBuiltInType extends ResolvedNormalType
+class ArtificialBuiltInType extends ResolvedNormalType
 {
 
 

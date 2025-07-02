@@ -2732,7 +2732,7 @@ public class Call extends AbstractCall
     if (_type != null && _type != Types.t_ERROR)
       {
         var o = _type;
-        while (o != null && !o.isGenericArgument())
+        while (o != null && o.isNormalType())
           {
             o = o.outer();
             if (o != null && o.isRef() && !o.feature().isRef())

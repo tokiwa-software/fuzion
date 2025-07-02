@@ -37,7 +37,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ResolvedParametricType extends ResolvedType
+class ResolvedParametricType extends ResolvedType
 {
 
 

@@ -34,7 +34,7 @@ import dev.flang.util.List;
 /**
  * A this-type refers to the outer instance of its feature.
  */
-public class ThisType extends ResolvedType {
+class ThisType extends ResolvedType {
 
 
   /*----------------------------  fields  ----------------------------*/
@@ -118,6 +118,10 @@ public class ThisType extends ResolvedType {
   @Override
   public AbstractType asRef()
   {
+    // NYI: CLEANUP: isAssignableFrom should create the ref-type itself
+    if (PRECONDITIONS) require
+      (Thread.currentThread().getStackTrace()[2].getMethodName().equals("isAssignableFrom"));
+
     return ResolvedNormalType
       .create(
         _feature.generics().asActuals(),
