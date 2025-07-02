@@ -36,8 +36,22 @@ import dev.flang.util.List;
  */
 public class ThisType extends ResolvedType {
 
+
+  /*----------------------------  fields  ----------------------------*/
+
+
+  /**
+   * The feature describing the this-type
+   */
   private final AbstractFeature _feature;
 
+
+  /*----------------------------  constructors  ----------------------------*/
+
+
+  /**
+   * @param feature the feature describing the this-type
+   */
   public ThisType(AbstractFeature feature)
   {
     if (PRECONDITIONS) require
@@ -46,12 +60,25 @@ public class ThisType extends ResolvedType {
     _feature = feature;
   }
 
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The feature backing the type.
+   */
   @Override
   protected AbstractFeature backingFeature()
   {
     return _feature;
   }
 
+
+  /**
+   * For a normal type, this is the list of actual type parameters given to the type.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   */
   @Override
   public List<AbstractType> generics()
   {
@@ -59,6 +86,12 @@ public class ThisType extends ResolvedType {
     throw new UnsupportedOperationException("Unimplemented method 'generics'");
   }
 
+
+  /**
+   * The outer of this type. May be null.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   */
   @Override
   public AbstractType outer()
   {
@@ -66,12 +99,22 @@ public class ThisType extends ResolvedType {
     return Types.resolved.universe.selfType();
   }
 
+
+  /**
+   * The mode of the type: ThisType, RefType or ValueType.
+   */
   @Override
   public TypeKind kind()
   {
     return TypeKind.ThisType;
   }
 
+
+  /**
+   * This type as a reference.
+   *
+   * Requires !isGenericArgument().
+   */
   @Override
   public AbstractType asRef()
   {
@@ -84,6 +127,12 @@ public class ThisType extends ResolvedType {
         TypeKind.RefType);
   }
 
+
+  /**
+   * This type as a value.
+   *
+   * Requires !isGenericArgument().
+   */
   @Override
   public AbstractType asValue()
   {
@@ -91,12 +140,25 @@ public class ThisType extends ResolvedType {
     throw new UnsupportedOperationException("Unimplemented method 'asValue'");
   }
 
+
+  /**
+   * Return this type as a this-type, a type denoting the
+   * instance of this type in the current context.
+   *
+   * Requires that this is resolved and !isGenericArgument().
+   */
   @Override
   public AbstractType asThis()
   {
     return this;
   }
 
+
+  /**
+   * traverse a resolved type collecting all features this type uses.
+   *
+   * @param s the features that have already been found
+   */
   @Override
   protected void usedFeatures(Set<AbstractFeature> s)
   {
