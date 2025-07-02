@@ -601,10 +601,10 @@ class LibraryOut extends ANY
           }
         else
           {
-            _data.writeInt(t.isThisType() ? 0 : t.generics().size());
+            _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
             _data.writeOffset(t.feature());
             _data.writeByte(t.kind().num);
-            if (!t.isThisType())
+            if (t.isNormalType())
               {
                 for (var gt : t.generics())
                   {

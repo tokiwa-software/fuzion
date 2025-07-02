@@ -329,7 +329,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (!isGenericArgument() && !isThisType())
+    else if (isNormalType())
       {
         for (var t: generics())
           {
@@ -347,6 +347,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Is the type a _normal_ type, i.e. value or ref-type with generics and outer?
+   */
+  public boolean isNormalType()
+  {
+    switch (kind()) {
+      case RefType:
+      case ValueType:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+
+  /**
    * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
    *
    * @param exceptFirst if true, the first generic argument may be
@@ -360,7 +375,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = true;
       }
-    else if (!isGenericArgument() && !isThisType())
+    else if (isNormalType())
       {
         for (var t: generics())
           {
@@ -531,17 +546,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private boolean isChoiceMatch(AbstractType actual, Context context)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument() && feature() != null || Errors.any());
+      (isChoice());
 
     boolean result = false;
-    if (!isGenericArgument() && !isRef() && feature().isChoice())
+    for (var t : choiceGenerics(context))
       {
-        for (var t : choiceGenerics(context))
-          {
-            if (CHECKS) check
-              (Errors.any() || t != null);
-            result = result || t != null && t.isAssignableFromWithoutBoxing(actual, context).yes();
-          }
+        if (CHECKS) check
+          (Errors.any() || t != null);
+        result = result || t != null && t.isAssignableFromWithoutBoxing(actual, context).yes();
       }
     return result;
   }
@@ -1529,7 +1541,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           isGenericArgument() &&  other.isGenericArgument() ?  0 :
           isGenericArgument() && !other.isGenericArgument() ? -1 :
           !isGenericArgument() && other.isGenericArgument() ? +1 : feature().compareTo(other.feature());
-        if (result == 0 && !isGenericArgument() && !isThisType() && !other.isThisType())
+        if (result == 0 && isNormalType() && other.isNormalType())
           {
             if (generics().size() != other.generics().size())  // this may happen for open generics lists
               {
@@ -2061,7 +2073,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType applyToGenericsAndOuter(java.util.function.Function<AbstractType, AbstractType> f)
   {
     var result = this;
-    if (!isGenericArgument() && !isThisType())
+    if (isNormalType())
       {
         var g = generics();
         var ng = g.map(f);
@@ -2263,7 +2275,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType checkConstraints(Context context)
   {
     var result = this;
-    if (result != Types.t_ERROR && !isGenericArgument() && !isThisType())
+    if (result != Types.t_ERROR && isNormalType())
       {
         if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null))
           {
