@@ -1716,6 +1716,7 @@ public class Call extends AbstractCall
             if (t != null && t.isFunctionTypeExcludingLazy())
               {
                 var a = resultExpression(actual);
+                a = a == null ? new ParsedCall(new ParsedName(actual.posOfLast(), FuzionConstants.UNIT_NAME)) : a;
                 Expr l = a.propagateExpectedTypeForPartial(res, context, t);
                 if (l != a)
                   {
