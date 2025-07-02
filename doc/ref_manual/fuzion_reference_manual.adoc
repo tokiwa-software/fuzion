@@ -372,6 +372,20 @@ include::rule.adoc[]
 :RULE_ID: CHOICE_RESULT
 include::rule.adoc[]
 
+== Type System
+
+:RULE_SRC: src/dev/flang/ast/AbstractType.java
+:RULE_ID: TYPE_SYSTEM_ASSIGNABLE_FROM
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/ast/AbstractType.java
+:RULE_ID: TYPE_SYSTEM_UNION
+include::rule.adoc[]
+
+
+[appendix]
+
+
 == Semantics
 
 CAUTION: *NYI*: Text Missing
