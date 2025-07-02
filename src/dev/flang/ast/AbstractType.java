@@ -351,13 +351,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isNormalType()
   {
-    switch (kind()) {
-      case RefType:
-      case ValueType:
-        return true;
-      default:
-        return false;
-    }
+    return switch (kind())
+      {
+      case RefType, ValueType -> true;
+      default -> false;
+      };
   }
 
 
