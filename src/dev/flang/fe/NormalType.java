@@ -32,7 +32,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -40,7 +39,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NormalType extends LibraryType
+class NormalType extends LibraryType
 {
 
 

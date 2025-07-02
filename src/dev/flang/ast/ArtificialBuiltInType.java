@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -36,7 +35,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ArtificialBuiltInType extends ResolvedNormalType
+class ArtificialBuiltInType extends ResolvedNormalType
 {
 
 
