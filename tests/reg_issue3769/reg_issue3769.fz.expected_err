@@ -12,6 +12,6 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'io.Out' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 one error.

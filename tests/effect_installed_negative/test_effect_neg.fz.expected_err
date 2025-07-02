@@ -61,7 +61,7 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.e' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 
 --CURDIR--/test_effect_neg.fz:44:17: error 2: Failed to verify that effect 'test_effect_neg.f' is installed in current environment.
@@ -126,7 +126,7 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.f' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 
 --CURDIR--/test_effect_neg.fz:45:17: error 3: Failed to verify that effect 'test_effect_neg.g' is installed in current environment.
@@ -191,7 +191,7 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.g' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 
 --CURDIR--/test_effect_neg.fz:47:22: error 4: Failed to verify that effect 'test_effect_neg.b' is installed in current environment.
@@ -229,7 +229,7 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.b' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 
 --CURDIR--/test_effect_neg.fz:48:22: error 5: Failed to verify that effect 'test_effect_neg.c' is installed in current environment.
@@ -267,7 +267,7 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.c' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 
 --CURDIR--/test_effect_neg.fz:46:22: error 6: Failed to verify that effect 'test_effect_neg.a' is installed in current environment.
@@ -305,7 +305,7 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.a' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 
 --CURDIR--/test_effect_neg.fz:49:22: error 7: Failed to verify that effect 'test_effect_neg.d' is installed in current environment.
@@ -401,6 +401,6 @@ effect environment '--empty--' at program entry
 
 To fix this, you should make sure that an effect for type 'test_effect_neg.d' is instated along all call paths to this effect use.
 
-Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will incease the analysis accuracy for effects, but may take a long time.
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 7 errors.
