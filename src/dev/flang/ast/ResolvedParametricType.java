@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -38,7 +37,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ResolvedParametricType extends ResolvedType
+class ResolvedParametricType extends ResolvedType
 {
 
 
