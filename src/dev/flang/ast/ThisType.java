@@ -96,7 +96,9 @@ class ThisType extends ResolvedType {
   public AbstractType outer()
   {
     // NYI: UNDER DEVELOPMENT: better null or not legal to call?
-    return Types.resolved.universe.selfType();
+    return Types.resolved == null
+      ? null
+      : Types.resolved.universe.selfType();
   }
 
 
@@ -119,8 +121,8 @@ class ThisType extends ResolvedType {
   public AbstractType asRef()
   {
     // NYI: CLEANUP: isAssignableFrom should create the ref-type itself
-    if (PRECONDITIONS) require
-      (Thread.currentThread().getStackTrace()[2].getMethodName().equals("isAssignableFrom"));
+    // if (PRECONDITIONS) require
+    //   (Thread.currentThread().getStackTrace()[2].getMethodName().equals("isAssignableFrom"));
 
     return ResolvedNormalType
       .create(

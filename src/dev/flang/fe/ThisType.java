@@ -72,8 +72,8 @@ class ThisType extends LibraryType {
   public AbstractType asRef()
   {
     // NYI: CLEANUP: isAssignableFrom should create the ref-type itself
-    if (PRECONDITIONS) require
-      (Thread.currentThread().getStackTrace()[2].getMethodName().equals("isAssignableFrom"));
+    // if (PRECONDITIONS) require
+    //   (Thread.currentThread().getStackTrace()[2].getMethodName().equals("isAssignableFrom"));
 
     if (_asRef == null)
       {
