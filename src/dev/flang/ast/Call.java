@@ -1387,7 +1387,12 @@ public class Call extends AbstractCall
             AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
             t = Types.t_ERROR;
           }
-        else if(tt.generics().stream().anyMatch(g -> g.isOpenGeneric()))
+        else if (tt.isThisType())
+          {
+            // NYI: UNDER DEVELOPMENT: better error for this-type target
+            AstErrors.selectorRange(pos(), 0, _calledFeature, _name, _select, AbstractCall.NO_GENERICS);
+          }
+        else if (tt.generics().stream().anyMatch(g -> g.isOpenGeneric()))
           {
             var types = tt.generics().stream().filter(g -> !g.isOpenGeneric()).collect(List.collector());
             AstErrors.selectorRange(pos(), types.size(), _calledFeature, _name, _select, types);
@@ -1463,7 +1468,7 @@ public class Call extends AbstractCall
     else if (_calledFeature.isOuterRef())
       {
         var o = t.feature().outer();
-        t = o == null || o.isUniverse() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
+        t = o == null || o.isUniverse() || t.isThisType() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
       }
     else if (_calledFeature.isConstructor())
       {  /* specialize t for the target type here */
@@ -2020,12 +2025,15 @@ public class Call extends AbstractCall
           {
             for (int i=0; i < formalType.generics().size(); i++)
               {
-                if (i < actualType.generics().size())
+                var g = actualType.isThisType()
+                  ? actualType.feature().generics().asActuals()
+                  : actualType.generics();
+                if (i < g.size())
                   {
                     inferGeneric(res,
                                  context,
                                  formalType.generics().get(i),
-                                 actualType.generics().get(i),
+                                 g.get(i),
                                  pos, conflict, foundAt);
                   }
               }
@@ -2724,7 +2732,7 @@ public class Call extends AbstractCall
     if (_type != null && _type != Types.t_ERROR)
       {
         var o = _type;
-        while (o != null && !o.isGenericArgument())
+        while (o != null && o.isNormalType())
           {
             o = o.outer();
             if (o != null && o.isRef() && !o.feature().isRef())
