@@ -502,7 +502,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = YesNo.fromBool(target_type.isChoiceMatch(actual_type, context));
       }
-    // NYI: UNDER DEVELOPMENT: probably unsound!
+    // NYI: UNDER DEVELOPMENT: probably unsound! see also isAssignableFrom
     if (result.no() && isChoice() && actual.isChoice() && (isThisType() || actual.isThisType()))
       {
         result = YesNo.fromBool(asThis().compareTo(actual.asThis()) == 0);

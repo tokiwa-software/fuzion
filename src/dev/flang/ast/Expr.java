@@ -670,7 +670,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
     // Case 1.1: types are equal, no tagging necessary
     // NYI: BUG: soundness issue?
-    else if(value.type().isChoice() && frmlT.asThis().compareTo(value.type().asThis()) == 0)
+    else if(value.type().isChoice() &&
+            (frmlT.isThisType() || value.type().isThisType()) &&
+            frmlT.asThis().compareTo(value.type().asThis()) == 0)
       {
         return value;
       }
