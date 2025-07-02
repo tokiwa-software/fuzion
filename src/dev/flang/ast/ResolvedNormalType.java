@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -67,7 +66,7 @@ public class ResolvedNormalType extends ResolvedType
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  final List<AbstractType> _unresolvedGenerics;
+  private final List<AbstractType> _unresolvedGenerics;
   public final List<AbstractType> unresolvedGenerics() { return _unresolvedGenerics; }
 
 
