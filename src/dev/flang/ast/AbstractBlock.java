@@ -157,6 +157,16 @@ public abstract class AbstractBlock extends Expr
   }
 
 
+  @Override
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
+  {
+    var a = resultExpression();
+    return a == null
+      ? super.propagateExpectedTypeForPartial(res, context, expectedType)
+      : a.propagateExpectedTypeForPartial(res, context, expectedType);
+  }
+
+
   /**
    * resultExpression returns the last non-NOP expression of this block if it is
    * an expression, null if the block is empty or the last non-NOP expression is

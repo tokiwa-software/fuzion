@@ -817,7 +817,7 @@ public class Feature extends AbstractFeature
                  List<AbstractCall> i,
                  Contract c,
                  Impl p,
-                 List<AbstractType> effects)
+                 List<AbstractType> effects) // NYI: UNDER DEVELOPMENT: effects
   {
     if (PRECONDITIONS) require
       (pos != null,
