@@ -93,6 +93,9 @@ class NormalType extends LibraryType
   {
     super(mod, at);
 
+    if (PRECONDITIONS) require
+      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType);
+
     this._feature = feature;
     this._typeKind = typeKind;
     this._generics = generics;
@@ -116,11 +119,9 @@ class NormalType extends LibraryType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
+  @Override
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
-    if (PRECONDITIONS) require
-      (!isGenericArgument());
-
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
 
@@ -142,6 +143,7 @@ class NormalType extends LibraryType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
+  @Override
   public List<AbstractType> generics()
   {
     return _generics;
@@ -157,12 +159,13 @@ class NormalType extends LibraryType
     return _typeKind;
   }
 
+  @Override
   public AbstractType outer()
   {
     return _outer;
   }
 
-
+  @Override
   public AbstractType asRef()
   {
     var result = _asRef;
@@ -174,6 +177,7 @@ class NormalType extends LibraryType
     return result;
   }
 
+  @Override
   public AbstractType asValue()
   {
     var result = _asValue;
@@ -185,18 +189,19 @@ class NormalType extends LibraryType
     return result;
   }
 
+  @Override
   public AbstractType asThis()
   {
     var result = _asThis;
     if (result == null)
       {
-        if (isThisType())
+        if (feature().isUniverse())
           {
             result = this;
           }
         else
           {
-            result = new NormalType(_libModule, _at, _feature, TypeKind.ThisType, _generics, _outer);
+            result = new ThisType(_libModule, _at, _feature);
           }
         _asThis = result;
       }

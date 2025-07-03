@@ -146,11 +146,12 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g)
+       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
+       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
        /* NYI: Types.resolved == null
          || f.compareTo(Types.resolved.f_void) != 0*/);
 
-    this._generics = ((g == null) || g.isEmpty()) ? UnresolvedType.NONE : g;
+    this._generics = g == null || g.isEmpty() ? UnresolvedType.NONE : g;
     this._generics.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
 
@@ -200,7 +201,8 @@ public class ResolvedNormalType extends ResolvedType
     if (PRECONDITIONS) require
       (kind() != original.kind(),
        Types.resolved == null
-         || !original.isVoid()
+         || !original.isVoid(),
+       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
       );
 
     this._typeKind           = typeKind;
@@ -379,14 +381,14 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asThis()
   {
     AbstractType result = this;
-    if (!isThisType() && this != Types.t_ERROR && !feature().isUniverse())
+    if (isNormalType() && this != Types.t_ERROR && !feature().isUniverse())
       {
-        result = ResolvedNormalType.create(this, TypeKind.ThisType);
+        result = new ThisType(_feature);
       }
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_ERROR || feature().isUniverse() || result.isThisType(),
-       !isThisType() || result == this);
+       isNormalType() || result == this);
 
     return result;
   }
@@ -399,7 +401,7 @@ public class ResolvedNormalType extends ResolvedType
   public AbstractType asValue()
   {
     if (PRECONDITIONS) require
-      (!isThisType());
+      (isNormalType());
 
     AbstractType result = this;
     if (!isValue() && this != Types.t_ERROR)

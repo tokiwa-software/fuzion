@@ -520,9 +520,10 @@ public class LibraryModule extends Module implements MirModule
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, feature,
-                                    TypeKind.fromInt(typeValRefOrThis(at)),
-                                    generics, outer);
+            var tk = TypeKind.fromInt(typeValRefOrThis(at));
+            result = tk == TypeKind.ThisType
+              ? new ThisType(this, at, feature)
+              : new NormalType(this, at, feature, tk, generics, outer);
           }
         _libraryTypes.put(at, result);
       }
