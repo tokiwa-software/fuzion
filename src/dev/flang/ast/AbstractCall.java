@@ -423,7 +423,7 @@ public abstract class AbstractCall extends Expr
    */
   private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractFeature f)
   {
-    return f == calledFeature()
+    return calledFeature().inheritsFrom(f)
       ? actualTypeParameters()
       : openGenericsFor(res, context, f, target().type());
   }
@@ -441,7 +441,7 @@ public abstract class AbstractCall extends Expr
       (tt != null);
 
     var x = tt.selfOrConstraint(res, context);
-    return f == x.feature()
+    return x.feature().inheritsFrom(f)
       ? x.generics()
       : openGenericsFor(res, context, f, tt.outer());
   }
