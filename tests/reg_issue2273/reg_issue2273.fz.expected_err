@@ -7,10 +7,14 @@ Callchain that lead to this point:
 effect environment '--empty--' for call to 'mutate.type.from_env' at {base.fum}/mutate/array.fz:106:5:
     LM.env.array length data unit
 ----^^^^^^
-effect environment '--empty--' for call to '(mutate.type.array.type door).new#3 mutate' at --CURDIR--/reg_issue2273.fz:33:6:
+effect environment '--empty--' for call to '(mutate.type.array.type door).new#3 mutate' at --CURDIR--/reg_issue2273.fz:34:6:
 d := (mutate.array door).new mutate 100 closed
 -----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
+
+To fix this, you should make sure that an effect for type 'mutate' is instated along all call paths to this effect use.
+
+Alternatively, you might want to try setting env variable 'dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true'.  This will increase the analysis accuracy for effects, but may take a long time.
 
 one error.
