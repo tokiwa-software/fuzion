@@ -158,6 +158,59 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
+   * Try to perform partial application such that this expression matches
+   * {@code expectedType}.  Note that this may happen twice:
+   *
+   * 1. during RESOLVING_DECLARATIONS phase of outer when resolving arguments to
+   *    a call such as {@code l.map +1}. In this case, expectedType may be a function
+   *    type {@code Function R A} with generic arguments not yet replaced by actual
+   *    arguments, in particular the result type {@code R} is unknown since it is the
+   *    result type of this expression.
+   *
+   * 2. during TYPES_INFERENCING phase when the target variable's type is fully
+   *    resolved and this gets propagated to this expression.
+   *
+   * Note that this does not perform resolveTypes on the results since that
+   * would be too early during 1. but it is required in 2.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @param expectedType the expected type.
+   */
+  @Override
+  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
+  {
+    var a = resultExpression();
+    return a == null
+      ? super.propagateExpectedTypeForPartial(res, context, expectedType)
+      : replacedResultExpression(a.propagateExpectedTypeForPartial(res, context, expectedType));
+  }
+
+
+  /**
+   * create a new block just like this but with a
+   * replaced result expression.
+   *
+   * @param newResultExpression
+   * @return
+   */
+  private Expr replacedResultExpression(Expr newResultExpression)
+  {
+    if (PRECONDITIONS) require
+      (this.resultExpressionIndex() >= 0);
+
+    var l = _expressions
+      .take(resultExpressionIndex());
+    l.add(newResultExpression);
+    return new Block(l);
+
+  }
+
+
+  /**
    * resultExpression returns the last non-NOP expression of this block if it is
    * an expression, null if the block is empty or the last non-NOP expression is
    * not an Expr.

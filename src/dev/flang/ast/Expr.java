@@ -537,6 +537,36 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
+    return expectedType.isFunctionType() && expectedType.arity() == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType()
+      ? new Function(pos(), NO_EXPRS, reset())
+      : this;
+  }
+
+
+  /**
+   * NYI: UNDER DEVELOPMENT: better throw away completly and reparse?
+   *
+   * resets all features in this expression so that they can have _new_ outers.
+   */
+  private Expr reset()
+  {
+    visit(new FeatureVisitor() {
+      @Override
+      public Expr action(Feature f, AbstractFeature outer)
+      {
+        return new Feature(f.pos(),
+                           f.visibility(),
+                           f._modifiers,
+                           f._returnType,
+                           f._qname,
+                           f.arguments(),
+                           f.inherits(),
+                           f.contract(),
+                           f.impl(),
+                           null
+                          );
+      }
+    }, null);
     return this;
   }
 
