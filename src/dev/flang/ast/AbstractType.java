@@ -1507,7 +1507,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        (other instanceof ResolvedType));
 
     int result = compareToIgnoreOuter(other);
-    if (result == 0 && isNormalType())
+    if (result == 0 && isNormalType() && !isChoice())
       {
         var to = this .outer();
         var oo = other.outer();
