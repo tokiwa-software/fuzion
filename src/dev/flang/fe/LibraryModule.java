@@ -2470,6 +2470,18 @@ SourceFile
     throw new UnsupportedOperationException("Unimplemented method 'data'");
   }
 
+
+  /**
+   * Is this module the same as the provided one or does this module depend on the provided one?
+   *
+   * @param lm the LibraryModule against which this module should be checked
+   * @return true iff they are the same or this module depends on the provided one
+   */
+  public boolean sameOrDependent(LibraryModule lm)
+  {
+    return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
+  }
+
 }
 
 /* end of file */
