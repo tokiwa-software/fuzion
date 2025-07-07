@@ -28,7 +28,7 @@ public Message ref is
   module version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
 
   # the start line of the message, for requests it is the request line, for responses the status line
-  module start_line String => abstract
+  public start_line String => abstract
 
   # header fields with all lower case
   public fields http.case_insensitive_map => abstract
