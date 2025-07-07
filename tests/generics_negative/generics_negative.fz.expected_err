@@ -92,45 +92,45 @@ expected 3 generic arguments for 'A, B, C'
 found 4: 'i32, i32, i32, i32'.
 
 
---CURDIR--/generics_negative.fz:140:18: error 12: Type not found
-    public hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
------------------^^^^^^
+--CURDIR--/generics_negative.fz:140:11: error 12: Type not found
+    hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
+----------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.hjkl'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:142:20: error 13: Type not found
-    public asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
--------------------^^^^^^
+--CURDIR--/generics_negative.fz:142:13: error 13: Type not found
+    asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
+------------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.asdfg1'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:143:20: error 14: Type not found
-    public asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
--------------------^^^^^^
+--CURDIR--/generics_negative.fz:143:13: error 14: Type not found
+    asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
+------------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.asdfg2'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:144:18: error 15: Type not found
-    public uiop (qwerty i32).uiop := (qwerty i32).uiop
------------------^^^^^^
+--CURDIR--/generics_negative.fz:144:11: error 15: Type not found
+    uiop (qwerty i32).uiop := (qwerty i32).uiop
+----------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.uiop'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:145:18: error 16: Type not found
-    public qwert qwerty i32 := qwerty i32
------------------^^^^^^
+--CURDIR--/generics_negative.fz:145:11: error 16: Type not found
+    qwert qwerty i32 := qwerty i32
+----------^^^^^^
 Type 'qwerty' was not found, no corresponding feature nor formal type parameter exists
 Type that was not found: 'qwerty'
 in feature: 'generics_negative.features_from_separate_source_file.qwert'
@@ -155,9 +155,9 @@ in feature: 'generics_negative.inheriting_type_parameter.child.g2'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:140:50: error 19: Could not find called feature
-    public hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
--------------------------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:140:43: error 19: Could not find called feature
+    hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
+------------------------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
@@ -171,25 +171,25 @@ Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty'
 
 
---CURDIR--/generics_negative.fz:142:46: error 21: Could not find called feature
-    public asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
----------------------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:142:39: error 21: Could not find called feature
+    asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
+--------------------------------------^^^^^^
 Feature not found: 'qwerty' (no arguments)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty'
 
 
---CURDIR--/generics_negative.fz:143:47: error 22: Could not find called feature
-    public asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
-----------------------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:143:40: error 22: Could not find called feature
+    asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
+---------------------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
 
 
---CURDIR--/generics_negative.fz:144:39: error 23: Could not find called feature
-    public uiop (qwerty i32).uiop := (qwerty i32).uiop
---------------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:144:32: error 23: Could not find called feature
+    uiop (qwerty i32).uiop := (qwerty i32).uiop
+-------------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
@@ -236,9 +236,9 @@ in feature: 'generics_negative.inheriting_type_parameter.child.g3'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:145:32: error 27: Could not find called feature
-    public qwert qwerty i32 := qwerty i32
--------------------------------^^^^^^
+--CURDIR--/generics_negative.fz:145:25: error 27: Could not find called feature
+    qwert qwerty i32 := qwerty i32
+------------------------^^^^^^
 Feature not found: 'qwerty' (one argument)
 Target feature: 'generics_negative.features_from_separate_source_file'
 In call: 'qwerty i32'
@@ -402,28 +402,28 @@ Declared at {base.fum}/Function.fz:35:10:
     x2 (A i32 i32   ).B String bool := (A i64 bool).B String bool true  # 45. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x2'
-expected formal type: '(generics_negative.this.outerGenerics.this.A i32 i32).B String bool'
-actual type found   : '(generics_negative.this.outerGenerics.this.A i64 bool).B String bool'
-assignable to       : '(generics_negative.this.outerGenerics.this.A i64 bool).B String bool'
+expected formal type: '(generics_negative.outerGenerics.this.A i32 i32).B String bool'
+actual type found   : '(generics_negative.outerGenerics.this.A i64 bool).B String bool'
+assignable to       : '(generics_negative.outerGenerics.this.A i64 bool).B String bool'
 for value assigned  : '(A i64 bool).B String bool true'
 To solve this you could:
-  • make  '(generics_negative.this.outerGenerics.this.A i32 i32).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'generics_negative.outerGenerics.x2' to '(generics_negative.this.outerGenerics.this.A i64 bool).B String bool', or
-  • convert the type of the assigned value to '(generics_negative.this.outerGenerics.this.A i32 i32).B String bool'.
+  • make  '(generics_negative.outerGenerics.this.A i32 i32).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'generics_negative.outerGenerics.x2' to '(generics_negative.outerGenerics.this.A i64 bool).B String bool', or
+  • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 i32).B String bool'.
 
 
 --CURDIR--/generics_negative.fz:160:5: error 43: Incompatible types in assignment
     x3 (A i32 String).B String bool := x1                               # 46. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x3'
-expected formal type: '(generics_negative.this.outerGenerics.this.A i32 String).B String bool'
-actual type found   : '(generics_negative.this.outerGenerics.this.A i32 bool).B String bool'
-assignable to       : '(generics_negative.this.outerGenerics.this.A i32 bool).B String bool'
+expected formal type: '(generics_negative.outerGenerics.this.A i32 String).B String bool'
+actual type found   : '(generics_negative.outerGenerics.this.A i32 bool).B String bool'
+assignable to       : '(generics_negative.outerGenerics.this.A i32 bool).B String bool'
 for value assigned  : 'x1'
 To solve this you could:
-  • make  '(generics_negative.this.outerGenerics.this.A i32 String).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'generics_negative.outerGenerics.x3' to '(generics_negative.this.outerGenerics.this.A i32 bool).B String bool', or
-  • convert the type of the assigned value to '(generics_negative.this.outerGenerics.this.A i32 String).B String bool'.
+  • make  '(generics_negative.outerGenerics.this.A i32 String).B String bool' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'generics_negative.outerGenerics.x3' to '(generics_negative.outerGenerics.this.A i32 bool).B String bool', or
+  • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 String).B String bool'.
 
 
 --CURDIR--/generics_negative.fz:176:9: error 44: Incompatible types when passing argument in a call

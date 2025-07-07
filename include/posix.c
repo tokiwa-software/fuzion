@@ -49,6 +49,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  // mkdir
 #include <sys/wait.h>
+#include <signal.h>
 #include <unistd.h>     // close
 #include <time.h>
 #include <assert.h>
@@ -58,6 +59,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include "fz.h"
+
+
+static_assert(SIGHUP == 1, "signal definition different than expected");
+static_assert(SIGINT == 2, "signal definition different than expected");
+static_assert(SIGQUIT == 3, "signal definition different than expected");
+static_assert(SIGILL == 4, "signal definition different than expected");
+static_assert(SIGTRAP == 5, "signal definition different than expected");
+static_assert(SIGABRT == 6, "signal definition different than expected");
+static_assert(SIGFPE == 8, "signal definition different than expected");
+static_assert(SIGKILL == 9, "signal definition different than expected");
+static_assert(SIGSEGV == 11, "signal definition different than expected");
+static_assert(SIGPIPE == 13, "signal definition different than expected");
+static_assert(SIGALRM == 14, "signal definition different than expected");
+static_assert(SIGTERM == 15, "signal definition different than expected");
+
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
@@ -105,7 +121,7 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
 }
 
 
-int fzE_dir_read(intptr_t * dir, void * result) {
+int fzE_dir_read(intptr_t * dir, int8_t * result) {
   errno = 0;
 
   DIR * dir1 = (DIR *)dir;
@@ -775,7 +791,7 @@ void * fzE_mtx_init() {
 #endif
 }
 
-int32_t fzE_mtx_lock(void *mtx) {
+int32_t fzE_mtx_lock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -783,7 +799,7 @@ int32_t fzE_mtx_lock(void *mtx) {
 #endif
 }
 
-int32_t fzE_mtx_trylock(void *mtx) {
+int32_t fzE_mtx_trylock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -791,7 +807,7 @@ int32_t fzE_mtx_trylock(void *mtx) {
 #endif
 }
 
-int32_t fzE_mtx_unlock(void *mtx) {
+int32_t fzE_mtx_unlock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -799,7 +815,7 @@ int32_t fzE_mtx_unlock(void *mtx) {
 #endif
 }
 
-void fzE_mtx_destroy(void *mtx) {
+void fzE_mtx_destroy(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
   // NYI: free(mtx);
@@ -816,7 +832,7 @@ void * fzE_cnd_init() {
 #endif
 }
 
-int32_t fzE_cnd_signal(void *cnd) {
+int32_t fzE_cnd_signal(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
 #else
@@ -824,7 +840,7 @@ int32_t fzE_cnd_signal(void *cnd) {
 #endif
 }
 
-int32_t fzE_cnd_broadcast(void *cnd) {
+int32_t fzE_cnd_broadcast(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
 #else
@@ -832,7 +848,7 @@ int32_t fzE_cnd_broadcast(void *cnd) {
 #endif
 }
 
-int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -840,7 +856,7 @@ int32_t fzE_cnd_wait(void *cnd, void *mtx) {
 #endif
 }
 
-void fzE_cnd_destroy(void *cnd) {
+void fzE_cnd_destroy(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_cond_destroy((pthread_cond_t *)cnd);
   // NYI: free(cnd);
@@ -878,7 +894,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
  * result[5] = sec
  * result[6] = nanosec;
  */
-void fzE_date_time(void * result)
+void fzE_date_time(int32_t * result)
 {
   struct timespec ts;
   struct tm ptm;
@@ -931,4 +947,9 @@ void * fzE_file_stderr(void) { return stderr; }
 int32_t fzE_file_flush(void * file)
 {
   return fflush(file) == 0 ? 0 : -1;
+}
+
+int fzE_send_signal(int64_t pid, int sig)
+{
+  return kill(pid, sig);
 }

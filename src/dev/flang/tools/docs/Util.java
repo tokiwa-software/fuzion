@@ -37,10 +37,8 @@ import java.util.stream.Collectors;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.fe.LibraryFeature;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.SourcePosition;
 
 public class Util
 {
@@ -80,7 +78,7 @@ public class Util
     var commentLines = new ArrayList<String>();
 
     // NYI: OPTIMIZATION: use lexer to retrieve comments
-    while (line > 0 && af.pos()._sourceFile.line(line).matches("^\\s*#.*"))
+    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
       {
         commentLines.add(af.pos()._sourceFile.line(line));
         line = line - 1;

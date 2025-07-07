@@ -21,6 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
+# Definitions of native functions
 
 gtk_application_window_new(gtkApplication Native_Ref) Native_Ref => native
 gtk_window_set_title(gtkWidget Native_Ref, c_str array u8) unit => native
@@ -32,6 +33,16 @@ g_application_run(app Native_Ref, argc i32, argv Native_Ref) i32 => native
 g_object_unref(app Native_Ref) unit => native
 
 
+# minimal example on how to use GTK from fuzion
+#
+# to run or compile use:
+#
+#     make jvm
+#
+# or
+#
+#     make c
+#
 gtk =>
 
   activate : Function unit Native_Ref Native_Ref is

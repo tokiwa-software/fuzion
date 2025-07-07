@@ -1690,7 +1690,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (!t1.isAssignableFromDirectly(t2) &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
+        else if (t1.isAssignableFromDirectly(t2).no() &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
                  !t2.isVoid() &&
                  !isLegalCovariantThisType(o, f, t1, t2, fixed))
           {
@@ -1706,7 +1706,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         if (CHECKS) check
           (Errors.any() || rt != Types.t_ERROR);
 
-        if (!Types.resolved.t_unit.isAssignableFromDirectly(rt) && rt != Types.t_ERROR)
+        if (Types.resolved.t_unit.isAssignableFromDirectly(rt).no() && rt != Types.t_ERROR)
           {
             AstErrors.constructorResultMustBeUnit(cod);
           }
@@ -1732,7 +1732,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkPreconditionVisibility(f);
     checkAbstractVisibility(f);
     checkDuplicateFeatures(f);
-    checkContractAccesses(f);
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
   }
@@ -2044,18 +2043,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               }
           }
       }
-  }
-
-
-  /**
-   * Check that code in contract does not access inner features apart from
-   * arguments, result field, outer refs or case fields (in case condition uses
-   * a {@code match}). Produce AstErrors if needed.
-   *
-   * @param f the feature whose contract should be checked.
-   */
-  private void checkContractAccesses(AbstractFeature f)
-  { //NYI: CLEANUP:  remove, has no effect.
   }
 
 

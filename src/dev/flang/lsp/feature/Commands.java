@@ -52,7 +52,6 @@ import com.google.gson.JsonPrimitive;
 
 import dev.flang.ast.AbstractMatch;
 import dev.flang.lsp.Config;
-import dev.flang.lsp.FuzionLanguageClient;
 import dev.flang.lsp.shared.ASTWalker;
 import dev.flang.lsp.shared.CaseConverter;
 import dev.flang.lsp.shared.Concurrency;
@@ -142,7 +141,7 @@ public enum Commands
               .type()
               .choiceGenerics()
               .stream()
-              .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFromDirectly(cg)))
+              .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFromDirectly(cg).yes()))
               .map(t -> indent + CaseConverter.toSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.label(t) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 

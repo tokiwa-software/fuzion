@@ -111,7 +111,7 @@ void * fzE_opendir(const char *pathname, int64_t * result);
  *
  * @return -1 on error, 0 on end reached, length of result on success
  */
-int fzE_dir_read(intptr_t * dir, void * result);
+int fzE_dir_read(intptr_t * dir, int8_t * result);
 
 /**
  * close directory
@@ -744,7 +744,7 @@ uint64_t fzE_unique_id(void);
  * result[5] = sec
  * result[6] = nanosec;
  */
-void fzE_date_time(void * result);
+void fzE_date_time(int32_t * result);
 
 
 /**
@@ -758,6 +758,8 @@ void * fzE_null(void);
  * @return 0 if p is NULL, -1 otherwise
  */
 int fzE_is_null(void * p);
+
+int fzE_send_signal(int64_t pid, int sig);
 
 
 #endif /* fz.h  */

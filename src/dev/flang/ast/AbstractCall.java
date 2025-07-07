@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -205,6 +206,316 @@ public abstract class AbstractCall extends Expr
     return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
   }
 
+
+  /**
+   * Is this expression a call to `type_as_value`?
+   */
+  @Override
+  boolean isTypeAsValueCall()
+  {
+    return calledFeature() == Types.resolved.f_type_as_value;
+  }
+
+
+  /**
+   * Convert a formal argument type in this call to the actual type defined by
+   * the target of this call and the actual type parameters given in this call.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param frmlT the formal type. Might contain Types.t_UNDEFINED since this is
+   * used during type resolution and type inference
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return the actual type applying actual type parameters known from the
+   * target of this call and actual type parameters given in this call. Result
+   * is interned.
+   */
+  AbstractType actualArgType(Resolution res, AbstractType frmlT, AbstractFeature arg, Context context)
+  {
+    if (PRECONDITIONS) require
+      (!frmlT.isOpenGeneric());
+
+    // NYI: CLEANUP: This is part of what is done in Call.adjustResultType, see comment there.
+    AbstractType result = adjustThisTypeForTarget(frmlT, true, arg, context);
+    result = targetTypeOrConstraint(res, context)
+      .actualType(result, context)
+      .applyTypePars(calledFeature(), actualTypeParameters());
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
+  /**
+   * Get the type of the target.  In case the target's type is a generic type
+   * parameter, return its constraint.
+   *
+   * @return the type of the target or null if unknown.
+   */
+  AbstractType targetTypeOrConstraint(Resolution res, Context context)
+  {
+    if (PRECONDITIONS) require
+      (target() != null);
+
+    var result = res == null
+      ? target().type()
+      : target().typeForInferencing();
+
+    result = result == null
+      ? null
+      : res == null
+      ? result.selfOrConstraint(context)
+      : result.selfOrConstraint(res, context);
+
+    if (POSTCONDITIONS) ensure
+      (result == null || !result.isGenericArgument());
+    return result;
+  }
+
+
+  /**
+   * Replace occurrences of this.type in formal arg or result type depending on
+   * the target of the call.
+   *
+   * @param t the formal type to be adjusted.
+   *
+   * @param arg true if {@code t} is the type of an argument, false if {@code t} is the result type
+   *
+   * @param calledOrArg the declared argument (if arg == true) or the called feature (otherwise).
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return a type derived from t where {@code this.type} is replaced by actual types
+   * from the call's target where this is possible.
+   */
+  AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
+  {
+    /**
+     * For a call {@code T.f} on a type parameter whose result type contains
+     * {@code this.type}, make sure we replace the implicit type parameter to
+     * {@code this.type}.
+     *
+     * example:
+     *
+     *   equatable is
+     *
+     *     type.equality(a, b equatable.this.type) bool is abstract
+     *
+     *   equals(T type : equatable, x, y T) => T.equality x y
+     *
+     * For the call {@code T.equality x y}, we must replace the formal argument type
+     * for {@code a} (and {@code b}) by {@code T}.
+     */
+    var target = target();
+    var tt = target().type();
+    if (target instanceof Call tc &&
+        tc.calledFeature().isTypeParameter() &&
+        !tt.isGenericArgument())
+      {
+        t = t.replace_type_parameter_used_for_this_type_in_cotype
+          (tt.feature(),
+           tc);
+      }
+    if (!calledFeature().isOuterRef())
+      {
+        var t0 = t;
+        var declF = calledFeature().outer();
+        if (!tt.isGenericArgument() && declF != tt.feature())
+          {
+            var heir = tt.feature();
+            t = t.replace_inherited_this_type(declF, heir,
+                                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
+          }
+        var inner = ResolvedNormalType.newType(calledFeature().selfType(),
+                                               target().type());
+        t = t.replace_this_type_by_actual_outer(inner,
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
+                                                context);
+      }
+    return t;
+  }
+
+
+  /**
+   * Helper routine for resolveFormalArgumentTypes to determine the actual type
+   * of a formal argument after inheritance and determination of actual type
+   * from the target type and generics provided to the call.
+   *
+   * The result will be stored in _resolvedFormalArgumentTypes[argnum..].
+   *
+   * @param res Resolution instance
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param argnum the number of this formal argument
+   *
+   * @param frml the formal argument
+   */
+  AbstractType[] resolveFormalArg(Resolution res, Context context, AbstractType[] rfat, int argnum, AbstractFeature frml)
+  {
+    int cnt = 1;
+    var frmlT = frml.resultTypeIfPresentUrgent(res, true);
+
+    var declF = calledFeature().outer();
+    var heir = target().type();
+    if (!heir.isGenericArgument() && declF != heir.feature())
+      {
+        var a = calledFeature().handDown(res, new AbstractType[] { frmlT }, heir.feature());
+        if (a.length != 1)
+          {
+            // Check that the number or args can only change for the
+            // last argument (when it is of an open generic type).  if
+            // it would change for other arguments, changing the
+            // _resolvedFormalArgumentTypes array would invalidate
+            // argnum for following arguments.
+            if (CHECKS) check
+              (Errors.any() || argnum == rfat.length - 1);
+            if (argnum != rfat.length -1)
+              {
+                a = new AbstractType[] { Types.t_ERROR }; /* do not change _resolvedFormalArgumentTypes array length */
+              }
+          }
+        rfat = addToResolvedFormalArgumentTypes(rfat, a, argnum);
+        cnt = a.length;
+      }
+    else
+      {
+        rfat[argnum] = frmlT;
+      }
+
+    // next, replace generics given in the target type and in this call
+    for (int i = 0; i < cnt; i++)
+      {
+        if (CHECKS) check
+          (Errors.any() || argnum + i <= rfat.length);
+
+        if (argnum + i < rfat.length)
+          {
+            frmlT = rfat[argnum + i];
+
+            if (frmlT.isOpenGeneric())
+              { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
+                var g = frmlT.genericArgument();
+                var frmlTs = g.replaceOpen(g.outer() == calledFeature()
+                                           ? actualTypeParameters()
+                                           : heir.selfOrConstraint(res, context).generics()); // see for example #1919
+                rfat = addToResolvedFormalArgumentTypes(rfat, frmlTs.toArray(new AbstractType[frmlTs.size()]), argnum + i);
+                i   = i   + frmlTs.size() - 1;
+                cnt = cnt + frmlTs.size() - 1;
+              }
+            else
+              {
+                rfat[argnum + i] = actualArgType(res, frmlT, frml, context);
+              }
+          }
+      }
+    return rfat;
+  }
+
+
+  /**
+   * Helper routine for resolveFormalArg and replaceGenericsInFormalArg to
+   * extend the _resolvedFormalArgumentTypes array.
+   *
+   * In case frml.resultType().isOpenGeneric(), this will call frml.select() for
+   * all the actual types the open generic is replaced by to make sure the
+   * corresponding features exist.
+   *
+   * @param a the new elements to add to _resolvedFormalArgumentTypes
+   *
+   * @param argnum index in _resolvedFormalArgumentTypes at which we add new
+   * elements
+   */
+  private AbstractType[] addToResolvedFormalArgumentTypes(AbstractType[] rfat, AbstractType[] a, int argnum)
+  {
+    var na = new AbstractType[rfat.length - 1 + a.length];
+    var j = 0;
+    for (var i = 0; i < rfat.length; i++)
+      {
+        if (i == argnum)
+          {
+            for (var at : a)
+              {
+                if (CHECKS) check
+                  (at != null);
+                na[j] = at;
+                j++;
+              }
+          }
+        else
+          {
+            na[j] = rfat[i];
+            j++;
+          }
+      }
+    return na;
+  }
+
+
+  /**
+   * For static type analysis: This gives the resolved formal argument types for
+   * the arguments of this call.  During type checking, it has to be checked
+   * that the actual arguments can be assigned to these types.
+   *
+   * The number of resolved formal arguments might be different to the number of
+   * formal arguments in case the last formal argument is of an open generic
+   * type.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   */
+  AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
+  {
+    // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
+
+    // wrap result in Array to make effectively final
+    var result = new AbstractType[][]{new AbstractType[0]};
+
+    if (!(this instanceof Call c) || c.calledFeatureKnown())
+      {
+        var fargs = calledFeature().valueArguments();
+        result[0] = fargs.size() == 0
+          ? UnresolvedType.NO_TYPES
+          : new AbstractType[fargs.size()];
+        Arrays.fill(result[0], Types.t_UNDEFINED);
+
+        int count = 0;
+        for (var frml : fargs)
+          {
+            int argnum = count;  // effectively final copy of count
+            frml.whenResolvedTypes
+              (() -> result[0] = resolveFormalArg(res, context, result[0], argnum, frml));
+            count++;
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result[0] != null);
+
+    return result[0];
+  }
+
+
+  /**
+   * For static type analysis: This gives the resolved formal argument types for
+   * the arguments of this call.  During type checking, it has to be checked
+   * that the actual arguments can be assigned to these types.
+   *
+   * The number of resolved formal arguments might be different to the number of
+   * formal arguments in case the last formal argument is of an open generic
+   * type.
+   *
+   */
+  public AbstractType[] formalArgumentTypes()
+  {
+    return resolvedFormalArgumentTypes(null, Context.NONE);
+  }
 
 
   /**

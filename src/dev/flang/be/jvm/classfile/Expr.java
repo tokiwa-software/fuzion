@@ -1207,7 +1207,20 @@ public abstract class Expr extends ByteCode
    */
   public static Expr stringconst(String s)
   {
-    return new LoadConst()
+    return stringconst(s, false);
+  }
+
+
+  /**
+   * Load a java.lang.String constant given by a Java string
+   *
+   * @param needsStackMapFrame output a StackMapFrame, sometimes needed since
+   * code might be unreachable, i.e. after a goto
+   */
+  public static Expr stringconst(String s, boolean needsStackMapFrame)
+  {
+    var label = new Label();
+    var strConst = new LoadConst()
       {
         public String toString() { return "String constant '" + s + "'"; }
         public JavaType type()   { return JAVA_LANG_STRING;              }
@@ -1215,10 +1228,22 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          if (needsStackMapFrame)
+            {
+              // save stack and locals at branch
+              smt.stacks.put(label._posFinal, clone(stack));
+              smt.locals.add(new Pair<>(label._posFinal, locals.clone()));
+
+              // add frames at branch and jump position.
+              smt.stackMapFrames.add(new StackMapFullFrame(smt, label._posFinal));
+            }
+
           stack.push(new VerificationType(type().className(), (cf)->cpEntry(cf).index()));
         }
       };
+    return label.andThen(strConst);
   }
+
 
   /**
    * Load a java.lang.String constant given by utf8 encoded bytes
@@ -1748,22 +1773,7 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos, Expr neg)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     Label lStart = new Label();
     Label lEnd   = new Label();
@@ -1901,24 +1911,34 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     return branch(bc, pos, UNIT);
+  }
+
+
+  /**
+   * Is bc an `if` instruction?
+   */
+  private static boolean isIfInstruction(byte bc)
+  {
+    return
+      bc == ClassFileConstants.O_ifeq      ||
+      bc == ClassFileConstants.O_ifne      ||
+      bc == ClassFileConstants.O_iflt      ||
+      bc == ClassFileConstants.O_ifge      ||
+      bc == ClassFileConstants.O_ifgt      ||
+      bc == ClassFileConstants.O_ifle      ||
+      bc == ClassFileConstants.O_if_icmpeq ||
+      bc == ClassFileConstants.O_if_icmpne ||
+      bc == ClassFileConstants.O_if_icmplt ||
+      bc == ClassFileConstants.O_if_icmpge ||
+      bc == ClassFileConstants.O_if_icmpgt ||
+      bc == ClassFileConstants.O_if_icmple ||
+      bc == ClassFileConstants.O_if_acmpeq ||
+      bc == ClassFileConstants.O_if_acmpne ||
+      bc == ClassFileConstants.O_ifnull    ||
+      bc == ClassFileConstants.O_ifnonnull;
   }
 
   public static Expr checkcast(JavaType type)

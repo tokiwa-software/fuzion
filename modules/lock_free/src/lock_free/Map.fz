@@ -471,7 +471,7 @@ is
       m := gcas_read p
       match m.data
         cn container_node =>
-          (flag, pos) := flagpos hash lev cn.bmp
+          flag, pos := flagpos hash lev cn.bmp
           if (cn.bmp & flag) != 0
             match cn[pos.as_i32]
               inode Indirection_Node =>
@@ -540,7 +540,7 @@ is
     m := gcas_read i
     match m.data
       cn container_node =>
-        (flag, pos) := flagpos (hash0 (hash k)) lev cn.bmp
+        flag, pos := flagpos (hash0 (hash k)) lev cn.bmp
         if (cn.bmp & flag) = 0
           not_found
         else
@@ -578,7 +578,7 @@ is
     m := gcas_read i
     match m.data
       cn container_node =>
-        (flag, pos) := flagpos (hash0 (hash k)) lev cn.bmp
+        flag, pos := flagpos (hash0 (hash k)) lev cn.bmp
         if (cn.bmp & flag) = 0
           ncn := (if cn.gen = i.gen then cn else renew cn i.gen).put (singleton_node k v) pos flag i.gen
           gcas i m ncn
@@ -620,7 +620,7 @@ is
     m := gcas_read i
     match m.data
       cn container_node =>
-        (flag, pos) := flagpos (hash0 (hash k)) lev cn.bmp
+        flag, pos := flagpos (hash0 (hash k)) lev cn.bmp
         if (cn.bmp & flag) = 0
           not_found
         else

@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fe.LibraryFeature;
@@ -273,8 +272,7 @@ public class Docs extends ANY
         return false;
       }
 
-    return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().isInternal()
+    return af.featureName().isInternal()
       || af.featureName().isNameless()
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()

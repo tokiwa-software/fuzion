@@ -56,4 +56,4 @@ public ffi is
 
 
 native_string_length(x Native_Ref) i32 => intrinsic
-native_array(T type, x Native_Ref, len i32) Array /* NYI: T */ => intrinsic
+native_array(T type, x Native_Ref, len i32) Array T => intrinsic

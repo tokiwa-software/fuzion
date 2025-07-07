@@ -31,20 +31,20 @@
 #
 # Ex. with these features
 #
-#   hello is
-#     say "Hello!"
+#     hello is
+#       say "Hello!"
 #
-#   say_and_inc(x i32) i32 =>
-#     say x
-#     x+1
+#     say_and_inc(x i32) i32 =>
+#       say x
+#       x+1
 #
 # the results can be ignored as follows
 #
-#   hello |> ignore
-#   (say_and_inc 42) |> ignore
-#   ignore hello
-#   ignore (say_and_inc 42)
-#   _ := hello
-#   _ := say_and_inc 42
+#     hello |> ignore
+#     (say_and_inc 42) |> ignore
+#     ignore hello
+#     ignore (say_and_inc 42)
+#     _ := hello
+#     _ := say_and_inc 42
 #
 public ignore(T type, x T) unit =>

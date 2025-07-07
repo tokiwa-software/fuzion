@@ -128,6 +128,7 @@ MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
 MOD_UUID              = $(BUILD_DIR)/modules/uuid.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
+MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -454,7 +455,8 @@ FZ_MODULES = \
 			$(MOD_NOM) \
 			$(MOD_UUID) \
 			$(MOD_CLANG) \
-			$(MOD_WOLFSSL)
+			$(MOD_WOLFSSL) \
+			$(MOD_JSON_ENCODE)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -702,6 +704,12 @@ $(MOD_WOLFSSL): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/wolfssl/src -na
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/wolfssl $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/wolfssl/src -saveModule=$@
+
+$(MOD_JSON_ENCODE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/json_encode/src -name "*.fz")
+	rm -rf $(@D)/json_encode
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/json_encode $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/json_encode/src -saveModule=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
@@ -1211,11 +1219,11 @@ $(BUILD_DIR)/generated/doc/stringEscapes.adoc: $(CLASS_FILES_PARSER)
 
 $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
-	asciidoctor-pdf $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REF_MANUAL_SOURCE)
+	asciidoctor-pdf --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REF_MANUAL_SOURCE)
 
 $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
-	asciidoctor $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
+	asciidoctor --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
 
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs

@@ -224,7 +224,7 @@ main =>
     .filter (x -> !x.is_blank)
     .as_array
 
-  (ok, skipped, failed) := results_content
+  ok, skipped, failed := results_content
     .reduce (0,0,0) (r, t)->
       if t.ends_with "ok"
         (r.0+1, r.1, r.2)
@@ -255,10 +255,10 @@ main =>
       .map x->"make $target -C $x"
       .as_string " && "
 
-    say "To re-recordord all failed tests, use this command:"
+    say "To re-record all failed tests, use this command:"
     say <| failed_tests
       .map x->x.split[0]
-      .map x->"make record_$target -C $x"
+      .map x->"make record -C $x" # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
       .as_string " && "
 
     exit 1

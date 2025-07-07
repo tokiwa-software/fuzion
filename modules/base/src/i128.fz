@@ -126,8 +126,9 @@ public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
 
   # arithmetic (signed) right shift
   # examples:
-  #   10..0 >> 127 = 1..1
-  #   10..0 >> 128 = 10..0
+  #
+  #     10..0 >> 127 = 1..1
+  #     10..0 >> 128 = 10..0
   #
   public fixed redef infix >> (other i128) i128 =>
     n := other.as_u64

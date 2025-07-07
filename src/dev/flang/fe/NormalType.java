@@ -29,12 +29,9 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Generic;
-import dev.flang.ast.TypeMode;
+import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -42,7 +39,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NormalType extends LibraryType
+class NormalType extends LibraryType
 {
 
 
@@ -59,7 +56,7 @@ public class NormalType extends LibraryType
   /**
    * Is this a value, ref or this type?
    */
-  TypeMode _typeMode;
+  TypeKind _typeKind;
 
 
   /**
@@ -90,14 +87,17 @@ public class NormalType extends LibraryType
   NormalType(LibraryModule mod,
              int at,
              AbstractFeature feature,
-             TypeMode typeMode,
+             TypeKind typeKind,
              List<AbstractType> generics,
              AbstractType outer)
   {
     super(mod, at);
 
+    if (PRECONDITIONS) require
+      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType);
+
     this._feature = feature;
-    this._typeMode = typeMode;
+    this._typeKind = typeKind;
     this._generics = generics;
     this._generics.freeze();
     this._outer = outer;
@@ -105,25 +105,6 @@ public class NormalType extends LibraryType
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return feature().pos(); }
-
-
-  /**
-   * Dummy visit() for types.
-   *
-   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FeatureVisitor.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return this;
-  }
 
 
   /**
@@ -138,12 +119,10 @@ public class NormalType extends LibraryType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
+  @Override
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
-    if (PRECONDITIONS) require
-      (!isGenericArgument());
-
-    return new NormalType(_libModule, _at, _feature, _typeMode, g2, o2);
+    return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
 
 
@@ -154,78 +133,75 @@ public class NormalType extends LibraryType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature feature()
+  @Override
+  protected AbstractFeature backingFeature()
   {
     return _feature;
   }
 
-  public boolean isGenericArgument()
-  {
-    return false;
-  }
 
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
+  @Override
   public List<AbstractType> generics()
   {
     return _generics;
   }
 
-  public Generic genericArgument()
-  {
-    throw new Error("genericArgument() is not defined for NormalType");
-  }
 
   /**
    * The mode of the type: ThisType, RefType or ValueType.
    */
   @Override
-  public TypeMode mode()
+  public TypeKind kind()
   {
-    return _typeMode;
+    return _typeKind;
   }
 
+  @Override
   public AbstractType outer()
   {
     return _outer;
   }
 
-
+  @Override
   public AbstractType asRef()
   {
     var result = _asRef;
     if (result == null)
       {
-        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeMode.RefType, _generics, _outer);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.RefType, _generics, _outer);
         _asRef = result;
       }
     return result;
   }
 
+  @Override
   public AbstractType asValue()
   {
     var result = _asValue;
     if (result == null)
       {
-        result = isValue() ? this :  new NormalType(_libModule, _at, _feature, TypeMode.ValueType, _generics, _outer);
+        result = isValue() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.ValueType, _generics, _outer);
         _asValue = result;
       }
     return result;
   }
 
+  @Override
   public AbstractType asThis()
   {
     var result = _asThis;
     if (result == null)
       {
-        if (isThisType())
+        if (feature().isUniverse())
           {
             result = this;
           }
         else
           {
-            result = new NormalType(_libModule, _at, _feature, TypeMode.ThisType, _generics, _outer);
+            result = new ThisType(_libModule, _at, _feature);
           }
         _asThis = result;
       }

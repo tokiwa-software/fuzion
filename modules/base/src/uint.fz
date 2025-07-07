@@ -38,17 +38,17 @@ is
 
   # bitwise and
   public fixed redef infix & (other uint) uint =>
-    (b1, b2) := equalize other
+    b1, b2 := equalize other
     uint (b1.zip b2 x,y->x&y) unit
 
   # bitwise or
   public fixed redef infix | (other uint) uint =>
-    (b1, b2) := equalize other
+    b1, b2 := equalize other
     uint (b1.zip b2 x,y->x|y) unit
 
   # bitwise xor
   public fixed redef infix ^ (other uint) uint =>
-    (b1, b2) := equalize other
+    b1, b2 := equalize other
     uint (b1.zip b2 x,y->x^y) unit
 
 
@@ -66,9 +66,9 @@ is
       (uint (data.take data.count-discard) unit) >> (other % (uint 32))
     else
       shift := other.as_u32
-      (l, _) := data
+      l, _ := data
         .reduce ((Sequence u32).empty, u32 0) r,t->
-          (res, carry_over) := r
+          res, carry_over := r
           next := t>>shift | carry_over
           (res ++ [next], t << (u32 32)-shift)
       uint l unit
@@ -85,10 +85,10 @@ is
       uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
     else
       shift := other.as_u32
-      (l, carry_over) := data
+      l, carry_over := data
         .reverse
         .reduce ((Sequence u32).empty, u32 0) r,t->
-          (res, co) := r
+          res, co := r
           next := t<<shift | co
           ([next] ++ res, t >> ((u32 32)-shift))
       uint ([carry_over] ++ l) unit
@@ -126,7 +126,7 @@ is
       highest_bit_diff uint := highest_bit - divisor.highest_bit
       shift := if uint.this -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.one
       remainder := uint.this - (divisor << shift)
-      (q, rem) := remainder.divide_with_remainder divisor
+      q, rem := remainder.divide_with_remainder divisor
       ((uint.one << shift) + q, rem)
 
 
@@ -144,12 +144,12 @@ is
 
   # add two unsigned ints
   public fixed redef infix +  (other uint) uint =>
-    (b1, b2) := equalize other
-    (d, _, _) := ([u32 0] ++ b1)
+    b1, b2 := equalize other
+    d, _, _ := ([u32 0] ++ b1)
       .reverse
       .reduce (((Sequence u32).empty), ([u32 0] ++ b2).reverse, u64 0) r,t->
 
-        (bits, rest, carry_over) := r
+        bits, rest, carry_over := r
 
         s := t.as_u64 + rest.first.get.as_u64 + carry_over
 
@@ -162,13 +162,13 @@ is
   public fixed redef infix - (other uint) uint
   =>
     two_pow_32 := ((u64 1)<<32)
-    (b1, b2) := equalize other
-    (s, _) := b1
-      .zip b2 (x, y -> (x,y))
+    b1, b2 := equalize other
+    s, _ := b1
+      .zip b2 tuple2
       .reverse
       .reduce ((Sequence u32).empty, u64 0) r,t->
-        (minuend, subtrahend) := t
-        (res, carry_over) := r
+        minuend, subtrahend := t
+        res, carry_over := r
 
         difference := two_pow_32 + minuend.as_u64 - subtrahend.as_u64 - carry_over
 
@@ -189,13 +189,13 @@ is
       .reverse
       .indexed
       .map x->
-        (i, v) := x
+        i, v := x
         other
           .data
           .reverse
           .indexed
           .map ox->
-            (oi, ov) := ox
+            oi, ov := ox
             tmp := v.as_u64 * ov.as_u64
             uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
       .flat_map id
@@ -205,7 +205,7 @@ is
   # divide these unsigned ints
   public fixed redef infix /  (other uint) uint
   =>
-    (quotient, _) := (divide_with_remainder other)
+    quotient, _ := divide_with_remainder other
     quotient
 
 
@@ -213,7 +213,7 @@ is
   # returns the remainder of the division
   public fixed redef infix %  (other uint) uint
   =>
-    (_, remainder) := (divide_with_remainder other)
+    _, remainder := divide_with_remainder other
     remainder
 
 
@@ -246,11 +246,11 @@ is
     if a.data.count = b.data.count
       a.data
         # zip the two equally long lists of digits
-        .zip b.data (c,d -> (c,d))
+        .zip b.data tuple2
         # skip to first unequal
-        .drop_while (x -> (c,d) := x; c = d)
+        .drop_while (x -> c, d := x; c = d)
         # compare
-        .map (x -> (c,d) := x; c ≤ d)
+        .map (x -> c, d := x; c ≤ d)
         # fallback, if all are equal
         .first true
     else
@@ -364,7 +364,7 @@ is
   #
   as_string0 String =>
     mrd := uint 1_000_000_000
-    (q, rem) := uint.this.divide_with_remainder mrd
+    q, rem := uint.this.divide_with_remainder mrd
 
     if q = uint.zero
       (rem.data.first 0).as_string

@@ -194,7 +194,7 @@ is
       # bulk expand by all elements of `s`
       expand s.count ()->
         for e in s.indexed do
-          (i,v) := e
+          i, v := e
           container.expanding T .env.put length+i v
 
     else
@@ -217,7 +217,7 @@ is
 
   # create an empty `expanding_array` of the type this is applied to, e.g.
   #
-  #   floats := (container.expanding_array f64).empty
+  #     floats := (container.expanding_array f64).empty
   #
   # Complexity: O(1)
   #
@@ -228,7 +228,7 @@ is
 
   # create an empty `expanding_array` of the type this is applied to, e.g.
   #
-  #   floats := (container.expanding_array f64).empty
+  #     floats := (container.expanding_array f64).empty
   #
   # Complexity: O(1)
   #

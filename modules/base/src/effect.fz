@@ -226,6 +226,25 @@ public effect is
     instate_self code
 
 
+  # fluent interface for using multiple effects together
+  #
+  public and(R type, E type : effect, e Lazy E) =>
+    as_functional R
+      .compose (e.as_functional R)
+
+
+  # this effect reinterpreted as a Functional
+  # which allows composition of effects
+  #
+  public as_functional(R type) Functional R =>
+
+    # NYI: BUG: does not work: Wrong number of arguments in lambda expression
+    # code -> instate_self code
+
+    ref : Functional R is
+      public redef call(code Function R) =>
+        instate_self code
+
 
   # infix variant of effect.instate
   #
@@ -233,8 +252,8 @@ public effect is
   #
   #     effect_type <- effect_instance ! code
   #
-  public type.infix <- (E type : effect, e E) effect0 E =>
-    effect0 e
+  public type.infix <- (E type : effect, e E) effect_to_be_instated E =>
+    effect_to_be_instated e
 
 
 
@@ -421,11 +440,13 @@ instate_helper(# result type
 
 
 
-# a constructor for holding an effect type and instance
+# a constructor for holding an effect type and instance that is to be instated
 #
-# this allows defining operators
+# this allows defining operators to instate effects like
 #
-public effect0(E type : effect, e E) is
+#     effect_type <- effect_instance ! code
+#
+private:public effect_to_be_instated(E type : effect, e E) is
 
 
   # infix variant of effect.instate

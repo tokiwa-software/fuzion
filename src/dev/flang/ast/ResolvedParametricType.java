@@ -30,8 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -39,7 +37,7 @@ import dev.flang.util.YesNo;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ResolvedParametricType extends ResolvedType
+class ResolvedParametricType extends ResolvedType
 {
 
 
@@ -49,19 +47,7 @@ public class ResolvedParametricType extends ResolvedType
   /**
    * The underlying generic:
    */
-  Generic _generic;
-
-
-  /**
-   * Is this generic type boxed?
-   */
-  private boolean _isBoxed;
-
-
-  /**
-   * Cached result of asRef(), null if not used yet.
-   */
-  private ResolvedParametricType _asRef;
+  AbstractFeature _generic;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -70,65 +56,13 @@ public class ResolvedParametricType extends ResolvedType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  private ResolvedParametricType(Generic generic, boolean isBoxed)
+  ResolvedParametricType(AbstractFeature generic)
   {
     this._generic = generic;
-    this._isBoxed = isBoxed;
-  }
-
-
-  /**
-   * Constructor for a plain generic type.
-   */
-  ResolvedParametricType(Generic generic)
-  {
-    this(generic, false);
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return _generic.typeParameter().pos(); }
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outerfeat the feature surrounding this expression.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return v.action(this);
-  }
-
-
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isGenericArgument().
-   */
-  public AbstractFeature feature()
-  {
-    if (CHECKS) check
-      (Errors.any());
-
-    return Types.f_ERROR;
-  }
-
-  public boolean isGenericArgument()
-  {
-    return true;
-  }
 
 
   /**
@@ -149,7 +83,7 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @return the Generic instance, never null.
    */
-  public Generic genericArgument()
+  public AbstractFeature backingFeature()
   {
     return _generic;
   }
@@ -165,13 +99,7 @@ public class ResolvedParametricType extends ResolvedType
 
   public AbstractType asRef()
   {
-    if (_asRef == null)
-      {
-        _asRef = _isBoxed
-          ? this
-          : new ResolvedParametricType(_generic, true);
-      }
-    return _asRef;
+    throw new Error("ResolvedParametricType.asRef() not defined");
   }
 
   public AbstractType asValue()
@@ -190,9 +118,10 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
-    if (!genericArgument().typeParameter().isCoTypesThisType() &&
+    if (!genericArgument().isCoTypesThisType() &&
         /**
          * Must not be recursive definition as in:
          *
@@ -200,9 +129,9 @@ public class ResolvedParametricType extends ResolvedType
          *   fs(F type : F) =>
          * scenario1
          */
-        this != genericArgument().typeParameter().resultType())
+        this != genericArgument().resultType())
       {
-        genericArgument().typeParameter().resultType().usedFeatures(s);
+        genericArgument().resultType().usedFeatures(s);
       }
   }
 
@@ -211,9 +140,9 @@ public class ResolvedParametricType extends ResolvedType
    * The mode of the type: ThisType, RefType or ValueType.
    */
   @Override
-  public TypeMode mode()
+  public TypeKind kind()
   {
-    return _isBoxed ? TypeMode.RefType : TypeMode.ValueType;
+    return TypeKind.GenericArgument;
   }
 
 

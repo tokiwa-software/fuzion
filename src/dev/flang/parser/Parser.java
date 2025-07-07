@@ -254,11 +254,11 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : modAndName routOrField
+feature     : modAndNames routOrField
             ;
-modAndName  : visibility
+modAndNames : visibility
               modifiers
-              qual
+              featNames
             ;
    */
   FList feature()
@@ -266,7 +266,7 @@ modAndName  : visibility
     var pos = tokenSourcePos();
     var v = visibility();
     var m = modifiers();
-    var n = qual(true);
+    var n = featNames();
     return routOrField(pos, new List<Feature>(), v, m, n, 0);
   }
 
@@ -293,8 +293,10 @@ field       : returnType
               implFldOrRout
             ;
    */
-  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<ParsedName> n, int i)
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<ParsedName>> n, int i)
   {
+    var name = n.get(i);
+    var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt(false);
     var r = returnType();
@@ -302,79 +304,29 @@ field       : returnType
     var hasType = r instanceof FunctionReturnType;
     var inh = inherits();
     Contract c = contract(forkAtFormArgs);
-    Impl p =
-      a  .isEmpty()    &&
-      eff == UnresolvedType.NONE &&
-      inh.isEmpty()       ? implFldOrRout(hasType)
-                          : implRout(hasType);
-    l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
-    return new FList(l);
-  }
+    Impl p;
 
-
-  /**
-   * For a feature declaration of the form
-   *
-   *   a, b, c : choice of x, y, z.
-   *
-   * add features x, y, z to list and the types to g.
-   *
-   * @param first true if this is called for the first ('a') out of several
-   * feature names.
-   *
-   * @param list list of features the inner features ('x', 'y', 'z') will be
-   * added to provided that first is true.
-   *
-   * @param e the expressions containing the feature declarations to be added, in
-   * this case "x, y, z."
-   *
-   * @param g the list of types to be collected, will be added as generic
-   * arguments to 'choice' in this example
-   *
-   * @param p Impl that contains the position of 'of' for error messages.
-   *
-   * @param v the visibility to be used for the features defined in of {@code <block>}
-   *
-   */
-  private void addFeaturesFromBlock(boolean first, List<Feature> list, Expr e, List<AbstractType> g, Impl p, Visi v)
-  {
-    if (e instanceof Block b)
+    if (a.isEmpty() &&
+        eff == UnresolvedType.NONE &&
+        inh.isEmpty())
       {
-        b._expressions.forEach(x -> addFeaturesFromBlock(first, list, x, g, p, v));
-      }
-    else if (e instanceof Feature f)
-      {
-        boolean ok = true;
-        if (f._qname.size() > 1)
-          {
-            AstErrors.featureOfMustContainOnlyUnqualifiedNames(f, p.pos);
-            ok = false;
-          }
-        if (!f.generics().list.isEmpty())
-          {
-            AstErrors.featureOfMustNotHaveFormalGenerics(f, p.pos);
-            ok = false;
-          }
-        if (!f.isConstructor())
-          {
-            AstErrors.featureOfMustContainOnlyConstructors(f, p.pos);
-            ok = false;
-          }
-        if (ok)
-          {
-            if (first)
-              {
-                f.setVisibility(v);
-
-                list.add(f);
-              }
-            g.add(new ParsedType(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
-          }
+        p = implFldOrRout(hasType, l, (n.size() > 1) ? i : FuzionConstants.NO_SELECT, n.size());
       }
     else
       {
-        AstErrors.featureOfMustContainOnlyDeclarations(e, p.pos);
+        if (n.size() > 1)
+          {
+            AstErrors.destructuringNonFields(pos, n);
+          }
+
+        p = implRout(hasType);
       }
+
+    l.add(new Feature(v, m, r, name, a, inh, c, p, eff));
+
+    return p2 == null
+      ? new FList(l)
+      : p2.routOrField(pos, l, v, m, n, i+1);
   }
 
 
@@ -801,6 +753,25 @@ modifier    : "redef"
       case t_fixed       : return true;
       default            : return false;
       }
+  }
+
+
+  /**
+   * Parse featNames
+   *
+featNames   : qual (COMMA featNames
+                   |
+                   )
+            ;
+   */
+  List<List<ParsedName>> featNames()
+  {
+    var result = new List<List<ParsedName>>(qual(true));
+    while (skipComma())
+      {
+        result.add(qual(true));
+      }
+    return result;
   }
 
 
@@ -2658,7 +2629,6 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
    *
 expr        : checkexpr
             | assign
-            | destructure
             | feature
             | operatorExpr
             ;
@@ -2671,7 +2641,6 @@ expr        : checkexpr
     var e =
       isCheckPrefix()       ? checkexpr()   :
       isAssignPrefix()      ? assign()      :
-      isDestructurePrefix() ? destructure() :
       isFeaturePrefix()     ? feature()     : operatorExpr();
     var p2 = lastTokenEndPos();
     e.setSourceRange(sourceRange(p0, p1, p2));
@@ -2715,6 +2684,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
+                                                    var ePos = tokenSourcePos();
                                                     var els1= fork().loopElseBlock();
                                                     var els2= fork().loopElseBlock();
                                                     var els =        loopElseBlock();
@@ -2732,7 +2702,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
                 syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
               }
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
+        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
       });
   }
 
@@ -2798,8 +2768,8 @@ nextValue   : COMMA exprInLine
       }
     else
       {
-        p1 =        implFldInit(hasType);
-        p2 = forked.implFldInit(hasType);
+        p1 =        implFldInit(hasType, null, -1, -1);
+        p2 = forked.implFldInit(hasType, null, -1, -1);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
@@ -3068,73 +3038,6 @@ assign      : "set" name ":=" exprInLine
 
 
   /**
-   * Parse destructure
-   *
-destructure : destructr
-            ;
-destructr   : "(" argNames ")"       ":=" exprInLine
-            ;
-   */
-  Expr destructure()
-  {
-    if (fork().skipFormArgs())
-      {
-        var a = formArgs(false);
-        var pos = tokenSourcePos();
-        matchOperator(":=", "destructure");
-        return Destructure.create(pos, a, null, exprInLine());
-      }
-    else
-      {
-        match(Token.t_lparen, "destructure");
-        var names = argNames();
-        match(Token.t_rparen, "destructure");
-        var pos = tokenSourcePos();
-        matchOperator(":=", "destructure");
-        return Destructure.create(pos, null, names, exprInLine());
-      }
-  }
-
-
-  /**
-   * Check if the current position starts destructure.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start a destructure.
-   */
-  boolean isDestructurePrefix()
-  {
-    return (current() == Token.t_lparen) && fork().skipDestructrPrefix() ||
-      (current() == Token.t_set) && (fork().skipDestructrPrefix());
-  }
-
-
-  /**
-   * Check if the current position starts a destructr and skip an unspecified part
-   * of it.
-   *
-   * @return true iff the next token(s) start a destructure.
-   */
-  boolean skipDestructrPrefix()
-  {
-    boolean result = false;
-    skip(Token.t_set);
-    if (skip(Token.t_lparen))
-      {
-        do
-          {
-            result = skipName();
-          }
-        while (result && skipComma());
-        result = result
-          && skip(Token.t_rparen)
-          && isOperator(":=");
-      }
-    return result;
-  }
-
-
-  /**
    * Parse call or anonymous feature or this
    *
 callOrFeatOrThis  : anonymous
@@ -3213,7 +3116,7 @@ anonymous   : "ref"
   {
     var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
-    SourcePosition pos = tokenSourcePos();
+    SourcePosition pos = tokenSourceRange();
     if (CHECKS) check
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
@@ -3221,7 +3124,7 @@ anonymous   : "ref"
     match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
-    var ca = new Call(pos, f);
+    var ca = new Call(SourceRange.range(new List<>(pos, b)), f);
     sameLine(sl);
     setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));
@@ -3398,17 +3301,22 @@ implFldOrRout   : implRout           // may start at min indent
                 |
                 ;
    */
-  Impl implFldOrRout(boolean hasType)
+  Impl implFldOrRout(boolean hasType, List<Feature> l, int select, int totalNames)
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
         isOperator(true, "=>"))
       {
+        if (select != FuzionConstants.NO_SELECT)
+          {
+            AstErrors.destructuringNonFields(tokenSourcePos(), null);
+          }
+
         return implRout(hasType);
       }
     else if (isOperator(true, ":="))
       {
-        return implFldInit(hasType);
+        return implFldInit(hasType, l, select, totalNames);
       }
     else
       {
@@ -3424,17 +3332,40 @@ implFldOrRout   : implRout           // may start at min indent
 implFldInit : ":=" operatorExpr      // may start at min indent
             ;
    */
-  Impl implFldInit(boolean hasType)
+  Impl implFldInit(boolean hasType, List<Feature> l, int select, int totalNames)
   {
     SourcePosition pos = tokenSourcePos();
+    Impl result;
     if (!skip(true, ":="))
       {
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
-    return new Impl(pos,
-                    operatorExpr(), // block()?
-                    hasType ? Impl.Kind.FieldInit
-                            : Impl.Kind.FieldDef);
+
+    if (select == FuzionConstants.NO_SELECT)
+      {
+        result = new Impl(pos,
+                          operatorExpr(), // block()?
+                          hasType ? Impl.Kind.FieldInit
+                                  : Impl.Kind.FieldDef);
+      }
+    else
+      {
+        if (CHECKS) check
+          (l != null, totalNames > 0);
+
+        if (l.size() == 0)
+          {
+            l.add(Feature.destructure(pos, operatorExpr()));
+          }
+
+        var tmpName = l.getFirst().featureName().baseName();
+        var s = new Select(pos, null, tmpName, select, true, totalNames);
+        result = new Impl(pos,
+                          s,
+                          hasType ? Impl.Kind.FieldInit
+                                  : Impl.Kind.FieldDef);
+      }
+    return result;
   }
 
 

@@ -37,14 +37,14 @@ public Function(public R type,
 
 # NYI: would be nice to have schönfinkeling defined here, could work like this:
 #
-#  curry(x A.0) Function(R, A.1...) is
-#    curried Function(R, A1...) is
-#      call(a A1...) is Function.this.call x a...
-#    curried
+#     curry(x A.0) Function(R, A.1...) is
+#       curried Function(R, A1...) is
+#         call(a A1...) is Function.this.call x a...
+#       curried
 #
 # --or, with different syntax sugar--
 #
-#  curry(x A.0) R->A.1... is x,a... -> call x a...
+#     curry(x A.0) R->A.1... is x,a... -> call x a...
 #
 # where A.1... is the tail of type argument A (might be empty), and A.0 is the first element,
 # void (or unit?) if it does not exist.

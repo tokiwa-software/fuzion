@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of enum TypeMode
+ * Source of enum TypeKind
  *
  *---------------------------------------------------------------------*/
 
@@ -28,28 +28,30 @@ package dev.flang.ast;
 
 
 /**
- * for specifying the mode of a type.
+ * for specifying the kind of a type.
  * May be one of "ThisType", "RefType" or "ValueType".
  */
-public enum TypeMode {
+public enum TypeKind {
 
-  ThisType(0x00),
-  RefType(0x01),
-  ValueType(0x02);
+  GenericArgument(0x00),
+  ValueType(0x01),
+  RefType(0x02),
+  ThisType(0x03);
 
   public int num;
 
-  TypeMode(int num) {
+  TypeKind(int num) {
       this.num = num;
   }
 
-  public static TypeMode fromInt(int num)
+  public static TypeKind fromInt(int num)
   {
     return switch (num) {
-      case 0x00 -> TypeMode.ThisType;
-      case 0x01 -> TypeMode.RefType;
-      case 0x02 -> TypeMode.ValueType;
-      default   -> throw new Error("Illegal TypeMode: " + num);
+      case 0x00 -> TypeKind.GenericArgument;
+      case 0x01 -> TypeKind.ValueType;
+      case 0x02 -> TypeKind.RefType;
+      case 0x03 -> TypeKind.ThisType;
+      default   -> throw new Error("Illegal TypeKind: " + num);
     };
   }
 

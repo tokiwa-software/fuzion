@@ -54,10 +54,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.ValueLayout;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -1385,7 +1381,7 @@ should be avoided as much as possible.
    */
   Expr reportErrorInCode(String msg)
   {
-    return Expr.stringconst(msg)
+    return Expr.stringconst(msg, true)
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
       .andThen(Expr.endless_loop());
   }

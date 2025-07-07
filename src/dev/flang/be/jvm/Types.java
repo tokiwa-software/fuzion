@@ -374,8 +374,7 @@ public class Types extends ANY implements ClassFileConstants
       case c_u64     -> PrimitiveType.type_long;
       case c_f32     -> PrimitiveType.type_float;
       case c_f64     -> PrimitiveType.type_double;
-      case c_Array,
-           c_Mutex,
+      case c_Mutex,
            c_Condition,
            c_File_Descriptor,
            c_Directory_Descriptor,
@@ -399,6 +398,10 @@ public class Types extends ANY implements ClassFileConstants
           else if (_fuir.clazzIsChoice(cl))
             {
               yield _choices.javaType(cl);
+            }
+          else if (_fuir.clazzIsArrayRef(cl))
+            {
+              yield JAVA_LANG_OBJECT;
             }
           else
             {

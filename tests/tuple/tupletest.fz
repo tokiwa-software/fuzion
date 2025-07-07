@@ -72,25 +72,22 @@ tupletest is
   # cant do any chck()s on empty tuples, let's hope everything is fine
 
   one2 tuple i32 := tuple(     42); p "one2 is {one2.values.0}" # one-tuple using explicit type and inferring generic
-  (one10)        := tuple     (42); p "one10 is $one10" # one-tuple using destructure and explicit type
-  (one12)        :=           (42); p "one12 is $one12" # special case: Destructure i32, which works!
   public one16 i32 := 42
   public one17 i32 := 42
   public one18 i32 := 42
   chck one2.values.0=42 "one2"
-  chck one10=42 "one10"
 
   two2 tuple i32 i32   := tuple          4 2 ; p "two2 is {two2.values.0}, {two2.values.1}" # one-tuple using explicit type and inferring generic
   two3 tuple i32 i32   :=               (4,2); p "two3 is {two3.values.0}, {two3.values.1}" # one-tuple using explicit type and tuple syntax sugar
   two9                 :=               (4,2); p "two9 is {two9.values.0}, {two9.values.1}" # one-tuple inferring type and tuple syntax sugar
-  (two11a, two11b)     := tuple          4 2 ; p "two11 is $two11a, $two11b" # two-tuple using destructure and inferring generic
-  (two12a, two12b)     :=               (4,2); p "two12 is $two12a, $two12b" # two-tuple using destructure and tuple syntax sugar
+  two11a, two11b       := tuple          4 2 ; p "two11 is $two11a, $two11b" # two-tuple using destructure and inferring generic
+  two12a, two12b       :=               (4,2); p "two12 is $two12a, $two12b" # two-tuple using destructure and tuple syntax sugar
   public two16a i32 := 42
   public two16b i32 := 42
-  public two17a i32 := 42
-  public two17b i32 := 42
-  public two18a i32 := 42
-  public two18b i32 := 42
+  two17a i32 := 42
+  two17b i32 := 42
+  two18a i32 := 42
+  two18b i32 := 42
   chck (two2.values.0=4 && two2.values.1=2) "two2"
   chck (two3.values.0=4 && two3.values.1=2) "two3"
   chck (two9.values.0=4 && two9.values.1=2) "two9"
@@ -119,7 +116,7 @@ tupletest is
   chck t10aaa.values.0.codepoint_length=14 "t10aaa.values.0"
   chck t10aaa.values.1=666       "t10aaa.values.1"
 
-  (t10a1, t10a2) := t10
+  t10a1, t10a2 := t10
   p "tuple t10a1/2 is {t10a1}, {t10a2}"
   chck t10a1=3 "t10a1"
   chck !t10a2  "t10a2"
@@ -136,7 +133,7 @@ tupletest is
   chck !t10b2   "t10b2"
 
 
-  (t10c1, t10c2) := t10
+  t10c1, t10c2 := t10
   p "tuple t10c1/2 is {t10c1}, {t10c2}"
   chck t10c1=3 "t10c1"
   chck !t10c2  "t10c2"
@@ -155,12 +152,12 @@ tupletest is
   chck t12a2=42  "second must be 42"
   chck t12a3=42  "third must be 42"
 
-  (t12d1,t12d2,t12d3) := t11 6
+  t12d1,t12d2,t12d3 := t11 6
   chck t12d1=6   "first must be 6"
   chck t12d2=36  "second must be 36"
   chck t12d3=216 "third must be 216"
 
-  (t12g1,t12g2,t12g3) := t11 7
+  t12g1,t12g2,t12g3 := t11 7
   chck t12g1=7   "first must be 7"
   chck t12g2=49  "second must be 49"
   chck t12g3=343 "third must be 343"
@@ -169,26 +166,26 @@ tupletest is
   public t12h2 i32 := 42
   public t12h3 i32 := 42
 
-  (_,_,t12i3) := t11 9; chck t12i3=729 "t12i3 must be 729"
-  (_,t12i2,_) := t11 9; chck t12i2=81  "t12i2 must be 81"
-  (t12i1,_,_) := t11 9; chck t12i1=9   "t12i1 must be 9"
+  _,_,t12i3 := t11 9; chck t12i3=729 "t12i3 must be 729"
+  _,t12i2,_ := t11 9; chck t12i2=81  "t12i2 must be 81"
+  t12i1,_,_ := t11 9; chck t12i1=9   "t12i1 must be 9"
 
-  (_,_) := (12, 23)
-  (_,_) := (true, 23)
+  _,_ := (12, 23)
+  _,_ := (true, 23)
 
   public t13a1 i32 := 42
   public t13a3 i32 := 42
   public t13a2 bool := false
-  (t13d1,_,_) := (01, 12, 23); chck t13d1=01 "t13d1 must be 01"
-  (_,t13d2,_) := (01, 12, 23); chck t13d2=12 "t13d2 must be 12"
-  (_,_,t13d3) := (01, 12, 23); chck t13d3=23 "t13d3 must be 23"
+  t13d1,_,_ := (01, 12, 23); chck t13d1=01 "t13d1 must be 01"
+  _,t13d2,_ := (01, 12, 23); chck t13d2=12 "t13d2 must be 12"
+  _,_,t13d3 := (01, 12, 23); chck t13d3=23 "t13d3 must be 23"
 
   public t14a1 i32 := 42
   public t14a3 i32 := 42
   public t14a2 bool := false
-  (t14d1,_,_) := (01, true, 23); chck t14d1=01 "t14d1 must be 01"
-  (_,t14d2,_) := (01, true, 23); chck t14d2    "t14d2 must be true"
-  (_,_,t14d3) := (01, true, 23); chck t14d3=23 "t14d3 must be 23"
+  t14d1,_,_ := (01, true, 23); chck t14d1=01 "t14d1 must be 01"
+  _,t14d2,_ := (01, true, 23); chck t14d2    "t14d2 must be true"
+  _,_,t14d3 := (01, true, 23); chck t14d3=23 "t14d3 must be 23"
 
   public t15a1 i32 := 42
   public t15a3 i32 := 42

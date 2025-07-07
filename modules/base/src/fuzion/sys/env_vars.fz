@@ -32,14 +32,14 @@ module env_vars is
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  has0(s Array) bool => intrinsic
+  has0(s Array u8) bool => intrinsic
 
 
   # intrinsic to get env var with given name
   #
   # NOTE: parameter s must be 0-terminated char *
   #
-  get0(s Array) String
+  get0(s Array u8) String
   => intrinsic
 
   # check if env var with given name exists

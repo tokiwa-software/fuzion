@@ -26,9 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.ResolvedType;
 
 
@@ -75,13 +76,12 @@ public abstract class LibraryType extends ResolvedType
 
 
   /**
-   * traverse a type collecting all features this type uses.
-   *
-   * @param s the features that have already been found
+   * Dummy visit() for Library types.
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
-    // a library type has already been checked. nothing to be done.
+    return this;
   }
 
 

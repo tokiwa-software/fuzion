@@ -50,7 +50,7 @@ nom_test =>
     # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := p.preceded (p.tag "#") (p.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color
-    parser_hex_color_seq_codepoints := parser_hex_tuple.map hex_color (t -> (r,g,b) := t; hex_color r g b)
+    parser_hex_color_seq_codepoints := parser_hex_tuple.map hex_color (t -> r, g, b := t; hex_color r g b)
     # convert parser to take string not codepoints as input
     parser_hex_color := p.to_string_input parser_hex_color_seq_codepoints
 

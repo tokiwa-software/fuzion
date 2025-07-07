@@ -315,7 +315,6 @@ public class ParsedCall extends Call
           }
         _actuals = new List<Expr>(ab);
         _calledFeature = Types.resolved.f_bool_AND;
-        _resolvedFormalArgumentTypes  = null;  // _calledFeature changed, so formal arg types must be resolved again
         _pendingError = null;
         _name = _calledFeature.featureName().baseName();
         var result = res.resolveType(ab, context);
@@ -582,7 +581,6 @@ public class ParsedCall extends Call
               : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
         _calledFeature = null;
-        _resolvedFormalArgumentTypes  = null;
         _pendingError = null;
         var fn = new Function(pos(),
                               pns,
@@ -610,52 +608,68 @@ public class ParsedCall extends Call
   }
 
 
+  /**
+   * Do we have to split of type args?
+   */
+  private boolean mustSplitOffTypeArgs(Resolution res, AbstractFeature calledFeature)
+  {
+    return !isSpecialWrtArgs(calledFeature) &&
+            calledFeature != Types.f_ERROR &&
+            _generics.isEmpty() &&
+            _actuals.size() != calledFeature.valueArguments().size() &&
+            !calledFeature.hasOpenGenericsArgList(res);
+  }
+
+
   @Override
   protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
   {
-    var g = new List<AbstractType>();
-    var a = new List<Expr>();
-    var ts = calledFeature.typeArguments();
-    var tn = ts.size();
-    var ti = 0;
-    var vs = calledFeature.valueArguments();
-    var vn = vs.size();
-    var i = 0;
-    ListIterator<Expr> ai = _actuals.listIterator();
-    while (ai.hasNext())
+    if (mustSplitOffTypeArgs(res, calledFeature))
       {
-        var aa = ai.next();
-
-        // check that ts[ti] is open type parameter only iff ti == tn-1, ie.,
-        // only the last type parameter may be open
-        if (CHECKS) check
-          (ti >= tn-1 ||
-           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
-           ti != tn-1 ||
-           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
-           ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
-
-        if (_actuals.size() - i > vn)
+        var g = new List<AbstractType>();
+        var a = new List<Expr>();
+        var ts = calledFeature.typeArguments();
+        var tn = ts.size();
+        var ti = 0;
+        var vs = calledFeature.valueArguments();
+        var vn = vs.size();
+        var i = 0;
+        ListIterator<Expr> ai = _actuals.listIterator();
+        while (ai.hasNext())
           {
-            AbstractType t = _actuals.get(i).asType();
-            if (t != null)
+            var aa = ai.next();
+
+            // check that ts[ti] is open type parameter only iff ti == tn-1, ie.,
+            // only the last type parameter may be open
+            if (CHECKS) check
+              (ti >= tn-1 ||
+               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+               ti != tn-1 ||
+               ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+               ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
+
+            if (_actuals.size() - i > vn)
               {
-                g.add(t);
+                AbstractType t = _actuals.get(i).asType();
+                if (t != null)
+                  {
+                    g.add(t);
+                  }
+                ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
+                if (ti > ts.size() && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+                  {
+                    ti++;
+                  }
               }
-            ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
-            if (ti > ts.size() && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+            else
               {
-                ti++;
+                a.add(aa);
               }
+            i++;
           }
-        else
-          {
-            a.add(aa);
-          }
-        i++;
+        _generics = g;
+        _actuals = a;
       }
-    _generics = g;
-    _actuals = a;
   }
 
 

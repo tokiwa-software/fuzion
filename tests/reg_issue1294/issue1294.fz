@@ -195,11 +195,11 @@ ex204 =>
       (bits3.cast_to_f64, exp)
 
   a f64 := 3.14
-  (b, c) := frexp a
+  b, c := frexp a
   say "{b} {c}"
 
   d f64 := 5E-324
-  (e, f) := frexp d
+  e, f := frexp d
   say "{e} {f}"
 
 ex204

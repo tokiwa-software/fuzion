@@ -25,7 +25,7 @@ private:public jvm : effect is
 
   # NYI: UNDER DEVELOPMENT: support starting multiple jvms?
   #
-  create_jvm(option_string universe.Array) unit => intrinsic
+  create_jvm(option_string universe.Array u8) unit => intrinsic
   destroy_jvm unit => intrinsic
 
   module is_null0(java_ref Java_Ref) bool => intrinsic
@@ -34,8 +34,6 @@ private:public jvm : effect is
   # short-hand to for jvm with no additional class path
   #
   public type.use(T type, code ()->T) T =>
-    # NYI: BUG: java.lang.Error: require-condition1 failed: AbstractType.java:875 "(Errors.any() || f.generics().sizeMatches(actualGenerics), Errors.any() || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());"
-    # fuzion.jvm.jvm "" code
     fuzion.jvm.use T "" code
 
 
@@ -90,22 +88,22 @@ private:public jvm : effect is
 
   # intrinsic to read static field
   #
-  get_static_field0(T type, clazz, field Java_Ref, signature universe.Array) T => intrinsic
+  get_static_field0(T type, clazz, field Java_Ref, signature universe.Array u8) T => intrinsic
 
 
   # intrinsic to read instance field
   #
-  get_field0(T type, thiz, field Java_Ref, signature universe.Array) T => intrinsic
+  get_field0(T type, thiz, field Java_Ref, signature universe.Array u8) T => intrinsic
 
 
   # intrinsic to set static field
   #
-  set_static_field0(clazz, field, val Java_Ref, signature universe.Array) unit => intrinsic
+  set_static_field0(clazz, field, val Java_Ref, signature universe.Array u8) unit => intrinsic
 
 
   # intrinsic to set instance field
   #
-  set_field0(thiz, field, val Java_Ref, signature universe.Array) unit => intrinsic
+  set_field0(thiz, field, val Java_Ref, signature universe.Array u8) unit => intrinsic
 
 
   # Call a virtual Java method class_name.name with given signature signature
@@ -210,7 +208,7 @@ private:public jvm : effect is
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  module array_get(T type, a Java_Ref, ix i32, signature universe.Array) T => intrinsic
+  module array_get(T type, a Java_Ref, ix i32, signature universe.Array u8) T => intrinsic
 
 
   # convert a Sequence to a Java Array object

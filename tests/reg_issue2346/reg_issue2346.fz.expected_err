@@ -1,7 +1,9 @@
 
---CURDIR--/reg_issue2346.fz:25:3: error 1: Type inference from actual arguments failed since no actual call was found
+--CURDIR--/reg_issue2346.fz:25:17: error 1: Failed to infer actual type parameters
 b(j) => {a j; b j}
---^
-For the formal argument 'b.j' the type can only be derived if there is a call to 'b'.
+----------------^
+In call to 'b.j', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: ''
+Type inference failed for no type parameters 
 
 one error.
