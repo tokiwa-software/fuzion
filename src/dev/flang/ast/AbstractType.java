@@ -677,7 +677,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 g = g.applyTypePars(call._calledFeature, call._generics);
               }
           }
-        var gt = g.isGenericArgument() ? g.genericArgument().constraint(context) : g;
+        var gt = g.selfOrConstraint(context);
 
         if (
           // NYI: BUG: #5002: check recursive type, e.g.:
