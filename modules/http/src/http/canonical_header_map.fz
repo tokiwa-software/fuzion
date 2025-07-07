@@ -1,0 +1,77 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature canonical_header_map
+#
+# -----------------------------------------------------------------------
+
+
+# A map of HTTP headers with field names normalized to canonical form,
+# where the first letter and letters following hyphens are capitalized.
+#
+private:public canonical_header_map(internal_map container.Map String String) : container.Map String String is
+
+
+  String.canonical_header_key String =>
+    # NYI: OPTIMIZATION: see validHeaderFieldByte() in https://go.dev/src/net/textproto/reader.go
+    valid_header_field_byte(c codepoint) bool =>
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#\$%&'*+-.^_|~".contains c
+
+    if as_codepoints.drop_while valid_header_field_byte .is_empty
+      split "-"
+       .map (s->(s.substring 0 1 .upper_case) + s.substring 1 .lower_case)
+       .as_string "-"
+    else
+      String.this
+
+  public redef add(k String, v String) container.Map String String => add_canonical k v
+
+  module add_canonical(k String, v String) canonical_header_map =>
+
+    canonical_header_map (internal_map.add k.canonical_header_key v)
+
+  # number of entries in this map
+  #
+  public redef size i32 => internal_map.size
+
+  # get the value k is mapped to, or nil if none.
+  #
+  public redef index [] (k String) option String => internal_map[k.canonical_header_key]
+
+  # get a sequence of all key/value pairs in this map
+  #
+  public redef items Sequence (tuple String String) => internal_map.items
+
+  # create a mutable map from this
+  #
+  public redef as_mutable_map(LM type : mutate) container.Mutable_Map String String => internal_map.as_mutable_map LM
+
+
+  # initializer for this map
+  #
+  # every map implementation needs to implement this
+  #
+  public redef fixed type.empty http.canonical_header_map => http.canonical_header_map(container.ordered_map String String .empty)
+
+  module type.from_map(m container.Map String String) http.canonical_header_map =>
+    map_of m.items
+
+  module type.map_of(kvs Sequence (tuple String String)) http.canonical_header_map =>
+
+    http.canonical_header_map (container.ordered_map (kvs.map (.0.canonical_header_key)) (kvs.map (.1)))

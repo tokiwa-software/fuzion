@@ -126,6 +126,7 @@ MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
 MOD_UUID              = $(BUILD_DIR)/modules/uuid.fum
+MOD_HTTP              = $(BUILD_DIR)/modules/http.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
 MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
@@ -454,6 +455,7 @@ FZ_MODULES = \
 			$(MOD_LOCK_FREE) \
 			$(MOD_NOM) \
 			$(MOD_UUID) \
+			$(MOD_HTTP) \
 			$(MOD_CLANG) \
 			$(MOD_WOLFSSL) \
 			$(MOD_JSON_ENCODE)
@@ -692,6 +694,12 @@ $(MOD_UUID): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/uuid/src -name "*.
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/uuid $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/uuid/src -saveModule=$@
+
+$(MOD_HTTP): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/http/src -name "*.fz")
+	rm -rf $(@D)/http
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/http $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/http/src -saveModule=$@
 
 $(MOD_CLANG): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/clang/src -name "*.fz")
 	rm -rf $(@D)/clang
