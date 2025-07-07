@@ -31,7 +31,7 @@ public Message ref is
   public start_line String => abstract
 
   # header fields with all lower case
-  public fields http.case_insensitive_map => abstract
+  public fields http.canonical_header_map => abstract
 
   module fields_str String =>
     fields.items.map kv->
@@ -77,9 +77,9 @@ module next_line(LM type : mutate) => (io.buffered LM).read_delimiter "\n".utf8[
 
 
 
-module parse_header_fields(LM type : mutate) outcome http.case_insensitive_map =>
+module parse_header_fields(LM type : mutate) outcome http.canonical_header_map =>
 
-  exception unit http.case_insensitive_map ()->
+  exception unit http.canonical_header_map ()->
 
     cause(s String) void =>
       (exception unit).env.cause (error s)
@@ -105,7 +105,7 @@ module parse_header_fields(LM type : mutate) outcome http.case_insensitive_map =
           # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
           fields.put parts[0].lower_case parts[1].trim
 
-      http.case_insensitive_map.from_map fields.as_map
+      http.canonical_header_map.from_map fields.as_map
 
 
 module:public body_reader(

@@ -78,7 +78,7 @@ public read_request(
         t1 := target.split_n "//" 1
         if t1.count != 2 then cause "broken target '$target in request"
         host := (t1[1].split_n "/" 1)[0]
-        tmp_parsed_fields.add_as_lower_case "Host" host
+        tmp_parsed_fields.add_canonical "Host" host
       else
         tmp_parsed_fields
 
