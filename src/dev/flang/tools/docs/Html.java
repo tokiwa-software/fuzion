@@ -1041,10 +1041,10 @@ public class Html extends ANY
         <summary>
           <div class="d-grid" style="grid-template-columns: 1fr min-content;">
             <div class="d-flex flex-wrap word-break-break-word">
-              <a class="fd-anchor-sign mr-2" href="#$2">§</a>
               <div class="d-flex flex-wrap word-break-break-word fz-code">
-                <div class="font-weight-600"><a class="fd-feature" href="$1">$2</a></div>
+                <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
                 <div class="flex-grow-1"></div>
+                <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
               </div>
             </div>
           </div>
