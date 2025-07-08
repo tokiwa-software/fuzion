@@ -1,0 +1,47 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test float_rounding_mode
+#
+# -----------------------------------------------------------------------
+
+float_rounding_mode =>
+
+  test =>
+    test(a, b f64) => say "{a.as_string.pad 19}  $b"
+
+    test ((1.0/3.0)*3.0) ((-1.0/3.0)*3.0)
+    test ((2.0/3.0)*3.0) ((-2.0/3.0)*3.0)
+    test (1.0 / 3.0)     (-1.0 / 3.0)
+    test (2.0 / 3.0)     (-2.0 / 3.0)
+    test (2.0 ** 3.0)    (-2.0 ** 3.0)
+    test (3.0 ** 2.0)    (-3.0 ** 2.0)
+
+
+  say "\nTO NEAREST"
+  _ := float_rounding.to_nearest ()->test
+
+  say "\nDOWNWARD"
+  _ := float_rounding.downward ()->test
+
+  say "\nUPWARD"
+  _ := float_rounding.upward ()->test
+
+  say "\nTOWARD ZERO"
+  _ := float_rounding.toward_zero ()->test
