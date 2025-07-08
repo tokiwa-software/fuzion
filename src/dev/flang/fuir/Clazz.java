@@ -115,7 +115,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * The outer clazz
    */
-  final Clazz _outer;
+  Clazz _outer;
 
 
   /**
@@ -380,6 +380,8 @@ class Clazz extends ANY implements Comparable<Clazz>
             _actualTypeParameters[i] = _fuir.type2clazz(gi);
           }
       }
+
+    _outer = isChoice() ? _fuir.universe() : _outer;
 
     // NYI: UNDER DEVELOPMENT: we might want to create the result clazz early
     // to avoid adding clazzes one lookupDone is set:
@@ -2024,6 +2026,12 @@ class Clazz extends ANY implements Comparable<Clazz>
                 // above.
                 t = t.replace_this_type_by_actual_outer2(child._type,
                                                          foundRef);
+              }
+            if (child != null && child.isChoice())
+              {
+                child = null;
+                parent = null;
+                break;
               }
             // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
             child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
