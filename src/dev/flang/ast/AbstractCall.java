@@ -362,10 +362,10 @@ public abstract class AbstractCall extends Expr
     var frmlT = frml.resultTypeIfPresentUrgent(res, true);
 
     var declF = calledFeature().outer();
-    var heir = target().type();
-    if (!heir.isGenericArgument() && declF != heir.feature())
+    var tt = target().type();
+    if (!tt.isGenericArgument() && declF != tt.feature())
       {
-        var a = calledFeature().handDown(res, new AbstractType[] { frmlT }, heir.feature());
+        var a = calledFeature().handDown(res, new AbstractType[] { frmlT }, tt.feature());
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -401,12 +401,7 @@ public abstract class AbstractCall extends Expr
             if (frmlT.isOpenGeneric())
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
                 var g = frmlT.genericArgument();
-                var frmlTs = g.replaceOpen(g.outer() == calledFeature()
-                                           ? actualTypeParameters()
-                                           : (res == null
-                                                ? heir.selfOrConstraint(context)
-                                                : heir.selfOrConstraint(res, context)
-                                             ).generics()); // see for example #1919
+                var frmlTs = g.replaceOpen(openGenericsFor(res, context, g.outer()));
                 rfat = addToResolvedFormalArgumentTypes(rfat, frmlTs.toArray(new AbstractType[frmlTs.size()]), argnum + i);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
@@ -418,6 +413,37 @@ public abstract class AbstractCall extends Expr
           }
       }
     return rfat;
+  }
+
+
+  /**
+   * Find the actual generics of the open generic argument in f.
+   *
+   * @param f the feature having the open type parameter
+   */
+  private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractFeature f)
+  {
+    return calledFeature().inheritsFrom(f)
+      ? actualTypeParameters()
+      : openGenericsFor(res, context, f, target().type());
+  }
+
+
+  /**
+   * In the target type of this call,
+   * find the actual generics of the open generic argument in f .
+   *
+   * @param f the feature having the open type parameter
+   */
+  private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractFeature f, AbstractType tt)
+  {
+    if (PRECONDITIONS) require
+      (tt != null);
+
+    var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
+    return x.feature().inheritsFrom(f)
+      ? x.generics()
+      : openGenericsFor(res, context, f, tt.outer());
   }
 
 

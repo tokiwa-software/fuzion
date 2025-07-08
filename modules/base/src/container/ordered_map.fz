@@ -63,35 +63,29 @@ is
 
   # a sorted array of entries of this map
   #
-  public sorted_entries =>
-    sorted_indices
-      .map (i -> entry i)
-      .as_array
-
-
-  # a sorted array of indices of this map
-  #
-  sorted_indices := ks.indices.sort_by (a,b)->ks[a]≤ks[b]
+  public sorted_entries :=
+    ks.indices.map (i -> entry i)
+      .sort
 
 
   # number of entries in this map
   #
-  public redef size i32 => sorted_indices.length
+  public redef size i32 => sorted_entries.length
 
 
   # get the value k is mapped to, or nil if none.
   #
   # performance is O(log size).
   #
-  public redef index [] (k OK) option V=>
-    sorted_indices
-      .find_by_comparator (i -> ks[i] ⋄ k)
+  public redef index [] (k OK) option V =>
+    sorted_entries
+      .find_by_comparator (e -> ks[e.i] ⋄ k)
       .bind i->sorted_entries[i].val
 
 
   # get an array of all key/value pairs in this map
   #
-  public redef items Sequence (tuple OK V) => sorted_indices.map i->(ks[i], vs[i])
+  public redef items Sequence (tuple OK V) => sorted_entries.map e->(e.key, e.val)
 
 
   # add mapping from k to v
