@@ -621,7 +621,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisType(AbstractType t)
   {
-    t = replaceThisTypeForCotype(t);
+    var ct = this;
+    while (ct != null && !t.isGenericArgument())
+      {
+        t = ct.replaceThisTypeForCotype(t);
+        ct = ct._outer;
+      }
     if (t.isThisType())
       {
         t = findOuter(t)._type;
