@@ -1688,14 +1688,34 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
+   * exactly tt, ignoring tt.outer().
+   *
+   * @param tt the type feature we are calling
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.
+   */
   public AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
-                                                                BiConsumer<AbstractType, AbstractType> foundRef)
+                                                        BiConsumer<AbstractType, AbstractType> foundRef)
   {
     return replace_this_type_by_actual_outer_locally(tt, foundRef, Context.NONE);
   }
 
 
-  private AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
+  /**
+   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
+   * exactly tt, ignoring tt.outer().
+   *
+   * @param tt the type feature we are calling
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.
+   */
+  private AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
+                                                         BiConsumer<AbstractType, AbstractType> foundRef,
+                                                         Context context)
   {
     var result = this;
     var att = tt.selfOrConstraint(context);
