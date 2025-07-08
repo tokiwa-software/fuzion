@@ -226,6 +226,9 @@ public class ParsedOperatorCall extends ParsedCall
     _actualsResolvedFor = null;
     _calledFeature = null;
     _type = null;
+    _pendingError = null; // original attempt to resolve might have caused an
+                          // error that might be fixed in new attempt, see #5467
+                          // or tests/reg_issue5467
   }
 
 }
