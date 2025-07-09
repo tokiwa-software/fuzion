@@ -372,8 +372,6 @@ public abstract class IR extends ANY
               (needsBoxing(result, frmlT) == null);
           }
       }
-    // NYI: ugly special case: currently needed for code like
-    // because isAssignableFrom does not return yes without correct Context...
     /**
      * A ref is
      * B ref is
@@ -390,6 +388,8 @@ public abstract class IR extends ANY
      *
      * y1 ab
      */
+    // NYI: ugly special case: currently needed for code like
+    // because isAssignableFrom does not return yes without correct Context...
     else if (t.isGenericArgument() && frmlT.isRef())
       {
         var rt = needsBoxing(expr, frmlT);
