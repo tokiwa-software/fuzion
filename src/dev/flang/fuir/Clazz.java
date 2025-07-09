@@ -413,8 +413,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     var or = f.outerRef();
 
-    return !f.isConstructor()  // do not specialize a constructor
-      && or != null;
+    return or != null;
   }
 
 
