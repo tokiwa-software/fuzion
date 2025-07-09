@@ -1717,7 +1717,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         else
           {
             var ft = f.resultType();
-            result = handDown(ft, _select, new List<>() /* NYI */);
+            result = handDown(ft, _select, new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
           }
         _resultClazz = result;
       }
@@ -1760,7 +1760,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
         var oc = _outer;
         var tclazz  = _fuir.clazz(call.target(), oc, inh);
-        var typePars = actualGenerics(call.actualTypeParameters(), new List<>() /* NYI? */);
+        var typePars = actualGenerics(call.actualTypeParameters(), new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
         check(call.isInheritanceCall());
         o = tclazz.lookupCall(call, typePars);
       }
