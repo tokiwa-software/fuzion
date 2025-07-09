@@ -1,7 +1,7 @@
 
---CURDIR--/reg_issue3693.fz:24:4: error 1: Illegal '.this' type: 'a.this'
+--CURDIR--/reg_issue3693.fz:24:6: error 1: Illegal '.this' type: 'a.this'
 A (b a.this) ref is
----^
+-----^
 To solve this, either
   - move the code inside of the feature the type refers to
 or
