@@ -52,7 +52,6 @@ import com.google.gson.JsonPrimitive;
 
 import dev.flang.ast.AbstractMatch;
 import dev.flang.lsp.Config;
-import dev.flang.lsp.FuzionLanguageClient;
 import dev.flang.lsp.shared.ASTWalker;
 import dev.flang.lsp.shared.CaseConverter;
 import dev.flang.lsp.shared.Concurrency;

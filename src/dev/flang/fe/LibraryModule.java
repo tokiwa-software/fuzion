@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.TypeMode;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
@@ -520,9 +520,10 @@ public class LibraryModule extends Module implements MirModule
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, feature,
-                                    TypeMode.fromInt(typeValRefOrThis(at)),
-                                    generics, outer);
+            var tk = TypeKind.fromInt(typeValRefOrThis(at));
+            result = tk == TypeKind.ThisType
+              ? new ThisType(this, at, feature)
+              : new NormalType(this, at, feature, tk, generics, outer);
           }
         _libraryTypes.put(at, result);
       }
@@ -562,7 +563,7 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.8+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.8+|true      | 1      | byte[4]       | MIR_FILE_MAGIC
 
               | 1      | Name          | module name
 
@@ -587,7 +588,7 @@ Module File
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
+   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -2467,6 +2468,18 @@ SourceFile
   public ByteBuffer data(String name)
   {
     throw new UnsupportedOperationException("Unimplemented method 'data'");
+  }
+
+
+  /**
+   * Is this module the same as the provided one or does this module depend on the provided one?
+   *
+   * @param lm the LibraryModule against which this module should be checked
+   * @return true iff they are the same or this module depends on the provided one
+   */
+  public boolean sameOrDependent(LibraryModule lm)
+  {
+    return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
   }
 
 }

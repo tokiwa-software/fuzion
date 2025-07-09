@@ -30,7 +30,6 @@ import java.util.Set;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -38,7 +37,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ResolvedParametricType extends ResolvedType
+class ResolvedParametricType extends ResolvedType
 {
 
 
@@ -67,34 +66,6 @@ public class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return _generic.pos(); }
-
-
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isGenericArgument().
-   */
-  public AbstractFeature feature()
-  {
-    if (CHECKS) check
-      (Errors.any());
-
-    return Types.f_ERROR;
-  }
-
-  public boolean isGenericArgument()
-  {
-    return true;
-  }
-
-
-  /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
   public List<AbstractType> generics()
@@ -112,7 +83,7 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @return the Generic instance, never null.
    */
-  public AbstractFeature genericArgument()
+  public AbstractFeature backingFeature()
   {
     return _generic;
   }
@@ -147,7 +118,8 @@ public class ResolvedParametricType extends ResolvedType
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     if (!genericArgument().isCoTypesThisType() &&
         /**
@@ -168,9 +140,9 @@ public class ResolvedParametricType extends ResolvedType
    * The mode of the type: ThisType, RefType or ValueType.
    */
   @Override
-  public TypeMode mode()
+  public TypeKind kind()
   {
-    return TypeMode.ValueType;
+    return TypeKind.GenericArgument;
   }
 
 

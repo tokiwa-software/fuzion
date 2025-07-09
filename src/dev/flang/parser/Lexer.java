@@ -3647,8 +3647,6 @@ PIPE        : "|"
    *
 STAR        : "*"
             ;
-QUESTION    : "?"
-            ;
    *
    * @param op the single-char operator
    *

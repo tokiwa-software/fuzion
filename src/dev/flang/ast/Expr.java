@@ -537,6 +537,36 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
+    return expectedType.isFunctionType() && expectedType.arity() == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType()
+      ? new Function(pos(), NO_EXPRS, reset())
+      : this;
+  }
+
+
+  /**
+   * NYI: UNDER DEVELOPMENT: better throw away completly and reparse?
+   *
+   * resets all features in this expression so that they can have _new_ outers.
+   */
+  private Expr reset()
+  {
+    visit(new FeatureVisitor() {
+      @Override
+      public Expr action(Feature f, AbstractFeature outer)
+      {
+        return new Feature(f.pos(),
+                           f.visibility(),
+                           f._modifiers,
+                           f._returnType,
+                           f._qname,
+                           f.arguments(),
+                           f.inherits(),
+                           f.contract(),
+                           f.impl(),
+                           null
+                          );
+      }
+    }, null);
     return this;
   }
 
@@ -670,7 +700,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
       }
     // Case 1.1: types are equal, no tagging necessary
     // NYI: BUG: soundness issue?
-    else if(value.type().isChoice() && frmlT.asThis().compareTo(value.type().asThis()) == 0)
+    else if(value.type().isChoice() &&
+            (frmlT.isThisType() || value.type().isThisType()) &&
+            frmlT.asThis().compareTo(value.type().asThis()) == 0)
       {
         return value;
       }
@@ -685,9 +717,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
     //
     else if (frmlT
              .choiceGenerics(context)
-              .stream()
+             .stream()
              .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context).yes())
-              .count() > 1)
+             .count() > 1)
       {
         AstErrors.ambiguousAssignmentToChoice(frmlT, value);
         return Call.ERROR;
@@ -696,8 +728,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // there is a choice generic in this choice
     // that this value is "directly" assignable to
     else if (frmlT
-              .choiceGenerics(context)
-              .stream()
+             .choiceGenerics(context)
+             .stream()
              .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type(), context).yes()))
       {
         return new Tag(value, frmlT, context);

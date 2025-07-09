@@ -817,7 +817,7 @@ public class Feature extends AbstractFeature
                  List<AbstractCall> i,
                  Contract c,
                  Impl p,
-                 List<AbstractType> effects)
+                 List<AbstractType> effects) // NYI: UNDER DEVELOPMENT: effects
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -2098,8 +2098,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     ensureTypeSetsInitialized(res);
     if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
-          || at.isFunctionTypeExcludingLazy()
-          || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()
+          || at.selfOrConstraint(Context.NONE).isFunctionTypeExcludingLazy()
           // NYI: BUG: check if array element type is valid
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
           || !at.isGenericArgument() && at.feature().mayBeNativeValue()

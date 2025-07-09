@@ -1845,7 +1845,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (isCotype() ? "type." : "") +
       featureName().baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
-      (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
+      (state().atLeast(State.TYPES_INFERENCED) ? resultType() : "***not yet known***") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
       ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
        +  "is " + kind();
@@ -1879,9 +1879,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * @return RefType if Feature is a reference otherwise ValueType
    */
-  public TypeMode defaultTypeMode()
+  public TypeKind defaultTypeKind()
   {
-    return isRef() ? TypeMode.RefType : TypeMode.ValueType;
+    return isRef() ? TypeKind.RefType : TypeKind.ValueType;
   }
 
 
