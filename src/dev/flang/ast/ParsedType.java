@@ -114,6 +114,7 @@ public class ParsedType extends UnresolvedType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
+  @Override
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
     return new ParsedType(_pos, name(), g2, o2, _typeKind);

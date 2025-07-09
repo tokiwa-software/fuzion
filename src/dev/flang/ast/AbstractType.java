@@ -114,23 +114,50 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract TypeKind kind();
 
 
-  // NYI: CLEANUP: implement asRef/asValue/asThis generically
+
+  /*-----------------------------  methods  -----------------------------*/
 
 
   /**
    * This type as a reference.
    *
-   * Requires !isGenericArgument().
+   * Requires that this is resolved, !isGenericArgument().
    */
-  public abstract AbstractType asRef();
+  public AbstractType asRef()
+  {
+    return asRef(false);
+  }
 
 
   /**
-   * This type as a value.
+   * This type as a reference.
    *
-   * Requires !isGenericArgument().
+   * @param allowForThisType allow this-types to be turned in to a ref-type
+   *
+   * Requires that this is resolved, !isGenericArgument().
    */
-  public abstract AbstractType asValue();
+  public AbstractType asRef(boolean allowForThisType)
+  {
+    if (PRECONDITIONS) require
+      (!(this instanceof UnresolvedType),
+       !isGenericArgument(),
+       allowForThisType || !isThisType());
+
+    return switch (kind()) {
+      case GenericArgument -> throw new Error("asValue not legal for genericArgument");
+      case ThisType -> allowForThisType
+        ? ResolvedNormalType.create(
+            feature().generics().asActuals(),
+            Call.NO_GENERICS,
+            feature().outer().selfType().asThis(),
+            feature(),
+            TypeKind.RefType)
+        : Types.t_ERROR;
+      case RefType -> this;
+      case ValueType ->
+        ResolvedNormalType.create(generics(), generics(), outer(), feature(), TypeKind.RefType);
+    };
+  }
 
 
   /**
@@ -139,10 +166,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * Requires that this is resolved and !isGenericArgument().
    */
-  public abstract AbstractType asThis();
+  public AbstractType asThis()
+  {
+    if (PRECONDITIONS) require
+      (!(this instanceof UnresolvedType),
+       !isGenericArgument());
 
-
-  /*-----------------------------  methods  -----------------------------*/
+    return switch (kind()) {
+      case GenericArgument -> throw new Error("asThis not legal for genericArgument");
+      case ThisType -> this;
+      case RefType, ValueType ->
+        feature().isUniverse()
+          ? this
+          : new ThisType(feature());
+    };
+  }
 
 
   /**
@@ -483,13 +521,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual_type.isGenericArgument())
           {
-            result = isAssignableFrom(actual_type.genericArgument().constraint(context).asRef(), context, allowBoxing, allowTagging, assignableTo);
+            result = isAssignableFrom(actual_type.genericArgument().constraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
           }
         else
           {
             for (var p: actual_type.feature().inherits())
               {
-                var pt = actual_type.actualType(p.type(), context).asRef();
+                var pt = actual_type.actualType(p.type(), context).asRef(true);
                 result = isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
                 // until result != no
                 if (!result.no()) { break; }
@@ -509,11 +547,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         if (actual.isGenericArgument())
           {
-            result = isAssignableFrom(actual.genericArgument().constraint(context).asRef(), context, allowBoxing, allowTagging, assignableTo);
+            result = isAssignableFrom(actual.genericArgument().constraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
           }
         else if (!actual.isRef())
           {
-            result = isAssignableFrom(actual.asRef(), context, false, allowTagging, assignableTo);
+            result = isAssignableFrom(actual.asRef(true), context, false, allowTagging, assignableTo);
           }
       }
     return result;
@@ -1190,20 +1228,28 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
-   * @param g2 the new actual generics to be used
+   * @param g the new actual generics to be used
    *
-   * @param o2 the new outer type to be used (which may also differ in its
+   * @param o the new outer type to be used (which may also differ in its
    * actual generics).
    *
-   * @return a new type with same feature(), but using g2/o2 as generics
+   * @return a new type with same feature(), but using g/o as generics
    * and outer type.
    */
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
+  public AbstractType applyTypePars(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument());
+      (isNormalType(),
+       this instanceof ResolvedType);
 
-    throw new Error("actualType not supported for "+getClass());
+    g.freeze();
+
+    return new ResolvedType() {
+      @Override protected AbstractFeature backingFeature() { return AbstractType.this.backingFeature(); }
+      @Override public List<AbstractType> generics() { return g; }
+      @Override public AbstractType outer() { return o == null ? feature().outer().selfType() : o; }
+      @Override public TypeKind kind() { return AbstractType.this.kind(); }
+    };
   }
 
 

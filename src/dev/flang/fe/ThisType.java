@@ -68,31 +68,4 @@ class ThisType extends LibraryType {
     return TypeKind.ThisType;
   }
 
-  @Override
-  public AbstractType asRef()
-  {
-    // NYI: CLEANUP: isAssignableFrom should create the ref-type itself
-    // if (PRECONDITIONS) require
-    //   (Thread.currentThread().getStackTrace()[2].getMethodName().equals("isAssignableFrom"));
-
-    if (_asRef == null)
-      {
-        _asRef = new NormalType(_libModule, _at, _feature, TypeKind.RefType, _feature.generics().asActuals(), _feature.outer().selfType().asThis());
-      }
-    return _asRef;
-  }
-
-  @Override
-  public AbstractType asValue()
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'asValue'");
-  }
-
-  @Override
-  public AbstractType asThis()
-  {
-    return this;
-  }
-
 }

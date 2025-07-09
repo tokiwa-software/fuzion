@@ -68,15 +68,6 @@ class NormalType extends LibraryType
 
   AbstractType _outer;
 
-
-  /**
-   * Cached result of asRef()
-   */
-  AbstractType _asRef = null;
-  AbstractType _asValue = null;
-  AbstractType _asThis = null;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -119,6 +110,7 @@ class NormalType extends LibraryType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
+  // NYI: CLEANUP: remove, why does this behave differently from super.applyTypePars?
   @Override
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
@@ -163,49 +155,6 @@ class NormalType extends LibraryType
   public AbstractType outer()
   {
     return _outer;
-  }
-
-  @Override
-  public AbstractType asRef()
-  {
-    var result = _asRef;
-    if (result == null)
-      {
-        result = isRef() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.RefType, _generics, _outer);
-        _asRef = result;
-      }
-    return result;
-  }
-
-  @Override
-  public AbstractType asValue()
-  {
-    var result = _asValue;
-    if (result == null)
-      {
-        result = isValue() ? this :  new NormalType(_libModule, _at, _feature, TypeKind.ValueType, _generics, _outer);
-        _asValue = result;
-      }
-    return result;
-  }
-
-  @Override
-  public AbstractType asThis()
-  {
-    var result = _asThis;
-    if (result == null)
-      {
-        if (feature().isUniverse())
-          {
-            result = this;
-          }
-        else
-          {
-            result = new ThisType(_libModule, _at, _feature);
-          }
-        _asThis = result;
-      }
-    return result;
   }
 
 
