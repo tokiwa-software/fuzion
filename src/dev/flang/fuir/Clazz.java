@@ -411,10 +411,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private boolean needsSpecialization(AbstractFeature f)
   {
-    var or = f.outerRef();
-
-    return !f.isConstructor()  // do not specialize a constructor
-      && or != null;
+    return !(f.isConstructor() || f.outerRef() == null);
   }
 
 
