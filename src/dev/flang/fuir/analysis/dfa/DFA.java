@@ -1403,6 +1403,20 @@ public class DFA extends ANY
     do
       {
         cnt++;
+
+        if (_options.verbose(2))
+          {
+            _options.verbosePrintln(2,
+                                    "DFA " + (_real ? "real " : "pre ") +
+                                    "iteration #" + cnt + ": --------------------------------------------------" +
+                                    (_options.verbose(3) ? ("calls:"   + _calls.size() +
+                                                            ",values:" + _numUniqueValues +
+                                                            ",envs:"   + (_envsQuick.size() + _envs.size()) +
+                                                            (_options.verbose(4) ? "; " + _changedSetBy.get()
+                                                                                    : ""                        ))
+                                                         : ""                                                     ));
+          }
+
         _changed = false;
         if (cnt == 1)
           {
