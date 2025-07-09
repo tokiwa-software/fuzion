@@ -1402,7 +1402,16 @@ public class Runtime extends ANY
       }
     for (String library : libraries)
       {
-        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), arena));
+        try
+          {
+            llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), arena));
+          }
+        catch (IllegalArgumentException e)
+          {
+            Errors.error("'" + library + "' not found on your system. "
+                        + "Make sure to install the corresponding package, that provides '" + library + "'.");
+            System.exit(1);
+          }
       }
 
     var memSeg = llu
