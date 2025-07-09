@@ -652,17 +652,23 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     if (feature().isCotype())
       {
-        t = _type.generics().get(0).actualType(t);
-        var g = t.cotypeActualGenerics();
-        var o = t.outer();
-        if (o != null)
+        t = t.isCotypeType() ? _type.generics().get(0).actualType(t) : t;
+        if (t.isNormalType())
           {
-            o = replaceThisTypeForCotype(o);
+            var g = t.cotypeActualGenerics();
+            var o = t.outer();
+            if (o != null)
+              {
+                o = replaceThisTypeForCotype(o);
+              }
+            return ResolvedNormalType.create(t, g, g, o);
           }
-        return ResolvedNormalType.create(t, g, g, o);
+        else
+          {
+            return t;
+          }
       }
-      // NYI: UNDER DEVELOPMENT: !t.isGenericArgument() seems weird?
-    else if (outer() != null && !t.isGenericArgument())
+    else if (outer() != null)
       {
         return outer().replaceThisTypeForCotype(t);
       }

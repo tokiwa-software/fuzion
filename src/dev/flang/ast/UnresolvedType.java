@@ -861,7 +861,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * was not resolved yet.
    */
   @Override
-  boolean isCotypeType()
+  public boolean isCotypeType()
   {
     return false;
   }
