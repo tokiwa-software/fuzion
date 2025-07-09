@@ -2104,12 +2104,12 @@ public class DFA extends ANY
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
-      return cl.getEffectCheck(cl.site(), ecl, false);
+      return cl.useAndGetEffect(cl.site(), ecl, false);
     });
     put("effect.type.unsafe_from_env"    , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
-      return cl.getEffectCheck(cl.site(), ecl, true);
+      return cl.getEffect(cl.site(), ecl, true);
     });
 
 
@@ -2277,7 +2277,7 @@ public class DFA extends ANY
     put("effect.type.abort0"                , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
-          var ev = cl.getEffectCheck(cl.site(), ecl, false);
+          var ev = cl.useAndGetEffect(cl.site(), ecl, false);
           if (cl._dfa._real)
             {
               if (ev != null      /* NYI: needed? */ &&
@@ -2293,11 +2293,11 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.getEffectCheck(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null
+    put("effect.type.is_instated0"          , cl -> cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
-                          * should reconsider if handling of default effects changes
-                          */
+                           * should reconsider if handling of default effects changes
+                           */
         );
 
     put("fuzion.jvm.is_null0"  , cl ->

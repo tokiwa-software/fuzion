@@ -566,11 +566,10 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param ignoreError true if error reporting for missing effect during
    * _dfa._real phase should be suppressed.
    *
-   * @return null in case no effect of type ecl was found
+   * @return the effect value or null in case no effect of type ecl was found (yet)
    */
-  Value getEffectCheck(int s, int ecl, boolean ignoreError)
+  Value getEffect(int s, int ecl, boolean ignoreError)
   {
-    _group.usesEffect(ecl);
     Value result;
     if (_dfa._real)
       {
@@ -593,6 +592,26 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * Mark effect of type `ecl` used and return its values via {@link getEffect}.
+   *
+   * @param s the site that requires this effect, for error message in case
+   * _dfa._reportResults.
+   *
+   * @param ecl clazz defining the effect type.
+   *
+   * @param ignoreError true if error reporting for missing effect during
+   * _dfa._real phase should be suppressed.
+   *
+   * @return the effect value or null in case no effect of type ecl was found (yet)
+   */
+  Value useAndGetEffect(int s, int ecl, boolean ignoreError)
+  {
+    _group.usesEffect(ecl);
+    return getEffect(s, ecl, ignoreError);
+  }
+
+
+  /**
    * Replace effect of given type with a new value.
    *
    * NYI: This currently modifies the effect and hence the call. We should check
@@ -604,12 +623,8 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void replaceEffect(int ecl, Value e)
   {
-    if (!_dfa._reportResults)
-      {
-        // make sure it is known that effect ecl is required here, but do not
-        // report an error if it is not since we have our own error below:
-        var ignore = getEffectCheck(site(), ecl, false);
-      }
+    // make sure it is known that effect ecl is required here:
+    _group.usesEffect(ecl);
 
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
