@@ -332,9 +332,12 @@ public class Html extends ANY
     var allInner = new List<AbstractFeature>();
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
-    return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
+    return allInner.stream()
+        .filter(f->isVisible(f))
+        .filter(f->f instanceof LibraryFeature lf && lm.sameOrDependent(lf._libModule))
+        .anyMatch(f->f.isAbstract())
              ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
-               "which are abstract.'>[Contains abstract features]</div>"
+               "which are abstract.'>[Contains abstract features]</div>" // NYI: replace title attribute with proper tooltip
              : "";
   }
 
@@ -354,9 +357,7 @@ public class Html extends ANY
 
   private boolean isVisible(AbstractFeature af)
   {
-    var vis = af.visibility();
-    return vis.typeVisibility() == Visi.PUB;
-
+    return af.visibility().typeVisibility() == Visi.PUB;
   }
 
 
