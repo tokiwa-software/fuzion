@@ -1789,7 +1789,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
-      (parent == Types.f_ERROR || heir ==Types.f_ERROR || heir.inheritsFrom(parent));
+      (parent == Types.f_ERROR || heir == Types.f_ERROR || heir.inheritsFrom(parent));
 
     if (isThisType() && feature() == parent)
       {
