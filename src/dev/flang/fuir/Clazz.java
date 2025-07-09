@@ -621,12 +621,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisType(AbstractType t)
   {
-    var ct = this;
-    while (ct != null && !t.isGenericArgument())
-      {
-        t = ct.replaceThisTypeForCotype(t);
-        ct = ct._outer;
-      }
+    t = replaceThisTypeForCotype(t);
     if (t.isThisType())
       {
         t = findOuter(t)._type;
@@ -664,9 +659,25 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             o = replaceThisTypeForCotype(o);
           }
-        t = ResolvedNormalType.create(t, g, g, o);
+        return ResolvedNormalType.create(t, g, g, o);
+      }
+      // NYI: UNDER DEVELOPMENT: !t.isGenericArgument() seems weird?
+    else if (outer() != null && !t.isGenericArgument())
+      {
+        return outer().replaceThisTypeForCotype(t);
       }
     return t;
+  }
+
+
+  /**
+   * Get outer of this clazz via outerRef or _outer
+   */
+  private Clazz outer()
+  {
+    return outerRef() != null
+      ? outerRef().resultClazz()
+      : _outer;
   }
 
 
@@ -1720,6 +1731,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         else
           {
             var ft = f.resultType();
+            ft = replaceThisTypeForCotype(ft);
             result = handDown(ft, _select);
           }
         _resultClazz = result;
@@ -1830,10 +1842,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var i = feature();
     while (i != null && i != of)
       {
-        res = res.outerRef() != null
-          ? res.outerRef().resultClazz()
-          : res._outer;
-
+        res = res.outer();
         i = res == null
           ? null
           : (LibraryFeature) res.feature();
