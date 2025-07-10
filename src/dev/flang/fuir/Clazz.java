@@ -43,6 +43,8 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
 import dev.flang.ast.ResolvedNormalType;
+import dev.flang.ast.ResolvedType;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.Types;
 
 import dev.flang.fe.LibraryFeature;
@@ -375,7 +377,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 if (CHECKS) check
                   (Errors.any() || feature() == Types.resolved.f_type_as_value);
 
-                gi = gi.feature().isRef() ? gi.asRef() : gi.asValue();
+                gi = gi.feature().isRef() ? gi.asRef() : asValue(gi);
                 }
             _actualTypeParameters[i] = _fuir.type2clazz(gi);
           }
@@ -387,6 +389,30 @@ class Clazz extends ANY implements Comparable<Clazz>
     // var ignore = resultClazz();
   }
 
+
+  /**
+   * `at` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  private AbstractType asValue(AbstractType at)
+  {
+    if (PRECONDITIONS) require
+      (at.isNormalType());
+
+    return switch (at.kind()) {
+      case GenericArgument -> throw new Error("asValue not legal for genericArgument");
+      case ThisType -> throw new Error("asValue not legal for this-type");
+      case ValueType -> at;
+      case RefType ->
+        new ResolvedType() {
+          @Override protected AbstractFeature backingFeature() { return at.feature(); }
+          @Override public List<AbstractType> generics() { return at.generics(); }
+          @Override public AbstractType outer() { return at.outer(); }
+          @Override public TypeKind kind() { return TypeKind.ValueType; }
+        };
+    };
+  }
 
 
   void addInner(Clazz i)
@@ -543,7 +569,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     for (var p: feature().inherits())
       {
         var pt = p.type();
-        var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
+        var t1 = isRef() && !pt.isVoid() ? pt.asRef() : asValue(pt);
         var t2 = _type.actualType(t1);
         var pc = _fuir.newClazz(t2);
         if (CHECKS) check
@@ -618,15 +644,16 @@ class Clazz extends ANY implements Comparable<Clazz>
    * from this Clazz.
    *
    * @param t a type
+   * @param inh
    */
-  AbstractType replaceThisType(AbstractType t)
+  AbstractType replaceThisType(AbstractType t, List<AbstractCall> inh)
   {
     t = replaceThisTypeForCotype(t);
     if (t.isThisType())
       {
-        t = findOuter(t)._type;
+        t = findOuter(t, inh)._type;
       }
-    return t.applyToGenericsAndOuter(g -> replaceThisType(g));
+    return t.applyToGenericsAndOuter(g -> replaceThisType(g, inh));
   }
 
 
@@ -683,20 +710,21 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param generics a list of generic arguments that might itself consist of
    * formal generics
+   * @param inh
    *
    * @return The list of actual generics after replacing the generics of this
    * class or its outer classes.
    */
-  List<AbstractType> actualGenerics(List<AbstractType> generics)
+  List<AbstractType> actualGenerics(List<AbstractType> generics, List<AbstractCall> inh)
   {
     var result = this._type.replaceGenerics(generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
-    result = result.map(t->replaceThisType(t));
+    result = result.map(t->replaceThisType(t, inh));
 
     if (_outer != null)
       {
-        result = _outer.actualGenerics(result);
+        result = _outer.actualGenerics(result, inh);
       }
     return result;
   }
@@ -957,7 +985,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     // first look in the feature itself
-    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn, f);
+    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn);
 
     if (!result.redefinesFull().contains(f) && result != f)
       {
@@ -972,7 +1000,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var p: chain)
           {
-            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn, f);
+            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn);
             if (!result.redefinesFull().contains(f) && result != f)
               {
                 // feature with same name, but not a redefinition
@@ -1522,7 +1550,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (isChoice())
       {
         result = new List<>();
-        for (var t : actualGenerics(feature().choiceGenerics()))
+        for (var t : actualGenerics(feature().choiceGenerics(), new List<>()))
           {
             result.add(_fuir.newClazz(t));
           }
@@ -1729,7 +1757,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             var ft = f.resultType();
             ft = replaceThisTypeForCotype(ft);
-            result = handDown(ft, _select);
+            result = handDown(ft, _select, new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
           }
         _resultClazz = result;
       }
@@ -1772,7 +1800,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
         var oc = _outer;
         var tclazz  = _fuir.clazz(call.target(), oc, inh);
-        var typePars = actualGenerics(call.actualTypeParameters());
+        var typePars = actualGenerics(call.actualTypeParameters(), new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
         check(call.isInheritanceCall());
         o = tclazz.lookupCall(call, typePars);
       }
@@ -1822,11 +1850,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Find outer clazz of this corresponding to this-type {@code o}.
    *
    * @param o the this-type whose clazz we are searching for.
+   * @param inh
    *
    * @return the outer clazz of this corresponding this-type {@code o}.
    */
   // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
-  private Clazz findOuter(AbstractType o)
+  private Clazz findOuter(AbstractType o, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (o.isThisType());
@@ -1834,7 +1863,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o, NO_SELECT, (t1,t2)->{}).feature();
+    var of = handDown(o, NO_SELECT, (t1,t2)->{}, inh).feature();
     var res = this;
     var i = feature();
     while (i != null && i != of)
@@ -1845,7 +1874,8 @@ class Clazz extends ANY implements Comparable<Clazz>
           : (LibraryFeature) res.feature();
       }
 
-    // NYI: BUG: handDown does not handle nestedinheritance correctly, test/covariance
+    // NYI: BUG: inh that is passed to handDown is incorrectly empty
+    // for some cases in test/covariance
     if (i == null)
       {
         res = this;
@@ -1949,7 +1979,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that is to be chosen. NO_SELECT otherwise.
    *
    */
-  private Clazz handDown(AbstractType t, int select)
+  private Clazz handDown(AbstractType t, int select, List<AbstractCall> inh)
   {
     // error handling for replacing {@code .this} types of {@code ref} types in a call result, see #4273
     var err = new List<Consumer<AbstractCall>>();
@@ -1957,12 +1987,12 @@ class Clazz extends ANY implements Comparable<Clazz>
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
       { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
-    t = handDown(t, select, foundRef);
+    t = handDown(t, select, foundRef, inh);
 
     var res = _fuir.type2clazz(t);
     if (res.feature().isCotype())
       {
-        var ac = handDown(res._type.generics().get(0));
+        var ac = handDown(res._type.generics().get(0), inh);
         res = ac.typeClazz();
       }
     if (err.size() > 0)
@@ -1984,81 +2014,53 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that is to be chosen. NO_SELECT otherwise.
    *
    */
-  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef)
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh0)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    for (var i = 0; i<2; i++) // NYI: UNDER DEVELOPMENT: get rid for second iteration!
+    for (AbstractCall c : inh0)
       {
-        // iterate using {@code child} and {@code parent} over outer clazzes starting at
-        // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
-        // parent feature the previous inner clazz' feature was inherited from.
-        var child = this;
-        AbstractFeature parent = feature();
-        while (child != null)
-          {
-            var childf = child.feature();
-            if (i == 0)
-              {
-                // find outer that inherits this clazz, e.g.
-                //
-                //   Any.me =>
-                //     res := Any.this
-                //     res
-                //   x : Any is
-                //
-                // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
-                // inheritance is two features out when {@code x} ({@code childf}) inherits
-                // form {@code Any} ({@code parent}).
-                t = t.replace_inherited_this_type(parent, childf, foundRef);
-                var inh = childf.tryFindInheritanceChain(parent);
-                if (CHECKS) check
-                  (Errors.any() || inh != null);
-                if (inh != null)
-                  {
-                    t = handDownThroughInheritsCalls(t, select, inh);
-                  }
-                t = t.applyTypeParsLocally(child._type, select);
-                // NYI: BUG: we should not need
-                // replace_this_type_by_actual_outer and replace_this_type_by_actual_outer2
-                t = t.replace_this_type_by_actual_outer(child._type, foundRef);
-              }
-            else
-              {
-                // NYI: UNDER DEVELOPMENT: This currently cannot be done during
-                // the first pass of the loop, need to check why (most likely it
-                // performs something that is in conflict with the call to
-                // {@code t.replace_inherited_this_type(parentf, childf, foundRef)} a few lines
-                // above.
-                t = t.replace_this_type_by_actual_outer2(child._type,
-                                                         foundRef);
-              }
-            // NYI: UNDER DEVELOPMENT: Where is the different to just using _outer?
-            child = childf.hasOuterRef() ? child.lookup(childf.outerRef()).resultClazz()
-                                         : child._outer;
-            parent = childf.outer();
-          }
-        if (CHECKS) check
-          (Errors.any() || (child == null) == (parent == null));
+        t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
+
+    // iterate using {@code child} and {@code parent} over outer clazzes starting at
+    // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
+    // parent feature the previous inner clazz' feature was inherited from.
+    var child = this;
+    AbstractFeature parent = feature();
+    while (child != null)
+      {
+        var childf = child.feature();
+        // find outer that inherits this clazz, e.g.
+        //
+        //   Any.me =>
+        //     res := Any.this
+        //     res
+        //   x : Any is
+        //
+        // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
+        // inheritance is two features out when {@code x} ({@code childf}) inherits
+        // form {@code Any} ({@code parent}).
+        t = t.replace_inherited_this_type(parent, childf, foundRef);
+        var inh = childf.tryFindInheritanceChain(parent);
+        if (CHECKS) check
+          (Errors.any() || inh != null);
+        if (inh != null)
+          {
+            t = handDownThroughInheritsCalls(t, select, inh);
+          }
+        t = t.applyTypeParsLocally(child._type, select);
+        t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
+        child = child.outerRef() != null ? child.outerRef().resultClazz()
+                                         : child._outer;
+        parent = childf.outer();
+      }
+    if (CHECKS) check
+      (Errors.any() || (child == null) == (parent == null));
     return t;
-  }
-
-
-  /**
-   * Convenience version of {@code handDown} with {@code select} set to {@code NO_SELECT}.
-   */
-  private Clazz handDown(AbstractType t)
-  {
-    if (PRECONDITIONS) require
-      (t != null,
-       Errors.any() || t != Types.t_ERROR,
-       !t.isOpenGeneric());
-
-    return handDown(t, FuzionConstants.NO_SELECT);
   }
 
 
@@ -2075,7 +2077,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        inh != null);
 
     var t1 = handDownThroughInheritsCalls(t, FuzionConstants.NO_SELECT, inh);
-    return handDown(t1);
+    return handDown(t1, FuzionConstants.NO_SELECT, inh);
   }
 
 
@@ -2215,7 +2217,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (_asValue == null)
       {
         _asValue = isRef()
-          ? _fuir.newClazz(_outer, _type.asValue(), _select)
+          ? _fuir.newClazz(_outer, asValue(_type), _select)
           : this;
       }
 

@@ -484,7 +484,7 @@ public class GeneratingFUIR extends FUIR
         if (!tclazz.isVoidType())
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
-            var typePars = outerClazz.actualGenerics(at);
+            var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
         else
@@ -2209,7 +2209,7 @@ public class GeneratingFUIR extends FUIR
     var callToOuterRef = c.target().isCallToOuterRef();
     var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
     var needsCode = !dynamic || explicitTarget != null;
-    var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
+    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     // NYI: HACK
     // can happen e.g. in compile_time_type_casts
     // since toStack currently puts illegal code in _allCode

@@ -297,7 +297,7 @@ public class LibraryModule extends Module implements MirModule
       {
         var d = main == null
           ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0), null);
+          : lookupFeature(universe(), FeatureName.get(main, 0));
 
         if (CHECKS) check
           (d != null);
@@ -563,7 +563,7 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.8+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.8+|true      | 1      | byte[4]       | MIR_FILE_MAGIC
 
               | 1      | Name          | module name
 
@@ -588,7 +588,7 @@ Module File
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
+   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -2468,6 +2468,18 @@ SourceFile
   public ByteBuffer data(String name)
   {
     throw new UnsupportedOperationException("Unimplemented method 'data'");
+  }
+
+
+  /**
+   * Is this module the same as the provided one or does this module depend on the provided one?
+   *
+   * @param lm the LibraryModule against which this module should be checked
+   * @return true iff they are the same or this module depends on the provided one
+   */
+  public boolean sameOrDependent(LibraryModule lm)
+  {
+    return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
   }
 
 }
