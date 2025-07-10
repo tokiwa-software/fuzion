@@ -1,0 +1,92 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature read_request
+#
+# -----------------------------------------------------------------------
+
+
+# read a HTTP response message
+#
+public read_request(
+  # mutate effect from which to read the bytes of the request
+  LM type: mutate) outcome request_msg
+=>
+
+  exception unit _ ()->
+
+    cause(s String) void =>
+      (exception unit).env.cause (error s)
+
+    # NYI: must parse header as superset of ASCII
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-2
+
+    # GET /images/logo.png HTTP/1.1
+
+    # request line
+    rl := match next_line LM
+            io.end_of_file => cause "unexpected end of file"
+            s String => s.split " "
+
+    if rl.count != 3 then cause "broken request line"
+
+    method http.req_method :=
+      if      rl[0] = "GET"     then http.get
+      else if rl[0] = "HEAD"    then http.head
+      else if rl[0] = "POST"    then http.post_r
+      else if rl[0] = "PUT"     then http.put
+      else if rl[0] = "DELETE"  then http.delete
+      else if rl[0] = "CONNECT" then http.connect
+      else if rl[0] = "OPTIONS" then http.options
+      else if rl[0] = "TRACE"   then http.trace
+      else if rl[0] = "PATCH"   then http.patch
+      else                           cause "unsupported request method"
+
+    target := rl[1]
+
+    if !rl[2].starts_with "HTTP/" then cause "unsupported protocol {rl[2]}"
+
+    ver := rl[2].substring 5 .split_n "." 1
+                .map (s->s.parse_i32.or_cause unit _->(error "broken format of HTTP version '{rl[2]}'"))
+
+    major := ver[0]
+    minor := ver.count = 1 ? 0 : ver[1]
+
+    tmp_parsed_fields := parse_header_fields LM .or_cause unit id
+
+    header_fields :=
+      # request target in absolute-form
+      # https://datatracker.ietf.org/doc/html/rfc9112#name-absolute-form
+      if target.starts_with "http"
+        # MUST replace Host field if target is in absolute-form
+        t1 := target.split_n "//" 1
+        if t1.count != 2 then cause "broken target '$target in request"
+        host := (t1[1].split_n "/" 1)[0]
+        tmp_parsed_fields.add_canonical "Host" host
+      else
+        tmp_parsed_fields
+
+
+    # The presence of a message body in a request is signaled by a Content-Length or Transfer-Encoding header field. Request message framing is independent of method semantics.
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-6-4
+    #
+    body :=
+      body_helper LM true header_fields .or_cause unit id
+
+    request_msg method target major minor header_fields body
