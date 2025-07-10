@@ -18,9 +18,7 @@
 
         one, two, three := (1, 2, 3)
 
-  - Support type inference for nullary lambda expressions, fix
-    [1015](https://github.com/tokiwa-software/fuzion/issues/1015)
-    ([5308](https://github.com/tokiwa-software/fuzion/pull/5308))
+  - Support type inference for nullary lambda expressions, fix [1015](https://github.com/tokiwa-software/fuzion/issues/1015) ([5308](https://github.com/tokiwa-software/fuzion/pull/5308))
 
     So, we no longer need to specify a type in declarations like this:
 
@@ -317,7 +315,7 @@
 
   - fuir: `clazzOuterRef` now always return `NO_CLAZZ` for native, fields etc. ([5012](https://github.com/tokiwa-software/fuzion/pull/5012))
 
-. JVM back end
+- JVM back end
 
   - fix verify error for unreachable code ([5379](https://github.com/tokiwa-software/fuzion/pull/5379))
 
@@ -365,7 +363,7 @@
 
   - create link libclang.dll, clang.dll ([5033](https://github.com/tokiwa-software/fuzion/pull/5033))
 
-fz tool
+- FZ tool
 
   - changed all options to camelCase ([5150](https://github.com/tokiwa-software/fuzion/pull/5150))
 
@@ -789,7 +787,7 @@ fz tool
 
   - fix error: 'poll.h' file not found ([4977](https://github.com/tokiwa-software/fuzion/pull/4977))
 
-- fz tool
+- FZ tool
 
   - changed all options to camelCase ([5150](https://github.com/tokiwa-software/fuzion/pull/5150))
 
