@@ -360,59 +360,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a reference variant of this type.  Return this
-   * in case it is a reference already.
-   */
-  public AbstractType asRef()
-  {
-    AbstractType result = this;
-    if (!isRef() && !isVoid() && this != Types.t_ERROR)
-      {
-        result = ResolvedNormalType.create(this, TypeKind.RefType);
-      }
-    return result;
-  }
-
-
-  /**
-   * Create a this.type variant of this type.  Return this
-   * in case it is a this.type or a choice variant already.
-   */
-  public AbstractType asThis()
-  {
-    AbstractType result = this;
-    if (isNormalType() && this != Types.t_ERROR && !feature().isUniverse())
-      {
-        result = new ThisType(_feature);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || feature().isUniverse() || result.isThisType(),
-       isNormalType() || result == this);
-
-    return result;
-  }
-
-
-  /**
-   * Create a value variant of this type.  Return this
-   * in case it is a value already.
-   */
-  public AbstractType asValue()
-  {
-    if (PRECONDITIONS) require
-      (isNormalType());
-
-    AbstractType result = this;
-    if (!isValue() && this != Types.t_ERROR)
-      {
-        result = ResolvedNormalType.create(this, TypeKind.ValueType);
-      }
-    return result;
-  }
-
-
-  /**
    * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.
@@ -454,6 +401,8 @@ public class ResolvedNormalType extends ResolvedType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
+  // NYI: CLEANUP: remove, why does this behave differently from super.applyTypePars?
+  @Override
   public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
   {
     return ResolvedNormalType.create(this, g2, unresolvedGenerics(), o2);

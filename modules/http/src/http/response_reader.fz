@@ -1,0 +1,97 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature response_reader
+#
+# -----------------------------------------------------------------------
+
+
+# read a HTTP response message
+#
+public read_response(
+  # mutate effect from which to read the bytes of the request
+  LM type : mutate) outcome (http.response_msg)
+=>
+  read_response LM nil
+
+# read a HTTP response message
+#
+public read_response(
+  # mutate effect from which to read the bytes of the request
+  LM type : mutate,
+  # the request for which this response is generated
+  req option (http.request_msg)) outcome (http.response_msg)
+=>
+  exception unit _ ()->
+
+    cause(s String) void =>
+      (exception unit).env.cause (error s)
+
+    # status line, e.g.: HTTP/1.1 200 OK
+    sl := match next_line LM
+            io.end_of_file => cause "unexpected end of file"
+            s String =>
+              # In the interest of robustness, a server that is expecting to receive and parse a request-line SHOULD ignore at least one empty line (CRLF) received prior to the request-line.
+              # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-6
+              raw_sl := s.starts_with crlf ? s.substring 2 : s
+              raw_sl.split_n " " 2
+
+    if sl.count != 3 then cause "broken status line"
+
+    if !sl[0].starts_with "HTTP/" then cause "not a HTTP response, protocol is '{sl[0]}'"
+
+    # When a major version of HTTP does not define any minor versions, the minor version "0" is implied. The "0" is used when referring to that protocol within elements that require a minor version identifier.
+    # https://datatracker.ietf.org/doc/html/rfc9110#section-2.5-6
+    ver := sl[0].substring 5 .split "."
+                .map (s->s.parse_i32.or_cause unit _->(error "broken format of HTTP version '{sl[0]}'"))
+    if ver.count > 2 then cause "broken format of HTTP version '{sl[0]}'"
+    major := ver[0]
+    minor := ver.count > 1 ? ver[1] : 0
+
+    code := sl[1].parse_i32.or_cause unit _->(error "invalid status code '{sl[1]}")
+
+    reason := sl[2]
+
+    header_fields := parse_header_fields LM .or_cause unit id
+
+    # NYI: UNDER DEVELOPMENT: make this lazy?
+    #
+    # The presence of a message body in a response, as detailed in Section 6.3, depends on both the request method to which it is responding and the response status code. This corresponds to when response content is allowed by HTTP semantics (Section 6.4.1 of [HTTP]).
+    # https://datatracker.ietf.org/doc/html/rfc9112#section-6-5
+    #
+    body :=
+      if (100 <= code < 200 # Informational
+          || code = 204     # No Content
+          || code = 304     # Not Modified
+          || req.ok && req.val.method = http.head) # responses to HEAD requests must not contain body data
+        # nil
+        body_reader LM 0
+      else if (200 <= code < 300 && req.ok && req.val.method = http.connect)
+
+        # Any 2xx (Successful) response to a CONNECT request implies that the connection will become a tunnel immediately after the empty line that concludes the header fields. A client MUST ignore any Content-Length or Transfer-Encoding header fields received in such a message.
+        # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.2
+
+        # NYI: BUG: what does "become a tunnel" mean
+        # option (Sequence u8) (io.buffered LM).read_fully
+        body_reader LM -1
+
+      else
+        body_helper LM false header_fields .or_cause unit id
+
+    http.response_msg req major minor code reason header_fields body

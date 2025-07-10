@@ -42,10 +42,10 @@ is
     */
 
     # Width of black lines as percentage of main radius
-    BLACK_LINE_WIDTH := 1.0/15
+    black_line_width := 1.0/15
 
     # size of three small circles relative to their surrounding circles
-    SMALL_CIRCLE_PERCENTAGE := 0.25
+    small_circle_percentage := 0.25
 
 
     /* the following values are geometry values that are fixed and should not be
@@ -53,13 +53,13 @@ is
     */
 
     # total size
-    SIZE := 512.0
+    size := 512.0
 
     # main radius
-    radius := SIZE / 2
+    radius := size / 2
 
     # width of black lines
-    blw := radius * BLACK_LINE_WIDTH
+    blw := radius * black_line_width
 
     # outer radius of three main wedges
     r1 := radius - blw
@@ -88,14 +88,14 @@ is
     r2 := (radius - blw * (1.0 + (1.0/3).sqrt)) / (1.0 + 2.0*(1.0/3).sqrt)
 
     # radius of three small circles
-    r3 := r2 * SMALL_CIRCLE_PERCENTAGE
+    r3 := r2 * small_circle_percentage
 
 
     # background and wedge colors:
-    BACKGROUND := java.awt.Color.BLACK
-    C1 := java.awt.Color.WHITE
-    C2 := java.awt.Color.new_III 81 36 128     # NYI: Overloading of Java constructors
-    C3 := java.awt.Color.new_III 130 106 175
+    background := java.awt.Color.BLACK
+    c1 := java.awt.Color.WHITE
+    c2 := java.awt.Color.new_III 81 36 128     # NYI: Overloading of Java constructors
+    c3 := java.awt.Color.new_III 130 106 175
 
 
     G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: #167: 'ref' due to lack of 'like this'
@@ -103,9 +103,9 @@ is
       rotate (d f64) => G2D g0 tx ty rot+d
 
       three_times(draw (G2D, Java.java.awt.Color) -> T) =>
-        _ := draw  G2D.this                      C1
-        _ := draw (G2D.this.rotate -2.0*f64.π/3) C2
-        _ := draw (G2D.this.rotate -4.0*f64.π/3) C3
+        _ := draw  G2D.this                      c1
+        _ := draw (G2D.this.rotate -2.0*f64.π/3) c2
+        _ := draw (G2D.this.rotate -4.0*f64.π/3) c3
 
       # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
       # start and extending of len degrees.
@@ -126,16 +126,16 @@ is
       #
       draw_logo is
         # black background circle
-        cir BACKGROUND 0 0 radius
+        cir background 0 0 radius
 
         # three arcs
         three_times (g, c -> g.arc c 0 0 r1 -30 120)
 
         # black circle in the center, radius to touch the sides of the inner triangle
-        cir BACKGROUND 0 0 (radius-r2-blw)/2
+        cir background 0 0 (radius-r2-blw)/2
 
         # black arcs around inner circles
-        three_times (g, c -> g.arc BACKGROUND 0 -radius+r2+blw r2+blw 90 210)
+        three_times (g, c -> g.arc background 0 -radius+r2+blw r2+blw 90 210)
 
         # inner circles
         three_times (g, c -> g.cir c 0 -radius+blw+r2 r2)

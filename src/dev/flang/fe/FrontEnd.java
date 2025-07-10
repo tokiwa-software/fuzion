@@ -106,7 +106,7 @@ public class FrontEnd extends ANY
    * The library modules loaded so far.  Maps the module name, e.g. "base" to
    * the corresponding LibraryModule instance.
    */
-  private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
+  private final TreeMap<String, LibraryModule> _modules = new TreeMap<>();
 
 
   /**

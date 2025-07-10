@@ -1,0 +1,98 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test http_message_test
+#
+# -----------------------------------------------------------------------
+
+# test HTTP messages
+http_message_test =>
+
+/*
+TODO:
+- [ ] test errors in decoding/parsing
+*/
+
+  say "\nHTTP TEST"
+
+
+  read_handler(LM type : mutate, arr array u8) : io.Read_Handler is
+
+    pos := LM.env.new 0
+
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
+      p := pos.get
+      if p > arr.count
+        io.end_of_file
+      else
+        pos <- p + count
+        end := p+count > arr.count ? arr.count : p+count
+        arr.slice p end .as_array
+
+  lm : mutate is
+  lm ! ()->
+
+    say "\nCREATE REQUEST:\n"
+
+    my_req http.request_msg := (http.request_msg http.get "/docs/base" 2 0
+                                                 (container.map_of [("Host", "fuzion-lang.dev"),
+                                                                    ("User-Agent", "Fuzion HTTP Module"),
+                                                                    ("DNT", $"1")])
+                                                 (read_handler lm "".utf8.as_array))
+    say my_req
+
+
+
+    say "\nCREATE RESPONSE:\n"
+
+    my_resp http.response_msg := http.response_msg my_req 2 0 200 "OK"
+                                                   (container.map_of [("content-type", "text/html"),
+                                                                      ("server", "FuzionWebServer v0.016"),
+                                                                      ("x-frame-options", "DENY")])
+                                                   (read_handler lm "  <body>\n    <p>Hello World!</p>\n  </body>".utf8.as_array)
+    say my_resp
+
+
+
+  say "\nPARSE REQUEST:\n"
+
+  req_path := "/home/simon/fuzion/tests/http_message/http_req.txt"
+
+  parse_req :=
+    io.file.use _ req_path io.file.mode.read ()->
+      req := http.read_request io.file.file_mutate
+
+      say <| match req
+               r http.request_msg => r.as_string_with_body
+               e error => $e
+      req.val
+  _:=parse_req
+
+
+
+  say "\nPARSE RESPONSE:\n"
+
+  resp_path := "/home/simon/fuzion/tests/http_message/http_resp.txt"
+
+  _ := io.file.use _ resp_path io.file.mode.read ()->
+    resp := http.read_response io.file.file_mutate parse_req.val
+
+    say <| match resp
+              r http.response_msg => r.as_string_with_body
+              e error => $e

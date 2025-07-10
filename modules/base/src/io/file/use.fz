@@ -71,9 +71,16 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
       mode.append => 2
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
+
+    # NYI: BUG: unclear why DFA does not accept this
+    # file_mutate
+    #   .and (outcome R) open (open fd file_name)
+    #   .and ((io.buffered file_mutate).reader (read_handler fd) 1024)
+    #   .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+    #   .call code
+
     file_mutate ! ()->
-      # install effect `open T` and run `code`
-      (open fd file_name) ! ()->
-        (io.buffered file_mutate).reader (read_handler fd) 1024 ! ()->
-          (io.buffered file_mutate).writer (write_handler fd) 1024 ! ()->
-            code.call
+      open fd file_name
+        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd) 1024)
+        .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+        .call code

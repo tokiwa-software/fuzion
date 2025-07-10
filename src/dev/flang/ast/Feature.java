@@ -817,7 +817,7 @@ public class Feature extends AbstractFeature
                  List<AbstractCall> i,
                  Contract c,
                  Impl p,
-                 List<AbstractType> effects)
+                 List<AbstractType> effects) // NYI: UNDER DEVELOPMENT: effects
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -2098,8 +2098,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     ensureTypeSetsInitialized(res);
     if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
-          || at.isFunctionTypeExcludingLazy()
-          || at.isGenericArgument() && at.genericArgument().constraint(Context.NONE).isFunctionTypeExcludingLazy()
+          || at.selfOrConstraint(Context.NONE).isFunctionTypeExcludingLazy()
           // NYI: BUG: check if array element type is valid
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
           || !at.isGenericArgument() && at.feature().mayBeNativeValue()
@@ -2137,10 +2136,10 @@ A ((Choice)) declaration must not contain a result type.
     // might be fully resolved yet.
     if (Types.resolved.legalNativeArgumentTypes.isEmpty())
       {
-        var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0), null).selfType();
-        var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0), null).selfType();
-        var mm = res._module.lookupFeature(res.universe, FeatureName.get("Mapped_Memory", 0), null).selfType();
-        var nr = res._module.lookupFeature(res.universe, FeatureName.get("Native_Ref", 0), null).selfType();
+        var fd = res._module.lookupFeature(res.universe, FeatureName.get("File_Descriptor", 0)).selfType();
+        var dd = res._module.lookupFeature(res.universe, FeatureName.get("Directory_Descriptor", 0)).selfType();
+        var mm = res._module.lookupFeature(res.universe, FeatureName.get("Mapped_Memory", 0)).selfType();
+        var nr = res._module.lookupFeature(res.universe, FeatureName.get("Native_Ref", 0)).selfType();
         Types.resolved.legalNativeResultTypes.addAll(Types.resolved.numericTypes);
         Types.resolved.legalNativeResultTypes.add(fd);
         Types.resolved.legalNativeResultTypes.add(dd);
@@ -2339,7 +2338,7 @@ A ((Choice)) declaration must not contain a result type.
   private void checkDuplicateFeature(Resolution res)
   {
     var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
-    var existing = res._module.lookupFeature(_outer, newFeatureName, null);
+    var existing = res._module.lookupFeature(_outer, newFeatureName);
     if (existing != null && !isAbstractAndFixedPair(existing, this))
       {
         AstErrors.duplicateFeatureDeclaration(existing, this);

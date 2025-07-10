@@ -43,6 +43,8 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
 import dev.flang.ast.ResolvedNormalType;
+import dev.flang.ast.ResolvedType;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.Types;
 
 import dev.flang.fe.LibraryFeature;
@@ -375,7 +377,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                 if (CHECKS) check
                   (Errors.any() || feature() == Types.resolved.f_type_as_value);
 
-                gi = gi.feature().isRef() ? gi.asRef() : gi.asValue();
+                gi = gi.feature().isRef() ? gi.asRef() : asValue(gi);
                 }
             _actualTypeParameters[i] = _fuir.type2clazz(gi);
           }
@@ -387,6 +389,30 @@ class Clazz extends ANY implements Comparable<Clazz>
     // var ignore = resultClazz();
   }
 
+
+  /**
+   * `at` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  private AbstractType asValue(AbstractType at)
+  {
+    if (PRECONDITIONS) require
+      (at.isNormalType());
+
+    return switch (at.kind()) {
+      case GenericArgument -> throw new Error("asValue not legal for genericArgument");
+      case ThisType -> throw new Error("asValue not legal for this-type");
+      case ValueType -> at;
+      case RefType ->
+        new ResolvedType() {
+          @Override protected AbstractFeature backingFeature() { return at.feature(); }
+          @Override public List<AbstractType> generics() { return at.generics(); }
+          @Override public AbstractType outer() { return at.outer(); }
+          @Override public TypeKind kind() { return TypeKind.ValueType; }
+        };
+    };
+  }
 
 
   void addInner(Clazz i)
@@ -543,7 +569,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     for (var p: feature().inherits())
       {
         var pt = p.type();
-        var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
+        var t1 = isRef() && !pt.isVoid() ? pt.asRef() : asValue(pt);
         var t2 = _type.actualType(t1);
         var pc = _fuir.newClazz(t2);
         if (CHECKS) check
@@ -944,7 +970,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     // first look in the feature itself
-    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn, f);
+    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn);
 
     if (!result.redefinesFull().contains(f) && result != f)
       {
@@ -959,7 +985,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var p: chain)
           {
-            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn, f);
+            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn);
             if (!result.redefinesFull().contains(f) && result != f)
               {
                 // feature with same name, but not a redefinition
@@ -2204,7 +2230,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (_asValue == null)
       {
         _asValue = isRef()
-          ? _fuir.newClazz(_outer, _type.asValue(), _select)
+          ? _fuir.newClazz(_outer, asValue(_type), _select)
           : this;
       }
 
