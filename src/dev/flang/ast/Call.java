@@ -1405,7 +1405,6 @@ public class Call extends AbstractCall
             if (_select >= sz)
               {
                 AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
-                setToErrorState();
                 t = Types.t_ERROR;
               }
             else
@@ -1418,6 +1417,10 @@ public class Call extends AbstractCall
                   }
               }
           }
+      }
+    if (t.containsError())
+      {
+        setToErrorState();
       }
     return t;
   }
