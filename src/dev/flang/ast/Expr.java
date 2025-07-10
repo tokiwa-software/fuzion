@@ -738,7 +738,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
     var t = type();
     if (frmlT.isChoice() && !t.isVoid() && frmlT.isAssignableFrom(t).yes())
       {
-        AbstractType boxedType = boxedType(this, frmlT);
+        var needsBoxing = needsBoxing(frmlT);
+        var boxedType = needsBoxing == null ? type() : needsBoxing;
         if (frmlT.isChoice() && frmlT.isAssignableFrom(boxedType).yes())
           {
             checkTagging(this, boxedType, frmlT);
@@ -748,26 +749,29 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * @param expr the expr to be boxed
+   * Is boxing needed when we assign to frmlT?
    *
-   * @param frmlT the formal type
+   * @param frmlT the formal type we are assigning to.
    *
-   * @return the potentially boxed type
+   * @return the type after boxing or null if boxing is not needed
    */
-  private static AbstractType boxedType(Expr expr, AbstractType frmlT)
+  public AbstractType needsBoxing(AbstractType frmlT)
   {
-    var t = expr.type();
+    var t = type();
     if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
-      {
-        return t.asRef();
+      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
+         * could be a ref) or frmlT is this type and the underlying feature is by
+         * default a ref?
+         */
+        return frmlT;
       }
-    else if (t.isRef() && !expr.isCallToOuterRef())
+    else if (t.isRef() && !isCallToOuterRef())
       {
-        return t;
+        return null;
       }
     else if (frmlT.isRef())
       {
-        return t.asRef();
+        return frmlT;
       }
     else
       {
@@ -779,14 +783,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
               {
                 if (cg.isAssignableFrom(t).yes())
                   {
-                    return t.asRef();
+                    return cg;
                   }
               }
             throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
           }
         else
           {
-            return t;
+            return null;
           }
       }
   }

@@ -360,7 +360,7 @@ public abstract class IR extends ANY
 
     if (!t.isVoid() && frmlT.isAssignableFrom(t).yes())
       {
-        var rt = needsBoxing(expr, frmlT);
+        var rt = expr.needsBoxing(frmlT);
         if (rt != null)
           {
             result = new Box(result, rt);
@@ -369,7 +369,7 @@ public abstract class IR extends ANY
           {
             result = tag(result, frmlT);
             if (CHECKS) check
-              (needsBoxing(result, frmlT) == null);
+              (result.needsBoxing(frmlT) == null);
           }
       }
     /**
@@ -392,7 +392,7 @@ public abstract class IR extends ANY
     // because isAssignableFrom does not return yes without correct Context...
     else if (t.isGenericArgument() && frmlT.isRef())
       {
-        var rt = needsBoxing(expr, frmlT);
+        var rt = expr.needsBoxing(frmlT);
         if (rt != null)
           {
             result = new Box(result, rt);
@@ -404,7 +404,7 @@ public abstract class IR extends ANY
         || t.isVoid()
         || frmlT.isGenericArgument()
         || frmlT.isThisType()
-        || needsBoxing(result, frmlT) == null
+        || result.needsBoxing(frmlT) == null
         || frmlT.isAssignableFrom(t).no());
 
     return result;
@@ -486,54 +486,6 @@ public abstract class IR extends ANY
           (Errors.any() || cgs.size() == 1);
 
         return tag(tag(expr, cgs.get(0)), frmlT);
-      }
-  }
-
-
-  /**
-   * Is boxing needed when we assign to frmlT?
-   *
-   * @param frmlT the formal type we are assigning to.
-   *
-   * @return the type after boxing or null if boxing is not needed
-   */
-  private static AbstractType needsBoxing(Expr expr, AbstractType frmlT)
-  {
-    var t = expr.type();
-    if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
-      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
-         * could be a ref) or frmlT is this type and the underlying feature is by
-         * default a ref?
-         */
-        return frmlT;
-      }
-    else if (t.isRef() && !expr.isCallToOuterRef())
-      {
-        return null;
-      }
-    else if (frmlT.isRef())
-      {
-        return frmlT;
-      }
-    else
-      {
-        if (frmlT.isChoice() &&
-            frmlT.isAssignableFromWithoutBoxing(t).no() &&
-            frmlT.isAssignableFrom(t).yes())
-          { // we do both, box and then tag:
-            for (var cg : frmlT.choiceGenerics())
-              {
-                if (cg.isAssignableFrom(t).yes())
-                  {
-                    return cg;
-                  }
-              }
-            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
-          }
-        else
-          {
-            return null;
-          }
       }
   }
 
