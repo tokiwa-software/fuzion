@@ -48,7 +48,6 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Function;
 import dev.flang.ast.Impl;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Tag;
 import dev.flang.ast.This;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
@@ -262,7 +261,6 @@ public class ParserTool extends ANY
         @Override public void         action      (Impl           i) { FoundPos(i.pos); }
         @Override public Expr         action      (InlineArray    i) { FoundPos(i.pos()); return i; }
         @Override public void         action      (AbstractMatch  m) { FoundPos(m.pos()); }
-        @Override public void         action      (Tag            b) { FoundPos(b.pos()); }
         @Override public Expr         action      (This           t) { FoundPos(t.pos()); return t; }
         @Override public AbstractType action      (AbstractType   t) { FoundPos(t.declarationPos()); return t; }
       };

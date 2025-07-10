@@ -1,13 +1,5 @@
 
---CURDIR--/reg_issue2347.fz:27:35: error 1: Could not find called feature
-for s := [1] : nil, s.filter x->d.bla
-----------------------------------^^^
-Feature not found: 'bla' (no arguments)
-Target feature: 'i32'
-In call: 'd.bla'
-
-
---CURDIR--/reg_issue2347.fz:27:5: error 2: Incompatible types when passing argument in a call
+--CURDIR--/reg_issue2347.fz:27:5: error 1: Incompatible types when passing argument in a call
 for s := [1] : nil, s.filter x->d.bla
 ----^
 Actual type for argument #1 's' does not match expected type.
@@ -17,5 +9,13 @@ actual type found   : 'Sequence (array i32)'
 assignable to       : 'Sequence (array i32)'
 for value assigned  : 's'
 To solve this, you could change the type of the target 's' to 'Sequence (array i32)' or convert the type of the assigned value to 'list (array i32)'.
+
+
+--CURDIR--/reg_issue2347.fz:27:35: error 2: Could not find called feature
+for s := [1] : nil, s.filter x->d.bla
+----------------------------------^^^
+Feature not found: 'bla' (no arguments)
+Target feature: 'i32'
+In call: 'd.bla'
 
 2 errors.

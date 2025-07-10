@@ -232,24 +232,6 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Boxing/tagging for assigned value: Make sure a value type that is assigned
-   * is properly boxed/tagged.
-   *
-   * @param context the source code context where this assignment is used
-   */
-  void boxAndTagVal(Context context)
-  {
-    if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.any());
-
-    if (_assignedField != Types.f_ERROR)
-      {
-        _value = _value.boxAndTag(_assignedField.resultType(), context);
-      }
-  }
-
-
-  /**
    * check the types in this assignment
    *
    * @param res the Resolution that performs this checkTypes
@@ -270,14 +252,18 @@ public abstract class AbstractAssign extends Expr
           (Errors.any() || frmlT != Types.t_ERROR,
            Errors.any() || _value.type() != Types.t_ERROR);
 
-        if (_value.type() != Types.t_ERROR && frmlT.isAssignableFromDirectly(_value.type()).no())
+        if (_value.type() != Types.t_ERROR && frmlT.isAssignableFrom(_value.type(), context).no())
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value, context);
           }
+        else
+          {
+            _value.checkAmbiguousAssignmentToChoice(frmlT);
+          }
+
 
         if (CHECKS) check
-          (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName()) == f,
-           Errors.any() || (_value.type().isVoid() || _value.needsBoxing(frmlT, context) == null || _value.isBoxed()));
+          (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName()) == f);
       }
   }
 
