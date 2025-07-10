@@ -948,7 +948,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * i32).type}. Will return false for an instance of Type for which this is
    * still unknown since {@code Type.resolve()} was not called yet.
    */
-  public boolean isCotypeType()
+  boolean isCotypeType()
   {
     return !isGenericArgument() && feature().isCotype();
   }
