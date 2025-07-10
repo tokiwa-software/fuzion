@@ -506,8 +506,7 @@ part of the (((inner features))) declarations of the corresponding
 
     if (inner.isField())
       {
-        // NYI: UNDER DEVELOPMENT: inner.iscotype() does not work currently
-        if (inner._qname.getFirst().equals(FuzionConstants.TYPE_NAME))
+        if (inner.isCotype())
           {
             AstErrors.typeFeaturesMustNotBeFields(inner);
           }
@@ -753,7 +752,7 @@ part of the (((inner features))) declarations of the corresponding
   /**
    * Add inner feature to the set of declared (or inherited) features of outer.
    *
-   * NYI: CLEANUP: This is a little ugly since it is used to add type features
+   * NYI: CLEANUP: This is a little ugly since it is used to add cotype features
    * while the sets of declared and inherited features had already been
    * determined.
    *
