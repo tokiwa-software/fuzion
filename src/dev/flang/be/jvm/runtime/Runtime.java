@@ -1402,14 +1402,15 @@ public class Runtime extends ANY
       }
     for (String library : libraries)
       {
+        var ln = System.mapLibraryName(library);
         try
           {
-            llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), arena));
+            llu = llu.or(SymbolLookup.libraryLookup(ln, arena));
           }
         catch (IllegalArgumentException e)
           {
-            Errors.error("'" + library + "' not found on your system. "
-                        + "Make sure to install the corresponding package, that provides '" + library + "'.");
+            Errors.error("'" + ln + "' not found on your system. "
+                        + "Make sure to install the corresponding package, that provides '" + ln + "'.");
             System.exit(1);
           }
       }
