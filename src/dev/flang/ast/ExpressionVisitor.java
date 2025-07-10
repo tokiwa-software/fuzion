@@ -46,7 +46,7 @@ public interface ExpressionVisitor
   abstract void action (Expr e);
 
   /**
-   * action is to be called an all AbstractCase's encountered.
+   * action is to be called on all AbstractCase's encountered.
    *
    * @param m a match
    *
