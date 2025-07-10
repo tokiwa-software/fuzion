@@ -970,7 +970,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     // first look in the feature itself
-    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn, f);
+    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn);
 
     if (!result.redefinesFull().contains(f) && result != f)
       {
@@ -985,7 +985,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var p: chain)
           {
-            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn, f);
+            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn);
             if (!result.redefinesFull().contains(f) && result != f)
               {
                 // feature with same name, but not a redefinition
