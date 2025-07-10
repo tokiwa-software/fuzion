@@ -61,10 +61,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private YesNo _dependsOnGenerics = YesNo.dontKnow;
 
 
+  // flag to disable applyTypePar caching, for debugging only
+  private static boolean typeParCachingEnabled = true;
   /**
    * Cached results for {@code applyTypePars(t)} and {@code applyTypePars(f, List<AbstractType>)};
    */
-  private static boolean typeParCachingEnabled = true;
   private AbstractType _appliedTypeParsCachedFor1;
   private AbstractType _appliedTypeParsCache;
   private AbstractFeature _appliedTypePars2CachedFor1;
