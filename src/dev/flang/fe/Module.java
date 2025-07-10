@@ -587,25 +587,13 @@ public abstract class Module extends ANY implements FeatureLookup
    *
    * @param outer the declaring or inheriting feature
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
+  @Override
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
     if (PRECONDITIONS) require
       (outer.state().atLeast(State.RESOLVED_DECLARATIONS));
 
-    var result = declaredOrInheritedFeatures(outer, name).getFirstOrNull();
-
-    /* NYI: CLEANUP: can this be removed?
-     *
-     * Was feature f added to the declared features of its outer features late,
-     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
-     * currently not added to the sets of declared or inherited features by
-     * children of their outer clazz.
-     *
-     * This is a fix for #978 but it might need to be removed when fixing #932.
-     */
-    return result == null
-      ? original
-      : result;
+    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
   }
 
 

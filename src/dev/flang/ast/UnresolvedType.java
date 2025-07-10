@@ -359,55 +359,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a reference variant of this type.  Return this
-   * in case it is a reference already.
-   */
-  public AbstractType asRef()
-  {
-    // throw new Error("asRef not available for unresolved type");
-    return this;
-    /*
-    AbstractType result = this;
-    if (!isRef() && this != Types.t_ERROR)
-      {
-        result = ResolvedNormalType.create(this, TypeKind.Boxed);
-      }
-      return result;*/
-  }
-
-
-  /**
-   * Create a this.type variant of this type.  Return this
-   * in case it is a this.type or a choice variant already.
-   */
-  public AbstractType asThis()
-  {
-    //throw new Error("asThis not available for unresolved type");
-    return this;
-    /*
-    AbstractType result = this;
-    if (!isThisType() && !isChoice() && this != Types.t_ERROR)
-      {
-        result = ResolvedNormalType.create(this, TypeKind.ThisType);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result.isThisType() || result.isChoice(),
-       !(isThisType() || isChoice()) || result == this);
-
-    return result;
-    */
-  }
-
-
-  @Override
-  public AbstractType asValue()
-  {
-    throw new Error("asValue not available for unresolved type");
-  }
-
-
-  /**
    * Call Constructor for a function type that returns a result
    *
    * @param returnType the result type.

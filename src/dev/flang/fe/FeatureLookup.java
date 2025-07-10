@@ -51,7 +51,7 @@ public interface FeatureLookup {
    *
    * @param name the feature name that we are searching for
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
 
 
 }

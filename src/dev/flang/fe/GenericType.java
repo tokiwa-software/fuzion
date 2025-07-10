@@ -103,24 +103,6 @@ class GenericType extends LibraryType
   }
 
 
-  public AbstractType asRef()
-  {
-    throw new Error("GenericType.asRef() not defined");
-  }
-
-
-  public AbstractType asValue()
-  {
-    throw new Error("GenericType.asValue() not defined");
-  }
-
-
-  public AbstractType asThis()
-  {
-    throw new Error("GenericType.asThis() not defined");
-  }
-
-
   /**
    * The mode of the type: ThisType, RefType or ValueType.
    */
