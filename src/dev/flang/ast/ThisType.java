@@ -113,54 +113,6 @@ class ThisType extends ResolvedType {
 
 
   /**
-   * This type as a reference.
-   *
-   * Requires !isGenericArgument().
-   */
-  @Override
-  public AbstractType asRef()
-  {
-    // NYI: CLEANUP: isAssignableFrom should create the ref-type itself
-    // if (PRECONDITIONS) require
-    //   (Thread.currentThread().getStackTrace()[2].getMethodName().equals("isAssignableFrom"));
-
-    return ResolvedNormalType
-      .create(
-        _feature.generics().asActuals(),
-        Call.NO_GENERICS,
-        _feature.outer().selfType().asThis(),
-        _feature,
-        TypeKind.RefType);
-  }
-
-
-  /**
-   * This type as a value.
-   *
-   * Requires !isGenericArgument().
-   */
-  @Override
-  public AbstractType asValue()
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'asValue'");
-  }
-
-
-  /**
-   * Return this type as a this-type, a type denoting the
-   * instance of this type in the current context.
-   *
-   * Requires that this is resolved and !isGenericArgument().
-   */
-  @Override
-  public AbstractType asThis()
-  {
-    return this;
-  }
-
-
-  /**
    * traverse a resolved type collecting all features this type uses.
    *
    * @param s the features that have already been found
