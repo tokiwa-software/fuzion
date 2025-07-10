@@ -273,7 +273,7 @@ public class SourceModule extends Module implements SrcModule
   {
     var d = _main == null
       ? _universe
-      : lookupFeature(_universe, FeatureName.get(_main, 0), null);
+      : lookupFeature(_universe, FeatureName.get(_main, 0));
     if (d instanceof Feature f)
       {
         f
@@ -291,7 +291,7 @@ public class SourceModule extends Module implements SrcModule
    */
   private AbstractCall plainCall(String featureName)
   {
-    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0), null);
+    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0));
     if (CHECKS) check
       (feature.arguments().isEmpty(),
        feature.outer().isUniverse());

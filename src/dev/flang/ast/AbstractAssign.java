@@ -276,7 +276,7 @@ public abstract class AbstractAssign extends Expr
           }
 
         if (CHECKS) check
-          (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName(), f) == f,
+          (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName()) == f,
            Errors.any() || (_value.type().isVoid() || _value.needsBoxing(frmlT, context) == null || _value.isBoxed()));
       }
   }
