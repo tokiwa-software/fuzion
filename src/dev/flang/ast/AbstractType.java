@@ -64,6 +64,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Cached results for {@code applyTypePars(t)} and {@code applyTypePars(f, List<AbstractType>)};
    */
+  private static boolean typeParCachingEnabled = true;
   private AbstractType _appliedTypeParsCachedFor1;
   private AbstractType _appliedTypeParsCache;
   private AbstractFeature _appliedTypePars2CachedFor1;
@@ -840,7 +841,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() || target.isGenericArgument() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
 
     AbstractType result;
-    if (_appliedTypeParsCachedFor1 == target)
+    if (typeParCachingEnabled && _appliedTypeParsCachedFor1 == target)
       {
         result = _appliedTypeParsCache;
       }
@@ -918,7 +919,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() || !isOpenGeneric() || genericArgument().outer().generics() != f.generics());
 
     AbstractType result;
-    if (_appliedTypePars2CachedFor1 == f &&
+    if (typeParCachingEnabled &&
+        _appliedTypePars2CachedFor1 == f &&
         _appliedTypePars2CachedFor2 == actualGenerics)
       {
         result = _appliedTypePars2Cache;
