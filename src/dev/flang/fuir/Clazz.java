@@ -650,27 +650,18 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisTypeForCotype(AbstractType t)
   {
-    if (feature().isCotype())
+    if (
+      // clazz actually describes a cotype
+      feature().isCotype() &&
+      // NYI: UNDER DEVELOPMENT: can this logic be simplified?
+         (t.isGenericArgument() && t.genericArgument().outer().isCotype() ||
+         !t.isGenericArgument() && t.feature() == _type.generics().get(0).actualType(t).feature()))
       {
-        t = t.isCotypeType() ? _type.generics().get(0).actualType(t) : t;
-        if (t.isNormalType())
-          {
-            var g = t.cotypeActualGenerics();
-            var o = t.outer();
-            if (o != null)
-              {
-                o = replaceThisTypeForCotype(o);
-              }
-            return ResolvedNormalType.create(t, g, g, o);
-          }
-        else
-          {
-            return t;
-          }
+        t = _type.generics().get(0).actualType(t);
       }
     else if (outer() != null)
       {
-        return outer().replaceThisTypeForCotype(t);
+        t = outer().replaceThisTypeForCotype(t);
       }
     return t;
   }
