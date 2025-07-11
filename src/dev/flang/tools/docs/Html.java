@@ -1037,7 +1037,7 @@ public class Html extends ANY
    */
   private String navigationModules(AbstractFeature relativeTo)
   {
-    String relativeToStr = relativeTo == null ? "/" : featureAbsoluteURL(relativeTo);
+    String relativeToStr = relativeTo == null ? "" : featureAbsoluteURL(relativeTo);
 
     return """
       <ul class="white-space-no-wrap">
