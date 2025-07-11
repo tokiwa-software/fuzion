@@ -111,7 +111,7 @@ public class Html extends ANY
   /*
    * html containing the inherited features of af or constraint in case of a type parameter
    */
-  private String inherited(AbstractFeature af)
+  private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
     if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
       {
@@ -121,7 +121,7 @@ public class Html extends ANY
       {
         var constraint = af.resultType().feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-          .replace("$1", featureRelativeURL(constraint, af.outer()))
+          .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodedQualifiedName(constraint));
       }
     else
@@ -130,7 +130,7 @@ public class Html extends ANY
           .stream()
           .<String>map(c -> {
             var f = c.calledFeature();
-            return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, af.outer()))
+            return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
               + htmlEncodedBasename(f)
               + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
               + c.actualTypeParameters().stream()
@@ -220,7 +220,7 @@ public class Html extends ANY
             + anchor(af, relativeTo)
             + arguments(af, (outer != null ? outer : af))
             + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
-            + inherited(af)
+            + inherited(af, relativeTo)
             + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
                : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
                : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
