@@ -957,7 +957,7 @@ public class Html extends ANY
    */
   private String navigation(AbstractFeature start, AbstractFeature relativeTo)
   {
-    return config.bare()
+    return config.bare() && navigationBareHTML != null
       ? navigationBareHTML  // cached navigation if absolute URLs are used
       : navigationModules(relativeTo) + navigationFeatures(java.util.List.of(start), "", relativeTo);
   }
