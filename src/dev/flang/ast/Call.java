@@ -405,18 +405,25 @@ public class Call extends AbstractCall
   /**
    * Type of the target of this call.
    */
-  AbstractType targetType(Context context)
+  protected AbstractType targetType(Context context)
   {
-    // NYI: CLEANUP: For a type parameter, the feature result type is abused
-    // and holds the type parameter constraint.  As a consequence, we have to
-    // fix this here and set the type of the target explicitly here.
-    //
-    // Would be better if AbstractFeature.resultType() would do this for us:
-    return
-      _target instanceof Call tc &&
-      targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
-      calledFeature().isConstructor()  ? _target.type()
-                                        : _target.type().selfOrConstraint(context);
+    return targetIsTypeParameter()
+      ?
+       (calledFeature().resultType().isThisTypeInCotype()
+          // a call B.f for a type parameter target B. resultType() is the
+          // constraint of B, so we create the corresponding type feature's
+          // selfType:
+          // NYI: CLEANUP: remove this special handling!
+          ? _target.type().feature().selfType()
+          // NYI: CLEANUP: For a type parameter, the feature result type is abused
+          // and holds the type parameter constraint.  As a consequence, we have to
+          // fix this here and set the type of the target explicitly here.
+          //
+          // Would be better if AbstractFeature.resultType() would do this for us:
+          : ((Call)_target).calledFeature().asGenericType())
+      : calledFeature().isConstructor()
+      ? _target.type()
+      : _target.type().selfOrConstraint(context);
   }
 
 
@@ -1325,13 +1332,7 @@ public class Call extends AbstractCall
    */
   private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
   {
-    var tt = targetIsTypeParameter() && rt.isThisTypeInCotype()
-      ? // a call B.f for a type parameter target B. resultType() is the
-      // constraint of B, so we create the corresponding type feature's
-      // selfType:
-      // NYI: CLEANUP: remove this special handling!
-      _target.type().feature().selfType()
-      : targetType(res, context);
+    var tt = targetType(res, context);
 
     // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
     // Call.actualArgType and AbstractType.genericsAssignable, might be nice to
@@ -1404,7 +1405,6 @@ public class Call extends AbstractCall
             if (_select >= sz)
               {
                 AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
-                setToErrorState();
                 t = Types.t_ERROR;
               }
             else
@@ -1417,6 +1417,10 @@ public class Call extends AbstractCall
                   }
               }
           }
+      }
+    if (t.containsError())
+      {
+        setToErrorState();
       }
     return t;
   }

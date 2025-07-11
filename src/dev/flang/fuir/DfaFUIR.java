@@ -190,7 +190,6 @@ public class DfaFUIR extends GeneratingFUIR {
                 lookup_static_finally(cl),
                 clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
                 clazzTypeName(cl),
-                clazzIsArray(cl) ? inlineArrayElementClazz(cl) : NO_CLAZZ,
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
                 clazzDeclarationPos(cl).bytePos(),

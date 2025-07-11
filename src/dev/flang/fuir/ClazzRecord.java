@@ -59,7 +59,6 @@ public record ClazzRecord(
   int lookup_static_finally,
   LifeTime lifeTime,
   byte[] clazzTypeName,
-  int inlineArrayElementClazz,
   String clazzAsStringHuman,
   String clazzSrcFile,
   int clazzSrcBytePos,

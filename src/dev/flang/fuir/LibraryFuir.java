@@ -581,13 +581,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int inlineArrayElementClazz(int constCl)
-  {
-    return _clazzes[clazzId2num(constCl)].inlineArrayElementClazz();
-  }
-
-
-  @Override
   public String clazzSrcFile(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzSrcFile();

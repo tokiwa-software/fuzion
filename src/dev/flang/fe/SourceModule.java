@@ -273,7 +273,7 @@ public class SourceModule extends Module implements SrcModule
   {
     var d = _main == null
       ? _universe
-      : lookupFeature(_universe, FeatureName.get(_main, 0), null);
+      : lookupFeature(_universe, FeatureName.get(_main, 0));
     if (d instanceof Feature f)
       {
         f
@@ -291,7 +291,7 @@ public class SourceModule extends Module implements SrcModule
    */
   private AbstractCall plainCall(String featureName)
   {
-    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0), null);
+    var feature = lookupFeature(_universe, FeatureName.get(featureName, 0));
     if (CHECKS) check
       (feature.arguments().isEmpty(),
        feature.outer().isUniverse());
@@ -506,8 +506,7 @@ part of the (((inner features))) declarations of the corresponding
 
     if (inner.isField())
       {
-        // NYI: UNDER DEVELOPMENT: inner.iscotype() does not work currently
-        if (inner._qname.getFirst().equals(FuzionConstants.TYPE_NAME))
+        if (inner.isCotype())
           {
             AstErrors.typeFeaturesMustNotBeFields(inner);
           }
@@ -753,7 +752,7 @@ part of the (((inner features))) declarations of the corresponding
   /**
    * Add inner feature to the set of declared (or inherited) features of outer.
    *
-   * NYI: CLEANUP: This is a little ugly since it is used to add type features
+   * NYI: CLEANUP: This is a little ugly since it is used to add cotype features
    * while the sets of declared and inherited features had already been
    * determined.
    *

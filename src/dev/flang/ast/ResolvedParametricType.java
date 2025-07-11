@@ -97,22 +97,6 @@ class ResolvedParametricType extends ResolvedType
   }
 
 
-  public AbstractType asRef()
-  {
-    throw new Error("ResolvedParametricType.asRef() not defined");
-  }
-
-  public AbstractType asValue()
-  {
-    throw new Error("ResolvedParametricType.asValue() not defined");
-  }
-
-  public AbstractType asThis()
-  {
-    throw new Error("ResolvedParametricType.asThis() not defined");
-  }
-
-
   /**
    * traverse a type collecting all features this type uses.
    *
