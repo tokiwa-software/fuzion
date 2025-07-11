@@ -1949,7 +1949,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
         Clazz vc = clazz(t._value, outerClazz, _inh.get(s - SITE_BASE));
-        var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE));
+        var tc = outerClazz.handDown(outerClazz.replaceThisTypeForCotype(t._taggedType), _inh.get(s - SITE_BASE));
         tc.instantiatedChoice(t);
         res = new Pair<>(vc, tc);
         _siteClazzCache.put(s, res);
