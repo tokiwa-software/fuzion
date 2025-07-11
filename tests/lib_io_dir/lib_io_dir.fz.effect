@@ -5,6 +5,6 @@ fuzion.runtime.fault
 io.Err
 io.dir.make
 io.Out
+panic
 fuzion.runtime.post_fault
 io.dir.read
-panic
