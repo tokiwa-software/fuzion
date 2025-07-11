@@ -719,6 +719,18 @@ public class AstErrors extends ANY
           "Original feature declared at " + originalFeature.pos().show());
   }
 
+  public static void formalTypeParametersLengthsMismatch(AbstractFeature originalFeature,
+                                                         AbstractFeature redefinedFeature)
+  {
+    error(redefinedFeature.pos(),
+          "Wrong number of type parameters in redefined feature",
+          "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
+          "type parameter count is " + redefinedFeature.generics().list.size() + " while it should be " + originalFeature.generics().list.size() + ".\n" +
+          "Original type parameters: "  + s(originalFeature .generics()) + "\n" +
+          "redefined type parameters: " + s(redefinedFeature.generics()) + "\n" +
+          "Original feature declared at " + originalFeature.pos().show());
+  }
+
   /* NYI: currently unused, need to check if a "while (23)" produces a useful error message
   static void whileConditionMustBeBool(SourcePosition pos, Type type)
   {
