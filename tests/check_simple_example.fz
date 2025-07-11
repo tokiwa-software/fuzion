@@ -61,10 +61,15 @@ envir_var_kv := [
   "C_INCLUDE_PATH",
   "LANGUAGE"
 ].map k->
-  (envir.vars.get k).bind v->
-    (k,v)
- .filter o->o.ok
- .map o->o.val
+  if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
+    (envir.vars.get k)
+      .bind v->(k,"$v:../../lib")
+      .or_else (k,"../../lib")
+  else
+    (envir.vars.get k).bind v->
+      (k,v)
+ .filter (.ok)
+ .map (.val)
  .as_array
 
 # envir vars as map
@@ -217,9 +222,8 @@ delete_tmp_files =>
 
 
 be     := envir.args[1]
-# bash -c is necessary since windows CreateProcess
-# can not execute bash scripts directly
-fz_run := envir.args[2].replace "../../bin/fz" "bash -c \$PWD/../../bin/fz{protected_space}\$@ dummy"
+# can not execute bash script fz on windows with CreateProcess
+fz_run := envir.args[2].replace "../../bin/fz" "java --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
 file   := envir.args[3]
 exp_out := if be = "effect"
              "$file.effect"
