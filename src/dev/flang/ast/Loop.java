@@ -255,7 +255,7 @@ public class Loop extends ANY
               List<Feature> iv,
               List<Feature> nv,
               Expr var,        /* NYI: loop variant currently ignored */
-              List<Cond> inv,  /* NYI: loop invariant currently ignored */
+              List<Cond> inv,
               Expr whileCond,
               Block block,
               Expr untilCond,
@@ -323,6 +323,10 @@ public class Loop extends ANY
     if (whileCond != null)
       {
         block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, false));
+      }
+    if (inv != null)
+      {
+        block = new Block(new List<>(Contract.asFault(inv, "invariantcondition_fault"), block));
       }
     var p = block.pos();
     Feature loop = new Feature(p,
