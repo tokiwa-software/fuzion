@@ -845,6 +845,10 @@ public class Html extends ANY
    */
   private String relativePath(String absoluteURL, String relativeTo)
   {
+    // relative path should not be used when bare HTML with absolute paths is generated
+    if (CHECKS) check
+      (!config.bare());
+
     var u = new LinkedList<>(Arrays.asList(absoluteURL.split("/")));
     var r = new LinkedList<>(Arrays.asList(relativeTo.split("/")));
     while (!u.isEmpty() && !r.isEmpty() && u.get(0).equals(r.get(0)))
