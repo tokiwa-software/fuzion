@@ -2977,7 +2977,7 @@ checkexpr   : "check" block
   Expr checkexpr()
   {
     match(Token.t_check, "checkexpr");
-    return new Check(Cond.from(block())).asIfs();
+    return Contract.asFault(Cond.from(block()), "checkcondition_fault");
   }
 
 

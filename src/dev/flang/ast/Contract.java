@@ -1113,6 +1113,42 @@ The conditions of a post-condition are checked at run-time in sequential source-
 
 
   /**
+   * creates code for the given list of conditions, i.e. if-expressions
+   *
+   * fuzion code of the form
+   *
+   *   check
+   *     debug: e1
+   *     safety: e2
+   *
+   * will be turned into
+   *
+   *   if (debug: e1)
+   *     fuzion.runtime.fault "debug: e1"
+   *   if (safety: e2)
+   *     fuzion.runtime.fault "safety: e2"
+   *
+   *
+   * @param conditions the list of conditions to create code for
+   *
+   * @param fault the name of the fault, e.g. "checkcondition_fault"
+   */
+  public static Expr asFault(List<Cond> conditions, String fault)
+  {
+    var l = new List<Expr>();
+    for (var c : conditions)
+      {
+        var p = c.cond().sourceRange();
+        var f = new Call(p, "fuzion");
+        var r = new Call(p, f, "runtime");
+        var e = new Call(p, r, fault, new List<>(new StrConst(p, p.sourceText())));
+        l.add(Match.createIf(p, c.cond(), new Block(), e, false));
+      }
+    return new Block(l);
+  }
+
+
+  /**
    * toString
    *
    * @return
