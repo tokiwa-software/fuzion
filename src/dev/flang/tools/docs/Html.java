@@ -724,15 +724,15 @@ public class Html extends ANY
    */
   private static String fullHtml(String qualifiedName, String bareHtml)
   {
-    int upDirCorrection = qualifiedName.equals("Modules")  ? 0 :
-                          qualifiedName.equals("universe") ? 1 : 2;
+    int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
 
     return ("""
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>Fuzion Docs - $qualifiedName</title>
+        <title>$qualifiedName | Fuzion Docs</title>
+        <link rel="icon" sizes="32x32" href="$root32.png">
         <link rel="stylesheet" type="text/css" href="$rootstyle.css" />
       </head>
       <body>""" +
@@ -741,7 +741,7 @@ public class Html extends ANY
         </body>
         </html>
                     """)
-        .replace("$qualifiedName", qualifiedName)
+        .replace("$qualifiedName", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()))
         .replace("$root", upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection));
   }
 
@@ -1115,7 +1115,10 @@ public class Html extends ANY
           <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
         """ : "")
         .replace("$4", Tool.fullVersion());
-    return config.bare() ? bareHtml: fullHtml(af.qualifiedName(), bareHtml);
+
+    return config.bare()
+      ? bareHtml
+      : fullHtml(lm.name() + "." + af.qualifiedName(), bareHtml);
   }
 
   /**
