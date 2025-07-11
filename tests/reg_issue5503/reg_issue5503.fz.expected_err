@@ -1,6 +1,6 @@
 
 --CURDIR--/reg_issue5503.fz:51:11: error 1: Wrong number of type parameters in redefined feature
-    redef f(X             type, y, z    Any, v, w i32) =>  # 3. should cause an error: 1 type parameter, expecting 3
+    redef f(X             type, y, z    Any, v, w i32) =>  # 3. should flag an error: 1 type parameter, expecting 3
 ----------^
 In 'reg_issue5503.f.f' that redefines 'reg_issue5503.d.f' type parameter count is 1 while it should be 3.
 Original type parameters: 'X, Y, Z'
@@ -11,7 +11,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 
 
 --CURDIR--/reg_issue5503.fz:35:11: error 2: Wrong number of type parameters in redefined feature
-    redef f(x Any) =>   # 1. should cause an error: no type parameters, expecting 1
+    redef f(x Any) =>   # 1. should flag an error: no type parameters, expecting 1
 ----------^
 In 'reg_issue5503.b.f' that redefines 'reg_issue5503.a.f' type parameter count is 0 while it should be 1.
 Original type parameters: 'X'
@@ -22,7 +22,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:30:5:
 
 
 --CURDIR--/reg_issue5503.fz:48:11: error 3: Wrong number of type parameters in redefined feature
-    redef f(                    x, y, z Any, v, w i32) =>  # 2. should cause an error: no type parameters, expecting 3
+    redef f(                    x, y, z Any, v, w i32) =>  # 2. should flag an error: no type parameters, expecting 3
 ----------^
 In 'reg_issue5503.e.f' that redefines 'reg_issue5503.d.f' type parameter count is 0 while it should be 3.
 Original type parameters: 'X, Y, Z'
@@ -33,7 +33,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 
 
 --CURDIR--/reg_issue5503.fz:54:11: error 4: Wrong number of type parameters in redefined feature
-    redef f(X, Y          type, z       Any, v, w i32) =>  # 4. should cause an error: 2 type parameters, expecting 3
+    redef f(X, Y          type, z       Any, v, w i32) =>  # 4. should flag an error: 2 type parameters, expecting 3
 ----------^
 In 'reg_issue5503.g.f' that redefines 'reg_issue5503.d.f' type parameter count is 2 while it should be 3.
 Original type parameters: 'X, Y, Z'
@@ -44,7 +44,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 
 
 --CURDIR--/reg_issue5503.fz:60:11: error 5: Wrong number of type parameters in redefined feature
-    redef f(X, Y, Z, V    type,                 w i32) =>  # 5. should cause an error: 4 type parameters, expecting 3
+    redef f(X, Y, Z, V    type,                 w i32) =>  # 5. should flag an error: 4 type parameters, expecting 3
 ----------^
 In 'reg_issue5503.i.f' that redefines 'reg_issue5503.d.f' type parameter count is 4 while it should be 3.
 Original type parameters: 'X, Y, Z'
@@ -55,7 +55,7 @@ Original feature declared at --CURDIR--/reg_issue5503.fz:45:5:
 
 
 --CURDIR--/reg_issue5503.fz:63:11: error 6: Wrong number of type parameters in redefined feature
-    redef f(X, Y, Z, V, W type                       ) =>  # 6. should cause an error: 5 type parameters, expecting 3
+    redef f(X, Y, Z, V, W type                       ) =>  # 6. should flag an error: 5 type parameters, expecting 3
 ----------^
 In 'reg_issue5503.j.f' that redefines 'reg_issue5503.d.f' type parameter count is 5 while it should be 3.
 Original type parameters: 'X, Y, Z'
