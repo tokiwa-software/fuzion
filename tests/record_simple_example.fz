@@ -96,7 +96,7 @@ write_to_file(dest String, data String) =>
 
 
 type_ := envir.args[1]
-fz_run   := envir.args[2]
+fz_run   := envir.args[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
 file     := envir.args[3]
 
 res :=
