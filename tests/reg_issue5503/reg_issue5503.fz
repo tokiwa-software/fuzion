@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5503
+#
+# -----------------------------------------------------------------------
+
+# test that the number of type parameters in a redefinition is not changed
+# compared to the original feature
+#
+reg_issue5503 =>
+
+  a is
+    f(X type) =>
+
+  # the orginal example from #5503
+  #
+  b : a is
+    redef f(x Any) =>   # 1. should cause an error: no type parameters, expecting 1
+
+  # cross-check with a correct redefinition:
+  #
+  c : a is
+    redef f(Y type) =>  # ok
+
+  # a more complex example with 3 type parameters and 2 value arguments
+  #
+  d is
+    f(X, Y, Z type, v, w i32) =>
+
+  e : d is
+    redef f(                    x, y, z Any, v, w i32) =>  # 2. should cause an error: no type parameters, expecting 3
+
+  f : d is
+    redef f(X             type, y, z    Any, v, w i32) =>  # 3. should cause an error: 1 type parameter, expecting 3
+
+  g : d is
+    redef f(X, Y          type, z       Any, v, w i32) =>  # 4. should cause an error: 2 type parameters, expecting 3
+
+  h : d is
+    redef f(X, Y, Z       type,              v, w i32) =>  # ok
+
+  i : d is
+    redef f(X, Y, Z, V    type,                 w i32) =>  # 5. should cause an error: 4 type parameters, expecting 3
+
+  j : d is
+    redef f(X, Y, Z, V, W type                       ) =>  # 6. should cause an error: 5 type parameters, expecting 3
