@@ -73,10 +73,10 @@ public nano (p Nano_Time_Handler) : effect is
 
 # short-hand for accessing time.nano effect in current environment
 #
-public nano nano =>
+public nano time.nano =>
   if !nano.is_instated
     nano.install_default
-  nano.env
+  time.nano.env
 
 
 # abstract handler that can deliver a nano time
