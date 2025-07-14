@@ -1634,6 +1634,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
           }
+        else if (o.generics().list.size() != f.generics().list.size())
+          {
+            AstErrors.formalTypeParametersLengthsMismatch(o, f);
+          }
         else
           {
             for (int i = 0; i < ta.length; i++)
