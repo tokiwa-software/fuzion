@@ -52,7 +52,7 @@ $(JARS_LSP_GSON):
 	mkdir -p $(@D)
 	curl $(LSP_GSON_URL) --output $@
 
-JARS_LSP: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC) $(JARS_LSP_GSON)
+$(BUILD_DIR)/jars/lsp.sha256: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC) $(JARS_LSP_GSON)
 	echo "b16bbc6232a3946e03d537bb9be74e18489dbc6a8b8c5ab6cb7980854df8440f $(BUILD_DIR)/jars/org.eclipse.lsp4j-0.23.1.jar" > $(BUILD_DIR)/jars/lsp.sha256
 	echo "1adaeb34550ebec21636a45afe76ff8b60188a056966feb3c7e562450ba911be $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
 	echo "4e1aa77474de1791d96dc55932fb46efdf53233548f38f62ba7376f8b0bc6650 $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
@@ -61,22 +61,25 @@ JARS_LSP: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC
 
 
 
-$(CLASS_FILES_LSP): JARS_LSP $(CLASS_FILES_BE_JVM)
+$(CLASS_FILES_LSP): $(BUILD_DIR)/jars/lsp.sha256 $(CLASS_FILES_BE_JVM)
 	mkdir -p $(CLASSES_DIR_LSP)
 	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
 	$(JAVAC) -cp $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP_SHARED)
 	touch $@
 
+.PHONY: lsp/compile
 lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
 
 LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
 LSP_JAVA_ARGS = -Dfuzion.home=$(BUILD_DIR) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+.PHONY: lsp/debug/stdio
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -stdio
 
 .SILENT:
-lsp/classes: JARS_LSP no-java
+.PHONY: lsp/classes
+lsp/classes: $(BUILD_DIR)/jars/lsp.sha256 no-java
 	rm -Rf $@
 	mkdir -p $@
 	$(JAVAC) -classpath $(CLASSPATH) -d $@ $(JAVA_FILES)
