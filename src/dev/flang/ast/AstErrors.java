@@ -661,14 +661,15 @@ public class AstErrors extends ANY
     if (!any() || !redefinedFeature.isCotype() // cotypes generated from broken original features may cause subsequent errors
         )
       {
-        String what, is, should_be, what2;
+        String what, is, should_be1, should_be2, what2;
         if (originalArg.isOpenTypeParameter() != redefinedArg.isOpenTypeParameter() ||
             originalArg.isTypeParameter()     != redefinedArg.isTypeParameter()        )
           {
             what = "argument kind";
             what2 = what;
-            is        = redefinedArg.kind().toString();
-            should_be = originalArg .kind().toString();
+            is         = redefinedArg.kind().toString();
+            should_be1 = originalArg .kind().toString();
+            should_be2 = originalArg .kind().toString();
           }
         else
           {
@@ -683,17 +684,19 @@ public class AstErrors extends ANY
                 what2 = "type of argument";
               }
             is = s(redefinedArg.resultType());
-            // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
-            should_be = typeWithFrom(originalArgType, originalArg.resultType());
+            // originalArg.resultType() might be a type parameter that has been replaced by originalArgType, so
+            // we explain where this type comes from:
+            should_be1 = typeWithFrom(originalArgType, originalArg.resultType());
+            should_be2 = s(originalArgType);
           }
         error(redefinedArg.pos(),
               "Wrong " + what + " in redefined feature",
               "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
               what + " is       : " + is + "\n" +
-              what + " should be: " + should_be + "\n\n" +
+              what + " should be: " + should_be1 + "\n\n" +
               "Original argument declared at " + originalArg.pos().show() + "\n" +
               (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
-               : "To solve this, change " + what2 +" to " + should_be + " at " + redefinedArg.pos().show()));
+               : "To solve this, change " + what2 +" to " + should_be2 + " at " + redefinedArg.pos().show()));
       }
   }
 

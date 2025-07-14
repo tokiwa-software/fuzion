@@ -124,7 +124,7 @@ argument type should be: 'i32' (from 'reg_issue5435.x.P')
 Original argument declared at --CURDIR--/reg_issue5435.fz:101:7:
     g(x P...) =>
 ------^
-To solve this, change type of argument to 'i32' (from 'reg_issue5435.x.P') at --CURDIR--/reg_issue5435.fz:111:13:
+To solve this, change type of argument to 'i32' at --CURDIR--/reg_issue5435.fz:111:13:
     redef g(x1 i64, x2 bool, x3 unit) =>   # 10. should flag an error for x1
 ------------^^
 
@@ -139,7 +139,7 @@ argument type should be: 'bool' (from 'reg_issue5435.x.P')
 Original argument declared at --CURDIR--/reg_issue5435.fz:101:7:
     g(x P...) =>
 ------^
-To solve this, change type of argument to 'bool' (from 'reg_issue5435.x.P') at --CURDIR--/reg_issue5435.fz:116:21:
+To solve this, change type of argument to 'bool' at --CURDIR--/reg_issue5435.fz:116:21:
     redef g(x1 i32, x2 u8  , x3 unit) =>   # 11. should flag an error for x2
 --------------------^^
 
@@ -154,7 +154,7 @@ argument type should be: 'unit' (from 'reg_issue5435.x.P')
 Original argument declared at --CURDIR--/reg_issue5435.fz:101:7:
     g(x P...) =>
 ------^
-To solve this, change type of argument to 'unit' (from 'reg_issue5435.x.P') at --CURDIR--/reg_issue5435.fz:121:30:
+To solve this, change type of argument to 'unit' at --CURDIR--/reg_issue5435.fz:121:30:
     redef g(x1 i32, x2 bool, x3 bool) =>   # 12. should flag an error for x3
 -----------------------------^^
 
