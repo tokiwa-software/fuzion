@@ -67,15 +67,18 @@ $(CLASS_FILES_LSP): $(BUILD_DIR)/jars/lsp.sha256 $(CLASS_FILES_BE_JVM)
 	$(JAVAC) -cp $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP_SHARED)
 	touch $@
 
+.PHONY: lsp/compile
 lsp/compile: $(FUZION_BASE) $(CLASS_FILES_LSP)
 
 LSP_JAVA_STACKSIZE=16
 LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
 LSP_JAVA_ARGS = -Dfuzion.home=$(BUILD_DIR) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
+.PHONY: lsp/debug/stdio
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -stdio
 
 .SILENT:
+.PHONY: lsp/classes
 lsp/classes: $(BUILD_DIR)/jars/lsp.sha256 no-java
 	rm -Rf $@
 	mkdir -p $@
