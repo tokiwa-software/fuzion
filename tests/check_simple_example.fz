@@ -35,6 +35,11 @@ process_result(out String, err String, exit_code u32) is
   type.empty_success =>
     process_result "" "" 0
 
+is_windows =>
+  ((envir.vars.get "OS").val "").lower_case.contains "windows"
+
+path_separator := is_windows ? ";" : ":"
+
 # specified environment variables as key,value array
 #
 envir_var_kv := [
@@ -64,7 +69,7 @@ envir_var_kv := [
 ].map k->
   if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
     (envir.vars.get k)
-      .bind v->(k,"$v:../../lib")
+      .bind v->(k,"$v$path_separator../../lib")
       .or_else (k,"../../lib")
   else
     (envir.vars.get k).bind v->
