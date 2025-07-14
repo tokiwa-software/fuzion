@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
@@ -1105,37 +1107,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           : result.applyTypePars(i.calledFeature(),
                                  i.actualTypeParameters());
       }
-    if (result.isGenericArgument())
-      {
-        var g = result.genericArgument();
-        if (g.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
-          {
-            g = g.cotypeOriginGeneric();
-          }
-        if (g.outer().generics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-          {
-            result = g.replace(actualGenerics);
-          }
-      }
-    else if (result.isNormalType())
-      {
-        var g2 = applyTypePars(f, result.generics(), actualGenerics);
-        var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
-
-        g2 = cotypeActualGenerics(g2);
-
-        if (g2 != result.generics() ||
-            o2 != result.outer()       )
-          {
-            var hasError = o2 == Types.t_ERROR;
-            for (var t : g2)
-              {
-                hasError = hasError || (t == Types.t_ERROR);
-              }
-            result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
-          }
-      }
-    return result;
+    return result
+      .applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
 
 
@@ -1193,61 +1166,66 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (f != null,
-       actualGenerics != null,
-       Errors.any() || !isOpenGeneric() || (select >= 0) || actualGenerics.isEmpty());
+       actualGenerics != null);
 
-    var result = this;
-    if (result.isGenericArgument())
+    return switch(kind())
       {
-        AbstractFeature g = result.genericArgument();
-        if (g.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+        case GenericArgument ->
           {
-            g = g.cotypeOriginGeneric();
-          }
-        if (g.outer().generics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-          {
-            if (g.isOpenTypeParameter())
+            var result = this;
+            AbstractFeature g = result.genericArgument();
+            if (g.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
               {
-                var tl = g.replaceOpen(actualGenerics);
-                if (CHECKS) check
-                  (Errors.any() || select >= 0 && select <= tl.size());
-                if (select >= 0 && select <= tl.size())
+                g = g.cotypeOriginGeneric();
+              }
+            if (g.outer().generics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
+              {
+                if (g.isOpenTypeParameter())
                   {
-                    result = tl.get(select);
+                    var tl = g.replaceOpen(actualGenerics);
+                    if (CHECKS) check
+                      (Errors.any() || select >= 0 && select <= tl.size());
+                    if (select >= 0 && select <= tl.size())
+                      {
+                        result = tl.get(select);
+                      }
+                    else
+                      {
+                        result = Types.t_ERROR;
+                      }
                   }
                 else
                   {
-                    result = Types.t_ERROR;
+                    result = g.replace(actualGenerics);
                   }
               }
-            else
-              {
-                result = g.replace(actualGenerics);
-              }
+            yield result;
           }
-      }
-    else if (!result.isThisType())
-      {
-        var generics = result.generics();
-        var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
-          ? actualGenerics
-          : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
-        var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
-
-        g2 = cotypeActualGenerics(g2);
-
-        if (g2 != result.generics() ||
-            o2 != result.outer()       )
+        case RefType, ValueType ->
           {
-            var hasError = o2 == Types.t_ERROR;
-            for (var t : g2)
+            var result = this;
+            var generics = result.generics();
+            var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
+              ? actualGenerics
+              : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
+            var o2 = (result.outer() == null) ? null : result.outer().applyTypeParsLocally(f, actualGenerics, select);
+
+            g2 = cotypeActualGenerics(g2);
+
+            if (g2 != result.generics() ||
+                o2 != result.outer()       )
               {
-                hasError = hasError || (t == Types.t_ERROR);
+                var hasError = o2 == Types.t_ERROR;
+                for (var t : g2)
+                  {
+                    hasError = hasError || (t == Types.t_ERROR);
+                  }
+                result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
               }
-            result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
+            yield result;
           }
-      }
-    return result;
+        case ThisType -> this;
+      };
   }
 
 
