@@ -1632,32 +1632,69 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
         else if (ta.length != ra.length)
           {
+            /*
+    // tag::fuzion_rule_REDEF_ARG_COUNT[]
+A redefined feature must have the same total number of formal arguments (type parameters and value arguments) as the original feature.
+    // end::fuzion_rule_REDEF_ARG_COUNT[]
+            */
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
           }
         else if (o.generics().list.size() != f.generics().list.size())
           {
+            /*
+    // tag::fuzion_rule_REDEF_TYPE_PAR_COUNT[]
+A redefined feature must have the same total number of formal type parameters as the original feature.
+    // end::fuzion_rule_REDEF_TYPE_PAR_COUNT[]
+            */
             AstErrors.formalTypeParametersLengthsMismatch(o, f);
           }
         else
           {
             for (int i = 0; i < ta.length; i++)
               {
+                // original arg list may be shorter if last arg is open generic:
+                if (CHECKS) check
+                  (Errors.any() ||
+                   i < args.size() ||
+                   args.get(args.size()-1).resultType().isOpenGeneric());
+
+                var oargs = o.arguments();
+                int oi    = Math.min(oargs.size() - 1, i);
+                var originalArg = oargs.get(oi);
+                var actualArg   =  args.get(i);
                 var t1 = ta[i].applyTypePars(o, f.generics().asActuals());  /* replace o's type pars by f's */
                 var t2 = ra[i];
-                if (!isLegalCovariantThisType(o, f, t1, t2, fixed))
+                if (
+            /*
+    // tag::fuzion_rule_REDEF_TYPE_PAR[]
+A xref:fuzion_typeparameter[type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_typeparameter[type parameter] in the redefined feature.
+    // end::fuzion_rule_REDEF_TYPE_PAR[]
+            */
+                    (originalArg.isTypeParameter()     != actualArg.isTypeParameter()               ) ||
+            /*
+    // tag::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
+A xref:fuzion_opentypeparameter[open type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_opentypeparameter[open type parameter] in the redefined feature.
+    // end::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
+            */
+                    (originalArg.isOpenTypeParameter() != actualArg.isOpenTypeParameter()           ) ||
+            /*
+    // tag::fuzion_rule_REDEF_TYPE_CONSTRAINTS[]
+A xref:fuzion_type_constraint[type constraint] of a xref:fuzion_typeparameter[type parameter] must be redefined using a xref:fuzion_type_constraint[type constraint] that is xref:fuzion_constraint_assignable[constraint assignable] from the original  xref:fuzion_typeparameter[type parameter]'s  xref:fuzion_type_constraint[type constraint].
+    // end::fuzion_rule_REDEF_TYPE_CONSTRAINTS[]
+            */
+                    ( originalArg.isTypeParameter() && !t2.constraintAssignableFrom(t1)             ) ||
+            /*
+    // tag::fuzion_rule_REDEF_VALUE_ARGUMENT[]
+A xref:fuzion_value_argument[value argument] must be redefined using a type that is a xref:fuzion_legal_covariant_this_type[legal covariant this_type] of the type of the corresponding xref:fuzion_value_argument[value argument] argument of the redefined feature.
+    // end::fuzion_rule_REDEF_VALUE_ARGUMENT[]
+            */
+                    (!originalArg.isTypeParameter() && !isLegalCovariantThisType(o, f, t1, t2, fixed)    )
+                    )
                   {
-                    // original arg list may be shorter if last arg is open generic:
-                    if (CHECKS) check
-                      (Errors.any() ||
-                       i < args.size() ||
-                       args.get(args.size()-1).resultType().isOpenGeneric());
-
-                    var oargs = o.arguments();
-                    int oi    = Math.min(oargs.size() - 1, i);
-                    var originalArg = oargs.get(oi);
-                    var actualArg   =  args.get(i);
                     AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
                                                                  f, actualArg,
+                                                                 !originalArg.isTypeParameter() &&
+                                                                 !actualArg  .isTypeParameter() &&
                                                                  isLegalCovariantThisType(o, f, t1, t2, true));
                   }
               }

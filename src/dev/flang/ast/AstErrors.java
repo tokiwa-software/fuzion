@@ -661,27 +661,39 @@ public class AstErrors extends ANY
     if (!any() || !redefinedFeature.isCotype() // cotypes generated from broken original features may cause subsequent errors
         )
       {
-        String what, what2;
-        if (originalArg.isTypeParameter() && redefinedArg.isTypeParameter())
+        String what, is, should_be, what2;
+        if (originalArg.isOpenTypeParameter() != redefinedArg.isOpenTypeParameter() ||
+            originalArg.isTypeParameter()     != redefinedArg.isTypeParameter()        )
           {
-            what = "type parameter constraint";
-            what2 = "constraint of type parameter";
+            what = "argument kind";
+            what2 = what;
+            is        = redefinedArg.kind().toString();
+            should_be = originalArg .kind().toString();
           }
         else
           {
-            what = "argument type";
-            what2 = "type of argument";
+            if (originalArg.isTypeParameter())
+              {
+                what = "type parameter constraint";
+                what2 = "constraint of type parameter";
+              }
+            else
+              {
+                what = "argument type";
+                what2 = "type of argument";
+              }
+            is = s(redefinedArg.resultType());
+            // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
+            should_be = typeWithFrom(originalArgType, originalArg.resultType());
           }
         error(redefinedArg.pos(),
               "Wrong " + what + " in redefined feature",
               "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
-              what + " is       : " + s(redefinedArg.resultType()) + "\n" +
-              what + " should be: " +
-              // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
-              typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
+              what + " is       : " + is + "\n" +
+              what + " should be: " + should_be + "\n\n" +
               "Original argument declared at " + originalArg.pos().show() + "\n" +
               (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
-                                  : "To solve this, change " + what2 +" to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
+               : "To solve this, change " + what2 +" to " + should_be + " at " + redefinedArg.pos().show()));
       }
   }
 
