@@ -24,16 +24,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ast;
+package dev.flang.ir;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.Expr;
+import dev.flang.ast.ExpressionVisitor;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.util.SourcePosition;
 
 
 /**
  * Box is an expression that copies a value instance into a newly created
  * instance and returns a reference to the new copy.
- *
- * NYI: Box should not be part of AST, but part of the IR.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -91,39 +94,18 @@ public class Box extends Expr
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
   @Override
-  AbstractType typeForInferencing()
+  public AbstractType type()
   {
     return _type;
   }
 
 
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public Box visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    var o = _value;
-    _value = _value.visit(v, outer);
-
-    if (CHECKS) check
-      (o.type().compareTo(_value.type()) == 0);
-
-    return this;
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'visit'");
   }
 
 
@@ -137,16 +119,6 @@ public class Box extends Expr
   {
     super.visitExpressions(v);
     _value.visitExpressions(v);
-  }
-
-
-  /**
-   * Is the result of this expression boxed?
-   */
-  @Override
-  public boolean isBoxed()
-  {
-    return true;
   }
 
 

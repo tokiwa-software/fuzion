@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
@@ -51,7 +50,6 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
@@ -633,15 +631,6 @@ public class LibraryFeature extends AbstractFeature
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
-          case Box:
-            {
-              var t = _libModule.boxType(iat);
-              x = new Box(s.pop(), t)
-                {
-                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
-                };
-              break;
-            }
           case Const:
             {
               var t = _libModule.constType(iat);
@@ -714,13 +703,6 @@ public class LibraryFeature extends AbstractFeature
           case Pop:
             {
               c = s.pop();
-              break;
-            }
-          case Tag:
-            {
-              var val = s.pop();
-              var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType);
               break;
             }
           case Unit:

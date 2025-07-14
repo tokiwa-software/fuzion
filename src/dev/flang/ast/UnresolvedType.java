@@ -271,7 +271,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param original the original value type
    *
-   * @param typeKind must be TypeKind.Boxed or TypeKind.Val
+   * @param typeKind must be TypeKind.RefType or TypeKind.ValueType
    */
   public UnresolvedType(UnresolvedType original, TypeKind typeKind)
   {

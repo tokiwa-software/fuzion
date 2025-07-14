@@ -433,6 +433,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
+  public YesNo isAssignableFrom(AbstractType actual)
+  {
+    return isAssignableFrom(actual, Context.NONE, true, true, null);
+  }
+
+
+  /**
+   * Is actual assignable to this?
+   *
+   * @param actual the actual type.
+   */
   YesNo isAssignableFrom(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, context, true, true, null);
@@ -447,6 +458,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   YesNo isAssignableFromWithoutTagging(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, context, true, false, null);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this.  This performs static type checking, i.e., the types may still
+   * be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public YesNo isAssignableFromWithoutBoxing(AbstractType actual)
+  {
+    return isAssignableFrom(actual, Context.NONE, false, true, null);
   }
 
 
@@ -2508,6 +2532,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         .stream()
         .flatMap(cg -> cg.choices(context))
       : Stream.of(this);
+  }
+
+
+  /**
+   * Return constraint if type is a generic, unmodified type otherwise
+   *
+   * @return constraint for generics, unmodified type otherwise
+   */
+  public AbstractType selfOrConstraint()
+  {
+    return (isGenericArgument() ? genericArgument().constraint(Context.NONE) : this);
   }
 
 

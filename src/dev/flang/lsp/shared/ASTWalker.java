@@ -40,12 +40,10 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractLambda;
 import dev.flang.ast.AbstractMatch;
-import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Universe;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
@@ -158,14 +156,6 @@ public class ASTWalker
     if (expr instanceof AbstractCall c)
       {
         return traverseCall(c, outer);
-      }
-    if (expr instanceof Tag t)
-      {
-        return traverseExpression(t._value, outer);
-      }
-    if (expr instanceof Box b)
-      {
-        return traverseExpression(b._value, outer);
       }
     // for offering completions on constants
     if (expr instanceof Constant ac)
