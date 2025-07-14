@@ -189,7 +189,7 @@ public mutate : linear_effect is
 
     # unwrap this mutable value
     #
-    public redef unwrap T ! mutate => get
+    public redef unwrap T ! mutate.this => get
 
 
     # returns `as_string` of the current value
