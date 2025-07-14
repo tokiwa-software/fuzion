@@ -677,18 +677,31 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   AbstractType replaceThisTypeForCotype(AbstractType t)
   {
-    if (feature().isCotype())
+    if (
+      // clazz actually describes a cotype
+      feature().isCotype() &&
+      // NYI: UNDER DEVELOPMENT: can this logic be simplified?
+         (t.isGenericArgument() && t.genericArgument().outer().isCotype() ||
+         !t.isGenericArgument() && t.feature() == _type.generics().get(0).actualType(t).feature()))
       {
         t = _type.generics().get(0).actualType(t);
-        var g = t.cotypeActualGenerics();
-        var o = t.outer();
-        if (o != null)
-          {
-            o = replaceThisTypeForCotype(o);
-          }
-        t = ResolvedNormalType.create(t, g, g, o);
+      }
+    else if (outer() != null)
+      {
+        t = outer().replaceThisTypeForCotype(t);
       }
     return t;
+  }
+
+
+  /**
+   * Get outer of this clazz via outerRef or _outer
+   */
+  private Clazz outer()
+  {
+    return outerRef() != null
+      ? outerRef().resultClazz()
+      : _outer;
   }
 
 
@@ -1742,7 +1755,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            var ft = f.resultType();
+            var ft = replaceThisTypeForCotype(f.resultType());
             result = handDown(ft, _select, new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
           }
         _resultClazz = result;
@@ -1854,10 +1867,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var i = feature();
     while (i != null && i != of)
       {
-        res = res.outerRef() != null
-          ? res.outerRef().resultClazz()
-          : res._outer;
-
+        res = res.outer();
         i = res == null
           ? null
           : (LibraryFeature) res.feature();
