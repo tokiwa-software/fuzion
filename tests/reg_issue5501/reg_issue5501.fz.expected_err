@@ -1,0 +1,31 @@
+
+--CURDIR--/reg_issue5501.fz:34:23: error 1: Wrong argument type in redefined feature
+                      y u8  # wrong type, should cause error
+----------------------^
+In 'reg_issue5501.f.call' that redefines 'Function.call'
+argument type is       : 'u8'
+argument type should be: 'unit' (from 'Function.A')
+
+Original argument declared at {base.fum}/Function.fz:35:15:
+  public call(a A...) R => abstract
+--------------^
+To solve this, change type of argument to 'unit' at --CURDIR--/reg_issue5501.fz:34:23:
+                      y u8  # wrong type, should cause error
+----------------------^
+
+
+--CURDIR--/reg_issue5501.fz:46:23: error 2: Wrong argument type in redefined feature
+                      z f64   # wrong type, should cause error
+----------------------^
+In 'reg_issue5501.g.call' that redefines 'Function.call'
+argument type is       : 'f64'
+argument type should be: 'f32' (from 'Function.A')
+
+Original argument declared at {base.fum}/Function.fz:35:15:
+  public call(a A...) R => abstract
+--------------^
+To solve this, change type of argument to 'f32' at --CURDIR--/reg_issue5501.fz:46:23:
+                      z f64   # wrong type, should cause error
+----------------------^
+
+2 errors.
