@@ -661,16 +661,27 @@ public class AstErrors extends ANY
     if (!any() || !redefinedFeature.isCotype() // cotypes generated from broken original features may cause subsequent errors
         )
       {
+        String what, what2;
+        if (originalArg.isTypeParameter() && redefinedArg.isTypeParameter())
+          {
+            what = "type parameter constraint";
+            what2 = "constraint of type parameter";
+          }
+        else
+          {
+            what = "argument type";
+            what2 = "type of argument";
+          }
         error(redefinedArg.pos(),
-              "Wrong argument type in redefined feature",
+              "Wrong " + what + " in redefined feature",
               "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
-              "argument type is       : " + s(redefinedArg.resultType()) + "\n" +
-              "argument type should be: " +
+              what + " is       : " + s(redefinedArg.resultType()) + "\n" +
+              what + " should be: " +
               // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
               typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
               "Original argument declared at " + originalArg.pos().show() + "\n" +
               (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
-                                  : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
+                                  : "To solve this, change " + what2 +" to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
       }
   }
 
