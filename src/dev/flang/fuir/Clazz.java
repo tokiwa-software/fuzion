@@ -1755,8 +1755,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            var ft = f.resultType();
-            ft = replaceThisTypeForCotype(ft);
+            var ft = replaceThisTypeForCotype(f.resultType());
             result = handDown(ft, _select, new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
           }
         _resultClazz = result;
