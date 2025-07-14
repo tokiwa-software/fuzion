@@ -730,7 +730,7 @@ public class Feature extends AbstractFeature
                  Impl p,
                  List<AbstractType> effects)
   {
-    this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
+    this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p, effects);
 
     // arguments of function features must not have visibility modifier
     if (!isConstructor())
@@ -743,8 +743,6 @@ public class Feature extends AbstractFeature
               }
           }
       }
-
-    _effects = effects;
 
     if (PRECONDITIONS) require
       (qpname.size() >= 1,
@@ -851,6 +849,7 @@ public class Feature extends AbstractFeature
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
+    this._effects = effects;
 
     // check args for duplicate names
     if (!a.stream()

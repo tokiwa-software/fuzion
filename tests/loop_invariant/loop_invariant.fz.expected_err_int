@@ -1,0 +1,33 @@
+
+error 1: FATAL FAULT `inv`: i < 1
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
+      fuzion.runtime.fault.cause kind_and_msg).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.invariant_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/invariant_fault.fz:39:7:
+      fuzion.runtime.contract_fault.cause ("inv", msg)).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.invariant_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.runtime.invariantcondition_fault#1: {base.fum}/fuzion/runtime/invariant_fault.fz:58:53:
+public invariantcondition_fault(msg String) void => invariant_fault.cause msg
+----------------------------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^
+loop_invariant.loop: --CURDIR--/loop_invariant.fz:32:7:
+  inv i < 1
+------^^^^^
+loop_invariant: --CURDIR--/loop_invariant.fz:31:3:
+  for i in 0..1
+--^
+
+*** fatal errors encountered, stopping.
+one error.
