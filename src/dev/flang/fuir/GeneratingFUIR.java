@@ -40,18 +40,19 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+
+import dev.flang.ir.Box;
+import dev.flang.ir.Tag;
 
 import dev.flang.mir.MIR;
 
@@ -484,7 +485,7 @@ public class GeneratingFUIR extends FUIR
         if (!tclazz.isVoidType())
           {
             var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
-            var typePars = outerClazz.actualGenerics(at);
+            var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
         else
@@ -1231,10 +1232,11 @@ public class GeneratingFUIR extends FUIR
                     argFields[i] = c.lookupNeeded(cfa);
                   }
               }
+            var fat = p.formalArgumentTypes();
             for (var i = 0; i < p.actuals().size(); i++)
               {
                 var a = p.actuals().get(i);
-                toStack(code, a);
+                toStack(code, boxAndTag(a, fat[i]));
                 while (inhe.size() < code.size()) { inhe.add(inh); }
                 while (_inh.size() < _allCode.size()) { _inh.add(inh); }
                 code.add(ExprKind.Current);
@@ -1750,20 +1752,22 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(InlineArray ia)
   {
-    return
-      !ia.type().dependsOnGenerics() &&
-      !ia.type().containsThisType() &&
+    return !ia.type().dependsOnGenerics()
+      && ia.type().containsThisType()
       // some backends have special handling for array void.
-      !ia.elementType().isVoid() &&
-      ia._elements
+      && !ia.elementType().isVoid()
+      && ia._elements
         .stream()
         .allMatch(el -> {
           var s = new List<>();
-          super.toStack(s, el);
+          // NYI: CLEANUP: unexpected sideEffect of isConst
+          toStack(s, el);
           return s
             .stream()
             .allMatch(x -> isConst(x));
-        });
+        })
+      // NYI: UNDER DEVELOPMENT: remove this restriction?
+      && ia._elements.stream().allMatch(x -> ia.elementType().isAssignableFromDirectly(x.type()).yes());
   }
 
 
@@ -1949,7 +1953,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
         Clazz vc = clazz(t._value, outerClazz, _inh.get(s - SITE_BASE));
-        var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE));
+        var tc = outerClazz.handDown(outerClazz.replaceThisTypeForCotype(t._taggedType), _inh.get(s - SITE_BASE));
         tc.instantiatedChoice(t);
         res = new Pair<>(vc, tc);
         _siteClazzCache.put(s, res);
@@ -2209,7 +2213,7 @@ public class GeneratingFUIR extends FUIR
     var callToOuterRef = c.target().isCallToOuterRef();
     var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
     var needsCode = !dynamic || explicitTarget != null;
-    var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
+    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     // NYI: HACK
     // can happen e.g. in compile_time_type_casts
     // since toStack currently puts illegal code in _allCode
@@ -2882,19 +2886,22 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the source file the clazz originates from.
+   * Get the source code position of the declaration of the underlying feature
+   * of a given clazz.
    *
-   * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
+   * @param cl index of the clazz
+   *
+   * @return the source code position or null if not available.
    */
   @Override
-  public String clazzSrcFile(int cl)
+  public SourcePosition clazzDeclarationPos(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.feature().pos()._sourceFile._fileName.toString();
+    return c.feature().pos();
   }
 
 

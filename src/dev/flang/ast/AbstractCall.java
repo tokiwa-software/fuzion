@@ -440,7 +440,7 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (tt != null);
 
-    var x = tt.selfOrConstraint(res, context);
+    var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
     return x.feature().inheritsFrom(f)
       ? x.generics()
       : openGenericsFor(res, context, f, tt.outer());

@@ -24,20 +24,25 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ast;
+package dev.flang.ir;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.Expr;
+import dev.flang.ast.ExpressionVisitor;
+import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Types;
 import dev.flang.util.Errors;
+import dev.flang.util.SourcePosition;
 
 
 /**
  * Tag is an expression that converts a value to a choice type, i.e., it adds a
  * tag to the value.
  *
- * NYI: Tag should not be part of AST, but part of the IR.
- *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Tag extends ExprWithPos
+public class Tag extends Expr
 {
 
 
@@ -72,18 +77,16 @@ public class Tag extends ExprWithPos
    *
    * @param context the source code context where this Tag is to be used
    */
-  Tag(Expr value, AbstractType taggedType, Context context)
+  Tag(Expr value, AbstractType taggedType)
   {
-    super(value.pos());
-
     if (PRECONDITIONS) require
       (value != null,
        taggedType.isChoice(),
        Errors.any()
         || taggedType
-            .choiceGenerics(context)
+            .choiceGenerics()
             .stream()
-            .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context).yes())
+            .filter(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes())
             .count() == 1
         // NYI: UNDER DEVELOPMENT: why is value.type() sometimes unit
         // even though none of the choice elements is unit
@@ -93,25 +96,30 @@ public class Tag extends ExprWithPos
     this._value = value;
     this._taggedType = taggedType;
     this._tagNum = (int)_taggedType
-      .choiceGenerics(context)
+      .choiceGenerics()
       .stream()
-      .takeWhile(cg -> cg.isAssignableFromWithoutTagging(value.type(), context).no())
+      .takeWhile(cg -> cg.isAssignableFromWithoutTagging(value.type()).no())
       .count();
   }
 
 
-  /**
-   * Constructor
-   *
-   * @param value the value instance
-   */
-  public Tag(Expr value, AbstractType taggedType)
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  @Override
+  public SourcePosition pos()
   {
-    this(value, taggedType, Context.NONE);
+    return _value.pos();
   }
 
 
-  /*-----------------------------  methods  -----------------------------*/
+  @Override
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'visit'");
+  }
+
 
   /**
    * The number to be used for tagging this value.
@@ -122,38 +130,10 @@ public class Tag extends ExprWithPos
   }
 
 
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
-   *
-   * @return this Expr's type or null if not known.
-   */
   @Override
-  AbstractType typeForInferencing()
+  public AbstractType type()
   {
     return _taggedType;
-  }
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public Tag visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    var o = _value;
-    _value = _value.visit(v, outer);
-    if (CHECKS) check
-      (o.type().compareTo(_value.type()) == 0);
-    v.action(this);
-    return this;
   }
 
 
@@ -171,15 +151,6 @@ public class Tag extends ExprWithPos
 
 
   /**
-   * check the tagged type of this Tag.
-   */
-  public void checkTypes(Context context)
-  {
-    _taggedType.checkChoice(_value.pos(), context);
-  }
-
-
-  /**
    * toString
    *
    * @return
@@ -188,6 +159,7 @@ public class Tag extends ExprWithPos
   {
     return "tag(" + _value + ")";
   }
+
 
 }
 

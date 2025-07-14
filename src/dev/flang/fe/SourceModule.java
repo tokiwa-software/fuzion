@@ -1634,6 +1634,10 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
           }
+        else if (o.generics().list.size() != f.generics().list.size())
+          {
+            AstErrors.formalTypeParametersLengthsMismatch(o, f);
+          }
         else
           {
             for (int i = 0; i < ta.length; i++)
@@ -1647,10 +1651,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
                       (Errors.any() ||
                        i < args.size() ||
                        args.get(args.size()-1).resultType().isOpenGeneric());
-                    int ai = Math.min(args.size() - 1, i);
 
-                    var originalArg = o.arguments().get(i);
-                    var actualArg   =   args       .get(ai);
+                    var oargs = o.arguments();
+                    int oi    = Math.min(oargs.size() - 1, i);
+                    var originalArg = oargs.get(oi);
+                    var actualArg   =  args.get(i);
                     AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
                                                                  f, actualArg,
                                                                  isLegalCovariantThisType(o, f, t1, t2, true));

@@ -61,6 +61,7 @@ public record ClazzRecord(
   byte[] clazzTypeName,
   String clazzAsStringHuman,
   String clazzSrcFile,
+  int clazzSrcBytePos,
   int lookupJavaRef
   ) implements Serializable
 {

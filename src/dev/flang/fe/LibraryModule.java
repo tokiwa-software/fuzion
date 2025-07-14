@@ -262,7 +262,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * The universe
    */
-  private AbstractFeature universe()
+  public AbstractFeature universe()
   {
     return _universe;
   }

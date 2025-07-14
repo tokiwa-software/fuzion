@@ -61,6 +61,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private YesNo _dependsOnGenerics = YesNo.dontKnow;
 
 
+  // flag to disable applyTypePar caching, for debugging only
+  private static boolean typeParCachingEnabled = true;
   /**
    * Cached results for {@code applyTypePars(t)} and {@code applyTypePars(f, List<AbstractType>)};
    */
@@ -431,6 +433,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actual the actual type.
    */
+  public YesNo isAssignableFrom(AbstractType actual)
+  {
+    return isAssignableFrom(actual, Context.NONE, true, true, null);
+  }
+
+
+  /**
+   * Is actual assignable to this?
+   *
+   * @param actual the actual type.
+   */
   YesNo isAssignableFrom(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, context, true, true, null);
@@ -445,6 +458,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   YesNo isAssignableFromWithoutTagging(AbstractType actual, Context context)
   {
     return isAssignableFrom(actual, context, true, false, null);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this.  This performs static type checking, i.e., the types may still
+   * be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public YesNo isAssignableFromWithoutBoxing(AbstractType actual)
+  {
+    return isAssignableFrom(actual, Context.NONE, false, true, null);
   }
 
 
@@ -878,7 +904,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() || target.isGenericArgument() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
 
     AbstractType result;
-    if (_appliedTypeParsCachedFor1 == target)
+    if (typeParCachingEnabled && _appliedTypeParsCachedFor1 == target)
       {
         result = _appliedTypeParsCache;
       }
@@ -956,7 +982,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() || !isOpenGeneric() || genericArgument().outer().generics() != f.generics());
 
     AbstractType result;
-    if (_appliedTypePars2CachedFor1 == f &&
+    if (typeParCachingEnabled &&
+        _appliedTypePars2CachedFor1 == f &&
         _appliedTypePars2CachedFor2 == actualGenerics)
       {
         result = _appliedTypePars2Cache;
@@ -1671,8 +1698,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return the actual type, i.e.{@code list a} or {@code list b} in the example above.
    */
   AbstractType replace_this_type_by_actual_outer(AbstractType tt,
-                                                        BiConsumer<AbstractType, AbstractType> foundRef,
-                                                        Context context)
+                                                 BiConsumer<AbstractType, AbstractType> foundRef,
+                                                 Context context)
   {
     var result = this;
     do
@@ -1743,10 +1770,28 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param foundRef a consumer that will be called for all the this-types found
    * together with the ref type they are replaced with.  May be null.
    */
-  public AbstractType replace_this_type_by_actual_outer(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
+  public AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
+                                                        BiConsumer<AbstractType, AbstractType> foundRef)
+  {
+    return replace_this_type_by_actual_outer_locally(tt, foundRef, Context.NONE);
+  }
+
+
+  /**
+   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
+   * exactly tt, ignoring tt.outer().
+   *
+   * @param tt the type feature we are calling
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.
+   */
+  private AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
+                                                         BiConsumer<AbstractType, AbstractType> foundRef,
+                                                         Context context)
   {
     var result = this;
-    var att = tt.selfOrConstraint(Context.NONE);
+    var att = tt.selfOrConstraint(context);
     if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
         isThisType() && att.feature() == feature()  // we have abc.this.type with att == abc, so use tt
@@ -1760,24 +1805,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer(tt, foundRef));
+        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer_locally(tt, foundRef, context));
       }
     return result;
-  }
-
-
-  /**
-   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
-   * exactly tt, ignoring tt.outer().
-   *
-   * @param tt the type feature we are calling
-   *
-   * @param foundRef a consumer that will be called for all the this-types found
-   * together with the ref type they are replaced with.  May be null.
-   */
-  public AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
-  {
-    return replace_this_type_by_actual_outer2(tt, foundRef, Context.NONE);
   }
 
 
@@ -1831,6 +1861,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public AbstractType replace_this_type(AbstractFeature parent, AbstractFeature heir, BiConsumer<AbstractType, AbstractType> foundRef)
   {
+    if (PRECONDITIONS) require
+      (parent == Types.f_ERROR || heir == Types.f_ERROR || heir.inheritsFrom(parent));
+
     if (isThisType() && feature() == parent)
       {
         var tt = heir.thisType();
@@ -2499,6 +2532,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         .stream()
         .flatMap(cg -> cg.choices(context))
       : Stream.of(this);
+  }
+
+
+  /**
+   * Return constraint if type is a generic, unmodified type otherwise
+   *
+   * @return constraint for generics, unmodified type otherwise
+   */
+  public AbstractType selfOrConstraint()
+  {
+    return (isGenericArgument() ? genericArgument().constraint(Context.NONE) : this);
   }
 
 

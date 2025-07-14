@@ -730,7 +730,7 @@ public class Feature extends AbstractFeature
                  Impl p,
                  List<AbstractType> effects)
   {
-    this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p);
+    this(qpname.getLast()._pos, v, m, r, qpname.map2(x -> x._name), a, i, c, p, effects);
 
     // arguments of function features must not have visibility modifier
     if (!isConstructor())
@@ -743,8 +743,6 @@ public class Feature extends AbstractFeature
               }
           }
       }
-
-    _effects = effects;
 
     if (PRECONDITIONS) require
       (qpname.size() >= 1,
@@ -851,6 +849,7 @@ public class Feature extends AbstractFeature
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
+    this._effects = effects;
 
     // check args for duplicate names
     if (!a.stream()
@@ -1982,49 +1981,6 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
-   * Perform boxing, i.e., wrap value instances into ref instances if they are
-   * assigned to a ref.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   */
-  void box(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_SUGAR2));
-
-    if (_state == State.RESOLVED_SUGAR2)
-      {
-        _state = State.BOXING;
-
-        visit(new ContextVisitor(context()) {
-            @Override public void  action(AbstractAssign a) { a.boxAndTagVal     (_context);           }
-            @Override public Call  action(Call           c) { c.boxArgs    (res, _context); return c; }
-            @Override public Expr  action(InlineArray    i) { i.boxElements(_context); return i; }
-            public void  action(AbstractCall c)
-              {
-                if (!(c instanceof Call cc) || cc.calledFeatureKnown())
-                  {
-                    var feat = c.calledFeature();
-
-                    if (feat instanceof Feature f)
-                      {
-                        f.recordUsage();
-                      }
-                  }
-              };
-          });
-
-        _state = State.BOXED;
-        res.scheduleForCheckTypes(this);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.BOXED));
-  }
-
-
-  /**
    * Perform static type checking, i.e., make sure, that for all assignments from
    * actual to formal arguments or from values to fields, the types match.
    *
@@ -2034,7 +1990,7 @@ A ((Choice)) declaration must not contain a result type.
   void checkTypes(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state == State.BOXED);
+      (_state == State.RESOLVED_SUGAR2);
 
     _state = State.CHECKING_TYPES;
 
@@ -2055,7 +2011,6 @@ A ((Choice)) declaration must not contain a result type.
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
         @Override public Expr         action(Function       f) { return f.checkTypes();                         }
-        @Override public void         action(Tag            t) {        t.checkTypes(_context);                 }
       });
 
     res._module.checkTypes(this);
@@ -2205,8 +2160,24 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void action(AbstractMatch am){ if (am instanceof Match m) { m.addFieldsForSubject(res, _context); } }
       });
 
+
+    visit(new ContextVisitor(context()) {
+        public void  action(AbstractCall c)
+          {
+            if (!(c instanceof Call cc) || cc.calledFeatureKnown())
+              {
+                var feat = c.calledFeature();
+
+                if (feat instanceof Feature f)
+                  {
+                    f.recordUsage();
+                  }
+              }
+          };
+      });
+
     _state = State.RESOLVED_SUGAR2;
-    res.scheduleForBoxing(this);
+    res.scheduleForCheckTypes(this);
   }
 
 

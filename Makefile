@@ -1243,6 +1243,7 @@ $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZI
 debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	mkdir -p $(BUILD_DIR)/debugdocs
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
+	cp assets/docs/32.png $(BUILD_DIR)/debugdocs/
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
 	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
 

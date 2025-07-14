@@ -421,7 +421,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre
       debug: 0 ≤ from ≤ codepoint_length
   =>
-    substring from codepoint_length
+    substring_codepoint from codepoint_length
 
 
   # splits this string in chunks of codepoint length n, the last part might be shorter

@@ -42,7 +42,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
@@ -50,7 +49,6 @@ import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
@@ -724,21 +722,6 @@ class LibraryOut extends ANY
    */
         _data.writeOffset(a._assignedField);
       }
-    else if (e instanceof Box b)
-      {
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Box                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | box result type                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        lastPos = expressions(b._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.sourceRange());
-        type(e.type());
-      }
     else if (e instanceof AbstractBlock b)
       {
         int i = 0;
@@ -914,21 +897,6 @@ class LibraryOut extends ANY
             var cc = c.code();
             code(cc);
           }
-      }
-    else if (e instanceof Tag t)
-      {
-        lastPos = expressions(t._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.sourceRange());
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Tag                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | resulting tagged union type                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        type(t.type());
       }
     else if (e instanceof Nop)
       {

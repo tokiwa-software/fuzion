@@ -405,18 +405,25 @@ public class Call extends AbstractCall
   /**
    * Type of the target of this call.
    */
-  AbstractType targetType(Context context)
+  protected AbstractType targetType(Context context)
   {
-    // NYI: CLEANUP: For a type parameter, the feature result type is abused
-    // and holds the type parameter constraint.  As a consequence, we have to
-    // fix this here and set the type of the target explicitly here.
-    //
-    // Would be better if AbstractFeature.resultType() would do this for us:
-    return
-      _target instanceof Call tc &&
-      targetIsTypeParameter()          ? tc.calledFeature().asGenericType() :
-      calledFeature().isConstructor()  ? _target.type()
-                                        : _target.type().selfOrConstraint(context);
+    return targetIsTypeParameter()
+      ?
+       (calledFeature().resultType().isThisTypeInCotype()
+          // a call B.f for a type parameter target B. resultType() is the
+          // constraint of B, so we create the corresponding type feature's
+          // selfType:
+          // NYI: CLEANUP: remove this special handling!
+          ? _target.type().feature().selfType()
+          // NYI: CLEANUP: For a type parameter, the feature result type is abused
+          // and holds the type parameter constraint.  As a consequence, we have to
+          // fix this here and set the type of the target explicitly here.
+          //
+          // Would be better if AbstractFeature.resultType() would do this for us:
+          : ((Call)_target).calledFeature().asGenericType())
+      : calledFeature().isConstructor()
+      ? _target.type()
+      : _target.type().selfOrConstraint(context);
   }
 
 
@@ -1325,13 +1332,7 @@ public class Call extends AbstractCall
    */
   private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
   {
-    var tt = targetIsTypeParameter() && rt.isThisTypeInCotype()
-      ? // a call B.f for a type parameter target B. resultType() is the
-      // constraint of B, so we create the corresponding type feature's
-      // selfType:
-      // NYI: CLEANUP: remove this special handling!
-      _target.type().feature().selfType()
-      : targetType(res, context);
+    var tt = targetType(res, context);
 
     // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
     // Call.actualArgType and AbstractType.genericsAssignable, might be nice to
@@ -1404,7 +1405,6 @@ public class Call extends AbstractCall
             if (_select >= sz)
               {
                 AstErrors.selectorRange(pos(), sz, _calledFeature, _name, _select, types);
-                setToErrorState();
                 t = Types.t_ERROR;
               }
             else
@@ -1417,6 +1417,10 @@ public class Call extends AbstractCall
                   }
               }
           }
+      }
+    if (t.containsError())
+      {
+        setToErrorState();
       }
     return t;
   }
@@ -2670,41 +2674,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Boxing for actual arguments: Find actual arguments of value type that are
-   * assigned to formal argument types that are references and box them.
-   *
-   * @param context the source code context where this Call is used
-   */
-  void boxArgs(Resolution res, Context context)
-  {
-    if (_type != Types.t_ERROR)
-      {
-        var resolvedArgumentTypes = resolvedFormalArgumentTypes(res, context);
-        int fsz = resolvedArgumentTypes.length;
-        if (_actuals.size() ==  fsz)
-          {
-            int count = 0;
-            ListIterator<Expr> i = _actuals.listIterator();
-            while (i.hasNext())
-              {
-                Expr actl = i.next();
-                var rft = resolvedArgumentTypes[count];
-                if (actl != null && rft != Types.t_ERROR)
-                  {
-                    var a = actl.boxAndTag(rft, context);
-                    if (CHECKS) check
-                      (a != null,
-                       a != Universe.instance);
-                    i.set(a);
-                  }
-                count++;
-              }
-          }
-      }
-  }
-
-
-  /**
    * perform static type checking, i.e., make sure that in all assignments from
    * actual to formal arguments, the types match.
    *
@@ -2757,14 +2726,14 @@ public class Call extends AbstractCall
                 var frmlT = resolvedFormalArgumentTypes[count];
                 if (CHECKS) check
                   (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFromWithoutTagging(actl.type(), context).no())
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
                   }
-
-                if (CHECKS) check
-                  (Errors.any() || actl.type().isVoid() || actl.needsBoxing(frmlT, context) == null || actl.isBoxed());
-
+                else
+                  {
+                    actl.checkAmbiguousAssignmentToChoice(frmlT);
+                  }
                 count++;
               }
           }
@@ -2922,11 +2891,6 @@ public class Call extends AbstractCall
       }
       @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
       @Override public AbstractType type() { return Types.t_ERROR; }
-      @Override
-      Expr boxAndTag(AbstractType frmlT, Context context)
-      {
-        return this;
-      }
       @Override
       protected AbstractType targetType(Resolution res, Context context)
       {

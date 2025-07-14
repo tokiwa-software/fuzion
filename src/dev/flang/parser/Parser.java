@@ -2679,7 +2679,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
-                                                    var i   = hasFor || v != null ? invariant(true) : null;
+                                                    var i   = hasFor || v != null ? invariant() : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
@@ -2977,7 +2977,7 @@ checkexpr   : "check" block
   Expr checkexpr()
   {
     match(Token.t_check, "checkexpr");
-    return new Check(Cond.from(block())).asIfs();
+    return Contract.asFault(Cond.from(block()), "checkcondition_fault");
   }
 
 
@@ -3227,10 +3227,10 @@ invariant   : "inv" block
             |
             ;
    */
-  List<Cond> invariant(boolean atMinIndent)
+  List<Cond> invariant()
   {
     List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_inv))
+    if (skip(true, Token.t_inv))
       {
         result = Cond.from(block());
       }
