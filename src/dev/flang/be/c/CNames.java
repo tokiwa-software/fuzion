@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -288,7 +290,7 @@ public class CNames extends ANY
     {
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
-      if (o != -1 &&
+      if (o != NO_CLAZZ &&
           _fuir.clazzOuterClazz(o) != FUIR.NO_CLAZZ)
         { // add o a prefix unless cl or o are universe
           clazzMangledName(o, sb);

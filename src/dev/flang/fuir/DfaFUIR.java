@@ -224,16 +224,16 @@ public class DfaFUIR extends GeneratingFUIR {
                   invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s0),
                   invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s0),
                   invalidSite(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s0),
-                  invalidSite(s) ? -1 : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
+                  invalidSite(s) ? NO_SITE : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
                   invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
                   invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
                   invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
+                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_SITE : tagTagNum(s),
                   invalidSite(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
                   invalidSite(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
                   invalidSite(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
-                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).line(),
-                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).column(),
+                  invalidSite(s) || sitePos(s) == null ? NO_SITE : sitePos(s).line(),
+                  invalidSite(s) || sitePos(s) == null ? NO_SITE : sitePos(s).column(),
                   invalidSite(s) || sitePos(s) == null ? null : sitePos(s).show()
                 );
           }

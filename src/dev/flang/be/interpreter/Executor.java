@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
@@ -278,7 +280,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
         yield fres;
       case Intrinsic :
-        yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
+        yield _fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
           ? pair(unitValue())
           : pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Abstract:
@@ -368,10 +370,10 @@ public class Executor extends ProcessExpression<Value, Object>
     int cc, tt;
     if (_fuir.accessIsDynamic(s))
       {
-        cc = -1;
+        cc = NO_CLAZZ;
         tt = ((ValueWithClazz)tvalue)._clazz;
         var ccs = _fuir.accessedClazzes(s);
-        for (var cci = 0; cci < ccs.length && cc==-1; cci += 2)
+        for (var cci = 0; cci < ccs.length && cc==NO_CLAZZ; cci += 2)
           {
             if (ccs[cci] == tt)
               {
@@ -386,7 +388,7 @@ public class Executor extends ProcessExpression<Value, Object>
       }
 
     if (POSTCONDITIONS) ensure
-      (cc != -1);
+      (cc != NO_CLAZZ);
 
     return new Pair<>(tt, cc);
   }
@@ -518,7 +520,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
     var field = _fuir.matchCaseField(s, cix);
-    if (field != -1 && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(field)))
+    if (field != NO_CLAZZ && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(field)))
       {
         Interpreter.setField(
             field,
@@ -652,7 +654,7 @@ public class Executor extends ProcessExpression<Value, Object>
    */
   private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
   {
-    if (frame != -1)
+    if (frame != NO_CLAZZ)
       {
         sb.append(_fuir.clazzAsStringHuman(frame)).append(": ");
       }
@@ -694,8 +696,8 @@ public class Executor extends ProcessExpression<Value, Object>
   public static String callStack(FUIR fuir)
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
-    int lastFrame = -1;
-    int lastCall = -1;
+    int lastFrame = NO_CLAZZ;
+    int lastCall = NO_CLAZZ;
     int repeat = 0;
     var s = FuzionThread.current()._callStack;
     var sf = FuzionThread.current()._callStackFrames;

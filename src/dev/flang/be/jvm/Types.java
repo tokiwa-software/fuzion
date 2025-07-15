@@ -38,6 +38,8 @@ import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.TreeMap;
 
 
@@ -435,7 +437,7 @@ public class Types extends ANY implements ClassFileConstants
   boolean hasOuterRef(int cl)
   {
     var or = _fuir.clazzOuterRef(cl);
-    return or != -1 && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(or));
+    return or != NO_CLAZZ && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(or));
   }
 
 
