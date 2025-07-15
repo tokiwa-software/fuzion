@@ -342,8 +342,6 @@ include::rule.adoc[]
 :RULE_ID: PARS_REDEF_AS_KIND
 include::rule.adoc[]
 
-==== Redefining inherited features
-
 === Redefining formal arguments
 
 For redefined features, the number of formal value arguments as well as the
