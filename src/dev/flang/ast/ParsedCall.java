@@ -173,8 +173,8 @@ public class ParsedCall extends Call
   public ParsedType asParsedType()
   {
     ParsedType result = null;
-    var target = target();
-    var tt = target == null ? null : target().asParsedType();
+    var target = _target;
+    var tt = target == null ? null : _target.asParsedType();
     var ok = target == null || tt != null;
     var name = name();
     var l = new List<AbstractType>();
@@ -266,7 +266,7 @@ public class ParsedCall extends Call
       {
         return null;
       }
-    var t = target();
+    var t = _target;
     var l = t == null ? new List<ParsedName>() : t.asQualifier();
     if (l != null)
       {
@@ -415,7 +415,7 @@ public class ParsedCall extends Call
     if (Types.resolved != null &&
         targetFeature(res, context) == Types.resolved.f_bool &&
         isValidOperatorInChainedBoolean() &&
-        target() instanceof ParsedCall pc &&
+        _target instanceof ParsedCall pc &&
         pc.isValidOperatorInChainedBoolean() &&
         pc.isOperatorCall(false))
       {
