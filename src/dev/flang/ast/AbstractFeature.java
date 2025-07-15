@@ -117,16 +117,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public static final AbstractType[] HAND_DOWN_FAILED = new AbstractType[0];
 
 
-  /*------------------------  static variables  -------------------------*/
-
-
-  /**
-   * Counter for assigning unique names to cotype() results. This is
-   * currently used only for non-constructors since they do not create a type
-   * name.
-   */
-  static int _cotypeId_ = 0;
-
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -168,7 +158,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * cached result of cotype()
    */
-  private AbstractFeature _cotype = null;
+  protected AbstractFeature _cotype = null;
 
 
   /**
@@ -413,23 +403,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   boolean isBaseChoice()
   {
     return this == Types.resolved.f_choice;
-  }
-
-
-  /**
-   * get a reference to the outermost feature.
-   */
-  private AbstractFeature universe()
-  {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.LOADED));
-
-    AbstractFeature r = this;
-    while (!r.isUniverse() && r != Types.f_ERROR)
-      {
-        r = r.outer();
-      }
-    return r;
   }
 
 
@@ -801,7 +774,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                               o.generics().asActuals().map(that::rebaseTypeForCotype)),
                                 res, that, null);
 
-    var tf = cotype(res);
+    var tf = res.cotype(this);
     return new Call(p,
                     oc,
                     typeParameters,
@@ -855,158 +828,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     t = t.applyTypePars(this, tl);
     t = t.clone(this);
     return t;
-  }
-
-
-  /**
-   * For every feature 'f', this produces the corresponding type feature
-   * 'f.type'.  This feature inherits from the abstract type features of all
-   * direct ancestors of this, and, if there are no direct ancestors (for
-   * Object), this inherits from 'Type'.
-   *
-   * @param res Resolution instance used to resolve this for types.
-   *
-   * @return The feature that should be the direct ancestor of this feature's
-   * type feature.
-   *
-   * NYI: CLEANUP: move to resolution
-   */
-  public AbstractFeature cotype(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (res != null,
-       Errors.any() || !isUniverse(),
-       Errors.any() || res.state(this).atLeast(State.FINDING_DECLARATIONS),
-       !isCotype());
-
-    if (_cotype == null)
-      {
-        if (hasCotype())
-          {
-            _cotype = cotype();
-          }
-        else if (isUniverse())
-          {
-            if (CHECKS) check
-              (Errors.any());
-            _cotype = Types.f_ERROR;
-          }
-        else
-          {
-            var name = featureName().baseName() + ".";
-            if (!isConstructor() && !isChoice())
-              {
-                name = name + "_" + (_cotypeId_++) + "_" + res._module.name();
-              }
-            name = name + FuzionConstants.TYPE_NAME;
-
-            var p = pos();
-            var inh = cotypeInherits(res);
-            var typeArg = new Feature(p,
-                                      Visi.PRIV,
-                                      0,
-                                      selfType(),
-                                      FuzionConstants.COTYPE_THIS_TYPE,
-                                      Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER)
-              {
-                @Override
-                public boolean isCoTypesThisType()
-                {
-                  return true;
-                }
-              };
-            var typeArgs = new List<AbstractFeature>(typeArg);
-            for (var t : typeArguments())
-              {
-                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
-                                                : Impl.TYPE_PARAMETER;
-                var constraint0 = t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType();
-                var constraint = rebaseTypeForCotype(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
-                                     Contract.EMPTY_CONTRACT,
-                                     i);
-                typeArgs.add(ta);
-              }
-
-            if (inh.isEmpty() && !Errors.any())
-              { // let `Any.type` inherit from `Type`
-                if (CHECKS) check
-                  (this instanceof Feature && featureName().baseName().equals(FuzionConstants.ANY_NAME));
-                inh.add(new Call(pos(), FuzionConstants.TYPE_FEAT));
-              }
-            existingOrNewCotype(res, name, typeArgs, inh);
-          }
-      }
-    return _cotype;
-  }
-
-
-  /**
-   * Helper method for cotype(res) to create the list of inherits calls of
-   * this' type feature.
-   *
-   * @param res Resolution instance used to resolve this for types.
-   */
-  private List<AbstractCall> cotypeInherits(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_INHERITANCE));
-
-    return inherits()
-      .stream()
-      .filter(pc -> pc.calledFeature() != Types.f_ERROR)
-      .map(pc -> pc.cotypeInheritanceCall(res, this))
-      .collect(List.collector());
-  }
-
-
-  /**
-   * Helper method for cotype to create a new feature with given name and
-   * inherits clause iff no such feature exists in outer().cotype().
-   *
-   * The new type feature will be stored in _cotype.
-   *
-   * @param res Resolution instance used to resolve this for types.
-   *
-   * @param name the name of the type feature to be created
-   *
-   * @param typeArgs arguments of the type feature.
-   * NYI: OPTIMIZATION: typeArgs should be determined within this method and
-   * only when needed.
-   *
-   * @param inh the inheritance clause of the new type feature.
-   */
-  private void existingOrNewCotype(Resolution res, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (!isUniverse());
-
-    var outerType = outer().isUniverse()    ? universe() :
-                    outer().isCotype() ? outer()
-                                            : outer().cotype(res);
-
-    _cotype = res
-      ._module
-      .declaredOrInheritedFeatures(outerType,
-                                   FeatureName.get(name, typeArgs.size()))
-      .getFirstOrNull();
-
-    if (_cotype == null)
-      {
-        var p = pos();
-        var cotype = new Feature(p, visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
-                                      inh,
-                                      Contract.EMPTY_CONTRACT,
-                                      new Impl(p, new Block(new List<>()), Impl.Kind.Routine));
-
-        // we need to set _cotype early to avoid endless recursion during
-        // res._module.addCotype for `Any.type`:
-        _cotype = cotype;
-
-        cotype._cotypeOrigin = this;
-        res._module.addCotype(outerType, cotype);
-      }
   }
 
 

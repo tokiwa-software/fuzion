@@ -551,7 +551,7 @@ part of the (((inner features))) declarations of the corresponding
           n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
                                                       false /* ignore ambiguous */,
                                                       false /* ignore not found */)._feature
-                                        : outer.cotype(_res);
+                                        : _res.cotype(outer);
         if (at < q.size()-2)
           {
             setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
