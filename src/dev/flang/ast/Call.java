@@ -114,7 +114,7 @@ public class Call extends AbstractCall
    * the target of the call, null for "this". Set by parser
    */
   protected Expr _target;
-  public Expr target() { return _target; }
+  public Expr target() { return _target == null ? Call.ERROR : _target; }
   private FeatureAndOuter _targetFrom = null;
 
 
@@ -384,7 +384,7 @@ public class Call extends AbstractCall
    */
   void tryResolveTarget(Resolution res, Context context)
   {
-    _target = res.resolveType(_target, context);
+    _target = _target == null ? null : res.resolveType(_target, context);
   }
 
 
