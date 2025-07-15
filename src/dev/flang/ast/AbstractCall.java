@@ -239,8 +239,9 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    return adjustResultType(res, context, targetTypeOrConstraint(res, context), frmlT,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
+    return adjustResultType(res, context, frmlT,
+                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to),
+                            true);
   }
 
 
@@ -250,8 +251,6 @@ public abstract class AbstractCall extends Expr
    *
    * @param context the source code context where this Call is used
    *
-   * @param tt the target type to use when adjusting t.
-   *
    * @param rt the result type to adjust
    *
    * @param foundRef a consumer that will be called for all the this-types found
@@ -259,45 +258,130 @@ public abstract class AbstractCall extends Expr
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
    *
    */
-  protected AbstractType adjustResultType(Resolution res, Context context, AbstractType tt, AbstractType rt, BiConsumer<AbstractType, AbstractType> foundRef, boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
+  protected AbstractType adjustResultType(Resolution res, Context context, AbstractType rt, BiConsumer<AbstractType, AbstractType> foundRef, boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
   {
+    var tt = targetType(context);
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
     var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
     var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
-    var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
+    var t5 = t4 == Types.t_ERROR || forArg
+                                 ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
+    var t6 = t5 == Types.t_ERROR || forArg
+                                 ? t5 : resolveForCalledFeature(res, t5, tt, context);
+    var t7 = t6 == Types.t_ERROR || calledFeature().isCotype() || context == Context.NONE
+                                 ? t6 : t6.replace_type_parameters_of_cotype_origin(context.outerFeature());
 
     if (POSTCONDITIONS) ensure
-      (t5 != null);
+      (t7 != null);
 
-    return t5;
+    return t7;
   }
 
 
   /**
-   * Get the type of the target.  In case the target's type is a generic type
-   * parameter, return its constraint.
+   * Helper function for resolveType to adjust a result type depending on the
+   * kind of feature that is called.
    *
-   * @return the type of the target or null if unknown.
+   * In particular, this contains special handling for calling type parameters,
+   * for type_as_value, for outer refs and for constructors.
+   *
+   * @param res the resolution instance.
+   *
+   * @param t the result type of the called feature, adjusts for select, this type, etc.
+   *
+   * @param tt target type or constraint.
+   *
+   * @param context the source code context where this Call is used
    */
-  AbstractType targetTypeOrConstraint(Resolution res, Context context)
+  private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt, Context context)
   {
-    if (PRECONDITIONS) require
-      (target() != null);
+    if (calledFeature().isTypeParameter())
+      {
+        if (!t.isGenericArgument())  // See AstErrors.constraintMustNotBeGenericArgument
+          {
+            // a type parameter's result type is the constraint's type as a type
+            // feature with actual type parameters as given to the constraint.
+            var tf = t.feature().cotype(res);
+            var tg = new List<AbstractType>(t); // the constraint type itself
+            tg.addAll(t.generics());            // followed by the generics
+            t = tf.selfType().applyTypePars(tf, tg);
+          }
+      }
+    else if (isTypeAsValueCall())
+      {
+        t = actualTypeParameters().get(0);
+        // we are using `.this.type` inside a type feature, see #2295
+        if (t.isThisTypeInCotype())
+          {
+            t = t.genericArgument().outer().thisType();
+          }
+        else if (!t.isGenericArgument())
+          {
+            t = t.typeType(res);
+          }
+        t = t.resolve(res, tt.feature().context());
+      }
+    else if (calledFeature().isOuterRef())
+      {
+        var o = t.feature().outer();
+        t = o == null || o.isUniverse() || t.isThisType() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
+      }
+    else if (calledFeature().isConstructor())
+      {  /* specialize t for the target type here */
+        t = ResolvedNormalType.newType(t, tt);
+      }
+    else
+      {
+        t = t.applyTypePars(calledFeature(), actualTypeParameters());
+      }
+    return t;
+  }
 
-    var result = res == null
+
+  /**
+   * Is the target of this call a type parameter?
+   *
+   * @return true for a call to {@code T.xyz}, {@code U.xyz} or {@code V.xyz} in a feature
+   * {@code f(T,U,V type)}, false otherwise.
+   */
+  private boolean targetIsTypeParameter()
+  {
+    return target() instanceof Call tc && tc != Call.ERROR && tc._calledFeature.isTypeParameter();
+  }
+
+
+  /**
+   * Get the type of the target as seen by this call
+   *
+   * When calling {@code X.f} and {@code X} is a type parameter and {@code f} is a constructor,
+   * then {@code X}'s type is the type {@code X}, while for a function {@code f} the type is {@code X}'s
+   * constraint.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @return the type of the target.
+   */
+  protected AbstractType targetType(Context context)
+  {
+    return targetIsTypeParameter()
+      ?
+       (calledFeature().resultType().isThisTypeInCotype()
+          // a call B.f for a type parameter target B. resultType() is the
+          // constraint of B, so we create the corresponding type feature's
+          // selfType:
+          // NYI: CLEANUP: remove this special handling!
+          ? target().type().feature().selfType()
+          // NYI: CLEANUP: For a type parameter, the feature result type is abused
+          // and holds the type parameter constraint.  As a consequence, we have to
+          // fix this here and set the type of the target explicitly here.
+          //
+          // Would be better if AbstractFeature.resultType() would do this for us:
+          : ((Call)target()).calledFeature().asGenericType())
+      // NYI: UNDER DEVELOPMENT: ugly special case, can this be avoided?
+      : calledFeature().isConstructor()
       ? target().type()
-      : target().typeForInferencing();
-
-    result = result == null
-      ? null
-      : res == null
-      ? result.selfOrConstraint(context)
-      : result.selfOrConstraint(res, context);
-
-    if (POSTCONDITIONS) ensure
-      (result == null || !result.isGenericArgument());
-    return result;
+      : target().type().selfOrConstraint(context);
   }
 
 
