@@ -55,4 +55,4 @@ is
     "{version_str version_major version_minor} $status_code $reason_phrase$crlf"
 
   # header fields with all lower case
-  public redef fields := http.canonical_header_map.from_map header_fields
+  public redef header := http.canonical_header_map.from_map header_fields

@@ -1339,10 +1339,9 @@ public class Call extends AbstractCall
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(rt, tt);
-    var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
-    var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
-    var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
-    var t4 = t3 == Types.t_ERROR ? t3 : adjustThisTypeForTarget(t3, false, calledFeature(), context);
+    var t4 = adjustResultType(res, context, tt, t0,
+                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to), false);
+    // NYI: UNDER DEVELOPMENT: can we move more to adjustTypeToCall
     var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
     var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
     return t6 == Types.t_UNDEFINED
@@ -2148,7 +2147,7 @@ public class Call extends AbstractCall
     var result = new boolean[] { false };
     if (formalType.isFunctionTypeExcludingLazy() || formalType.isLazyType())
       {
-        var at = actualArgType(res, formalType, frml, context);
+        var at = actualArgType(res, context, formalType, frml);
         if (!at.containsUndefined(true))
           {
             var lambdaResultType = formalType.generics().get(0);

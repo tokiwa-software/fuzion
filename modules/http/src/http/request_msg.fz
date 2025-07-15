@@ -47,7 +47,7 @@ is
 
   public redef start_line => request_line
 
-  public redef fields := http.canonical_header_map.from_map header_fields
+  public redef header := http.canonical_header_map.from_map header_fields
 
 
 

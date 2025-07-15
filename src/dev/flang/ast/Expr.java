@@ -873,6 +873,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
+  /**
+   * If this expression is a Call to a type parameter,
+   * return the type parameters type, otherwise null.
+   */
+  AbstractType asTypeParameterType()
+  {
+    return null;
+  }
+
+
 }
 
 /* end of file */

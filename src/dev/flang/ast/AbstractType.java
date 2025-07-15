@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
@@ -1089,53 +1091,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
      * this a bit, but this is probably not sufficient!
      */
     var result = this;
-    /**
-     * example where result.isThisType() is relevant (test mix_inheritance_and_outer):
-     *
-     *     X (A type, v A) ref is
-     *       y : X i32 42 is
-     *         get => X.this.v
-     *     say (X "Hello").y.get
-     *
-     */
     for (var i : f.inherits())
       {
-        result = result.isThisType()
-          ? result
-          : result.applyTypePars(i.calledFeature(),
-                                 i.actualTypeParameters());
+        result = result
+          .applyTypePars(i.calledFeature(),
+                         i.actualTypeParameters());
       }
-    if (result.isGenericArgument())
-      {
-        var g = result.genericArgument();
-        if (g.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
-          {
-            g = g.cotypeOriginGeneric();
-          }
-        if (g.outer().generics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-          {
-            result = g.replace(actualGenerics);
-          }
-      }
-    else if (result.isNormalType())
-      {
-        var g2 = applyTypePars(f, result.generics(), actualGenerics);
-        var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
-
-        g2 = cotypeActualGenerics(g2);
-
-        if (g2 != result.generics() ||
-            o2 != result.outer()       )
-          {
-            var hasError = o2 == Types.t_ERROR;
-            for (var t : g2)
-              {
-                hasError = hasError || (t == Types.t_ERROR);
-              }
-            result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
-          }
-      }
-    return result;
+    return result
+      .applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
 
 
@@ -1193,61 +1156,66 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (f != null,
-       actualGenerics != null,
-       Errors.any() || !isOpenGeneric() || (select >= 0) || actualGenerics.isEmpty());
+       actualGenerics != null);
 
-    var result = this;
-    if (result.isGenericArgument())
+    return switch(kind())
       {
-        AbstractFeature g = result.genericArgument();
-        if (g.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+        case GenericArgument ->
           {
-            g = g.cotypeOriginGeneric();
-          }
-        if (g.outer().generics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
-          {
-            if (g.isOpenTypeParameter())
+            var result = this;
+            AbstractFeature g = result.genericArgument();
+            if (g.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
               {
-                var tl = g.replaceOpen(actualGenerics);
-                if (CHECKS) check
-                  (Errors.any() || select >= 0 && select <= tl.size());
-                if (select >= 0 && select <= tl.size())
+                g = g.cotypeOriginGeneric();
+              }
+            if (g.outer().generics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
+              {
+                if (g.isOpenTypeParameter())
                   {
-                    result = tl.get(select);
+                    var tl = g.replaceOpen(actualGenerics);
+                    if (CHECKS) check
+                      (Errors.any() || select >= 0 && select <= tl.size());
+                    if (select >= 0 && select <= tl.size())
+                      {
+                        result = tl.get(select);
+                      }
+                    else
+                      {
+                        result = Types.t_ERROR;
+                      }
                   }
                 else
                   {
-                    result = Types.t_ERROR;
+                    result = g.replace(actualGenerics);
                   }
               }
-            else
-              {
-                result = g.replace(actualGenerics);
-              }
+            yield result;
           }
-      }
-    else if (!result.isThisType())
-      {
-        var generics = result.generics();
-        var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
-          ? actualGenerics
-          : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
-        var o2 = (result.outer() == null) ? null : result.outer().applyTypePars(f, actualGenerics);
-
-        g2 = cotypeActualGenerics(g2);
-
-        if (g2 != result.generics() ||
-            o2 != result.outer()       )
+        case RefType, ValueType ->
           {
-            var hasError = o2 == Types.t_ERROR;
-            for (var t : g2)
+            var result = this;
+            var generics = result.generics();
+            var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
+              ? actualGenerics
+              : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
+            var o2 = (result.outer() == null) ? null : result.outer().applyTypeParsLocally(f, actualGenerics, select);
+
+            g2 = cotypeActualGenerics(g2);
+
+            if (g2 != result.generics() ||
+                o2 != result.outer()       )
               {
-                hasError = hasError || (t == Types.t_ERROR);
+                var hasError = o2 == Types.t_ERROR;
+                for (var t : g2)
+                  {
+                    hasError = hasError || (t == Types.t_ERROR);
+                  }
+                result = hasError ? Types.t_ERROR : result.replaceGenericsAndOuter(g2, o2);
               }
-            result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
+            yield result;
           }
-      }
-    return result;
+        case ThisType -> this;
+      };
   }
 
 
@@ -1263,17 +1231,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new type with same feature(), but using g/o as generics
    * and outer type.
    */
-  public AbstractType applyTypePars(List<AbstractType> g, AbstractType o)
+  public AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
       (isNormalType(),
        this instanceof ResolvedType);
 
-    g.freeze();
+    var g2 = new List<>(g);
+    g2.freeze();
 
     return new ResolvedType() {
       @Override protected AbstractFeature backingFeature() { return AbstractType.this.backingFeature(); }
-      @Override public List<AbstractType> generics() { return g; }
+      @Override public List<AbstractType> generics() { return g2; }
       @Override public AbstractType outer() { return o == null ? feature().outer().selfType() : o; }
       @Override public TypeKind kind() { return AbstractType.this.kind(); }
     };
@@ -2024,10 +1993,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param tf the type feature we are calling ({@code equatable.type} in the example
    * above).
    *
-   * @param tc the target call ({@code T} in the example above).
+   * @param tpt the type parameters type that is the target of the call ({@code T} in the example above).
    */
-  AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractFeature tf, AbstractCall tc)
+  AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractFeature tf, AbstractType tpt)
   {
+    if (PRECONDITIONS) require
+      (tpt.isGenericArgument());
+
     var result = this;
     if (isGenericArgument())
       {
@@ -2035,12 +2007,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           { // a call of the form `T.f x` where `f` is declared as
             // `abc.type.f(arg abc.this.type)`, so replace
             // `abc.this.type` by `T`.
-            result = tc.calledFeature().asGenericType();
+            result = tpt;
           }
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_this_type_in_cotype(tf, tc));
+        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_this_type_in_cotype(tf, tpt));
       }
     return result;
   }

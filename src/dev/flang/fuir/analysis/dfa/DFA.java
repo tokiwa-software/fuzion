@@ -843,6 +843,11 @@ public class DFA extends ANY
   static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
   static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, false);
 
+  static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
+  static boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
+  TreeMap<Integer, Value> _allValuesForEnv = new TreeMap<>();
+
+
 
   /*-------------------------  static methods  --------------------------*/
 
@@ -2256,7 +2261,14 @@ public class DFA extends ANY
           Value ev;
           if (cl._dfa._real)
             {
-              ev = newEnv.getActualEffectValues(ecl);
+              if (DO_NOT_TRACE_ENVS)
+                {
+                  ev = cl._dfa._allValuesForEnv.get(ecl);
+                }
+              else
+                {
+                  ev = newEnv.getActualEffectValues(ecl);
+                }
             }
           else
             {
@@ -2307,7 +2319,9 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null
+    put("effect.type.is_instated0"          , cl ->
+        cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null &&
+        !DO_NOT_TRACE_ENVS
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                            * should reconsider if handling of default effects changes
@@ -3370,7 +3384,7 @@ public class DFA extends ANY
 
 
   /**
-   * Create new Env for given existing env and effect type  and value pair.
+   * Create new Env for given existing env and effect type and value pair.
    *
    * @param env the previous environment.
    *
@@ -3382,6 +3396,16 @@ public class DFA extends ANY
    */
   Env newEnv(Env env, int ecl, Value ev)
   {
+    if (DO_NOT_TRACE_ENVS)
+      {
+        var v0 = _allValuesForEnv.get(ecl);
+        var v1 = v0 == null ? ev : v0.join(this, ev, ecl);
+        if (v0 != v1)
+          {
+            _allValuesForEnv.put(ecl, v1);
+          }
+        return env;
+      }
     Env e;
     var eid = env == null ? 0 : env._id;
     var vid = ev._envId;

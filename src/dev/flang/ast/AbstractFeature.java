@@ -81,6 +81,22 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
       return values()[ordinal];
     }
+
+    @Override
+    public String toString()
+    {
+      return switch (this)
+        {
+          case Routine           -> "routine";
+          case Field             -> "field";
+          case TypeParameter     -> "type parameter";
+          case OpenTypeParameter -> "open type parameter";
+          case Intrinsic         -> "intrinsic";
+          case Abstract          -> "abstract";
+          case Choice            -> "choice";
+          case Native            -> "native";
+        };
+    }
   }
 
 

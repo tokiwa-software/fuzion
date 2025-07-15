@@ -31,21 +31,7 @@ public Message ref is
   public start_line String => abstract
 
   # header fields with all lower case
-  public fields http.canonical_header_map => abstract
-
-  module fields_str String =>
-    fields.items.map kv->
-                        k, v := kv
-                        "$k: $v" + crlf
-      .as_string ""
-
-  # checks if the header contains the field
-  public has_field(name String) bool =>
-    fields.has name
-
-  # returns the fields value, if the field exists in the header
-  public get_field(name String) option String =>
-    fields[name]
+  public header http.canonical_header_map => abstract
 
   # NYI: can only be called once
   # body of the message, if it has one
@@ -56,16 +42,16 @@ public Message ref is
   # the whole message as a sequence of bytes
   public bytes Sequence u8 =>
     # NYI BUG, read fully
-    (start_line + fields_str + crlf).utf8 ++ (match (body.read 1E6)
+    (start_line + header.as_string + crlf).utf8 ++ (match (body.read 1E6)
                                                 a array u8 => a
                                                 * => [])
 
   # String representation of the message header
-  public redef as_string String => start_line + fields_str + crlf
+  public redef as_string String => start_line + header.as_string + crlf
 
   # NYI: can only be called once
   # String representation of the message header
-  public as_string_with_body String => start_line + fields_str + crlf
+  public as_string_with_body String => start_line + header.as_string + crlf
 
 
 
