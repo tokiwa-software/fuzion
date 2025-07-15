@@ -62,6 +62,13 @@ private:public canonical_header_map(internal_map container.Map String String) : 
   #
   public redef as_mutable_map(LM type : mutate) container.Mutable_Map String String => internal_map.as_mutable_map LM
 
+  # string of this that can be used in HTTP messages
+  #
+  public redef as_string =>
+    items.map kv->
+                k, v := kv
+                "$k: $v" + crlf
+         .as_string ""
 
   # initializer for this map
   #

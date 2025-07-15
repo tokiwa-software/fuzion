@@ -420,13 +420,12 @@ public abstract class AbstractCall extends Expr
      */
     var target = target();
     var tt = target().type();
-    if (target instanceof Call tc &&
-        tc.calledFeature().isTypeParameter() &&
-        !tt.isGenericArgument())
+    var tpt = target.asTypeParameterType();
+    if (tpt != null)
       {
         t = t.replace_type_parameter_used_for_this_type_in_cotype
           (tt.feature(),
-           tc);
+           tpt);
       }
     if (!calledFeature().isOuterRef())
       {
@@ -441,6 +440,19 @@ public abstract class AbstractCall extends Expr
         t = t.replace_this_type_by_actual_outer(inner, foundRef, context);
       }
     return t;
+  }
+
+
+  /**
+   * If this expression is a Call to a type parameter,
+   * return the type parameters type, otherwise null.
+   */
+  @Override
+  AbstractType asTypeParameterType()
+  {
+    return calledFeature().isTypeParameter()
+      ? calledFeature().asGenericType()
+      : null;
   }
 
 
