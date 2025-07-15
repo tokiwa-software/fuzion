@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -224,30 +225,52 @@ public abstract class AbstractCall extends Expr
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
+   * @param context the source code context where this Call is used
+   *
    * @param frmlT the formal type. Might contain Types.t_UNDEFINED since this is
    * used during type resolution and type inference
-   *
-   * @param context the source code context where this Call is used
    *
    * @return the actual type applying actual type parameters known from the
    * target of this call and actual type parameters given in this call. Result
    * is interned.
    */
-  AbstractType actualArgType(Resolution res, AbstractType frmlT, AbstractFeature arg, Context context)
+  AbstractType actualArgType(Resolution res, Context context, AbstractType frmlT, AbstractFeature arg)
   {
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    // NYI: CLEANUP: This is part of what is done in Call.adjustResultType, see comment there.
-    AbstractType result = adjustThisTypeForTarget(frmlT, true, arg, context);
-    result = targetTypeOrConstraint(res, context)
-      .actualType(result, context)
-      .applyTypePars(calledFeature(), actualTypeParameters());
+    return adjustResultType(res, context, targetTypeOrConstraint(res, context), frmlT,
+                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
+  }
+
+
+  /**
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param tt the target type to use when adjusting t.
+   *
+   * @param rt the result type to adjust
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.  This will
+   * be used to check for AstErrors.illegalOuterRefTypeInCall.
+   *
+   */
+  protected AbstractType adjustResultType(Resolution res, Context context, AbstractType tt, AbstractType rt, BiConsumer<AbstractType, AbstractType> foundRef, boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
+  {
+    var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
+    var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
+    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
+    var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
+    var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (t5 != null);
 
-    return result;
+    return t5;
   }
 
 
@@ -282,18 +305,18 @@ public abstract class AbstractCall extends Expr
    * Replace occurrences of this.type in formal arg or result type depending on
    * the target of the call.
    *
+   * @param context the source code context where this Call is used
+   *
    * @param t the formal type to be adjusted.
    *
-   * @param arg true if {@code t} is the type of an argument, false if {@code t} is the result type
-   *
-   * @param calledOrArg the declared argument (if arg == true) or the called feature (otherwise).
-   *
-   * @param context the source code context where this Call is used
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.  This will
+   * be used to check for AstErrors.illegalOuterRefTypeInCall.
    *
    * @return a type derived from t where {@code this.type} is replaced by actual types
    * from the call's target where this is possible.
    */
-  AbstractType adjustThisTypeForTarget(AbstractType t, boolean arg, AbstractFeature calledOrArg, Context context)
+  AbstractType adjustThisTypeForTarget(Context context, AbstractType t, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     /**
      * For a call {@code T.f} on a type parameter whose result type contains
@@ -322,19 +345,15 @@ public abstract class AbstractCall extends Expr
       }
     if (!calledFeature().isOuterRef())
       {
-        var t0 = t;
         var declF = calledFeature().outer();
         if (!tt.isGenericArgument() && declF != tt.feature())
           {
             var heir = tt.feature();
-            t = t.replace_inherited_this_type(declF, heir,
-                                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to));
+            t = t.replace_inherited_this_type(declF, heir, foundRef);
           }
         var inner = ResolvedNormalType.newType(calledFeature().selfType(),
                                                target().type());
-        t = t.replace_this_type_by_actual_outer(inner,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, arg, calledOrArg, t0, from, to),
-                                                context);
+        t = t.replace_this_type_by_actual_outer(inner, foundRef, context);
       }
     return t;
   }
@@ -420,7 +439,7 @@ public abstract class AbstractCall extends Expr
               }
             else
               {
-                rfat[argnum + i] = actualArgType(res, frmlT, frml, context);
+                rfat[argnum + i] = actualArgType(res, context, frmlT, frml);
               }
           }
       }
