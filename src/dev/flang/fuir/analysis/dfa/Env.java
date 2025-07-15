@@ -413,6 +413,10 @@ public class Env extends ANY implements Comparable<Env>
    */
   Value getActualEffectValues(int ecl)
   {
+    if (DFA.DO_NOT_TRACE_ENVS)
+      {
+        return _dfa._allValuesForEnv.get(ecl);
+      }
     if (_dfa._real)
       return
         _effectType == ecl  ? _actualEffectValues :
