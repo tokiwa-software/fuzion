@@ -31,21 +31,13 @@ public Message ref is
   public start_line String => abstract
 
   # header fields with all lower case
-  public fields http.canonical_header_map => abstract
+  public header http.canonical_header_map => abstract
 
   module fields_str String =>
-    fields.items.map kv->
+    header.items.map kv->
                         k, v := kv
                         "$k: $v" + crlf
       .as_string ""
-
-  # checks if the header contains the field
-  public has_field(name String) bool =>
-    fields.has name
-
-  # returns the fields value, if the field exists in the header
-  public get_field(name String) option String =>
-    fields[name]
 
   # NYI: can only be called once
   # body of the message, if it has one
