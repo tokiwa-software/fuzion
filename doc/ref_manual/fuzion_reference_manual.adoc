@@ -567,7 +567,7 @@ CAUTION: *NYI*: see `SourceModule.isLegalCovariantThisType`.
 CAUTION: *NYI*: Need more detail on native feature
 
 [#fuzion_opentypeparameter]
-((Open Type Parameter)): A _open type parameter_ is a xref:fuzion_typeparameter[type parameters] whose declaration is folled by three dots as in `A type ...`.
+((Open Type Parameter)): An _open type parameter_ is a xref:fuzion_typeparameter[type parameters] whose declaration is followed by three dots as in `A type ...`.
 
 [#fuzion_orignalfeature]
 ((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
