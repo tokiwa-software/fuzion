@@ -576,8 +576,6 @@ public class Resolution extends ANY
    * direct ancestors of this, and, if there are no direct ancestors (for
    * Object), this inherits from 'Type'.
    *
-   * @param res Resolution instance used to resolve this for types.
-   *
    * @return The feature that should be the direct ancestor of this feature's
    * type feature.
    */
@@ -653,10 +651,8 @@ public class Resolution extends ANY
 
 
   /**
-   * Helper method for cotype(res) to create the list of inherits calls of
+   * Helper method for cotype() to create the list of inherits calls of
    * this' type feature.
-   *
-   * @param res Resolution instance used to resolve this for types.
    */
   private List<AbstractCall> cotypeInherits(AbstractFeature af)
   {
@@ -676,8 +672,6 @@ public class Resolution extends ANY
    * inherits clause iff no such feature exists in outer().cotype().
    *
    * The new type feature will be stored in _cotype.
-   *
-   * @param res Resolution instance used to resolve this for types.
    *
    * @param name the name of the type feature to be created
    *
