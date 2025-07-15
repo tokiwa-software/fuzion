@@ -1210,7 +1210,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     hasError = hasError || (t == Types.t_ERROR);
                   }
-                result = hasError ? Types.t_ERROR : result.applyTypePars(g2, o2);
+                result = hasError ? Types.t_ERROR : result.replaceGenericsAndOuter(g2, o2);
               }
             yield result;
           }
@@ -1231,17 +1231,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new type with same feature(), but using g/o as generics
    * and outer type.
    */
-  public AbstractType applyTypePars(List<AbstractType> g, AbstractType o)
+  public AbstractType replaceGenericsAndOuter(List<AbstractType> g, AbstractType o)
   {
     if (PRECONDITIONS) require
       (isNormalType(),
        this instanceof ResolvedType);
 
-    g.freeze();
+    var g2 = new List<>(g);
+    g2.freeze();
 
     return new ResolvedType() {
       @Override protected AbstractFeature backingFeature() { return AbstractType.this.backingFeature(); }
-      @Override public List<AbstractType> generics() { return g; }
+      @Override public List<AbstractType> generics() { return g2; }
       @Override public AbstractType outer() { return o == null ? feature().outer().selfType() : o; }
       @Override public TypeKind kind() { return AbstractType.this.kind(); }
     };

@@ -101,25 +101,6 @@ public class ParsedType extends UnresolvedType
 
 
   /**
-   * For a type that is not a type parameter, create a new variant using given
-   * actual generics and outer type.
-   *
-   * @param g2 the new actual generics to be used
-   *
-   * @param o2 the new outer type to be used (which may also differ in its
-   * actual generics).
-   *
-   * @return a new type with same feature(), but using g2/o2 as generics
-   * and outer type.
-   */
-  @Override
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
-  {
-    return new ParsedType(_pos, name(), g2, o2, _typeKind);
-  }
-
-
-  /**
    * Create a clone of this Type that uses originalOuterFeature as context to
    * look up features the type is built from.  Generics will be looked up in the
    * current context.

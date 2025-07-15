@@ -401,9 +401,9 @@ public class ResolvedNormalType extends ResolvedType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
-  // NYI: CLEANUP: remove, why does this behave differently from super.applyTypePars?
+  // NYI: CLEANUP: remove, why does this behave differently from super.replaceGenericsAndOuter?
   @Override
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
     return ResolvedNormalType.create(this, g2, unresolvedGenerics(), o2);
   }
