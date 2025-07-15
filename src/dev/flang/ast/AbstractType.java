@@ -1091,21 +1091,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
      * this a bit, but this is probably not sufficient!
      */
     var result = this;
-    /**
-     * example where result.isThisType() is relevant (test mix_inheritance_and_outer):
-     *
-     *     X (A type, v A) ref is
-     *       y : X i32 42 is
-     *         get => X.this.v
-     *     say (X "Hello").y.get
-     *
-     */
     for (var i : f.inherits())
       {
-        result = result.isThisType()
-          ? result
-          : result.applyTypePars(i.calledFeature(),
-                                 i.actualTypeParameters());
+        result = result
+          .applyTypePars(i.calledFeature(),
+                         i.actualTypeParameters());
       }
     return result
       .applyTypeParsLocally(f, actualGenerics, NO_SELECT);
