@@ -1993,10 +1993,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param tf the type feature we are calling ({@code equatable.type} in the example
    * above).
    *
-   * @param tc the target call ({@code T} in the example above).
+   * @param tpt the type parameters type that is the target of the call ({@code T} in the example above).
    */
-  AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractFeature tf, AbstractCall tc)
+  AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractFeature tf, AbstractType tpt)
   {
+    if (PRECONDITIONS) require
+      (tpt.isGenericArgument());
+
     var result = this;
     if (isGenericArgument())
       {
@@ -2004,12 +2007,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           { // a call of the form `T.f x` where `f` is declared as
             // `abc.type.f(arg abc.this.type)`, so replace
             // `abc.this.type` by `T`.
-            result = tc.calledFeature().asGenericType();
+            result = tpt;
           }
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_this_type_in_cotype(tf, tc));
+        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_this_type_in_cotype(tf, tpt));
       }
     return result;
   }
