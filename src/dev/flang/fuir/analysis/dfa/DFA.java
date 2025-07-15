@@ -2319,7 +2319,9 @@ public class DFA extends ANY
             }
           return null;
         });
-    put("effect.type.is_instated0"          , cl -> cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null
+    put("effect.type.is_instated0"          , cl ->
+        cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null &&
+        !DO_NOT_TRACE_ENVS
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                            * should reconsider if handling of default effects changes
