@@ -189,24 +189,13 @@ is
       #
       as_list.concat_list s.as_list
 
-    else if false  # NYI: OPTIMIZATION: This nicer (and faster?) version cannot be used due to DFA performance #4634?
+    else
 
       # bulk expand by all elements of `s`
       expand s.count ()->
         for e in s.indexed do
           i, v := e
           container.expanding T .env.put length+i v
-
-    else
-
-      # indiviudally add each elements of `s`
-      for # `expanding_array.concat` is `fixed`, so type of expanding_array.this
-          # is `expanding_array`:
-          n := expanding_array.this,
-               n.add e
-          e in s
-      else
-        n
 
 
   # collect the contents of this expanding_array as an array.
