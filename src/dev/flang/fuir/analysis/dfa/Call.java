@@ -575,6 +575,10 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         result = _env != null ? _env.getActualEffectValues(ecl)
                               : _dfa._defaultEffects.get(ecl);
+        if (result == null && DFA.DO_NOT_TRACE_ENVS)
+          {
+            result = _dfa._allValuesForEnv.get(ecl);
+          }
         if (result == null && _dfa._reportResults && !ignoreError)
           {
             DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
@@ -628,7 +632,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
-        if (_dfa._reportResults)
+        if (_dfa._reportResults && !DFA.DO_NOT_TRACE_ENVS)
           {
             // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
             Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))

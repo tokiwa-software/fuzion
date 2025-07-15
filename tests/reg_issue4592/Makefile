@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue4592
+override FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS=false
 include ../simple.mk
