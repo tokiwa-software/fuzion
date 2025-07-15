@@ -1673,7 +1673,7 @@ A xref:fuzion_typeparameter[type parameter] argument to a feature that is redefi
                     (originalArg.isTypeParameter()     != actualArg.isTypeParameter()               ) ||
             /*
     // tag::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
-A xref:fuzion_opentypeparameter[open type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_opentypeparameter[open type parameter] in the redefined feature.
+An xref:fuzion_opentypeparameter[open type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_opentypeparameter[open type parameter] in the redefined feature.
     // end::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
             */
                     (originalArg.isOpenTypeParameter() != actualArg.isOpenTypeParameter()           ) ||
