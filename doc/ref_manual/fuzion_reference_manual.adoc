@@ -348,7 +348,7 @@ include::rule.adoc[]
 
 For redefined features, the number of formal value arguments as well as the
 number of xref:fuzion_typeparameter[type parameters] must not change compared to the original feature,
-otherwise it would not be possible to perform dynamically bind and pass the
+otherwise it would not be possible to perform dynamic binding and pass the
 actual xref:fuzion_typeparameter[type parameters] and value arguments given in a call to the redefined
 feature:
 
