@@ -11,7 +11,7 @@ This is an implementation restriction that should be removed in a future version
 To solve this, create a helper feature 'lazy_value' that calculates the value as follows:
 
   lazy_value => {
-  private loop ***not yet known*** : Any is Routine
+  private loop ***not yet known*** : Any is routine
   f.this.loop
 }
 
