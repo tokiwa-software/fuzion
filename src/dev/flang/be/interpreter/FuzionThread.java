@@ -69,7 +69,7 @@ public class FuzionThread extends ANY
   /**
    * Current call stack, for debugging output
    */
-  Stack<Integer> _callStack = new Stack<>();
+  Stack<Integer> _callSiteStack = new Stack<>();
   Stack<Integer> _callStackFrames = new Stack<>();
 
 

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -343,8 +345,8 @@ public class Names extends ANY implements ClassFileConstants
     {
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
-      if (o != -1 &&
-          _fuir.clazzOuterClazz(o) != -1)
+      if (o != NO_CLAZZ &&
+          _fuir.clazzOuterClazz(o) != NO_CLAZZ)
         { // add a prefix unless cl or o are universe
           clazzMangledName(o, sb);
           sep = "__";

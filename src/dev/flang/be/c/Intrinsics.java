@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -1057,7 +1059,7 @@ public class Intrinsics extends ANY
   {
     var or = c._fuir.clazzOuterRef(cl);
     var outer =
-      or == -1                                         ? null :
+      or == NO_CLAZZ                                   ? null :
       c._fuir.clazzFieldIsAdrOfValue(or)               ? CNames.OUTER.deref() :
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;

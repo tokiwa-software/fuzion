@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import dev.flang.util.IntMap;
 import dev.flang.util.List;
 
@@ -77,7 +79,7 @@ public class ValueSet extends Value
     /**
      * In case the values are TaggedValue instances, this is their clazz.
      */
-    int _taggedClazz = -1;
+    int _taggedClazz = NO_CLAZZ;
 
 
     /**
