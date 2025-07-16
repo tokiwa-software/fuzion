@@ -60,12 +60,46 @@ public abstract class AbstractCall extends Expr
 
   /*-----------------------------  methods  -----------------------------*/
 
-
+  /**
+   * The type parameters used for calling {@code calledFeature}, never null.
+   */
   public abstract List<AbstractType> actualTypeParameters();
+
+
+  /**
+   * The feature we are calling, never null.
+   */
   public abstract AbstractFeature calledFeature();
+
+
+  /**
+   * The target of the call, never null.
+   */
   public abstract Expr target();
+
+
+  /**
+   * The actual arguments of the call, never null.
+   */
   public abstract List<Expr> actuals();
+
+
+  /**
+   * For a call a.b.4 with a select clause ".4" to pick a variant from a field
+   * of an open generic type, this is the chosen variant.
+   */
   public abstract int select();
+
+
+  /**
+   * True iff this a call to a direct parent feature in an inheritance call.
+   *
+   * e.g.:
+   *
+   *     a : b.c.d is
+   *     # ------^  for call d isInheritanceCall is true
+   *
+   */
   public abstract boolean isInheritanceCall();
 
 
