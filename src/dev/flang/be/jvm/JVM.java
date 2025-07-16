@@ -1590,7 +1590,7 @@ should be avoided as much as possible.
   public JavaType javaTypeOfTarget(int cl)
   {
     var o = _fuir.clazzOuterRef(cl);
-    return o == -1 ? PrimitiveType.type_void
+    return o == NO_CLAZZ ? PrimitiveType.type_void
                    : _types.javaType(_fuir.clazzResultClazz(o));
   }
 
@@ -2036,7 +2036,7 @@ should be avoided as much as possible.
    * @param rt the Fuzion type of the value
    *
    * @param f iff this is called to assign the cloned value to a field, the
-   * field id. -1 if not assigned to a field.  This is used to not clone a value
+   * field id. NO_CLAZZ if not assigned to a field.  This is used to not clone a value
    * if assigned to an outer ref.
    *
    * @return value iff cloning was not required, or an expression that creates a
@@ -2045,7 +2045,7 @@ should be avoided as much as possible.
   Expr cloneValue(int s, Expr value, int rt, int f)
   {
     if (!_fuir.clazzIsRef(rt) &&
-        (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
+        (f == NO_CLAZZ || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_fuir.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
@@ -2081,7 +2081,7 @@ should be avoided as much as possible.
                         var fn = _types._choices.generalValueFieldName(rt, i);
                         var v = Expr.aload(vl, jt)
                           .andThen(Expr.getfield(cc, fn, ft));
-                        var cv = cloneValueOrNull(s, v, tc, -1);
+                        var cv = cloneValueOrNull(s, v, tc, NO_CLAZZ);
                         e = e
                           .andThen(Expr.aload(nl, jt))
                           .andThen(cv)

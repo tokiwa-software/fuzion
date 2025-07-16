@@ -584,7 +584,7 @@ class CodeGen
         }
       case Intrinsic:
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
+          if (_fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
             {
               return new Pair<>(Expr.UNIT, tvalue.drop());
             }
@@ -919,9 +919,9 @@ class CodeGen
                                : args(needTarget, tvalue, args, cc, argCount-1);
 
     // then add tvalue/arg #argCount:
-    var add = argCount > 0                                 ? args.get(argCount-1) :
-              !needTarget && _fuir.clazzOuterRef(cc) == -1 ? tvalue.drop()
-                                                           : tvalue;
+    var add = argCount > 0                                       ? args.get(argCount-1) :
+              !needTarget && _fuir.clazzOuterRef(cc) == NO_CLAZZ ? tvalue.drop()
+                                                                 : tvalue;
     return result.andThen(add);
   }
 

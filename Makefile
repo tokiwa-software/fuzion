@@ -1146,7 +1146,6 @@ $(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
-	chmod +x $@/*.sh
 	@echo "pre building check_simple_example"
 	$(FZ) -modules=terminal -c -o=$(BUILD_DIR)/tests/check_simple_example $(BUILD_DIR)/tests/check_simple_example.fz
 	@echo " + $(BUILD_DIR)/tests/check_simple_example"
