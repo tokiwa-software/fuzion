@@ -1221,7 +1221,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
             for (var v : e.getValue())
               {
                 if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
-                    !(use instanceof Call c && !c._isInheritanceCall && v.isChoice()) &&
+                    !(use instanceof Call c && !c.isInheritanceCall() && v.isChoice()) &&
                     (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
                   {
                     result.add(new FeatureAndOuter(v, curOuter, inner));
@@ -1357,7 +1357,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
               *   ring(r ring) is
               *      last ring := r.last
               */
-            if (useIsBeforeDefinition[0] && !(use instanceof AbstractCall ac && ac.target() instanceof AbstractCall))
+            // NYI: UNDER DEVELOPMENT: find better way to do this
+            if (useIsBeforeDefinition[0] && !(use instanceof Call c && c.targetIsCall()))
               {
                 return false;
               }

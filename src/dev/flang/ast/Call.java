@@ -82,7 +82,7 @@ public class Call extends AbstractCall
   /**
    * actual generic arguments, set by parser
    */
-  public /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
+  /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
   public final List<AbstractType> _unresolvedGenerics;
   public List<AbstractType> actualTypeParameters()
   {
@@ -99,6 +99,10 @@ public class Call extends AbstractCall
           }
       }
     // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateTypeAndInferResult performs gs.set
+
+    if (POSTCONDITIONS) ensure
+      (res != null);
+
     return res;
   }
 
@@ -106,15 +110,32 @@ public class Call extends AbstractCall
   /**
    * Actual arguments, set by parser
    */
-  public List<Expr> _actuals;
-  public List<Expr> actuals() { return _actuals; }
+  List<Expr> _actuals;
+  public List<Expr> actuals() {
+
+    if (POSTCONDITIONS) ensure
+      (_actuals != null);
+
+    return _actuals;
+  }
 
 
   /**
    * the target of the call, null for "this". Set by parser
    */
   protected Expr _target;
-  public Expr target() { return _target; }
+  public Expr target()
+  {
+    if (_target == null)
+      {
+        reportPendingError();
+      }
+
+    if (POSTCONDITIONS) ensure
+      (_target != null);
+
+    return _target;
+  }
   private FeatureAndOuter _targetFrom = null;
 
 
@@ -157,7 +178,7 @@ public class Call extends AbstractCall
    * Will be set to true for a call to a direct parent feature in an inheritance
    * call.
    */
-  public boolean _isInheritanceCall = false;
+  boolean _isInheritanceCall = false;
   public boolean isInheritanceCall() { return _isInheritanceCall; }
 
 
@@ -187,7 +208,7 @@ public class Call extends AbstractCall
    * This will be used to produce suggestions to fix errors reported for this
    * call.
    */
-  public Call _targetOf_forErrorSolutions = null;
+  Call _targetOf_forErrorSolutions = null;
 
 
   /*-------------------------- constructors ---------------------------*/
@@ -2916,6 +2937,15 @@ public class Call extends AbstractCall
       {
         r.run();
       }
+  }
+
+
+  /**
+   * NYI: CLEANUP: remove this
+   */
+  public boolean targetIsCall()
+  {
+    return _target instanceof Call;
   }
 
 }
