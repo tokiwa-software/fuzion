@@ -117,7 +117,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public void setSourceRange(SourceRange r)
   {
     if (PRECONDITIONS) require
-      (/* make sure we do not accidentally set this repeatedly, as for special
+      (Errors.any() || // in case of earlier (syntax-) errors, do not care, otherwise:
+
+       /* make sure we do not accidentally set this repeatedly, as for special
         * Exprs like Call.ERROR, but we might extend it as in adding
         * parentheses around the Expr:
         */
