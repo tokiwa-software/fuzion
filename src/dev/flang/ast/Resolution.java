@@ -713,6 +713,25 @@ public class Resolution extends ANY
   }
 
 
+  /**
+   * Convenience function to resolve all types in a list of types.
+   *
+   * @param types the types to resolve
+   *
+   * @param outer the feature to use as context when resolving the types
+   *
+   * @return a list of resolved types
+   */
+  public List<AbstractType> resolveTypes(List<AbstractType> types, Context context)
+  {
+    if (!(types instanceof FormalGenerics.AsActuals))
+      {
+        types = types.map(t -> t.resolve(this, context));
+      }
+    return types;
+  }
+
+
 }
 
 /* end of file */

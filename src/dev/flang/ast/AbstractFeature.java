@@ -1170,7 +1170,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             else
               {
                 var actualTypes = c.actualTypeParameters();
-                actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
+                actualTypes = res == null ? actualTypes : res.resolveTypes(actualTypes, heir.context());
                 ti = ti.applyTypePars(c.calledFeature(), actualTypes);
                 a[i] = ti;
               }

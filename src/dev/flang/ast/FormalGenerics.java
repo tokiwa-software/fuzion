@@ -157,23 +157,6 @@ public class FormalGenerics extends ANY
   }
 
 
-  /**
-   * Convenience function to resolve all types in a list of actual generic
-   * arguments of a call or a type.
-   *
-   * @param generics the actual generic arguments that should be resolved
-   *
-   * @return a new array of the resolved generics
-   */
-  public static List<AbstractType> resolve(Resolution res, List<AbstractType> generics, AbstractFeature outer)
-  {
-    if (!(generics instanceof FormalGenerics.AsActuals))
-      {
-        generics = generics.map(t -> t.resolve(res, outer.context()));
-      }
-    return generics;
-  }
-
 
   private List<AbstractType> _asActuals = null;
 
