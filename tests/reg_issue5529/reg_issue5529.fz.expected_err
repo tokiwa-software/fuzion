@@ -1,47 +1,47 @@
 
---CURDIR--/reg_issue5529.fz:30:18: error 1: Agument name expected in left hand side (before '->') of lambda expression
+--CURDIR--/reg_issue5529.fz:30:18: error 1: Argument name expected in left hand side (before '->') of lambda expression
   (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
 -----------------^
 Instead, found expression: '1'
 To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
 
 
---CURDIR--/reg_issue5529.fz:30:20: error 2: Agument name expected in left hand side (before '->') of lambda expression
+--CURDIR--/reg_issue5529.fz:30:20: error 2: Argument name expected in left hand side (before '->') of lambda expression
   (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
 -------------------^^^^^
 Instead, found expression: '"bla"'
 To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
 
 
---CURDIR--/reg_issue5529.fz:30:26: error 3: Agument name expected in left hand side (before '->') of lambda expression
+--CURDIR--/reg_issue5529.fz:30:26: error 3: Argument name expected in left hand side (before '->') of lambda expression
   (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
 -------------------------^^^^^^^^^^^^
 Instead, found expression: '[io.Out.env]'
 To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
 
 
---CURDIR--/reg_issue5529.fz:30:39: error 4: Agument name expected in left hand side (before '->') of lambda expression
+--CURDIR--/reg_issue5529.fz:30:39: error 4: Argument name expected in left hand side (before '->') of lambda expression
   (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
 --------------------------------------^
 Instead, found expression: '(47,11)'
 To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
 
 
---CURDIR--/reg_issue5529.fz:30:48: error 5: Agument name expected in left hand side (before '->') of lambda expression
+--CURDIR--/reg_issue5529.fz:30:48: error 5: Argument name expected in left hand side (before '->') of lambda expression
   (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
 -----------------------------------------------^
 Instead, found expression: '3+4'
 To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
 
 
---CURDIR--/reg_issue5529.fz:30:51: error 6: Agument name expected in left hand side (before '->') of lambda expression
+--CURDIR--/reg_issue5529.fz:30:51: error 6: Argument name expected in left hand side (before '->') of lambda expression
   (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
 --------------------------------------------------^
 Instead, found expression: '5'
 To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
 
 
---CURDIR--/reg_issue5529.fz:30:59: error 7: Agument name expected in left hand side (before '->') of lambda expression
+--CURDIR--/reg_issue5529.fz:30:59: error 7: Argument name expected in left hand side (before '->') of lambda expression
   (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
 ----------------------------------------------------------^^
 Instead, found expression: 'say << "hi"'

@@ -1611,7 +1611,7 @@ public class AstErrors extends ANY
   static void argNameExpectedInLambda(Expr e)
   {
     error(e.pos(),
-          "Agument name expected in left hand side (before " + code("->") +") of lambda expression",
+          "Argument name expected in left hand side (before " + code("->") +") of lambda expression",
           "Instead, found expression: " + s(e) + "\n" +
           "To solve this, replace the expression with an argument name like " + code("x") + " and use "+
           "that variable in the implementation of the right hand side of the lambda expression."
