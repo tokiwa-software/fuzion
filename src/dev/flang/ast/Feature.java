@@ -1386,25 +1386,6 @@ public class Feature extends AbstractFeature
   }
 
 
-  /**
-   * For every feature 'f', this produces the corresponding type feature
-   * 'f.type'.  This feature inherits from the abstract type features of all
-   * direct ancestors of this, and, if there are no direct ancestors (for
-   * Object), this inherits from 'Type'.
-   *
-   * @param res Resolution instance used to resolve this for types.
-   *
-   * @return The feature that should be the direct ancestor of this feature's
-   * type feature.
-   */
-  @Override
-  public AbstractFeature cotype(Resolution res)
-  {
-    resolveInheritance(res);
-    return super.cotype(res);
-  }
-
-
   /*
    * Declaration resolution for a feature f: For all declarations of features in
    * f (formal arguments, local features, implicit result field), add these
@@ -1643,11 +1624,9 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_SUGAR1;
 
         Contract.addContractFeatures(res, this, context());
-        if (!isUniverse() && !isCotype()
-            && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
-            && !isTypeParameter())
+        if (needsCotype())
           {
-            cotype(res);
+            res.cotype(this);
           }
         visit(new ContextVisitor(context())
           {
@@ -1662,6 +1641,17 @@ public class Feature extends AbstractFeature
 
     if (POSTCONDITIONS) ensure
       (_state.atLeast(State.RESOLVED_SUGAR1));
+  }
+
+
+  /**
+   * @return true if this feature needs a cotype
+   */
+  private boolean needsCotype()
+  {
+    return !isUniverse() && !isCotype()
+        && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
+        && !isTypeParameter();
   }
 
 

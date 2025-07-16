@@ -1448,7 +1448,7 @@ public class Call extends AbstractCall
           {
             // a type parameter's result type is the constraint's type as a type
             // feature with actual type parameters as given to the constraint.
-            var tf = t.feature().cotype(res);
+            var tf = res.cotype(t.feature());
             var tg = new List<AbstractType>(t); // the constraint type itself
             tg.addAll(t.generics());            // followed by the generics
             t = tf.selfType().applyTypePars(tf, tg);
@@ -2328,7 +2328,7 @@ public class Call extends AbstractCall
       if (tt != null && tt != Types.t_ERROR)
         {
           var tf = tt.feature();
-          var ttf = tf.isUniverse() ? tf : tf.cotype(res);
+          var ttf = tf.isUniverse() ? tf : res.cotype(tf);
           res.resolveDeclarations(tf);
           var fo = findOnTarget(res, tf, false).v1();
           var tfo = findOnTarget(res, ttf, false).v1();

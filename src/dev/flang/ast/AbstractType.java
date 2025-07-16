@@ -1952,7 +1952,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             actualGenerics()
           );
 
-        var tf = res != null ? fot.cotype(res) : fot.cotype();
+        var tf = res != null ? res.cotype(fot) : fot.cotype();
         if (CHECKS) check
           (tf != null);
         result = ResolvedNormalType.create(g,
