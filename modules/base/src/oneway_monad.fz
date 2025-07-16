@@ -37,8 +37,7 @@ public oneway_monad(
   # effect.
   A type,
 
-  # NYI: CLEANUP: replace by `oneway_monad.this`
-  OMA type : oneway_monad A OMA,
+  OMA type : oneway_monad.this,
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   #

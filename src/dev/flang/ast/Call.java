@@ -2027,9 +2027,7 @@ public class Call extends AbstractCall
           {
             for (int i=0; i < formalType.generics().size(); i++)
               {
-                var g = actualType.isThisType()
-                  ? actualType.feature().generics().asActuals()
-                  : actualType.generics();
+                var g = actualType.actualGenerics();
                 if (i < g.size())
                   {
                     inferGeneric(res,

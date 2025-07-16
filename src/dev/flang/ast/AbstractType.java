@@ -123,6 +123,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * @return the generics of this type.
+   * In case this is a this-type return the features generics.
+   */
+  public List<AbstractType> actualGenerics()
+  {
+    return isThisType()
+      ? feature().generics().asActuals()
+      : generics();
+  }
+
+
+  /**
    * This type as a reference.
    *
    * Requires that this is resolved, !isGenericArgument().
@@ -706,7 +718,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        !actual.isGenericArgument());
 
     var ogs = actual.generics();
-    var i1 = generics().iterator();
+    var i1 = actualGenerics().iterator();
     var i2 = ogs.iterator();
     AbstractType go = null;
     while ((go != null || i1.hasNext()) && i2.hasNext())
@@ -944,15 +956,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (dependsOnGenerics())
       {
         target = target.selfOrConstraint(Context.NONE);
+        result = result.applyTypePars(target.feature(), target.actualGenerics());
         if (target.isThisType())
           {
-            result = result.applyTypePars(target.feature(), target.feature().generics().asActuals());
             // see #659 for when this is relevant
             result = result.applyTypePars(target.feature().outer().thisType());
           }
         else
           {
-            result = result.applyTypePars(target.feature(), target.generics());
             if (target.outer() != null)
               {
                 result = result.applyTypePars(target.outer());
@@ -1938,7 +1949,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             // THIS#TYPE
             this,
             // all other generics
-            isThisType() ? feature().generics().asActuals() : generics()
+            actualGenerics()
           );
 
         var tf = res != null ? fot.cotype(res) : fot.cotype();
