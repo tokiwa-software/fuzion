@@ -33,6 +33,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
+import dev.flang.util.StringHelpers;
 import dev.flang.util.Pair;
 
 
@@ -2951,6 +2952,24 @@ public class Call extends AbstractCall
   public boolean targetIsCall()
   {
     return _target instanceof Call;
+  }
+
+
+  /**
+   * This call as a human readable string
+   */
+  @Override
+  public String toString()
+  {
+    return (_target == null ||
+            (target() instanceof Universe) ||
+            (target() instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
+            ? ""
+            : StringHelpers.wrapInParentheses(target().toString()) + ".")
+      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().featureName().baseNameHuman())
+      + actualTypeParameters().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
+      + actuals()             .toString(" ", " ", "", e -> (e == null ? "--null--" : e.toStringWrapped()))
+      + (select() < 0        ? "" : " ." + select());
   }
 
 }
