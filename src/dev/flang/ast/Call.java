@@ -96,7 +96,7 @@ public class Call extends AbstractCall
     if (_generics == NO_GENERICS && needsToInferTypeParametersFromArgs())
       {
         res = new List<>();
-        for (var g : _calledFeature.generics().list)
+        for (var g : _calledFeature.typeArguments())
           {
             if (!g.isOpenTypeParameter())
               {
@@ -1582,7 +1582,7 @@ public class Call extends AbstractCall
    */
   private void inferGenericsFromArgs(Resolution res, Context context)
   {
-    int sz = _calledFeature.generics().list.size();
+    int sz = _calledFeature.typeArguments().size();
     boolean[] conflict = new boolean[sz]; // The generics that had conflicting types
     var foundAt  = new List<List<Pair<SourcePosition, AbstractType>>>(); // generics that were found will get the type and pos found stored here, null while not found
     for (var i = 0; i<sz ; i++)
@@ -1665,7 +1665,7 @@ public class Call extends AbstractCall
   {
     // replace any missing type parameters or conflicting ones with t_ERROR,
     // report errors for conflicts
-    for (var g : _calledFeature.generics().list)
+    for (var g : _calledFeature.typeArguments())
       {
         int i = g.typeParameterIndex();
         if (!g.isOpenTypeParameter() && (_generics.size() <= i || _generics.get(i) == Types.t_UNDEFINED) || conflict[i])
@@ -1693,7 +1693,7 @@ public class Call extends AbstractCall
   private List<AbstractFeature> missingGenerics()
   {
     List<AbstractFeature> missing = new List<>();
-    for (var g : _calledFeature.generics().list)
+    for (var g : _calledFeature.typeArguments())
       {
         int i = g.typeParameterIndex();
         if (!g.isOpenTypeParameter() && _generics.get(i) == Types.t_UNDEFINED)
@@ -2114,7 +2114,7 @@ public class Call extends AbstractCall
                   }
               }
           }
-        else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.generics().list.isEmpty())
+        else if (actualArgIndex != -1 && aft != null && !aft.inheritsFrom(fft) && !fft.typeArguments().isEmpty())
           {
             AstErrors.incompatibleArgumentTypeInCall(_calledFeature, actualArgIndex, formalType, _actuals.get(actualArgIndex), Context.NONE);
             setToErrorState();
@@ -2297,7 +2297,7 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && _calledFeature.generics() != FormalGenerics.NONE;
+    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && !_calledFeature.typeArguments().isEmpty();
   }
 
 

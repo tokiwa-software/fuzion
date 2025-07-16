@@ -47,13 +47,10 @@ public class FormalGenerics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * Convenience constant for an empty formal generics instance.
-   */
-  public static final FormalGenerics NONE = new FormalGenerics(new List<>());
+  private static final List<AbstractFeature> NO_FEATURES = new List<>();
+  // NYI: UNDER DEVELOPMENT: { NO_FEATURES.freeze(); }
 
-
-  /*----------------------------  variables  ----------------------------*/
+  private final AbstractFeature _feature;
 
 
   /**
@@ -62,7 +59,13 @@ public class FormalGenerics extends ANY
    * This is private to prevent direct access that does not take care about
    * isOpen.
    */
-  public final List<AbstractFeature> list;
+  // NYI: CLEANUP: remove this method
+  public final List<AbstractFeature> list()
+  {
+    return _feature == null
+      ? NO_FEATURES
+      : _feature.typeArguments();
+  };
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -73,10 +76,9 @@ public class FormalGenerics extends ANY
    *
    * @param l the list of formal generics. May not be empty.
    */
-  public FormalGenerics(List<AbstractFeature> l)
+  public FormalGenerics(AbstractFeature af)
   {
-    list = l.clone();
-    list.freeze();
+    _feature = af;
   }
 
 
@@ -88,7 +90,7 @@ public class FormalGenerics extends ANY
    */
   public boolean isOpen()
   {
-    return !list.isEmpty() && list.getLast().isOpenTypeParameter();
+    return !list().isEmpty() && list().getLast().isOpenTypeParameter();
   }
 
 
@@ -105,18 +107,9 @@ public class FormalGenerics extends ANY
    */
   public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
-    if (_asActuals == actualGenerics)
-      {
-        return true;
-      }
-    else if (isOpen())
-      {
-        return (list.size()-1) <= actualGenerics.size();
-      }
-    else
-      {
-        return list.size() == actualGenerics.size();
-      }
+    return isOpen()
+      ? (list().size()-1) <= actualGenerics.size()
+      : list().size() == actualGenerics.size();
   }
 
 
@@ -175,9 +168,6 @@ public class FormalGenerics extends ANY
   }
 
 
-  private List<AbstractType> _asActuals = null;
-
-
   /**
    * Wrapper class for result of asActuals(). This is used to quickly identify
    * the generics list of formals used as actuals, e.g., in an outer reference,
@@ -193,7 +183,7 @@ public class FormalGenerics extends ANY
       // NYI: This is a bit ugly, can we avoid adding all these types
       // here?  They should never be used since AsActuals is only a
       // placeholder for the actual generics.
-      for (var g : list)
+      for (var g : list())
         {
           add(g.asGenericType());
         }
@@ -239,35 +229,8 @@ public class FormalGenerics extends ANY
    */
   public List<AbstractType> asActuals()
   {
-    var result = _asActuals;
-    if (result == null)
-      {
-        if (this == FormalGenerics.NONE)
-          {
-            result = UnresolvedType.NONE;
-          }
-        else
-          {
-            result = new AsActuals();
-          }
-        _asActuals = result;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (sizeMatches(result));
-
-    return result;
-  }
-
-
-  /**
-   * Add type parameter g to this list of formal generics.
-   *
-   * @param g the new type parameter
-   */
-  FormalGenerics addTypeParameter(AbstractFeature g)
-  {
-    return new FormalGenerics(list.addAfterUnfreeze(g));
+    // NYI: UNDER DEVELOPMENT: re-add caching?
+    return new AsActuals();
   }
 
 
@@ -279,8 +242,8 @@ public class FormalGenerics extends ANY
    */
   public String sizeText()
   {
-    int sz = isOpen() ? list.size() - 1
-                      : list.size();
+    int sz = isOpen() ? list().size() - 1
+                      : list().size();
     return
       isOpen()    && (sz == 0) ? "any number of generic arguments"
       :  isOpen() && (sz == 1) ? "at least one generic argument"
@@ -298,9 +261,9 @@ public class FormalGenerics extends ANY
    */
   public String toString()
   {
-    return !isOpen() && list.isEmpty()
+    return !isOpen() && list().isEmpty()
       ? ""
-      : list.map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
+      : list().map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
   }
 
 }

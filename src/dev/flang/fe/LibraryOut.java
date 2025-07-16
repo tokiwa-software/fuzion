@@ -458,7 +458,7 @@ class LibraryOut extends ANY
                                 : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.generics() == FormalGenerics.NONE);
+       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.typeArguments().isEmpty());
     if (f.hasCotype())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_COTYPE;
@@ -824,7 +824,7 @@ class LibraryOut extends ANY
           }
         else
           {
-            n = cf.generics().list.size();
+            n = cf.typeArguments().size();
             if (CHECKS) check
               (c.actualTypeParameters().size() == n);
           }
