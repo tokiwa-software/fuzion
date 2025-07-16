@@ -80,10 +80,15 @@ public class Call extends AbstractCall
 
 
   /**
+   * May be used in error messages for their positions.
+   */
+  private final List<AbstractType> _originalGenerics;
+
+
+  /**
    * actual generic arguments, set by parser
    */
   public /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
-  public final List<AbstractType> _unresolvedGenerics;
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
@@ -338,7 +343,7 @@ public class Call extends AbstractCall
     this._name = name;
     this._select = select;
     this._generics = generics;
-    this._unresolvedGenerics = generics;
+    this._originalGenerics = generics;
     this._actuals = actuals;
     this._target = target;
     if (target instanceof Call tc)
@@ -2758,7 +2763,7 @@ public class Call extends AbstractCall
         if ( !(Errors.any() && _actuals.stream().anyMatch(a->a.typeForInferencing() == Types.t_ERROR)) )
           {
             // Check that generics match formal generic constraints
-            AbstractType.checkActualTypePars(context, _calledFeature, _generics, _unresolvedGenerics, this);
+            AbstractType.checkActualTypePars(context, _calledFeature, _generics, _originalGenerics, this);
           }
       }
   }
