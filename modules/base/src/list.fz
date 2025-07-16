@@ -160,18 +160,13 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public redef as_array array A =>
 
-    # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
-    # as outer feature for `lm` to reduce number of DFA values for `lm` (while `list`
-    # has many values).
-    unit.lm : mutate is
+    lm : mutate is
 
       # redefine `mpanic` here to break endless recursion
       module redef mpanic(msg String) => fuzion.std.panic msg
 
-    unit.new_lm => lm
-
-    unit.new_lm ! ()->
-      e := unit.lm.env.new list.this
+    lm ! ()->
+      e := lm.env.new list.this
       array A count _->
         res := e.get.first.get
         e <- e.get.force_tail

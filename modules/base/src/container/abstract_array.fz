@@ -129,7 +129,7 @@ public abstract_array
         if to ≤ from
           nil
         else
-          unit.new_array_cons abstract_array.this from to
+          array_cons abstract_array.this from to
 
 
       # get the contents of this slice at the given index
@@ -177,18 +177,12 @@ public abstract_array
   # create a cons cell for a list of this array starting at the given
   # index `i` and up to `to`
   #
-  # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
-  # as outer feature for `array_const` to reduce number of DFA values for
-  # `array_cons` (while `abstract_array` has many values).
-  #
-  unit.array_cons(a A : container.abstract_array T, i, to i32) : Cons T (list T)
+  array_cons(a A : container.abstract_array T, i, to i32) : Cons T (list T)
     pre
       debug: 0 ≤ i < to ≤ a.length
   is
     public redef head T => a[i]
     public redef tail list T => (a.slice i+1 to).as_list
-
-  unit.new_array_cons(a A : container.abstract_array T, i, to i32) => array_cons T A a i to
 
 
   # map the array to a new array applying function f to all elements
