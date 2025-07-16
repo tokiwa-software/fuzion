@@ -117,8 +117,8 @@ public class Call extends AbstractCall
    * Actual arguments, set by parser
    */
   List<Expr> _actuals;
-  public List<Expr> actuals() {
-
+  public List<Expr> actuals()
+  {
     if (POSTCONDITIONS) ensure
       (_actuals != null);
 
