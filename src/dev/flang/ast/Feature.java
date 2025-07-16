@@ -1749,6 +1749,13 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (isChoice());
 
+    var inheritsChoice = inherits().stream().filter(p -> p.calledFeature().isChoice()).collect(Collectors.toList());
+    if (inheritsChoice.size() > 1)
+      {
+        AstErrors.repeatedInheritanceOfChoice(inheritsChoice.get(1).pos(),
+                                              inheritsChoice.get(0).pos());
+      }
+
     if (isRef())
       {
         AstErrors.choiceMustNotBeRef(_pos);

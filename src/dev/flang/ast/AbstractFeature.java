@@ -550,7 +550,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     else
       {
         result = null;
-        AbstractCall lastP = null;
         for (var p: inherits())
           {
             if (CHECKS) check
@@ -558,11 +557,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
             if (p.calledFeature().isChoice())
               {
-                if (lastP != null)
-                  {
-                    AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
-                  }
-                lastP = p;
                 result = p.calledFeature().isBaseChoice()
                   ? p.actualTypeParameters()
                   : p.calledFeature().choiceGenerics();
