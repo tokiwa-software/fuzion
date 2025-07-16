@@ -617,8 +617,7 @@ public abstract class AbstractCall extends Expr
    */
   public String toString()
   {
-    return (target() == null ||
-            (target() instanceof Universe) ||
+    return ((target() instanceof Universe) ||
             (target() instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
             ? ""
             : StringHelpers.wrapInParentheses(target().toString()) + ".")
