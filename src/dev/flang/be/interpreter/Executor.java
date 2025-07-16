@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
@@ -613,7 +614,7 @@ public class Executor extends ProcessExpression<Value, Object>
   Instance callOnNewInstance(int s, int cc, Value outer, List<Value> args)
   {
     FuzionThread.current()._callStackFrames.push(cc);
-    FuzionThread.current()._callStack.push(s);
+    FuzionThread.current()._callSiteStack.push(s);
 
     var o = outer;
     var a = args;
@@ -634,7 +635,7 @@ public class Executor extends ProcessExpression<Value, Object>
           }
       }
 
-    FuzionThread.current()._callStack.pop();
+    FuzionThread.current()._callSiteStack.pop();
     FuzionThread.current()._callStackFrames.pop();
 
     return cur;
@@ -697,28 +698,28 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
     int lastFrame = NO_CLAZZ;
-    int lastCall = NO_CLAZZ;
+    int lastCallSite = NO_SITE;
     int repeat = 0;
-    var s = FuzionThread.current()._callStack;
+    var s = FuzionThread.current()._callSiteStack;
     var sf = FuzionThread.current()._callStackFrames;
     for (var i = s.size()-1; i >= 0; i--)
       {
         int frame = i<sf.size() ? sf.get(i) : null;
         var call = s.get(i);
-        if (frame == lastFrame && call == lastCall)
+        if (frame == lastFrame && call == lastCallSite)
           {
             repeat++;
           }
         else
           {
-            showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+            showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
             repeat = 0;
             showFrame(fuir, sb, frame, call);
             lastFrame = frame;
-            lastCall = call;
+            lastCallSite = call;
           }
       }
-    showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+    showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
     return sb.toString();
   }
 

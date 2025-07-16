@@ -263,7 +263,7 @@ hw25 is
    */
   public String featureAsString(int f)
   {
-    return f == NO_CLAZZ
+    return f == -1
       ? "-- no feature --"
       : _featureIds.get(f).qualifiedName();
   }
@@ -277,7 +277,7 @@ hw25 is
    *
    * @param s site of the access
    *
-   * @return the feature that has to be accessed or NO_CLAZZ if the access is an
+   * @return the feature that has to be accessed or -1 if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
   public int accessedFeature(int f, int s)
@@ -294,7 +294,7 @@ hw25 is
       (e instanceof AbstractAssign a   ) ? a._assignedField :
       (AbstractFeature) (Object) new Object() { { if (true) throw new Error("accessedFeature found unexpected Expr."); } } /* Java is ugly... */;
 
-    return af == null ? NO_CLAZZ : _featureIds.get(af);
+    return af == null ? -1 : _featureIds.get(af);
   }
 
 
