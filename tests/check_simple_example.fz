@@ -229,7 +229,7 @@ delete_tmp_files =>
 
 be     := envir.args[1]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.args[2].replace "../../bin/fz" "java --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
+fz_run := envir.args[2].replace "../../bin/fz" "java --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {(envir.vars.get "FUZION_JAVA_OPTIONS").or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
 file   := envir.args[3]
 exp_out := if be = "effect"
              "$file.effect"
