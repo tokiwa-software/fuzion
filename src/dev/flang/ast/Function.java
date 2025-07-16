@@ -149,8 +149,17 @@ public class Function extends AbstractLambda
     super(pos);
 
     _namesAsExprs = names;
-    _names = names.map2(n->n.asParsedName());
-    _names.removeIf(n -> n==null);
+    _names = names
+      .map2(n ->
+            {
+              var pn = n.asParsedName();
+              if (pn == null)
+                {
+                  AstErrors.argNameExpectedInLambda(n);
+                }
+              return pn;
+            })
+      .filter(n -> n != null);
     _originalExpr = e;
     _expr = e;
   }

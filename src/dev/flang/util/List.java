@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import java.util.stream.Collector;
@@ -599,6 +600,32 @@ public class List<T>
     for (var i = 0; i < size(); i++)
       {
         result.add(f.apply(get(i)));
+      }
+    return result;
+  }
+
+
+  /**
+   * Filter elements that match a given predicate.
+   *
+   * @return this (if the predicate holds for all elements) or a new list with
+   * only those elements that tested true.
+   */
+  public List filter(Predicate<T> f)
+  {
+    var result = this;
+    for (var i = 0; i < size(); i++)
+      {
+        var e = get(i);
+        var pass = f.test(e);
+        if (pass && result != this)
+          {
+            result.add(e);
+          }
+        else if (!pass && result == this)
+          {
+            result = take(i);
+          }
       }
     return result;
   }
