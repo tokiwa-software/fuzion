@@ -718,7 +718,7 @@ public class Resolution extends ANY
    *
    * @param types the types to resolve
    *
-   * @param outer the feature to use as context when resolving the types
+   * @param context the context to use when resolving the types
    *
    * @return a list of resolved types
    */
