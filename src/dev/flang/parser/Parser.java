@@ -59,6 +59,20 @@ public class Parser extends Lexer
   }
 
 
+  /**
+   * Exception used for control flow to exit a call.
+   */
+  static class GiveUp extends RuntimeException
+  {
+
+    /**
+     * Pre-allocated instance of `GiveUp`
+     */
+    static GiveUp _INSTANCE_ = new GiveUp();
+
+  };
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -1343,7 +1357,7 @@ indexTail   : ":=" exprInLine
     do
       {
         SourcePosition pos = tokenSourcePos();
-        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas());
+        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas(true));
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
@@ -1556,7 +1570,7 @@ actualArgs  : actualSpaces
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
       ? actualSpaces()
-      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas());
+      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas(true));
   }
 
 
@@ -1652,6 +1666,12 @@ actualArgs  : actualSpaces
   /**
    * Parse actualCommas
    *
+   * @param endAtComma true to treat `x, v->2*v` as two actuals `x` and `v->2*v`
+   * instead of one `(x,v)->2*v`.
+   *
+   * NYI: CLEANUP: It might be better to omit the case endAtComma==true and to always
+   * parse the case `x, v->2*v` as one actual.
+   *
 actualCommas: actualSome
             |
             ;
@@ -1662,7 +1682,7 @@ actualMore  : COMMA actualSome
             |
             ;
    */
-  List<Expr> actualCommas()
+  List<Expr> actualCommas(boolean endAtComma)
   {
     var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
@@ -1670,7 +1690,7 @@ actualMore  : COMMA actualSome
       {
         do
           {
-            var oldEAc = endAtComma(true);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
+            var oldEAc = endAtComma(endAtComma);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
             result.add(operatorExpr());
             endAtComma(oldEAc);
           }
@@ -1893,52 +1913,86 @@ opsTerms    : ops
   /**
    * Parse klammer is either a single parenthesized expression or a tuple
    *
-klammer     : klammerExpr
+klammer     : LPAREN block RPAREN
             | tuple
-            | klammerLambd
-            ;
-klammerExpr : LPAREN expr RPAREN
-            ;
-tuple       : LPAREN RPAREN
-            | LPAREN operatorExpr (COMMA operatorExpr)+ RPAREN
-            ;
-klammerLambd: tuple lambda
+            | tuple lambda
             ;
    */
   Expr klammer()
   {
-    SourcePosition pos = tokenSourcePos();
-    var tupleElements = new List<Expr>();
-    bracketTermWithNLs(PARENS, "klammer",
-                       () -> {
-                         do
-                           {
-                             tupleElements.add(operatorExpr());
-                           }
-                         while (skipComma());
-                         return Void.TYPE;
-                       },
-                       () -> Void.TYPE);
-
-
-    if (isLambdaPrefix())                  // a lambda expression
+    Expr res;
+    var f = fork();
+    var t = f.tuple();
+    if (t != null && f.isLambdaPrefix())                  // a lambda expression
       {
-        return lambda(tupleElements);
+        // a little overkill: we first permit an arbitrary tuple, just to later
+        // extract either the argument names or types.
+        res = lambda(tuple());
       }
-    else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
+    else if (t != null && t.size() != 1)
       {
-        var e = tupleElements.get(0);
-        if (e instanceof ParsedOperatorCall oc)
+        res = new ParsedCall(null, new ParsedName(tokenSourcePos(), "tuple"), tuple());
+      }
+    else if (t != null)
+      {
+        // NYI: UNDER DEVELOPMENT: This case of a single operatorExpr in parentheses is parsed slightly different than
+        // a block.  Would be good to avoid the special handling here and always use the `else` case below.
+        //
+        // in particular:
+        //
+        //   _ := l.zip m (a,b -> unit)         # as block, would be parsed as declaration of `a` and `b` and not lambda
+        //   _ := ("bla"
+        //          + "blub")                   # as block, causes indentation error
+        //   _ := (a).this                      # as block, causes qualifier expected for '.this' expression.
+        //
+        // I suggest the cases `(a,b -> unit)` and `(a).this` should be
+        // supported when parsing a block in parentheses, while the indentation
+        // problem is maybe acceptable to cause an error.
+        //
+        res = tuple().get(0);
+        if (res instanceof ParsedOperatorCall oc)
           { // disable chained boolean optimization:
             oc.putInParentheses();
           }
-        return e;
       }
-    else                                   // a tuple
+    else                                                    // a block
       {
-        return new ParsedCall(null, new ParsedName(pos, "tuple"), tupleElements);
+        res = bracketTermWithNLs(PARENS, "klammer",
+                                 () -> block(),
+                                 () -> emptyBlock());
       }
+    return res;
   }
+
+
+  /**
+   * Parse tuple, return null in case this is not a tuple, but a block (leaving
+   * the Parser instance in an undefined state).
+   *
+tuple       : LPAREN actualCommas RPAREN
+            ;
+   */
+  List<Expr> tuple()
+  {
+    try
+      {
+        return bracketTermWithNLs(PARENS, "klammer",
+                                  () -> {
+                                    var l = actualCommas(false);
+                                    if (currentAtMinIndent() != Token.t_rparen ) // there is more, so this might be a block
+                                      {
+                                        throw GiveUp._INSTANCE_;
+                                      }
+                                    return l;
+                                  },
+                                  () -> new List<Expr>() // default for `()` is an empty tuple
+                                  );
+      }
+    catch (GiveUp _)
+      {
+        return null;
+      }
+  };
 
 
   /**
