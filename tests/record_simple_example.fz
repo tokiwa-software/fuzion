@@ -125,6 +125,7 @@ if type_ != "effect"
       "_$type_"
 
   write_to_file "$file.expected_out$sfx" res.out
+  # NYI: add intrinsic to get current directory
   cur_dir := (envir.vars.get "PWD").val
   write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
 else
