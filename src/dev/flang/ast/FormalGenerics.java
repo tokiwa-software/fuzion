@@ -74,7 +74,7 @@ public class FormalGenerics extends ANY
   /**
    * Constructor for a FormalGenerics instance
    *
-   * @param l the list of formal generics. May not be empty.
+   * @param af the features for which this is the generics.
    */
   public FormalGenerics(AbstractFeature af)
   {
