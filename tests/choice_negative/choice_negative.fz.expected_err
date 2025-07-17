@@ -17,35 +17,7 @@ While parsing: implRout, parse stack: implRout, routOrField, feature, expr, expr
 While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/choice_negative.fz:61:26: error 4: Repeated inheritance of choice is not permitted
-    A : choice i32 bool, choice String f64 is # 9. should flag an error: choice type must inherit exactly once from choice
--------------------------^^^^^^
-A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9:
-
-
---CURDIR--/choice_negative.fz:66:12: error 5: Repeated inheritance of choice is not permitted
-    C : A, B is # 10. should flag an error: choice type must inherit exactly once from choice
------------^
-A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:66:9:
-
-
---CURDIR--/choice_negative.fz:70:12: error 6: Repeated inheritance of choice is not permitted
-    B : A, choice String f64 is # 11. should flag an error: choice type must inherit exactly once from choice
------------^^^^^^
-A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:70:9:
-
-
---CURDIR--/choice_negative.fz:74:28: error 7: Repeated inheritance of choice is not permitted
-    B : choice String f64, A is # 12. should flag an error: choice type must inherit exactly once from choice
----------------------------^
-A choice feature must inherit directly from choice exactly once.
-Previous inheritance from choice at --CURDIR--/choice_negative.fz:74:9:
-
-
---CURDIR--/choice_negative.fz:54:10: error 8: Could not find called feature
+--CURDIR--/choice_negative.fz:54:10: error 4: Could not find called feature
     _ := choice i32 String  # 7. should flag an error: cannot instantiate choice
 ---------^^^^^^
 Feature not found: 'choice' (2 arguments)
@@ -53,7 +25,7 @@ Target feature: 'choice_negative.instantiate1'
 In call: 'choice i32 String'
 
 
---CURDIR--/choice_negative.fz:58:10: error 9: Could not find called feature
+--CURDIR--/choice_negative.fz:58:10: error 5: Could not find called feature
     _ := MyChoice  # 8. should flag an error: cannot instantiate choice
 ---------^^^^^^^^
 Feature not found: 'MyChoice' (no arguments)
@@ -61,7 +33,7 @@ Target feature: 'choice_negative.instantiate2'
 In call: 'MyChoice'
 
 
---CURDIR--/choice_negative.fz:137:30: error 10: Could not find called feature
+--CURDIR--/choice_negative.fz:137:30: error 6: Could not find called feature
     x bool : choice i64 bool := true  # 27. should flag an error, choice feature must not be field
 -----------------------------^^
 Feature not found: 'prefix :=' (no arguments)
@@ -69,7 +41,7 @@ Target feature: 'bool'
 In call: ':= true'
 
 
---CURDIR--/choice_negative.fz:140:25: error 11: Could not find called feature
+--CURDIR--/choice_negative.fz:140:25: error 7: Could not find called feature
     x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
 ------------------------^^
 Feature not found: 'prefix :=' (no arguments)
@@ -77,61 +49,89 @@ Target feature: 'bool'
 In call: ':= true'
 
 
---CURDIR--/choice_negative.fz:158:11: error 12: 'match' subject type must be a choice type
+--CURDIR--/choice_negative.fz:158:11: error 8: 'match' subject type must be a choice type
     match 42   # 34. should flag an error, match subject must be choice
 ----------^^
 Matched type: 'i32', which is not a choice type
 
 
---CURDIR--/choice_negative.fz:162:11: error 13: 'match' subject type must be a choice type
+--CURDIR--/choice_negative.fz:162:11: error 9: 'match' subject type must be a choice type
     _ := (42 ? true_ => true   # 35. should flag an error, match subject must be choice
 ----------^^
 Matched type: 'i32', which is not a choice type
 
 
---CURDIR--/choice_negative.fz:170:21: error 14: Ambiguous assignment to 'choice choice_negative.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.C'
+--CURDIR--/choice_negative.fz:170:21: error 10: Ambiguous assignment to 'choice choice_negative.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.C'
     _ choice A B := C  # 36. should flag an error, Ambiguous assignment to ...
 --------------------^
 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.C' is assignable to 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.A', 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.B'
 
 
---CURDIR--/choice_negative.fz:32:5: error 15: Choice must not refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:32:5: error 11: Choice must not refer to its own value type as one of the choice alternatives
     A : choice A i32 String is       # 1. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
 Faulty type parameter: 'choice_negative.cyclic1.this.A'
 
 
---CURDIR--/choice_negative.fz:35:5: error 16: Choice feature must not be ref
+--CURDIR--/choice_negative.fz:35:5: error 12: Choice feature must not be ref
     A ref : choice A i32 String is  # 1a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:38:5: error 17: Choice must not refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:38:5: error 13: Choice must not refer to its own value type as one of the choice alternatives
     A : choice i32 A String is      # 2. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
 Faulty type parameter: 'choice_negative.cyclic3.this.A'
 
 
---CURDIR--/choice_negative.fz:41:5: error 18: Choice feature must not be ref
+--CURDIR--/choice_negative.fz:41:5: error 14: Choice feature must not be ref
     A ref : choice i32 A String is  # 2a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:44:5: error 19: Choice must not refer to its own value type as one of the choice alternatives
+--CURDIR--/choice_negative.fz:44:5: error 15: Choice must not refer to its own value type as one of the choice alternatives
     A : choice i32 String A is      # 3. should flag an error: cyclic choice
 ----^
 Embedding a choice type in itself would result in an infinitely large type.
 Faulty type parameter: 'choice_negative.cyclic5.this.A'
 
 
---CURDIR--/choice_negative.fz:47:5: error 20: Choice feature must not be ref
+--CURDIR--/choice_negative.fz:47:5: error 16: Choice feature must not be ref
     A ref : choice i32 String A is  # 3a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
+
+
+--CURDIR--/choice_negative.fz:61:26: error 17: Repeated inheritance of choice is not permitted
+    A : choice i32 bool, choice String f64 is # 9. should flag an error: choice type must inherit exactly once from choice
+-------------------------^^^^^^
+A choice feature must inherit directly from choice exactly once.
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:61:9:
+
+
+--CURDIR--/choice_negative.fz:66:12: error 18: Repeated inheritance of choice is not permitted
+    C : A, B is # 10. should flag an error: choice type must inherit exactly once from choice
+-----------^
+A choice feature must inherit directly from choice exactly once.
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:66:9:
+
+
+--CURDIR--/choice_negative.fz:70:12: error 19: Repeated inheritance of choice is not permitted
+    B : A, choice String f64 is # 11. should flag an error: choice type must inherit exactly once from choice
+-----------^^^^^^
+A choice feature must inherit directly from choice exactly once.
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:70:9:
+
+
+--CURDIR--/choice_negative.fz:74:28: error 20: Repeated inheritance of choice is not permitted
+    B : choice String f64, A is # 12. should flag an error: choice type must inherit exactly once from choice
+---------------------------^
+A choice feature must inherit directly from choice exactly once.
+Previous inheritance from choice at --CURDIR--/choice_negative.fz:74:9:
 
 
 --CURDIR--/choice_negative.fz:77:5: error 21: Choice feature must not contain any code
