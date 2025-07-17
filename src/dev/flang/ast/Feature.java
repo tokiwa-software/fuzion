@@ -1419,7 +1419,30 @@ public class Feature extends AbstractFeature
              * Find all the types used in this that refer to formal generic arguments of
              * this or any of this' outer classes.
              */
+            var oldArgCount = arguments().size();
+
             resolveArgumentTypes(res);
+
+            var existing = _outer == null
+              ? null
+              : res
+                ._module
+                .declaredFeatures(_outer)
+                .get(featureName());
+            // argCount may change due to free types
+            if (oldArgCount != arguments().size() && existing != null)
+              {
+                existing.whenResolvedDeclarations(()-> {
+                  if (existing.featureName().compareTo(featureName()) == 0)
+                    {
+                      // NYI: CLEANUP: raise duplicate feature in only one place.
+                      AstErrors.duplicateFeatureDeclaration(this, existing);
+                      // just to suppress further errors
+                      res._module.declaredOrInheritedFeatures(_outer, featureName()).clear();
+                    }
+                });
+              }
+
             visit(res.resolveTypesOnly(this));
           }
 
