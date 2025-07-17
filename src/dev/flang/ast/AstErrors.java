@@ -1845,7 +1845,7 @@ public class AstErrors extends ANY
 
   static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
   {
-    if (!any() || cf != Types.f_ERROR)
+    if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
         error(pos,
               "Failed to infer actual type parameters",
