@@ -495,7 +495,7 @@ class LibraryOut extends ANY
         bn = "";
       }
     _data.writeString(bn);
-    var argCount = n.argCount() + f.freeTypesCount();
+    var argCount = n.argCount();
     _data.writeInt (argCount);      // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());

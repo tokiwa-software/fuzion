@@ -2271,7 +2271,8 @@ A ((Choice)) declaration must not contain a result type.
   AbstractFeature addTypeParameter(Resolution res, Feature ta)
   {
     if (PRECONDITIONS) require
-      (ta.isFreeType());
+      (ta.isFreeType(),
+       !state().atLeast(State.RESOLVED_DECLARATIONS));
 
     // A call to generics() has the side effects of setting _generics,
     // _arguments
@@ -2284,7 +2285,7 @@ A ((Choice)) declaration must not contain a result type.
     var tas = typeArguments();
     _arguments.add(tas.size(), ta);
 
-    checkDuplicateFeature(res);
+    _featureName = FeatureName.get(featureName().baseName(), arguments().size());
 
     res._module.findDeclarations(ta, this);
 
@@ -2292,23 +2293,6 @@ A ((Choice)) declaration must not contain a result type.
     this.whenResolvedTypes(()->res.resolveTypes(ta));
 
     return ta;
-  }
-
-
-  /**
-   * check if outer already contains a feature with
-   * the feature name of this feature
-   *
-   * @param res the current Resolution instance
-   */
-  private void checkDuplicateFeature(Resolution res)
-  {
-    var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
-    var existing = res._module.lookupFeature(_outer, newFeatureName);
-    if (existing != null && !isAbstractAndFixedPair(existing, this))
-      {
-        AstErrors.duplicateFeatureDeclaration(existing, this);
-      }
   }
 
 
@@ -2424,26 +2408,7 @@ A ((Choice)) declaration must not contain a result type.
 
   public FeatureName featureName()
   {
-    if (CHECKS) check
-      (// the feature name is currently not changed in addTypeParameter, so
-       // we add freeTypesCount() here.
-       arguments().size() == _featureName.argCount() + freeTypesCount());
-
     return _featureName;
-  }
-
-
-  /**
-   * Number of free types among the type parameters.
-   */
-  public int freeTypesCount()
-  {
-    var result = 0;
-    for (var tp : _arguments)
-      {
-        result += ((Feature) tp).isFreeType() ? 1 : 0;
-      }
-    return result;
   }
 
 
