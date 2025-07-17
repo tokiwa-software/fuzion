@@ -1,6 +1,6 @@
 
 --CURDIR--/reg_issue4273.fz:32:26: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
-    type.x(a e.this) => $a.me   # 1. Should flag an error: `Call has an ambiguous result type...`
+    type.x(a e.this) => $a.me   # 1. should flag an error: `Call has an ambiguous result type...`
 -------------------------^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
 Called feature: 'case1.e.me'
@@ -11,7 +11,7 @@ To solve this, you could try to use a value type as the target type of the call,
 
 
 --CURDIR--/reg_issue4273.fz:65:26: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
-    type.x(a e.this) => $a.me   # 2. Should flag an error: `Call has an ambiguous result type...`
+    type.x(a e.this) => $a.me   # 2. should flag an error: `Call has an ambiguous result type...`
 -------------------------^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
 Called feature: 'case3.e.me'
@@ -22,7 +22,7 @@ To solve this, you could try to use a value type as the target type of the call,
 
 
 --CURDIR--/reg_issue4273.fz:85:17: error 3: Call has an ambiguous result type since target of the call is a 'ref' type.
-    redef s => $me              # 4. Should flag an error: `Call has an ambiguous result type...`
+    redef s => $me              # 4. should flag an error: `Call has an ambiguous result type...`
 ----------------^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
 Called feature: 'case4.e.me'
@@ -33,7 +33,7 @@ To solve this, you could try to use a value type as the target type of the call,
 
 
 --CURDIR--/reg_issue4273.fz:84:17: error 4: Call has an ambiguous result type since target of the call is a 'ref' type.
-    redef me => option e.this   # 3. Should flag an error: `Call has an ambiguous result type...`
+    redef me => option e.this   # 3. should flag an error: `Call has an ambiguous result type...`
 ----------------^^^^^^^^^^^^^
 The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
 Called feature: 'option'
