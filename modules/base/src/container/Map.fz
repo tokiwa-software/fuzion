@@ -45,29 +45,36 @@ public Map(public K type : property.equatable, public V type) ref is
   # get a sequence of all keys in this map
   #
   public keys Sequence K =>
-    items.map K (t -> (k,_) := t; k)
+    items.map K (t -> k, _ := t; k)
 
 
   # check if key k is present in the set of keys
   #
-  public has (k K) => Map.this[k]??
+  public has (k K) bool => Map.this[k]??
 
 
   # get a sequence of all values in this map
   #
   public values Sequence V =>
-    items.map V (t -> (_,v) := t; v)
+    items.map V (t -> _, v := t; v)
 
 
   # create a string containing all mappings
   #
-  public redef as_string =>
+  public redef as_string String =>
     for
-      r := "", r + c + "($k => {index[] k})"
+      r := $"\{", r + c + "($k => {index[] k})"
       k in keys
       c := "", ", "
     else
-      r
+      r + "}"
+
+
+  # create a mutable map from this
+  #
+  # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
+  #
+  public as_mutable_map(LM type : mutate) container.Mutable_Map K V => abstract
 
 
   # initializer for this map

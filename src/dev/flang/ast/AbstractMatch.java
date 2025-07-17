@@ -26,10 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Iterator;
-
 import dev.flang.util.Errors;
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -41,7 +40,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractMatch extends Expr
+public abstract class AbstractMatch extends ExprWithPos
 {
 
   /**
@@ -66,8 +65,9 @@ public abstract class AbstractMatch extends Expr
   /**
    * Constructor for a AbstractMatch
    */
-  public AbstractMatch()
+  public AbstractMatch(SourcePosition pos)
   {
+    super(pos);
   }
 
 
@@ -130,40 +130,23 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * Helper routine for typeForInferencing to determine the type of this match
-   * expression on demand, i.e., as late as possible.
-   */
-  private AbstractType typeFromCases()
-  {
-    var result = Expr.union(cases().map2(x -> x.code()), Context.NONE);
-    if (result == Types.t_ERROR)
-      {
-        new IncompatibleResultsOnBranches(pos(),
-                                          "Incompatible types in cases of match expression",
-                                          new Iterator<Expr>()
-                                          {
-                                            Iterator<AbstractCase> it = cases().iterator();
-                                            public boolean hasNext() { return it.hasNext(); }
-                                            public Expr next() { return it.next().code(); }
-                                          });
-      }
-    return result;
-  }
-
-
-  /**
-   * typeForInferencing returns the type of this expression or null if the type is
-   * still unknown, i.e., before or during type resolution.  This is redefined
-   * by sub-classes of Expr to provide type information.
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or null if not known.
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
    */
   @Override
-  AbstractType typeForInferencing()
+  public AbstractType type()
   {
     if (_type == null)
       {
-        _type = typeFromCases();
+        _type = cases()
+          .map2(x -> x.code().type())
+          .stream()
+          .reduce(Types.resolved.t_void, (a,b) -> a.union(b, Context.NONE));
+        if (CHECKS) require
+          (_type.isVoid() || _type.compareTo(Types.resolved.t_unit) == 0);
       }
     return _type;
   }
@@ -202,7 +185,7 @@ public abstract class AbstractMatch extends Expr
                 AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
               }
           }
-        else if (!Types.resolved.t_bool.isDirectlyAssignableFrom(st, context))
+        else if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
           {
             if (kind() == Kind.Contract)
               {

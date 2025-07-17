@@ -306,7 +306,7 @@ public class Errors extends ANY
 
 
   /**
-   * Where any errors encountered so far?
+   * Were any errors encountered so far?
    */
   public static synchronized boolean any()
   {
@@ -324,12 +324,12 @@ public class Errors extends ANY
 
 
   /**
-   * Convert given message into an error message preceded by "error <count>: "
+   * Convert given message into an error message preceded by {@code error <count>}: "
    * and increment the count.
    *
    * @param s a message, e.g., "undefined variable".
    *
-   * @return a message including error count, e..g, "error 23: undefined variable".
+   * @return a message including error count, e.g., "error 23: undefined variable".
    */
   static String errorMessage(String s)
   {
@@ -592,7 +592,7 @@ public class Errors extends ANY
   /**
    * Record the given runtime error and exit immediately with exit code 1.
    *
-   * @param k the kind of error we encountered, currently "postcondition" is the
+   * @param kind the kind of error we encountered, currently "postcondition" is the
    * only supported kind that is treated specially.
    *
    * @param msg a message to be shown
@@ -799,6 +799,15 @@ public class Errors extends ANY
     syntaxError(pos,
                 "No white space may occur before this position",
                 "This code is part of an actual argument that must not contain white space.\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
+  public static void commaNotAllowedHere(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "No comma ',' may occur at this position",
+                "This code is part of a comma separated actual argument list that must not itself contain commas.\n" +
                 detail + "\n" +
                 "To solve this, enclose the expression in parentheses '(' and ')'.");
   }

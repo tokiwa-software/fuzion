@@ -35,7 +35,7 @@ public move(mop Move_Handler) : effect is
        # the old (relative or absolute) file name, using platform specific path separators
        old_path String,
        # the new (relative or absolute) file name, using platform specific path separators
-       new_path String) =>
+       new_path String) outcome unit =>
     tmp := mop.move old_path new_path
     replace
     tmp
@@ -58,7 +58,7 @@ public move(
      # the old (relative or absolute) file name, using platform specific path separators
      old_path String,
      # the new (relative or absolute) file name, using platform specific path separators
-     new_path String) =>
+     new_path String) outcome unit =>
   (move default_move_handler).default
   move.env.move old_path new_path
 

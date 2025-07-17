@@ -30,11 +30,21 @@ import java.nio.file.Path;
 
 /**
  * api doc specific options
+ *
+ * @param destination
+ * @param apiSrcDir the location to which the src links in the docs should point to, null for default
+ * @param bare
+ * @param printCSSStyles
+ * @param ignoreVisibility
  */
-public record DocsOptions(Path destination, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
+public record DocsOptions(Path destination, String apiSrcDir, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
 {
 
-  static final String baseApiDir = "/api/std";
+  public String apiSrcDir()
+  {
+    return apiSrcDir == null ? "/api" : apiSrcDir;
+  }
+
 
   public boolean ignoreVisibility()
   {

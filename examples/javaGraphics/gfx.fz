@@ -31,146 +31,150 @@
 gfx
 is
 
-  java  => Java.java   # handy shortcut to access Java code
+  # NYI: UNDER DEVELOPMENT: fails to infer void
 
-  /* the following two values are geometry values that may be modified to alter
-   * the appearance:
-   */
+  fuzion.jvm.use void ()->
 
-  // Width of black lines as percentage of main radius
-  BLACK_LINE_WIDTH := 1.0/15
+    java  => Java.java   # handy shortcut to access Java code
 
-  // size of three small circles relative to their surrounding circles
-  SMALL_CIRCLE_PERCENTAGE := 0.25
+    /* the following two values are geometry values that may be modified to alter
+    * the appearance:
+    */
 
+    # Width of black lines as percentage of main radius
+    black_line_width := 1.0/15
 
-  /* the following values are geometry values that are fixed and should not be
-   * changed:
-   */
-
-  // total size
-  SIZE := 512.0
-
-  // main radius
-  radius := SIZE / 2
-
-  // width of black lines
-  blw := radius * BLACK_LINE_WIDTH
-
-  // outer radius of three main wedges
-  r1 := radius - blw
-
-  // side length of triangle of the centers of the three main circles with radius r2:
-  //
-  //  l = 2*r2 + b;
-  //
-  // distance from center to center of three main circles
-  //
-  //  h = r - r2 - b               -- using radius r
-  //
-  //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonometry
-  //
-  // so we get for r2
-  //
-  //  r - r2 - b = (2*r2+b)/ (2*(cos 30))
-  //
-  //  r - (b * (1 + 1/(2*(cos 30)))) = r2 * (1 + 1 / (cos 30))
-  //
-  //  r2 = (r - (b * (1 + 1/(2*(cos 30))))) / (1 + 1 / (cos 30))
-  //     = (r - (b * (1 + 1/(2*sqrt(3/4))))) / (1 + 1 / sqrt(3/4))
-  //     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
-  //
-  // radius of three main circles:
-  r2 := (radius - blw * (1.0 + (1.0/3).sqrt)) / (1.0 + 2.0*(1.0/3).sqrt)
-
-  // radius of three small circles
-  r3 := r2 * SMALL_CIRCLE_PERCENTAGE
+    # size of three small circles relative to their surrounding circles
+    small_circle_percentage := 0.25
 
 
-  // background and wedge colors:
-  BACKGROUND := java.awt.Color.BLACK
-  C1 := java.awt.Color.WHITE
-  C2 := java.awt.Color.new_III 81 36 128     # NYI: Overloading of Java constructors
-  C3 := java.awt.Color.new_III 130 106 175
+    /* the following values are geometry values that are fixed and should not be
+    * changed:
+    */
 
+    # total size
+    size := 512.0
 
-  G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: #167: 'ref' due to lack of 'like this'
+    # main radius
+    radius := size / 2
 
-    rotate (d f64) => G2D g0 tx ty rot+d
+    # width of black lines
+    blw := radius * black_line_width
 
-    three_times(draw (G2D, Java.java.awt.Color) -> T) =>
-      _ := draw  G2D.this                      C1
-      _ := draw (G2D.this.rotate -2.0*f64.π/3) C2
-      _ := draw (G2D.this.rotate -4.0*f64.π/3) C3
+    # outer radius of three main wedges
+    r1 := radius - blw
 
-    # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
-    # start and extending of len degrees.
+    # side length of triangle of the centers of the three main circles with radius r2:
     #
-    arc(c Java.java.awt.Color, x, y, r f64, start, len i32) =>
-      g0.setColor c
-      rx := x * rot.cos - y * rot.sin
-      ry := x * rot.sin + y * rot.cos
-      g0.fillArc (tx+rx-r).as_i32 (ty+ry-r).as_i32 (2.0*r).as_i32 (2.0*r).as_i32 (start-(rot*360/(2.0*f64.π)).as_i32)%360 len
-
-
-    # Draw a filled circle of color c, center at (x,y), radius r
+    #  l = 2*r2 + b;
     #
-    cir(c Java.java.awt.Color, x, y, r f64) =>
-      arc c x y r 0 360
-
-    # Draw the Fuzion logo
+    # distance from center to center of three main circles
     #
-    draw_logo is
-      // black background circle
-      cir BACKGROUND 0 0 radius
+    #  h = r - r2 - b               -- using radius r
+    #
+    #  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonometry
+    #
+    # so we get for r2
+    #
+    #  r - r2 - b = (2*r2+b)/ (2*(cos 30))
+    #
+    #  r - (b * (1 + 1/(2*(cos 30)))) = r2 * (1 + 1 / (cos 30))
+    #
+    #  r2 = (r - (b * (1 + 1/(2*(cos 30))))) / (1 + 1 / (cos 30))
+    #     = (r - (b * (1 + 1/(2*sqrt(3/4))))) / (1 + 1 / sqrt(3/4))
+    #     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
+    #
+    # radius of three main circles:
+    r2 := (radius - blw * (1.0 + (1.0/3).sqrt)) / (1.0 + 2.0*(1.0/3).sqrt)
 
-      // three arcs
-      three_times (g, c -> g.arc c 0 0 r1 -30 120)
-
-      // black circle in the center, radius to touch the sides of the inner triangle
-      cir BACKGROUND 0 0 (radius-r2-blw)/2
-
-      // black arcs around inner circles
-      three_times (g, c -> g.arc BACKGROUND 0 -radius+r2+blw r2+blw 90 210)
-
-      // inner circles
-      three_times (g, c -> g.cir c 0 -radius+blw+r2 r2)
-
-      // small circles
-      _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -radius+blw+r2 r3)
+    # radius of three small circles
+    r3 := r2 * small_circle_percentage
 
 
-  gfx =>
-    match java.awt.Frame.new
-      e error => say "error: $e"
-      f Java.java.awt.Frame =>
-        f.setSize 800 800
-        f.setTitle "Fuzion's first window!"
+    # background and wedge colors:
+    background := java.awt.Color.BLACK
+    c1 := java.awt.Color.WHITE
+    c2 := java.awt.Color.new_III 81 36 128     # NYI: Overloading of Java constructors
+    c3 := java.awt.Color.new_III 130 106 175
 
-        b := java.lang.System.getenv "BUTTON"
-        if !b.is_null && b = "TRUE"  # show a button
-          match java.awt.Button.new "If you like Fuzion, click here!"
-            e error => say "error: $e"
-            btn Java.java.awt.Button =>
-              btn.setBounds 50 50 50 50
-              _ := f.add_Ljava_7_awt_7_Component_s_ btn
-              f.setVisible true
-              g := f.getGraphics
-              say "g is "+g.getClass.toString
-              _ := (G2D g 400 400 0).draw_logo
-              f.setVisible true
 
-        else  # draw logo
-          f.setVisible true
+    G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: #167: 'ref' due to lack of 'like this'
 
-          # NYI: cannot redefine Frame.paint, so instead we use a hack: wait for 200ms
-          # for the Frame to perform its paint(), and then just draw over it:
-          _ := java.lang.Thread.sleep_J 200
-          _ := (G2D f.getGraphics 400 400 0).draw_logo
+      rotate (d f64) => G2D g0 tx ty rot+d
 
-        timeout := ((envir.args.nth 1).or_else "50000").parse_i64.val 0
-        _ := java.lang.Thread.sleep_J timeout
-        f.setVisible false
+      three_times(draw (G2D, Java.java.awt.Color) -> T) =>
+        _ := draw  G2D.this                      c1
+        _ := draw (G2D.this.rotate -2.0*f64.π/3) c2
+        _ := draw (G2D.this.rotate -4.0*f64.π/3) c3
 
-  gfx.this.gfx
-  exit 0   # explicitly exit since JVM would otherwise keep us alive
+      # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
+      # start and extending of len degrees.
+      #
+      arc(c Java.java.awt.Color, x, y, r f64, start, len i32) =>
+        g0.setColor c
+        rx := x * rot.cos - y * rot.sin
+        ry := x * rot.sin + y * rot.cos
+        g0.fillArc (tx+rx-r).as_i32 (ty+ry-r).as_i32 (2.0*r).as_i32 (2.0*r).as_i32 (start-(rot*360/(2.0*f64.π)).as_i32)%360 len
+
+
+      # Draw a filled circle of color c, center at (x,y), radius r
+      #
+      cir(c Java.java.awt.Color, x, y, r f64) =>
+        arc c x y r 0 360
+
+      # Draw the Fuzion logo
+      #
+      draw_logo is
+        # black background circle
+        cir background 0 0 radius
+
+        # three arcs
+        three_times (g, c -> g.arc c 0 0 r1 -30 120)
+
+        # black circle in the center, radius to touch the sides of the inner triangle
+        cir background 0 0 (radius-r2-blw)/2
+
+        # black arcs around inner circles
+        three_times (g, c -> g.arc background 0 -radius+r2+blw r2+blw 90 210)
+
+        # inner circles
+        three_times (g, c -> g.cir c 0 -radius+blw+r2 r2)
+
+        # small circles
+        _ := (rotate -2.0*f64.π/3).three_times (g, c -> g.cir c 0 -radius+blw+r2 r3)
+
+
+    gfx_ =>
+      match java.awt.Frame.new
+        e error => say "error: $e"
+        f Java.java.awt.Frame =>
+          f.setSize 800 800
+          f.setTitle "Fuzion's first window!"
+
+          b := java.lang.System.getenv "BUTTON"
+          if !b.is_null && b = "TRUE"  # show a button
+            match java.awt.Button.new "If you like Fuzion, click here!"
+              e error => say "error: $e"
+              btn Java.java.awt.Button =>
+                btn.setBounds 50 50 50 50
+                _ := f.add_Ljava_7_awt_7_Component_s_ btn
+                f.setVisible true
+                g := f.getGraphics
+                say "g is "+g.getClass.toString
+                _ := (G2D g 400 400 0).draw_logo
+                f.setVisible true
+
+          else  # draw logo
+            f.setVisible true
+
+            # NYI: cannot redefine Frame.paint, so instead we use a hack: wait for 200ms
+            # for the Frame to perform its paint(), and then just draw over it:
+            _ := java.lang.Thread.sleep_J 200
+            _ := (G2D f.getGraphics 400 400 0).draw_logo
+
+          timeout := ((envir.args.nth 1).or_else "50000").parse_i64.val 0
+          _ := java.lang.Thread.sleep_J timeout
+          f.setVisible false
+
+    gfx_
+    exit 0   # explicitly exit since JVM would otherwise keep us alive

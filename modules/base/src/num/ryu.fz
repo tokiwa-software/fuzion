@@ -29,7 +29,7 @@
 # For more information see the original repository: https://github.com/ulfjack/ryu
 # and the paper: https://dl.acm.org/citation.cfm?doid=3296979.3192369
 #
-# NYI lacks documentation
+# NYI: UNDER DEVELOPMENT: lacks documentation
 #
 public ryū(public T type : float) is
 
@@ -44,14 +44,14 @@ public ryū(public T type : float) is
 
   # rounding mode 'conservative', never accepts lower/upper bound
   #
-  public rounding_conservative := (rounding_mode (is_even)->false (is_even)->false)
+  public rounding_conservative rounding_mode := rounding_mode (is_even)->false (is_even)->false
 
 
   # rounding mode 'even', chooses the closest even number.
   # examples: 0.5 => 0
   #           1.5 => 2
   #
-  public rounding_even := (rounding_mode (is_even)->is_even (is_even)->is_even)
+  public rounding_even rounding_mode := rounding_mode (is_even)->is_even (is_even)->is_even
 
 
   # convert float to string using conservative rounding
@@ -81,11 +81,11 @@ public ryū(public T type : float) is
   # convert float to string for nontrivial case
   as_string_nontrivial(val T, scientific_notation bool, rounding_mode rounding_mode) String =>
 
-    (smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even) := step_2 val
+    smaller_halfway_point, mv, larger_halfway_point, mm_shift, is_even := step_2 val
 
-    (dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10) := step_3 (val.exponent-T.mantissa_bits-2).as_i64 smaller_halfway_point mv larger_halfway_point mm_shift is_even rounding_mode
+    dv, dp, dm, dm_is_trailing_zeros, dv_is_trailing_zeros, e10 := step_3 (val.exponent-T.mantissa_bits-2).as_i64 smaller_halfway_point mv larger_halfway_point mm_shift is_even rounding_mode
 
-    (output, output_length, exponent_decimal) := step_4 dv dp dm dm_is_trailing_zeros dv_is_trailing_zeros e10 is_even scientific_notation rounding_mode
+    output, output_length, exponent_decimal := step_4 dv dp dm dm_is_trailing_zeros dv_is_trailing_zeros e10 is_even scientific_notation rounding_mode
 
     step_5 output output_length exponent_decimal (val < T.zero) scientific_notation
 

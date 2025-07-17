@@ -10,13 +10,18 @@ s pre x =>
 Field declared: 's'
 
 
---CURDIR--/reg_issue3493.fz:24:7: error 3: Failed to infer type of expression.
+--CURDIR--/reg_issue3493.fz:24:3: error 3: Implementation restriction: pre-condition for field not supported yet.
+s pre x =>
+--^^^^^^^^
+
+
+--CURDIR--/reg_issue3493.fz:24:7: error 4: Failed to infer type of expression.
 s pre x =>
 ------^
 Expression with unknown type: 'x'
 
 
---CURDIR--/reg_issue3493.fz:24:7: error 4: Incompatible types in assignment
+--CURDIR--/reg_issue3493.fz:24:7: error 5: Incompatible types in assignment
 s pre x =>
 ------^
 assignment to field : 'pre s.result'
@@ -26,4 +31,4 @@ assignable to       : 'unit'
 for value assigned  : 'x'
 To solve this, you could change the type of the target 'pre s.result' to 'unit' or convert the type of the assigned value to 'bool'.
 
-4 errors.
+5 errors.

@@ -32,7 +32,15 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
   # get the value k is mapped to, or nil if none.
   #
-  public index [] (k K) option V => abstract
+  public index [] (k K) option V =>
+    get k
+
+
+  # convenience feature to add a key-value pair to this map
+  # does the same as `put k v`
+  #
+  public set [] (k K, v V) unit =>
+    put k v
 
 
   # get a sequence of all key/value pairs in this map
@@ -42,37 +50,51 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
   # check if key k is present in the set of keys
   #
-  public has (k K) => Mutable_Map.this[k]??
+  public has (k K) bool => Mutable_Map.this[k]??
 
 
   # get a sequence of all keys in this map
   #
-  public keys =>
-    # NYI: BUG: t.0 does not work here, why?
-    items.map t->t.values.0
+  public keys Sequence K =>
+    items.map (.0)
 
 
   # get a sequence of all values in this map
   #
-  public values =>
-    # NYI: BUG: t.1 does not work here, why?
-    items.map t->t.values.1
+  public values Sequence V =>
+    items.map (.1)
+
+
+  # get the value stored in this map at key k, nil if k is not
+  # contained in this map
+  #
+  public get(k K) option V => abstract
+
+
+  # get the value stored in this map at key k,
+  # if it does not exist, v is added and returned
+  #
+  public get_or_put(k K, v V) V =>
+    match get k
+      ex V => ex
+      nil  => put k v
+              v
 
 
   # add key-value pair to this map
   #
-  # if key already exists, NYI what should happen?
+  # if key already exists, existing value gets updated
   #
-  public add(k K, v V) unit => abstract
+  public put(k K, v V) unit => abstract
 
 
   # add all key-value pairs to this map
   #
-  # if key already exists, NYI what should happen?
+  # for existing keys, value gets updated
   #
-  public add_all(kvs Sequence (tuple K V)) =>
+  public put_all(kvs Sequence (tuple K V)) unit =>
     for kv in kvs do
-      add kv.values.0 kv.values.1
+      put kv.0 kv.1
 
 
   # remove key from map
@@ -82,13 +104,20 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
   # create a string containing all mappings
   #
-  public redef as_string =>
+  public redef as_string String =>
     for
-      r := "", r + c + "($k => {index[] k})"
+      r := $"\{", r + c + "($k => {get k})"
       k in keys
       c := "", ", "
     else
-      r
+      r + "}"
+
+
+  # create an immutable map from this
+  #
+  # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
+  #
+  public as_map container.Map K V => abstract
 
 
   # initializer for this mutable map
@@ -109,7 +138,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   public type.from_entries(kvs Sequence (tuple K V)) Mutable_Map.this =>
     m := empty
     for kv in kvs do
-      m.add kv.values.0 kv.values.1
+      m.put kv.0 kv.1
     m
 
 */

@@ -31,14 +31,14 @@
 # Several error conditions are needed if there are several very different
 # reasons for an operation to fail, e.g.
 #
-#   get_data (u User, t Type) outcome data IO_Error Permission_Error is
-#     if u.allowed_to_acces T
-#       (read_file t.file_name)?
-#     else
-#       Permission_Error u, t
+#     get_data (u User, t Type) outcome data IO_Error Permission_Error is
+#       if u.allowed_to_access T
+#         (read_file t.file_name)?
+#       else
+#         Permission_Error u, t
 #
-#   read_file t Type outcome data IO_Error is
-#     [..]
+#     read_file t Type outcome data IO_Error is
+#       [..]
 #
 # Note that 'outcome data IO_Error' is not assignment compatible with
 # 'outcome data IO_Error Permission_Error', it has to be unwrapped first.
@@ -49,14 +49,12 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type) : switch T error,
-                                monad T (outcome T),
-                                property.equatable
+public outcome(public T type) : switch T error
 is
 
   # Does this outcome contain an error
   #
-  public is_error => !ok
+  public is_error bool => !ok
 
 
   # error of an outcome that is known to contain an error
@@ -77,14 +75,9 @@ is
   # returns the result of T.as_string for a successful outcome, or
   # "--$e--" for e error.
   #
-  public redef as_string =>
+  public redef as_string String =>
     outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
-
-
-  # monadic operator
-  #
-  public redef infix >>= (f T -> outcome T) => outcome.this.bind f
 
 
   # monadic operator
@@ -110,9 +103,9 @@ is
   #
   # The monadic operator turns this into:
   #
-  #     (open "example.txt").bind (array u8) (fd->read fd 42)
+  #     (open "example.txt").bind (fd->read fd 42)
   #
-  public bind(B type, f T -> outcome B) outcome B =>
+  public fixed bind(B type, f T -> outcome B) outcome B =>
     outcome.this ? v T => f v
                  | e error => e
 
@@ -126,38 +119,16 @@ is
     outcome.this
 
 
-  # return function
-  #
-  public fixed redef type.return (a T) => outcome a
-
-
-  # option is equatable only if T is
-  #
-  public redef type.is_equatable => T : property.equatable
-
-
-  # equality
-  #
-  # NYI: UNDER DEVELOPMENT: (how) move this to switch?
-  #
-  public fixed redef type.equality(x, y outcome T) =>
-    if T : property.equatable
-      x ? v T     => y.exists  && v = y.val
-        | e error => !y.exists && e = y.err
-    else
-      panic "***"
-
-
 
 # outcome with 1 argument provides an short-hand to wrap a value into a
 # outcome
 #
 # Using this enables to write
 #
-#   o := outcome x
+#     o := outcome x
 #
 # instead of
 #
-#   o outcome TypeOfX := x
+#     o outcome TypeOfX := x
 #
-public outcome(T type, o outcome T) => o
+public outcome(T type, o outcome T) outcome T => o

@@ -26,40 +26,34 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
+
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
 /**
- * Type created by parser for types like `a.b.this`.
+ * Type created by parser for types like {@code a.b.this}.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class QualThisType extends UnresolvedType
 {
 
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  final List<ParsedName> _qual;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Create the type corresponding to "<qual>.this".
+   * Create the type corresponding to {@code <qual>.this}.
    *
    * @param qual the qualifier
    */
   public QualThisType(List<ParsedName> qual)
   {
+    // NYI: BUG: need to take complete qualifier into account!
     super(SourcePosition.range(qual),
           qual.getLast()._name,
-          Call.NO_GENERICS, null, RefOrVal.ThisType);
-
-    this._qual = qual;
+          Call.NO_GENERICS, null, Optional.of(TypeKind.ThisType));
   }
 
 

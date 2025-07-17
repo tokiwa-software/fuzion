@@ -26,21 +26,23 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
+import java.util.stream.Collectors;
+
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
-import dev.flang.ast.Box; // NYI: remove dependency
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
-import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -62,15 +64,15 @@ public abstract class IR extends ANY
    * integers to detect wrong values quickly.
    */
   protected static final int CLAZZ_BASE   = 0x10000000;
-  protected static final int CLAZZ_END    = 0x2fffffff;
+  protected static final int CLAZZ_END    = CLAZZ_BASE + 0x1FFFFFFF; // 0x2fffffff
 
 
   /**
    * For FUIR code represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  public static final int SITE_BASE    = 0x30000000;
-  public static final int SITE_END     = 0x4fffffff;
+  public static final int SITE_BASE    = CLAZZ_END + 1; // 0x30000000;
+  public static final int SITE_END     = SITE_BASE + 0x1FFFFFFF; // 0x4fffffff
 
 
   /**
@@ -83,8 +85,8 @@ public abstract class IR extends ANY
   /**
    * Special clazz index value for not-existing clazz.
    *
-   * NYI: CLEANUP: This should better be `CLAZZ_BASE-1` and it should be used
-   * instead of `-1` in FUIR.java.
+   * NYI: CLEANUP: This should better be {@code CLAZZ_BASE-1} and it should be used
+   * instead of {@code -1} in FUIR.java.
    */
   public static final int NO_CLAZZ = -1;
 
@@ -93,7 +95,7 @@ public abstract class IR extends ANY
    * For Features represented by integers, this gives the base added to the
    * integers to detect wrong values quickly.
    */
-  protected static final int FEATURE_BASE = 0x50000000;
+  protected static final int FEATURE_BASE = SITE_END + 1; // 0x50000000
 
 
   /**
@@ -106,7 +108,16 @@ public abstract class IR extends ANY
     Intrinsic,
     Abstract,
     Choice,
-    Native
+    Native;
+
+
+    /**
+     * Can a feature of this kind have an outer ref?
+     */
+    public boolean mayHaveOuterRef()
+    {
+      return this == Routine || this == Intrinsic;
+    }
   }
 
 
@@ -125,7 +136,7 @@ public abstract class IR extends ANY
 
 
   /**
-   * All the code blocks in this IR. They are added via `addCode`.
+   * All the code blocks in this IR. They are added via {@code addCode}.
    */
   protected final List<Object> _allCode;
 
@@ -158,11 +169,11 @@ public abstract class IR extends ANY
   /**
    * Add given code block and obtain a unique id for it.
    *
-   * This also sets _siteStart in case `b` was not already added.
+   * This also sets _siteStart in case {@code b} was not already added.
    *
-   * @param b a list of Exprs, might contain non-Expr values for special cases.
+   * @param code a list of Exprs, might contain non-Expr values for special cases.
    *
-   * @return the index of b
+   * @return the index of code
    */
   protected int addCode(List<Object> code)
   {
@@ -240,7 +251,7 @@ public abstract class IR extends ANY
 
     if (e instanceof AbstractAssign a)
       {
-        toStack(l, a._value);
+        toStack(l, boxAndTag(a._value, a._assignedField.resultType()));
         toStack(l, a._target);
         l.add(a);
       }
@@ -287,9 +298,10 @@ public abstract class IR extends ANY
     else if (e instanceof AbstractCall c)
       {
         toStack(l, c.target());
-        for (var a : c.actuals())
+        var fat = c.formalArgumentTypes();
+        for (int i = 0; i < c.actuals().size(); i++)
           {
-            toStack(l, a);
+            toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
           }
         l.add(c);
         if (dumpResult)
@@ -329,11 +341,161 @@ public abstract class IR extends ANY
 
 
   /**
+   * Check if expr might need boxing or tagging and wrap this
+   * into Box()/Tag()/Tag(Box()) if this is the case.
+   *
+   * @param expr the expr to be boxed/tagged
+   *
+   * @param frmlT the formal type this value is assigned to
+   *
+   * @return this or an instance of Box/Tag wrapping this.
+   */
+  protected static Expr boxAndTag(Expr expr, AbstractType frmlT)
+  {
+    if (PRECONDITIONS) require
+      (frmlT != null);
+
+    var result = expr;
+    var t = expr.type();
+
+    if (!t.isVoid() && frmlT.isAssignableFrom(t).yes())
+      {
+        var rt = expr.needsBoxing(frmlT);
+        if (rt != null)
+          {
+            result = new Box(result, rt);
+          }
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type()).yes())
+          {
+            result = tag(result, frmlT);
+            if (CHECKS) check
+              (result.needsBoxing(frmlT) == null);
+          }
+      }
+    /**
+     * A ref is
+     * B ref is
+     *
+     * ab  : A, B is
+     *
+     * take_B(v B) => say "take_B: ok: {type_of v} dynamic {v.dynamic_type}"
+     *
+     * y1(v T : A) =>
+     *   y2
+     *     pre T : B
+     *   =>
+     *     take_B v
+     *
+     * y1 ab
+     */
+    // NYI: ugly special case: currently needed for code like
+    // because isAssignableFrom does not return yes without correct Context...
+    else if (t.isGenericArgument() && frmlT.isRef())
+      {
+        var rt = expr.needsBoxing(frmlT);
+        if (rt != null)
+          {
+            result = new Box(result, rt);
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (Errors.any()
+        || t.isVoid()
+        || frmlT.isGenericArgument()
+        || frmlT.isThisType()
+        || result.needsBoxing(frmlT) == null
+        || frmlT.isAssignableFrom(t).no());
+
+    return result;
+  }
+
+
+  /**
+   * handle tagging when assigning value to choice frmlT
+   *
+   * @param expr
+   *
+   * @param frmlT
+   *
+   * @return
+   */
+  private static Expr tag(Expr expr, AbstractType frmlT)
+  {
+    if(PRECONDITIONS) require
+      (frmlT.isChoice());
+
+    // Case 1: types are equal, no tagging necessary
+    if (frmlT.compareTo(expr.type()) == 0)
+      {
+        return expr;
+      }
+    // Case 1.1: types are equal, no tagging necessary
+    // NYI: BUG: soundness issue? see also isAssignableFrom
+    else if(expr.type().isChoice() && (frmlT.isThisType() || expr.type().isThisType()) && frmlT.asThis().compareTo(expr.type().asThis()) == 0)
+      {
+        return expr;
+      }
+    // Case 2.1: ambiguous assignment via subtype
+    //
+    // example:
+    //
+    //  A ref is
+    //  B ref is
+    //  C ref : B, A is
+    //  t choice A B := C
+    //
+    else if (frmlT
+             .choiceGenerics()
+             .stream()
+             .filter(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes())
+             .count() > 1)
+      {
+        Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
+        return expr;
+      }
+    // Case 2.2: no nested tagging necessary:
+    // there is a choice generic in this choice
+    // that this value is "directly" assignable to
+    else if (frmlT
+             .choiceGenerics()
+             .stream()
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes()))
+      {
+        return new Tag(expr, frmlT);
+      }
+    // Case 3: nested tagging necessary
+    // value is only assignable to choice element
+    // that itself is a choice
+    else
+      {
+        // we assign to the choice generic
+        // that expr is assignable to
+        var cgs = frmlT
+          .choiceGenerics()
+          .stream()
+          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(expr.type()).yes())
+          .collect(Collectors.toList());
+
+        if (cgs.size() > 1)
+          {
+            Errors.fatal("Ambiguous assignment to choice, should have been caught in frontend.");
+          }
+
+        if (CHECKS) check
+          (Errors.any() || cgs.size() == 1);
+
+        return tag(tag(expr, cgs.get(0)), frmlT);
+      }
+  }
+
+
+  /**
    * Get size of the code starting at given site
    *
    * @param s a site
    *
-   * @return the size of code block c, i.e., withinCode(s+0..s+result-1) <==> true.
+   * @return the size of code block c, i.e. {@code withinCode(s+0..s+result-1) <==> true}.
    */
   public int codeSize(int s)
   {
@@ -347,8 +509,8 @@ public abstract class IR extends ANY
 
 
   /**
-   * Check if site s is still a valid site. For every valid site `s` with `withinCode(s)`,
-   * it is legal to call `withinCode(s+codeSizeAt(s))` to check if the code continues.
+   * Check if site s is still a valid site. For every valid site {@code s} with {@code withinCode(s)},
+   * it is legal to call {@code withinCode(s+codeSizeAt(s))} to check if the code continues.
    *
    * @param s a value site or the successor of a valid site
    *
@@ -381,7 +543,7 @@ public abstract class IR extends ANY
 
 
   /**
-   * Helper for `codeAt` to determine the ExprKind for an Object that is either
+   * Helper for {@code codeAt} to determine the ExprKind for an Object that is either
    * an ast Expr or String.
    *
    * @param e an expression as stored in _allCode
@@ -439,7 +601,7 @@ public abstract class IR extends ANY
   /**
    * Get the source code position of an expr at the given site if it is available.
    *
-   * @param site a site
+   * @param s a site
    *
    * @return the source code position or null if not available.
    */
@@ -460,7 +622,7 @@ public abstract class IR extends ANY
    *
    * @param s a site
    *
-   * @return the offset of the next expression relative to `s`.
+   * @return the offset of the next expression relative to {@code s}.
    */
   public int codeSizeAt(int s)
   {
@@ -499,7 +661,7 @@ public abstract class IR extends ANY
    *
    * @param site any site
    *
-   * @return the site of the first Expr in the code block containing `site`
+   * @return the site of the first Expr in the code block containing {@code site}
    */
   public int codeBlockStart(int site)
   {
@@ -519,7 +681,7 @@ public abstract class IR extends ANY
    *
    * @param site any site
    *
-   * @return the site of the last Expr in the code block containing `site`
+   * @return the site of the last Expr in the code block containing {@code site}
    */
   public int codeBlockEnd(int site)
   {

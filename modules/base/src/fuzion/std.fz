@@ -25,7 +25,7 @@
 
 # fuzion.std -- unit type to group low-level std APIs
 #
-module fuzion.std is
+module std is
 
   # exit -- exit immediately with the given return code
   #
@@ -35,15 +35,6 @@ module fuzion.std is
   # panic -- display a panic message and exit immediately with error code 1
   #
   module panic(msg String) void =>
-    fuzion.sys.err.println "*** panic: $msg"
+    io.err.println "*** panic: $msg"
     std.this.exit 1
 
-  # no guarantee can be given for precision nor resolution
-  module fzE_nanotime u64 => native
-
-  # no guarantee can be given for precision nor resolution
-  module fzE_nanosleep(arg1 u64) unit => native
-
-
-  # fills arg with current UTC date time
-  module date_time(array_of_i32 fuzion.sys.Pointer) unit => intrinsic

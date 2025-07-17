@@ -49,14 +49,22 @@ jobs:
             git
             mingw-w64-ucrt-x86_64-clang
             diffutils
-
+            patch
+            libsqlite
+            libsqlite-devel
 
 
       - name: install choco packages
         shell: powershell
-        run: choco install openjdk --version 21.0.2
+        run: |
+          choco install openjdk --version 21.0.2
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v2.6.0
+
+      - name: create dll links
+        run: |
+          ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
+          ln -s  /usr/bin/msys-sqlite3-0.dll /ucrt64/bin/sqlite3.dll
 
       - name: echo versions
         run: |
@@ -66,6 +74,7 @@ jobs:
           clang --version
           javac --version
           whereis jvm.dll
+          whereis sqlite3.dll
 
       - name: run tests
         run: |

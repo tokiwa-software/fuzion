@@ -33,10 +33,10 @@
 private:public array2(
        public T type,
        public length0, length1 i32,
-       redef internal_array fuzion.sys.internal_array T,
+       module redef internal_array fuzion.sys.internal_array T,
        _ unit,
        _ unit)
- : array T /* NYI: BUG: when removing T Failed to infer actual type parameters */ internal_array unit unit unit
+ : array internal_array unit unit unit
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
@@ -47,16 +47,16 @@ is
 
   # indices range in first dimension
   #
-  public indices0 => 0..length0-1
+  public indices0 interval i32 => 0..length0-1
 
 
   # indices range in second dimension
   #
-  public indices1 => 0..length1-1
+  public indices1 interval i32 => 0..length1-1
 
   # all pairs of indices: (0,0), (0,1), (0,2), .. (length0-1, length1-1)
   #
-  public index_pairs =>
+  public index_pairs Sequence (tuple i32 i32) =>
     indices0.flat_map i->
       indices1.map j->(i,j)
 
@@ -73,7 +73,7 @@ is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
-  public redef as_string : encodings =>
+  public redef as_string  String : encodings =>
     c =>
       indices0
         .map (i -> "  " + (slice i*length1 (i+1)*length1))
@@ -96,8 +96,8 @@ is
       debug: 0 ≤ i < length0
       debug: 0 ≤ j < length1
   is
-    redef head => (i, j, index[] i j)
-    redef tail list (tuple i32 i32 T) =>
+    public redef head tuple i32 i32 T => (i, j, index[] i j)
+    public redef tail list (tuple i32 i32 T) =>
       if      j < length1-1 then enumerate_cons i j+1
       else if i < length0-1 then enumerate_cons i+1 0
       else                       nil
@@ -107,13 +107,13 @@ is
   #
   # flips the array along its diagonal
   #
-  public transpose =>
+  public transpose array2 T =>
     (array2 T).new length1 length0 i,j->index[](j, i)
 
 
   # create an array2 from a Sequence of a Sequence of elements
   #
-  public type.create2(s Sequence (Sequence T)) =>
+  public type.create2(s Sequence (Sequence T)) array2 T =>
     a := s.map s1->s1.as_array
           .as_array
     (array2 T).new a.count a[0].count i,j->a[i][j]
@@ -127,7 +127,7 @@ is
   # two index parameters.
   #
   public type.new(length0, length1 i32,
-                  init2 (i32, i32) -> T)
+                  init2 (i32, i32) -> T) array2 T
     pre
       safety: length0 ≥ 0
       safety: length1 ≥ 0
@@ -151,7 +151,7 @@ is
 #
 public array2(T type,
               length0, length1 i32,
-              init2 (i32, i32) -> T)
+              init2 (i32, i32) -> T) array2 T
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0

@@ -94,21 +94,6 @@ public abstract class Constant extends Expr
 
 
   /**
-   * The type of the constant.  This may be different to the the user-visible
-   * `type()` of this constant, in particular, for a constant string, `type()`
-   * returns `String`, while `typeOfConstant` is the actual child of `String`
-   * used for constants: `Const_String`.
-   *
-   * @return the type to be used to create the constant value. Is assignment
-   * compatible to `type()`.
-   */
-  public AbstractType typeOfConstant()
-  {
-    return type();
-  }
-
-
-  /**
    * visit all the expressions within this feature.
    *
    * @param v the visitor instance that defines an action to be performed on
@@ -122,8 +107,7 @@ public abstract class Constant extends Expr
   @Override
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.action(this);
-    return this;
+    return v.action(this);
   }
 
 
@@ -155,6 +139,21 @@ public abstract class Constant extends Expr
   public Expr origin()
   {
     return this;
+  }
+
+
+  /**
+   * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
+   * features to be searched for runtime types to be layouted.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Expr is used
+   */
+  protected Expr resolveSyntacticSugar2(Resolution res, Context context)
+  {
+     return this;
   }
 
 }

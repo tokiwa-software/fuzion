@@ -43,34 +43,58 @@ is
     res
 
 
-  # return next random number of type i32 in the range 0..max-1
+  # return next random number of type i32 in the range 0..exclusive_bound-1
   #
-  public next_i32(max i32)
-  pre debug: max ≥ 0
-  => (next.get max.as_u64).as_i32
+  public next_i32(exclusive_bound i32) i32
+  pre debug: exclusive_bound ≥ 0
+  => (next.get exclusive_bound.as_u64).as_i32
 
 
-  # return next random number of type i64 in the range 0..max-1
+  # return next random number of type i32 in the full range of i32 (i32.min..i32.max)
   #
-  public next_i64(max i64)
-  pre debug: max ≥ 0
-  => (next.get max.as_u64).as_i64
+  public next_i32 i32 => next_u32.cast_to_i32
 
 
-  # return next random number of type u32 in the range 0..max-1
+  # return next random number of type i64 in the range 0..exclusive_bound-1
   #
-  public next_u32(max u32) => (next.get max.as_u64).as_u32
-
-
-  # return next random number of type u64 in the range 0..max-1
+  # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
   #
-  public next_u64(max u64) =>  next.get max
+  public next_i64(exclusive_bound i64) i64
+  pre debug: exclusive_bound ≥ 0
+  => (next.get exclusive_bound.as_u64).as_i64
+
+
+  # return next random number of type i64 in the full range of i64 (i64.min..i64.max)
+  #
+  public next_i64 i64 => next_u64.cast_to_i64
+
+
+  # return next random number of type u32 in the range 0..exclusive_bound-1
+  #
+  public next_u32(exclusive_bound u32) u32 => (next.get exclusive_bound.as_u64).as_u32
+
+
+  # return next random number of type u32 in the full range of u32 (0..u32.max)
+  #
+  public next_u32 u32 => (next_u64 & 0x0000_0000_ffff_ffff).as_u32
+
+
+  # return next random number of type u64 in the range 0..exclusive_bound-1
+  #
+  # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
+  #
+  public next_u64(exclusive_bound u64) u64 => next.get exclusive_bound
+
+
+  # return next random number of type u64 in the full range of u64 (0..u64.max)
+  #
+  public next_u64 u64 => next.p.get
 
 
   # return next random number of type f32 in the range [0..1),
   # result will never be equal to f32 1
   #
-  public next_f32 =>
+  public next_f32 f32 =>
     max := u64 1 << f32.significand_bits.as_u64
     (next_u64 max).as_f64.as_f32 / max.as_f64.as_f32
 
@@ -78,22 +102,24 @@ is
   # return next random number of type f64 in the range [0..1),
   # result will never be equal to f64 1
   #
-  public next_f64 =>
+  public next_f64 f64 =>
     max := u64 1 << f64.significand_bits.as_u64
     (next_u64 max).as_f64 / max.as_f64
 
 
   # return next random number as a bool
   #
-  public next_bool =>
-    (next.get 2) %% 2
+  public next_bool bool =>
+    p.get %% 2
 
 
-  # get the current random number in the range 0..max-1
+  # get the current random number in the range 0..exclusive_bound-1
   #
-  public get (max u64)
+  # Note: uniform distribution is not perfect, it gets worse the closer exclusive_bound gets to 2^64, because internal calculation uses modulo
+  #
+  public get (exclusive_bound u64) u64
   =>
-    p.get % max  # NYI: This implementation is bad if max is big
+    p.get % exclusive_bound  # NYI: This implementation is bad if exclusive_bound is big
 
 
   # install default instance of random
@@ -106,14 +132,14 @@ is
 # random with no argument returns random.env, i.e., the currently installed
 # source of randomness.
 #
-public random =>
+public random random =>
   random.install_default
   random.env
 
-public simple_random(seed u64, rr ()->unit) =>
+public simple_random(seed u64, rr ()->unit) unit =>
   random <- (random (simple_random_handler seed seed)) ! rr
 
-public time_seeded_random(rr ()->unit) =>
+public time_seeded_random(rr ()->unit) unit =>
   random <- (random simple_random_handler.time_seeded) ! rr
 
 
@@ -155,7 +181,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get next instance by shuffling bits in seeds around
   #
-  redef next Random_Handler =>
+  public redef next Random_Handler =>
     # NYI: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
@@ -166,7 +192,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
 
   # get current random number
   #
-  redef get u64 => seed1
+  public redef get u64 => seed1
 
 
   # name of env var to provide default random seed.
@@ -178,6 +204,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # number generator.
   #
   type.random_seed_env_var => "FUZION_RANDOM_SEED"
+
 
   # create the default random handler depending on the environment settings
   #
@@ -197,7 +224,8 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   type.time_seeded Random_Handler =>
     # initialize with large numbers XORed with nano time
     #
-    simple_random_handler (u64 77777777777777 ^ time.nano.read) 98765432109876543
+    simple_random_handler (u64 77777777777777 ^ fzE_nanotime) 98765432109876543
+
 
   # create a time-seeded handler for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good

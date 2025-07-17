@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import java.util.stream.Collector;
@@ -298,8 +299,7 @@ public class List<T>
   public boolean add(T e)
   {
     if (ANY.PRECONDITIONS) ANY.require
-      (true || !isFrozen() // NYI: disabled since tests/reg_issue1943_type_parameter_as_outer_type crashes if enabled, need to check
-       );
+      (!isFrozen());
 
     return super.add(e);
   }
@@ -457,9 +457,9 @@ public class List<T>
    *
    * @param i index of element to set
    *
-   * @return the element at index i or null if size() <= i.
+   * @return the element at index i or null if size() {@literal <=} i.
    *
-   * @throws IndexOutOfBoundsException if i < 0.
+   * @throws IndexOutOfBoundsException if i &lt; 0.
    */
   public T getIfExists(int i)
   {
@@ -488,7 +488,7 @@ public class List<T>
 
 
   /**
-   * Set an element of this list using `set(i,x)`, but first make sure the
+   * Set an element of this list using {@code set(i,x)}, but first make sure the
    * list's capacity is sufficient.
    *
    * @param i index of element to set
@@ -570,10 +570,20 @@ public class List<T>
    */
   public List<T> flatMap(Function<T,List<T>> f)
   {
-    var result = new List<T>();
+    var result = this;
     for (var i = 0; i < size(); i++)
       {
-        result.addAll(f.apply(get(i)));
+        var e = get(i);
+        var l = f.apply(e);
+        if (result != this)
+          {
+            result.addAll(l);
+          }
+        else if (l.size() != 1 || e != l.getFirst())
+          {
+            result = take(i);
+            result.addAll(l);
+          }
       }
     return result;
   }
@@ -595,13 +605,56 @@ public class List<T>
   }
 
 
+  /**
+   * Filter elements that match a given predicate.
+   *
+   * @return this (if the predicate holds for all elements) or a new list with
+   * only those elements that tested true.
+   */
+  public List filter(Predicate<T> f)
+  {
+    var result = this;
+    for (var i = 0; i < size(); i++)
+      {
+        var e = get(i);
+        var pass = f.test(e);
+        if (pass && result != this)
+          {
+            result.add(e);
+          }
+        else if (!pass && result == this)
+          {
+            result = take(i);
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Create a new list of the first n elements
+   *
+   * @param n the number of elements to put into new list
+   *
+   * @return new list of the length max(n, this.length()), containing get(0) .. get(n-1).
+   */
+  public List<T> take(int n)
+  {
+    var result = new List<T>();
+    for (var i = 0; i < n; i++)
+      {
+        result.add(get(i));
+      }
+    return result;
+  }
+
 
   /**
    * Create a new list without the first n elements
    *
    * @param n the number of elements to drop
    *
-   * @return new list of the length max(0, this.length()-1), containing get(n) .. get(length()-1).
+   * @return new list of the length max(0, this.length()-n), containing get(n) .. get(length()-1).
    */
   public List<T> drop(int n)
   {

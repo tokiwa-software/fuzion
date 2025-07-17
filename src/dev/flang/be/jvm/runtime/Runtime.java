@@ -30,21 +30,36 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-
+import java.lang.foreign.AddressLayout;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
 import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
+import java.lang.foreign.ValueLayout.OfBoolean;
+import java.lang.foreign.ValueLayout.OfByte;
+import java.lang.foreign.ValueLayout.OfChar;
+import java.lang.foreign.ValueLayout.OfDouble;
+import java.lang.foreign.ValueLayout.OfFloat;
+import java.lang.foreign.ValueLayout.OfInt;
+import java.lang.foreign.ValueLayout.OfLong;
+import java.lang.foreign.ValueLayout.OfShort;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
@@ -67,6 +82,9 @@ import dev.flang.util.StringHelpers;
 @SuppressWarnings({"rawtypes"})
 public class Runtime extends ANY
 {
+
+  /* NYI: UNDER DEVELOPMENT: memory leak */
+  private static Arena arena = Arena.global();
 
   /*-----------------------------  classes  -----------------------------*/
 
@@ -131,7 +149,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Value used for `FuzionThread.effect_store` and `FuzionThread.effect_load`
+   * Value used for {@code FuzionThread.effect_store} and {@code FuzionThread.effect_load}
    * to distinguish a unit value effect from a not existing effect
    */
   public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI() { };
@@ -187,11 +205,6 @@ public class Runtime extends ANY
     }
   };
 
-  static long _stdin  = _openStreams_.add(System.in );
-  static long _stdout = _openStreams_.add(System.out);
-  static long _stderr = _openStreams_.add(System.err);
-
-
   /**
    * This contains all open processes.
    */
@@ -207,23 +220,11 @@ public class Runtime extends ANY
   };
 
 
-  /**
-   * This contains all started threads.
-   */
-  static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
-    @Override
-    protected boolean close(Thread f)
-    {
-      return true;
-    };
-  };
-
-
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
   /**
-   * The result of `envir.args[0]`
+   * The result of {@code envir.args[0]}
    */
   public static String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
@@ -234,7 +235,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The results of `envir.args[1..n]`
+   * The results of {@code envir.args[1..n]}
    */
   public static String[] _args_ = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 
@@ -317,7 +318,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for a `Const_String` from data in the
+   * Create the internal (Java) array for a {@code const_string} from data in the
    * chars of a Java String.
    *
    * @param str the Java string as unicodes.
@@ -331,7 +332,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i8` or `array u8` from data
+   * Create the internal (Java) array for an {@code array i8} or {@code array u8} from data
    * in the chars of a Java String.
    *
    * @param str the Java string, lower byte is the first, upper the second byte.
@@ -355,7 +356,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i16` from data in the chars
+   * Create the internal (Java) array for an {@code array i16} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, each char is one i16.
@@ -376,7 +377,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array u16` from data in the chars
+   * Create the internal (Java) array for an {@code array u16} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, each char is one u16.
@@ -397,7 +398,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i32` or `array u32` from
+   * Create the internal (Java) array for an {@code array i32} or {@code array u32} from
    * data in the chars of a Java String.
    *
    * @param str the Java string, two char form one i32 or u32 in little endian order.
@@ -420,7 +421,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array i64` or `array u64` from
+   * Create the internal (Java) array for an {@code array i64} or {@code array u64} from
    * data in the chars of a Java String.
    *
    * @param str the Java string, four char form one i64 or u64 in little endian
@@ -446,7 +447,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array f32` from data in the chars
+   * Create the internal (Java) array for an {@code array f32} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, two chars form the bits of one f32 in little
@@ -469,7 +470,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Create the internal (Java) array for an `array f64` from data in the chars
+   * Create the internal (Java) array for an {@code array f64} from data in the chars
    * of a Java String.
    *
    * @param str the Java string, four chars form the bits of one f64 in little
@@ -508,7 +509,6 @@ public class Runtime extends ANY
   public static void effect_default(int id, AnyI instance)
   {
     var t = currentThread();
-    t.ensure_effect_capacity(id);
     if (t.effect_load(id) == null)
       {
         t.effect_store(id, instance);
@@ -536,9 +536,9 @@ public class Runtime extends ANY
    *
    * @param id an effect type id.
    *
-   * @instance a new instance to replace the old one
+   * @param instance a new instance to replace the old one
    */
-  public static void effect_replace(int id, Any instance)
+  public static void effect_replace(int id, AnyI instance)
   {
     var t = currentThread();
 
@@ -597,7 +597,7 @@ public class Runtime extends ANY
    *
    * @param id the id of the effect type that is instated
    *
-   * @param instance the effect instance that is instated, NOTE: This is `_UNIT_TYPE_EFFECT_`
+   * @param instance the effect instance that is instated, NOTE: This is {@code _UNIT_TYPE_EFFECT_}
    * for a unit type effect.
    */
   public static void effect_push(int id, AnyI instance)
@@ -663,7 +663,7 @@ public class Runtime extends ANY
 
 
   /**
-   * cached results of `classNameToFeatureName`.
+   * cached results of {@code classNameToFeatureName}.
    */
   static WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
 
@@ -814,7 +814,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.string_to_java_object0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.string_to_java_object0 intrinsic.
    *
    * Creates a new instance of String from the byte array passed as argument,
    * assuming the byte array contains an UTF-8 encoded string.
@@ -851,7 +851,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.get_static_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.get_static_field0 intrinsic.
    *
    * Retrieves the content of a given static field.
    *
@@ -875,7 +875,7 @@ public class Runtime extends ANY
       }
     catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
       {
-        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal(e.toString()+" when calling fuzion.jvm.env.get_static_field for field "+clazz+"."+field);
         result = null;
       }
 
@@ -884,7 +884,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.set_static_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.set_static_field0 intrinsic.
    *
    * Sets the static field to the given content
    *
@@ -906,14 +906,14 @@ public class Runtime extends ANY
       }
     catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
       {
-        Errors.fatal(e.toString()+" when calling fuzion.java.set_static_field for field "
+        Errors.fatal(e.toString()+" when calling fuzion.jvm.env.set_static_field for field "
                      +clazz+"."+field+" and value "+value);
       }
   }
 
 
   /**
-   * Helper method called by the fuzion.java.get_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.get_field0 intrinsic.
    *
    * Given some instance of a Java class, retrieves the content of a given field in
    * this instance.
@@ -940,7 +940,7 @@ public class Runtime extends ANY
     catch (IllegalAccessException | NoSuchFieldException e)
       {
         Errors.fatal(e.toString()
-          + " when calling fuzion.java.get_field for field "
+          + " when calling fuzion.jvm.env.get_field for field "
           + (clazz !=null ? clazz.getName() : "")+"."+field
         );
         result = null;
@@ -951,7 +951,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.set_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.set_field0 intrinsic.
    *
    * Given some instance of a Java class, set the given field in
    * this instance to the given content
@@ -977,7 +977,7 @@ public class Runtime extends ANY
     catch (IllegalAccessException | NoSuchFieldException e)
       {
         Errors.fatal(e.toString()
-          + " when calling fuzion.java.set_field for field "
+          + " when calling fuzion.jvm.env.set_field for field "
           + (clazz !=null ? clazz.getName() : "")+"."+field
           + "and value "+value
         );
@@ -1021,7 +1021,7 @@ public class Runtime extends ANY
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_"+what+" for class" +
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.env.call_"+what+" for class" +
                            clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
         cl = Object.class; // not reached.
       }
@@ -1031,7 +1031,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.call_v0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.call_v0 intrinsic.
    *
    * Calls a Java method on a specified instance.
    *
@@ -1065,7 +1065,7 @@ public class Runtime extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_virtual calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_virtual calling " +
                            (cl.getName() + "." + name) + sig);
       }
     return invoke(m, thiz, args);
@@ -1123,7 +1123,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.call_s0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.call_s0 intrinsic.
    *
    * Calls a static Java method of a specified class.
    *
@@ -1155,7 +1155,7 @@ public class Runtime extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_static calling " +
                            (cl.getName() + "." + name) + sig);
       }
     return invoke(m, null, args);
@@ -1163,7 +1163,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.call_c0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.call_c0 intrinsic.
    *
    * Calls a Java constructor of a specified class.
    *
@@ -1193,7 +1193,7 @@ public class Runtime extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_constructor calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_constructor calling " +
                            ("new " + clName) + sig);
         return null; // not reached
       }
@@ -1201,13 +1201,13 @@ public class Runtime extends ANY
 
 
   /**
-   * @param code the Unary instance to be executed
+   * @param code the Unary instance to be executed, i.e. the outer instance
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
-  public static long thread_spawn(Any code, Class call)
+  public static Object thread_spawn(Any code, Class call)
   {
-    long result = 0;
+    Object result = null;
     Method r = null;
     for (var m : call.getDeclaredMethods())
       {
@@ -1222,8 +1222,7 @@ public class Runtime extends ANY
       }
     else
       {
-        var t = new FuzionThread(r, code);
-        result = _startedThreads_.add(t);
+        result = new FuzionThread(r, code);
       }
     return result;
   }
@@ -1377,25 +1376,576 @@ public class Runtime extends ANY
       }
   }
 
-  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc)
+
+  /**
+   * Find the method handle of a native function
+   *
+   * @param str name of the function: e.g. sqlite3_exec
+   *
+   * @param desc the FunctionDescriptor of the function
+   *
+   * NYI: CLEANUP: remove param libraries. do init of library lookup once at program start.
+   *
+   * @return
+   */
+  public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
+  {
+    SymbolLookup llu = null;
+    try
+      {
+        llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.error(e.getMessage());
+        System.exit(1);
+      }
+    for (String library : libraries)
+      {
+        var ln = System.mapLibraryName(library);
+        try
+          {
+            llu = llu.or(SymbolLookup.libraryLookup(ln, arena));
+          }
+        catch (IllegalArgumentException e)
+          {
+            Errors.error("'" + ln + "' not found on your system. "
+                        + "Make sure to install the corresponding package, that provides '" + ln + "'.");
+            System.exit(1);
+          }
+      }
+
+    var memSeg = llu
+      .find(str)
+      .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str));
+
+    var result = Linker
+      .nativeLinker()
+      .downcallHandle(memSeg, desc);
+
+    var params = result.type().parameterList();
+
+    // if first argument is a segment allocator
+    // the native method returns a value type (struct)
+    return params.size() > 0 && params.getFirst() == SegmentAllocator.class
+      ? result.bindTo(arena)
+      : result;
+  }
+
+
+  /**
+   * copy the contents of memSeg to obj
+   */
+  public static void memorySegment2Obj(Object obj, MemorySegment memSeg)
+  {
+    if      (obj instanceof byte   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof short  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof char   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof int    [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof long   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
+    else if (obj instanceof MemorySegment) { /* NYI: UNDER DEVELOPMENT */ }
+    else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
+      {
+        for (int i = 0; i < arr.length; i++)
+          {
+            arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
+          }
+      }
+    else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
+    else { /* NYI: check if value type */ }
+  }
+
+
+  /**
+   * creates a new MemorySegment and copies
+   * content of object to the memory segment
+   */
+  public static MemorySegment obj2MemorySegment(Object obj)
+  {
+    if      (obj instanceof byte   [] arr) { return arena.allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof short  [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof char   [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof int    [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof long   [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof float  [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof double [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
+    else if (obj instanceof MemorySegment memSeg) { return memSeg; }
+    else if (obj instanceof Object [] arr)
+      {
+        var argsArray = arena.allocate(arr.length * 8);
+        for (int i = 0; i < arr.length; i++)
+          {
+            argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
+          }
+        return argsArray;
+      }
+    else
+      {
+        return value2MemorySegment(obj);
+      }
+  }
+
+
+  /**
+   * copy fuzion value to a memory segment
+   *
+   * @param obj, e.g. point(a,b i32) is
+   *
+   * @return the memory segment that has been filled with
+   * the data of the obj.
+   */
+  private static MemorySegment value2MemorySegment(Object obj)
+  {
+    var cl = obj.getClass();
+    var df = cl.getDeclaredFields();
+    var result = arena.allocate(byteSize(df));
+    long offset = 0;
+    for (int i = 0; i < df.length; i++)
+      {
+        var ft = df[i].getType();
+        setMemSeg(result, df[i], offset, obj);
+        offset += byteCount(ft);
+      }
+    return result;
+  }
+
+
+  /**
+   * copy data of field f from source to target at given offset.
+   */
+  private static void setMemSeg(MemorySegment target, Field f, long offset, Object source)
   {
     try
       {
-        return Linker.nativeLinker()
-          .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion" /* NYI */), Arena.ofAuto())
-              .or(SymbolLookup.loaderLookup())
-              .or(Linker.nativeLinker().defaultLookup())
-              .find(str)
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str)),
-            desc);
+        if (f.getType() == int.class)
+          {
+            target.set(ValueLayout.JAVA_INT, offset, f.getInt(source));
+          }
+        if (f.getType() == Object.class)
+          {
+            target.set(ValueLayout.ADDRESS, offset, (MemorySegment)f.get(source));
+          }
       }
-    catch (Throwable e)
+    catch (Exception e)
       {
-        say_err(e);
-        System.exit(1);
-        return null;
+        Errors.fatal(e);
       }
+  }
+
+
+  /**
+   * the sizeof the struct that has the given fields
+   */
+  private static int byteSize(Field[] fields)
+  {
+    var result = 0;
+    for (int i = 0; i < fields.length; i++)
+      {
+        result += byteCount(fields[i].getType());
+      }
+    return result;
+  }
+
+
+  /**
+   * create a new fuzion value, an fill
+   * it with the data in memSeg.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T memorySegment2Value(Class<T> cl, MemorySegment memSeg)
+    throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+  {
+    var constructor = cl.getConstructors()[0];
+    var result = constructor.newInstance();
+    var fields = cl.getDeclaredFields();
+
+    if (memSeg.byteSize() == 0)
+      {
+        memSeg = memSeg.reinterpret(byteSize(fields));
+      }
+
+    long offset = 0;
+    for (int i = 0; i < fields.length; i++)
+      {
+        var ft = fields[i].getType();
+        fields[i].set(result, extractFromMemSegment(memSeg, ft, offset));
+        offset += byteCount(ft);
+      }
+
+    return (T)result;
+  }
+
+
+  /**
+   * count of bytes need for class c
+   */
+  private static int byteCount(Class<?> c)
+  {
+    if (PRECONDITIONS) require
+      (c != void.class);
+
+    if (c == boolean.class)
+      {
+        return 4;
+      }
+    else if (c == byte.class)
+      {
+        return 1;
+      }
+    else if (c == char.class)
+      {
+        return 2;
+      }
+    else if (c == short.class)
+      {
+        return 2;
+      }
+    else if (c == int.class)
+      {
+        return 4;
+      }
+    else if (c == long.class)
+      {
+        return 8;
+      }
+    else if (c == float.class)
+      {
+        return 4;
+      }
+    else if (c == double.class)
+      {
+        return 8;
+      }
+    else if (c == Object.class)
+      {
+        return 8;
+      }
+    throw new Error("Implementation restriction: byteCount missing impl. for: " + c);
+  }
+
+
+  public static Object native_array(MemoryLayout memLayout, Object obj, int length)
+  {
+    var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
+    if (memLayout instanceof OfByte o)
+      {
+        var result = new byte[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(o, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfBoolean ob)
+      {
+        var result = new boolean[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfChar ob)
+      {
+        var result = new char[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfDouble ob)
+      {
+        var result = new double[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfFloat ob)
+      {
+        var result = new float[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfInt ob)
+      {
+        var result = new int[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfLong ob)
+      {
+        var result = new long[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else if (memLayout instanceof OfShort ob)
+      {
+        var result = new short[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+    else
+      {
+        var ob = (AddressLayout)memLayout;
+        var result = new Object[length];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = memSeg.getAtIndex(ob, i);
+          }
+        return result;
+      }
+  }
+
+
+  /**
+   * @param outerRef the outer reference that the Function.call needs
+   *                 or null if Function.call does not need an outer
+   *                 reference passed in
+   *
+   * @param call     the java class of the Function.call that we create an
+   *                 upcall for.
+   *
+   * @return An upcall which can be passed to other foreign functions as a function pointer
+   */
+  public static MemorySegment upcall(Any outerRef, Class call)
+  {
+    Method method = null;
+    for (var m : call.getDeclaredMethods())
+      {
+        if (m.getName().equals(ROUTINE_NAME))
+          {
+            method = m;
+          }
+      }
+    if (method == null)
+      {
+        Errors.fatal("Runtime.upcall, could not find method " + ROUTINE_NAME + " in " + call.toString());
+      }
+
+    MethodHandle handle;
+    try
+      {
+        handle = MethodHandles.lookup().unreflect(method);
+        if (outerRef != null)
+          {
+            handle = handle.bindTo(outerRef);
+          }
+        var pl = handle
+          .type()
+          .parameterList();
+        for (int i = 0; i < pl.size(); i++)
+          {
+            var p = pl.get(i);
+            if (!p.isPrimitive() && p != Object.class)
+              {
+                try
+                  {
+                    var mh = MethodHandles
+                      .lookup()
+                      .findStatic(
+                        Runtime.class,
+                        "memorySegment2Value",
+                        MethodType.methodType(Object.class, new Class[]{ Class.class, MemorySegment.class}));
+                    handle = MethodHandles.filterArguments(
+                      handle,
+                      i,
+                      mh
+                        .bindTo(p)
+                        .asType(MethodType.methodType(p, new Class[]{ MemorySegment.class})));
+                  }
+                catch (NoSuchMethodException e)
+                  {
+                    Errors.fatal(e);
+                  }
+              }
+          }
+        handle = MethodHandles
+          .explicitCastArguments(
+            handle,
+            MethodType.methodType(
+              handle
+                .type()
+                .returnType(),
+              handle
+                .type()
+                .parameterList()
+                .stream()
+                .map(c -> c.isPrimitive() ? c : MemorySegment.class)
+                .toArray(Class[]::new)
+            ));
+
+        var desc = method.getReturnType() == void.class
+          ? FunctionDescriptor.ofVoid(layout(pl))
+          : FunctionDescriptor.of(layout(method.getReturnType()), layout(pl));
+
+        return Linker
+          .nativeLinker()
+          .upcallStub(handle, desc, arena);
+      }
+    catch (IllegalAccessException e)
+      {
+        Errors.fatal(e);
+      }
+    return null;
+  }
+
+
+  /**
+   * For segment extract the length of the NULL-terminated
+   * string.
+   *
+   * @param segment
+   *
+   * @return
+   */
+  public static int native_string_length(MemorySegment segment)
+  {
+    int length = 0;
+    segment = segment.reinterpret(10000 /* NYI: magic constant */);
+
+    while (segment.get(ValueLayout.JAVA_BYTE, length) != 0)
+      {
+        length++;
+      }
+
+    return length;
+  }
+
+
+  /**
+   * extract data from memory segment at offset of type ct
+   */
+  private static Object extractFromMemSegment(MemorySegment memSeg, Class ct, long offset)
+  {
+    if (PRECONDITIONS) require
+      (ct != void.class);
+
+    if (ct == boolean.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_BOOLEAN, offset);
+      }
+    else if (ct == byte.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_BYTE, offset);
+      }
+    else if (ct == char.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_CHAR, offset);
+      }
+    else if (ct == short.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_SHORT, offset);
+      }
+    else if (ct == int.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_INT, offset);
+      }
+    else if (ct == long.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_LONG, offset);
+      }
+    else if (ct == float.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_FLOAT, offset);
+      }
+    else if (ct == double.class)
+      {
+        return memSeg.get(ValueLayout.JAVA_DOUBLE, offset);
+      }
+    else if (ct == Object.class)
+      {
+        return memSeg.get(ValueLayout.ADDRESS, offset);
+      }
+    throw new Error("Implementation restriction Runtime.extract: " + ct);
+  }
+
+
+  /**
+   * For a given java class get the native MemoryLayout.
+   *
+   * @param ct
+   * @return
+   */
+  public static MemoryLayout layout(Class ct)
+  {
+    if (PRECONDITIONS) require
+      (ct != void.class);
+
+    if (ct == boolean.class)
+      {
+        return ValueLayout.JAVA_BOOLEAN;
+      }
+    else if (ct == byte.class)
+      {
+        return ValueLayout.JAVA_BYTE;
+      }
+    else if (ct == char.class)
+      {
+        return ValueLayout.JAVA_CHAR;
+      }
+    else if (ct == short.class)
+      {
+        return ValueLayout.JAVA_SHORT;
+      }
+    else if (ct == int.class)
+      {
+        return ValueLayout.JAVA_INT;
+      }
+    else if (ct == long.class)
+      {
+        return ValueLayout.JAVA_LONG;
+      }
+    else if (ct == float.class)
+      {
+        return ValueLayout.JAVA_FLOAT;
+      }
+    else if (ct == double.class)
+      {
+        return ValueLayout.JAVA_DOUBLE;
+      }
+    else if (ct == Object.class)
+      {
+        return ValueLayout.ADDRESS;
+      }
+    return MemoryLayout.structLayout(
+      Arrays
+        .stream(ct.getDeclaredFields())
+        .map(f -> layout(f.getType()))
+        .toArray(MemoryLayout[]::new));
+  }
+
+
+  /**
+   * get the layouts for the given classes
+   *
+   * @param types
+   * @return
+   */
+  private static MemoryLayout[] layout(List<Class<?>> types)
+  {
+    var result = new MemoryLayout[types.size()];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i] = layout(types.get(i));
+      }
+    return result;
   }
 
 

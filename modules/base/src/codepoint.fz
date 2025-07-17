@@ -51,59 +51,83 @@ is
 
   # is this an ASCII code encoded in one byte
   #
-  public redef is_ascii => codepoint.ascii.contains val
+  public redef is_ascii bool => codepoint.ascii.contains val
+
+  # is this an ASCII digit i.e. 0-9
+  #
+  public is_ascii_digit bool => codepoint.ascii_digit.contains val
+
+  # is this an ASCII letter i.e. A-Z or a-z
+  #
+  public is_ascii_letter bool => codepoint.latin_alphabet.contains val
+
+  # is this an uppercase ASCII letter i.e. A-Z
+  #
+  public is_uppercase_ascii_letter bool => codepoint.A_to_Z.contains val
+
+  # is this a lowercase ASCII letter i.e. a-z
+  #
+  public is_lowercase_ascii_letter bool => codepoint.a_to_z.contains val
+
+  # is this a codepoint reserved for utf16 surrogate pairs
+  #
+  public is_utf16_surrogate bool => codepoint.utf16_surrogate.contains val
+
+  # is this codepoint guaranteed to never be a legal unicode character
+  #
+  public is_not_a_character bool => codepoint.not_a_character.contains val
 
 
   # range of permitted value for a codepoint
   #
-  public type.range => u32 0 .. 0x10ffff
+  public type.range interval u32=> u32 0 .. 0x10ffff
 
 
   # range of values encoded in one byte
   #
-  public type.ascii => u32 0 .. 0x7f
+  public type.ascii interval u32=> u32 0 .. 0x7f
 
   # 0 to 9
-  public type.ascii_digit => u32 0x30 .. 0x39
+  public type.ascii_digit interval u32 => u32 0x30 .. 0x39
 
   # A to Z (uppercase only)
-  public type.A_to_Z => u32 0x41 .. 0x5A
+  public type.A_to_Z interval u32 => u32 0x41 .. 0x5A
 
   # a to z (lowercase only)
-  public type.a_to_z => u32 0x61 .. 0x7A
+  public type.a_to_z interval u32 => u32 0x61 .. 0x7A
 
   # a-z and A-Z
   # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
-  public type.latin_alphabet => A_to_Z ∪ a_to_z
+  public type.latin_alphabet container.Set u32 => A_to_Z ∪ a_to_z
 
   # range of values encoded in one byte
   #
-  public type.utf8_encoded_in_one_byte => ascii
+  public type.utf8_encoded_in_one_byte interval u32 => ascii
 
 
   # range of values encoded in two bytes
   #
-  public type.utf8_encoded_in_two_bytes => u32 0x80 .. 0x7ff
+  public type.utf8_encoded_in_two_bytes interval u32 => u32 0x80 .. 0x7ff
 
 
   # range of values encoded in three bytes
   #
-  public type.utf8_encoded_in_three_bytes => u32 0x800 .. 0xffff
+  public type.utf8_encoded_in_three_bytes interval u32 => u32 0x800 .. 0xffff
 
 
   # range of values encoded in four bytes
   #
-  public type.utf8_encoded_in_four_bytes => u32 0x10000 .. 0x10ffff
+  public type.utf8_encoded_in_four_bytes interval u32 => u32 0x10000 .. 0x10ffff
 
 
   # range reserved for utf16 surrogate pairs
   #
-  public type.utf16_surrogate => u32 0xd800 .. 0xdfff
+  public type.utf16_surrogate interval u32 => u32 0xd800 .. 0xdfff
 
 
   # values guaranteed never to be a legal unicode character
   #
-  public type.not_a_character => u32 0xfffe .. 0xffff
+  public type.not_a_character interval u32 => u32 0xfffe .. 0xffff
 
 
   # return the number of bytes of this utf-8 character
@@ -127,11 +151,11 @@ is
   #
   # result is true iff the codepoints have the same value
   #
-  public fixed redef type.equality(a, b codepoint) => a.val = b.val
+  public fixed redef type.equality(a, b codepoint) bool => a.val = b.val
 
 
   # compare two codepoints
   #
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
-  public fixed redef type.lteq(a, b codepoint) => a.val <= b.val
+  public fixed redef type.lteq(a, b codepoint) bool => a.val <= b.val

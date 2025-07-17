@@ -42,9 +42,9 @@ ex_lazy is
   mtrue => {say "eval mtrue!"; true}
 
   lst(T type, h T, t Lazy (list T)) list T =>
-    ref : Cons T (list T)
-      redef head => h
-      redef tail => t
+    ref : Cons T (list T) is
+      public redef head => h
+      public redef tail => t
 
   stars => {say "eval stars!"; lst "*" stars}
 
@@ -53,6 +53,5 @@ ex_lazy is
   say "y"
 
   type_of2(W type, x Lazy W) Type => W
-  # NYI: should work but currently does not:
-  # say (type_of2 42)
+  say (type_of2 42)
   say (type_of2 ()->42)

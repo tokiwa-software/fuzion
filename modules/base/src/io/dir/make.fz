@@ -39,8 +39,8 @@ public make(fwh Make_Dir_Handler, _ unit) : effect is
   # the default handler
   #
   type.default_handler =>
-    ref : io.dir.Make_Dir_Handler
-      public redef mkdir(path String) =>
+    ref : io.dir.Make_Dir_Handler is
+      public redef mkdir(path String) outcome unit =>
         fuzion.sys.fileio.create_dir path
 
 
@@ -49,7 +49,7 @@ public make(fwh Make_Dir_Handler, _ unit) : effect is
 # if none is installed the default handler will be used to
 # install the effect and perform the operation.
 #
-public make(path String) =>
+public make(path String) outcome unit =>
   if !io.dir.make.is_instated
     (io.dir.make make.default_handler unit).default
   make.env.make_dir path

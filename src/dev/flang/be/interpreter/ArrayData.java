@@ -26,6 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+
 import dev.flang.fuir.FUIR;
 import dev.flang.util.Errors;
 
@@ -218,6 +222,72 @@ public class ArrayData extends Value
     return "data[" + length() + ", " + _array.getClass().componentType() + "]";
   }
 
+
+  @Override
+  protected Object toNative()
+  {
+    var memSegment = Arena.ofAuto().allocate(length() * elementByteSize());
+
+    copyToMemSegment(memSegment);
+
+    return memSegment;
+  }
+
+
+  private void copyToMemSegment(MemorySegment memSegment)
+  {
+    for (int i = 0; i < length(); i++)
+      {
+        if      (_array instanceof byte   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BYTE,   i, arr[i]);}
+        else if (_array instanceof short  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_SHORT,  i, arr[i]);}
+        else if (_array instanceof char   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_CHAR,   i, arr[i]);}
+        else if (_array instanceof int    [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_INT,    i, arr[i]);}
+        else if (_array instanceof long   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_LONG,   i, arr[i]);}
+        else if (_array instanceof float  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_FLOAT,  i, arr[i]);}
+        else if (_array instanceof double [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_DOUBLE, i, arr[i]);}
+        else if (_array instanceof boolean[] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BOOLEAN,i, arr[i]);}
+        else if (_array instanceof Value  [] arr)
+        {
+          for (int j = 0; j < arr.length; j++)
+            {
+              memSegment.set(ValueLayout.ADDRESS, j * 8, (MemorySegment)arr[j].toNative());
+            }
+        }
+        else throw new Error("NYI: UNDER DEVELOPMENT: copyToMemSegment: " + _array.getClass());
+      }
+  }
+
+  private int elementByteSize()
+  {
+    if      (_array instanceof byte   []) { return 1; }
+    else if (_array instanceof short  []) { return 2; }
+    else if (_array instanceof char   []) { return 2; }
+    else if (_array instanceof int    []) { return 4; }
+    else if (_array instanceof long   []) { return 8; }
+    else if (_array instanceof float  []) { return 4; }
+    else if (_array instanceof double []) { return 8; }
+    else if (_array instanceof boolean[]) { return 4; }
+    else if (_array instanceof Value  []) { return 8; }
+    throw new Error("NYI: ArrayData.elementByteSize");
+  }
+
+
+  public void set(MemorySegment memSegment)
+  {
+    for (int i = 0; i < length(); i++)
+      {
+        if      (_array instanceof byte   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BYTE, i); }
+        else if (_array instanceof short  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_SHORT, i); }
+        else if (_array instanceof char   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_CHAR, i); }
+        else if (_array instanceof int    [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_INT, i); }
+        else if (_array instanceof long   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_LONG, i); }
+        else if (_array instanceof float  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_FLOAT, i); }
+        else if (_array instanceof double [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_DOUBLE, i); }
+        else if (_array instanceof boolean[] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BOOLEAN, i); }
+        else if (_array instanceof Value  [] arr) { /* NYI: UNDER DEVELOPMENT */ }
+        else throw new Error("NYI: UNDER DEVELOPMENT: set: " + _array.getClass());
+      }
+  }
 }
 
 /* end of file */

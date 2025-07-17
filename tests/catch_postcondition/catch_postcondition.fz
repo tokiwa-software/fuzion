@@ -100,7 +100,7 @@ catch_postcondition is
     catch(msg String) T => abstract
 
     # use local mutate to store msg passed to `cause`
-    lm : mutate.
+    lm : mutate is
 
     res := lm ! ()->
         m := lm.env.new (option String nil)
@@ -129,13 +129,13 @@ catch_postcondition is
 
   say "using anonymous instance of convenience feature with `try` and `catch`"
 
-  say (ref : handle_post String
-    redef try =>
-      test i32
-    redef catch(s String) =>
-      say "*** failed: $s ***"
-      test u64
-    ).res
+  say (ref : handle_post String is
+        redef try =>
+          test i32
+        redef catch(s String) =>
+          say "*** failed: $s ***"
+          test u64
+      ).res
 
   say ""
 
@@ -197,7 +197,7 @@ catch_postcondition is
     # alternative implementation of catch using anonymous feature
     #
     catch1(code_catch String->T) =>
-      (ref : handle_post T
+      (ref : handle_post T is
         redef try             => code_try()
         redef catch(s String) => code_catch s).res
 

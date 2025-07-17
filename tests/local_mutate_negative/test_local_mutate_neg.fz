@@ -85,9 +85,8 @@ test_local_mutate_neg is
 
       caught_msg(msg) => "*** got '$msg' ***\nok"
 
-      if false       # NYI: BUG #3352: this does not work for the C backend
-        say (panic.try   neg_test3
-                  .catch caught_msg)
+      say (panic.try   neg_test3
+                .catch caught_msg)
 
       say (panic.try   neg_test4
                 .catch caught_msg)

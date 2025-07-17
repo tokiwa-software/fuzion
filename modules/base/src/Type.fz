@@ -43,7 +43,7 @@ module:public Type ref is
   #
   # result has the form "Type of '<name>'", but this might change in the future
   #
-  public redef as_string => "Type of '$name'"
+  public redef as_string String => "Type of '$name'"
 
 
   # convenience prefix operator to create a string from a value.
@@ -54,14 +54,14 @@ module:public Type ref is
   #
   # NYI: Redefinition allows the type feature to be distinguished from its normal counterpart, see #3913
   #
-  public redef prefix $ => Type.this.as_string
+  public redef prefix $ String => Type.this.as_string
 
 
   # There is no dynamic type of a type instance since this would result in an
   # endless hierarchy of types, so dynamic_type is redefined to just return
   # Type.type here.
   #
-  public redef dynamic_type => Type.type
+  public redef dynamic_type Type => Type.type
 
 
   # Is this type assignable to a type parameter with constraint `T`?
@@ -69,33 +69,41 @@ module:public Type ref is
   # The result of this is a compile-time constant that can be used to specialize
   # code for a particular type.
   #
-  #   is_of_integer_type(n T : numeric) => T : integer
-  #   say (is_of_integer_type 1234)    # true
-  #   say (is_of_integer_type 3.14)    # false
+  #     is_of_integer_type(n T : numeric) => T : integer
+  #     say (is_of_integer_type 1234)    # true
+  #     say (is_of_integer_type 3.14)    # false
   #
-  # it is most useful in conjunction preconditions or `if` statements as in
+  # it is most useful in conjunction with preconditions or `if` statements as in
   #
-  #   pair(a,b T) is
-  #     same
-  #       pre T : property.equatable
-  #   =>
-  #     a = b
+  #     pair(a,b T) is
+  #       same
+  #         pre T : property.equatable
+  #       =>
+  #         a = b
+  #
+  #     pair 3 3     .same |> say
+  #     pair "A" "B" .same |> say
   #
   # or
   #
-  #   val(n T) is
+  #     val(n T) is
   #
-  #     # check if T is numeric, if so
-  #     # return true if n > zero,
-  #     # return nil if T is not numeric
-  #     #
-  #     more_than_zero option bool =>
-  #       if T : numeric then
-  #         n > T.zero
-  #       else
-  #         nil
+  #       # check if T is numeric, if so
+  #       # return true if n > zero,
+  #       # return nil if T is not numeric
+  #       #
+  #       more_than_zero option bool =>
+  #         if T : numeric then
+  #           n > 0
+  #         else
+  #           nil
   #
-  public infix : (T type) =>
+  #     val 3.14   .more_than_zero |> say   # "true"
+  #     val -3     .more_than_zero |> say   # "false"
+  #     val "drei" .more_than_zero |> say   # "--nil--"
+  #
+  #
+  public infix : (T type) bool =>
 
     # Fuzion's middle end will replace calls to `Type.infix :` by calls to either
     # `Type.infix_colon_true` or `Type.infix_colon_false` depending on the result.
@@ -123,7 +131,7 @@ module:public Type ref is
 # `type_as_value x`. The middle end then replaces calls to
 # `type_as_value` by `T`'s type clazz.
 #
-public type_as_value(T type) => T
+public type_as_value(T type) Type => T
 
 
 # universe feature to determine the compile-time type of an expression.
@@ -138,29 +146,7 @@ public type_as_value(T type) => T
 #
 # examples:
 #
-#   `type_of "bla"` is `String`
-#   `type_of (panic "***")` will terminate
+#     `type_of "bla"` is `String`
+#     `type_of (panic "***")` will terminate
 #
-public type_of(T type, _ T) => T
-
-
-# universe feature to determine the compile-time type of an expression.
-#
-# This is to be called without an actual type passed to `T`, but `T` should be
-# inferred from the result type of the actual value argument `_`.
-#
-# The function passed as value argument is ignored, it is not called.
-#
-# The result is the result type of the value argument boxed into a ref value and
-# returned as a value of type `Type`.
-#
-# examples:
-#
-#   `type_of_lazy ()->"bla"` is Type of `String`
-#   `type_of_lazy ()->(panic "***")` is Type of `void`.
-#
-# NYI: Fuzion should have better syntax sugar for lazy value arguments such that
-# we do not need the `()->` prefix to create a lambda.  Then, `type_of` could
-# have a lazy argument and `type_of_lazy` could be removed.
-#
-public type_of_lazy(T type, _ ()->T) => T
+public type_of(T type, _ Lazy T) Type => T

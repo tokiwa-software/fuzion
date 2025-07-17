@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -288,7 +290,7 @@ public class CNames extends ANY
     {
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
-      if (o != -1 &&
+      if (o != NO_CLAZZ &&
           _fuir.clazzOuterClazz(o) != FUIR.NO_CLAZZ)
         { // add o a prefix unless cl or o are universe
           clazzMangledName(o, sb);
@@ -503,14 +505,7 @@ public class CNames extends ANY
   CIdent fieldName(int field)
   {
     var m = mangle(_fuir.clazzBaseName(field));
-    var n = _fuir.isJavaRef(field)
-      // NYI: UNDER DEVELOPMENT: Need to check: the special handling for
-      // isJavaRef might be needed for all redefined fields. This should be
-      // checked and fixed in case this is true.
-      //
-      // NYI: CLEANUP: #3927: Remove special handling once #3927 is fixed.
-      ? FIELD_PREFIX + m
-      : FIELD_PREFIX + _fuir.fieldIndex(field) + "_" + m;
+    var n = FIELD_PREFIX + _fuir.clazzId2num(field) + "_" + m;
     return new CIdent(n);
   }
 

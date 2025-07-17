@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue2346.fz:25:17: error 1: Failed to infer actual type parameters
+b(j) => {a j; b j}
+----------------^
+In call to 'b.j', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: ''
+Type inference failed for no type parameters 
+
+one error.

@@ -43,7 +43,9 @@ inheritance_for_value_types is
       _ := set_exit_code 1
 
   ra ref is
-    x, y, z (msg String, expected i32) unit => abstract
+    x (msg String, expected i32) unit => abstract
+    y (msg String, expected i32) unit => abstract
+    z (msg String, expected i32) unit => abstract
 
   a : ra is
     redef x (msg String, expected i32) unit => chck msg expected=1
@@ -86,7 +88,7 @@ inheritance_for_value_types is
   rz b "rz b" 2
   rz c "rz c" 3
   v (a.q "v a.q" 1)
-  // v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
-  // v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
+  # v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
+  # v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
 
   exit

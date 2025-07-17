@@ -30,14 +30,12 @@ public korean : provide is
     #
     # ex.`date 2024 4 12` results in `2024년 12월 4일`.
     #
-    redef date(d i32, m i32, y i32)
+    public redef date(d i32, m i32, y i32) String
     =>
         "{y}년 {m}월 {d}일"
 
     # example: `currency 300000` results in `300000₩`.
     #
-    redef currency(c i32)
+    public redef currency(c i32) String
     =>
         "{c}₩"
-
-

@@ -1,6 +1,6 @@
 
 --CURDIR--/argumentcount_negative.fz:31:11: error 1: Feature declared using modifier 'redef' does not redefine another feature
-    redef call(x i32) i32 => 42                // 1. should flag an error, wrong number of arguments
+    redef call(x i32) i32 => 42                # 1. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics12.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics12.call'.
@@ -8,28 +8,31 @@ Also make sure that the feature to be redefined is visible where it is redefined
 
 
 --CURDIR--/argumentcount_negative.fz:33:11: error 2: Feature declared using modifier 'redef' does not redefine another feature
-    redef call(x, y i32) i32 => 42             // 2. should flag an error, wrong number of arguments
+    redef call(x, y i32) i32 => 42             # 2. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics13.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics13.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics13.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics13'.
 
 
 --CURDIR--/argumentcount_negative.fz:36:11: error 3: Feature declared using modifier 'redef' does not redefine another feature
-    redef call() i32 => 42                     // 3. should flag an error, wrong number of arguments
+    redef call() i32 => 42                     # 3. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics14.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics14.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics14.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics14'.
 
 
 --CURDIR--/argumentcount_negative.fz:40:11: error 4: Feature declared using modifier 'redef' does not redefine another feature
-    redef call(x bool, y bool) i32 => 42       // 4. should flag an error, wrong number of arguments
+    redef call(x bool, y bool) i32 => 42       # 4. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics16.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics16.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics16.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics16'.
 
 
 --CURDIR--/argumentcount_negative.fz:45:11: error 5: Feature declared using modifier 'redef' does not redefine another feature
-    redef call(x i32) is                       // 5. should flag an error, wrong number of arguments
+    redef call(x i32) is                       # 5. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics18.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics18.call'.
@@ -37,28 +40,31 @@ Also make sure that the feature to be redefined is visible where it is redefined
 
 
 --CURDIR--/argumentcount_negative.fz:47:11: error 6: Feature declared using modifier 'redef' does not redefine another feature
-    redef call(x, y i32) is                    // 6. should flag an error, wrong number of arguments
+    redef call(x, y i32) is                    # 6. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics19.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics19.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics19.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics19'.
 
 
 --CURDIR--/argumentcount_negative.fz:50:11: error 7: Feature declared using modifier 'redef' does not redefine another feature
-    redef call() is                            // 7. should flag an error, wrong number of arguments
+    redef call() is                            # 7. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics20.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics20.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics20.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics20'.
 
 
 --CURDIR--/argumentcount_negative.fz:54:11: error 8: Feature declared using modifier 'redef' does not redefine another feature
-    redef call(x, y bool) is                   // 8. should flag an error, wrong number of arguments
+    redef call(x, y bool) is                   # 8. should flag an error, wrong number of arguments
 ----------^^^^
 Redefining feature: 'argumentcount_negative.opengenerics22.call'
 To solve this, check spelling and argument count against the feature you want to redefine or remove 'redef' modifier in the declaration of 'argumentcount_negative.opengenerics22.call'.
+Also make sure that the feature to be redefined is visible where it is redefined. There is the feature 'argumentcount_negative.opengenerics22.call' that could be made public to allow redefinition in 'argumentcount_negative.opengenerics22'.
 
 
 --CURDIR--/argumentcount_negative.fz:56:3: error 9: Incompatible types in assignment
-  _ Function unit          := opengenerics21  // 9. should flag an error: incompatible number of generic arguments
+  _ Function unit          := opengenerics21  # 9. should flag an error: incompatible number of generic arguments
 --^
 assignment to field : 'argumentcount_negative._'
 expected formal type: 'Function unit'
@@ -71,7 +77,7 @@ To solve this, you could change the type of the target 'argumentcount_negative._
 
 
 --CURDIR--/argumentcount_negative.fz:57:3: error 10: Incompatible types in assignment
-  _ Function unit i32 bool := opengenerics21  // 10. should flag an error: incompatible number of generic arguments
+  _ Function unit i32 bool := opengenerics21  # 10. should flag an error: incompatible number of generic arguments
 --^
 assignment to field : 'argumentcount_negative._'
 expected formal type: 'Function unit i32 bool'
@@ -84,7 +90,7 @@ To solve this, you could change the type of the target 'argumentcount_negative._
 
 
 --CURDIR--/argumentcount_negative.fz:59:3: error 11: Incompatible types in assignment
-  _ Function i32 i32   := opengenerics15      // 11. should flag an error: incompatible types due to incompatible generics
+  _ Function i32 i32   := opengenerics15      # 11. should flag an error: incompatible types due to incompatible generics
 --^
 assignment to field : 'argumentcount_negative._'
 expected formal type: 'Function i32 i32'
@@ -97,7 +103,7 @@ To solve this, you could change the type of the target 'argumentcount_negative._
 
 
 --CURDIR--/argumentcount_negative.fz:60:3: error 12: Incompatible types in assignment
-  _ Function bool bool := opengenerics15      // 12. should flag an error: incompatible types due to incompatible generics
+  _ Function bool bool := opengenerics15      # 12. should flag an error: incompatible types due to incompatible generics
 --^
 assignment to field : 'argumentcount_negative._'
 expected formal type: 'Function bool bool'

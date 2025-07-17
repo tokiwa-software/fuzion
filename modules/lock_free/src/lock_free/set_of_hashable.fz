@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion feature container.set_of_hashable
+#
+# -----------------------------------------------------------------------
+
+
+# set_of_hashable -- routine to initialize a set from a Sequence of hashable elements
+#
+# This feature creates an instance of a Set.
+#
+public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K unit) | (Sequence K)) : Set K is
+
+  map lock_free.Map K unit :=
+    match vs
+      vss Sequence => (lock_free.Map K unit).from_entries (vss.map (k -> tuple k unit))
+      vsc lock_free.Map => vsc
+
+
+  # does this set contain the given value?
+  #
+  public redef contains (k K) bool =>
+    map[k].exists
+
+
+  # list representation of values in this set
+  #
+  public redef as_list list K =>
+    map.keys.as_list
+
+
+  # add new element k to this set.
+  #
+  # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
+  #
+  public fixed redef add (k K) Set K =>
+    ss := map.snapshot false
+    ss.put k unit
+    set_of_hashable ss
+
+
+  # remove an element k from the set if it exists.
+  # return the same set if it does not exist.
+  #
+  public remove (k K) Set K =>
+    ss := map.snapshot false
+    _ := ss.remove k
+    set_of_hashable ss

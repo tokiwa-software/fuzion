@@ -31,31 +31,33 @@
 FUZION_OPTIONS ?=
 FUZION = FUZION_DISABLE_ANSI_ESCAPES=true ../../bin/fz -XmaxErrors=-1 $(FUZION_OPTIONS)
 FILE ?= $(NAME).fz
-EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '`
+EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*\#  g"| sort -n | uniq | wc -l | tr -d ' '`
 
 all: jvm c int
 
 int:
 	$(FUZION) -interpreter $(FILE) 2>err.txt || true
 # check if for every unique comment containing "should flag an error" an error is reported for a line with that comment
-	printf "RUN negative test $(FILE) using interpreter backend "; \
-	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
+	@printf "RUN negative test $(FILE) using interpreter backend "; \
+	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*\#  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
 		printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED ***\033[0m\n" && exit 1)
 
 jvm:
 	$(FUZION) -jvm $(FILE) 2>err.txt || true
 # check if for every unique comment containing "should flag an error" an error is reported for a line with that comment
-	printf "RUN negative test $(FILE) using jvm backend "; \
-	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
+	@printf "RUN negative test $(FILE) using jvm backend "; \
+	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*\#  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
 		printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED ***\033[0m\n" && exit 1)
 
 c:
 	($(FUZION) -c -o=testbin $(FILE) && ./testbin) 2>err.txt || true
 # check if for every unique comment containing "should flag an error" an error is reported for a line with that comment
-	printf "RUN negative test $(FILE) using c backend "; \
-	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
+	@printf "RUN negative test $(FILE) using c backend "; \
+	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*\#  g" | sort -n | uniq | wc -l | tr -d ' ' | grep ^$(EXPECTED_ERRORS)$$ > /dev/null && \
 		printf "\033[32;1mPASSED\033[0m.\n" || (printf "\033[31;1m*** FAILED ***\033[0m\n" && exit 1)
 
 show:
-	printf "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | tr -d ' '
-	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq
+	printf "Expected $(EXPECTED_ERRORS) errors, found " && cat err.txt  | grep "should.flag.an.error" | sed "s ^.*\#  g"| sort -n | uniq | wc -l | tr -d ' '
+	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*\#  g"| sort -n | uniq
+
+effect:

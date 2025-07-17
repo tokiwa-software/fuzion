@@ -28,7 +28,7 @@ package dev.flang.ast;
 
 
 /**
- * RefType <description>
+ * RefType
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

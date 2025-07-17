@@ -60,13 +60,13 @@ base32hex_test is
   # ENCODING
 
   say """
-      Testing base32hex encoding..."""
+      Testing base32hex encoding:"""
 
   enc_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
-      (plain, code_expected) := tup
+      plain, code_expected := tup
       code_actual := match plain
                         str String   => encodings.base32hex.encode_to_string str.utf8.as_array
                         arr array u8 => encodings.base32hex.encode_to_string arr
@@ -97,12 +97,12 @@ base32hex_test is
 
   say """
       \n
-      Testing base32hex decoding..."""
+      Testing base32hex decoding:"""
   dec_test(test_vectors array (tuple my_c String), name String) =>
-    for results list (outcome String) := nil, results.concat (out:nil)
+    for results := (Sequence (outcome String)).empty, results.concat (out:nil)
         tup in test_vectors
     do
-      (plain_exp, code) := tup
+      plain_exp, code := tup
       out :=
         match encodings.base32hex.decode code.utf8.as_array
           actual array u8 =>
@@ -137,7 +137,7 @@ base32hex_test is
 
   say """
       \n
-      Test error messages when decoding broken base32hex...
+      Test error messages when decoding broken base32hex:
       """
 
   broken_enc := ["""

@@ -41,7 +41,7 @@ is
 
   # alternative for has using []
   #
-  public index[] (bit u64) => has bit
+  public index[] (bit u64) bool => has bit
 
   # set the given bit
   public put (bit u64) bitset =>
@@ -111,7 +111,7 @@ is
 
   # monoid of bitset with infix ∪ operation.
   #
-  public type.union =>
-    ref : Monoid bitset
-      redef infix ∙ (a, b bitset) => a ∪ b
-      redef e bitset => bitset.empty
+  public type.union Monoid bitset =>
+    ref : Monoid bitset is
+      public redef infix ∙ (a, b bitset) bitset => a ∪ b
+      public redef e bitset => bitset.empty

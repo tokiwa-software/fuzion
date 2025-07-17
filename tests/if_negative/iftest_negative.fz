@@ -35,32 +35,32 @@ iftest_negative is
     say (s + msg)
 
   testIfNonBoolean1 is
-    if "string"       // 1. should flag an error: must be of type bool
-    else if "string"  // 2. should flag an error: must be of type bool
+    if "string"       # 1. should flag an error: must be of type bool
+    else if "string"  # 2. should flag an error: must be of type bool
   _ := testIfNonBoolean1
 
   testIfNonBoolean2 is
-    if 42             // 3. should flag an error: must be of type bool
-    else if 42        // 4. should flag an error: must be of type bool
+    if 42             # 3. should flag an error: must be of type bool
+    else if 42        # 4. should flag an error: must be of type bool
   _ := testIfNonBoolean2
 
-  testIfBoolean1 is { if false  { } else if false  { } }; _ := testIfBoolean1 // ok
-  testIfBoolean2 is { if true   { } else if true   { } }; _ := testIfBoolean2 // ok
-  testIfBoolean5 is { if !false { } else if !false { } }; _ := testIfBoolean5 // ok
-  testIfBoolean6 is { if !true  { } else if !true  { } }; _ := testIfBoolean6 // ok
+  testIfBoolean1 is { if false  { } else if false  { } }; _ := testIfBoolean1 # ok
+  testIfBoolean2 is { if true   { } else if true   { } }; _ := testIfBoolean2 # ok
+  testIfBoolean5 is { if !false { } else if !false { } }; _ := testIfBoolean5 # ok
+  testIfBoolean6 is { if !true  { } else if !true  { } }; _ := testIfBoolean6 # ok
 
   routine_positive (b bool) choice unit String =>
-    if b // ok
+    if b # ok
       "Hello"
 
-  # NYI improve error message
+  # NYI: UNDER DEVELOPMENT: improve error message
   routine_negative (b bool) String =>
-    if b // 5. should flag an error: Incompatible types in assignment
+    if b # 5. should flag an error: Incompatible types in assignment
       "Hello"
 
-  # NYI improve error message
+  # NYI: UNDER DEVELOPMENT: improve error message
   function1 (b bool) String =>
-    if b // 6. should flag an error: Incompatible types in branches of if expression
+    if b # 6. should flag an error: Incompatible types in branches of if expression
       "Hello"
 
   exit

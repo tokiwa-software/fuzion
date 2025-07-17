@@ -26,9 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm.classfile;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 import dev.flang.be.jvm.classfile.ClassFile.StackMapTable;
+
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
@@ -140,8 +142,8 @@ public abstract class Expr extends ByteCode
    * This inherits from Label that defines the start of this try-catch.
    *
    * The main thing that this does when it is part of the code is inform the
-   * `ByteCodeWriter` passed to `code()` about its existance by calling
-   * `by.addExceptionTable`.
+   * {@code ByteCodeWriter} passed to {@code code()} about its existence by calling
+   * {@code by.addExceptionTable}.
    */
   static class TryCatch extends Label
   {
@@ -1205,7 +1207,20 @@ public abstract class Expr extends ByteCode
    */
   public static Expr stringconst(String s)
   {
-    return new LoadConst()
+    return stringconst(s, false);
+  }
+
+
+  /**
+   * Load a java.lang.String constant given by a Java string
+   *
+   * @param needsStackMapFrame output a StackMapFrame, sometimes needed since
+   * code might be unreachable, i.e. after a goto
+   */
+  public static Expr stringconst(String s, boolean needsStackMapFrame)
+  {
+    var label = new Label();
+    var strConst = new LoadConst()
       {
         public String toString() { return "String constant '" + s + "'"; }
         public JavaType type()   { return JAVA_LANG_STRING;              }
@@ -1213,10 +1228,22 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          if (needsStackMapFrame)
+            {
+              // save stack and locals at branch
+              smt.stacks.put(label._posFinal, clone(stack));
+              smt.locals.add(new Pair<>(label._posFinal, locals.clone()));
+
+              // add frames at branch and jump position.
+              smt.stackMapFrames.add(new StackMapFullFrame(smt, label._posFinal));
+            }
+
           stack.push(new VerificationType(type().className(), (cf)->cpEntry(cf).index()));
         }
       };
+    return label.andThen(strConst);
   }
+
 
   /**
    * Load a java.lang.String constant given by utf8 encoded bytes
@@ -1254,6 +1281,27 @@ public abstract class Expr extends ByteCode
         }
       };
   }
+
+
+  /**
+   * Load a java.lang.Class constant given by JavaType
+   */
+  public static Expr classconst(JavaType t)
+  {
+    if (t instanceof ClassType ct)
+      {
+        return classconst(ct);
+      }
+
+    if (CHECKS) check
+      (t.isPrimitive());
+
+    return getstatic(
+      "java/lang/" + t.className().substring(0,1).toUpperCase() + t.className().substring(1).toLowerCase(),
+      "TYPE",
+      ClassFileConstants.JAVA_LANG_CLASS);
+  }
+
 
   /**
    * Load int local variable from slot at given index.
@@ -1714,7 +1762,7 @@ public abstract class Expr extends ByteCode
 
   /**
    * Create conditional branch with one Expr executed if the condition holds
-   * (`pos`) and one if it does not (`neg`).
+   * ({@code pos}) and one if it does not ({@code neg}).
    *
    * @param bc a condition bytecode O_if*
    *
@@ -1725,22 +1773,7 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos, Expr neg)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     Label lStart = new Label();
     Label lEnd   = new Label();
@@ -1869,7 +1902,7 @@ public abstract class Expr extends ByteCode
   /**
    * Create conditional branch with one Expr executed if the condition
    * holds. I.e., this typically results in a branch using the negated condition
-   * that jumps behind the code given as `pos`.
+   * that jumps behind the code given as {@code pos}.
    *
    * @param bc a condition bytecode O_if*
    *
@@ -1878,24 +1911,34 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     return branch(bc, pos, UNIT);
+  }
+
+
+  /**
+   * Is bc an `if` instruction?
+   */
+  private static boolean isIfInstruction(byte bc)
+  {
+    return
+      bc == ClassFileConstants.O_ifeq      ||
+      bc == ClassFileConstants.O_ifne      ||
+      bc == ClassFileConstants.O_iflt      ||
+      bc == ClassFileConstants.O_ifge      ||
+      bc == ClassFileConstants.O_ifgt      ||
+      bc == ClassFileConstants.O_ifle      ||
+      bc == ClassFileConstants.O_if_icmpeq ||
+      bc == ClassFileConstants.O_if_icmpne ||
+      bc == ClassFileConstants.O_if_icmplt ||
+      bc == ClassFileConstants.O_if_icmpge ||
+      bc == ClassFileConstants.O_if_icmpgt ||
+      bc == ClassFileConstants.O_if_icmple ||
+      bc == ClassFileConstants.O_if_acmpeq ||
+      bc == ClassFileConstants.O_if_acmpne ||
+      bc == ClassFileConstants.O_ifnull    ||
+      bc == ClassFileConstants.O_ifnonnull;
   }
 
   public static Expr checkcast(JavaType type)
@@ -1905,7 +1948,7 @@ public abstract class Expr extends ByteCode
 
     return new Expr()
       {
-        // NYI checkcasts where isRedundant=true should
+        // NYI: UNDER DEVELOPMENT: checkcasts where isRedundant=true should
         // not be present in the first place...
         // isRedundant is set to true if the checkcast
         // checks for the exact same type that is on the stack.
@@ -2050,13 +2093,27 @@ public abstract class Expr extends ByteCode
    *
    * @param try_handler label marking the catch code
    *
-   * @param type the exception type that is to be caught, must not be null.
+   * @param exc_type the exception type that is to be caught, must not be null.
    */
   public static Expr tryCatch(Label try_end,
                               Label try_handler,
                               ClassType exc_type)
   {
     return new TryCatch(try_end, try_handler, exc_type);
+  }
+
+
+  /**
+   * For debugging only.
+   *
+   * Add a comment to byte code containing the stack trace.
+   *
+   * Useful to find out how an expression was inserted into the byte code.
+   */
+  public static Expr trace()
+  {
+    var st = Arrays.toString(Thread.currentThread().getStackTrace()).replace(',', '\n');
+    return Expr.commentAlways(st);
   }
 
 
@@ -2070,7 +2127,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Create a sequence of two Expr: `this` followed by `s`.
+   * Create a sequence of two Expr: {@code this} followed by {@code s}.
    *
    * @param s another Expr that is to be execute after this.
    */
@@ -2144,7 +2201,7 @@ public abstract class Expr extends ByteCode
 
   /**
    * Create a sequence of this Expr, followed by a statement and a value from a
-   * Pair<> of value and statement.
+   * {@code Pair<>} of value and statement.
    *
    * @param p a pair of value and statement, both encoded as expr. value may be
    * null to indicate the statements do not return.

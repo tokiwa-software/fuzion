@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.Generic;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
@@ -262,7 +262,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * The universe
    */
-  private AbstractFeature universe()
+  public AbstractFeature universe()
   {
     return _universe;
   }
@@ -297,7 +297,7 @@ public class LibraryModule extends Module implements MirModule
       {
         var d = main == null
           ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0), null);
+          : lookupFeature(universe(), FeatureName.get(main, 0));
 
         if (CHECKS) check
           (d != null);
@@ -458,13 +458,13 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param offset the offset of the Generic
    */
-  Generic genericArgument(int offset)
+  AbstractFeature genericArgument(int offset)
   {
     var tp = feature(offset);
     var o = tp.outer();
-    for (var g : o.generics().list)
+    for (var g : o.typeArguments())
       {
-        if (g.typeParameter() == tp)
+        if (g == tp)
           {
             return g;
           }
@@ -484,11 +484,7 @@ public class LibraryModule extends Module implements MirModule
     if (result == null)
       {
         var k = typeKind(at);
-        if (k == -4)
-          {
-            return Types.t_ADDRESS;
-          }
-        else if (k == -3)
+        if (k == -3)
           {
             return universe().selfType();
           }
@@ -524,9 +520,10 @@ public class LibraryModule extends Module implements MirModule
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, feature,
-                                    typeValRefOrThis(at),
-                                    generics, outer);
+            var tk = TypeKind.fromInt(typeValRefOrThis(at));
+            result = tk == TypeKind.ThisType
+              ? new ThisType(this, at, feature)
+              : new NormalType(this, at, feature, tk, generics, outer);
           }
         _libraryTypes.put(at, result);
       }
@@ -566,7 +563,7 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.8+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.8+|true      | 1      | byte[4]       | MIR_FILE_MAGIC
 
               | 1      | Name          | module name
 
@@ -591,7 +588,7 @@ Module File
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
+   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -1301,7 +1298,6 @@ Type
    |cond.     | repeat | type          | what
 
    | true     | 1      | int           | the kind of this type tk
-   | tk==-4   | 1      | unit          | ADDRESS
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
@@ -1318,8 +1314,6 @@ Type
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | unit          | ADDRESS                                       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-3 | 1      | unit          | type of universe                              |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -2008,7 +2002,7 @@ Match
    |cond.     | repeat | type          | what
 
 .2+| true     | 1      | int           | number of cases
-   |          | n      | Case          | cases
+              | n      | Case          | cases
 |====
 
 --asciidoc--
@@ -2382,7 +2376,7 @@ SourceFile
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of(sourceFileName(at)), ba);
+            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
             _sourceFiles.set(i, sf);
           }
         return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
@@ -2465,7 +2459,7 @@ SourceFile
   {
     // NYI: CLEANUP: library-module should/could know its source dirs.
     return Path.of(Version.REPO_PATH)
-      .resolve(name().equals("base") ? "lib" : "modules/" + name() + "/src")
+      .resolve("modules").resolve(name()).resolve("src")
       .toString();
   }
 
@@ -2474,6 +2468,18 @@ SourceFile
   public ByteBuffer data(String name)
   {
     throw new UnsupportedOperationException("Unimplemented method 'data'");
+  }
+
+
+  /**
+   * Is this module the same as the provided one or does this module depend on the provided one?
+   *
+   * @param lm the LibraryModule against which this module should be checked
+   * @return true iff they are the same or this module depends on the provided one
+   */
+  public boolean sameOrDependent(LibraryModule lm)
+  {
+    return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
   }
 
 }

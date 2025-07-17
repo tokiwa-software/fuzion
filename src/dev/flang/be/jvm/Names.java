@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -224,6 +226,10 @@ public class Names extends ANY implements ClassFileConstants
   static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYLAYOUT = new ClassType("java/lang/foreign/MemoryLayout");
   static final ClassType CT_JAVA_LANG_INVOKE_METHODHANDLE = new ClassType(Names.JAVA_LANG_INVOKE_METHODHANDLE);
   static final ClassType CT_JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR = new ClassType(Names.JAVA_LANG_FOREIGN_FUNCTIONDESCRIPTOR);
+  static final ClassType CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT = new ClassType("java/lang/foreign/MemorySegment");
+  static final ClassType CT_JAVA_LANG_FOREIGN_ADDRESS_LAYOUT = new ClassType("java/lang/foreign/AddressLayout");
+  static final String    JAVA_LANG_FOREIGN_STRUCT_LAYOUT = "java/lang/foreign/StructLayout";
+  static final ClassType CT_JAVA_LANG_FOREIGN_STRUCT_LAYOUT = new ClassType(JAVA_LANG_FOREIGN_STRUCT_LAYOUT);
 
 
 
@@ -255,10 +261,7 @@ public class Names extends ANY implements ClassFileConstants
     {
       String rawName(int field)
       {
-        var index = _fuir.isJavaRef(field)
-          ? ""
-          : _fuir.fieldIndex(field) + "_";
-        return _prefix + index + baseName(field);
+        return _prefix + _fuir.clazzId2num(field) + "_" + baseName(field);
       }
     };
 
@@ -342,8 +345,8 @@ public class Names extends ANY implements ClassFileConstants
     {
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
-      if (o != -1 &&
-          _fuir.clazzOuterClazz(o) != -1)
+      if (o != NO_CLAZZ &&
+          _fuir.clazzOuterClazz(o) != NO_CLAZZ)
         { // add a prefix unless cl or o are universe
           clazzMangledName(o, sb);
           sep = "__";
@@ -652,7 +655,7 @@ public class Names extends ANY implements ClassFileConstants
     if (PRECONDITIONS) check
       (// NYI: CLEANUP: _types not available here:  _types.choiceKind(cc) == Types.ChoiceImplementations.general,
        tagNum >= 0,
-       tagNum < _fuir.clazzNumChoices(cc));
+       tagNum < _fuir.clazzChoiceCount(cc));
 
     var tc = _fuir.clazzChoice(cc, tagNum);
     return _fuir.clazzIsRef(tc) ? CHOICE_REF_ENTRY_NAME

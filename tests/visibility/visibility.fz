@@ -261,10 +261,12 @@ visibility is
   visi6
 
   visi7 =>
+    e  := ()->"x is "+x1+""   # ok, usage in a lambda before declaration is ok
     x0 := 2;            f () -> String := () -> "x is "+x0+""
     x1 := x0*x0*x0*x0;  g () -> String := () -> "x is "+x1+""
     x2 := x1.as_string; h () -> String := () -> "x is "+x2+""
     x3 := x2 * 5;       i () -> String := () -> "x is "+x3+""
+    chck (e()      = "x is 16") "x is 16"
     chck (f.call() = "x is 2") "x is 2"
     chck (g.call() = "x is 16") "x is 16"
     chck (h.call() = "x is 16") "x is 16"
@@ -296,11 +298,11 @@ visibility is
   visi9 =>
     a i32 => 3
     for
-      ix1 := a, ix1 + a                  // can make unqualified call to a, ix1 ..
-      ix2 := 3 * ix1 + a, a + ix2 + ix1  // can make unqualified call to a, ix1, ix2 ..
-      it1 in ix1..(ix2+a)                // can make unqualified call to a, ix1, ix2 ..
-      it2 in it1..2*it1                  // can make unqualified call to a, ix1, ix2, it1 ..
-      ix3 := a + ix1 + ix2 + it1 + it2   // can make unqualified call to a, ix1, ix2, it1, it2 ..
+      ix1 := a, ix1 + a                  # can make unqualified call to a, ix1 ..
+      ix2 := 3 * ix1 + a, a + ix2 + ix1  # can make unqualified call to a, ix1, ix2 ..
+      it1 in ix1..(ix2+a)                # can make unqualified call to a, ix1, ix2 ..
+      it2 in it1..2*it1                  # can make unqualified call to a, ix1, ix2, it1 ..
+      ix3 := a + ix1 + ix2 + it1 + it2   # can make unqualified call to a, ix1, ix2, it1, it2 ..
     while a + ix1 + ix2 + it1 + it2 + ix3 < 10000
       b => 6
       q := a + ix1 + ix2 + it1 + it2 + ix3 + b
@@ -318,9 +320,9 @@ visibility is
 
     red(color rgb | rgba | cmyk) =>
       match color
-        v rgb  => (r,_,_  ) := v; r
-        v rgba => (R,_,_,A) := v; R*A/255
-        v cmyk => (c,_,_,k) := v; (255-c)*(255-k)/255
+        v rgb  => r,_,_   := v; r
+        v rgba => R,_,_,A := v; R*A/255
+        v cmyk => c,_,_,k := v; (255-c)*(255-k)/255
 
     white   := rgb 255 255 255
     magenta := cmyk 0 255 0 0

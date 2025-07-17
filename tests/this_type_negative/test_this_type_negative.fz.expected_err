@@ -57,30 +57,30 @@ To solve this you could:
 
 
 --CURDIR--/test_this_type_negative.fz:34:5: error 5: Incompatible types in assignment
-    _ a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
+    _ a     := a.this  #  2. should flag an error: a.this not compatible to 'a'
 ----^
 assignment to field : 'test_this_type_negative.a._'
 expected formal type: 'test_this_type_negative.this.a'
-actual type found   : 'test_this_type_negative.this.a.this'
+actual type found   : 'test_this_type_negative.a.this'
 assignable to       : 'test_this_type_negative.this.ref a'
 for value assigned  : 'a.this'
 To solve this you could:
   • make  'test_this_type_negative.this.a' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'test_this_type_negative.a._' to 'test_this_type_negative.this.a.this', or
+  • change the type of the target 'test_this_type_negative.a._' to 'test_this_type_negative.a.this', or
   • convert the type of the assigned value to 'test_this_type_negative.this.a'.
 
 
 --CURDIR--/test_this_type_negative.fz:31:7: error 6: Incompatible types in assignment
-      _ a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
+      _ a     := a.this  #  1. should flag an error: a.this not compatible to 'a'
 ------^
 assignment to field : 'test_this_type_negative.a.x._'
 expected formal type: 'test_this_type_negative.this.a'
-actual type found   : 'test_this_type_negative.this.a.this'
+actual type found   : 'test_this_type_negative.a.this'
 assignable to       : 'test_this_type_negative.this.ref a'
 for value assigned  : 'a.this'
 To solve this you could:
   • make  'test_this_type_negative.this.a' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'test_this_type_negative.a.x._' to 'test_this_type_negative.this.a.this', or
+  • change the type of the target 'test_this_type_negative.a.x._' to 'test_this_type_negative.a.this', or
   • convert the type of the assigned value to 'test_this_type_negative.this.a'.
 
 6 errors.

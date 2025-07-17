@@ -59,7 +59,7 @@ public class Case extends AbstractCase
   /**
    * Field with type from this.type created in case fieldName != null.
    */
-  final Feature _field;
+  private final Feature _field;
   public AbstractFeature field() { return _field; }
 
 
@@ -67,7 +67,7 @@ public class Case extends AbstractCase
    * List of types to be matched against. null if we match against type or match
    * everything.
    */
-  List<AbstractType> _types;
+  private List<AbstractType> _types;
   public List<AbstractType> types() { return _types; }
 
 
@@ -199,9 +199,10 @@ public class Case extends AbstractCase
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
+  @Override
+  public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {
-    v.actionBefore(this);
+    v.actionBefore(this, m);
     if (_field != null)
       {
         _field.visit(v, outer);
@@ -215,7 +216,7 @@ public class Case extends AbstractCase
           }
       }
     _code = _code.visit(v, outer);
-    v.actionAfter(this);
+    v.actionAfter(this, m);
   }
 
 
@@ -299,13 +300,13 @@ public class Case extends AbstractCase
    * that have already been found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+  private AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Context context, SourcePosition[] matched)
   {
     var original_t = t;
     List<AbstractType> matches = new List<>();
     int i = 0;
     t = t.resolve(res, context);
-    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.feature().generics() != FormalGenerics.NONE;
+    var inferGenerics = !t.isGenericArgument() && (t.isThisType() || t.generics().isEmpty()) && !t.feature().typeArguments().isEmpty();
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());
@@ -369,7 +370,7 @@ public class Case extends AbstractCase
         for (var t : _types)
           {
             sb.append(first ? "" : ", ");
-            sb.append(t.toString());
+            sb.append(t.toString(true));
             first = false;
           }
       }

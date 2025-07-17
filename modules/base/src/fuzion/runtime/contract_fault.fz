@@ -24,12 +24,12 @@
 # -----------------------------------------------------------------------
 
 # contract_fault -- effect that terminates a computation due to a failed
-# condition in a check statement
+# condition in a pre, post or check statement
 #
 public contract_fault (
   # the handler this effect uses to fail
   p ((String,String)) -> void
-  ) : eff.fallible (String,String) /* NYI: BUG: this type parameter is required, type inference results in NullPointException */ p
+  ) : eff.fallible p
 is
 
 
@@ -41,12 +41,12 @@ is
 
   # create an instance of `contract_fault` with the given error handler.
   #
-  public fixed redef type.new(h ((String,String)) -> void) => fuzion.runtime.contract_fault h
+  public fixed redef type.new(h ((String,String)) -> void) fuzion.runtime.contract_fault => fuzion.runtime.contract_fault h
 
 
 # contract_fault with no argument returns contract_fault.env, the currently installed
 # runtime contract_fault handler.
 #
-public contract_fault =>
+public contract_fault contract_fault =>
   contract_fault.install_default
   contract_fault.env

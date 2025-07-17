@@ -41,13 +41,15 @@ env:
   PRECONDITIONS: true
   POSTCONDITIONS: true
   FUZION_REPRODUCIBLE_BUILD: true
+  dev_flang_tools_serializeFUIR: true
+
 
 jobs:
   run_tests:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -55,18 +57,24 @@ jobs:
       - name: Set environment variables
         run: |
           echo "CPATH=/opt/homebrew/include:$CPATH" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=/usr/lib:/opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/:$LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: install dependencies
         run: |
-          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils
+          brew install bdw-gc gnu-sed make asciidoc asciidoctor pcre antlr coreutils sqlite shellcheck llvm wolfssl
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
+
+      - name: xcode-select # to have libclang available
+        run: sudo xcode-select -s /Library/Developer/CommandLineTools
 
       - name: sed version
         run: sed --version
 
       - name: make version
         run: make --version
+
+      - name: check shell scripts
+        run: make shellcheck
 
       - name: build java code
         run: make javac
@@ -76,6 +84,9 @@ jobs:
 
       - name: build docs
         run: make doc
+
+      - name: compile language server
+        run: make lsp/compile
 
       - name: run tests
         run: make run_tests_parallel

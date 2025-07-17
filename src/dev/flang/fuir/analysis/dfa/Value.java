@@ -27,9 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis.dfa;
 
 import static dev.flang.ir.IR.NO_SITE;
+import static dev.flang.ir.IR.NO_CLAZZ;
 
-import dev.flang.fuir.FUIR;
-
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.Errors;
 import dev.flang.util.IntMap;
 
@@ -66,17 +66,18 @@ public class Value extends Val
        */
       public int compare(Value a, Value b)
       {
-
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
+        else if (a instanceof SysArray     sa && b instanceof SysArray     sb) { return sa.compareTo(this, sb);     }
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
-        else if (a._id >= 0 && b._id >= 0) { return Integer.compare(a._id, b._id); }
+        else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
+        else if (a._id >= 0 && b._id >= 0 ) { return Integer.compare(a._id, b._id); }
         else
           {
-            throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass());
+            throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass()+ System.lineSeparator() + a + System.lineSeparator() + b);
           }
       }
   }
@@ -133,7 +134,7 @@ public class Value extends Val
   /**
    * The unit value 'unit', '{}'
    */
-  static Value UNIT = new Value(-1)
+  static Value UNIT = new Value(NO_CLAZZ)
     {
       /**
        * Add v to the set of values of given field within this instance.
@@ -181,7 +182,7 @@ public class Value extends Val
   /**
    * undefined value, used for not initialized fields.
    */
-  static Value UNDEFINED = new Value(-1)
+  static Value UNDEFINED = new Value(NO_CLAZZ)
     {
       public String toString()
       {
@@ -193,23 +194,31 @@ public class Value extends Val
   /**
    * used for jref field of Java_Objects
    */
-  static Value UNKNOWN_JAVA_REF = new Value(-1)
+  static Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
     {
+
+      /**
+       * Add v to the set of values of given field within this instance.
+       */
+      @Override
+      public void setField(DFA dfa, int field, Value v)
+      {
+        throw new Error("setField");
+      }
+
+      /**
+       * Get set of values of given field within this value.  This works for unit
+       * type results even if this is not an instance (but a unit type itself).
+       */
+      @Override
+      public Val readField(DFA dfa, int field, int site, Context why)
+      {
+        throw new Error("readField");
+      }
+
       public String toString()
       {
         return "UNKNOWN_JAVA_REF";
-      }
-    };
-
-
-  /**
-   * used for ADDRESS
-   */
-  static Value ADDRESS = new Value(-1)
-    {
-      public String toString()
-      {
-        return "ADDRESS";
       }
     };
 
@@ -220,7 +229,7 @@ public class Value extends Val
   /**
    * The clazz this is an instance of.
    */
-  int _clazz;
+  final int _clazz;
 
 
   /**
@@ -236,7 +245,7 @@ public class Value extends Val
 
 
   /**
-   * Uniquew id for this value when used as an effect instance in an environment.
+   * Unique id for this value when used as an effect instance in an environment.
    */
   int _envId = -1;
 
@@ -321,8 +330,8 @@ public class Value extends Val
       // `fuzion.java.Array`. These intrinsics currently do not set the outer
       // refs correctly, so we handle them here for now by just assuming they
       // are unit type values:
-      dfa._fuir.clazzIsOuterRef(field) && (rt == dfa._fuir.clazz(FUIR.SpecialClazzes.c_java  ) ||
-                                           rt == dfa._fuir.clazz(FUIR.SpecialClazzes.c_fuzion)    )
+      dfa._fuir.clazzIsOuterRef(field) && (rt == dfa._fuir.clazz(SpecialClazzes.c_java  ) ||
+                                           rt == dfa._fuir.clazz(SpecialClazzes.c_fuzion)    )
       ? Value.UNIT
       : readFieldFromInstance(dfa, field, site, why);
     return res;
@@ -376,7 +385,7 @@ public class Value extends Val
    * @param v the value this value should be joined with.
    *
    * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   public Value join(DFA dfa, Value v, int clazz)
   {
@@ -408,7 +417,7 @@ public class Value extends Val
    * @param v the value this value should be joined with.
    *
    * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   public Value joinInstances(DFA dfa, Value v, int clazz)
   {

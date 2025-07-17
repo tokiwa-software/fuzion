@@ -26,42 +26,40 @@
 #
 # To start this webserver, use:
 #
-#   fz webserver_native.fz
+#     fz webserver_native.fz
 #
 # Alternatively, compile it using the C backend and run the resulting
 # executable:
 #
-#   fz -c webserver_native.fz
-#   ./webserver
+#     fz -c webserver_native.fz
+#     ./webserver
 #
 webserver_native is
 
-  # just to install the default mutate effect
+  # NYI: CLEANUP: just to install the default mutate effect
   _ := mut
 
   port u16 := 8080
-  match net.server.start net.family.ipv6 net.protocol.tcp port
-    e error => say e
-    unit =>
-      say "started server on port: $port"
-      say "you may now send a request, e.g.:"
-      say "echo 'Hello' | curl 'http://[::1]:8080'"
+  say <| net.server.start net.family.ipv6 net.protocol.tcp port ()->
+    say "started server on port: $port"
+    say "you may now send a request, e.g.:"
+    say "echo 'Hello' | curl 'http://[::1]:8080'"
+
+    for n in 1..
+    while (accept_connection n).ok
 
 
-  # accept connections while server is active
-  #
-  for n in 1..
-  while net.server.is_active
-    _ := net.server.accept.bind unit c->
+  accept_connection(n i32) =>
+    net.server.env.accept.bind c->
       _ := c.with unit mutate ()->
         say "accepted connection:"
 
-        match io.buffered.read_line mutate
+        match (io.buffered mutate).read_line
           str String => say str
           * =>
 
         send200(data String) =>
-          _ := io.buffered.writer.env
+          _ := (io.buffered mutate).writer.env
             .write """
               HTTP/1.1 200 OK
               Connection: close
@@ -71,10 +69,8 @@ webserver_native is
 
               {data}
             """.utf8.as_array
-          io.buffered.writer.env.flush
+          (io.buffered mutate).writer.env.flush
 
         _ := send200 "<html>Hello Fuzion $n!</html>"
 
         say "closed connection"
-
-

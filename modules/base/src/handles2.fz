@@ -27,11 +27,11 @@
 # cells.
 #
 # handles is a state monad.  It provides features to create several
-# handles that refer to modifiable value and features to 'get', 'put' or
-# 'update' this value.
+# handles that refer to modifiable value and features to `get`, `put` or
+# `update` this value.
 #
 # For performance, this implementation uses mutable state. It can consequently
-# only be used as a one-way monad.
+# only be used as an effect (oneway_monad).
 #
 private:public handles2(
   T, X type,
@@ -39,7 +39,7 @@ private:public handles2(
   # the inner value of this monad
   public v X,
 
-  last_opt option (handle2_0 T),
+  last_opt option (handle2_id T),
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
@@ -48,7 +48,7 @@ is
 
   # create a new instance with one additional handle
   #
-  # the new handle can be accessed by 'result.last'
+  # the new handle can be accessed by `result.last`
   #
   public new (
     # initial value referred to by the new handle
@@ -57,17 +57,17 @@ is
   post
     debug: result.has_last
   =>
-    handles2 v (handle2_0 w) mode.next
+    handles2 v (handle2_id w) mode.next
 
 
-  # has one element been created using 'new'?
+  # has one element been created using `new`?
   #
-  public has_last => last_opt??
+  public has_last bool => last_opt??
 
 
-  # return the last handle that was created by 'new'
+  # return the last handle that was created by `new`
   #
-  public last
+  public last handle2_id T
     pre
       debug: has_last
   =>
@@ -81,7 +81,7 @@ is
   public create (
     # initial value referred to by the new handle
     w T
-    )
+    ) handle2_id T
   =>
     (new w).last
 
@@ -89,9 +89,9 @@ is
   # get the value referred to by a given handle
   #
   public get (
-    # a handle created by 'new'
-    h handle2_0 T
-    )
+    # a handle created by `new`
+    h handle2_id T
+    ) T
   =>
     h.get
 
@@ -99,11 +99,11 @@ is
   # create a new instance with new value referred to by a given handle
   #
   public put (
-    # a handle created by 'new'
-    h handle2_0 T,
+    # a handle created by `new`
+    h handle2_id T,
 
-    # the new value to be stored with 'h'
-    w T)
+    # the new value to be stored with `h`
+    w T) handles2 T X
   =>
     h.put w
     handles2 v last_opt mode.next
@@ -113,23 +113,23 @@ is
   # updated.
   #
   public update (
-    # a handle created by 'new'
-    h handle2_0 T,
+    # a handle created by `new`
+    h handle2_id T,
 
     # function calculating the new value from the old value
     f T->T
-    )
+    ) handles2 T X
   =>
     h.put (f h.get)
     handles2 v last_opt mode.next
 
 
-  public redef infix >>= (f X -> handles2 T X) => bind X f
+  public redef infix >>= (f X -> handles2 T X) handles2 T X => bind X f
 
   public bind(B type, f X -> handles2 T B) handles2 T B =>
     handles2 (f v).v last_opt oneway_monad_mode.plain
 
-  public return(B type, w B) => handles2 T B w last_opt oneway_monad_mode.plain
+  public return(B type, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
@@ -148,9 +148,9 @@ handles2(T type) =>
   (handles2 T unit).env
 
 
-# handle value created by 'handles2.new'
+# handle value created by `handles2.new`
 #
-private:public handle2_0(
+private:public handle2_id(
   T type,
 
   # get value stored in this handle
@@ -161,13 +161,13 @@ is
 
   # set value stored in this handle to new_val
   #
-  public put(new_val T) =>
+  public put(new_val T) unit =>
     set get := new_val
     (handles2 T unit).env.replace
 
   # update value stored in this handle using f.
   #
-  public update(f T->T) =>
+  public update(f T->T) T =>
     set get := f get
     (handles2 T unit).env.replace
     get
@@ -184,4 +184,4 @@ handles2_type(T type) is
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-public handle2(T type, v T) => (handles2 T).create v
+public handle2(T type, v T) handle2_id T => (handles2 T).create v

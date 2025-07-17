@@ -29,13 +29,13 @@
 # from numeric plus a division remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-module:public integer : numeric is
+public integer : numeric is
 
 
   # preconditions used in 'numeric' for basic operations: true if the
   # operation is permitted for the given values
-  public redef infix /! (other integer.this) => other != integer.this.zero
-  public redef infix %! (other integer.this) => other != integer.this.zero
+  public redef infix /! (other integer.this) bool => other != integer.this.zero
+  public redef infix %! (other integer.this) bool => other != integer.this.zero
 
 
   # test divisibility by other
@@ -74,7 +74,7 @@ module:public integer : numeric is
   # check if this type of integer is bounded
   #
   # returns false unless redefined by a specific implementation of integer
-  public is_bounded => false
+  public is_bounded bool => false
 
   # greatest common divisor of this and b
   #
@@ -91,10 +91,10 @@ module:public integer : numeric is
 
 
   # create a fraction
-  public infix /-/ (other integer.this) => (num.fraction integer.this other).reduce
+  public infix /-/ (other integer.this) num.fraction integer.this => (num.fraction integer.this other).reduce
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
-  public infix ⁄ (other integer.this) => integer.this /-/ other
+  public infix ⁄ (other integer.this) num.fraction integer.this => integer.this /-/ other
 
 
   # convert this to a decimal number in a string.  If negative, add "-" as
@@ -148,7 +148,7 @@ module:public integer : numeric is
     n := integer.this.as_string base
 
     # split n into sign and digits
-    (sgn, digits) := if (integer.this.sign < 0) ($"-", String.from_bytes (n.utf8.drop 1)) else ("", n)
+    sgn, digits := if (integer.this.sign < 0) ($"-", String.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
     zeros := "0" * (max 0 (len - n.byte_length))
@@ -159,43 +159,44 @@ module:public integer : numeric is
 
   # create binary representation
   #
-  public bin => integer.this.as_string 2
+  public bin String => integer.this.as_string 2
 
 
   # create binary representation with given number of digits.
   #
-  public bin(len i32) => integer.this.as_string len 2
+  public bin(len i32) String => integer.this.as_string len 2
 
 
   # create octal representation
   #
-  public oct => integer.this.as_string 8
+  public oct String => integer.this.as_string 8
 
 
   # create octal representation with given number of digits.
   #
-  public oct(len i32) => integer.this.as_string len 8
+  public oct(len i32) String => integer.this.as_string len 8
 
 
   # create decimal representation
   #
-  public dec => integer.this.as_string 10
+  public dec String => integer.this.as_string 10
 
 
   # create decimal representation with given number of digits.
   #
-  public dec(len i32) => integer.this.as_string len 10
+  public dec(len i32) String => integer.this.as_string len 10
 
 
   # create hexadecimal representation
   #
-  public hex => integer.this.as_string 16
+  public hex String => integer.this.as_string 16
 
 
   # create hexadecimal representation with given number of digits.
   #
-  public hex(len i32) => integer.this.as_string len 16
+  public hex(len i32) String=> integer.this.as_string len 16
 
 
   # the least significant byte of this integer
-  module low8bits u8 => abstract
+  #
+  public low8bits u8 => abstract

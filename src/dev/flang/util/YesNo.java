@@ -38,7 +38,32 @@ public enum YesNo
 
   yes,
   no,
-  dontKnow
+  dontKnow;
+
+  public boolean yes()
+  {
+    return this == YesNo.yes;
+  }
+
+  public boolean no()
+  {
+    return this == YesNo.no;
+  }
+
+  public boolean yesOrDontKnow()
+  {
+    return this != YesNo.no;
+  }
+
+  public boolean noOrDontKnow()
+  {
+    return this != YesNo.yes;
+  }
+
+  public static YesNo fromBool(boolean b)
+  {
+    return b ? YesNo.yes : YesNo.no;
+  }
 
 }
 

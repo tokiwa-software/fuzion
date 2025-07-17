@@ -25,7 +25,9 @@
 
 # Set -- an abstract set of values
 #
-public Set(public E type : property.equatable) ref : Sequence E is
+public Set(public E type : property.equatable) ref : Sequence E,
+                                                     property.equatable
+is
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -45,6 +47,13 @@ public Set(public E type : property.equatable) ref : Sequence E is
   public redef contains (e E) bool => abstract
 
 
+  # return a new Set that contains
+  # all elements in this Set and `k`.
+  #
+  public add (k E) Set E =>
+    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
+
+
   # list representation of values in this set
   #
   public redef as_list list E => abstract
@@ -52,43 +61,43 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # create a new Set from a sequence of elements
   #
-  public type.new (s Sequence E) Set.this => abstract
+  public type.new (s Sequence E) container.Set E => abstract
 
 
   # create a union of these two Sets
   #
-  public union(other container.Set E) Set E =>
+  public union(other container.Set E) container.Set E =>
     Set.this.new (Set.this ++ other)
 
 
   # infix variant for Set.union
   #
-  public infix ∪ (other container.Set E) =>
+  public infix ∪ (other container.Set E) container.Set E =>
     Set.this.union other
 
 
   # create an intersection of these two Sets
   #
-  public intersection(other container.Set E) Set E =>
+  public intersection(other container.Set E) container.Set E =>
     Set.this.new (Set.this ++ other).filter(el -> Set.this.contains el && other.contains el)
 
 
   # infix variant for Set.intersection
   #
-  public infix ∩ (other container.Set E) =>
+  public infix ∩ (other container.Set E) container.Set E =>
     Set.this.intersection other
 
 
   # this Set without all elements in other
   #
-  public difference(other container.Set E) Set E =>
+  public difference(other container.Set E) container.Set E =>
     Set.this.new filter(el -> !other.contains el)
 
 
   # infix variant for Set.difference
   # Note: the operator is NOT a backslash, but the unicode character U+2216 (SET MINUS)
   #
-  public infix ∖ (other container.Set E) =>
+  public infix ∖ (other container.Set E) container.Set E =>
     Set.this.difference other
 
 
@@ -97,7 +106,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # true, iff other contains all
   # elements that this Set contains.
   #
-  public is_subset_of(other container.Set E) =>
+  public is_subset_of(other container.Set E) bool =>
     Set.this ∀ other.contains
 
 
@@ -105,35 +114,28 @@ public Set(public E type : property.equatable) ref : Sequence E is
   # true, iff this Set contains all
   # elements that other contains.
   #
-  public is_superset_of(other container.Set E) =>
+  public is_superset_of(other container.Set E) bool =>
     other ∀ contains
 
 
-
-  # add new element k to this set.
-  #
-  public add (k E) Set E =>
-    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
-
-
-  public redef as_string =>
+  public redef as_string String =>
     if is_empty
       "∅"
     else
       ("\{"
-       + (as_list.map x->x.as_string).fold(String.concat ";")
+       + (as_list.map (.as_string)).fold(String.concat ";")
        + "}")
 
 
   # equality
   #
-  # NYI: remove this, since we inherit from Sequence?
+  # NYI: BUG: #4676 this could be
+  # public redef type.equality(a, b Set.this)
   #
-  public fixed redef type.equality(a, b container.Set E)
-  # NYI: BUG: #3888
-  # pre else
-  #     debug: a.finite
-  #     debug: b.finite
+  public fixed redef type.equality(a, b container.Set E) bool
+  pre else
+    debug: a.finite != trit.no
+    debug: b.finite != trit.no
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val
@@ -141,8 +143,7 @@ public Set(public E type : property.equatable) ref : Sequence E is
 
   # monoid of Set with infix ∪ operation.
   #
-  # NYI: BUG: name clash with union
-  public type.unionize =>
-    ref : Monoid (container.Set E)
-      redef infix ∙ (a, b container.Set E) => a ∪ b
-      redef e => (container.Set E).new []
+  public type.union Monoid (container.Set E) =>
+    ref : Monoid (container.Set E) is
+      public redef infix ∙ (a, b container.Set E) container.Set E => a ∪ b
+      public redef e container.Set E => (container.Set E).new []

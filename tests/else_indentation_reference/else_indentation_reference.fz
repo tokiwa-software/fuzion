@@ -1,0 +1,194 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test else_indentation_reference
+#
+# -----------------------------------------------------------------------
+
+c0  := false
+c1 := false
+c2 := false
+
+
+# POSITIVE
+
+positive1 =>
+  if c0
+  then "true"
+  else "false"
+
+positive2 =>
+  if c0 then "-true-" else "-false-"
+
+positive3 =>
+  if c0 then "-true-"
+  else "-false-"
+
+positive4 =>
+  if c0 then "-true-"
+        else "-false-"
+
+positive5 =>
+  if c0
+    "-true-"
+  else
+    "-false-"
+
+positive6 =>
+  if c0 then "-true-"
+        else if c1 then "-false::true-"
+             else       "-false::false-"
+
+positive7 =>
+  if c0 then "-true-"
+        else if c1 then "-false::true-"
+                   else "-false::false-"
+
+positive8 =>
+  if c0 then "-true-"
+  else if c1 then "-false::true-"
+  else       "-false::false-"
+
+positive9 =>
+  if c0 then "-true-"
+  else if c1 then "-false::true-"
+       else       "-false::false-"
+
+positive10 =>
+  if c0 then "-true-"
+  else if c1 then "-false::true-"
+             else "-false::false-"
+
+positive11 =>
+  if c0 then "-true-"
+        else if c1 then "-false::true-"
+        else            "-false::false-"
+
+positive12 =>
+  if c0 then "-true-"
+        else if c1 then "-false::true-"
+             else       "-false::false-"
+
+positive13 =>
+  if c0 then "-true-"
+        else if c1 then "-false::true-"
+                   else "-false::false-"
+
+positive14 =>
+  if c0
+  then "-true-"
+  else if c1
+  then "-false::true-"
+  else  "-false::false-"
+
+positive15 =>
+  if c0 then "-true-"
+  else
+    if c1 then "-false::true-"
+    else       "-false::false-"
+
+positive16 =>
+  if c0 then "-true-"
+  else
+    if c1 then "-false::true-"
+          else "-false::false-"
+
+positive17 =>
+  if
+      c0 then "-true-"
+  else if
+      c1 then "-false::true-"
+  else       "-false::false-"
+
+positive18 =>
+  if
+    if c0 then true else false
+  then "-true-"
+  else if
+    if c1 then true else false
+  then "-false::true-"
+  else  "-false::false-"
+
+
+
+# NEGATIVE
+
+negative1 =>
+  if c0 then "-true-"
+        else if c1 then "-false::true-"
+  else       "-false::false-"    # 1. should flag an error: inconsistent indentation
+
+negative2 =>
+  if c0 then "-true-"
+  else if c1 then "-false::true-"
+       else if c2       "-false::false::true-"
+  else             "-false::false::false-" # 2. should flag an error: inconsistent indentation
+
+negative3 =>
+  if c0
+  then "-true-"
+  else if c1
+  then "-false::true-"
+        else "-false::false-"     # 3. should flag an error: inconsistent indentation
+
+negative4 =>
+  if c0
+  then "-true-"
+    else if c1                    # 4. should flag an error: inconsistent indentation
+  then "-false::true-"
+  else  "-false::false-"
+
+negative5 =>
+  if c0
+  then "-true-"
+  else if c1
+  then "-false::true-"
+        else  "-false::false-"    # 5. should flag an error: inconsistent indentation
+
+negative6 =>
+  if c0 then "-true-"
+  else
+    if c1 then "-false::true-"
+        else "-false::false-"     # 6. should flag an error: inconsistent indentation
+
+negative7 =>
+  if c0 then "-true-"
+  else
+    if c1 then "-false::true-"
+            else "-false::false-" # 7. should flag an error: inconsistent indentation
+
+negative8 =>
+  if
+  c0 then "-true-" # 8. should flag an error: inconsistent indentation
+  else if
+  c1 then "-false::true-" # 8a. should NYI: UNDER DEVELOPMENT: (error does not show because of 8.) flag an error: inconsistent indentation
+  else       "-false::false-"
+
+# errors of this test don't show up because negative8 causes parsing to stop
+# negative9 =>
+#   if true
+#       if
+#     c0 then "-true-" # 9. should NYI: UNDER DEVELOPMENT: flag an error: inconsistent indentation
+
+# errors of this test don't show up because negative8/negative9 causes parsing to stop
+# negative10 =>
+#   if c0 then "-true-"
+#   else
+#     if c1 then "-false::true-"
+#   else         "-false::false-"  # 10. should NYI: UNDER DEVELOPMENT: flag an error: broken if because of indentation

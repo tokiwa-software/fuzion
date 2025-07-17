@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Internal features which are not meant
+#  to be used outside of this module.
+#
+# -----------------------------------------------------------------------
+
+# a type denoting a mutex, used in concur.sync
+#
+private:module Mutex ref is
+
+
+# a type denoting a condition, used in concur.sync
+#
+private:module Condition ref is
+
+
+# a type denoting a file handle or file pointer
+#
+private:module File_Descriptor ref is
+
+
+# a type denoting a directory handle or file pointer
+#
+private:module Directory_Descriptor ref is
+
+
+# a type denoting mapped memory
+#
+private:module Mapped_Memory ref is
+
+
+# a type denoting backend-specific allocated memory
+# i.e. an array with element type ET
+#
+# This must not be used for anything except assignments to other pointers, no
+# calls on this value are permitted, not even `p.as_string`, this will lead to
+# undefined behaviour.
+#
+private:module Array(ET type) ref is
+
+
+# a type denoting a (started) thread
+#
+private:module Thread ref is

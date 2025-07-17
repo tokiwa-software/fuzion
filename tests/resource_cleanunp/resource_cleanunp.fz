@@ -42,7 +42,7 @@ resource_cleanunp =>
       say "open: $s"
       (e ([s] ++ opened) state).replace
 
-    redef finally =>
+    public redef finally =>
       for s in opened do
         say "closing $s"
 
@@ -100,10 +100,10 @@ resource_cleanunp =>
     e.env.open "P"
     e.env.open "Q"
     say "throw!"
-    (try exc).env.cause (error "throw!")
+    (exception exc).env.cause (error "throw!")
 
   say "--------------------------- open / throw / close / error"
-  say <| try exc unit ()->
+  say <| exception exc unit ()->
     r := e.instate String e test3 def
     say "*** unreachable *** $r"
 
@@ -136,6 +136,6 @@ resource_cleanunp =>
 
   say "--------------------------- open L M / open P Q / throw / close Q P / close M L / error"
 
-  say <| try exc unit ()->
+  say <| exception exc unit ()->
     r := e.instate String e test5 def
     say "*** unreachable *** $r"

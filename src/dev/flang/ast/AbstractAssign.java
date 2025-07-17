@@ -80,7 +80,9 @@ public abstract class AbstractAssign extends Expr
   public AbstractAssign(Expr v)
   {
     if (CHECKS) check
-      (v != null);
+      (v != null,
+       // correct mechanism is Match.addFieldForResult
+       !(v instanceof AbstractMatch));
 
     this._value = v;
   }
@@ -123,7 +125,7 @@ public abstract class AbstractAssign extends Expr
       {
         _target = _target.visit(v, outer);
       }
-    v.action(this, outer);
+    v.action(this);
     return this;
   }
 
@@ -149,23 +151,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void resolveTypes(Resolution res, Context context)
-  {
-    resolveTypes(res, context, null);
-  }
-
-
-  /**
-   * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this assignment is used
-   *
-   * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure expression.
-   */
-  public void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Resolution res, Context context)
   {
   }
 
@@ -181,14 +167,15 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
 
     if (resultTypeKnown(res))
       {
-        _value = _value.propagateExpectedType(res, context, _assignedField.resultType());
+        var rt = _assignedField.resultType();
+        _value = _value.propagateExpectedType(res, context, rt, null);
       }
   }
 
@@ -202,7 +189,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void wrapValueInLazy(Resolution res, Context context)
+  void wrapValueInLazy(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -222,7 +209,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void unwrapValue(Resolution res, Context context)
+  void unwrapValue(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -239,27 +226,8 @@ public abstract class AbstractAssign extends Expr
    */
   private boolean resultTypeKnown(Resolution res)
   {
-    return  _assignedField != Types.f_ERROR
-         && res.state(_assignedField).atLeast(State.RESOLVED_TYPES)
-         && _assignedField.resultTypeIfPresent(res) != null;
-  }
-
-
-  /**
-   * Boxing for assigned value: Make sure a value type that is assigned to a ref
-   * type will be boxed.
-   *
-   * @param context the source code context where this assignment is used
-   */
-  public void boxVal(Context context)
-  {
-    if (CHECKS) check
-      (_assignedField != Types.f_ERROR || Errors.any());
-
-    if (_assignedField != Types.f_ERROR)
-      {
-        _value = _value.box(_assignedField.resultType(), context);
-      }
+    return _assignedField != Types.f_ERROR
+        && _assignedField.resultTypeIfPresent(res) != null;
   }
 
 
@@ -270,7 +238,7 @@ public abstract class AbstractAssign extends Expr
    *
    * @param context the source code context where this assignment is used
    */
-  public void checkTypes(Resolution res, Context context)
+  void checkTypes(Resolution res, Context context)
   {
     if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.any());
@@ -284,14 +252,18 @@ public abstract class AbstractAssign extends Expr
           (Errors.any() || frmlT != Types.t_ERROR,
            Errors.any() || _value.type() != Types.t_ERROR);
 
-        if (_value.type() != Types.t_ERROR && !frmlT.isDirectlyAssignableFrom(_value.type(), context))
+        if (_value.type() != Types.t_ERROR && frmlT.isAssignableFrom(_value.type(), context).no())
           {
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value, context);
           }
+        else
+          {
+            _value.checkAmbiguousAssignmentToChoice(frmlT);
+          }
+
 
         if (CHECKS) check
-          (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName(), f) == f,
-           Errors.any() || (_value.type().isVoid() || _value.needsBoxing(frmlT, context) == null || _value.isBoxed()));
+          (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName()) == f);
       }
   }
 
@@ -307,10 +279,10 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
-  public boolean producesResult()
+  @Override public boolean producesResult()
   {
     return false;
   }

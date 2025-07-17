@@ -30,19 +30,19 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => is_min
+  public redef wrapped_on_neg bool => is_min
 
   # would addition + other cause an overflow or underflow?
-  public fixed redef overflow_on_add (other i64) => val > 0 && i64.max -° val < other
-  public fixed redef underflow_on_add(other i64) => val < 0 && i64.min -° val > other
+  public fixed redef overflow_on_add (other i64) bool => val > 0 && i64.max -° val < other
+  public fixed redef underflow_on_add(other i64) bool => val < 0 && i64.min -° val > other
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other i64) => val > 0 && val -° i64.max > other
-  public fixed redef underflow_on_sub(other i64) => val < 0 && val -° i64.min < other
+  public fixed redef overflow_on_sub (other i64) bool => val > 0 && val -° i64.max > other
+  public fixed redef underflow_on_sub(other i64) bool => val < 0 && val -° i64.min < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed redef overflow_on_mul (other i64) => if sign *° other.sign ≤ 0 false else (val *° other / other) != val
-  public fixed redef underflow_on_mul(other i64) => if sign *° other.sign ≥ 0 false else (val *° other / other) != val
+  public fixed redef overflow_on_mul (other i64) bool => if sign *° other.sign ≤ 0 false else (val *° other / other) != val
+  public fixed redef underflow_on_mul(other i64) bool => if sign *° other.sign ≥ 0 false else (val *° other / other) != val
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed redef prefix -° i64 => intrinsic
@@ -51,18 +51,8 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
   public fixed redef infix *° (other i64) i64 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other i64)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => div other
-  public fixed redef infix % (other i64)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != 0
-  => mod other
+  public fixed redef infix / (other i64) i64 => div other
+  public fixed redef infix % (other i64) i64 => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i64) i64 => intrinsic
@@ -110,65 +100,72 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
 
   # does this i64 fit into an u8?
   #
-  public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i64
+  public fixed redef fits_in_u8 bool => 0 ≤ val ≤ u8.max.as_i64
 
 
   # this i64 as an u8
+  #
   public redef as_u8 u8
-#    post
-#      analysis: result.as_u64 = val
-    =>
-      low8bits
+    post then
+      analysis: result.as_i64 = val
+  =>
+    low8bits
 
 
   # this i64 as an u16
+  #
   public as_u16 u16
-     pre
+    pre
       debug: val ≥ 0
       debug: val ≤ u16.max.as_i64
-#    post
-#      analysis: result.as_u64 = val
-    =>
-      low16bits
+    post
+      analysis: result.as_i64 = val
+  =>
+    low16bits
 
 
   # this i64 as an u32
+  #
   public as_u32 u32
     pre
       debug: val ≥ (i64 0)
       debug: val ≤ u32.max.as_i64
-#    post then
-#      analysis:  result.as_i64 = val
-    =>
-      low32bits
+    post
+      analysis:  result.as_i64 = val
+  =>
+    low32bits
 
 
   # this i64 as an u64
+  #
   public as_u64 u64
     pre
       debug: val ≥ 0
-#    post
-#      analysis:  result.as_i64 = val
-    =>
-      cast_to_u64
+    post
+      analysis: result.as_i64 = val
+  =>
+    cast_to_u64
 
 
   # this i64 as an u128
+  #
   public as_u128 u128
     pre
       debug: val ≥ 0
     post
       analysis:  result.as_i64 = val
-    =>
-      u128 0 cast_to_u64
+  =>
+    u128 0 cast_to_u64
 
 
   # this i64 as an int
+  #
   public as_int int =>
     int val
 
 
   # this i64 as an uint
+  #
   public as_uint uint
   pre debug: val ≥ 0
   =>
@@ -183,7 +180,7 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
 
   # conversion to float
   public as_f64 f64 => intrinsic
-  public as_f32 => as_f64.as_f32
+  public as_f32 f32 => as_f64.as_f32
 
 
   # create hash code from this number
@@ -218,12 +215,12 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
 
   # identity element for 'infix +'
   #
-  fixed redef type.zero i64 => 0
+  public fixed redef type.zero i64 => 0
 
 
   # identity element for 'infix *'
   #
-  fixed redef type.one  i64 => 1
+  public fixed redef type.one  i64 => 1
 
 
   # equality
@@ -237,14 +234,14 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => i64 -1
+  public fixed redef type.all_bits_set i64 => i64 -1
 
 
   # minimum
   #
-  public fixed redef type.min => i64 -0x_8000_0000_0000_0000
+  public fixed redef type.min i64 => i64 -0x_8000_0000_0000_0000
 
 
   # maximum
   #
-  public fixed redef type.max => i64 0x_7fff_ffff_ffff_ffff
+  public fixed redef type.max i64 => i64 0x_7fff_ffff_ffff_ffff

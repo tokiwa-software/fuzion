@@ -10,17 +10,17 @@ q.f  0 0
 c111.f1 1: should be ok  OK 1
 c111.f1 0: should be ok  OK 0
 c111.f2 1: should be ok  OK 1
-c111.f2 0: should be ok  OK 0
+c111.f2 0: should fail   FAILED x > 0
 c111.f3 1: should be ok  OK 1
 c111.f3 0: should be ok  OK 0
 c111.f4 1: should be ok  OK 1
 c111.f4 0: should be ok  OK 0
-c111.f5 1: should be ok  OK 1
-c111.f5 0: should be ok  OK 0
+c111.f5 1: should fail   FAILED false
+c111.f5 0: should fail   FAILED false
 c111.f6 1: should be ok  OK 1
-c111.f6 0: should be ok  OK 0
-c111.f7 1: should be ok  OK 1
-c111.f7 0: should be ok  OK 0
+c111.f6 0: should fail   FAILED x > 0
+c111.f7 1: should fail   FAILED false
+c111.f7 0: should fail   FAILED x > 0
 c121.f1 1: should be ok  OK 1
 c121.f1 0: should be ok  OK 0
 c121.f2 1: should be ok  OK 1
@@ -30,9 +30,9 @@ c121.f3 0: should be ok  OK 0
 c121.f4 1: should be ok  OK 1
 c121.f4 0: should be ok  OK 0
 c121.f5 1: should be ok  OK 1
-c121.f5 0: should be ok  OK 0
+c121.f5 0: should fail   FAILED x > 0
 c121.f6 1: should be ok  OK 1
-c121.f6 0: should be ok  OK 0
+c121.f6 0: should fail   FAILED x > 0
 c121.f7 1: should be ok  OK 1
 c121.f7 0: should be ok  OK 0
 c131.f1 1: should be ok  OK 1
@@ -43,16 +43,16 @@ c131.f3 1: should be ok  OK 1
 c131.f3 0: should be ok  OK 0
 c131.f4 1: should be ok  OK 1
 c131.f4 0: should be ok  OK 0
-c131.f5 1: should be ok  OK 1
-c131.f5 0: should be ok  OK 0
+c131.f5 1: should fail   FAILED false
+c131.f5 0: should fail   FAILED x > 0
 c131.f6 1: should be ok  OK 1
 c131.f6 0: should be ok  OK 0
 c131.f7 1: should be ok  OK 1
-c131.f7 0: should be ok  OK 0
+c131.f7 0: should fail   FAILED x > 0
 c141.f1 1: should be ok  OK 1
 c141.f1 0: should be ok  OK 0
 c141.f2 1: should be ok  OK 1
-c141.f2 0: should be ok  OK 0
+c141.f2 0: should fail   FAILED false
 c141.f3 1: should be ok  OK 1
 c141.f3 0: should be ok  OK 0
 c141.f4 1: should be ok  OK 1
@@ -60,19 +60,19 @@ c141.f4 0: should be ok  OK 0
 c141.f5 1: should be ok  OK 1
 c141.f5 0: should be ok  OK 0
 c141.f6 1: should be ok  OK 1
-c141.f6 0: should be ok  OK 0
+c141.f6 0: should fail   FAILED x > 0
 c141.f7 1: should be ok  OK 1
 c141.f7 0: should be ok  OK 0
 c151.f1 1: should be ok  OK 1
 c151.f1 0: should be ok  OK 0
 c151.f2 1: should be ok  OK 1
-c151.f2 0: should be ok  OK 0
+c151.f2 0: should fail   FAILED x > 0
 c151.f3 1: should be ok  OK 1
 c151.f3 0: should be ok  OK 0
 c151.f4 1: should be ok  OK 1
 c151.f4 0: should be ok  OK 0
 c151.f5 1: should be ok  OK 1
-c151.f5 0: should be ok  OK 0
+c151.f5 0: should fail   FAILED x > 0
 c151.f6 1: should be ok  OK 1
 c151.f6 0: should be ok  OK 0
 c151.f7 1: should be ok  OK 1
@@ -80,7 +80,7 @@ c151.f7 0: should be ok  OK 0
 c161.f1 1: should be ok  OK 1
 c161.f1 0: should be ok  OK 0
 c161.f2 1: should be ok  OK 1
-c161.f2 0: should be ok  OK 0
+c161.f2 0: should fail   FAILED x > 0
 c161.f3 1: should be ok  OK 1
 c161.f3 0: should be ok  OK 0
 c161.f4 1: should be ok  OK 1
@@ -89,8 +89,8 @@ c161.f5 1: should be ok  OK 1
 c161.f5 0: should be ok  OK 0
 c161.f6 1: should be ok  OK 1
 c161.f6 0: should be ok  OK 0
-c161.f7 1: should be ok  OK 1
-c161.f7 0: should be ok  OK 0
+c161.f7 1: should fail   FAILED false
+c161.f7 0: should fail   FAILED false
 c171.f1 1: should be ok  OK 1
 c171.f1 0: should be ok  OK 0
 c171.f2 1: should be ok  OK 1
@@ -102,9 +102,9 @@ c171.f4 0: should be ok  OK 0
 c171.f5 1: should be ok  OK 1
 c171.f5 0: should be ok  OK 0
 c171.f6 1: should be ok  OK 1
-c171.f6 0: should be ok  OK 0
+c171.f6 0: should fail   FAILED false
 c171.f7 1: should be ok  OK 1
-c171.f7 0: should be ok  OK 0
+c171.f7 0: should fail   FAILED x > 0
 c112.f1 1: should be ok  OK 1
 c112.f1 0: should be ok  OK 0
 c112.f2 1: should be ok  OK 1

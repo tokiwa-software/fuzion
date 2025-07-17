@@ -71,8 +71,6 @@ public effect is
 
   # instate e for effect type effect.this in the current environment.
   #
-
-
   # execute code provided by `code` while this effect `e` is instated in the
   # current environment and remove the instated effect after `code` returned.
   #
@@ -125,7 +123,7 @@ public effect is
   # determine the required effects and create code to  instate them at the beginning
   # of an application.
   #
-  public type.default(e effect.this) => default0 e
+  public type.default(e effect.this) unit => default0 e
 
 
   # convenience version of `type.default` for effect values whose type is
@@ -138,7 +136,7 @@ public effect is
   #
   public default unit
   =>
-    effect.this.type.default effect.this
+    effect.this.default effect.this
 
 
   # --------------------  effect instation  --------------------
@@ -164,8 +162,8 @@ public effect is
                       def effect.this -> R
                       ) R
   =>
+    e.check_depletion
     x := instate_helper R effect.this e code def
-    instate0 e x.call_code x.call_def
     x.res.get
 
 
@@ -227,6 +225,25 @@ public effect is
     instate_self code
 
 
+  # fluent interface for using multiple effects together
+  #
+  public and(R type, E type : effect, e Lazy E) =>
+    as_functional R
+      .compose (e.as_functional R)
+
+
+  # this effect reinterpreted as a Functional
+  # which allows composition of effects
+  #
+  public as_functional(R type) Functional R =>
+
+    # NYI: BUG: does not work: Wrong number of arguments in lambda expression
+    # code -> instate_self code
+
+    ref : Functional R is
+      public redef call(code Function R) =>
+        instate_self code
+
 
   # infix variant of effect.instate
   #
@@ -234,8 +251,8 @@ public effect is
   #
   #     effect_type <- effect_instance ! code
   #
-  public type.infix <- (E type : effect, e E) =>
-    effect0 e
+  public type.infix <- (E type : effect, e E) effect_to_be_instated E =>
+    effect_to_be_instated e
 
 
 
@@ -274,9 +291,11 @@ public effect is
   # effect of the same effect type.
   #
   # NYI: BUG: It is currently not enforced that replace is only called during the execution
-  # of an operation of a currenlty instated effect of the same effect type.
+  # of an operation of a currently instated effect of the same effect type.
   #
-  public type.replace(e effect.this)
+  public type.replace(e effect.this) unit
+  pre
+    safety: effect.this.is_instated
   =>
     replace0 e
 
@@ -291,9 +310,11 @@ public effect is
   # replace may only be called during the execution of an operation of a currently instated
   # effect of the same effect type.
   #
-  public replace
+  public replace unit
+  pre
+    safety: effect.this.is_instated
   =>
-    effect.this.type.replace effect.this
+    effect.this.replace effect.this
 
 
   # --------------------  aborting code execution  --------------------
@@ -324,13 +345,13 @@ public effect is
 
   # does this effect support abort?
   #
-  # Redefining this to return `false` helps to detect unexptected calls to
+  # Redefining this to return `false` helps to detect unexpected calls to
   # `abort` at runtime and ensure that the static analysis finds that the
   # code executed with this effect will always return normally and produce
   # a result. This is used, e.g, in `mutate` to avoid static analysis
   # reporting `panic` as an effect of the use of a local mutate instance.
   #
-  public abortable => true
+  public abortable bool => true
 
 
   # abort the current execution and return from the surrounding call to
@@ -357,14 +378,14 @@ public effect is
   # after it has been de-instated.
   #
   # This happens either on a normal return form the code passed to
-  # `instate`, on an abort perfomed on this effect or on an abort
+  # `instate`, on an abort performed on this effect or on an abort
   # performed on an effect instated prior to this effect's instation.
   #
   # This can be used to perform actions when leaving an effect such
   # a cleanup up resources that were created or opened by operations
   # of this effect.
   #
-  public finally =>
+  public finally unit =>
 
 
   # internal feature that will be called on the instance of this effect
@@ -378,7 +399,13 @@ public effect is
   static_finally => finally
 
 
-# instante helper to hold the result of the effect
+  # trigger runtime check if effect is
+  # already depleted and may not be used any more
+  #
+  module check_depletion =>
+
+
+# instate helper to hold the result of the effect
 #
 instate_helper(# result type
                R type,
@@ -400,23 +427,27 @@ instate_helper(# result type
   # collect the result in this field
   res := option R nil
 
+  ET.instate0 e call_code call_def
+
   # wrapper to call `code` and store result in 'res`
   call_code : Function unit is
-    redef call =>
+    public redef call unit =>
       set res := code()
 
   # wrapper to call `def` on final effect value and store result in 'res`
   call_def : Function unit ET is
-    redef call(cur_e ET) =>
+    public redef call(cur_e ET) unit =>
       set res := def cur_e
 
 
 
-# a constructor for holding an effect type and instance
+# a constructor for holding an effect type and instance that is to be instated
 #
-# this allows defining operators
+# this allows defining operators to instate effects like
 #
-public effect0(E type : effect, e E) is
+#     effect_type <- effect_instance ! code
+#
+private:public effect_to_be_instated(E type : effect, e E) is
 
 
   # infix variant of effect.instate
@@ -433,3 +464,19 @@ public effect0(E type : effect, e E) is
   ) R
   =>
     E.instate R e code
+
+
+# linear variant of an effect
+# that may only be instated/used once.
+#
+public linear_effect : effect is
+  depleted := Depleted_Wrapper
+
+  module redef check_depletion =>
+    if !depleted.depleted.compare_and_set0 false true
+      fuzion.std.panic "effect {linear_effect.this.type.name} already depleted. effect may only be instated once."
+
+
+Depleted_Wrapper ref is
+
+  depleted := concur.atomic false

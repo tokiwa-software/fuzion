@@ -26,40 +26,59 @@
 #
 public sync is
 
-  mtx_init outcome fuzion.sys.Pointer => intrinsic
-  mtx_lock(mtx fuzion.sys.Pointer) bool => intrinsic
+  mtx_init outcome Mutex => intrinsic
+  mtx_lock(mtx Mutex) bool => intrinsic
   # NYI: mtx_timedlock
-  mtx_trylock(mtx fuzion.sys.Pointer) bool => intrinsic
-  mtx_unlock(mtx fuzion.sys.Pointer) bool => intrinsic
-  mtx_destroy(mtx fuzion.sys.Pointer) unit => intrinsic
+  mtx_trylock(mtx Mutex) bool => intrinsic
+  mtx_unlock(mtx Mutex) bool => intrinsic
+  mtx_destroy(mtx Mutex) unit => intrinsic
 
-  cnd_init(mtx fuzion.sys.Pointer) outcome fuzion.sys.Pointer => intrinsic
-  cnd_signal(cnd fuzion.sys.Pointer) bool => intrinsic
-  cnd_broadcast(cnd fuzion.sys.Pointer) bool => intrinsic
-  cnd_wait(cnd fuzion.sys.Pointer, mtx fuzion.sys.Pointer) bool => intrinsic
+  cnd_init(mtx Mutex) outcome Condition => intrinsic
+  cnd_signal(cnd Condition) bool => intrinsic
+  cnd_broadcast(cnd Condition) bool => intrinsic
+  cnd_wait(cnd Condition, mtx Mutex) bool => intrinsic
   # NYI: cnd_timedwait
-  cnd_destroy(cnd fuzion.sys.Pointer) unit => intrinsic
+  cnd_destroy(cnd Condition) unit => intrinsic
 
 
-  # NYI: documentation missing, waiting for JVM backend impl
+  # NYI: tie life of mutex/condition to thread pool?
 
-  private:public mutex(module mtx fuzion.sys.Pointer) is
 
+
+  # a mutex is a synchronization primitive
+  # that allows threads to wait for one another.
+  #
+  private:public mutex(module mtx Mutex) is
+
+    # run code synchronized across all threads
+    # that also use this mutex
+    #
+    public synchronized(T type, code ()->T) T =>
+      check mtx_lock mtx
+      res := code.call
+      check mtx_unlock mtx
+      res
+
+
+    # initialize a new mutex
+    #
     public type.new outcome concur.sync.mutex =>
-      concur.sync.mtx_init.bind concur.sync.mutex mtx->
+      concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
 
-    public condition outcome concur.sync.condition =>
-      (concur.sync.cnd_init mtx).bind concur.sync.condition cnd->
-        concur.sync.condition mtx cnd
-
-    # NYI destroy
+    # NYI: UNDER DEVELOPMENT: destroy
 
 
-  private:public condition(mtx fuzion.sys.Pointer, cnd fuzion.sys.Pointer) is
+  # a condition is synchronization primitive
+  # that allows threads to signal and wait for one another.
+  #
+  private:public condition(mtx Mutex, cnd Condition) is
 
-    public is_locked := concur.atomic false
+    public is_locked concur.atomic bool := concur.atomic false
 
+    # run code synchronized across all threads
+    # that also use this condition
+    #
     public synchronized(T type, code ()->T) T =>
       check mtx_lock mtx
       is_locked.write true
@@ -68,14 +87,33 @@ public sync is
       check mtx_unlock mtx
       res
 
-    public signal
-    pre is_locked.read
+
+    # signal one waiting thread to wake up
+    #
+    public signal bool
+      pre is_locked.read
     => cnd_signal cnd
-    public broadcast
-    pre is_locked.read
+
+
+    # signal all waiting thread to wake up
+    #
+    public broadcast bool
+      pre is_locked.read
     => cnd_broadcast cnd
-    public wait
-    pre is_locked.read
+
+
+    # make this thread wait for signal
+    #
+    public wait bool
+      pre is_locked.read
     => cnd_wait cnd mtx
 
-    # NYI destroy
+
+    # initialize a new condition
+    #
+    public type.new outcome concur.sync.condition =>
+      concur.sync.mtx_init.bind mtx->
+        (concur.sync.cnd_init mtx).bind cnd->
+          concur.sync.condition mtx cnd
+
+    # NYI: UNDER DEVELOPMENT: destroy

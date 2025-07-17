@@ -1,0 +1,2 @@
+# NYI: BUG: #5026
+test native_value fails in github action with exit code 134

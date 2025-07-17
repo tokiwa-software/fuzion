@@ -2,7 +2,7 @@
 --CURDIR--/reg_issue627.fz:25:3: error 1: Syntax error: expected '[ ]' after 'set', found left parenthesis '('
   set(a string) unit is
 --^
-While parsing: name, parse stack: name (twice), call (twice), callOrFeatOrThis, term, opTail, opExpr, operatorExpr (twice), expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+While parsing: name, parse stack: name (twice), call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/reg_issue627.fz:25:17: error 2: Syntax error: expected semicolon ';', found identifier 'unit'

@@ -64,7 +64,7 @@ scenario2 is
     type.zero T => abstract
 
     type.sum =>
-      ref : scenario2.M T
+      ref : scenario2.M T is
         fixed redef e => zero
 
   b : a scenario2.b is
@@ -118,7 +118,7 @@ ex202 =>
 
   # using sum and map
   sum_map =>
-    sum := sum (a.map x->x*x)
+    sum := a.map x->x*x .sum
     say "sum is $sum"
 
   sum_map_fold =>
@@ -195,11 +195,11 @@ ex204 =>
       (bits3.cast_to_f64, exp)
 
   a f64 := 3.14
-  (b, c) := frexp a
+  b, c := frexp a
   say "{b} {c}"
 
   d f64 := 5E-324
-  (e, f) := frexp d
+  e, f := frexp d
   say "{e} {f}"
 
 ex204
@@ -214,14 +214,6 @@ _ := ~8
 # here, we have a feature `p` with a type parameter that depends on `p` itself that defines
 # a type feature `abs`
 
-/*
-
-NYI: BUG: currently
-error 1: java.lang.Error: check-condition failed: Clazz.java:1833 "(Errors.any() || i == of || i != null && i.inheritsFrom(of) && isValue);"
-        at dev.flang.util.ANY.check(ANY.java:440)
-        at dev.flang.fuir.Clazz.findOuter(Clazz.java:1833)
-        at dev.flang.fuir.Clazz.replaceThisType(Clazz.java:592)
-        ...
 
 scenario7 is
 
@@ -267,14 +259,14 @@ run_scenario7 =>
   x2 := scenario7.r .a; say (type_of x2)   # Type of 'q'
   x3 := scenario7.s .a; say (type_of x3)   # Type of 'q'
   x4 := scenario7.t .a; say (type_of x4)   # Type of 'q'
-  x5 := scenario7.v1.a; say (type_of x5)   # Type of 'q3'  (inherited through p.W -> u1.A -> q2)
+  x5 := scenario7.v1.a; say (type_of x5)   # Type of 'q2'  (inherited through p.W -> u1.A -> q2)
   x6 := scenario7.v2.a; say (type_of x6)   # Type of 'q3'  (inherited through p.W -> u1.A -> q3)
-  x7 := scenario7.w1.a; say (type_of x7)   # Type of 'q2'  (inherited through p.W -> u2.B -> q3)
+  x7 := scenario7.w1.a; say (type_of x7)   # Type of 'q3'  (inherited through p.W -> u2.B -> q3)
   x8 := scenario7.w2.a; say (type_of x8)   # Type of 'q2'  (inherited through p.W -> u2.B -> q2)
 
 run_scenario7
 
-*/
+
 
 # ------  eigth scenario  ------
 #
@@ -323,7 +315,7 @@ scenario8 is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
+    public redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -331,9 +323,9 @@ scenario8 is
     valueString String => abstract
 
     type.sum =>
-      ref : Monoid num0.this
-        redef infix ∙ (a, b num0.this) => a.plus b
-        redef e => zero
+      ref : Monoid num0.this is
+        public redef infix ∙ (a, b num0.this) => a.plus b
+        public redef e => zero
 
 
   # integer mod 2 implementation of num0

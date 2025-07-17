@@ -50,7 +50,7 @@ public interval(T type : integer,
   : container.Set T
 
 pre
-  debug: ((step.sign = 0): (through.map =from).first false)  # step cannot be zero unless from=through
+  debug: ((step.sign = 0): through.as_equatable=from)  # step cannot be zero unless from=through
 is
 
 
@@ -59,9 +59,9 @@ is
   # This is typically applied to an interval with implicit `step` of one,
   # e.g., in `2..10:2` will create "{2,4,6,8,10}".
   #
-  public infix : (step_factor T)
+  public infix : (step_factor T) interval T
   pre
-    debug: ((step_factor.sign = 0): (through.map =from).first false)  # step cannot be zero unless from=through
+    debug: ((step_factor.sign = 0): through.as_equatable=from)  # step cannot be zero unless from=through
     safety: (step *? step_factor).exists
   =>
     interval from through step*step_factor
@@ -99,7 +99,7 @@ is
 
   # does this interval contain the given value?
   #
-  public redef contains(e T) =>
+  public redef contains(e T) bool =>
     if      step.sign > 0 then from <= e <= through.or_else e && (e %  step = from %  step)
     else if step.sign < 0 then from >= e >= through.or_else e && (e % -step = from % -step)
     else                       from =  e
@@ -107,25 +107,22 @@ is
 
   # string representation of this interval, e.g., "1..10:2"
   #
-  public redef as_string =>
-    thru := through.bind String ($)
+  public redef as_string String =>
+    thru := through.bind ($)
                    .or_else ()->if step.sign < 0 then "-∞" else "∞"
     "$from..$thru{if step = T.one then "" else ":$step"}"
 
 
-  # NYI: BUG: workaround without this
-  # test lib_container_set fails with
-  # require-condition1 failed: Clazzes.java:1068
-  # "(Errors.any() || !thiz.dependsOnGenerics(),
-  #   outerClazz != null || thiz.feature().outer() == null, Errors.any()
-  #     || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.feature().outer()));"
-  public fixed redef type.new (s Sequence T) interval.this => panic "not applicable"
+  # create a new interval from a sequence of elements
+  #
+  public fixed redef type.new (s Sequence T) container.Set T =>
+    container.set_of_ordered s
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite =>
+  public redef finite trit =>
     if through.exists then trit.yes else trit.no
 
 
@@ -139,18 +136,18 @@ public has_interval : integer is
   #
   # special cases of interval a..b:
   #
-  #   a <  b: the interval from a to b, both inclusive
-  #   a == b: the interval containing only one element, a
-  #   a >  b: an empty interval
-  public infix .. (through has_interval.this) =>
+  #     a <  b: the interval from a to b, both inclusive
+  #     a == b: the interval containing only one element, a
+  #     a >  b: an empty interval
+  public infix .. (through has_interval.this) interval has_interval.this =>
     interval has_interval.this through has_interval.this.one
 
 
   # an infinite integer Sequence starting from this up to the maximum value
   # has_interval.this.max
   #
-  public postfix .. =>
-    interval has_interval.this has_interval.this nil has_interval.this.one
+  public postfix .. interval has_interval.this =>
+    interval has_interval.this nil has_interval.this.one
 
 
   # an infinite integer Sequence starting from this up to the maximum value
@@ -159,5 +156,5 @@ public has_interval : integer is
   # NYI: CLEANUP: Eventually remove `postfix ..` or `postfix ..∞` in favor of the
   # other one, for now this is here to show that `∞` is a legal symbol in an operator.
   #
-  public postfix ..∞ =>
+  public postfix ..∞ interval has_interval.this =>
     postfix ..

@@ -30,19 +30,20 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   # overflow checking
 
   # would negation cause an overflow?
-  redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg bool => !is_zero
 
   # would addition + other cause an overflow or underflow?
-  public fixed redef overflow_on_add (other u128) => u128.max -° u128.this < other
-  public fixed redef underflow_on_add(other u128) => false
+  public fixed redef overflow_on_add (other u128) bool => u128.max -° u128.this < other
+  public fixed redef underflow_on_add(other u128) bool => false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other u128) => false
-  public fixed redef underflow_on_sub(other u128) => u128.this < other
+  public fixed redef overflow_on_sub (other u128) bool => false
+  public fixed redef underflow_on_sub(other u128) bool => u128.this < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed redef overflow_on_mul (other u128) => if (other = u128.zero) false else (u128.this *° other / other) != u128.this
-  public fixed redef underflow_on_mul(other u128) => false
+  public fixed redef overflow_on_mul (other u128) bool =>
+    if (other = u128.zero) false else (u128.this *° other / other) != u128.this
+  public fixed redef underflow_on_mul(other u128) bool => false
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed redef prefix -°             u128 => {carry u64 := { if (lo > 0             ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)}
@@ -79,18 +80,8 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
      u128 p03<<32 0         )
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u128)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != u128.zero
-  => div other
-  public fixed redef infix % (other u128)
-    pre else
-      # NYI: #3051 precondition inheritance does not work yet
-      # remove this redundant precondition once #3051 is fixed
-      safety: other != u128.zero
-  => mod other
+  public fixed redef infix / (other u128) u128 => div other
+  public fixed redef infix % (other u128) u128 => mod other
 
   # division and remainder with crash in case of div-by-zero
   fixed div (other u128) u128 =>
@@ -143,17 +134,17 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   # equality
   #
-  public fixed redef type.equality(a, b u128) =>
+  public fixed redef type.equality(a, b u128) bool =>
     a.hi = b.hi && a.lo = b.lo
 
   # total order
   #
-  public fixed redef type.lteq(a, b u128) =>
+  public fixed redef type.lteq(a, b u128) bool =>
     a.hi < b.hi || (a.hi = b.hi) && (a.lo ≤ b.lo)
 
   # does this u128 fit into an u8?
   #
-  public fixed redef fits_in_u8  => u128.this ≤ u8.max.as_u128
+  public fixed redef fits_in_u8 bool => u128.this ≤ u8.max.as_u128
 
   public fixed as_i8 i8
     pre
@@ -214,7 +205,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public low32bits u32 => lo.low32bits
   public low64bits u64 => lo
 
-  public cast_to_i128 => i128 hi.cast_to_i64 lo
+  public cast_to_i128 i128 => i128 hi.cast_to_i64 lo
 
 
   # create hash code from this number
@@ -249,25 +240,24 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  fixed redef type.all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.all_bits_set u128 => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # minimum
   #
-  public fixed redef type.min => u128 0 0
+  public fixed redef type.min u128 => u128 0 0
 
 
   # maximum
   #
-  public fixed redef type.max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+  public fixed redef type.max u128 => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # identity element for 'infix +'
   #
-  public fixed redef type.zero => u128 0 0
+  public fixed redef type.zero u128 => u128 0 0
 
 
   # identity element for 'infix *'
   #
-  public fixed redef type.one => u128 0 1
-  
+  public fixed redef type.one u128 => u128 0 1

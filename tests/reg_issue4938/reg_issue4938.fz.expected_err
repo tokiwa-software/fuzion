@@ -1,0 +1,30 @@
+
+--CURDIR--/reg_issue4938.fz:24:20: error 1: Incompatible types when passing argument in a call
+say <| [0,1,2].map 42
+-------------------^^
+Actual type for argument #1 'f' does not match expected type.
+In call to          : 'Sequence.map'
+expected formal type: 'Unary Sequence.map.B Sequence.T'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '42'
+To solve this, you could change the type of the target 'f' to 'i32' or convert the type of the assigned value to 'Unary Sequence.map.B Sequence.T'.
+
+
+--CURDIR--/reg_issue4938.fz:26:20: error 2: Incompatible types when passing argument in a call
+say <| [0,1,2].map ""
+-------------------^^
+Actual type for argument #1 'f' does not match expected type.
+In call to          : 'Sequence.map'
+expected formal type: 'Unary Sequence.map.B Sequence.T'
+actual type found   : 'String'
+assignable to       : 'Any',
+                      'String',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable'
+for value assigned  : '""'
+To solve this, you could change the type of the target 'f' to 'String' or convert the type of the assigned value to 'Unary Sequence.map.B Sequence.T'.
+
+2 errors.

@@ -152,7 +152,7 @@ public class MIR extends IR
    *
    * @param ff a routine or constructor feature.
    */
-  private void addCode(AbstractFeature heir, List<Object> code, AbstractFeature ff)
+  private void addCode(List<Object> code, AbstractFeature ff)
   {
     for (var p: ff.inherits())
       {
@@ -206,7 +206,7 @@ hw25 is
             // Field clazz means assign value to that field
             // NYI: code.add((Clazz) cc.getRuntimeData(p._parentCallArgFieldIds + i));
           }
-        addCode(ff, code, p.calledFeature());
+        addCode(code, p.calledFeature());
       }
     toStack(code, ff.code());
   }
@@ -226,7 +226,7 @@ hw25 is
 
     var ff = _featureIds.get(f);
     var code = prolog(ff);
-    addCode(ff, code, ff);
+    addCode(code, ff);
     return addCode(code);
   }
 

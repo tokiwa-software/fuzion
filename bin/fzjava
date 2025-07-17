@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # This file is part of the Fuzion language implementation.
 #
@@ -37,7 +37,7 @@
 #   FUZION_JAVA_OPTIONS    options to be passed to the JAVA command (if set, will
 #                          override stack size)
 
-set -euo pipefail
+set -eu
 
 FUZION_CMD=$0
 FUZION_BIN="$(dirname "$(readlink -f "$0")")"
@@ -55,5 +55,17 @@ fi
 : "${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}"
 : "${FUZION_JAVA_ADDITIONAL_OPTIONS=--enable-preview --enable-native-access=ALL-UNNAMED}"
 
+LINE_SEPARATOR="
+"
+
 # shellcheck disable=SC2086
-$FUZION_JAVA $FUZION_JAVA_OPTIONS $FUZION_JAVA_ADDITIONAL_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dline.separator=$'\n' -Dfile.encoding=UTF-8 -Dfuzion.home="$FUZION_HOME" -Dfuzion.command="$FUZION_CMD" dev.flang.tools.fzjava.FZJava "$@"
+$FUZION_JAVA \
+  $FUZION_JAVA_OPTIONS \
+  $FUZION_JAVA_ADDITIONAL_OPTIONS \
+  --class-path "$FUZION_JAVA_CLASSPATH" \
+  -Dline.separator="$LINE_SEPARATOR" \
+  -Dfile.encoding=UTF-8 \
+  -Dfuzion.home="$FUZION_HOME" \
+  -Dfuzion.command="$FUZION_CMD" \
+  dev.flang.tools.fzjava.FZJava \
+  "$@"

@@ -34,7 +34,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     T type,
 
                     # the data stored in this element.
-                    redef data T) ref : Linked_List T is
+                    public redef data T) ref : Linked_List T is
 
 
   # mutable references to next. Initializes to refer to nil to form
@@ -46,12 +46,12 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   # short-hand features to get the mutable references from `n`
   #
   public redef next option (Linked_List T) =>
-    n.get.bind (Linked_List T) x->x
+    n.get.bind (Linked_List T) id
 
 
   # append an element to the linked list
   #
-  public append(data T) =>
+  public append(data T) unit =>
     match n.get
       nil => n <- Mutable_Linked_List LM T append.this.data
       ll Mutable_Linked_List => ll.append append.this.data
@@ -59,49 +59,38 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
 
   # append an entire list to this linked list
   #
-  public concat(other Mutable_Linked_List LM T) =>
+  public concat_mutable_linked_list(other Mutable_Linked_List LM T) unit =>
     match n.get
       nil => n <- other
-      ll Mutable_Linked_List => ll.concat other
+      ll Mutable_Linked_List => ll.concat_mutable_linked_list other
 
 
   # freeze this list, i.e., turn all references into immutable values
   #
-  public freeze =>
+  public freeze unit =>
     if n.open
       n.close
 
-    _ := n.get.bind unit ll->ll.freeze
+    _ := n.get.bind (.freeze)
 
 
   # create a mutable linked list from a given sequence
   #
   # this results in a mutable linked list that is not yet frozen, i.e. it
-  # can still be modified. however, the list needs to be frozen manually
+  # can still be modified. the list needs to be frozen manually
   # before leaving the mutate environment.
   #
-  public type.new(from Sequence T)
-    pre
-      !from.is_empty
-  =>
-    new from true
-
-
-  # create a mutable linked list from a given sequence
+  # code example:
   #
-  # the argument freeze specifies whether the resulting list is frozen. if
-  # true, the list is frozen after creation, i.e. it can no longer be changed,
-  # but the mutate environment can be left.
+  #     mll := (container.Mutable_Linked_List x i32).new [0,1,2,3,4]
+  #     mll.append 42
+  #     mll.freeze
   #
-  public type.new(from Sequence T, freeze bool)
+  public type.new(from Sequence T) container.Mutable_Linked_List LM T
     pre
       !from.is_empty
   =>
     from_list := from.as_list
     c := container.Mutable_Linked_List LM T from_list.head.get
     from_list.tail.for_each (x -> c.append x)
-
-    if freeze
-      c.freeze
-
     c

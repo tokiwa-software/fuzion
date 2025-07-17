@@ -38,7 +38,7 @@ is
 
   # number of entries in this map
   #
-  redef size => ks.length
+  public redef size i32 => ks.length
 
 
   # size of allocated contents array, allows for some empty slots
@@ -77,7 +77,7 @@ is
             mcontents[at.as_i64] := (k, v)
 
           t tuple =>     # we have a conflict
-            (ek, _) := t
+            ek, _ := t
             if ek = k    # no conflict, but remapping of k
               mcontents[at.as_i64] := (k, v)
             else         # conflict
@@ -102,7 +102,7 @@ is
       match contents[at]
         nil     => nil
         t tuple =>
-          (ek, v) := t
+          ek, v := t
           if ek = k
             v
           else
@@ -113,21 +113,19 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  public redef items =>
+  public redef items Sequence (tuple HK V) =>
     contents
       .filter o->o??
       .map (o -> o.get (panic "filter failed"))
 
 
-  # this hash map as a human readable string
-  # example: [(0,a),(1,b),(2,c),(3,d)]
+  # NYI: implement this when #4642 is done
+  # create a mutable map from this
   #
-  public redef as_string =>
-    items
-      .map t->"({t.values.0},{t.values.1})"
-      .as_string
+  # public redef as_mutable_map container.Mutable_Map PK V =>
 
 
   # empty -- convenience routine to create an empty instance of hash_map
   #
-  public fixed redef type.empty => container.hash_map HK V [] []
+  public fixed redef type.empty container.hash_map HK V =>
+    container.hash_map HK V [] []

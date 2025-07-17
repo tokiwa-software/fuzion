@@ -43,16 +43,13 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
@@ -409,13 +406,13 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * createThisType returns a new instance of the type of this feature's frame
-   * object.  This can be called even if !hasThisType() since thisClazz() is
-   * used also for abstract or intrinsic feature to determine the resultClazz().
+   * createSelfType returns a new instance of the type of this feature's frame
+   * object.
    *
    * @return this feature's frame object
    */
-  public AbstractType createThisType()
+  @Override
+  public AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
       (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());
@@ -423,8 +420,7 @@ public class LibraryFeature extends AbstractFeature
     var o = outer();
     var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this,
-                                         isRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                                     : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
+                                         defaultTypeKind(),
                                          generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
@@ -629,19 +625,10 @@ public class LibraryFeature extends AbstractFeature
             {
               var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field);
-              var target = f.outer().isUniverse() ? new Universe() : s.pop();
+              var target = f.outer().isUniverse() ? Universe.instance : s.pop();
               var val = s.pop();
               c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
-              break;
-            }
-          case Box:
-            {
-              var t = _libModule.boxType(iat);
-              x = new Box(s.pop(), t)
-                {
-                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
-                };
               break;
             }
           case Const:
@@ -698,7 +685,7 @@ public class LibraryFeature extends AbstractFeature
                   cases.add(lc);
                   cat = _libModule.caseNextPos(cat);
                 }
-              c = new AbstractMatch()
+              c = new AbstractMatch(null)
                 {
                   public Expr subject() { return subj; }
                   public List<AbstractCase> cases() { return cases; }
@@ -716,13 +703,6 @@ public class LibraryFeature extends AbstractFeature
           case Pop:
             {
               c = s.pop();
-              break;
-            }
-          case Tag:
-            {
-              var val = s.pop();
-              var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType, Context.NONE);
               break;
             }
           case Unit:
@@ -897,16 +877,17 @@ public class LibraryFeature extends AbstractFeature
   }
 
   /**
-   * Does this feature belong to or contain inner features of the given module?
-   * And should therefore be shown on the api page for that module
+   * Does this feature belong to or contain inner features of the given module
+   * and should therefore be shown on the API doc page for that module?
+   *
    * @param module the module for which the belonging is to be checked
-   * @return true iff this feature needs to be included in the api page for module
+   * @return true iff this feature needs to be included in the API doc page for module
    */
   public boolean showInMod(LibraryModule module)
   {
     // Problem: all features inherit from any, which is in base
     // therefore all features from other modules would be shown in base module because they always have an inner feature from base
-    if (module.name().equals("base"))
+    if (module.name().equals(FuzionConstants.BASE_MODULE_NAME))
       {
         return _libModule == module || isUniverse();
       }

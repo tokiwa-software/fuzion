@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -46,7 +47,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePosition
+public abstract class AbstractCase extends ANY implements HasSourcePosition
 {
 
 
@@ -92,8 +93,8 @@ public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePo
 
 
   /**
-   * List of types to be matched against. null if we match against type or match
-   * everything.
+   * List of types to be matched against.
+   * null if we match everything.
    */
   public abstract List<AbstractType> types();
 
@@ -115,22 +116,14 @@ public abstract class AbstractCase extends HasGlobalIndex implements HasSourcePo
   public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {
     v.actionBefore(this, m);
-    if (field() instanceof Feature f)
+    if (field() != null)
       {
-        f.visit(v, outer);
-      }
-    if (types() != null)
-      {
-        var i = types().listIterator();
-        while (i.hasNext())
-          {
-            i.set(i.next().visit(v, outer));
-          }
+        field().visit(v, outer);
       }
     var nc = code().visit(v, outer);
     if (CHECKS) check
       (nc == code());
-    v.actionAfter(this);
+    v.actionAfter(this, m);
   }
 
 

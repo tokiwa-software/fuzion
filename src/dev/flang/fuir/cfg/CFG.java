@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import dev.flang.fuir.FUIR;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.Graph;
 import dev.flang.util.List;
 
@@ -134,7 +135,7 @@ public class CFG extends ANY
    */
   public void createCallGraph()
   {
-    var cl = _fuir.mainClazzId();
+    var cl = _fuir.mainClazz();
     _newCalledClazzesToBeProcessed.add(cl);
     while (_newCalledClazzesToBeProcessed.size() > 0)
       {
@@ -219,8 +220,8 @@ public class CFG extends ANY
     put("concur.atomic.racy_accesses_supported", (cfg, cl) -> { } );
     put("concur.atomic.read0"            , (cfg, cl) -> { } );
     put("concur.atomic.write0"           , (cfg, cl) -> { } );
-    put("concur.util.loadFence"          , (cfg, cl) -> { } );
-    put("concur.util.storeFence"         , (cfg, cl) -> { } );
+    put("concur.util.load_fence"          , (cfg, cl) -> { } );
+    put("concur.util.store_fence"         , (cfg, cl) -> { } );
 
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
@@ -228,29 +229,7 @@ public class CFG extends ANY
     put("fuzion.sys.args.count"          , (cfg, cl) -> { } );
     put("fuzion.sys.args.get"            , (cfg, cl) -> { } );
     put("fuzion.std.exit"                , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.read"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.write"        , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.delete"       , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.move"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.create_dir"   , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.stats"        , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.lstats"       , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.open"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.close"        , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.seek"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.file_position", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mmap"         , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.munmap"       , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mapped_buffer_get", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.mapped_buffer_set", (cfg, cl) -> { } );
     put("fuzion.sys.fatal_fault0"        , (cfg, cl) -> { } );
-    put("fuzion.sys.stdin.stdin0"        , (cfg, cl) -> { } );
-    put("fuzion.sys.out.stdout"          , (cfg, cl) -> { } );
-    put("fuzion.sys.err.stderr"          , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.open_dir"     , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.read_dir"     , (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.read_dir_has_next", (cfg, cl) -> { } );
-    put("fuzion.sys.fileio.close_dir"    , (cfg, cl) -> { } );
 
     put("i8.prefix -°"                   , (cfg, cl) -> { } );
     put("i16.prefix -°"                  , (cfg, cl) -> { } );
@@ -401,16 +380,10 @@ public class CFG extends ANY
     put("f64.infix %"                    , (cfg, cl) -> { } );
     put("f32.infix **"                   , (cfg, cl) -> { } );
     put("f64.infix **"                   , (cfg, cl) -> { } );
-    put("f32.infix ="                    , (cfg, cl) -> { } );
-    put("f64.infix ="                    , (cfg, cl) -> { } );
-    put("f32.infix <="                   , (cfg, cl) -> { } );
-    put("f64.infix <="                   , (cfg, cl) -> { } );
-    put("f32.infix >="                   , (cfg, cl) -> { } );
-    put("f64.infix >="                   , (cfg, cl) -> { } );
-    put("f32.infix <"                    , (cfg, cl) -> { } );
-    put("f64.infix <"                    , (cfg, cl) -> { } );
-    put("f32.infix >"                    , (cfg, cl) -> { } );
-    put("f64.infix >"                    , (cfg, cl) -> { } );
+    put("f32.type.equal"                 , (cfg, cl) -> { } );
+    put("f64.type.equal"                 , (cfg, cl) -> { } );
+    put("f32.type.lower_than_or_equal"   , (cfg, cl) -> { } );
+    put("f64.type.lower_than_or_equal"   , (cfg, cl) -> { } );
     put("f32.as_f64"                     , (cfg, cl) -> { } );
     put("f64.as_f32"                     , (cfg, cl) -> { } );
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
@@ -454,41 +427,20 @@ public class CFG extends ANY
     put("f64.type.max"                   , (cfg, cl) -> { } );
     put("f64.type.epsilon"               , (cfg, cl) -> { } );
 
-    put("fuzion.sys.internal_array_init.alloc", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.setel", (cfg, cl) -> { } );
-    put("fuzion.sys.internal_array.get"  , (cfg, cl) -> { } );
+    put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
+    put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.freeze"
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.internal_array.ensure_not_frozen"
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
-    put("fuzion.sys.env_vars.set0"       , (cfg, cl) -> { } );
-    put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 
-    put("fuzion.sys.net.bind0"           , (cfg, cl) -> { } );
-    put("fuzion.sys.net.listen"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.accept"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.connect0"        , (cfg, cl) -> { } );
-    put("fuzion.sys.net.get_peer_address", (cfg, cl) -> { } );
-    put("fuzion.sys.net.get_peer_port"   , (cfg, cl) -> { } );
-    put("fuzion.sys.net.read"            , (cfg, cl) -> { } );
-    put("fuzion.sys.net.write"           , (cfg, cl) -> { } );
-    put("fuzion.sys.net.close0"          , (cfg, cl) -> { } );
-    put("fuzion.sys.net.set_blocking0"   , (cfg, cl) -> { } );
-
-    put("fuzion.sys.process.create"      , (cfg, cl) -> { } );
-    put("fuzion.sys.process.wait"        , (cfg, cl) -> { } );
-    put("fuzion.sys.pipe.read"           , (cfg, cl) -> { } );
-    put("fuzion.sys.pipe.write"          , (cfg, cl) -> { } );
-    put("fuzion.sys.pipe.close"          , (cfg, cl) -> { } );
-
-    put("fuzion.std.date_time"           , (cfg, cl) -> { } );
-
-    put("effect.type.default0"              , (cfg, cl) -> { } );
-    put("effect.type.instate0"              , (cfg, cl) ->
+    put("effect.type.default0"           , (cfg, cl) -> { } );
+    put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
           var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
           var call = cfg._fuir.lookupCall(oc);
@@ -502,29 +454,23 @@ public class CFG extends ANY
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
     put("effect.type.from_env"              , (cfg, cl) -> { } );
     put("effect.type.unsafe_from_env"       , (cfg, cl) -> { } );
-    put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
-    put("fuzion.java.array_get"             , (cfg, cl) -> { } );
-    put("fuzion.java.array_length"          , (cfg, cl) -> { } );
-    put("fuzion.java.array_to_java_object0" , (cfg, cl) -> { } );
-    put("fuzion.java.bool_to_java_object"   , (cfg, cl) -> { } );
-    put("fuzion.java.call_c0"               , (cfg, cl) -> { } );
-    put("fuzion.java.call_s0"               , (cfg, cl) -> { } );
-    put("fuzion.java.call_v0"               , (cfg, cl) -> { } );
-    put("fuzion.java.cast0"                 , (cfg, cl) -> { } );
-    put("fuzion.java.f32_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.f64_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.get_field0"            , (cfg, cl) -> { } );
-    put("fuzion.java.get_static_field0"     , (cfg, cl) -> { } );
-    put("fuzion.java.set_field0"            , (cfg, cl) -> { } );
-    put("fuzion.java.set_static_field0"     , (cfg, cl) -> { } );
-    put("fuzion.java.i16_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.i32_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.i64_to_java_object"    , (cfg, cl) -> { } );
-    put("fuzion.java.i8_to_java_object"     , (cfg, cl) -> { } );
-    put("fuzion.java.java_string_to_string" , (cfg, cl) -> { } );
-    put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
-    put("fuzion.java.create_jvm"            , (cfg, cl) -> { } );
-    put("fuzion.java.u16_to_java_object"    , (cfg, cl) -> { } );
+    put("fuzion.jvm.is_null0"               , (cfg, cl) -> { } );
+    put("fuzion.jvm.array_get"              , (cfg, cl) -> { } );
+    put("fuzion.jvm.array_length"           , (cfg, cl) -> { } );
+    put("fuzion.jvm.array_to_java_object0"  , (cfg, cl) -> { } );
+    put("fuzion.jvm.call_c0"                , (cfg, cl) -> { } );
+    put("fuzion.jvm.call_s0"                , (cfg, cl) -> { } );
+    put("fuzion.jvm.call_v0"                , (cfg, cl) -> { } );
+    put("fuzion.jvm.cast0"                  , (cfg, cl) -> { } );
+    put("fuzion.jvm.get_field0"             , (cfg, cl) -> { } );
+    put("fuzion.jvm.get_static_field0"      , (cfg, cl) -> { } );
+    put("fuzion.jvm.set_field0"             , (cfg, cl) -> { } );
+    put("fuzion.jvm.set_static_field0"      , (cfg, cl) -> { } );
+    put("fuzion.jvm.java_string_to_string"  , (cfg, cl) -> { } );
+    put("fuzion.jvm.string_to_java_object0" , (cfg, cl) -> { } );
+    put("fuzion.jvm.primitive_to_java_object", (cfg, cl) -> { } );
+    put("fuzion.jvm.create_jvm"             , (cfg, cl) -> { } );
+    put("fuzion.jvm.destroy_jvm"            , (cfg, cl) -> { } );
 
     put("concur.sync.mtx_init"              , (cfg, cl) -> { } );
     put("concur.sync.mtx_lock"              , (cfg, cl) -> { } );
@@ -536,6 +482,9 @@ public class CFG extends ANY
     put("concur.sync.cnd_broadcast"         , (cfg, cl) -> { } );
     put("concur.sync.cnd_wait"              , (cfg, cl) -> { } );
     put("concur.sync.cnd_destroy"           , (cfg, cl) -> { } );
+
+    put("native_string_length"              , (cfg, cl) -> { } );
+    put("native_array"                      , (cfg, cl) -> { } );
   }
 
 

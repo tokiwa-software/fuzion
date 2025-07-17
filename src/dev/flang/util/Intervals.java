@@ -65,7 +65,7 @@ public class Intervals<PROPERTY> extends ANY
    *
    * @param min the first value for which p holds
    *
-   * @param max the value after the last value for which p holds. May be <= min
+   * @param max the value after the last value for which p holds. May be {@literal <=} min
    * to specify the empty interval.
    *
    * @param p tne new property to store for min..max-1

@@ -35,6 +35,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <stdatomic.h>
+#include <time.h>
 
 
 /**
@@ -96,10 +97,15 @@ void * fzE_malloc_safe(size_t size) {
   return p;
 }
 
-void fzE_memset(void *dest, int ch, size_t sz){
-  // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memset_s
-  memset(dest, ch, sz);
+
+void fzE_free(void * ptr) {
+#ifdef GC_THREADS
+  GC_FREE(ptr);
+#else
+  free(ptr);
+#endif
 }
+
 
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
   // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memcpy_s
@@ -113,7 +119,7 @@ void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
 
 // global instance of the jvm
 JavaVM *fzE_jvm                = NULL;
-// global instance of the jvm environment
+// thread local instance of the jvm environment
 __thread JNIEnv *fzE_jni_env   = NULL;
 _Bool jvm_running              = false;
 
@@ -156,7 +162,7 @@ struct fzE_jvm_result
   union
   {
     jvalue v0;
-    jstring v1; // NYI should probably better be jthrowable
+    jstring v1; // NYI: UNDER DEVELOPMENT: should probably better be jthrowable
   }fzChoice;
 };
 
@@ -212,7 +218,7 @@ JNIEnv * getJNIEnv()
 {
   if (!jvm_running)
     {
-      printf("JVM has not been started via: `fuzion.java.create_jvm0 ...`\n");
+      printf("JVM has not been started via: `fuzion.jvm.env.create_jvm0 ...`\n");
       exit(EXIT_FAILURE);
     }
   if (fzE_jni_env == NULL) {
@@ -269,7 +275,7 @@ void fzE_create_jvm(char * option_string) {
 }
 
 // close the JVM.
-void fzE_destroy_jvm()
+void fzE_destroy_jvm(void)
 {
   (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
 }
@@ -289,7 +295,7 @@ char* fzE_replace_char(const char* str, char find, char replace){
 }
 
 // convert a jstring to a utf-8 byte array
-// NYI OPTIMIZATION do conversion in C not via the JVM.
+// NYI: OPTIMIZATION: do conversion in C not via the JVM.
 const char * fzE_java_string_to_utf8_bytes(jstring jstr)
 {
   if (jstr == NULL)
@@ -412,7 +418,7 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
       }
       break;
     default:
-      // NYI array
+      // NYI: UNDER DEVELOPMENT: array
       printf("unhandled %c", *sig);
       exit(EXIT_FAILURE);
       break;
@@ -434,7 +440,7 @@ fzE_jvm_result fzE_jvm_not_found(jstring jstr)
 // convert a 0-terminated utf8-bytes array to a jstring.
 jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 {
-  // NYI we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
+  // NYI: UNDER DEVELOPMENT: we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
   // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
   char outstr[4*byte_length];
   utf8_to_mod_utf8(utf8_bytes, outstr);
@@ -798,7 +804,7 @@ jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig)
 
 
 // set a static field in class.
-void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig) // TODO:FIXME:
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig)
 {
   jclass cl  = (*getJNIEnv())->FindClass(getJNIEnv(), fzE_replace_char(fzE_java_string_to_modified_utf8(class_name), '.', '/'));
   assert( cl != NULL );
@@ -839,82 +845,6 @@ void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const
 
 #endif
 
-/*
-
-C11 support is still limited on e.g. macOS etc.
-
-void * fzE_mtx_init()
-{
-  mtx_t * mtx = fzE_malloc_safe(sizeof(mtx_t));
-  return mtx_init(mtx, mtx_plain) == thrd_success
-    ? (void *)mtx
-    : NULL;
-}
-
-int32_t fzE_mtx_lock(void * mtx)
-{
-  return mtx_lock((mtx_t *) mtx) == thrd_success
-    ? 0
-    : -1;
-}
-
-int32_t fzE_mtx_trylock(void * mtx)
-{
-  return mtx_trylock((mtx_t *) mtx) == thrd_success
-    ? 0
-    : -1;
-}
-
-int32_t fzE_mtx_unlock(void * mtx)
-{
-  return mtx_unlock((mtx_t *) mtx) == thrd_success
-    ? 0
-    : -1;
-}
-
-void fzE_mtx_destroy(void * mtx)
-{
-  mtx_destroy((mtx_t *) mtx);
-  // NYI: free(mtx)
-}
-
-void * fzE_cnd_init()
-{
-  cnd_t * cnd = fzE_malloc_safe(sizeof(cnd));
-  return cnd_init(cnd) == thrd_success
-    ? (void *)cnd
-    : NULL;
-}
-
-int32_t fzE_cnd_signal(void * cnd)
-{
-  return cnd_signal((cnd_t *) cnd) == thrd_success
-    ? 0
-    : -1;
-}
-
-int32_t fzE_cnd_broadcast(void * cnd)
-{
-  return cnd_broadcast((cnd_t *) cnd) == thrd_success
-    ? 0
-    : -1;
-}
-
-int32_t fzE_cnd_wait(void * cnd, void * mtx)
-{
-  return cnd_wait((cnd_t *) cnd, (mtx_t *) mtx) == thrd_success
-    ? 0
-    : -1;
-}
-
-void fzE_cnd_destroy(void * cnd)
-{
-  cnd_destroy((cnd_t *) cnd);
-  // NYI: free(cnd)
-}
-
-*/
-
 
 /**
  * get a unique id > 0
@@ -924,3 +854,27 @@ uint64_t fzE_unique_id()
   static atomic_uint_least64_t last_id = 0;
   return ++last_id;
 }
+
+
+extern inline uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
+{
+  return ((uint8_t *)addr)[idx];
+}
+
+extern inline void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
+{
+  ((uint8_t *)addr)[idx] = x;
+}
+
+extern inline void * fzE_null(void)
+{
+  return NULL;
+}
+
+extern inline int fzE_is_null(void * p)
+{
+  return p == NULL
+    ? 0
+    : -1;
+}
+

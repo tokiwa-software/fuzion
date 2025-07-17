@@ -29,25 +29,25 @@
 public check_fault (
   # the handler this effect uses to fail
   p String -> void
-  ) : eff.fallible (String) /* NYI: BUG: this type parameter is required, type inference results in NullPointException */ p
+  ) : eff.fallible p
 is
 
 
   # install default check_fault handler
   type.install_default =>
     (fuzion.runtime.check_fault msg->
-      fuzion.runtime.fault.cause ("check", msg)).default
+      fuzion.runtime.contract_fault.cause ("check", msg)).default
 
 
   # create an instance of `check_fault` with the given error handler.
   #
-  public fixed redef type.new(h String -> void) => fuzion.runtime.check_fault h
+  public fixed redef type.new(h String -> void) fuzion.runtime.check_fault => fuzion.runtime.check_fault h
 
 
 # check_fault with no argument returns check_fault.env, the currently installed
 # runtime check_fault handler.
 #
-public check_fault =>
+public check_fault check_fault =>
   check_fault.install_default
   check_fault.env
 
@@ -55,4 +55,4 @@ public check_fault =>
 # cause a check fault with given msg argument, i.e., call check_fault.cause
 # msg, i.e., use the current check_fault effect to fail with the given message.
 #
-public checkcondition_fault(msg String) => check_fault.cause msg
+public checkcondition_fault(msg String) void => check_fault.cause msg

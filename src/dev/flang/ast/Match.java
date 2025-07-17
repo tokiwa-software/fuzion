@@ -26,7 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Iterator;
+import java.util.Stack;
+import java.util.function.Supplier;
+
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -42,6 +47,15 @@ import dev.flang.util.SourcePosition;
  */
 public class Match extends AbstractMatch
 {
+
+
+  /*-------------------------  static variables -------------------------*/
+
+
+  /**
+   * quick-and-dirty way to make unique names for match result vars
+   */
+  static private long _id_ = 0;
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -64,12 +78,6 @@ public class Match extends AbstractMatch
   public List<AbstractCase> cases() { return _cases; }
 
 
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  private final SourcePosition _pos;
-
-
   private boolean _assignedToField = false;
 
 
@@ -90,26 +98,17 @@ public class Match extends AbstractMatch
                Expr e,
                List<AbstractCase> c)
   {
+    super(pos);
     if (PRECONDITIONS) require
       (e != null,
        c != null);
 
     _subject = e;
     _cases = c;
-    _pos = pos;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**
@@ -124,9 +123,12 @@ public class Match extends AbstractMatch
    */
   public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _subject = _subject.visit(v, outer);
+    var os = _subject;
+    var ns = _subject.visit(v, outer);
+    if (CHECKS) check
+      (os == _subject);
+    _subject = ns;
     v.action(this);
-    v.action(this, outer);
     for (var c: cases())
       {
         c.visit(v, this, outer);
@@ -142,16 +144,14 @@ public class Match extends AbstractMatch
    *
    * @param context the source code context where this Call is used
    */
-  public void resolveTypes(Resolution res, Context context)
+  void resolveTypes(Resolution res, Context context)
   {
-    var st = _subject.type();
-    if (CHECKS) check
-      (Errors.any() || st != Types.t_ERROR);
-    if (st != Types.t_ERROR && !st.isGenericArgument())
+    var st = _subject.typeForInferencing();
+    if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
       {
         res.resolveTypes(st.feature());
       }
-    if (st.isChoice())
+    if (st != null && st.isChoice() && Types.resolved.t_void != st)
       {
         var cgs = st.choiceGenerics(context);
         for (var i = 0; i < cgs.size(); i++)
@@ -229,24 +229,241 @@ public class Match extends AbstractMatch
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
+    // NYI: CLEANUP: there should be another mechanism, for
+    // adding missing result fields instead of misusing
+    // `propagateExpectedType`.
+    //
     return addFieldForResult(res, context, t);
   }
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Add a field for the result of this match expression,
+   * add an assign to this field of each cases result.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this assignment is used
+   *
+   * @param t the type to use for the result field
+   */
+  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  {
+    Expr result = this;
+    if (!t.isVoid())
+      {
+        var pos = pos();
+        Feature r = new Feature(res,
+                                pos,
+                                Visi.PRIV,
+                                t,
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                                context.outerFeature());
+        r.scheduleForResolution(res);
+        res.resolveTypes();
+        result = new Block(new List<>(assignToField(res, context, r),
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
+      }
+    return result;
+  }
+
+
+  /**
+   * This will trigger addFieldForResult in some cases, e.g.:
+   * `match (if true then true else true) * =>`
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   */
+  void addFieldsForSubject(Resolution res, Context context)
+  {
+    _subject = subject().propagateExpectedType(res, context, subject().type(), null);
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
-  public boolean producesResult()
+  @Override public boolean producesResult()
   {
     return !_assignedToField;
+  }
+
+
+  /**
+   * typeForInferencing returns the type of this expression or null if the type is
+   * still unknown, i.e., before or during type resolution.  This is redefined
+   * by sub-classes of Expr to provide type information.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  @Override
+  AbstractType typeForInferencing()
+  {
+    if (_type == null)
+      {
+        _type = typeFromCases(false);
+      }
+    return _type;
+  }
+
+
+  /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
+   */
+  @Override
+  public AbstractType type()
+  {
+    if (typeForInferencing() == null)
+      {
+        _type = typeFromCases(true);
+      }
+
+    if (POSTCONDITIONS) ensure
+      (_type != null,
+       _type != Types.t_UNDEFINED);
+
+    return _type;
+  }
+
+
+  /**
+   * Helper routine for typeForInferencing to determine the
+   * type of this if expression on demand, i.e., as late as possible.
+   *
+   * @param urgent true if we really need a type and an error should be produced
+   * if we can't get one.
+   */
+  private AbstractType typeFromCases(boolean urgent)
+  {
+    var result = Expr.union(new List<>(casesForType()), Context.NONE, urgent);
+    if (result == Types.t_ERROR)
+      {
+        new IncompatibleResultsOnBranches
+          (pos(),
+           "Incompatible types in " +
+           (kind() == Kind.Plain ? "cases of match" : "branches of if") +
+           " expression",
+           casesForType());
+      }
+    return result;
+  }
+
+
+  /**
+   * Iterator over all case blocks,
+   * including nested match case blocks
+   */
+  private Iterator<Expr> casesForType()
+  {
+    return new Iterator<Expr>()
+    {
+      Stack<Iterator<AbstractCase>> stack = new Stack<Iterator<AbstractCase>>();
+      {
+        stack.push(cases().iterator());
+      }
+      public boolean hasNext()
+      {
+        while (!stack.peek().hasNext() && stack.size() > 1)
+          {
+            stack.pop();
+          }
+        return stack.peek().hasNext();
+      }
+      public Expr next()
+      {
+        var c = stack.peek().next().code();
+        if (c instanceof Match m)
+          {
+            stack.push(m.cases().iterator());
+            return next();
+          }
+        else if (c instanceof Block b && b.resultExpression() instanceof Match m)
+          {
+            stack.push(m.cases().iterator());
+            return next();
+          }
+        else
+          {
+            return c;
+          }
+      }
+    };
+  }
+
+
+  /**
+   * create an if expr,
+   *
+   * @param pos the source position of the if
+   *
+   * @param c then condition
+   *
+   * @param b the "true"-block, must not be null
+   *
+   * @param elseB else block, may be null
+   *
+   * @param fromContract is this an if generated from a contract? (for error messages)
+   */
+  public static Match createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
+  {
+    if (PRECONDITIONS) require
+      (c != null,
+       b != null);
+
+    /**
+     * If there is no else / elseif, create a default else
+     * branch returning unit.
+     */
+    if (elseB == null)
+      {
+        var unit = new Call(pos, FuzionConstants.UNIT_NAME);
+        elseB = new Block(new List<>(unit));
+      }
+
+    // Types.resolved may still be null, so we have to
+    // create these cases in a lazy fashion.
+    var cases = new List<AbstractCase>(
+          new Case(b.pos(), null, b)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[1] = SourcePosition.notAvailable;
+              return true;
+            }
+          },
+          new Case(elseB.pos(), null, elseB)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[0] = SourcePosition.notAvailable;
+              return true;
+            }
+          });
+
+    return new Match(pos, c, cases)
+      {
+        @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
+      };
   }
 
 
@@ -257,7 +474,7 @@ public class Match extends AbstractMatch
    */
   public String toString()
   {
-    var sb = new StringBuilder("match " + subject() + "\n");
+    var sb = new StringBuilder((kind() == Kind.Plain ? "match " : "if ") + subject() + "\n");
     for (var c : cases())
       {
         sb.append(c.toString()).append("\n");

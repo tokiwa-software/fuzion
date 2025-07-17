@@ -88,8 +88,8 @@ class Layout extends FUIRContext
 
 
   /**
-   * The size of the clazz, -1 if layout has not started yet, <-1 if layout is
-   * in progress, Integer.MIN_VALUE if layout is done but clazz cannot be
+   * The size of the clazz, -1 if layout has not started yet, &lt; -1 if layout is
+   * in progress, {@code Integer.MIN_VALUE} if layout is done but clazz cannot be
    * instantiated.
    */
   private final int _size;
@@ -115,7 +115,7 @@ class Layout extends FUIRContext
         // reserved for tagging
         size += (fuir().clazzIsChoiceOfOnlyRefs(_clazz) ? 0 : 1);
         int maxSz = 0;
-        for (int i = 0; i < fuir().clazzNumChoices(cl); i++)
+        for (int i = 0; i < fuir().clazzChoiceCount(cl); i++)
           {
             var cg = fuir().clazzChoice(cl, i);
             var sz = fuir().clazzIsRef(cg) ? 1 : get(cg).size();
@@ -130,13 +130,11 @@ class Layout extends FUIRContext
       }
     else if (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine)
       {
-        for (int i = 0; i < fuir().clazzNumFields(cl); i++)
+        for (int i = 0; i < fuir().clazzFieldCount(cl); i++)
           {
             var f = fuir().clazzField(cl, i);
-            // NYI: Ugly special handling, clean up:
-            int fc = fuir().clazzFieldIsAdrOfValue(f)  ? fuir().clazz(FUIR.SpecialClazzes.c_sys_ptr)
-                                                       : fuir().clazzResultClazz(f);
-            var fsz = fuir().clazzIsRef(fc)
+            int fc = fuir().clazzResultClazz(f);
+            var fsz = fuir().clazzFieldIsAdrOfValue(f) || fuir().clazzIsRef(fc)
               ? 1
               : switch (fuir().getSpecialClazz(fc))
                 {
@@ -151,9 +149,12 @@ class Layout extends FUIRContext
                 case c_f32  -> 1;
                 case c_f64  -> 2;
                 case c_void -> 0;
-                default     -> get(fc).size();
+                default     ->
+                  fuir().clazzIsUnitType(fc)
+                    ? 0
+                    : get(fc).size();
                 };
-            _offsets.put(i, size - Integer.MIN_VALUE);
+            _offsets.put(f, size - Integer.MIN_VALUE);
             size += fsz;
           }
         size -= Integer.MIN_VALUE;
@@ -182,10 +183,10 @@ class Layout extends FUIRContext
     if (PRECONDITIONS) require
       (fuir().clazzKind(_clazz) == FUIR.FeatureKind.Routine ||
        fuir().clazzIsChoice(_clazz),
-       _offsets.containsKey(fuir().fieldIndex(f))
+       _offsets.containsKey(f)
        );
 
-    return _offsets.get(fuir().fieldIndex(f));
+    return _offsets.get(f);
   }
 
 
@@ -228,7 +229,7 @@ class Layout extends FUIRContext
     if (PRECONDITIONS) require
       (fuir().clazzIsChoice(_clazz),
        id >= 0,
-       id < fuir().clazzNumChoices(_clazz));
+       id < fuir().clazzChoiceCount(_clazz));
 
     // id is ignored, all vals are currently stored at the same offset:
     return choiceValsOffset();

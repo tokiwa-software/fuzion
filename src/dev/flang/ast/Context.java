@@ -38,12 +38,12 @@ import dev.flang.util.ANY;
  *      else if T : integer then
  *        say "integer, neg is {-v}"
  *
- * The context of the calls to `say` would contain the constraints `T : String`
- * or `T : integer`.
+ * The context of the calls to {@code say} would contain the constraints {@code T : String}
+ * or {@code T : integer}.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Context extends ANY
+abstract class Context extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -52,7 +52,7 @@ public abstract class Context extends ANY
   /**
    * Pre-allocated instance for no context.
    */
-  public static final Context NONE = new Context()
+  static final Context NONE = new Context()
     {
       @Override AbstractFeature outerFeature()
       {
@@ -84,12 +84,12 @@ public abstract class Context extends ANY
   /**
    * Create the default context for the given feature f.
    *
-   * The result is a context whose `outerFeature()` equals to `f` and whose
-   * `exterior()` context is the contains the source code context of the
-   * declaration of `f`.
+   * The result is a context whose {@code outerFeature()} equals to {@code f} and whose
+   * {@code exterior()} context is the contains the source code context of the
+   * declaration of {@code f}.
    *
    * This means that any type constraints that are made outside of the
-   * declaration of `f` will be part of the constraints on the result.
+   * declaration of {@code f} will be part of the constraints on the result.
    */
   static Context forFeature(AbstractFeature f)
   {
@@ -103,8 +103,11 @@ public abstract class Context extends ANY
 
         @Override Context exterior()
         {
-          return f instanceof Feature ff ? ff._sourceCodeContext
-                                         : NONE;
+          return f instanceof Feature ff && ff._sourceCodeContext != NONE
+            ? ff._sourceCodeContext
+            : f.outer() != null
+            ? forFeature(f.outer())
+            : NONE;
         }
 
         @Override String localToString()
@@ -113,24 +116,45 @@ public abstract class Context extends ANY
         }
 
         @Override
-        public AbstractType constraintFor(AbstractFeature typeParameter)
+        AbstractType constraintFor(AbstractFeature typeParameter)
         {
           if (f instanceof Feature ff)
             {
-              for (var c : ff.contract()._declared_preconditions)
+              for (var c : ff.originalContract()._declared_preconditions)
                 {
-                  if (c.cond instanceof Call cc &&
+                  if (c.cond() instanceof Call cc &&
                       cc.calledFeatureKnown() &&
                       cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
                       cc.target() instanceof Call tc &&
-                      tc.calledFeature() == typeParameter)
+                      isClone(typeParameter, tc.calledFeature()))
                     {
-                      return cc.actualTypeParameters().get(0);
+                      return cc
+                        .actualTypeParameters()
+                        .get(0)
+                        /**
+                         * replace type parameters that come from pre feature
+                         * with their original type parameter.
+                         * {@code Sequence.pre unzip2.A} by {@code Sequence.unzip2.A}
+                         */
+                        .applyToGenericsAndOuter(x ->
+                          x instanceof ResolvedParametricType rpt
+                            ? f
+                              .typeArguments()
+                              .stream()
+                              .filter(y ->
+                                  y.outer().origin() == rpt.genericArgument().outer().origin() &&
+                                  y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
+                                )
+                              .findFirst()
+                              .get()
+                              .asGenericType()
+                            : x);
                     }
                 }
             }
           return super.constraintFor(typeParameter);
         }
+
       };
   }
 
@@ -165,7 +189,7 @@ public abstract class Context extends ANY
    *
    * @param typeParameter a type parameter feature.
    */
-  public AbstractType constraintFor(AbstractFeature typeParameter)
+  AbstractType constraintFor(AbstractFeature typeParameter)
   {
     var e = exterior();
     return e != null ? e.constraintFor(typeParameter)
@@ -174,10 +198,10 @@ public abstract class Context extends ANY
 
 
   /**
-   * Create a new context that adds the constraint imposed by a call `T : x` to
+   * Create a new context that adds the constraint imposed by a call {@code T : x} to
    * this context.
    */
-  public Context addTypeConstraint(AbstractCall infix_colon_call)
+  Context addTypeConstraint(AbstractCall infix_colon_call)
   {
     if (PRECONDITIONS) require
       (infix_colon_call.calledFeature() == Types.resolved.f_Type_infix_colon);
@@ -197,7 +221,7 @@ public abstract class Context extends ANY
             @Override
             public AbstractType constraintFor(AbstractFeature typeParameter)
             {
-              if (t.calledFeature() == typeParameter)
+              if (isClone(t.calledFeature(), typeParameter))
                 {
                   return infix_colon_call.actualTypeParameters().get(0);
                 }
@@ -212,6 +236,21 @@ public abstract class Context extends ANY
           };
       }
     return result;
+  }
+
+
+  /**
+   * Test if f1 and f2 are equal or clones of each other,
+   * that where create via Contract.argsSupplier
+   */
+  protected boolean isClone(AbstractFeature f1, AbstractFeature f2)
+  {
+    return f1 == f2 ||
+      f2.featureName().baseName().compareTo(f1.featureName().baseName()) == 0 &&
+      (f2.outer().preFeature() == f1.outer() ||
+        f2.outer().preBoolFeature() == f1.outer() ||
+        f2.outer() == f1.outer().preFeature() ||
+        f2.outer() == f1.outer().preBoolFeature());
   }
 
 

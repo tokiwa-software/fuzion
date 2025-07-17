@@ -47,26 +47,26 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (i1, i2 i64) =>
+  public redef index [ ] (i1, i2 i64) T =>
     data[i1.as_i32 * length1.as_i32 + i2.as_i32]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (i1, i2 i64, o T) =>
+  public redef set [ ] (i1, i2 i64, o T) unit =>
     check_and_replace
     data[i1.as_i32 * length1.as_i32 + i2.as_i32] := o
 
 
   # create immutable array from this
   #
-  public redef as_array =>
+  public redef as_array universe.array T =>
     array (length0.as_i32 * length1.as_i32) i->data[i]
 
 
   # create a list from this array
   #
-  public redef as_list =>
+  public redef as_list list T =>
     # since array is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -83,7 +83,7 @@ is
     length1 i64,
 
     # initial value for elements
-    init2 (i64, i64) -> T
+    init T
 
    ) container.Mutable_Array2 T LM
   =>
@@ -91,6 +91,13 @@ is
 
     for i1 in (i64 0)..length0-1 do
       for i2 in (i64 0)..length1-1 do
-        data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init2 i1 i2
+        data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init
 
     LM.env.array2 length0 length1 data unit
+
+
+# convenience feature for creating a new array2,
+# in some cases even with type inference
+#
+public new_array2 (T type, length0, length1 i64, init T) container.Mutable_Array2 T mutate.this =>
+  (mutate.array2 T).new mutate.this length0 length1 init

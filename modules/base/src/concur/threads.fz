@@ -39,7 +39,7 @@ is
 
   # spawn a new thread
   #
-  public spawn(code ()->unit) =>
+  public spawn(code ()->unit) concur.thread =>
     st := p.spawn code
     (threads p (running++[st]).as_array).replace
     st
@@ -47,7 +47,7 @@ is
 
   # detach a running thread
   #
-  public detach(thrd concur.thread)
+  public detach(thrd concur.thread) unit
   pre debug: running.contains thrd
   =>
     (threads p (running.filter (t->t!=thrd)).as_array).replace
@@ -55,7 +55,7 @@ is
 
   # join all running threads
   #
-  redef finally =>
+  public redef finally unit =>
     running.for_each t->
       t.join
 
@@ -74,13 +74,13 @@ default_thread_handler : Thread_Handler is
 # thread with no argument returns thread.env, i.e., the currently installed
 # source of thread concurrency.
 #
-public threads =>
+public threads threads =>
   (threads default_thread_handler []).default
   threads.env
 
 
 
-# Thread_Provider -- abstract source of concurrency
+# Thread_Handler -- abstract source of concurrency
 #
 private:public Thread_Handler ref is
 

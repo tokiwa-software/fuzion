@@ -28,6 +28,7 @@ package dev.flang.fuir.analysis.dfa;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import static dev.flang.util.Errors.*;
 import dev.flang.util.HasSourcePosition;
 
@@ -48,7 +49,14 @@ public class DfaErrors extends ANY
   {
     Errors.error(pos.pos(),
                  "Failed to verify that effect " + st(e) + " is installed in current environment.",
-                 "Callchain that lead to this point:\n\n" + why.contextStringForEnv());
+                 "Callchain that lead to this point:\n\n" + why.contextStringForEnv() + "\n" +
+                 "To fix this, you should make sure that an effect for type " + st(e) +" is instated "+
+                 "along all call paths to this effect use." +
+                 (DFA.TRACE_ALL_EFFECT_ENVS
+                  ? ""
+                  : ("\n\nAlternatively, you might want to try setting env variable "+code(FuzionOptions.envVarName(DFA.TRACE_ALL_EFFECT_ENVS_NAME)+"=true")+
+                     ".  This will increase the analysis accuracy for effects, but may take a long time.")
+                  ));
   }
 
 

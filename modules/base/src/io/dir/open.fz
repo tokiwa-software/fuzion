@@ -24,7 +24,7 @@
 
 # effect for manipulating open directories
 #
-module:public open(fd i64,
+module:public open(dd Directory_Descriptor,
                    public path String) : effect is
 
   # reads the next entry of this directory
@@ -35,11 +35,18 @@ module:public open(fd i64,
   # NOTES: current directory `.` and parent directory `..` are omitted.
   #
   public read outcome String ! io.dir.read =>
-    io.dir.read.read fd
+    io.dir.read.read dd
+
+
+  # close dir when de-instating effect
+  #
+  public redef finally unit =>
+    if fzE_dir_close dd != 0
+      fuzion.runtime.fault.cause ("io.dir.open.finally", "closing directory failed.")
 
 
 # short hand to get the currently
 # installed open effect
 #
-public open =>
+public open open =>
   open.env

@@ -37,11 +37,11 @@ is
 
 
   # basic operations
-  public fixed redef prefix + => complex.this
-  public fixed redef infix + (b complex.this) => complex real+b.real imag+b.imag
-  public fixed redef infix - (b complex.this) => complex real-b.real imag-b.imag
-  public fixed redef infix * (b complex.this) => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
-  public fixed redef infix / (b complex.this)
+  public fixed redef prefix + complex C => complex.this
+  public fixed redef infix + (b complex C) complex C => complex real+b.real imag+b.imag
+  public fixed redef infix - (b complex C) complex C => complex real-b.real imag-b.imag
+  public fixed redef infix * (b complex C) complex C => complex real*b.real-imag*b.imag real*b.imag+imag*b.real
+  public fixed redef infix / (b complex C) complex C
   =>
     n := b.real*b.real+b.imag*b.imag
     complex (real*b.real+imag*b.imag)/n (imag*b.real-real*b.imag)/n
@@ -49,22 +49,25 @@ is
 
   # equality
   #
-  public fixed redef type.equality(a, b num.complex C) =>
+  public fixed redef type.equality(a, b num.complex C) bool =>
     a.real = b.real && a.imag = b.imag
 
 
-  # total order ignoring imag
+  # lexicographic order
   #
-  # NYI: Does this make sense mathematically?
+  # see ORDERING COMPLEX NUMBERS. . . NOT* by David Angell:
+  # https://web.maths.unsw.edu.au/~angell/articles/complexorder.pdf
   #
-  public fixed redef type.lteq(a, b num.complex C) =>
-    a.real ≤ b.real
+  # NOTE: the lexicographic order is compatible with addition, but not with multiplication.
+  #
+  public fixed redef type.lteq(a, b num.complex C) bool =>
+    a.real < b.real || (a.real = b.real && a.imag <= b.imag)
 
 
-  public abs² => real*real+imag*imag
+  public abs² C => real*real+imag*imag
 
 
-  public redef as_string =>
+  public redef as_string String =>
     si :=
       for c in ($imag).as_codepoints
       until !("0123456789.+-".contains c)
@@ -77,17 +80,17 @@ is
 
   # identity element for 'infix +'
   #
-  public fixed redef type.zero =>
+  public fixed redef type.zero num.complex C =>
     num.complex C.zero C.zero
 
 
   # identity element for 'infix *'
   #
-  public fixed redef type.one =>
+  public fixed redef type.one num.complex C =>
     num.complex C.one C.zero
 
 
   # the imaginary unit
   #
-  public fixed type.i =>
+  public fixed type.i num.complex C =>
     num.complex C.zero C.one

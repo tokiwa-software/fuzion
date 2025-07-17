@@ -32,56 +32,55 @@ public mode is
 
   module:public val : choice mode.read mode.write append is
 
-
-
-# this opens a file with the given mode and installs
-# effect (open T) to be used in `code()`.
+# this opens a file with the given mode.
+# on success it instates effects:
+#
+# file.this.open,
+# (io.buffered file.this.file_mutate).reader and
+# (io.buffered file.this.file_mutate).writer.
+#
+# These can then be used in `code()`.
 #
 # usage example:
 #
-#     use some_type file_name mode.read ()->
-#       match (open some_type).read
-#         e error => e
-#         a array => String.from_bytes a
+#     my_file : io.file is
+#     _ := my_file.use file_name mode.read ()->
+#       say (io.buffered my_file.file_mutate).read_lines
 #
-public use(R type, LM type : mutate, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
 
-  # definition of read provider for file
+  # definition of read handler for file
   #
-  read_provider(desc i64) : io.Read_Provider is
-    redef read(count i32) choice (array u8) io.end_of_file error =>
+  read_handler(desc File_Descriptor) : io.Read_Handler is
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
       match fuzion.sys.fileio.read desc count.as_u64
         a array u8 => if a.is_empty then io.end_of_file else a
         e error => e
 
-  # definition of write provider for file
+  # definition of write handler for file
   #
-  write_provider (desc i64) : io.Write_Provider is
-    redef write (bytes Sequence u8) outcome unit =>
+  write_handler (desc File_Descriptor) : io.Write_Handler is
+    public redef write (bytes Sequence u8) outcome unit =>
       fuzion.sys.fileio.write desc bytes.as_array
 
 
-  mode_num := match m
-                mode.read => i8 0
-                mode.write => i8 1
-                mode.append => i8 2
+  mode_num :=
+    match m
+      mode.read => 0
+      mode.write => 1
+      mode.append => 2
 
-  (fuzion.sys.fileio.open file_name mode_num).bind R fd->
-    # install effect `open T` and run `code`
-    r := (open fd file_name) ! ()->
-          (io.buffered.reader LM (read_provider fd) 1024) ! ()->
-            (io.buffered.writer (write_provider fd) 1024) ! ()->
-              tmp := code.call
-              # NYI: handle error once signature of with is changed
-              _ := io.buffered.writer.env.flush
-              tmp
+  (fuzion.sys.fileio.open file_name mode_num).bind fd->
 
-    # close file
-    _ := fuzion.sys.fileio.close fd
+    # NYI: BUG: unclear why DFA does not accept this
+    # file_mutate
+    #   .and (outcome R) open (open fd file_name)
+    #   .and ((io.buffered file_mutate).reader (read_handler fd) 1024)
+    #   .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+    #   .call code
 
-    # return result
-    r
-      # NYI: UNDER DEVELOPMENT: nested outcomes
-      .bind (outcome R) x->x
-      .bind R x->x
-
+    file_mutate ! ()->
+      open fd file_name
+        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd) 1024)
+        .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+        .call code

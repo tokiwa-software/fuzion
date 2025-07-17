@@ -1,0 +1,161 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.calendar_duration
+#
+# -----------------------------------------------------------------------
+
+# time.calendar_duration -- value representing a duration in the ISO 8601
+# calendar
+#
+module:public calendar_duration (
+
+  # the amount of years in this duration
+  #
+  public years u64,
+
+  # the amount of months in this duration
+  #
+  public months u64,
+
+  # the amount of days in this duration
+  #
+  public days u64,
+
+  # the amount of hours in this duration
+  #
+  public hours u64,
+
+  # the amount of minutes in this duration
+  #
+  public minutes u64,
+
+  # the amount of seconds in this duration
+  #
+  public seconds u64,
+
+  # the amount of nanoseconds in this duration
+  #
+  public nanos u64
+  ) : property.orderable
+
+# NYI: UNDER DEVELOPMENT: pre condition upper bounds for arguments
+
+is
+
+  # this duration and another one combined
+  #
+  # NYI: UNDER DEVELOPMENT: overflow handling
+  #
+  public infix + (other calendar_duration) calendar_duration =>
+    calendar_duration
+      (years + other.years)
+      (months + other.months)
+      (days + other.days)
+      (hours + other.hours)
+      (minutes + other.minutes)
+      (seconds + other.seconds)
+      (nanos + other.nanos)
+
+
+  # this duration multiplied by n
+  #
+  # NYI: UNDER DEVELOPMENT: overflow handling
+  #
+  public infix * (n u64) calendar_duration =>
+    calendar_duration
+      (years * n)
+      (months * n)
+      (days * n)
+      (hours * n)
+      (minutes * n)
+      (seconds * n)
+      (nanos * n)
+
+
+  # create a string representation of this duration.
+  #
+  public redef as_string String =>
+    lm : mutate is
+    lm ! ()->
+      is_positive := lm.env.new bool false
+      time_prefix := lm.env.new bool false
+      s := lm.env.new String "P"
+
+      with_time_prefix (x String) =>
+        if !time_prefix.get
+          time_prefix <- true
+          "{s.get}T{x}"
+        else
+          "{s.get}{x}"
+
+      if years > 0
+        s <- "{s.get}{years}Y"
+        is_positive <- true
+
+      if months > 0
+        s <- "{s.get}{months}M"
+        is_positive <- true
+
+      if days > 0
+        s <- "{s.get}{days}D"
+        is_positive <- true
+
+      if hours > 0
+        s <- with_time_prefix "{hours}H"
+        is_positive <- true
+
+      if minutes > 0
+        s <- with_time_prefix "{minutes}M"
+        is_positive <- true
+
+      if (seconds > 0 || !is_positive.get) && nanos = 0
+        s <- with_time_prefix "{seconds}S"
+      else if nanos != 0
+        combined := seconds * 1E9 + nanos
+        newsecs := combined / 1E9
+        newnanos := combined % 1E9
+        s <- with_time_prefix "{newsecs}.{newnanos.as_string 9 10}S"
+
+      s.get
+
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b time.calendar_duration) bool =>
+    helper(mappers Sequence (time.calendar_duration->u64)) =>
+      if mappers.is_empty
+        true
+      else
+        # NYI: UNDER DEVELOPMENT: can not omit `.call`
+        match (mappers[0].call a) ⋄ (mappers[0].call b)
+          greater => false
+          less => true
+          equal => helper (mappers.drop 1)
+
+
+    helper [
+      # NYI: UNDER DEVELOPMENT: can not omit parens
+      (x->x.years),
+      (x->x.months),
+      (x->x.days),
+      (x->x.hours),
+      (x->x.minutes),
+      (x->x.seconds),
+      (x->x.nanos)]

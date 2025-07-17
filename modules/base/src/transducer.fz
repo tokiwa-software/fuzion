@@ -37,7 +37,7 @@
 # ages := td.map (x -> x.age)
 # gt_ten := td.filter (x -> x > 10)
 # xf := ages ∘ gt_ten
-# say ([human 4, human 12, human 30].into xf) # [12,30]
+# say <| [human 4, human 12, human 30].into xf # [12,30]
 #
 #
 # TA   result     type
@@ -47,17 +47,17 @@ public transducer(public TA, B, C type,
                   td ((TA,B) -> TA) ->  (TA,C) -> TA) is
 
   # use the transducer with reducing function `rf`.
-  public call(rf (TA,B) -> TA) =>
+  public call(rf (TA,B) -> TA) Binary TA TA C =>
     td rf
 
 
   # left-to-right composition of transducers
-  public compose (A type, o transducer(TA,A,B)) =>
+  public compose (A type, o transducer(TA,A,B)) transducer TA A C =>
     transducer TA A C (re -> transducer.this.call (o.call re))
 
 
   # left-to-right composition of transducers
-  public infix ∘ (A type, o transducer(TA,A,B)) =>
+  public infix ∘ (A type, o transducer(TA,A,B)) transducer TA A C =>
     transducer.this.compose o
 
 

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import dev.flang.fuir.FUIR;
 
 import dev.flang.ir.IR;
@@ -107,15 +109,14 @@ public class TailCall extends ANY
 
     var c2 = _fuir.clazzCode(cl);
     return _fuir.codeSize(c2) > 0 &&
-      isTailCall(cl, _fuir.codeBlockEnd(c2), s, _fuir.clazzResultField(cl));
+      (_fuir.alwaysResultsInVoid(s) ||
+       isTailCall(cl, _fuir.codeBlockEnd(c2), s, _fuir.clazzResultField(cl)));
   }
 
 
   /**
    * check if the first argument in the given call is the current instance's
    * outer reference.
-   *
-   * @param cl index of clazz containing the call
    *
    * @param s site of the call
    */
@@ -143,7 +144,7 @@ public class TailCall extends ANY
     var cl = _fuir.clazzAt(s);
     var outerRef = _fuir.clazzOuterRef(cl);
     var res =
-      outerRef == -1 ||
+      outerRef == NO_CLAZZ ||
       nargs >= 1 &&
       (tc == _fuir.clazzUniverse() ||
        _fuir.codeAt       (ts) == IR.ExprKind.Call    &&
@@ -162,17 +163,17 @@ public class TailCall extends ANY
    */
   private int noClazzIfResultUnitType(int f)
   {
-    if (f != IR.NO_CLAZZ &&
+    if (f != NO_CLAZZ &&
         _fuir.clazzIsUnitType(_fuir.clazzResultClazz(f)))
       {
-        f = IR.NO_CLAZZ;
+        f = NO_CLAZZ;
       }
     return f;
   }
 
   /**
-   * Check if `a` and `b` refer to the same field are both NO_CLAZZ. A field
-   * with unit type result clazz is considered the same as `NO_CLAZZ`.
+   * Check if {@code a} and {@code b} refer to the same field are both NO_CLAZZ. A field
+   * with unit type result clazz is considered the same as {@code NO_CLAZZ}.
    *
    * @param a a field or NO_CLAZZ
    *
@@ -204,12 +205,12 @@ public class TailCall extends ANY
    */
   private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
   {
-    return switch (_fuir.codeAt(cls))
+    return _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
       {
       case Call ->
         {
           var cc = _fuir.accessedClazz(cls);
-          yield mustAssignTo == IR.NO_CLAZZ &&
+          yield mustAssignTo == NO_CLAZZ &&
             (// we found call c/ix and we do not need to assign any variable, so we have a success!
              cls == s ||
 
@@ -224,15 +225,16 @@ public class TailCall extends ANY
       case Assign ->
         {
           var cc = _fuir.accessedClazz(cls);
-          if (cc != IR.NO_CLAZZ &&
+          if (cc != NO_CLAZZ &&
               _fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
             {
-              cc = IR.NO_CLAZZ;
+              cc = NO_CLAZZ;
             }
           yield
             // if this is an assignment to 'Current.mustAssignTo' with, recursively check if
             // the value assigned is the call s.
-            sameField(cc, mustAssignTo) && cls > _fuir.codeBlockStart(cls)+1 &&
+            sameField(cc, mustAssignTo) &&
+            cls > _fuir.codeBlockStart(cls)+1 &&
             _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
             isTailCall(cl, _fuir.codeIndex(cls, -2), s, -1);
         }

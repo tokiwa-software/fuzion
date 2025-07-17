@@ -1210,7 +1210,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       var byteCodeSize = byteCodeSize();
       var smfs = stackMapFrames.stream().filter(x -> x.byteCodePos < byteCodeSize).toList();
       o.writeU2((int)smfs.size());
-      // NYI optimization potential
+      // NYI: PERFORMANCE: optimization potential
       // currently we write full frames only
       // we could use the other frame types as well:
       // - same_frame
@@ -1258,7 +1258,7 @@ public class ClassFile extends ANY implements ClassFileConstants
 
 
     /**
-     * @return A union all locals states that have been found for `byteCodePos`.
+     * @return A union all locals states that have been found for {@code byteCodePos}.
      */
     public List<VerificationType> unifiedLocals(int byteCodePos)
     {
@@ -1738,7 +1738,7 @@ public class ClassFile extends ANY implements ClassFileConstants
                     String name,
                     String descr)
   {
-    _fields.add(new Field(access_flags, name, descr, new List<>()));
+    field(access_flags, name, descr, new List<>());
   }
 
 
@@ -1791,7 +1791,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     // Doing this for the sake of side effects.
     // This will sometimes add things to constant pool
     // for description of stackmapframe.
-    // NYI we could only evaluate for stackmapframes...
+    // NYI: UNDER DEVELOPMENT: we could only evaluate for stackmapframes...
     // instead of simulating writing of whole bytecode
     for (var m : _methods)
       {

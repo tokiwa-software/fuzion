@@ -39,7 +39,7 @@ public interface FeatureLookup {
 
 
   /**
-   * Get all inner and inherited features of `f`.
+   * Get all inner and inherited features of {@code f}.
    */
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
 
@@ -51,7 +51,7 @@ public interface FeatureLookup {
    *
    * @param name the feature name that we are searching for
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
 
 
 }

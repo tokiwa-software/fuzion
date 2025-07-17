@@ -24,4 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_effect_neg
+override FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS=false
 include ../simple_and_negative.mk

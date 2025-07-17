@@ -28,36 +28,36 @@
 # This effect is typically used to work with mutable values. You can create
 # a mutable value as follows
 #
-#   v := mutate.env.new i32 42
+#     v := mutate.env.new i32 42
 #
 # and then modify it using
 #
-#   v <- 666
+#     v <- 666
 #
 # To read it, call 'get' as in
 #
-#   say "v is {v.get}"
+#     say "v is {v.get}"
 #
 # Convenience feature 'mut' and type inference allow the creation to be
 # written as
 #
-#   v := mut 42
+#     v := mut 42
 #
 # NYI: syntax sugar to read mutable field using
 #
-#   w := v + 1
+#     w := v + 1
 #
 # instead of
 #
-#   w := v.get + 1
+#     w := v.get + 1
 #
 # is not supported yet.
 #
-public mutate : effect is
+public mutate : linear_effect is
 
 
   # does this effect support abort?
-  public redef abortable => false
+  public redef abortable bool => false
 
 
   # short-hand to access effect type
@@ -69,7 +69,7 @@ public mutate : effect is
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  id := fuzion.sys.misc.fzE_unique_id
+  id := fzE_unique_id
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the
@@ -92,7 +92,7 @@ public mutate : effect is
     # `mutate.this`
     #
     is_currently_instated =>
-      match mutate.this.type.get_if_instated
+      match mutate.this.get_if_instated
         x mutate.this => my_id = x.id
         nil           => false
 
@@ -108,12 +108,12 @@ public mutate : effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    public open => my_id != u64 0
+    public open bool => my_id != u64 0
 
 
     # stop any further mutations of this element
     #
-    public close =>
+    public close unit =>
       set my_id := 0
 
 
@@ -135,7 +135,7 @@ public mutate : effect is
     # If this is open, check that the mutate effect this was created with is still
     # instated in the current environment.
     #
-    public get ! mutate.this =>
+    public get T ! mutate.this =>
       if open
         check_and_replace
       mutable_value
@@ -143,7 +143,7 @@ public mutate : effect is
 
     # read the mutable value that is now immutable after it was closed for mutation.
     #
-    public val
+    public val T
     pre
       safety: !open
     =>
@@ -157,7 +157,7 @@ public mutate : effect is
     #
     public put (
       # the new value to be stored with 'h'
-      to T)
+      to T) unit
       ! mutate.this
     pre
       safety: open
@@ -168,15 +168,15 @@ public mutate : effect is
 
     # infix operator for put, OCaml/F#-style syntax
     #
-    public infix <- (to T) => put to
+    public infix <- (to T) unit => put to
 
 
     # update mutable field using a function of the old value
     #
     public update (
-      # function calculcating the new value from the old value
+      # function calculating the new value from the old value
       f T->T
-      )
+      ) unit
     =>
       put (f get)
 
@@ -189,12 +189,12 @@ public mutate : effect is
 
     # unwrap this mutable value
     #
-    public redef unwrap ! mutate => get
+    public redef unwrap T ! mutate.this => get
 
 
     # returns `as_string` of the current value
     #
-    public redef as_string => get.as_string
+    public redef as_string String => get.as_string
 
 
 
@@ -206,11 +206,11 @@ public mutate : effect is
 
 # short-hand for accessing mut effect in current environment
 #
-public mut =>
+public mut mutate =>
   mutate.install_default
   mutate.env
 
 
 # create a new mutable value of type T with initial value v
 #
-public mut(T type, v T) => mut.new v
+public mut(T type, v T) mutate.new T => mut.new v

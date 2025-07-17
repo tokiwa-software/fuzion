@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.instant
+#
+# -----------------------------------------------------------------------
+
+# time.instant -- abstract moment in time used for measuring durations
+#
+module:public instant (val u64) : property.orderable is
+
+  # which instant will be after the time specified by the duration
+  # has passed after this instant?
+  #
+  public fixed infix + (d duration) instant =>
+    instant (val + d.nanos)
+
+
+  # how much time passed between two instants?
+  #
+  public fixed infix - (other instant) time.duration
+  pre
+    debug: other <= instant.this
+  =>
+    time.duration (val - other.val)
+
+
+  # do two given instants represent the same moment in time?
+  #
+  public fixed redef type.equality(a, b time.instant) bool => a.val = b.val
+
+
+  # check whether an instant happened before or at the same moment in time
+  # as another instant
+  #
+  public fixed redef type.lteq(a, b time.instant) bool => a.val ≤ b.val

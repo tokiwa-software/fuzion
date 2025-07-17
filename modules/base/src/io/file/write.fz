@@ -25,7 +25,5 @@
 # write String `s` to file `f`
 #
 public write(f String, s String) outcome unit =>
-  lm : mutate is
-  lm ! ()->
-    use unit lm f mode.write ()->
-      (io.buffered.writer.env.write s.utf8).error
+  use f mode.write ()->
+    (writer.write s.utf8).error

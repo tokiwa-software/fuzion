@@ -29,6 +29,7 @@ package dev.flang.be.c;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
@@ -95,6 +96,17 @@ public class CTypes extends ANY
   String clazz(int cl)
   {
     return _names.struct(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
+  }
+
+
+  /**
+   * if !hasData(rc) => void
+   * otherwise
+   * the type of a value of the given clazz.
+   */
+  public String resultClazz(int rc)
+  {
+    return _fuir.hasData(rc) ? clazz(rc) : "void";
   }
 
 
@@ -183,7 +195,7 @@ public class CTypes extends ANY
    * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
-  static String scalar(FUIR.SpecialClazzes sc)
+  static String scalar(SpecialClazzes sc)
   {
     return switch (sc)
       {
@@ -242,10 +254,15 @@ public class CTypes extends ANY
     if (!visited.contains(cl))
       {
         visited.add(cl);
-        if (!isScalar(cl)) // special handling of stdlib clazzes known to the compiler
+        // value must be declared before the ref
+        if (_fuir.clazzIsRef(cl))
+          {
+            findDeclarationOrder(_fuir.clazzAsValue(cl), result, visited);
+          }
+        else
           {
             // first, make sure structs used for inner fields are declared:
-            for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+            for (int i = 0; i < _fuir.clazzFieldCount(cl); i++)
               {
                 var fcl = _fuir.clazzField(cl, i);
                 var rcl = _fuir.clazzResultClazz(fcl);
@@ -254,14 +271,10 @@ public class CTypes extends ANY
                     findDeclarationOrder(rcl, result, visited);
                   }
               }
-            for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+            for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
                 findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzAny() : cc, result, visited);
-              }
-            if (_fuir.clazzIsRef(cl))
-              {
-                findDeclarationOrder(_fuir.clazzAsValue(cl), result, visited);
               }
           }
         result.add(cl);
@@ -295,7 +308,7 @@ public class CTypes extends ANY
                 els.add(CStmnt.decl(typeTagName, _names.TAG_NAME));
               }
             var uls = new List<CStmnt>();
-            for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+            for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
               {
                 var cc = _fuir.clazzChoice(cl, i);
                 if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
@@ -311,7 +324,7 @@ public class CTypes extends ANY
           }
         else
           {
-            for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+            for (int i = 0; i < _fuir.clazzFieldCount(cl); i++)
               {
                 var f = _fuir.clazzField(cl, i);
                 var t = _fuir.clazzResultClazz(f);
@@ -335,7 +348,7 @@ public class CTypes extends ANY
 
 
   /**
-   * Get the matching atomic type for `rc`.
+   * Get the matching atomic type for {@code rc}.
    *
    * For references this is: atomic_uintptr_t
    * For scalars this is: e.g. atomic_uint_least32_t
@@ -369,7 +382,8 @@ public class CTypes extends ANY
   boolean clazzNeedsCode(int cl)
   {
     return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_Const_String_utf8_data() ||
+      cl == _fuir.clazz_const_string() ||
+      cl == _fuir.clazz_const_string_utf8_data() ||
       cl == _fuir.clazz_array_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8() ||
       cl == _fuir.clazz_fuzionSysArray_u8_data() ||

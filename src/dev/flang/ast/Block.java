@@ -27,7 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -78,7 +80,7 @@ public class Block extends AbstractBlock
 
   /**
    * Generate an empty block of expressions. This is called from the Parser when
-   * the body of a routine contains no code but just a `.`.
+   * the body of a routine contains no code but just a {@code .}.
    */
   public Block()
   {
@@ -181,7 +183,7 @@ public class Block extends AbstractBlock
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable
-      // NYI hack, positions used for loops are not always in right order.
+      // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
       : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
       ? SourcePosition.notAvailable
       : new SourceRange(
@@ -203,14 +205,14 @@ public class Block extends AbstractBlock
    */
   public Block visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.actionBefore(this, outer);
+    v.actionBefore(this);
     ListIterator<Expr> i = _expressions.listIterator();
     while (i.hasNext())
       {
         Expr e = i.next();
         i.set(e.visit(v, outer));
       }
-    v.actionAfter(this, outer);
+    v.actionAfter(this);
     return this;
   }
 
@@ -271,31 +273,6 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Check if this value might need boxing and wrap this into Box() if this is
-   * the case.
-   *
-   * @param frmlT the formal type this is assigned to.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @return this or an instance of Box wrapping this.
-   */
-  @Override
-  Expr box(AbstractType frmlT, Context context)
-  {
-    var r = removeResultExpression();
-    if (CHECKS) check
-      (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
-    if (r != null)
-      {
-        _expressions.add(r.box(frmlT, context));
-      }
-    return this;
-  }
-
-
-
-  /**
    * Does this block produce a result that does not explicitly appear in source
    * code? This is the case, e.g., for loops that implicitly return the last
    * value of the index variable for true/false to indicate success or failure.
@@ -327,11 +304,16 @@ public class Block extends AbstractBlock
   Block assignToField(Resolution res, Context context, Feature r)
   {
     Expr resExpr = removeResultExpression();
+    if (resExpr == null && r.resultType().isAssignableFromWithoutBoxing(Types.resolved.t_unit, context).yes())
+      {
+        resExpr = new Call(pos(), FuzionConstants.UNIT_NAME)
+          .resolveTypes(res, context);
+      }
     if (resExpr != null)
       {
         _expressions.add(resExpr.assignToField(res, context, r));
       }
-    else if (!r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
+    else
       {
         AstErrors.blockMustEndWithExpression(pos(), r.resultType());
       }
@@ -352,11 +334,14 @@ public class Block extends AbstractBlock
    *
    * @param type the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType type, Supplier<String> from)
   {
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
@@ -371,26 +356,15 @@ public class Block extends AbstractBlock
 
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, context, type);
+        var x = resExpr.propagateExpectedType(res, context, type, from);
         _expressions.remove(idx);
         _expressions.add(x);
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
-        _expressions.add(new Call(pos(), "unit").resolveTypes(res, context));
+        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
     return this;
-  }
-
-
-  /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last expression is not an expression that produces a result.
-   */
-  public boolean producesResult()
-  {
-    var expr = resultExpression();
-    return expr != null && expr.producesResult();
   }
 
 
@@ -405,10 +379,9 @@ public class Block extends AbstractBlock
       .limit(_expressions.isEmpty() ? 0 : _expressions.size() - 1)
       .forEach(e -> {
         if (e.producesResult() &&
-            e.typeForInferencing() != null &&
-            e.typeForInferencing().compareTo(Types.resolved.t_unit) != 0 &&
-            !e.typeForInferencing().isVoid() &&
-            e.typeForInferencing() != Types.t_ERROR)
+            e.type().compareTo(Types.resolved.t_unit) != 0 &&
+            !e.type().isVoid() &&
+            e.type() != Types.t_ERROR)
           {
             AstErrors.unusedResult(e);
           }

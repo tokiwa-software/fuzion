@@ -1,0 +1,23 @@
+
+--CURDIR--/reg_issue5433.fz:35:6: error 1: Wrong number of actual arguments in call
+    .c
+-----^
+Number of actual arguments is 0, while call expects 2 arguments.
+Called feature: 'reg_issue5433.a.b.c'
+Formal arguments: 'arg' 'u64', 'arg' 'String'
+Declared at --CURDIR--/reg_issue5433.fz:30:7:
+      c(arg A...) unit => abstract
+------^
+
+
+--CURDIR--/reg_issue5433.fz:39:6: error 2: Wrong number of actual arguments in call
+    .c "asdf"
+-----^
+Number of actual arguments is 1, while call expects 2 arguments.
+Called feature: 'reg_issue5433.a.b.c'
+Formal arguments: 'arg' 'u64', 'arg' 'String'
+Declared at --CURDIR--/reg_issue5433.fz:30:7:
+      c(arg A...) unit => abstract
+------^
+
+2 errors.

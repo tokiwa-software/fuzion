@@ -27,8 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.be.jvm.classfile.Expr;
@@ -43,7 +45,6 @@ import dev.flang.util.Pair;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 
 
@@ -152,8 +153,6 @@ class CodeGen
    * Called before each statement is processed.  May be used to, e.g., produce
    * tracing code for debugging or a comment.
    *
-   * @param cl the clazz we are compiling
-   *
    * @param s site of the next expression
    */
   @Override
@@ -209,11 +208,7 @@ class CodeGen
    *
    * @param s cl id of clazz we are interpreting
    *
-   * @param tc clazz id of the target instance
-   *
    * @param f clazz id of the assigned field
-   *
-   * @param rt clazz of the field type
    *
    * @param tvalue the target instance
    *
@@ -222,16 +217,9 @@ class CodeGen
    * @return statement to perform the given assignment
    */
   @Override
-  public Expr assignStatic(int s, int tc, int f, int rt, Expr tvalue, Expr val)
+  public Expr assignStatic(int s, int f, Expr tvalue, Expr val)
   {
-    if (_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt))
-      {
-        return val.drop().andThen(tvalue.drop());
-      }
-    else
-      {
-        return _jvm.assignField(s, tvalue, f, val, rt);
-      }
+    return _jvm.assignField(s, f, _fuir.clazzResultClazz(f), tvalue, val);
   }
 
 
@@ -331,7 +319,7 @@ class CodeGen
     var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
-    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(FUIR.SpecialClazzes.c_unit);
+    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(SpecialClazzes.c_unit);
     if (ccs.length == 0)
       {
         s = s.andThen(tvalue.drop());
@@ -380,11 +368,11 @@ class CodeGen
         s = s.andThen(calpair.v1());
         res = calpair.v0();
       }
-    if (_fuir.clazzIsVoidType(_fuir.clazzResultClazz(cc0)))
+    if (_fuir.alwaysResultsInVoid(si))
       {
         if (res != null)
           {
-            s = s.andThen(res);
+            s = s.andThen(res.drop());
           }
         res = null;
       }
@@ -407,7 +395,7 @@ class CodeGen
   {
     var intfc = _types.interfaceFile(_fuir.clazzOuterClazz(cc0));
     var rc = _fuir.clazzResultClazz(cc0);
-    var dn = _names.dynamicFunction(cc0);
+    var dn = _names.dynamicFunction(cc0) + (isCall ? "_c" : "");
     var ds = isCall ? _types.dynDescriptor(cc0) : "(" + _types.javaType(rc).argDescriptor() + ")V";
     var dr = isCall ? _types.resultType(rc)     : PrimitiveType.type_void;
     if (!intfc.hasMethod(dn))
@@ -480,7 +468,7 @@ class CodeGen
             na.add(t.load(1));
           }
         var p = staticAccess(/* *** NOTE ***: The site must be NO_SITE since we are not generating
-                              * code for `_fuir.clazzAt(si)`, but for the stub. If we would pass the
+                              * code for {@code _fuir.clazzAt(si)}, but for the stub. If we would pass the
                               * site here, the access might otherwise be optimized as a tail call!
                               */
                              FUIR.NO_SITE,
@@ -516,28 +504,44 @@ class CodeGen
    * @param isCall true if the access is a call, false if it is an assignment to
    * a field.
    *
-   * @param si site of the access
-   *
    * @return the result and code to perform the access.
    */
   Pair<Expr, Expr> staticAccess(int si, int tt, int cc, Expr tv, List<Expr> args, boolean isCall)
   {
+    tv = unbox(tt, cc, tv);
+
+    return isCall ? staticCall(si, tv, args, cc)
+                  : new Pair<>(Expr.UNIT,
+                               _jvm.assignField(
+                                si, cc, _fuir.clazzResultClazz(cc), tv, args.get(0)
+                              ));
+  }
+
+
+  /**
+   * Unbox tv if needed.
+   *
+   * @param tt the target type
+   * @param cc the called clazz
+   * @param tv the target value which may be boxed
+   */
+  private Expr unbox(int tt, int cc, Expr tv)
+  {
     var cco = _fuir.clazzOuterClazz(cc);   // actual outer clazz of called clazz, more specific than tt
     if (_fuir.clazzIsBoxed(tt) &&
-        !_fuir.clazzIsRef(cco)  // NYI: CLEANUP: would be better if the AbstractInterpreter would
+        !_fuir.clazzIsRef(cco))  // NYI: CLEANUP: would be better if the AbstractInterpreter would
                                 // not confront us with boxed references here, such that
                                 // this special handling could be removed.
-        )
-      { // in case we access the value in a boxed target, unbox it first:
-        tv = Expr.comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
+
+      {
+        // in case we access the value in a boxed target, unbox it first:
+        tv = Expr
+          .comment("UNBOXING , boxed type " + clazzInQuotes(tt) + " desired type " + clazzInQuotes(cco))
           .andThen(tv.getFieldOrUnit(_names.javaClass(tt),    // note that tv.getfield works vor unit type (resulting in tv.drop()).
                                      Names.BOXED_VALUE_FIELD_NAME,
                                      _types.javaType(cco)));
       }
-
-    return isCall ? staticCall(si, tv, args, cc)
-                  : new Pair<>(Expr.UNIT,
-                               _jvm.assignField(si, tv, cc, args.get(0), _fuir.clazzResultClazz(cc)));
+    return tv;
   }
 
 
@@ -553,8 +557,6 @@ class CodeGen
    * @param cc clazz that is called
    *
    * @return the code to perform the call
-   *
-   * @param si site of the call
    */
   Pair<Expr, Expr> staticCall(int si, Expr tvalue, List<Expr> args, int cc)
   {
@@ -572,22 +574,17 @@ class CodeGen
         break;
       case Native   :
         {
-          var invokeDescr = "(" +  args.stream().map(arg -> arg.type().descriptor()).collect(Collectors.joining()) + ")" + _types.javaType(rt).descriptor();
-          Expr call =
-            Expr.getstatic(_names.javaClass(cc),
-                           Names.METHOD_HANDLE_FIELD_NAME,
-                           Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                     // MethodHandle
-                .andThen(argsToStack(args))                                                    // MethodHandle, args...
-                .andThen(Expr.invokeVirtual(
-                  Names.JAVA_LANG_INVOKE_METHODHANDLE, "invoke",
-                  invokeDescr,
-                  _types.javaType(rt)));                                                       // rt
-          res = makePair(call, rt);
+          if (CHECKS) check
+            (_types.clazzNeedsCode(cc),
+             !(cc == _fuir.clazzAt(si) && // calling myself
+             _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
+
+          res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
       case Intrinsic:
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
+          if (_fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
             {
               return new Pair<>(Expr.UNIT, tvalue.drop());
             }
@@ -656,23 +653,249 @@ class CodeGen
     return res;
   }
 
+
   /**
-   * Put all args in the list onto the stack.
+   * Build java byte code code for calling a native function
+   * by using the method handle that is stored in a field
+   * in the class of the native feature.
    *
+   * @param si
    * @param args
+   * @param cc
+   * @param rt
    * @return
    */
-  private Expr argsToStack(List<Expr> args)
+  private Expr callNative(int si, List<Expr> args, int cc, int rt)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzOuterRef(cc) == NO_CLAZZ);
+
+    var invokeDescr =
+      "("
+        + nativeArgDescriptor(cc)
+      + ")"
+      + nativeResultTypeDescriptor(rt).descriptor();
+
+    var localSlotsOfMemorySegments = new List<Integer>();
+    return Expr
+          .getstatic(_names.javaClass(cc),
+                     Names.METHOD_HANDLE_FIELD_NAME,
+                     Names.CT_JAVA_LANG_INVOKE_METHODHANDLE)                                   // MethodHandle
+          .andThen(convertArgumentsToMemorySegments(si, args, localSlotsOfMemorySegments, cc)) // MethodHandle, args...
+          .andThen(invokeMethodHandle(rt, invokeDescr))                                        // rt
+          .andThen(copyValueResultToFuzion(rt))                                                // rt
+          .andThen(copyMemorySegmentsToArrays(cc, args, localSlotsOfMemorySegments))           // rt
+          .is(_types.javaType(rt));
+  }
+
+
+  /**
+   * Invoke the methodHandle on the stack
+   * with given descriptor and return type.
+   *
+   * @param rt
+   * @param invokeDescr
+   * @return
+   */
+  private Expr invokeMethodHandle(int rt, String invokeDescr)
+  {
+    return Expr.invokeVirtual(
+      Names.JAVA_LANG_INVOKE_METHODHANDLE,
+      "invokeExact",
+      invokeDescr,
+      nativeResultTypeDescriptor(rt)
+    );
+  }
+
+
+  /**
+   * Build the native descriptor for the arguments of cc.
+   *
+   * @return e.g. ILjava/lang/foreign/MemorySegment;
+   */
+  private String nativeArgDescriptor(int cc)
+  {
+    var argCount = _fuir.clazzArgCount(cc);
+    var result = new StringBuilder();
+    for (int i = 0; i < argCount; i++)
+      {
+        var at = _fuir.clazzArgClazz(cc, i);
+        var jt = _types.javaType(at);
+
+        result.append(
+        jt.isPrimitive() && jt != PrimitiveType.type_void
+        ? jt.descriptor()
+        : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor()
+        );
+      }
+    return result.toString();
+  }
+
+
+  /**
+   * Build the native descriptor for the result type of cc.
+   *
+   * @return e.g. Ljava/lang/foreign/MemorySegment;
+   */
+  private JavaType nativeResultTypeDescriptor(int rt)
+  {
+    return _types.javaType(rt).isPrimitive()
+      ? _types.javaType(rt)
+      : Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT;
+  }
+
+
+  /**
+   * create java byte code that copies
+   * native results, essentially structs to
+   * its fuzion value type.
+   */
+  private Expr copyValueResultToFuzion(int rt)
+  {
+    return _jvm.isAddressLike(rt) || _types.javaType(rt).isPrimitive()
+      ? Expr.UNIT
+      : Expr
+        .classconst((ClassType)_types.javaType(rt))     // memSeg, class
+        .andThen(Expr.SWAP)                             // class, memSeg
+        .andThen(Expr.invokeStatic                      // Object
+            (Names.RUNTIME_CLASS,
+            "memorySegment2Value",
+            "(" + Types.JAVA_LANG_CLASS.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")" + Names.JAVA_LANG_OBJECT.descriptor(),
+            Names.JAVA_LANG_OBJECT))
+        .andThen(Expr.checkcast(_types.javaType(rt)));  // rt
+  }
+
+
+  /**
+   * invoke memorySegment2Obj for any of the args that are not primitives
+   */
+  private Expr copyMemorySegmentsToArrays(int cc, List<Expr> args, List<Integer> slotsOfMemorySegments)
+  {
+    var result = Expr.UNIT;
+    var slot = 0;
+    for (int i = 0; i < args.size(); i++)
+      {
+        var at = _fuir.clazzArgClazz(cc, i);
+        if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at))
+          {
+            result = result
+                .andThen(args.get(i))
+                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
+                .andThen(invokeMemorySegment2Obj());
+            slot++;
+          }
+      }
+
+    if (CHECKS) check
+      (slot == slotsOfMemorySegments.size());
+    return result;
+  }
+
+
+  /**
+   * byte code to invoke memorySegment2Obj
+   */
+  private Expr invokeMemorySegment2Obj()
+  {
+    return Expr.invokeStatic(
+      Names.RUNTIME_CLASS,
+      "memorySegment2Obj",
+      "(" + Names.JAVA_LANG_OBJECT.descriptor() + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor() + ")V",
+      PrimitiveType.type_void);
+  }
+
+
+  /**
+   * invoke obj2MemorySegment for any of the args that are not primitives
+   * the created MemorySegments are stored in locals and
+   * the slot index is added to the slots list.
+   */
+  private Expr convertArgumentsToMemorySegments(int si, List<Expr> args, List<Integer> slots, int cc)
   {
     var result = Expr.UNIT;
     for (int i = 0; i < args.size(); i++)
       {
-        result = result
-          .andThen(args.get(i));
+        var at = _fuir.clazzArgClazz(cc, i);
+        var call = _fuir.lookupCall(at);
+        if (call != NO_CLAZZ)
+          {
+            result = result
+              .andThen(upcall(_fuir.clazzOuterRef(call) != NO_CLAZZ ? args.get(i) : Expr.ACONST_NULL, call));
+          }
+        else if (args.get(i).type().isPrimitive())
+          {
+            result = result
+              .andThen(args.get(i));
+          }
+        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
+          {
+            var slot = _jvm.allocLocal(si, 1);
+            slots.addLast(slot);
+            result = result
+                .andThen(args.get(i))
+                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(invokeObj2MemorySegment())
+                .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
+                .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+          }
+        else
+          {
+            result = result
+                .andThen(args.get(i))
+                .andThen(invokeObj2MemorySegment());
+          }
       }
     return result;
   }
 
+
+  /**
+   * @return code to access the data in an array (.internal_array.data)
+   */
+  private Expr getArrayDataField(int at)
+  {
+    var ia = _fuir.lookup_array_internal_array(at);
+    var iad = _fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia));
+    return _jvm
+      .getfield(ia)
+      .andThen(_jvm.getfield(iad));
+  }
+
+
+  /**
+   * @return Code that calls Runtime.upcall
+   * with args outer and the java-class of call
+   */
+  private Expr upcall(Expr outer, int call)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzBaseName(call).equals("call"));
+
+    return outer
+      .andThen(Expr.classconst((ClassType)_types.javaType(call)))
+      .andThen(Expr.invokeStatic(
+          Names.RUNTIME_CLASS,
+          "upcall",
+          "(" +
+            Names.ANY_DESCR +
+            JAVA_LANG_CLASS.descriptor() +
+          ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
+          Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
+  }
+
+
+  /**
+   * create Expr for invoking Runtime.obj2MemorySegment
+   */
+  private Expr invokeObj2MemorySegment()
+  {
+    return Expr.invokeStatic(
+      Names.RUNTIME_CLASS,
+      "obj2MemorySegment",
+      "(" + Names.JAVA_LANG_OBJECT.descriptor() + ")" + Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.descriptor(),
+      Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT);
+  }
 
 
   /**
@@ -696,9 +919,9 @@ class CodeGen
                                : args(needTarget, tvalue, args, cc, argCount-1);
 
     // then add tvalue/arg #argCount:
-    var add = argCount > 0                                 ? args.get(argCount-1) :
-              !needTarget && _fuir.clazzOuterRef(cc) == -1 ? tvalue.drop()
-                                                           : tvalue;
+    var add = argCount > 0                                       ? args.get(argCount-1) :
+              !needTarget && _fuir.clazzOuterRef(cc) == NO_CLAZZ ? tvalue.drop()
+                                                                 : tvalue;
     return result.andThen(add);
   }
 
@@ -709,17 +932,16 @@ class CodeGen
   @Override
   public Pair<Expr, Expr> box(int s, Expr val, int vc, int rc)
   {
-    var res = val;
-    if (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc))  // NYI: CLEANUP: would be good if the AbstractInterpreter would not call box() in this case
-      {
-        var n = _names.javaClass(rc);
-        res = Expr.comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
-          .andThen(val)
-          .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
-                                     _types.boxSignature(rc),
-                                     _types.javaType(rc))
-                   );
-      }
+    if (PRECONDITIONS) require
+      (!_fuir.clazzIsRef(vc) && _fuir.clazzIsRef(rc));
+
+    var n = _names.javaClass(rc);
+    var res = Expr
+      .comment("box from " + clazzInQuotes(vc) + " to " + clazzInQuotes(rc))
+      .andThen(val)
+      .andThen(Expr.invokeStatic(n, Names.BOX_METHOD_NAME,
+                                  _types.boxSignature(rc),
+                                  _types.javaType(rc)));
     return new Pair<>(res, Expr.UNIT);
   }
 
@@ -731,7 +953,7 @@ class CodeGen
   public Pair<Expr, Expr> current(int s)
   {
     var cl = _fuir.clazzAt(s);
-    if (_types.isScalar(cl))
+    if (_fuir.isScalar(cl))
       {
         return new Pair<>(_types.javaType(cl).load(0), Expr.UNIT);
       }
@@ -794,7 +1016,7 @@ class CodeGen
    *
    * @param val the value of the argument.
    *
-   * @return code that stores `val` into the slot of arg #i.
+   * @return code that stores {@code val} into the slot of arg #i.
    */
   Expr setArg(int cl, int i, Expr val)
   {
@@ -824,7 +1046,7 @@ class CodeGen
         {
           var ucl = _types.classFile(_fuir.clazzUniverse());
           var f = _names.preallocatedConstantField(constCl, d);
-          var jt = _types.javaType(constCl);
+          var jt = _types.resultType(constCl);
           if (!ucl.hasField(f))
             {
               ucl.field(ACC_STATIC | ACC_PUBLIC,
@@ -851,13 +1073,9 @@ class CodeGen
    */
   JVMOptions.ConstantCreation constantCreationStrategy(int constCl)
   {
-    return switch (_fuir.getSpecialClazz(constCl))
-      {
-      case c_bool, c_i8 , c_i16, c_i32,
-           c_i64 , c_u8 , c_u16, c_u32,
-           c_u64 , c_f32, c_f64         -> JVMOptions.ConstantCreation.onEveryUse;
-      default                           -> _jvm._options._constantCreationStrategy;
-      };
+    return _fuir.clazzIsBuiltInPrimitive(constCl)
+      ? JVMOptions.ConstantCreation.onEveryUse
+      : _jvm._options._constantCreationStrategy;
   }
 
 
@@ -886,8 +1104,7 @@ class CodeGen
       case c_u64          -> new Pair<>(Expr.lconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
       case c_f32          -> new Pair<>(Expr.fconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ())                                   , Expr.UNIT);
       case c_f64          -> new Pair<>(Expr.dconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong ())                                   , Expr.UNIT);
-      case c_Const_String, c_String
-                          -> _jvm.constString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
+      case c_String       -> _jvm.boxedConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4));
       default             ->
         {
           if (_fuir.clazzIsArray(constCl))
@@ -905,7 +1122,7 @@ class CodeGen
 
               for (int idx = 0; idx < elCount; idx++)
                 {
-                  var b = _fuir.deseralizeConst(elementType, bb);
+                  var b = _fuir.deserializeConst(elementType, bb);
                   var c = createConstant(si, elementType, b);
                   result = result
                     .andThen(Expr.DUP)                             // T[], T[]
@@ -924,7 +1141,7 @@ class CodeGen
               for (int index = 0; index < _fuir.clazzArgCount(constCl); index++)
                 {
                   var fr = _fuir.clazzArgClazz(constCl, index);
-                  var bytes = _fuir.deseralizeConst(fr, b);
+                  var bytes = _fuir.deserializeConst(fr, b);
                   var c = createConstant(si, fr, bytes);
                   result = result
                     .andThen(c.v1())
@@ -958,17 +1175,16 @@ class CodeGen
    * @return the code for the match, produces unit type result.
    */
   @Override
-  public Pair<Expr, Expr> match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
+  public Expr match(int s, AbstractInterpreter<Expr, Expr> ai, Expr sub)
   {
-    var code = _choices.match(_jvm, ai, s, sub);
-    return new Pair<>(Expr.UNIT, code);
+    return _choices.match(_jvm, ai, s, sub);
   }
 
 
   /**
    * Create a tagged value of type newcl from an untagged value for type valuecl.
    *
-   * @param cl the clazz we are compiling
+   * @param s site of the match
    *
    * @param value code to produce the value we are tagging
    *
@@ -1012,7 +1228,7 @@ class CodeGen
   /**
    * For debugging output
    *
-   * @return "`<clazz c>`".
+   * @return "{@code <clazz c>}".
    */
   private String clazzInQuotes(int c)
   {
@@ -1025,13 +1241,11 @@ class CodeGen
    *
    * @param msg a message explaining the illegal state
    */
-  // NYI: BUG: #3178 reportErrorInCode may currently not be called repeatedly
-  //           triggers error: Expecting a stack map frame
-  // @Override
-  // public Expr reportErrorInCode(String msg)
-  // {
-  //   return this._jvm.reportErrorInCode(msg);
-  // }
+  @Override
+  public Expr reportErrorInCode(String msg)
+  {
+    return this._jvm.reportErrorInCode(msg);
+  }
 
 }
 

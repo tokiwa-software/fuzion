@@ -24,21 +24,23 @@
 
 # effect for manipulating open files
 #
-module:public open(fd i64,
+module:public open(fd File_Descriptor,
                    public file_name String) : effect is
 
-  # seek in file
-  #
-  public seek(
-       # the offset to seek from the beginning of the stream pointer
-       offset i64) =>
-    seek.seek fd offset
 
-
-  # get the current byte position in the file
+  # install seek effect an run code
   #
-  public file_position =>
-    seek.file_position fd
+  public seek(R type, code ()->R) outcome R =>
+
+    hndlr :=
+      ref : Seek_Handler is
+        public redef seek(offset i64) outcome unit =>
+          fuzion.sys.fileio.seek fd offset
+
+        public redef file_position outcome i64 =>
+          fuzion.sys.fileio.file_position fd
+
+    file.this.seek hndlr ! code
 
 
   # install mmap effect an run code
@@ -47,24 +49,35 @@ module:public open(fd i64,
   # note: offset+size must not exceed size of file
   #
   # example usage:
-  # _ := io.file.use unit "/some_file" io.file.mode.append ()->
-  #   io.file.open.mmap (i64 0) (i64 100) ()->
-  #     io.file.open.mmap[99] := 42
+  #
+  #     _ := io.file.use unit "/some_file" io.file.mode.append ()->
+  #       io.file.open.mmap (i64 0) (i64 100) ()->
+  #         io.file.open.mmap[99] := 42
   #
   public mmap(R type, offset i64, size i64, code ()->R) outcome R
-  pre safety: offset % 4096 = 0 # NYI get real page size instead of 4096.
+  pre safety: offset % 4096 = 0 # NYI: UNDER DEVELOPMENT: get real page size instead of 4096.
   =>
 
     res := fuzion.sys.internal_array_init i32 1
-    mapped_memory := fuzion.sys.fileio.mmap fd offset size res.data
+    mapped_memory := fzE_mmap fd offset size res.data
 
     if res[0] = -1
       error "mmap failed"
     else
       (mapped_buffer mapped_memory size) ! code
 
+
+  # close file when de-instating effect
+  #
+  public redef finally unit =>
+    match fuzion.sys.fileio.close fd
+      e error => fuzion.runtime.fault.cause ("io.file.open.finally", "closing file failed:  {e}")
+      unit =>
+
+
+
 # short hand to get the currently
 # installed open effect
 #
-public open =>
+public open open =>
   open.env

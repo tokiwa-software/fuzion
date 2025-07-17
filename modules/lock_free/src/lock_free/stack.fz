@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature stack
+#  Source code of Fuzion feature stack
 #
 # -----------------------------------------------------------------------
 
@@ -45,16 +45,16 @@ public stack(T type) : container.Stack T is
   public redef pop option T =>
 
     next (x option Node) =>
-      x.bind Node n->n.next
+      x.bind n->n.next
 
     for o := top.read
         n := next o
     while !o.is_nil && !top.compare_and_set o n
     else
-      o.bind T node->node.data
+      o.bind node->node.data
 
 
   # peek at the top element from the stack
   #
   public redef peek option T =>
-    top.read.bind T node->node.data
+    top.read.bind node->node.data

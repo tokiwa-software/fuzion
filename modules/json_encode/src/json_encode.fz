@@ -1,0 +1,74 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion module Any.json_encode
+#
+# -----------------------------------------------------------------------
+
+# Any.json_encode, abstract feature that
+# features need to implement to support
+# encoding to json
+#
+public Any.json_encode /* NYI: UNDER DEVELOPMENT: option-args? */ String =>
+  abstract
+
+
+public redef Sequence.json_encode String
+=>
+  "[{ String.join (map (.json_encode)) "," }]"
+
+
+public redef numeric.json_encode String =>
+  /* NYI: UNDER DEVELOPMENT: always valid? */
+  numeric.this.as_string
+
+
+public redef String.json_encode String =>
+  /* NYI: UNDER DEVELOPMENT: escaping missing */
+  # json.org: A character wrapped in "double quote can be any of the Unicode code points except the 32 control codes and "double quote. The definition of character shows an example of a codepoint range and exclude.
+  "\"{String.this.as_string}\""
+
+
+public redef bool.json_encode String =>
+  bool.this.as_string
+
+
+public redef option.json_encode String =>
+  match option.this
+    nil => "null"
+    t T => t.json_encode
+
+
+# helper feature for implementing json_encode
+# in custom features.
+#
+# example:
+#
+#     public redef json_encode String =>
+#       [
+#         ("<membername1>", id Any child_feat1),
+#         ("<membername2>", id Any child_feat2),
+#         ...
+#       ].json_encode_feature
+#
+#
+public Sequence.json_encode_feature String
+pre T : tuple String Any
+=>
+  "\{{ String.join (map (x -> "{x.0.json_encode}:{x.1.json_encode}" )) "," }\}"

@@ -21,48 +21,63 @@
 #
 # -----------------------------------------------------------------------
 
-module:public connection(desc i64) is
+module:public connection(desc i32) is
 
   # close connection manually.
   # note that connections are closed automatically
   # when effect is uninstalled, i.e. on abort or when thread is finished.
   #
-  public close ! net.connections =>
-    net.connections.env.close desc
-
-
-  # is the connection still active?
-  #
-  public is_active ! net.connections =>
-    net.connections.env.is_active desc
+  public close outcome unit =>
+    fuzion.sys.net.close desc
 
 
   # this installs reader, writer and channel for the given connection
   #
-  public with(T type, LM type : mutate, fn ()->T) ! net.connections
-  pre is_active
+  public with(T type, LM type : mutate, fn ()->T) T
   =>
-    with0 T LM fn
+
+    reader =>
+      # helper feature to create a read handler
+      # for a given descriptor
+      #
+      read_handler : io.Read_Handler is
+        public redef read(count i32) choice (array u8) io.end_of_file error =>
+          match fuzion.sys.net.read desc count.as_i64
+            a array => a
+            e error => e
+      (io.buffered LM)
+        .reader read_handler 1024
+
+    writer =>
+
+      # helper feature to create a read handler
+      # for a given descriptor
+      #
+      write_handler : io.Write_Handler is
+        public redef write(data Sequence u8) outcome unit =>
+          fuzion.sys.net.write desc data.as_array
+
+      (io.buffered LM)
+        .writer write_handler 1024
+
+    channel_ =>
+      net
+        .channel desc
+
+    reader
+      .and T _ writer
+      .and channel_
+      .call fn
 
 
-  # helper feature, without precondition `is_active`
-  # to make this usable from any thread
-  #
-  with0(T type, LM type : mutate, fn ()->T) ! net.connections
-  =>
-    (io.buffered.reader LM (read_provider desc) 1024) ! ()->
-      (io.buffered.writer (write_provider desc) 1024) ! ()->
-        (net.channel desc) ! ()->
-          fn.call
 
 
   # this installs reader, writer and channel for the given connection
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
-  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) ! net.connections
-  pre is_active
+  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) concur.Future (outcome T)
   =>
     TP.env.submit (outcome T) ()->
       lm ! ()->
-        with0 T LM fn
+        with T LM fn

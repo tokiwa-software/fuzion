@@ -40,7 +40,8 @@ module:public circular_buffer (
 
       ) : container.Circular_Buffer T mutate.this, mutable_element
 pre
-  safety: (length ≥ 0) && (length ≤ data.length.as_i64)
+  safety: length > 0
+  safety: length ≤ data.length.as_i64
 is
 
   # where to start reading from this buffer
@@ -55,29 +56,26 @@ is
 
   # modulo operator whose result is always positive
   #
-  modded_mod(a, c i64) i64
+  mod_length(a i64) i64
+    pre  debug: a+length+1 >= 0
+    post debug: result >= 0
   =>
-    b := c + 1
-    m := a % b
-
-    if m < 0
-      m + b
-    else
-      m
+    b := length + 1
+    (a+b) % b
 
 
   # buffer is full?
   #
   is_full bool
   =>
-    (modded_mod (end.get + 1) length) = (modded_mod start.get length)
+    mod_length (end.get + 1) = mod_length start.get
 
 
   # buffer is empty?
   #
   is_empty bool
   =>
-    (modded_mod start.get length) = (modded_mod end.get length)
+    mod_length start.get = mod_length end.get
 
 
   # amount of elements free for writing
@@ -89,7 +87,7 @@ is
     else if is_empty
       length
     else
-      modded_mod (start.get - end.get - 1) length
+      mod_length (start.get - end.get - 1)
 
 
   # amount of elements available for reading
@@ -101,7 +99,7 @@ is
     else if is_empty
       0
     else
-      modded_mod (end.get - start.get) length
+      mod_length (end.get - start.get)
 
 
   # enqueue a single element into the buffer
@@ -117,7 +115,7 @@ is
       error "circular buffer is full"
     else
       data[end.get.as_i32] := e
-      end <- modded_mod (end.get + 1) length
+      end <- mod_length (end.get + 1)
 
 
   # read a single element from the buffer
@@ -130,7 +128,7 @@ is
       nil
     else
       v := data[start.get.as_i32]
-      start <- modded_mod (start.get + 1) length
+      start <- mod_length (start.get + 1)
       v
 
 
@@ -143,7 +141,7 @@ is
   =>
     check_and_replace
 
-    # NYI hack because using array as argument does not work
+    # NYI: UNDER DEVELOPMENT: hack because using array as argument does not work
     d := s.as_array
 
     if d.length.as_i64 > available
@@ -151,30 +149,33 @@ is
     else
       for i in d.indices
       do
-        data[(modded_mod (end.get + i.as_i64) length).as_i32] := d[i]
+        data[(mod_length (end.get + i.as_i64)).as_i32] := d[i]
 
-      end <- modded_mod (end.get + d.length.as_i64) length
+      end <- mod_length (end.get + d.length.as_i64)
 
 
   # read the elements from the buffer
   #
-  public redef flush (n i64) =>
+  public redef flush (n i64) universe.array T =>
     check_and_replace
 
-    x := array n.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
-    start <- modded_mod (start.get + n) length
+    x := array n.as_i32 i->
+      data[(mod_length (start.get + i.as_i64)).as_i32]
+
+    start <- mod_length (start.get + n)
     x
 
 
   # create immutable array from this
   #
-  public redef as_array =>
-    array buffered.as_i32 (i -> data[(modded_mod (start.get + i.as_i64) length).as_i32])
+  public redef as_array universe.array T =>
+    array buffered.as_i32 i->
+      data[(mod_length (start.get + i.as_i64)).as_i32]
 
 
   # create a list from this array
   #
-  public redef as_list =>
+  public redef as_list list T =>
     as_array.as_list
 
 

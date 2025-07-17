@@ -222,9 +222,9 @@ public class FZJava extends Tool
       {
         List<String> emptyList = new List<>();
         var feOptions = new FrontEndOptions(/* verbose */ _verbose,
-                                            /* fuzionHome */ (new FuzionHome())._fuzionHome,
-                                            /* loadBaseLib */ true,
-                                            /* eraseInternalNamesInLib */ true,
+                                            /* fuzionHome */ FuzionHome._fuzionHome,
+                                            /* loadBaseMod */ true,
+                                            /* eraseInternalNamesInMod */ true,
                                             /* modules */ _options._loadModules,
                                             /* moduleDirs */ _options._moduleDirs,
                                             /* dumpModules */ emptyList,
@@ -235,8 +235,10 @@ public class FZJava extends Tool
                                             /* readStdin */ false,
                                             /* executeCode */ null,
                                             /* main */ null,
+                                            /* moduleName */ null,
                                             /* loadSources */ true,
                                             /* needsEscapeAnalysis */ false,
+                                            /* serializeFuir */ false,
                                             /* timer */ s -> timer(s));
         _fe = new FrontEnd(feOptions);
 
@@ -275,7 +277,7 @@ public class FZJava extends Tool
         str.append("      el in seq\n");
         str.append("  do\n");
         str.append("    _ := Java.java.lang.reflect.Array.__k__set res idx el\n");
-        str.append("  fuzion.java.Array T res.Java_Ref\n");
+        str.append("  fuzion.java.Array T res.java_ref\n");
         str.append("\n");
         Files.write(fzp, str.toString().getBytes(StandardCharsets.UTF_8));
       }

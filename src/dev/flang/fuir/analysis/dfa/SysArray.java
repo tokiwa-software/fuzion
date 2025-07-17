@@ -26,7 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import java.util.Comparator;
 
+import dev.flang.fuir.FUIR;
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
@@ -41,8 +43,6 @@ public class SysArray extends Value
 
 
   /*----------------------------  constants  ----------------------------*/
-
-  static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -79,7 +79,7 @@ public class SysArray extends Value
    */
   public SysArray(DFA dfa, Value el, int ec)
   {
-    super(dfa._fuir.clazzAny());
+    super(FUIR.NO_CLAZZ);
 
     _dfa = dfa;
     _elements = el;
@@ -138,8 +138,8 @@ public class SysArray extends Value
    *
    * @param v the value this value should be joined with.
    *
-   * @param clazz the clazz of the resulting value. This is usually the same as
-   * the clazz of `this` or `v`, unless we are joining `ref` type values.
+   * @param cl the clazz of the resulting value. This is usually the same as
+   * the clazz of {@code this} or {@code v}, unless we are joining {@code ref} type values.
    */
   @Override
   public Value joinInstances(DFA dfa, Value v, int cl)
@@ -155,6 +155,24 @@ public class SysArray extends Value
       {
         throw new Error("DFA: trying to join SysArray with " + v.getClass());
       }
+  }
+
+
+  /**
+   * Compare this SysArray another SysArray.
+   *
+   * @param other the other SysArray
+   *
+   * @return -1, 0, or +1 depending on whether this &lt; other, this == other or
+   * this &gt; other by some order.
+   */
+  public int compareTo(Comparator<Value> comp, SysArray other)
+  {
+    return _elementClazz < other._elementClazz
+      ? -1
+      : _elementClazz > other._elementClazz
+      ? 1
+      : comp.compare(_elements, other._elements);
   }
 
 

@@ -41,13 +41,13 @@ is
   # checks if a character is valid in the encoding
   #
   module is_valid(c u8) =>
-    (65 <= c <= 90) || (50 <= c <= 55) // A-Z or 2-7
+    (65 <= c <= 90) || (50 <= c <= 55) # A-Z or 2-7
 
 
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a sequence of ascii values
   #
-  public encode(data array u8) =>
+  public encode(data array u8) Sequence u8 =>
 
     # extract 8 quintets from 40 bits (of an u64)
     enc40(n u64) =>
@@ -76,7 +76,7 @@ is
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a string
   #
-  public encode_to_string(data array u8) =>
+  public encode_to_string(data array u8) String =>
     String.type.from_bytes (encode data)
 
 
@@ -86,7 +86,7 @@ is
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
-  public decode_str(data String) =>
+  public decode_str(data String) outcome (array u8) =>
     decode data.utf8.as_array
 
 
@@ -96,7 +96,7 @@ is
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
-  public decode(data array u8) =>
+  public decode(data array u8) outcome (array u8) =>
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
@@ -147,10 +147,10 @@ is
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
 
     for
-      res list u8 := nil, res ++ bytes  # contains the decoded data at the end
+      res := (Sequence u8).empty, res ++ bytes  # contains the decoded data at the end
       nxt := 0, nxt + 8
       last_err := false, is_err
-      qnt_last list (outcome u64) := nil, quintets
+      qnt_last Sequence (outcome u64) := (Sequence (outcome u64)).empty, quintets
 
     while nxt < data.length && !last_err
     do
@@ -161,7 +161,7 @@ is
       bits := if is_err then 0
               else quintets.map (.val)
                            .zip (((u64 35) :: -5).take 8) (<<)
-                           .foldf (|) (u64 0)
+                           .foldf (u64 0) (|)
       bytes := [(u64 32), 24, 16, 8, 0].map (i->(bits >> i).low8bits)
 
     else
@@ -175,5 +175,5 @@ is
 # Base32 encoding and decoding as defined in RFC 4648
 # alphabet is A-Z, 2-7
 #
-public base32 =>
+public base32 base32 =>
   base32 "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".utf8.as_array "base32"

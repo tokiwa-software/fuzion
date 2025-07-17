@@ -24,10 +24,11 @@
 x(T type, v T)    => say "x1 $T $v"
 x(T type, v, w T) => say "x2 $T $v $w"
 
-a,b => 42
+a => 42
+b => 42
 
 x i32 a
 x a
 
 x i32 a b
-x _ a b   // could work, but does not
+x _ a b   # could work, but does not

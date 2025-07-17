@@ -28,7 +28,7 @@ primes is
   mi : mutate is
   mi ! ()->
 
-    primes(n i64) => // sieve using loops
+    primes(n i64) => # sieve using loops
       _ :=
         for
           a := (mutate.array bool).new mi n+1 false, a
@@ -43,33 +43,24 @@ primes is
                 a[j] := true
     say "Primes using loop:"; primes 1000; say ""
 
-    primes2(n i64) =>   // sieve using streams
+    primes2(n i64) =>   # sieve using streams
       a := (mutate.array bool).new mi n+1 false
-      ((i64 2)..n).for_each (i ->
+      ((i64 2)..n).for_each i->
           if !a[i]
             yak "$i "
-            ((i64 1)..n).for_while (j ->
+            ((i64 1)..n).for_while j->
                 a[i*j] := true;
                 (i*j+i) ≤ n
-              )
-        )
+
     say "Primes using streams:"; primes2 1000; say ""
 
-    primes3(n i64) =>   // sieve using streams and filters
+    primes3(n i64) =>   # sieve using streams and filters
       a := (mutate.array bool).new mi n+1 false
       ((i64 2)..n)
         .filter (i -> !a[i])
-        .for_each (i ->
+        .for_each i->
             yak "$i "
             ((i64 1)..n/i).for_each (j -> a[i*j] := true)
-          )
+
     say "Primes using streams and filters:"; primes3 1000; say ""
 
-    primes4(n i64) =>  // sieve using pipes
-      a := (mutate.array bool).new mi n+1 false
-
-      (((i64 2)..n) |& (i -> !a[i])) ! i ->
-        yak "$i "
-        ((i64 1)..n/i) ! j -> a[i*j] := true
-
-    say "Primes using pipes:"; primes4 1000; say ""
