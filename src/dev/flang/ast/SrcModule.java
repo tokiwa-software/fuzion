@@ -80,15 +80,6 @@ public interface SrcModule extends AbstractModule
 
   /* NYI: cleanup: methods for AIR phase should not be defined in package ast! */
 
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
-
-
   String name();
 
 }
