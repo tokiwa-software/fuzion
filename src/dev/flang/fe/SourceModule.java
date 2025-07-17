@@ -1028,14 +1028,11 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
       }
     df.put(fn, f);
-    if (outer.state().atLeast(State.RESOLVED_DECLARATIONS))
+    outer.whenResolvedDeclarations(()->
       {
         addToDeclaredOrInheritedFeatures(outer, f);
-        if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
-          {
-            addToHeirs(outer, fn, f);
-          }
-      }
+      });
+    addToHeirs(outer, fn, f);
   }
 
 
