@@ -33,13 +33,11 @@
 #
 
 FUZION_OPTIONS ?=
-FILE ?= $(NAME).fz
 FUZION_JVM_BACKEND_OPTIONS ?=
 FUZION_C_BACKEND_OPTIONS ?=
 FUZION_DEPENDENCIES ?=
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
-FILE = $(NAME).fz
 ENV = \
   $(if $(FUZION_HOME)               , FUZION_HOME="$(FUZION_HOME)"                              ,) \
   $(if $(FUZION_JAVA)               , FUZION_JAVA="$(FUZION_JAVA)"                              ,) \
@@ -53,28 +51,28 @@ ENV = \
 all: jvm int c
 
 jvm:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../negative.mk jvm
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../simple.mk jvm
+	NAME=$(NAME) $(ENV) make -f ../negative.mk jvm
+	NAME=$(NAME) $(ENV) make -f ../simple.mk jvm
 c:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../negative.mk c
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../simple.mk c
+	NAME=$(NAME) $(ENV) make -f ../negative.mk c
+	NAME=$(NAME) $(ENV) make -f ../simple.mk c
 int:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../negative.mk int
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../simple.mk int
+	NAME=$(NAME) $(ENV) make -f ../negative.mk int
+	NAME=$(NAME) $(ENV) make -f ../simple.mk int
 
 show:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../negative.mk show
+	NAME=$(NAME) $(ENV) make -f ../negative.mk show
 
 record:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../simple.mk record
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record
 
 record_jvm:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../simple.mk record_jvm
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record_jvm
 
 record_c:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../simple.mk record_c
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record_c
 
 record_int:
-	FILE=$(FILE) NAME=$(NAME) $(ENV) make -f ../simple.mk record_int
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record_int
 
 effect:
