@@ -61,7 +61,7 @@ partial_application is
 
   i32.prefix      !! => if val <= 1 then 1 else val * !!(val-1)
   integer.postfix !  => if integer.this <= integer.this.one then integer.this.one else integer.this * (integer.this-integer.this.one)!
-  i32.postfix !  => if val <= 1 then 1 else val * (val-1)!
+  fixed redef i32.postfix !  => if val <= 1 then 1 else val * (val-1)!
   u64.postfix     !!  => if val <= u64 1 then u64 1 else val * (val-1)!!
   u64.prefix      !!  => if val <= u64 1 then u64 1 else val * !!(val-1)
 
@@ -370,3 +370,44 @@ partial_application is
     test "fun arg 4 4" (fun_arg_with_4_args f_4_args 4 2 0 69) "4,2,0,69"
 
   with_tp
+
+  # example code from #4687, partial application of infix operator
+  #
+  test_4687 =>
+
+    [(u8 0, u8 1)].map (||> x,y->unit) |> x -> test "#4687:" x "[unit]"
+
+  test_4687
+
+  # example code from #5259, partial application on numeric literals
+  #
+  test_5259 =>
+
+    # numeric literal passed as unary partial function as argument
+    a(f i32->i32, exp String) => test "#5259: f 7" (f 7) exp
+    a -1 "6"
+    a *2 "14"
+
+    # numeric literal passed as unary partial function as field or function result
+    g i32->i32 := -1
+    h i32->i32 => -1
+    i i32->i32 := *2
+    j i32->i32 => *2
+
+    7 |> g |> x -> test "#5259: 7 |> g" x "6"
+    7 |> h |> x -> test "#5259: 7 |> h" x "6"
+    7 |> i |> x -> test "#5259: 7 |> i" x "14"
+    7 |> j |> x -> test "#5259: 7 |> j" x "14"
+
+    # numeric literal passed as nullary partial function
+    k ()->i32 := -123
+    l ()->i32 => -456
+    m ()->i32 := +123
+    n ()->i32 => +456
+
+    k() |> x -> test "#5259: k()" x "-123"
+    l() |> x -> test "#5259: l()" x "-456"
+    m() |> x -> test "#5259: m()" x "123"
+    n() |> x -> test "#5259: n()" x "456"
+
+  test_5259

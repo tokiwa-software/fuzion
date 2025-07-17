@@ -1,0 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Lazy
+#
+# -----------------------------------------------------------------------
+
+# Lazy has special compiler support.
+# It can be used to require lazy evaluation of arguments.
+#
+# A good example is `or` in bool:
+#     infix || (other Lazy bool) bool =>
+#
+# In the following example the expression
+# `4+5>10` will never be executed:
+#     true || 4+5>10
+#
+public Lazy(public T type) ref : Nullary T,
+# Read here how lazy compuations form a monad: https://blog.ploeh.dk/2022/05/30/the-lazy-monad/
+# NYI: UNDER DEVELOPMENT: add example where monad is useful #5057
+                                 monad T (Lazy T) is
+
+
+  # monadic operator within the same monad
+  #
+  # Apply f to elements of type A and re-wrap them in this monad.
+  #
+  public redef infix >>= (f T -> Lazy T) Lazy T =>
+    ref : Lazy T is
+      public redef call T =>
+        (f Lazy.this.call).call
+
+
+  # return function
+  #
+  public redef type.return (a T) Lazy T =>
+    ref : Lazy T is
+      public redef call T => a

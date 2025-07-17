@@ -1,0 +1,2 @@
+this will fail with a stack trace.
+It is important that the stack trace contains no generated lambdas:

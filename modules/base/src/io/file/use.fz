@@ -1,0 +1,86 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.file.use
+#
+# -----------------------------------------------------------------------
+
+
+# the mode to use when opening a file
+#
+public mode is
+
+  public read is
+  public write is
+  public append is
+
+  module:public val : choice mode.read mode.write append is
+
+# this opens a file with the given mode.
+# on success it instates effects:
+#
+# file.this.open,
+# (io.buffered file.this.file_mutate).reader and
+# (io.buffered file.this.file_mutate).writer.
+#
+# These can then be used in `code()`.
+#
+# usage example:
+#
+#     my_file : io.file is
+#     _ := my_file.use file_name mode.read ()->
+#       say (io.buffered my_file.file_mutate).read_lines
+#
+public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+
+  # definition of read handler for file
+  #
+  read_handler(desc File_Descriptor) : io.Read_Handler is
+    public redef read(count i32) choice (array u8) io.end_of_file error =>
+      match fuzion.sys.fileio.read desc count.as_u64
+        a array u8 => if a.is_empty then io.end_of_file else a
+        e error => e
+
+  # definition of write handler for file
+  #
+  write_handler (desc File_Descriptor) : io.Write_Handler is
+    public redef write (bytes Sequence u8) outcome unit =>
+      fuzion.sys.fileio.write desc bytes.as_array
+
+
+  mode_num :=
+    match m
+      mode.read => 0
+      mode.write => 1
+      mode.append => 2
+
+  (fuzion.sys.fileio.open file_name mode_num).bind fd->
+
+    # NYI: BUG: unclear why DFA does not accept this
+    # file_mutate
+    #   .and (outcome R) open (open fd file_name)
+    #   .and ((io.buffered file_mutate).reader (read_handler fd) 1024)
+    #   .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+    #   .call code
+
+    file_mutate ! ()->
+      open fd file_name
+        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd) 1024)
+        .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+        .call code

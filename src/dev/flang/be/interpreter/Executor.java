@@ -26,12 +26,23 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
+
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.AbstractInterpreter.ProcessExpression;
 
@@ -114,7 +125,7 @@ public class Executor extends ProcessExpression<Value, Object>
     _options_ = opt;
     _universe = new Instance(_fuir.clazzUniverse());
     _tailCall = new TailCall(fuir);
-    this._cur = _fuir.mainClazzId() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazzId());
+    this._cur = _fuir.mainClazz() == _fuir.clazzUniverse() ? _universe : new Instance(_fuir.mainClazz());
     this._outer = _universe;
     this._args = new List<>();
   }
@@ -124,7 +135,6 @@ public class Executor extends ProcessExpression<Value, Object>
    * The constructor to initialize the executor
    * with a custom current, outer and args.
    *
-   * @param fuir
    * @param cur
    * @param outer
    * @param args
@@ -198,12 +208,9 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object assignStatic(int s, int tc, int f, int rt, Value tvalue, Value val)
+  public Object assignStatic(int s, int f, Value tvalue, Value val)
   {
-    if (!(_fuir.clazzIsOuterRef(f) && _fuir.clazzIsUnitType(rt)))
-      {
-        Interpreter.setField(f, tc, tvalue, val);
-      }
+    Interpreter.setField(f, _fuir.clazzAt(s), tvalue, val);
     return null;
   }
 
@@ -234,9 +241,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var tt = ttcc.v0();
     var cc = ttcc.v1();
 
-    // NYI: abstract interpreter should probably not give us boxed values
-    // in this case
-    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc /* NYI should this be cc0? */)))
+    if(_fuir.clazzIsBoxed(tt) && !_fuir.clazzIsRef(_fuir.clazzOuterClazz(cc)))
       {
         tt = ((Boxed)tvalue)._valueClazz;
         tvalue = ((Boxed)tvalue)._contents;
@@ -252,7 +257,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var result = switch (_fuir.clazzKind(cc))
       {
       case Routine :
-        // NYI change call to pass in ai as in match expression?
+        // NYI: UNDER DEVELOPMENT: change call to pass in ai as in match expression?
         var cur = callOnNewInstance(s, cc, tvalue, args);
 
         Value rres = cur;
@@ -276,18 +281,83 @@ public class Executor extends ProcessExpression<Value, Object>
 
         yield fres;
       case Intrinsic :
-        yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
+        yield _fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
           ? pair(unitValue())
-          : pair(Intrinsics.call(this, cc).call(new List<>(tvalue, args)));
+          : pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Abstract:
         throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
       case Choice :
         throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
       case Native:
-        throw new Error("NYI: UNDER DEVELOPMENT: Calling native not yet supported in interpreter.");
+        var mh = Linker.nativeLinker()
+          .downcallHandle(
+            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI: UNDER DEVELOPMENT: */), Arena.ofAuto())
+              .find(_fuir.clazzNativeName(cc))
+              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
+
+              _fuir.clazzIsUnitType(rt)
+                ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
+                : FunctionDescriptor.of(layout(rt), layoutArgs(cc0)));
+
+        var arguments = args.stream().map(arg -> arg.toNative()).toList();
+        Object tmp = null;
+        try
+          {
+            tmp = mh.invokeWithArguments(arguments);
+          }
+        catch (Throwable e)
+          {
+            Errors.fatal(e);
+            yield null;
+          }
+        for (int i = 0; i < args.size(); i++)
+         {
+            if (args.get(i) instanceof ArrayData ad)
+              {
+                ad.set((MemorySegment)arguments.get(i));
+              }
+          }
+        yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
       };
 
     return result;
+  }
+
+
+  /*
+   * get MemoryLayout/ValueLayout of args of cc.
+   */
+  private MemoryLayout[] layoutArgs(int cc)
+  {
+    var result = new MemoryLayout[_fuir.clazzArgCount(cc)];
+    for (int i = 0; i < _fuir.clazzArgCount(cc); i++)
+      {
+        result[i] = layout(_fuir.clazzArgClazz(cc, i));
+      }
+    return result;
+  }
+
+
+  /*
+   * get MemoryLayout/ValueLayout for clazz c.
+   */
+  private MemoryLayout layout(int c)
+  {
+    return switch (_fuir.getSpecialClazz(c))
+      {
+      case c_bool    -> ValueLayout.JAVA_BOOLEAN;
+      case c_i8      -> ValueLayout.JAVA_BYTE;
+      case c_i16     -> ValueLayout.JAVA_SHORT;
+      case c_i32     -> ValueLayout.JAVA_INT;
+      case c_i64     -> ValueLayout.JAVA_LONG;
+      case c_u8      -> ValueLayout.JAVA_BYTE;
+      case c_u16     -> ValueLayout.JAVA_CHAR;
+      case c_u32     -> ValueLayout.JAVA_INT;
+      case c_f32     -> ValueLayout.JAVA_FLOAT;
+      case c_f64     -> ValueLayout.JAVA_DOUBLE;
+      case c_u64     -> ValueLayout.JAVA_LONG;
+      default        -> ValueLayout.ADDRESS;
+      };
   }
 
 
@@ -301,10 +371,10 @@ public class Executor extends ProcessExpression<Value, Object>
     int cc, tt;
     if (_fuir.accessIsDynamic(s))
       {
-        cc = -1;
+        cc = NO_CLAZZ;
         tt = ((ValueWithClazz)tvalue)._clazz;
         var ccs = _fuir.accessedClazzes(s);
-        for (var cci = 0; cci < ccs.length && cc==-1; cci += 2)
+        for (var cci = 0; cci < ccs.length && cc==NO_CLAZZ; cci += 2)
           {
             if (ccs[cci] == tt)
               {
@@ -319,14 +389,14 @@ public class Executor extends ProcessExpression<Value, Object>
       }
 
     if (POSTCONDITIONS) ensure
-      (cc != -1);
+      (cc != NO_CLAZZ);
 
     return new Pair<>(tt, cc);
   }
 
 
   /**
-   * wrap `v` into a `Pair<>(v, null)`
+   * wrap {@code v} into a {@code Pair<>(v, null)}
    *
    * @param v
    * @return
@@ -370,8 +440,8 @@ public class Executor extends ProcessExpression<Value, Object>
     // NYI: UNDERDEVELOPMENT: cache?
     var val = switch (_fuir.getSpecialClazz(constCl))
       {
-      case c_Const_String, c_String -> Interpreter
-        .value(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
+      case c_String -> Interpreter
+        .boxedConstString(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
       case c_bool -> { check(d.length == 1, d[0] == 0 || d[0] == 1); yield new boolValue(d[0] == 1); }
       case c_f32 -> new f32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getFloat());
       case c_f64 -> new f64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getDouble());
@@ -395,23 +465,9 @@ public class Executor extends ProcessExpression<Value, Object>
 
             for (int idx = 0; idx < elCount; idx++)
               {
-                var b = _fuir.deseralizeConst(elementType, bb);
+                var b = _fuir.deserializeConst(elementType, bb);
                 var c = constData(s, elementType, b).v0();
-                switch (_fuir.getSpecialClazz(elementType))
-                  {
-                    case c_i8   : ((byte[])   (arrayData._array))[idx] = (byte)c.i8Value(); break;
-                    case c_i16  : ((short[])  (arrayData._array))[idx] = (short)c.i16Value(); break;
-                    case c_i32  : ((int[])    (arrayData._array))[idx] = c.i32Value(); break;
-                    case c_i64  : ((long[])   (arrayData._array))[idx] = c.i64Value(); break;
-                    case c_u8   : ((byte[])   (arrayData._array))[idx] = (byte)c.u8Value(); break;
-                    case c_u16  : ((char[])   (arrayData._array))[idx] = (char)c.u16Value(); break;
-                    case c_u32  : ((int[])    (arrayData._array))[idx] = c.u32Value(); break;
-                    case c_u64  : ((long[])   (arrayData._array))[idx] = c.u64Value(); break;
-                    case c_f32  : ((float[])  (arrayData._array))[idx] = c.f32Value(); break;
-                    case c_f64  : ((double[]) (arrayData._array))[idx] = c.f64Value(); break;
-                    case c_bool : ((boolean[])(arrayData._array))[idx] = c.boolValue(); break;
-                    default     : ((Value[])  (arrayData._array))[idx] = c;
-                  }
+                arrayData.set(idx, c, fuir(), elementType);
               }
 
             Instance result = new Instance(constCl);
@@ -432,7 +488,7 @@ public class Executor extends ProcessExpression<Value, Object>
               {
                 var fr = _fuir.clazzArgClazz(constCl, index);
 
-                var bytes = _fuir.deseralizeConst(fr, b);
+                var bytes = _fuir.deserializeConst(fr, b);
                 var c = constData(s, fr, bytes).v0();
                 var acl = _fuir.clazzArg(constCl, index);
                 Interpreter.setField(acl, constCl, result, c);
@@ -455,7 +511,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Pair<Value, Object> match(int s, AbstractInterpreter<Value, Object> ai, Value subv)
   {
-    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(FUIR.SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
+    var staticSubjectClazz = subv instanceof boolValue ? fuir().clazz(SpecialClazzes.c_bool) : ((ValueWithClazz)subv)._clazz;
 
     if (CHECKS) check
       (fuir().clazzIsChoice(staticSubjectClazz));
@@ -465,11 +521,11 @@ public class Executor extends ProcessExpression<Value, Object>
     var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
     var field = _fuir.matchCaseField(s, cix);
-    if (field != -1)
+    if (field != NO_CLAZZ && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(field)))
       {
         Interpreter.setField(
             field,
-            _cur._clazz,
+            _cur.clazz(),
             _cur,
             tagAndChoiceElement.v1());
       }
@@ -496,7 +552,7 @@ public class Executor extends ProcessExpression<Value, Object>
         val = Interpreter.getChoiceRefVal(staticSubjectClazz, staticSubjectClazz, sub);
         tag = ChoiceIdAsRef.tag(staticSubjectClazz, val);
       }
-    else if (staticSubjectClazz == fuir().clazz(FUIR.SpecialClazzes.c_bool))
+    else if (staticSubjectClazz == fuir().clazz(SpecialClazzes.c_bool))
       {
         tag = sub.boolValue() ? 1 : 0;
         val = sub;
@@ -527,21 +583,6 @@ public class Executor extends ProcessExpression<Value, Object>
     return pair(Interpreter.tag(newcl, tc, value, tagNum));
   }
 
-  @Override
-  public Pair<Value, Object> env(int s, int ecl)
-  {
-    var result = FuzionThread.current()._effects.get(ecl);
-    if (result == null)
-      {
-        Errors.fatal("No effect installed: " + _fuir.clazzAsStringHuman(ecl));
-      }
-
-    if (POSTCONDITIONS) ensure
-      (fuir().clazzIsUnitType(ecl) || result != unitValue());
-
-    return pair(result);
-  }
-
 
   /**
    * Generate code to terminate the execution immediately.
@@ -551,8 +592,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Object reportErrorInCode(String msg)
   {
-    say_err(msg);
-    System.exit(1);
+    Errors.fatal(msg);
     return null;
   }
 
@@ -574,7 +614,7 @@ public class Executor extends ProcessExpression<Value, Object>
   Instance callOnNewInstance(int s, int cc, Value outer, List<Value> args)
   {
     FuzionThread.current()._callStackFrames.push(cc);
-    FuzionThread.current()._callStack.push(s);
+    FuzionThread.current()._callSiteStack.push(s);
 
     var o = outer;
     var a = args;
@@ -595,7 +635,7 @@ public class Executor extends ProcessExpression<Value, Object>
           }
       }
 
-    FuzionThread.current()._callStack.pop();
+    FuzionThread.current()._callSiteStack.pop();
     FuzionThread.current()._callStackFrames.pop();
 
     return cur;
@@ -605,13 +645,17 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Helper for callStack() to show one single frame
    *
+   * @param fuir
+   *
+   * @param sb used to append the output
+   *
    * @param frame the clazz of the entry to show
    *
-   * @param call the call of the entry to show
+   * @param callSite the call of the entry to show
    */
   private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
   {
-    if (frame != -1)
+    if (frame != NO_CLAZZ)
       {
         sb.append(_fuir.clazzAsStringHuman(frame)).append(": ");
       }
@@ -622,6 +666,8 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Helper for callStack() to show a repeated frame
    *
+   * @param fuir
+   *
    * @param sb used to append the output
    *
    * @param repeat how often was the previous entry repeated? >= 0 where 0 means
@@ -630,7 +676,7 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @param frame the clazz of the previous entry
    *
-   * @param call the call of the previous entry
+   * @param callSite the call of the previous entry
    */
   private static void showRepeat(FUIR fuir, StringBuilder sb, int repeat, int frame, int callSite)
   {
@@ -651,29 +697,29 @@ public class Executor extends ProcessExpression<Value, Object>
   public static String callStack(FUIR fuir)
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
-    int lastFrame = -1;
-    int lastCall = -1;
+    int lastFrame = NO_CLAZZ;
+    int lastCallSite = NO_SITE;
     int repeat = 0;
-    var s = FuzionThread.current()._callStack;
+    var s = FuzionThread.current()._callSiteStack;
     var sf = FuzionThread.current()._callStackFrames;
     for (var i = s.size()-1; i >= 0; i--)
       {
         int frame = i<sf.size() ? sf.get(i) : null;
         var call = s.get(i);
-        if (frame == lastFrame && call == lastCall)
+        if (frame == lastFrame && call == lastCallSite)
           {
             repeat++;
           }
         else
           {
-            showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+            showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
             repeat = 0;
             showFrame(fuir, sb, frame, call);
             lastFrame = frame;
-            lastCall = call;
+            lastCallSite = call;
           }
       }
-    showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+    showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
     return sb.toString();
   }
 

@@ -116,7 +116,7 @@ public class SourceFile extends ANY
   /**
    * Dummy value for fileName argument for data from command line. Unlike STDIN,
    * no data can be read from this, it must not be passed to the constructor of
-   * SourceFile without providing a `byte[]` or file data!
+   * SourceFile without providing a {@code byte[]} or file data!
    */
   public static Path COMMAND_LINE_DUMMY = Path.of("command line");
 
@@ -229,10 +229,12 @@ public class SourceFile extends ANY
           }
         catch (IOException e)
           {
-            Errors.error(new SourcePosition(this, 0),
+            sf = new byte[0];
+            Errors.error(new SourcePosition(/* cannt use `this` here since `_bytes` etc. is not intialized yet */
+                                            new SourceFile(fileName, sf),
+                                            0),
                          "I/O Error: " + e.getMessage(),
                          "");
-            sf = new byte[0];
           }
       }
     _bytes = sf;
@@ -865,7 +867,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    * @param end the byte position of first code point after the desired portion
    * of the file
    *
-   * @pram s a String
+   * @param s a String
    *
    * @return -1, 0, +1 if the string in the file is smaller, equal or larger
    * than s comparing each single code point until the end. If all are equal,
@@ -1036,8 +1038,8 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
    *
    * @param l a line number
    *
-   * @return if 0 < l < lines().length, the contents of that line. Otherwise,
-   * if l <= 0, "<line does not exist>", otherwise "<end of file>".
+   * @return {@literal if 0 < l < lines().length, the contents of that line. Otherwise,
+   * if l <= 0, <line does not exist>, otherwise <end of file>.}
    */
   public String line(int l)
   {
@@ -1129,7 +1131,7 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
   /**
    * Check if this SourceFile operates on the same byte array as other.
    *
-   * This ensures that any clones created via `new SourceFile(origin)` will be
+   * This ensures that any clones created via {@code new SourceFile(origin)} will be
    * considered to be the same.
    */
   public boolean sameAs(SourceFile other)

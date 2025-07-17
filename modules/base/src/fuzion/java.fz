@@ -1,0 +1,114 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.java
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# fuzion.java -- unit type grouping low-level helpers for Java interface
+#
+public java is
+
+
+  # A Java reference
+  #
+  public Java_Object(public java_ref Java_Ref) ref
+  is
+
+    # convenience feature to get JVM effect from current environment. This avoids DFA limitations
+    # that is currently not accurate enough to find the presence of the jvm effect for Strings
+    #
+    jvm => (fuzion.jvm.get_if_instated.or_else (panic "jvm effect required but not instated"))
+
+    public is_null bool ! fuzion.jvm =>
+      fuzion.jvm.env.is_null0 java_ref
+
+
+    # NYI: UNDER DEVELOPMENT:
+    # redef as_string String =>
+    #   call_virtual "java.lang.Object" "toString" "()Ljava.lang.String;" Java_Object.this []
+
+
+  # A Java array
+  #
+  public Array(public T type,
+               public redef java_ref Java_Ref) ref : Sequence T, Java_Object java_ref
+  is
+    public length i32 ! fuzion.jvm =>
+      fuzion.jvm.env.array_length T java_ref
+
+    public redef finite trit => trit.yes
+
+    public redef index [ ] (i i32) T ! fuzion.jvm =>
+      fuzion.jvm.env.array_get T java_ref i (sys.c_string signature)
+
+    public redef as_list list T => as_list 0
+
+
+    # create list starting at index from
+    #
+    public as_list (from i32) list T =>
+      if length ≤ from
+        nil
+      else
+        array_cons from
+
+
+    # create a cons cell for a list of this array starting at the given
+    # index
+    #
+    array_cons (i i32) : Cons T (list T)
+      pre
+        debug: 0 ≤ i < length
+    is
+      public redef head T => Array.this[i]
+      public redef tail list T => as_list i+1
+
+
+    # get the java signature for type T.
+    #
+    signature =>
+      if T.name = "i8"
+        "B"
+      else if T.name = "i16"
+        "S"
+      else if T.name = "u16"
+        "C"
+      else if T.name = "i32"
+        "I"
+      else if T.name = "i64"
+        "J"
+      else if T.name = "f32"
+        "F"
+      else if T.name = "f64"
+        "D"
+      else if T.name = "bool"
+        "Z"
+      else
+        "NOT_A_PRIMITIVE"
+
+
+  # Java's 'java.lang.String' type
+  #
+  public Java_String(public redef java_ref Java_Ref) ref : String, Java_Object java_ref
+  is
+    public redef utf8 Sequence u8 =>
+      (jvm.java_string_to_string java_ref).utf8

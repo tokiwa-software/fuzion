@@ -106,9 +106,15 @@ public class JVMOptions extends FuzionOptions
 
 
   /**
-   * Custom output name when using option `-classes` or `-jvm`.
+   * Custom output name when using option {@code -classes} or {@code -jvm}.
    */
   final Optional<String> _outputName;
+
+
+  /**
+   * Native libraries (*.so, *.dll) to be used when running program.
+   */
+  final Optional<String> _jLibs;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -121,7 +127,8 @@ public class JVMOptions extends FuzionOptions
                     boolean run,
                     boolean saveClasses,
                     boolean saveJAR,
-                    Optional<String> outputName)
+                    Optional<String> outputName,
+                    Optional<String> jLibs)
   {
     super(fo);
 
@@ -130,6 +137,7 @@ public class JVMOptions extends FuzionOptions
     this._saveJAR     = saveJAR;
     this._applicationArgs = fo.getBackendArgs();
     this._outputName = outputName;
+    this._jLibs = jLibs;
   }
 
 

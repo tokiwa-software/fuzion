@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue4420.fz:24:23: error 1: Wrong number of type parameters
+[""].reduce unit unit id
+----------------------^^
+Wrong number of actual type parameters in call:
+Called feature: id
+expected one generic argument for 'T'
+found none.
+
+one error.

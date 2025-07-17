@@ -30,7 +30,7 @@ import java.util.Arrays;
 
 
 /**
- * BoolArray contains an expandable array of `boolean` values
+ * BoolArray contains an expandable array of {@code boolean} values
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

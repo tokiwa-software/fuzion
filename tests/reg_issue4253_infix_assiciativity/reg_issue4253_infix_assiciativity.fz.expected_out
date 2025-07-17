@@ -1,0 +1,13 @@
+expecting `[4, 16, 36, 64, 100]`, four times:
+[4, 16, 36, 64, 100]
+[4, 16, 36, 64, 100]
+[4, 16, 36, 64, 100]
+[4, 16, 36, 64, 100]
+expecting `hi!unit`
+hi!unit
+expecting `hi! right unit left`
+hi! right unit left
+expecting `-36`
+-36
+expecting `7`
+7

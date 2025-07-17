@@ -1,0 +1,68 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue4425
+#
+# -----------------------------------------------------------------------
+
+# parentheses ( ) around a block should behave the same as braces around
+# that block
+#
+reg_issue4425 =>
+
+  # original positive example from #4425
+  #
+  ignore i32->bool p->{if p = 3 then
+                          say "hi"
+                       false}
+
+
+  # original negative example from #4425 that used to cause an indentation
+  # error while parsing
+  #
+  ignore i32->bool p->(if p = 3 then
+                         say "hi"
+                       false)
+
+  # same tests, but producing some output:
+  (id i32->bool p->{if p = 3 then
+                      say "hi using \{\}"
+                    false}).call 3 |> say
+  (id i32->bool p->(if p = 3 then
+                      say "hi using ()"
+                    false)).call 3 |> say
+
+  type_of ()                           |> x -> say "should be empty tuple: $x"
+  type_of ("a",42)                     |> x -> say "should be tuple String 42: $x"
+  type_of (id i32,i32->i32 (a,b)->a*b) |> x -> say "should be Binary i32 i32 i32: $x"
+  type_of (if 3 = 4 then
+             say "strange"
+           else
+             say "*** should not run ***"
+           say "done code block")      |> x -> say "should be unit: $x"
+  (if 3 = 4 then
+     say "strange"
+   else
+     say "this should run 1"
+   "result from code block 1")         |> x -> say "should be result form code block 1: $x"
+  {if 3 = 4 then
+     say "strange"
+   else
+     say "this should run 2"
+   "result from code block 2"}         |> x -> say "should be result form code block 2: $x"

@@ -494,7 +494,8 @@ class ForClass extends ANY
                             "  # call Java instance method '" + me + "':\n" +
                             "  #\n" +
                             "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
-                            "    " + ("match fuzion.java.call_virtual (" + fr + ") " +
+                            "    " + ("match fuzion.jvm.env.call_virtual " +
+                                      (fr.contains(" ") ? "(" + fr + ")" : fr) + " " +
                                       fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -510,7 +511,8 @@ class ForClass extends ANY
                             "  # call Java static method '" + me + "':\n" +
                             "  #\n" +
                             "  public " + fn + fp + " " + outcomeResultType(me, fr) + " =>\n" +
-                            "    " + ("match fuzion.java.call_static (" + fr + ") " +
+                            "    " + ("match fuzion.jvm.env.call_static " +
+                                      (fr.contains(" ") ? "(" + fr + ")" : fr) + " " +
                                       fuzionString(me.getDeclaringClass().getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
@@ -524,7 +526,7 @@ class ForClass extends ANY
 
   /**
    * If executable throws any checked exception
-   * the result type `fr` is wrapped in an outcome.
+   * the result type {@code fr} is wrapped in an outcome.
    */
   private String outcomeResultType(Executable exc, String fr)
   {
@@ -553,7 +555,7 @@ class ForClass extends ANY
                        "  # call Java constructor '" + co + "':\n" +
                        "  #\n" +
                        "  public " + fn + fp + " " + outcomeResultType(co, fr) + " =>\n" +
-                       "    " + ("match fuzion.java.call_constructor (" + fr + ") " +
+                       "    " + ("match fuzion.jvm.env.call_constructor " + fr + " " +
                                  fuzionString(co.getDeclaringClass().getName()) + " " +
                                  fuzionString(js) + " " +
                                  parametersArray(outer + "." + fn, pa) + "\n") +
@@ -753,7 +755,7 @@ class ForClass extends ANY
         if (t.isArray() && !t.getComponentType().isArray() /* NYI: nested arrays */)
           {
             var et = plainResultType(t.getComponentType());
-            mt = (et == null) ? null : "Sequence (" + et + ")";
+            mt = (et == null) ? null : "Sequence " + et;
           }
         else if (t == String.class)
           {
@@ -849,7 +851,7 @@ class ForClass extends ANY
    * @param pa array of parameters
    *
    * @return a string declaring such an array, e.g.,
-   * "[fuzion.java.string_to_java_object arg0]".
+   * "[fuzion.jvm.env.string_to_java_object arg0]".
    */
   String parametersArray(String outer, Parameter[] pa)
   {
@@ -865,22 +867,22 @@ class ForClass extends ANY
             if (t.getComponentType().isPrimitive())
               {
                 res.append(
-                  "fuzion.java.array_to_java_object (" + plainResultType(t.getComponentType()) + ") ");
+                  "fuzion.jvm.env.array_to_java_object " + plainResultType(t.getComponentType()) + " ");
               }
             else
               {
                 res.append("Java.as_java_object ");
               }
           }
-        else if (t == Byte     .TYPE) { res.append("fuzion.java.i8_to_java_object "    ); }
-        else if (t == Character.TYPE) { res.append("fuzion.java.u16_to_java_object "   ); }
-        else if (t == Short    .TYPE) { res.append("fuzion.java.i16_to_java_object "   ); }
-        else if (t == Integer  .TYPE) { res.append("fuzion.java.i32_to_java_object "   ); }
-        else if (t == Long     .TYPE) { res.append("fuzion.java.i64_to_java_object "   ); }
-        else if (t == Float    .TYPE) { res.append("fuzion.java.f32_to_java_object "   ); }
-        else if (t == Double   .TYPE) { res.append("fuzion.java.f64_to_java_object "   ); }
-        else if (t == Boolean  .TYPE) { res.append("fuzion.java.bool_to_java_object "  ); }
-        else if (t == String.class  ) { res.append("fuzion.java.string_to_java_object "); }
+        else if (t == Byte     .TYPE) { res.append("fuzion.jvm.env.i8_to_java_object "    ); }
+        else if (t == Character.TYPE) { res.append("fuzion.jvm.env.u16_to_java_object "   ); }
+        else if (t == Short    .TYPE) { res.append("fuzion.jvm.env.i16_to_java_object "   ); }
+        else if (t == Integer  .TYPE) { res.append("fuzion.jvm.env.i32_to_java_object "   ); }
+        else if (t == Long     .TYPE) { res.append("fuzion.jvm.env.i64_to_java_object "   ); }
+        else if (t == Float    .TYPE) { res.append("fuzion.jvm.env.f32_to_java_object "   ); }
+        else if (t == Double   .TYPE) { res.append("fuzion.jvm.env.f64_to_java_object "   ); }
+        else if (t == Boolean  .TYPE) { res.append("fuzion.jvm.env.bool_to_java_object "  ); }
+        else if (t == String.class  ) { res.append("fuzion.jvm.env.string_to_java_object "); }
         res.append( outer + ".this." + mp );
         res.append(")");
       }
@@ -919,7 +921,7 @@ class ForClass extends ANY
    *
    * @param me the Java Method
    *
-   * @return the corresponding Fuzion type, e.g., "i32", "outcome<string>",
+   * @return the corresponding Fuzion type, e.g., {@code i32}, {@code outcome<string>},
    * "Java.java.util.Vector".
    */
   String resultType(Method me)
@@ -956,16 +958,16 @@ class ForClass extends ANY
             Errors.warning("Used type '" + t + "' is not public");
           }
       }
-    else if (t == Byte     .TYPE) { return "i8";        }
-    else if (t == Character.TYPE) { return "u16";       }
-    else if (t == Short    .TYPE) { return "i16";       }
-    else if (t == Integer  .TYPE) { return "i32";       }
-    else if (t == Long     .TYPE) { return "i64";       }
-    else if (t == Float    .TYPE) { return "f32";       }
-    else if (t == Double   .TYPE) { return "f64";       }
-    else if (t == Boolean  .TYPE) { return "bool";      }
-    else if (t == Void     .TYPE) { return "unit";      }
-    else if (!t.isArray()       ) { return typeName(t); }
+    else if (t == Byte     .TYPE) { return FuzionConstants.I8_NAME;   }
+    else if (t == Character.TYPE) { return FuzionConstants.U16_NAME;  }
+    else if (t == Short    .TYPE) { return FuzionConstants.I16_NAME;  }
+    else if (t == Integer  .TYPE) { return FuzionConstants.I32_NAME;  }
+    else if (t == Long     .TYPE) { return FuzionConstants.I64_NAME;  }
+    else if (t == Float    .TYPE) { return FuzionConstants.F32_NAME;  }
+    else if (t == Double   .TYPE) { return FuzionConstants.F64_NAME;  }
+    else if (t == Boolean  .TYPE) { return "bool";                    }
+    else if (t == Void     .TYPE) { return FuzionConstants.UNIT_NAME; }
+    else if (!t.isArray()       ) { return typeName(t);               }
     else { return "fuzion.java.Array " + (t.getComponentType().isArray() ? "Java.java.lang.Object" : plainResultType(t.getComponentType())); }
     return null;
   }
@@ -1023,10 +1025,11 @@ class ForClass extends ANY
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
                                "  public " + fn + " " + rt + " =>\n" +
-                               "    " + ("fuzion.java.get_static_field (" + rt + ") " +
+                               "    " + ("fuzion.jvm.env.get_static_field " +
+                                         (rt.contains(" ") ? "(" + rt + ")" : rt) + " " +
                                          fuzionString(cn) + " " +
                                          fuzionString(jn) + " " +
-                                         fuzionString(signature(fi.getType())) + "\n"));  // NYI fi.getType.getClass??
+                                         fuzionString(signature(fi.getType())) + "\n"));  // NYI: UNDER DEVELOPMENT: fi.getType.getClass??
           }
         else
           {
@@ -1034,7 +1037,8 @@ class ForClass extends ANY
                                 "  # read instance Java field '" + fi + "':\n" +
                                 "  #\n" +
                                 "  public " + fn + " " + rt + " =>\n" +
-                                "    " + ("fuzion.java.get_field (" + rt + ") " +
+                                "    " + ("fuzion.jvm.env.get_field " +
+                                          (rt.contains(" ") ? "(" + rt + ")" : rt) + " " +
                                           fcn + ".this " +
                                           fuzionString(jn) + " " +
                                           fuzionString(signature(fi.getType())) + "\n"

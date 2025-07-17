@@ -23,60 +23,56 @@
 #
 # -----------------------------------------------------------------------
 
-
-lm : mutate is
-
-_ := lm ! ()->fileiotests
-
 fileiotests =>
 
-  dir := "testdir"
-  newdir := "newdir"
-  file := dir + "/" + "testfile"
+  dir := "testdir_😀"
+  newdir := "newdir_😀"
+  file := dir + "/" + "testfile_😀"
 
   content := "Hello world 🌍"
 
   f : io.file is
 
   say "$dir exists: {f.exists dir}"
-  _ := (io.dir.make dir).bind unit _->
+  _ := (io.dir.make dir).bind _->
     say "$dir was created"
   say "$dir exists: {f.exists dir}"
 
   say "$file exists: {f.exists file}"
 
   _ := f
-    .use unit lm file f.mode.write ()->(io.buffered.writer.env.write content.utf8).error
-    .bind unit (_ -> say "$file was created")
+    .use file f.mode.write ()->(f.writer.write content.utf8).error
+    .bind (_ -> say "$file was created")
   say "$file exists: {f.exists file}"
 
   say "stat resolve=true : $file size is {(f.stat file true).val.size}"
   say "stat resolve=false: $file size is {(f.stat file false).val.size}"
 
-  _ := f.use unit lm file f.mode.read ()->
-    say  f.open.file_position
-    say (f.open.seek 1)
-    say  f.open.file_position
-    say (f.open.seek 0)
+  _ := f.use file f.mode.read ()->
+    f.open.seek ()->
+      say  f.seek.env.file_position
+      say (f.seek.env.seek 1)
+      say  f.seek.env.file_position
+      say (f.seek.env.seek 0)
 
 
-  _ := f.use (array u8) lm file f.mode.read (()->io.buffered.read_fully lm)
-    .bind unit bytes->
+  _ := f.use file f.mode.read ()->(io.buffered f.file_mutate).read_fully
+    .bind bytes->
       filecontent := String.from_bytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
 
   _ := f.delete file
-    .bind unit (_-> say "$file was deleted")
+    .bind (_-> say "$file was deleted")
   say "$file exists: {f.exists file}"
 
   say "$dir exists: {f.exists dir}"
   say "$newdir exists: {f.exists newdir}"
   _ := f.move dir newdir
-    .bind unit (_ -> say "$dir is now: $newdir")
+    .bind (_ -> say "$dir is now: $newdir")
   say "$newdir exists: {f.exists newdir}"
   say "$dir exists: {f.exists dir}"
 
   _ := f.delete newdir
-    .bind unit (_ -> say "$newdir was deleted")
+    .bind (_ -> say "$newdir was deleted")
   say "$newdir exists: {f.exists newdir}"

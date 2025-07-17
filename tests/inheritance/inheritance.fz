@@ -82,9 +82,9 @@ inheritance is
   aa.x
 
 
-  // mixing value and ref types along the inheritance chain:
+  # mixing value and ref types along the inheritance chain:
   mixValAndRef =>
-    // simple test: value type inheriting form ref type:
+    # simple test: value type inheriting form ref type:
     AA ref is
       x := 3
       p => print
@@ -92,13 +92,13 @@ inheritance is
         say x
     BB : AA is
     b := BB
-    b.p // all type info is static in this call
+    b.p # all type info is static in this call
 
     c := 1000
     count => set c := c + 1; c # NYI: this should cause an ambiguous semicolon error. Does it do so?
 
-    // nested features with a ref (P, Q, R, S) and a value (Pv, Qv, Rv, Sv)
-    // variant and calls to features of the corresponding outer features.
+    # nested features with a ref (P, Q, R, S) and a value (Pv, Qv, Rv, Sv)
+    # variant and calls to features of the corresponding outer features.
     P ref is
       pid := count
       p => print
@@ -119,14 +119,14 @@ inheritance is
     P.p
     P.Q.q
     P.Q.R.r
-    P.Q.R.S.s // #1004
+    P.Q.R.S.s # #1004
 
     say "only values:"
 
     Pv.p
     Pv.Qv.q
     Pv.Qv.Rv.r
-    Pv.Qv.Rv.Sv.s // #1008
+    Pv.Qv.Rv.Sv.s # #1008
 
     say "mixed refs and values:"
 
@@ -137,7 +137,7 @@ inheritance is
     P.Q.R.Sv.s
     P.Q.Rv.r
     P.Q.Rv.S.s
-    P.Q.Rv.Sv.s  // #1016
+    P.Q.Rv.Sv.s  # #1016
     P.Qv.q
     P.Qv.R.r
     P.Qv.R.S.s
@@ -159,17 +159,17 @@ inheritance is
     Pv.Qv.R.Sv.s
     Pv.Qv.Rv.r
     Pv.Qv.Rv.S.s
-    Pv.Qv.Rv.Sv.s // #1038
+    Pv.Qv.Rv.Sv.s # #1038
   mixValAndRef
 
 
-  // Inheritance from outer: stream.before inherits from stream:
+  # Inheritance from outer: stream.before inherits from stream:
   (1..).before (x -> x > 100)
        .before (x -> x > 40)
        .before (x -> x > 20)
        .for_each (x -> say x)
 
-  // test for recursive inheritance/outer relation with refs
+  # test for recursive inheritance/outer relation with refs
   strm.u.print
   strm.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm ref is
@@ -177,7 +177,7 @@ inheritance is
     print =>
       say "strm.print"
 
-  // This works even though strm1 is a value type, but the inner feature u that inherits from strm1 is a ref
+  # This works even though strm1 is a value type, but the inner feature u that inherits from strm1 is a ref
   strm1.print
   strm1.u.print
   strm1.u.u.print
@@ -187,7 +187,7 @@ inheritance is
     print =>
       say "strm1.print"
 
-  // this should work since it uses ref types
+  # this should work since it uses ref types
   strm5.u.print
   strm5.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print
   strm5 ref is

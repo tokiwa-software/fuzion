@@ -69,7 +69,7 @@ test_issue1610 =>
     # and this instance is kept alive longer than `f.this` by returing an instance
     # of `a.g`
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     f =>
       (y "abc" (a 1234567890) 4711).u.g
@@ -89,7 +89,7 @@ test_issue1610 =>
     # and this instance is kept alive longer than `f.this` by returing an instance
     # of `a.g`
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     f =>
       x := y "abc" (a 1234567890) 4711
@@ -157,7 +157,7 @@ test_issue1610 =>
     # and this instance is kept alive longer than `f.this` by returing an instance
     # of `a.g`
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     r ref is
       v u64 => abstract
@@ -182,7 +182,7 @@ test_issue1610 =>
     # and this instance is kept alive longer than `f.this` by returing an instance
     # of `a.g`
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     r ref is
       v u64 => abstract
@@ -255,7 +255,7 @@ test_issue1610 =>
 
     m := mut (option a.g) nil
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     f =>
       m <- (y "abc" (a 1234567890) 4711).u.g
@@ -280,7 +280,7 @@ test_issue1610 =>
 
     m := mut (option a.g) nil
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     f =>
       x := y "abc" (a 1234567890) 4711
@@ -357,7 +357,7 @@ test_issue1610 =>
 
     m := mut (option r) nil
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     r ref is
       v u64 => abstract
@@ -385,7 +385,7 @@ test_issue1610 =>
 
     m := mut (option r) nil
 
-    y(T, U, V type, t T, u U, v V).
+    y(T, U, V type, t T, u U, v V) is
 
     r ref is
       v u64 => abstract

@@ -36,7 +36,7 @@ import java.util.TreeSet;
  *
  * This permits exchanging the internal implementation easily without changing
  * all the places that use this map. This intentionally does not inherit from
- * `java.util.Map` to provide only the essential operations.
+ * {@code java.util.Map} to provide only the essential operations.
  *
  * Even though this might internally be use hashing, all operations should be
  * implemented in a way that provides reproducible execution, i.e, iteration do
@@ -67,7 +67,7 @@ public class IntMap<T>
 
 
   /**
-   * @see java.util.Map.size
+   * @see java.util.Map#size()
    */
   public int size()
   {
@@ -76,7 +76,7 @@ public class IntMap<T>
 
 
   /**
-   * @see java.util.Map.get
+   * @see java.util.Map#get(Object)
    */
   public T get(int i)
   {
@@ -85,7 +85,7 @@ public class IntMap<T>
 
 
   /**
-   * @see java.util.Map.getOrDefault
+   * @see java.util.Map#getOrDefault(Object, Object)
    */
   public T getOrDefault(int i, T def)
   {
@@ -94,7 +94,7 @@ public class IntMap<T>
 
 
   /**
-   * @see java.util.Map.put
+   * @see java.util.Map#put(Object, Object)
    */
   public T put(int i, T v)
   {
@@ -106,7 +106,7 @@ public class IntMap<T>
    * All keys in this map.  This is sorted by the integer values to ensure
    * repeatable behaviour when iterating.
    *
-   * @see java.util.Map.keySet
+   * @see java.util.Map#keySet()
    */
   public Set<Integer> keySet()
   {

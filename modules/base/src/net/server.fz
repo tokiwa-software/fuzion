@@ -1,0 +1,121 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.server
+#
+# -----------------------------------------------------------------------
+
+
+# server -- effect for storing a bound - and in the
+# case of TCP, listening - socket descriptor.
+#
+# Basic usage description:
+# 1) Initialize the server, e.g. like this:
+# `server family.ipv4 protocol.tcp 8080`
+# 2) accept a new connection:
+#      `server.accept`
+#
+module:public server(
+  sock i32
+) : effect
+is
+
+
+  # close server, stop listening on port
+  #
+  public redef finally =>
+    check (fuzion.sys.net.close sock).ok
+
+
+  # accept new TCP connection
+  # does nothing for UDP etc.
+  # blocks until connection is established
+  #
+  # NYI: accept that returns a Future and does not block
+  #
+  public accept outcome net.connection =>
+    fuzion.sys.net.accept sock
+      .bind desc->
+        net.connections.add desc
+        net.connection desc
+
+
+  # short-hand to open new server bound to the any address
+  # with a default backlog.
+  #
+  # NYI: UNDER DEVELOPMENT: blocking / none blocking
+  #
+  public type.start(T type, f net.family.val, p net.protocol.val, port u16, code ()->T) outcome T =>
+
+    any_addr => (
+      match f
+        net.family.ipv4 => "0.0.0.0"
+        net.family.ipv6 => "0:0:0:0:0:0:0:0"
+    )
+
+    net.server.start T f p any_addr port code
+
+
+  # short-hand to open new server with a default backlog
+  #
+  # NYI: UNDER DEVELOPMENT: blocking / none blocking
+  #
+  public type.start(T type, f net.family.val, p net.protocol.val, addr String, port u16, code ()->T) =>
+    backlog := 10
+    net.server.start T f p addr port backlog code
+
+
+  # open new server
+  #
+  # NYI: UNDER DEVELOPMENT: blocking / none blocking
+  #
+  public type.start(
+    # the result type of the code that is run while server is active
+    T type,
+    # the network family the server uses
+    f net.family.val,
+    # the network protocol the server uses
+    p net.protocol.val,
+    # the address the server binds to
+    addr String,
+    # the port the server is listening on
+    port u16,
+    # the backlog, (pending connections to keep in queue)
+    backlog i32,
+    # the code to be run while server is active
+    code ()->T) outcome T
+  =>
+
+    s => net.socket_type.by_protocol p
+
+    (fuzion.sys.net.bind f.as_num s.as_num p.as_num addr port)
+      .bind i32 sd->
+        match p
+          net.protocol.tcp =>
+            listen_res := fzE_listen sd backlog
+            if listen_res != 0
+              _ := fuzion.sys.net.close sd
+              error "listening on socket failed with error $listen_res."
+            else
+              sd
+          * =>
+            sd
+      .bind desc->
+        net.server desc
+          .instate_self code

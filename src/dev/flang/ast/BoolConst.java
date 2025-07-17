@@ -30,7 +30,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * BoolConst <description>
+ * BoolConst
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -41,24 +41,24 @@ public class BoolConst extends Constant
   /*------------------------  static variables  -------------------------*/
 
 
-  public static final BoolConst TRUE = new BoolConst(true);
-  public static final BoolConst FALSE = new BoolConst(false);
+  static final Expr TRUE  = new BoolConst(true);
+  static final Expr FALSE = new BoolConst(false);
 
 
   /**
    * Serialized forms of this constants:
    */
-  static final byte[] DATA_TRUE  = new byte[] { 1 };
-  static final byte[] DATA_FALSE = new byte[] { 0 };
+  private static final byte[] DATA_TRUE  = new byte[] { 1 };
+  private static final byte[] DATA_FALSE = new byte[] { 0 };
 
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
-   *
+   * the value of this boolean constant
    */
-  public boolean b;
+  private final boolean b;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -71,18 +71,6 @@ public class BoolConst extends Constant
   {
     super(SourcePosition.builtIn);
     this.b = value;
-  }
-
-
-  /*--------------------------  static methods  -------------------------*/
-
-
-  /**
-   * Get either TRUE of FALSE
-   */
-  static BoolConst get(boolean b)
-  {
-    return b ? TRUE : FALSE;
   }
 
 
@@ -112,6 +100,7 @@ public class BoolConst extends Constant
   /**
    * Serialized form of the data of this constant.
    */
+  @Override
   public byte[] data()
   {
     return b ? DATA_TRUE : DATA_FALSE;

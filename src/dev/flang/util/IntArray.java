@@ -30,7 +30,7 @@ import java.util.Arrays;
 
 
 /**
- * IntArray contains an expandable array of `int` values
+ * IntArray contains an expandable array of {@code int} values
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

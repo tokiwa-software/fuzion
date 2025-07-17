@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test mod_json_encode
+#
+# -----------------------------------------------------------------------
+
+mod_json_encode =>
+  some_custom_feature(a i32, b String) is
+    c := 4.5
+    d := true
+
+    public redef json_encode String =>
+      [("a", id Any a),
+       ("b", id Any b),
+       ("c", id Any c),
+       ("d", id Any d)].json_encode_feature
+
+  some_custom_feature2(a i32, b String) is
+    c := 4.5
+    d := true
+    e := some_custom_feature a "inner"
+
+    public redef json_encode String =>
+      [("a", id Any a),
+       ("b", id Any b),
+       ("c", id Any c),
+       ("d", id Any d),
+       ("f", id Any [id Any e, id Any e])
+       ].json_encode_feature
+
+
+  say (some_custom_feature2 2 "json").json_encode

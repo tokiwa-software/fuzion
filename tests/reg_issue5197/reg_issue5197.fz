@@ -1,0 +1,36 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5197
+#
+# -----------------------------------------------------------------------
+
+m := container.ordered_map [ "Hund", "Katze", "Maus" ] [ "dog", "cat", "mouse" ]
+
+c := "cat"
+if (for x in m.values until c = x)
+  say "$c was found"
+else
+  say "$c not found"
+
+b := "budgie"
+if (for x in m.values until b = x)
+  say "$b was found"
+else
+  say "$b not found"

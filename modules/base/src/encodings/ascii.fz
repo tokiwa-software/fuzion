@@ -1,0 +1,169 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library ascii
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+public ascii is
+
+  ##
+  # byte values of control code defined in ASCII
+  ##
+
+  # Null
+  public nul u8 => u8 0
+  # Start of Heading
+  public soh u8 => u8 1
+  # Start of Text
+  public stx u8 => u8 2
+  # End of Text
+  public etx u8 => u8 3
+  # End of Transmission
+  public eot u8 => u8 4
+  # Enquiry
+  public enq u8 => u8 5
+  # Acknowledgement
+  public ack u8 => u8 6
+  # Bell
+  public bel u8 => u8 7
+  # Backspace
+  public bs  u8 => u8 8
+  # Horizontal Tab
+  public ht  u8 => u8 9
+  # Line Feed
+  public lf  u8 => u8 10
+  # Vertical Tab
+  public vt  u8 => u8 11
+  # Form Feed
+  public ff  u8 => u8 12
+  # Carriage Return
+  public cr  u8 => u8 13
+  # Shift Out
+  public so  u8 => u8 14
+  # Shift In
+  public si  u8 => u8 15
+  # Data Link Escape
+  public dle u8 => u8 16
+  # Device Control 1 (often XON)
+  public dc1 u8 => u8 17
+  # Device Control 2
+  public dc2 u8 => u8 18
+  # Device Control 3 (often XOFF)
+  public dc3 u8 => u8 19
+  # Device Control 4
+  public dc4 u8 => u8 20
+  # Negative Acknowledgement
+  public nak u8 => u8 21
+  # Synchronous Idle
+  public syn u8 => u8 22
+  # End of Transmission Block
+  public etb u8 => u8 23
+  # Cancel
+  public can u8 => u8 24
+  # End of Medium
+  public em  u8 => u8 25
+  # SUB  Substitute
+  public ss  u8 => u8 26
+  # Escape
+  public esc u8 => u8 27
+  # File Separator
+  public fs  u8 => u8 28
+  # Group Separator
+  public gs  u8 => u8 29
+  # Record Separator
+  public rs  u8 => u8 30
+  # Unit Separator
+  public us  u8 => u8 31
+  # Delete
+  public del u8 => u8 127
+
+
+  ##
+  # control codes defined in ASCII as strings
+  ##
+
+  # Null
+  public nul_str String => String.from_bytes [nul]
+  # Start of Heading
+  public soh_str String => String.from_bytes [soh]
+  # Start of Text
+  public stx_str String => String.from_bytes [stx]
+  # End of Text
+  public etx_str String => String.from_bytes [etx]
+  # End of Transmission
+  public eot_str String => String.from_bytes [eot]
+  # Enquiry
+  public enq_str String => String.from_bytes [enq]
+  # Acknowledgement
+  public ack_str String => String.from_bytes [ack]
+  # Bell
+  public bel_str String => String.from_bytes [bel]
+  # Backspace
+  public bs_str  String => String.from_bytes [bs]
+  # Horizontal Tab
+  public ht_str  String => String.from_bytes [ht]
+  # Line Feed
+  public lf_str  String => String.from_bytes [lf]
+  # Vertical Tab
+  public vt_str  String => String.from_bytes [vt]
+  # Form Feed
+  public ff_str  String => String.from_bytes [ff]
+  # Carriage Return
+  public cr_str  String => String.from_bytes [cr]
+  # Shift Out
+  public so_str  String => String.from_bytes [so]
+  # Shift In
+  public si_str  String => String.from_bytes [si]
+  # Data Link Escape
+  public dle_str String => String.from_bytes [dle]
+  # Device Control 1 (often XON)
+  public dc1_str String => String.from_bytes [dc1]
+  # Device Control 2
+  public dc2_str String => String.from_bytes [dc2]
+  # Device Control 3 (often XOFF)
+  public dc3_str String => String.from_bytes [dc3]
+  # Device Control 4
+  public dc4_str String => String.from_bytes [dc4]
+  # Negative Acknowledgement
+  public nak_str String => String.from_bytes [nak]
+  # Synchronous Idle
+  public syn_str String => String.from_bytes [syn]
+  # End of Transmission Block
+  public etb_str String => String.from_bytes [etb]
+  # Cancel
+  public can_str String => String.from_bytes [can]
+  # End of Medium
+  public em_str  String => String.from_bytes [em]
+  # SUB  Substitute
+  public ss_str  String => String.from_bytes [ss]
+  # Escape
+  public esc_str String => String.from_bytes [esc]
+  # File Separator
+  public fs_str  String => String.from_bytes [fs]
+  # Group Separator
+  public gs_str  String => String.from_bytes [gs]
+  # Record Separator
+  public rs_str  String => String.from_bytes [rs]
+  # Unit Separator
+  public us_str  String => String.from_bytes [us]
+  # Delete
+  public del_str String => String.from_bytes [del]

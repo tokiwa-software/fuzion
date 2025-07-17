@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 reg_issue1698 is
-  x := try unit void ()->
-    t := (try unit).env
-    t.raise (error "a")
+  x := exception unit void ()->
+    t := (exception unit).env
+    t.cause (error "a")
   say x

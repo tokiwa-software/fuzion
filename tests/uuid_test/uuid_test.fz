@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test uuid_test
+#
+# -----------------------------------------------------------------------
+
+uuid_test =>
+
+  shw(id uuid) unit => say "$id (version {id.version.as_string.pad_left 2}, variant {id.var_field.bin 4})"
+
+
+  test_str := "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+  test_val := test_str.replace "-" "" .parse_u128_hex.val
+
+  my_uuid_1 := uuid.from_u128 test_val
+  my_uuid_2 := uuid.from_string test_str .val
+
+  say test_str+" <-- expected"
+  say my_uuid_1
+  say my_uuid_2
+  say ($my_uuid_1 = "f81d4fae-7dec-11d0-a765-00a0c91e6bf6" ? "OK" : "ERROR")
+  say ($my_uuid_2 = "f81d4fae-7dec-11d0-a765-00a0c91e6bf6" ? "OK" : "ERROR")
+  say "my_uuid_1 {my_uuid_1 <> my_uuid_1} to itself"
+  say "my_uuid_2 {my_uuid_2 <> my_uuid_2} to itself"
+  say "1 <> 2 = {my_uuid_1 <> my_uuid_2}"
+  say "2 <> 1 = {my_uuid_2 <> my_uuid_1}"
+
+  say "\nrandom:"
+
+  rand_uuid := uuid.create_random
+  say "version = {rand_uuid.version} {rand_uuid.version = 4 ? "OK" : "ERROR"}"
+  say "variant is {8 <= rand_uuid.var_field <= 11 ? "OK" : "ERROR"}"
+
+  say "\nnil and max:"
+  shw uuid.nil_uuid
+  shw uuid.max_uuid
+
+
+  say "\ncustom:"
+
+  shw <| uuid.create_custom u128.zero
+  shw <| uuid.create_custom (u128.max >> 6.as_u128)
+
+  d1 := (u128 0x0123_4567_4890_1234 0x2567_8901_2345_6789)
+  d2 := (u128 0x02aa_aaaa_aaaa_aaaa 0xaaaa_aaaa_aaaa_aaaa)
+
+  cust_1 := uuid.create_custom d1
+  cust_2 := uuid.create_custom d2
+
+  shw cust_1
+  shw cust_2
+
+  say "{cust_1.data.hex 32} {cust_1.data = d1 ? "OK" : "ERROR"}"
+  say "{cust_2.data.hex 32} {cust_2.data = d2 ? "OK" : "ERROR"}"

@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue4963.fz:24:1: error 1: Main feature must not have arguments
+f16(a i32) =>
+^^^
+Main feature has one argument ('f16.a'), but should have no arguments to be used as main feature in an application
+To solve this, remove the arguments from feature 'f16'
+
+one error.

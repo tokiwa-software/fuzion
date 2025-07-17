@@ -61,15 +61,15 @@ illegal_assignment is
     redef xc => say "E.xc"
 
   bi := B
-  ci Q.C := C  // 1. should flag an error: illegal assignment
-  aa Q.A := bi // 2. should flag an error: illegal assignment
+  ci Q.C := C  # 1. should flag an error: illegal assignment
+  aa Q.A := bi # 2. should flag an error: illegal assignment
   _ := bi.x
   _ := ci.x
   _ := aa.x
-  set aa := ci // 3. should flag an error: illegal assignment
+  set aa := ci # 3. should flag an error: illegal assignment
   _ := aa.x
-  di Q.D := D // 4. should flag an error: illegal assignment
-  ei Q.E := E // 5. should flag an error: illegal assignment
+  di Q.D := D # 4. should flag an error: illegal assignment
+  ei Q.E := E # 5. should flag an error: illegal assignment
   say "Calling non-redefed multiple"
   _ := di.x
   _ := di.xb
@@ -79,16 +79,16 @@ illegal_assignment is
   _ := ei.xb
   _ := ei.xc
   say "Calling redefed multiple from non-redefed static "
-  set di := ei  // 6. should flag an error: illegal assignment
+  set di := ei  # 6. should flag an error: illegal assignment
   _ := di.x
   _ := di.xb
   _ := di.xc
-  set bi := di  // 7. should flag an error: illegal assignment
-  set ci := di  // 8. should flag an error: illegal assignment
+  set bi := di  # 7. should flag an error: illegal assignment
+  set ci := di  # 8. should flag an error: illegal assignment
   _ := bi.x
   _ := bi.xb
   _ := ci.x
   _ := ci.xc
-  set aa := ei  // 9. should flag an error: illegal assignment
+  set aa := ei  # 9. should flag an error: illegal assignment
   _ := aa.x
   unit

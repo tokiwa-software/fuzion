@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Impl <description>
+ * Impl
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -73,9 +73,9 @@ public class Impl extends ANY
 
 
   /**
-   * For a field declared using `:=` this
+   * For a field declared using {@code :=} this
    * gives the initial value of that field or function.
-   * For a function declared using `=>` this
+   * For a function declared using {@code =>} this
    * gives the code of that function.
    */
   private Expr _expr;
@@ -105,7 +105,6 @@ public class Impl extends ANY
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
     Intrinsic,    // an intrinsic feature
-    Of,           // Syntactic sugar 'enum : choice of red, green, blue is', exists only during parsing
     Native;       // a native feature
 
     public String toString()
@@ -124,7 +123,6 @@ public class Impl extends ANY
           case Abstract          : yield "abstract";
           case Intrinsic         : yield "intrinsic";
           case Native            : yield "native";
-          case Of                : yield "choice of";
         };
     }
   };
@@ -231,15 +229,18 @@ public class Impl extends ANY
         //   f type := ?;
         //
         // requires a type
-        if (rt == NoType.INSTANCE)
+        if (!f.isResultField())
           {
-            AstErrors.missingResultTypeForField(f);
-            rt = new FunctionReturnType(Types.t_ERROR);
-          }
-        else if (!(rt instanceof FunctionReturnType))
-          {
-            AstErrors.illegalResultTypeNoInit(f, rt);
-            rt = new FunctionReturnType(Types.t_ERROR);
+            if (rt == NoType.INSTANCE)
+              {
+                AstErrors.missingResultTypeForField(f);
+                rt = new FunctionReturnType(Types.t_ERROR);
+              }
+            else if (!(rt instanceof FunctionReturnType))
+              {
+                AstErrors.illegalResultTypeNoInit(f, rt);
+                rt = new FunctionReturnType(Types.t_ERROR);
+              }
           }
         break;
 
@@ -308,7 +309,7 @@ public class Impl extends ANY
         //
         // this.visitCode(v, outer.outer());
       }
-    v.action(this, outer);
+    v.action(this);
   }
 
 
@@ -370,17 +371,17 @@ public class Impl extends ANY
    *
    * @param context the source code context where this Expr is used
    */
-  public void propagateExpectedType(Resolution res, Context context)
+  void propagateExpectedType(Resolution res, Context context)
   {
     if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
-        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType());
+        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType(), null);
       }
   }
 
 
   /**
-   * Inform the expression of this implementation that its expected type is `t`.
+   * Inform the expression of this implementation that its expected type is {@code t}.
    *
    * @param res this is called during type inference, res gives the resolution
    * instance.
@@ -389,9 +390,9 @@ public class Impl extends ANY
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Context context, AbstractType t)
+  void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, context, t);
+    _expr = _expr.propagateExpectedType(res, context, t, null);
   }
 
 
@@ -407,15 +408,15 @@ public class Impl extends ANY
 
   /**
    * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * declaration of corresponding inner features. Add (f,{@literal <>}) to the list of
    * features to be searched for runtime types to be layouted.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this implementation.
+   * @param context the source code context where this assignment is used
    */
-  public void resolveSyntacticSugar2(Resolution res, Context context)
+  void resolveSyntacticSugar2(Resolution res, Context context)
   {
     var outer = context.outerFeature();
     if (outer.isConstructor() && outer.preFeature() != null)
@@ -466,8 +467,8 @@ public class Impl extends ANY
    *
    *   x := f 3 4
    *
-   * where the argument types for `a` and `b` are inferred from the actual
-   * arguments `3` and `4`.
+   * where the argument types for {@code a} and {@code b} are inferred from the actual
+   * arguments {@code 3} and {@code 4}.
    *
    * @param call an actual argument expression
    */
@@ -492,7 +493,7 @@ public class Impl extends ANY
    */
   private Expr initialValueFromCall(int i, Resolution res)
   {
-    Expr result = null;
+    Expr result = Call.ERROR;
     var ic = _initialCalls.get(i);
     var aargs = ic._actuals.listIterator();
     for (var frml : ic.calledFeature().valueArguments())
@@ -510,7 +511,7 @@ public class Impl extends ANY
                     _infiniteRecursionInResolveTypes = false;
                   }
                 if (CHECKS) check
-                  (result == null);
+                  (result == Call.ERROR);
                 result = actl;
               }
           }
@@ -532,12 +533,12 @@ public class Impl extends ANY
    *
    * @param formalArg the features whose Impl this is.
    *
-   * @param reportError true to produce an error message, false to suppress
+   * @param urgent true to produce an error message, false to suppress
    * this. Error messages are first suppressed until all initial values were
    * found such that we can report all occurrences of actuals and all actual
    * types that were found.
    */
-  private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean reportError)
+  private AbstractType typeFromInitialValues(Resolution res, AbstractFeature formalArg, boolean urgent)
   {
     var exprs = new List<Expr>();
     for (var i = 0; i < _initialCalls.size(); i++)
@@ -545,15 +546,13 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs, Context.NONE);
-    // the following line is currently necessary
-    // to enable cyclic type inference e.g. in reg_issue2182
-    result = result == null ? Types.resolved.t_void : result;
-    if (reportError)
+    var result = Expr.union(exprs, Context.NONE, urgent);
+    if (urgent)
       {
         if (_initialCalls.size() == 0)
           {
             AstErrors.noActualCallFound(formalArg);
+            result = Types.t_ERROR;
           }
         else if (result == Types.t_ERROR)
           {
@@ -578,6 +577,8 @@ public class Impl extends ANY
             AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
           }
       }
+    if (POSTCONDITIONS) ensure
+      (!urgent || result != null);
 
     return result;
   }
@@ -588,7 +589,11 @@ public class Impl extends ANY
    */
   public boolean typeInferable()
   {
-    return _kind == Kind.RoutineDef || _kind == Kind.FieldDef || _kind == Kind.FieldActual;
+    return _kind == Kind.RoutineDef
+        || _kind == Kind.FieldDef
+        // field actual is inferable via initial call(s)
+        || _kind == Kind.FieldActual
+      ;
   }
 
 
@@ -636,13 +641,21 @@ public class Impl extends ANY
             }
           yield t;
         }
-      case FieldActual -> typeFromInitialValues(res, f, false);
-      default -> null;
+      case FieldActual -> typeFromInitialValues(res, f, urgent);
+      default -> { check(false); yield null; }
       };
 
+    if (CHECKS) check
+      (!urgent || result != null);
+
     return result != null &&
-           result.isTypeType() &&
-           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_type_as_value)
+           result.isCotypeType() &&
+           /**
+            * this allows code like:
+            * p := codepoint.type
+            * p.some_type_feature
+            */
+           !_expr.isTypeAsValueCall()
       ? Types.resolved.f_Type.selfType()
       : result;
   }
@@ -685,11 +698,23 @@ public class Impl extends ANY
         case Routine    : result = " is " + _expr.toString();                               break;
         case Abstract   : result = "is abstract";                                           break;
         case Intrinsic  : result = "is intrinsic";                                          break;
-        case Of         : result = "of " + _expr.toString();                                break;
         default: throw new Error("Unexpected Kind: "+_kind);
         }
     }
     return result;
+  }
+
+
+  /**
+   * Add initial call to the expression of
+   * this implementation.
+   */
+  public void addInitialCall(AbstractCall ac)
+  {
+    if (PRECONDITIONS) require
+      (ac.type().compareTo(Types.resolved.t_unit) == 0);
+
+    _expr = new Block(new List<>(ac, _expr));
   }
 
 }

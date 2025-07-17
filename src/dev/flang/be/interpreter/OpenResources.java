@@ -39,7 +39,7 @@ public abstract class OpenResources<T>
   /**
    * cnt is used to atomically create unique identifiers for open resources.
    *
-   * Fridtjof: "I prefer to start with a large number, maybe System.identityHashCode(this)*(1L<<32) or similar.
+   * Fridtjof: "I prefer to start with a large number, maybe {@code System.identityHashCode(this)*(1L<<32)} or similar.
    * The reason is to see the code crash early in case ids for different resources get mixed up."
    */
   private AtomicLong cnt = new AtomicLong(System.identityHashCode(this)*(1L<<32));

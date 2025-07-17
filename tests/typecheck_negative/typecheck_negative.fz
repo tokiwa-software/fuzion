@@ -35,14 +35,14 @@ typecheck_negative is
     q := ((A i64).B u64).C bool
     r := ((A i32).B bool).C bool
     s := ((A i32).B u64).C u32
-    public t := ((A i32).B u64).C u32
-    set q := p // 1. should flag an error, illegal assignment
-    set r := p // 2. should flag an error, illegal assignment
-    set q := r // 3. should flag an error, illegal assignment
-    set r := q // 4. should flag an error, illegal assignment
-    set s := p // 5. should flag an error, illegal assignment
-    set s := q // 6. should flag an error, illegal assignment
-    set s := r // 7. should flag an error, illegal assignment
+    t := ((A i32).B u64).C u32
+    set q := p # 1. should flag an error, illegal assignment
+    set r := p # 2. should flag an error, illegal assignment
+    set q := r # 3. should flag an error, illegal assignment
+    set r := q # 4. should flag an error, illegal assignment
+    set s := p # 5. should flag an error, illegal assignment
+    set s := q # 6. should flag an error, illegal assignment
+    set s := r # 7. should flag an error, illegal assignment
     set t := s
 
     D(T type) ref is
@@ -53,13 +53,13 @@ typecheck_negative is
     v := ((D i64).E u64).F bool
     w := ((D i32).E bool).F bool
     x := ((D i32).E u64).F u32
-    public y := ((D i32).E u64).F u32
-    set v := u // 8. should flag an error, illegal assignment
-    set w := u // 9. should flag an error, illegal assignment
-    set v := w // 10. should flag an error, illegal assignment
-    set w := v // 11. should flag an error, illegal assignment
-    set x := u // 12. should flag an error, illegal assignment
-    set x := v // 13. should flag an error, illegal assignment
-    set x := w // 14. should flag an error, illegal assignment
+    y := ((D i32).E u64).F u32
+    set v := u # 8. should flag an error, illegal assignment
+    set w := u # 9. should flag an error, illegal assignment
+    set v := w # 10. should flag an error, illegal assignment
+    set w := v # 11. should flag an error, illegal assignment
+    set x := u # 12. should flag an error, illegal assignment
+    set x := v # 13. should flag an error, illegal assignment
+    set x := w # 14. should flag an error, illegal assignment
     set y := x
   _ := assign

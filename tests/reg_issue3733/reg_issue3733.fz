@@ -23,5 +23,5 @@
 
 reg_issue3733 =>
 
-  public asd := ""
+  asd := ""
   for a in asd do

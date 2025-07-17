@@ -57,6 +57,9 @@ related to the Fuzion project, to mark sections that need further work or future
 enhancements.  This is often equivalent to comments starting *TODO* or similar
 used in other projects.
 
+In addition to rfc2119 https://www.rfc-editor.org/rfc/rfc2119
+we use "cannot" if something is logically impossible.
+
 The specification contains a number of rules that must be implemented by the
 language implementations. These rules are identified by identifiers such as
 *DOMAIN_DETAIL*. Rules are shown as follows:
@@ -269,15 +272,11 @@ include::rule.adoc[]
 :RULE_ID: LEXR_COMMENT2
 include::rule.adoc[]
 
-:RULE_SRC: src/dev/flang/parser/Lexer.java
-:RULE_ID: LEXR_COMMENT3
-include::rule.adoc[]
-
 Examples of valid comments are
 
     i := 42     # this is a comment
     this is not a comment
-    j := 32168  // this is also a comment
+    j := 32168  // this is not a comment either
     k := /* this is a comment */ 23
     /* this /* comment /* is */ nested */ */
     l := "not a comment, but a string literal"
@@ -343,7 +342,51 @@ include::rule.adoc[]
 :RULE_ID: PARS_REDEF_AS_KIND
 include::rule.adoc[]
 
-==== Redefining inherited features
+=== Redefining formal arguments
+
+For redefined features, the number of formal value arguments as well as the
+number of xref:fuzion_typeparameter[type parameters] must not change compared to the original feature,
+otherwise it would not be possible to perform dynamic binding and pass the
+actual xref:fuzion_typeparameter[type parameters] and value arguments given in a call to the redefined
+feature:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: REDEF_ARG_COUNT
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: REDEF_TYPE_PAR_COUNT
+include::rule.adoc[]
+
+The kinds of xref:fuzion_argument[arguments] must not change in the redefined feature, i.e., xref:fuzion_typeparameter[Type parameters], xref:fuzion_opentypeparameter[open type parameters] and xref:fuzion_value_argument[value arguments] in the original feature must remain xref:fuzion_typeparameter[Type parameters], xref:fuzion_opentypeparameter[open type parameters] and xref:fuzion_value_argument[value arguments], respectively, in the redefined feature:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: REDEF_TYPE_PAR
+include::rule.adoc[]
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: REDEF_OPEN_TYPE_PAR
+include::rule.adoc[]
+
+The types of xref:fuzion_value_argument[value arguments] in a redefined feature
+usually must stay the same with the exception of covariant changes of `this`
+types (NYI: reference).
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: REDEF_VALUE_ARGUMENT
+include::rule.adoc[]
+
+The xref:fuzion_type_constraint[type constraint] of a
+xref:fuzion_typeparameter[type parameter] are more flexible and may essentially
+be relaxed for the xref:fuzion_typeparameter[Type parameters] of the redefined
+features:
+
+:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_ID: REDEF_TYPE_CONSTRAINTS
+include::rule.adoc[]
+
+
+=== Redefining pre- and postconditions
 
 Pre- and postconditions of features are introduced using the `pre` or `post`
 keyword if those features do not redefine an inherited feature:
@@ -402,8 +445,7 @@ xref:feature_call[call] or the right hand side of an infix operator call.
 xref:fuzion_typeparameter[type parameter] of the feature a type is based on.
 
 [#fuzion_argument]
-((Argument)):: An _argument_ is a xref:fuzion_typeparameter[type parameter] or a xref:fuzion_field[field]
-that is declared in the `formArgs` section of a xref:fuzion_routine[routine].
+((Argument)):: An _argument_ is a xref:fuzion_typeparameter[type parameter] or a xref:fuzion_value_argument[value argument].
 
 [#braces]
 ((Braces)):: In this manual, _braces_ are curly brackets `{` and `}`, in contrast to xref:parentheses[parentheses] and xref:brackets[brackets].
@@ -511,12 +553,19 @@ either by a xref:fuzion_call[call] or by xref:fuzion_tagging[tagging].
 [#fuzion_intrinsic]
 ((Intrinsic Feature)):: An _intrinsic feature_ is a xref:fuzion_feature[feature] declared using `=> intrinsic`.
 
+[#fuzion_legal_covariant_this_type]
+((Legal Covariant This Type)):: NYI
+CAUTION: *NYI*: see `SourceModule.isLegalCovariantThisType`.
+
 [#monomorphization]
 ((Monomorphization)):: Fuzion uses  _monomorphization_ at compile time to remove xref:fuzion_typeparameter[type parameters] by creating specialized versions of xref:fuzion_feature[features] with xref:fuzion_typeparameter[type parameters] for all possible xref:runtime_type[runtime types] for all xref:fuzion_typeparameter[type parameters].
 
 [#fuzion_native]
 ((Native Feature)):: A _native feature_ is a xref:fuzion_feature[feature] declared using `=> native`.
 CAUTION: *NYI*: Need more detail on native feature
+
+[#fuzion_opentypeparameter]
+((Open Type Parameter)): An _open type parameter_ is a xref:fuzion_typeparameter[type parameters] whose declaration is followed by three dots as in `A type ...`.
 
 [#fuzion_orignalfeature]
 ((Original Feature)):: An _original feature_ is a xref:fuzion_routine[routine] or a xref:fuzion_choice[choice] seen from their corresponing xref:fuzion_cotype[cotype].
@@ -582,6 +631,9 @@ xref:fuzion_choice[choice].  If that feature has xref:fuzion_typeparameter[type 
 corresponding xref:fuzion_actual_typeparameters[actual type parameters].  If the base has an xref:outer_feature[outer feature] that is
 not the xref:universe[universe], the type has an xref:fuzion_outer_type[outer type].
 
+[#fuzion_type_constraint]
+((Type Constraint)):: A _type constraint_ is a type provided in the declaration of a xref:fuzion_typeparameter[type parameter] following a colon, e.g., `A type : b` which places the constraint `b` on xref:fuzion_typeparameter[type parameter] `A`.
+
 [#fuzion_typefeature]
 ((Type Feature)):: A _type feature_ is a xref:fuzion_feature[feature] whose outer feature is a xref:fuzion_cotype[cotype]. A _type feature_ `name` can be declared within the xref:fuzion_cotype[cotype]'s xref:fuzion_orignalfeature[original feature] using `type.name` as the feature name. A _type feature_  cannot be called on an instance of the xref:fuzion_orignalfeature[original feature], but on an instance of the corresponding xref:fuzion_cotype[cotype].
 
@@ -600,6 +652,9 @@ is the xref:outer_feature[outer feature] of all xref:fuzion_feature[features] th
 [#universe_instance]
 ((Universe Instance)):: The _universe instance_ is an implicit singleton instance created by the implicit call to the xref:universe[universe] on system
 startup.
+
+[#fuzion_value_argument]
+((Value Argument)):: A _value argument_ is a xref:fuzion_field[field] that is declared in the `formArgs` section of a xref:fuzion_routine[routine].
 
 [appendix]
 == File Formats

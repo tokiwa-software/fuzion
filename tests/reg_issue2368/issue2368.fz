@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 ex_a2 =>
-  x := array2 10 10 i,j->i*10+j
+  x := (array2 i32).new 10 10 i,j->i*10+j
   say x
   say x.transpose
   # NYI: #2662: remove explicit types once type inference works

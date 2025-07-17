@@ -45,96 +45,105 @@ import dev.flang.util.SourcePosition;
  * successful loop termination and one after failed loop termination.
  *
  * In general, this is
+ * <pre>{@code
 
-  for
-    x1 := init1, next1
-    x2 in set2
-    x3 := init3, next3
-    x4 in set4
-    x5 := init5, next5
-  while <whileCond>
-    <body>
-  until <untilCond>
-    <success>
-  else
-    <failure>
+for
+  x1 := init1, next1
+  x2 in set2
+  x3 := init3, next3
+  x4 in set4
+  x5 := init5, next5
+while <whileCond>
+  <body>
+until <untilCond>
+  <success>
+else
+  <failure>
 
- * This will be converted into a loop prolog that defines a variable to hold the
+ * }</pre>This will be converted into a loop prolog that defines a variable to hold the
  * loop success, defines temp vars for streams as needed and initializes the
  * index variables
+ * <pre>{@code
 
-  // loop prolog
-  x1 := init1
-  list2 := set2.as_list
-  ### loopElse will be put here ###
-  match list2
-    c2 Cons =>
-      x2 := c2.head
-      x2t := c2.tail
-      x3 := init3
-      list4 := set4.as_list
-      match list4
-        c4 Cons =>
-          x4 := c4.head
-          x4t := c4.tail
-          x5 := init5
+// loop prolog
+x1 := init1
+list2 := set2.as_list
+### loopElse will be put here ###
+match list2
+  c2 Cons =>
+    x2 := c2.head
+    x2t := c2.tail
+    x3 := init3
+    list4 := set4.as_list
+    match list4
+      c4 Cons =>
+        x4 := c4.head
+        x4t := c4.tail
+        x5 := init5
 
-          ### loop will be put here ###
+        ### loop will be put here ###
 
-        _ nil => loopElse
-    _ nil => loopElse
+      _ nil => loopElse
+  _ nil => loopElse
 
+ * }</pre>
  * The loop will be implemented using a tail recursive feature as follows
+ * <pre>{@code
 
-  loop(x1, x2, x2a, x3, x4, x4a, x5, ... inferred-type) =>
-     if whileCond
-       <body>
-       if untilCond
-         <success>
-         ### OPTIONAL TRUE ###
-       else ### nextIteration will be put here ###
-         loop(x1,x2,x2t,x3,x4,x4t,x5,...)   // tail recursion
-       else
-         <failure>
-     else
-       <failure>
-  loop(x1,x2,x2t,x3,x4,x4t,x5,...)
+loop(x1, x2, x2a, x3, x4, x4a, x5, ... inferred-type) =>
+    if whileCond
+      <body>
+      if untilCond
+        <success>
+        ### OPTIONAL TRUE ###
+      else ### nextIteration will be put here ###
+        loop(x1,x2,x2t,x3,x4,x4t,x5,...)   // tail recursion
+      else
+        <failure>
+    else
+      <failure>
+loop(x1,x2,x2t,x3,x4,x4t,x5,...)
 
+ *}</pre>
  * The part marked
  *
  *   ### nextIteration will be put here ###
  *
  * is code that calculates the next values of the index variables similar
  * to the prolog
+ * <pre>{@code
 
-  // nextIteration:
-  x1 := next1
-  ### loopElse will be put here ###
-  match x2a
-    c2 Cons =>
-      x2 := c2.head
-      x2t := c2.tail
-      x3 := next3
-      match x4a
-        c4 Cons =>
-          x4 := c4.head
-          x4t := c4.tail
-          x5 := next5
+// nextIteration:
+x1 := next1
+### loopElse will be put here ###
+match x2a
+  c2 Cons =>
+    x2 := c2.head
+    x2t := c2.tail
+    x3 := next3
+    match x4a
+      c4 Cons =>
+        x4 := c4.head
+        x4t := c4.tail
+        x5 := next5
 
-          ### loop tail recursive call will be put here ###
+        ### loop tail recursive call will be put here ###
 
-        _ nil => loopElse
-    _ nil => loopElse
+      _ nil => loopElse
+  _ nil => loopElse
 
- * If needed, the code for the <failure> case will be put into a loopElse
+ * }</pre>
+ * If needed, the code for the {@code <failure>} case will be put into a loopElse
  * feature that can be called at different locations:
+ * <pre>{@code
 
-  loopElse() =>
-    <failure>
-    ### OPTIONAL FALSE ###
+loopElse() =>
+  <failure>
+  ### OPTIONAL FALSE ###
 
- * In case <success> or <failure> are missing or do (syntactically) not produce
- * a result, an automatic result TRUE or FALSE, resp., will be added.
+ * }</pre>
+ * In case {@code <success>} or {@code <failure>} are missing or do (syntactically) not produce
+ * a result, an automatic result {@code TRUE} or {@code FALSE}, resp., will be added.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -246,11 +255,12 @@ public class Loop extends ANY
               List<Feature> iv,
               List<Feature> nv,
               Expr var,        /* NYI: loop variant currently ignored */
-              List<Cond> inv,  /* NYI: loop invariant currently ignored */
+              List<Cond> inv,
               Expr whileCond,
               Block block,
               Expr untilCond,
               Block sb,
+              SourcePosition ePos,
               Expr eb0,
               Expr eb1,
               Expr eb2)
@@ -260,9 +270,9 @@ public class Loop extends ANY
        nv != null,
        iv.size() == nv.size(),
        sb == null || untilCond != null,
-       eb0 == null || eb0 instanceof Block || eb0 instanceof If);
+       eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
 
-    _elsePos   = pos;  // NYI: if present, use position of "else" keyword
+    _elsePos   = ePos;
     _indexVars = iv;
     _nextValues = nv;
     block = Block.newIfNull(block);
@@ -278,8 +288,8 @@ public class Loop extends ANY
       }
 
     var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
-    // if there are no iteratees then else block may access every loop var.
-    // if there are iteratees we move else block to feature and
+    // if there are no iterates then else block may access every loop var.
+    // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
     if (_elseBlock0 != null && iterates())
       {
@@ -304,15 +314,19 @@ public class Loop extends ANY
 
     Expr nextIteration = untilCond == null
       ? new Block(nextItBlock, hasImplicitResult)
-      : new If(untilCond.pos(),
+      : Match.createIf(untilCond.pos(),
                untilCond,
                Block.newIfNull(_successBlock),
-               new Block(nextItBlock, hasImplicitResult));
+               new Block(nextItBlock, hasImplicitResult), false);
 
     block._expressions.add(nextIteration);
     if (whileCond != null)
       {
-        block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
+        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, false));
+      }
+    if (inv != null)
+      {
+        block = new Block(new List<>(Contract.asFault(inv, "invariantcondition_fault"), block));
       }
     var p = block.pos();
     Feature loop = new Feature(p,
@@ -424,27 +438,12 @@ public class Loop extends ANY
         result = true;
       }
     else if (booleanAsImplicitResult(whileCond, untilCond))
-      { /* add implicit TRUE / FALSE results to success and else blocks: */
-        _successBlock = Block.newIfNull(_successBlock);
-        _successBlock._expressions.add(BoolConst.TRUE );
-        if (_elseBlock0 == null)
-          {
-            _elseBlock0 = BoolConst.FALSE;
-            _elseBlock1 = BoolConst.FALSE;
-            _elseBlock2 = BoolConst.FALSE;
-          }
-        else
-          {
-            var e0 = Block.fromExpr(_elseBlock0);
-            var e1 = Block.fromExpr(_elseBlock1);
-            var e2 = Block.fromExpr(_elseBlock2);
-            e0._expressions.add(BoolConst.FALSE);
-            e1._expressions.add(BoolConst.FALSE);
-            e2._expressions.add(BoolConst.FALSE);
-            _elseBlock0 = e0;
-            _elseBlock1 = e1;
-            _elseBlock2 = e2;
-          }
+      {
+        /* add implicit TRUE / FALSE results to success and else blocks: */
+        _successBlock = new Block(true, _successBlock == null ? new List<>(BoolConst.TRUE) : new List<>(_successBlock, BoolConst.TRUE));
+        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock0, BoolConst.FALSE));
+        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock1, BoolConst.FALSE));
+        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock2, BoolConst.FALSE));
         result = true;
       }
     return result;
@@ -562,20 +561,20 @@ public class Loop extends ANY
   {
     return new FeatureVisitor() {
       @Override
-      public Expr action(Call c, AbstractFeature outer)
+      public Expr action(Call c)
       {
         if (c._target == null && names.contains(c._name))
           {
             c._name = prefix + c._name;
           }
-        return super.action(c, outer);
+        return super.action(c);
       }
 
       @Override
-      public Expr action(Function f, AbstractFeature outer)
+      public Expr action(Function f)
       {
-        f._expr.visit(this, outer);
-        return super.action(f, outer);
+        f.expr().visit(this, null);
+        return super.action(f);
       }
     };
   }

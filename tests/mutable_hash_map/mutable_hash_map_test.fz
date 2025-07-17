@@ -1,0 +1,331 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test mutable_hash_map
+#
+# -----------------------------------------------------------------------
+
+# uncomment for easier debugging
+/*
+show_op(A type, B type, itm (option (tuple A B))) String =>
+  match itm
+    nil => "--nil--"
+    t tuple =>
+      (a, b) := t
+      "($a, $b)"
+
+
+show(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V)=>
+  say "load={m.size} content={m.as_string}"
+  say "\n{m.int_arr.map(x->show_op(x)).as_string}"
+  say "\n"
+
+test_put(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
+  say "put $k $v"
+  m.put k v
+  check m.get .get = v
+  show m
+
+test_remove(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK) =>
+  say "remove $k"
+  _ := m.remove k
+  check m.get k .is_nil
+  say "=> removed $v"
+  show m
+*/
+
+# wrapper for put to be able to add debugging code easily
+#
+test_put(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
+  m.put k v
+
+# wrapper for remove to be able to add debugging code easily
+#
+test_remove(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK) =>
+  _ := m.remove k
+
+# create a string from a number to be used as value in the map
+#
+str(i i32) String => "No. $i"
+
+
+
+# INTERVAL TEST
+# add numbers of an interval and then remove them with all combinations of none, one or both reversed
+#
+interval_test is
+  interval_map := container.Mutable_Hash_Map mutate i32 String .empty
+
+  interval_test_size := 200
+
+
+  # put 1..n then remove 1..n
+
+  for i in 1..interval_test_size do
+    test_put interval_map i (str i)
+    check interval_map.size = interval_map.items.count = i
+    for j in 1..i do
+      check interval_map.get j .get = (str j)
+
+  for i in 1..interval_test_size do
+    test_remove interval_map i
+    check interval_map.size = interval_map.items.count = (interval_test_size - i)
+    for j in 1..i do
+      check interval_map.get j .is_nil
+    for j in (i+1)..interval_test_size do
+      check interval_map.get j .get = (str j)
+
+
+  # put n..1 then remove 1..n
+
+  for i in (1..interval_test_size).reverse do
+    test_put interval_map i (str i)
+    check interval_map.size = interval_map.items.count = (interval_test_size - i + 1)
+    for j in i..interval_test_size do
+      check interval_map.get j .get = (str j)
+
+  for i in 1..interval_test_size do
+    test_remove interval_map i
+    check interval_map.size = interval_map.items.count = (interval_test_size - i)
+    for j in 1..i do
+      check interval_map.get j .is_nil
+    for j in (i+1)..interval_test_size do
+      check interval_map.get j .get = (str j)
+
+
+  # put n..1 then remove n..1
+
+  for i in (1..interval_test_size).reverse do
+    test_put interval_map i (str i)
+    check interval_map.size = interval_map.items.count = (interval_test_size - i + 1)
+    for j in i..interval_test_size do
+      check interval_map.get j .get = (str j)
+
+  for i in (1..interval_test_size).reverse do
+    test_remove interval_map i
+    check interval_map.size = interval_map.items.count = (i-1)
+    for j in i..interval_test_size do
+      check interval_map.get j .is_nil
+    for j in 1..(i-1) do
+      check interval_map.get j .get = (str j)
+
+
+  # put 1..n then remove n..1
+
+  for i in 1..interval_test_size do
+      test_put interval_map i (str i)
+      check interval_map.size = interval_map.items.count = i
+      for j in 1..i do
+        check interval_map.get j .get = (str j)
+
+  for i in (1..interval_test_size).reverse do
+    test_remove interval_map i
+    check interval_map.size = interval_map.items.count = (i-1)
+    for j in i..interval_test_size do
+      check interval_map.get j .is_nil
+    for j in 1..(i-1) do
+      check interval_map.get j .get = (str j)
+
+
+
+# COLLISION TEST 1
+#
+# Once more then 8 elements are in the map all collision elements get mapped to index 25,
+# therefore subsequent elements get saved afterwards, with some going into the beginning
+# of the array after the end has been reached.
+# Some "other" elements are stored at their regular index, which is in the range used for collision resolution.
+#
+collision_test_1 is
+  collision_test_size := 16
+  collision_map := container.Mutable_Hash_Map mutate i32 String .empty
+
+  others1 := [4, 27]
+  others2 := [1, 30]
+  collisions := array (collision_test_size - others1.length - others2.length) (i->i*collision_test_size*2 + 25)
+
+  put_ord := others1 ++ others2 ++ collisions
+  remove_ord := others1 ++ collisions ++ others2
+
+  for n in put_ord
+      i in 1..
+  do
+      test_put collision_map n (str n)
+      check collision_map.size = collision_map.items.count = i
+
+      for m in (put_ord.take i) do
+        check collision_map.get m .get = (str m)
+      for m in (put_ord.drop i) do
+        check collision_map.get m .is_nil
+
+  for n in remove_ord
+      i in 1..
+  do
+    test_remove collision_map n
+    check collision_map.size = collision_map.items.count = (collision_test_size - i)
+
+    for m in (remove_ord.take i) do
+      check collision_map.get m .is_nil
+    for m in (remove_ord.drop i) do
+      check collision_map.get m .get = (str m)
+
+
+
+
+# COLLISION TEST 2
+#
+# most elements mapped to one index, a few other elements in the range which is used for collisions
+#
+collision_test_2 is
+  collision_test_size := 60
+  collision_map := container.Mutable_Hash_Map mutate i32 String .empty
+
+  others1 := [0, 3, 15, 16]
+  others2 := [1, 28, 30]
+  collisions1 := array (collision_test_size/2 - others1.length) (i->i*collision_test_size*2 + 25)
+  collisions2 := array (collision_test_size/2 - others2.length) (i->(collision_test_size/2 + i)*collision_test_size*2 + 25)
+
+  put_ord := others1 ++ collisions1 ++ others2 ++ collisions2
+  remove_ord := collisions2 ++ others1 ++ collisions1 ++ others2
+
+  for n in put_ord
+      i in 1..
+  do
+      test_put collision_map n (str n)
+      check collision_map.size = collision_map.items.count = i
+
+      for m in (put_ord.take i) do
+        check collision_map.get m .get = (str m)
+      for m in (put_ord.drop i) do
+        check collision_map.get m .is_nil
+
+  for n in remove_ord
+      i in 1..
+  do
+    test_remove collision_map n
+    check collision_map.size = collision_map.items.count = (collision_test_size - i)
+
+    for m in (remove_ord.take i) do
+      check collision_map.get m .is_nil
+    for m in (remove_ord.drop i) do
+      check collision_map.get m .get = (str m)
+
+
+
+# PRIMES TEST
+# add and then remove prime numbers
+#
+primes_test is
+  primes_map := container.Mutable_Hash_Map mutate i32 String .empty
+
+  primes_test_size := 250
+
+  # NYI: calculation of prime numbers very slow
+  primes(n i32) =>
+    sieve(l list i32) list i32 =>
+      l.head.get : sieve (l.tail.filter ((x) -> !(x%%l.head.get))).as_list
+    1 : ((sieve (2..).as_list).take n).as_list
+
+  test_primes := (primes (primes_test_size + 1)).as_array
+
+
+  for i in 0..primes_test_size do
+    n := test_primes[i]
+    test_put primes_map n (str n)
+    check primes_map.size = primes_map.items.count = i + 1
+    for j in 0..primes_test_size do
+      m := test_primes[j]
+      if j <= i
+        check primes_map.get m .get = (str m)
+      else
+        check primes_map.get m .is_nil
+
+  for i in 0..primes_test_size do
+    n := test_primes[i]
+    test_remove primes_map n
+    check primes_map.size = primes_map.items.count = (primes_test_size - i)
+
+    for j in 0..primes_test_size do
+      m := test_primes[j]
+      if j <= i
+        check primes_map.get m .is_nil
+      else
+        match primes_map.get m
+          s String => check s = (str m)
+          nil => panic "after removing round $i (prime $n) get for $j (prime $m) falsely returned nil"
+        check primes_map.get m .get = (str m)
+
+
+
+# RANDOM TEST
+# put or remove random numbers at random , checking against mutable_tree_map
+#
+random_test is
+  simple_random 42 ()->
+
+    random_test_size := 600
+    random_map := container.Mutable_Hash_Map mutate i32 String .empty
+    verify_map := container.mutable_tree_map mutate i32 String .empty
+
+    for i in 1..random_test_size do
+
+      # limited range to have a good chance for repeated numbers (for modifications or removals)
+      next_rand := random.next_i32 (random_test_size/2)
+
+      if random.next_bool # put value
+
+        if verify_map.has next_rand
+          # update existing value
+          match verify_map.get next_rand
+            s String => verify_map.put next_rand (s + "+1")
+            nil      => panic "on verify_map `get` failed after `has` succeeded"
+          match random_map.get next_rand
+            s String => test_put random_map next_rand (s + "+1")
+            nil      => panic "on random_map `get` failed after `has` succeeded"
+        else
+          # add new value
+          verify_map.put next_rand (str next_rand)
+          test_put random_map next_rand (str next_rand)
+
+      else # remove value
+        _ := verify_map.remove next_rand
+        test_remove random_map next_rand
+
+      check verify_map.size = random_map.size
+
+      for k in verify_map.keys do
+        match verify_map.get k
+          s String => check random_map.get k .get = s
+          nil      => check random_map.get k .is_nil
+
+
+
+_ := interval_test
+say "\nINTERVAL TEST succeeded 🎉"
+
+_ := collision_test_1
+say "\n\nCOLLISION TEST 1 succeeded 🎉"
+
+_ := collision_test_2
+say "\n\nCOLLISION TEST 2 succeeded 🎉"
+
+_ := primes_test
+say "\n\nPRIMES TEST succeeded 🎉"
+
+_ := random_test
+say "\n\nRANDOM TEST succeeded 🎉"

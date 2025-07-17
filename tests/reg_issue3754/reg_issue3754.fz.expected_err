@@ -5,7 +5,7 @@
 Indentation reference point is --CURDIR--/reg_issue3754.fz:26:15:
   my_feat is {say "a"
 --------------^
-While parsing: block, parse stack: block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, implRout, implFldOrRout, routOrField, feature, expr, exprs, block, unit
+While parsing: block, parse stack: block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/reg_issue3754.fz:29:3: error 2: Could not find called feature

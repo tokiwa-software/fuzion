@@ -1,0 +1,35 @@
+expecting prefix first:
+prefix  *
+postfix +
+
+expecting postfix first:
+postfix *
+prefix  +
+
+expecting prefix first:
+prefix  ~
+postfix ~
+
+expecting prefix *, postfix +, postfix *, prefix +:
+prefix  *
+postfix +
+postfix *
+prefix  +
+
+expecting postfix *, prefix +, prefix *, postfix +:
+postfix *
+prefix  +
+prefix  *
+postfix +
+
+expecting postfix +, prefix *, postfix *, prefix +:
+postfix +
+prefix  *
+postfix *
+prefix  +
+
+expecting prefix +, prefix *, postfix *, postfix +:
+prefix  +
+prefix  *
+postfix *
+postfix +

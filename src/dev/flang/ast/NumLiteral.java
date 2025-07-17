@@ -35,10 +35,11 @@ import java.math.BigInteger;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * NumLiteral <description>
+ * NumLiteral
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -61,7 +62,8 @@ public class NumLiteral extends Constant
     ct_u64 (false, 8),
     // ct_f16 (11, 5),   -- NYI: support for f16
     ct_f32 (24, 8),
-    ct_f64 (53, 11);
+    ct_f64 (53, 11),
+    ct_numeric(false, 4);
     // ct_f128 (113, 15),   -- NYI: support for f128
     // ct_f256 (237, 19),   -- NYI: support for f256
 
@@ -357,7 +359,7 @@ public class NumLiteral extends Constant
   /**
    * Create new constant by removing the added sign.
    *
-   * @return a NumLiteral equal to the original one `addSign` was called on.
+   * @return a NumLiteral equal to the original one {@code addSign} was called on.
    */
   public NumLiteral stripSign()
   {
@@ -371,7 +373,7 @@ public class NumLiteral extends Constant
 
 
   /**
-   * If this NumLiteral has an explicit sign as in `+127 or `-128`, return that
+   * If this NumLiteral has an explicit sign as in {@code +127} or {@code -128}, return that
    * sign as a String, return null otherwise.
    *
    * @return "+", "-", or null,
@@ -419,7 +421,7 @@ public class NumLiteral extends Constant
     var result = _propagatedType;
     if (result == null)
       {
-        var i = hasDot() ? null : intValue(ConstantType.ct_i32);
+        var i = hasDot() ? null : intValue();
         result = i == null
           ? Types.resolved.t_f64
           : Types.resolved.t_i32;
@@ -438,9 +440,7 @@ public class NumLiteral extends Constant
   @Override
   AbstractType typeForUnion()
   {
-    // NYI: UNDER DEVELOPMENT: This seems to work even if we always return null
-    // here.  Need to check if we can just always return null for a union.
-    return _propagatedType;
+    return null;
   }
 
 
@@ -480,18 +480,6 @@ public class NumLiteral extends Constant
    * @return the integer represented by this,
    */
   public BigInteger intValue()
-  {
-    return intValue(findConstantType(type()));
-  }
-
-
-  /**
-   * Get this value if it is an integer. In case the value is above/below
-   * +/-2^max, the result might get replaced by 2^max.
-   *
-   * @return the integer represented by this,
-   */
-  private BigInteger intValue(ConstantType ct)
   {
     var v = _mantissa;
     var e2 = _exponent2;
@@ -644,7 +632,7 @@ public class NumLiteral extends Constant
 
 
   /**
-   * Helper routine to shift BigInteger v left (sh > 0) or right (sh < 0) and
+   * Helper routine to shift BigInteger v left (sh &gt; 0) or right (sh &lt; 0) and
    * perform rounding in case of a right shift.
    *
    * @param v a BigInteger value
@@ -716,7 +704,7 @@ public class NumLiteral extends Constant
       }
     else
       {
-        var i = intValue(ct);
+        var i = intValue();
         if (i == null)
           {
             AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
@@ -784,13 +772,13 @@ public class NumLiteral extends Constant
     else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
     else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
     else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
-    else                                             { return null;                }
+    else                                             { return t.isGenericArgument() ? ConstantType.ct_numeric : null; }
   }
 
 
   /**
    * Perform partial application for a NumLiteral. In particular, this converts
-   * a literal with a sign such as `-2` into a lambda of the form `x -> x - 2`.
+   * a literal with a sign such as {@code -2} into a lambda of the form {@code x -> x - 2}.
    *
    * @see Expr#propagateExpectedTypeForPartial for details.
    *
@@ -804,20 +792,22 @@ public class NumLiteral extends Constant
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
-    Expr result = this;
-    if (t.isFunctionType() && t.arity() == 1 && explicitSign() != null)
+    Expr result;
+    if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
         pns.add(Partial.argName(pos()));
-        var fn = new Function(pos(),
+        result = new Function(pos(),
                               pns,
                               new ParsedCall(pns.get(0),                                  // target #p<n>
                                              new ParsedName(signPos(),
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        fn.resolveTypes(res, context);
-        result = fn;
+      }
+    else
+      {
+        result = super.propagateExpectedTypeForPartial(res, context, t);
       }
     return result;
   }
@@ -836,29 +826,24 @@ public class NumLiteral extends Constant
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    var result = propagateExpectedTypeForPartial(res, context, t);
-    if (result != this)
+    // if expected type is choice, examine if there is exactly one numeric
+    // constant type in choice generics, if so use that for further type
+    // propagation.
+    t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
+    if (_propagatedType == null && findConstantType(t) != null)
       {
-        result = result.propagateExpectedType(res, context, t);
+        _propagatedType = t;
       }
-    else
-      {
-        // if expected type is choice, examine if there is exactly one numeric
-        // constant type in choice generics, if so use that for further type
-        // propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
-        if (_propagatedType == null && findConstantType(t) != null)
-          {
-            _propagatedType = t;
-          }
-      }
-    return result;
+    return super.propagateExpectedType(res, context, t, from);
   }
 
 
@@ -875,11 +860,11 @@ public class NumLiteral extends Constant
    * @param t the type this expression is assigned to.
    */
   @Override
-  public Expr wrapInLazy(Resolution res, Context context, AbstractType t)
+  Expr wrapInLazy(Resolution res, Context context, AbstractType t)
   {
     if (t.isLazyType())
       {
-        propagateExpectedType(res, context, t.generics().get(0));
+        propagateExpectedType(res, context, t.generics().get(0), null);
       }
     return super.wrapInLazy(res, context, t);
   }
@@ -901,7 +886,7 @@ public class NumLiteral extends Constant
       }
     else
       {
-        var i = intValue(ct);
+        var i = intValue();
         var b = i.toByteArray();
         var bytes = ct._bytes;
         result = new byte[bytes];
@@ -921,6 +906,46 @@ public class NumLiteral extends Constant
     bb.putInt(ct._bytes);
     bb.put(result);
     return bb.array();
+  }
+
+
+  @Override
+  protected Expr resolveSyntacticSugar2(Resolution res, Context _context)
+  {
+    if (_propagatedType != null && _propagatedType.isGenericArgument())
+      {
+        Call result;
+
+        if (_originalString.equals("0"))
+          {
+            result = new ParsedCall(
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
+                          new ParsedName(pos(), "zero"))
+                  .resolveTypes(res, _context);
+          }
+        else if (_originalString.equals("1"))
+          {
+            result = new ParsedCall(
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
+                          new ParsedName(pos(), "one"))
+                  .resolveTypes(res, _context);
+          }
+        else
+          {
+            result = new ParsedCall(
+                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
+                      new ParsedName(pos(), "from_u32"),
+                      new List<>(this))
+                  .resolveTypes(res, _context);
+          }
+
+        _propagatedType = Types.resolved.t_u32;
+        return result;
+      }
+    else
+      {
+        return this;
+      }
   }
 
 

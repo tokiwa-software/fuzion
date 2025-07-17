@@ -28,7 +28,7 @@ public b : a is
     say "hello from b"
 
   public hello3 =>
-    hello2 # calling hello2 visibile only in module
+    hello2 # calling hello2 visible only in module
 
   public ret_a a =>
     a
@@ -40,7 +40,7 @@ public b : a is
     say "hello_a from b"
 
   priv is
-    redef as_string => "priv"
+    public redef as_string => "priv"
 
   public get_any Any =>
     priv

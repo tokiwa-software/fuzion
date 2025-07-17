@@ -36,7 +36,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * This <description>
+ * This
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -50,7 +50,7 @@ public class This extends ExprWithPos
   /**
    * the qualified name of the this that is to be accessed.
    */
-  public final List<ParsedName> _qual;
+  private final List<ParsedName> _qual;
 
 
   /**
@@ -93,7 +93,7 @@ public class This extends ExprWithPos
    *
    * @param f the outer feature whose instance we want to access.
    */
-  public This(SourcePosition pos, AbstractFeature cur, AbstractFeature f)
+  private This(SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {
     super(pos);
 
@@ -135,19 +135,24 @@ public class This extends ExprWithPos
    *
    * @param context the source code context where this This is to be used
    *
-   * @param cur the current feature that contains this this expression
-   *
    * @param f the outer feature whose instance we want to access.
    *
-   * @return the type resolved expression to access f.this.
+   * @return the expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
+  static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (context != null,
        f != null);
 
-    return new This(pos, context.outerFeature(), f).resolveTypes(res, context);
+    var outer = context.outerFeature();
+
+    var result = new This(pos, outer, f);
+
+    return res.state(outer) != State.RESOLVING_INHERITANCE &&
+           res.state(outer) != State.RESOLVING
+      ? result.resolveTypes(res, context)
+      : result;
   }
 
 
@@ -189,7 +194,7 @@ public class This extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    return v.action(this, outer);
+    return v.action(this);
   }
 
 
@@ -204,7 +209,7 @@ public class This extends ExprWithPos
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
     if (PRECONDITIONS) require
       (res != null || Errors.any(),
@@ -233,11 +238,11 @@ public class This extends ExprWithPos
       }
     if (f == Types.f_ERROR)
       {
-        getOuter = Expr.ERROR_VALUE;
+        getOuter = Call.ERROR;
       }
     else if (f.isUniverse())
       {
-        getOuter = new Universe();
+        getOuter = Universe.instance;
       }
     else
       {
@@ -254,18 +259,7 @@ public class This extends ExprWithPos
               (Errors.any() || (or != null));
             if (or != null)
               {
-                var t = cur.outer().thisType(cur.isFixed());
-                var isAdr = cur.isOuterRefAdrOfValue();
-                Expr c = new Call(pos(), getOuter, or, -1)
-                  {
-                    @Override
-                    AbstractType typeForInferencing()
-                    {
-                      return isAdr ? t : _type;
-                    }
-                  }.resolveTypes(res, context);
-
-                getOuter = c;
+                getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
               }
             cur = cur.outer();
           }
@@ -276,26 +270,10 @@ public class This extends ExprWithPos
 
 
   /**
-   * Check if this is an implicit access to the universe, i.e., for a feature
-   * call f.g.h where f is found in the universe, this call will be converted to
-   * "universe.f.g.h", this returns true for "universe".
+   * getThisFeature find the outer feature {@code x.y.z.a.b.c} for a given qualified name 'a.b.c' as
+   * seen for a feature within outer {@code x.y.z.a.b.c.d.e.f.}.
    *
-   * NYI: CLEANUP: This is used only in Feature.isChoice, which should be
-   * improved not to need this.
-   */
-  public static boolean isUniverse(Expr e)
-  {
-    return
-      (e instanceof This) &&
-      ((This) e)._feature.isUniverse();
-  }
-
-
-  /**
-   * getThisFeature find the outer feature `x.y.z.a.b.c` for a given qualified name 'a.b.c' as
-   * seen for a feature within outer `x.y.z.a.b.c.d.e.f.`.
-   *
-   * @param thisOrType instance of `This` or `Type` depending on whether this is a lookup for `this` as a value or as a type.
+   * @param thisOrType instance of {@code This} or {@code Type} depending on whether this is a lookup for {@code this} as a value or as a type.
    *
    * @param qual the qualified name
    *
@@ -303,7 +281,7 @@ public class This extends ExprWithPos
    *
    * @return the feature that was found or Types.f_ERROR in case of an error.
    */
-  static AbstractFeature getThisFeature(SourcePosition pos, ANY thisOrType, List<ParsedName> qual, AbstractFeature outer)
+  private static AbstractFeature getThisFeature(SourcePosition pos, ANY thisOrType, List<ParsedName> qual, AbstractFeature outer)
   {
     // The comments on the right hand side will give an example to illustrate how this works: Note
     // that indices in outer start from the right, innermost name:

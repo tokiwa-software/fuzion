@@ -28,7 +28,7 @@ package dev.flang.ast;
 
 
 /**
- * ValueType <description>
+ * ValueType
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

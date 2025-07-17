@@ -30,7 +30,7 @@ test_outer_as_type_parameter is
   # here the test from #1943
   x is
     y is
-      redef as_string => "y in {x.this}"
+      public redef as_string => "y in {x.this}"
 
   z : x is
 
@@ -48,7 +48,7 @@ test_outer_as_type_parameter is
       n <- n.get + 1
     n
 
-  mm : mutate.
+  mm : mutate is
   mm ! ()->
     {
       cnt := mm.env.new 100

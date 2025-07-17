@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature invariant_fault
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# invariant_fault -- effect that terminates a computation due to a failed
+# condition in a inv statement
+#
+public invariant_fault (
+  # the handler this effect uses to fail
+  p String -> void
+  ) : eff.fallible p
+is
+
+
+  # install default invariant_fault handler
+  type.install_default =>
+    (fuzion.runtime.invariant_fault msg->
+      fuzion.runtime.contract_fault.cause ("inv", msg)).default
+
+
+  # create an instance of `invariant_fault` with the given error handler.
+  #
+  public fixed redef type.new(h String -> void) fuzion.runtime.invariant_fault => fuzion.runtime.invariant_fault h
+
+
+# invariant_fault with no argument returns invariant_fault.env, the currently installed
+# runtime invariant_fault handler.
+#
+public invariant_fault invariant_fault =>
+  invariant_fault.install_default
+  invariant_fault.env
+
+
+# cause a inv fault with given msg argument, i.e., call invariant_fault.cause
+# msg, i.e., use the current invariant_fault effect to fail with the given message.
+#
+public invariantcondition_fault(msg String) void => invariant_fault.cause msg

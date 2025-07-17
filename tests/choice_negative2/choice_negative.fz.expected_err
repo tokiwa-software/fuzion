@@ -4,9 +4,18 @@
 ----^
 Cyclic value field nesting would result in infinitely large objects.
 Cycle of nesting found during clazz layout:
---CURDIR--/choice_negative.fz:30:7:
-      x A | i32 | String := "Hello"  // 4. should flag an error: cyclic choice
+Layout 'choice_negative.cyclic7.A': --CURDIR--/choice_negative.fz:30:7:
+      x A | i32 | String := "Hello"  # 4. should flag an error: cyclic choice
 ------^
+Field: 'choice_negative.cyclic7.A.x' of type 'choice choice_negative.cyclic7.A i32 String': --CURDIR--/choice_negative.fz:30:7:
+      x A | i32 | String := "Hello"  # 4. should flag an error: cyclic choice
+------^
+Choice variant 'choice_negative.cyclic7.A': --CURDIR--/choice_negative.fz:29:5:
+    A is
+----^
+Requires layout of 'choice_negative.cyclic7.A': --CURDIR--/choice_negative.fz:29:5:
+    A is
+----^
 
 To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
 
@@ -16,9 +25,18 @@ To solve this, you could change one or several of the fields involved to a refer
 ----^
 Cyclic value field nesting would result in infinitely large objects.
 Cycle of nesting found during clazz layout:
---CURDIR--/choice_negative.fz:53:7:
-      x i32 | A | String := "Hello"  // 5. should flag an error: cyclic choice
+Layout 'choice_negative.cyclic9.A': --CURDIR--/choice_negative.fz:53:7:
+      x i32 | A | String := "Hello"  # 5. should flag an error: cyclic choice
 ------^
+Field: 'choice_negative.cyclic9.A.x' of type 'choice i32 choice_negative.cyclic9.A String': --CURDIR--/choice_negative.fz:53:7:
+      x i32 | A | String := "Hello"  # 5. should flag an error: cyclic choice
+------^
+Choice variant 'choice_negative.cyclic9.A': --CURDIR--/choice_negative.fz:52:5:
+    A is
+----^
+Requires layout of 'choice_negative.cyclic9.A': --CURDIR--/choice_negative.fz:52:5:
+    A is
+----^
 
 To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
 
@@ -28,9 +46,18 @@ To solve this, you could change one or several of the fields involved to a refer
 ----^
 Cyclic value field nesting would result in infinitely large objects.
 Cycle of nesting found during clazz layout:
---CURDIR--/choice_negative.fz:76:7:
-      x i32 | String | A := "Hello"  // 6. should flag an error: cyclic choice
+Layout 'choice_negative.cyclic11.A': --CURDIR--/choice_negative.fz:76:7:
+      x i32 | String | A := "Hello"  # 6. should flag an error: cyclic choice
 ------^
+Field: 'choice_negative.cyclic11.A.x' of type 'choice i32 String choice_negative.cyclic11.A': --CURDIR--/choice_negative.fz:76:7:
+      x i32 | String | A := "Hello"  # 6. should flag an error: cyclic choice
+------^
+Choice variant 'choice_negative.cyclic11.A': --CURDIR--/choice_negative.fz:75:5:
+    A is
+----^
+Requires layout of 'choice_negative.cyclic11.A': --CURDIR--/choice_negative.fz:75:5:
+    A is
+----^
 
 To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.
 

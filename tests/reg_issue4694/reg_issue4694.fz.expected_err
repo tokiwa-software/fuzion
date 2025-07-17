@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue4694.fz:26:8: error 1: Wrong number of arguments in lambda expression
+  0 |> x,y->container.expanding.env.put
+-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Lambda expression has 2 arguments while the target type expects one argument.
+Arguments of lambda expression: 'x', 'y'
+Expected function type: Unary --UNDEFINED-- i32
+To solve this, remove one argument from the list 'x', 'y' before the '->' of the lambda expression.
+
+one error.

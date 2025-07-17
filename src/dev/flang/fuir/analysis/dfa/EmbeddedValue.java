@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
+
 import java.util.function.Function;
 
 
@@ -80,9 +83,7 @@ public class EmbeddedValue extends Val
    *
    * @param instance the instance containing this embedded value
    *
-   * @param code code block index
-   *
-   * @param index expr index in code block
+   * @param site expr index in code block
    *
    * @param value the value of the embedded field
    */
@@ -91,9 +92,9 @@ public class EmbeddedValue extends Val
                 Value value)
   {
     if (PRECONDITIONS) require
-      ((instance != null) != (site != -1),
+      ((instance != null) != (site != NO_SITE),
        value != null,
-       instance == null || value._clazz == -1 || !instance._dfa._fuir.clazzIsRef(value._clazz));
+       instance == null || value._clazz == NO_CLAZZ || !instance._dfa._fuir.clazzIsRef(value._clazz));
 
     this._instance = instance;
     this._site = site;
@@ -114,7 +115,7 @@ public class EmbeddedValue extends Val
     var res = f.apply(value());
     var rv = res.value();
     var cl = rv._clazz;
-    if (cl != -1 && dfa._fuir.clazzIsRef(cl))
+    if (cl != NO_CLAZZ && dfa._fuir.clazzIsRef(cl))
       {
         return res;
       }

@@ -1,0 +1,53 @@
+
+--CURDIR--/reg_issue4959.fz:43:33: error 1: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
+  hay6 => (42,unit); say (hay6 .0)  # 1. should flag an error
+--------------------------------^
+In call to 'reg_issue4959.hay6'
+Selected variant 'hay6.0'
+Type of called feature: 'unit'
+
+
+--CURDIR--/reg_issue4959.fz:45:28: error 2: Implementation restriction, cyclic type inference with select not supported yet.
+  hay7 => (42,unit); hay7 .1        # 2. should flag an error
+---------------------------^
+
+
+--CURDIR--/reg_issue4959.fz:45:28: error 3: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
+  hay7 => (42,unit); hay7 .1        # 2. should flag an error
+---------------------------^
+In call to 'reg_issue4959.hay7'
+Selected variant 'hay7.1'
+Type of called feature: 'void'
+
+
+--CURDIR--/reg_issue4959.fz:47:27: error 4: Implementation restriction, cyclic type inference with select not supported yet.
+  hay8 => (42,unit); hay8.1         # 3. should flag an error
+--------------------------^
+
+
+--CURDIR--/reg_issue4959.fz:47:27: error 5: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
+  hay8 => (42,unit); hay8.1         # 3. should flag an error
+--------------------------^
+In call to 'reg_issue4959.hay8'
+Selected variant 'hay8.1'
+Type of called feature: 'void'
+
+
+--CURDIR--/reg_issue4959.fz:43:11: error 6: Expression produces result of type 'tuple i32 unit' but result is not used.
+  hay6 => (42,unit); say (hay6 .0)  # 1. should flag an error
+----------^
+To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'tuple' from constructor to routine by replacing 'is' by '=>'.
+
+
+--CURDIR--/reg_issue4959.fz:45:11: error 7: Expression produces result of type 'tuple i32 unit' but result is not used.
+  hay7 => (42,unit); hay7 .1        # 2. should flag an error
+----------^
+To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'tuple' from constructor to routine by replacing 'is' by '=>'.
+
+
+--CURDIR--/reg_issue4959.fz:47:11: error 8: Expression produces result of type 'tuple i32 unit' but result is not used.
+  hay8 => (42,unit); hay8.1         # 3. should flag an error
+----------^
+To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'tuple' from constructor to routine by replacing 'is' by '=>'.
+
+8 errors.

@@ -44,6 +44,14 @@ unused_fields_error =>
   d : c is
     # no warnings for unused redef
     redef inner := 4
-    # while error for unused field that is not a redef
+
+    # error for unused field that is not a redef
     inner2 := 3
 
+  f(val choice String i32) =>
+    match val
+      s String => "'$s' is a String"
+      i i32    => "'i' is a i32"
+
+  if true
+    e := 42

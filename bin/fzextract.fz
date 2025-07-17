@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of fzextract
+#
+# -----------------------------------------------------------------------
+
+string_option : option String is
+  public redef as_string =>
+    match string_option.this
+      nil => "*** unknown type ***"
+      s String => s
+
+to_fuzion_type(c_type String) string_option =>
+  if c_type = "void"
+    "unit"
+  else if c_type.contains "*" || c_type.ends_with "]"
+    "Native_Ref"
+  else if c_type = "float"
+    "f32"
+  else if c_type = "double"
+    "f64"
+  else if c_type = "int64_t"
+    "i64"
+  else if c_type = "int32_t" || c_type = "int"
+    "i32"
+  else if c_type = "uint64_t"
+    "u64"
+  else if c_type = "int8_t"
+    "i8"
+  else if c_type = "uint8_t"
+    "u8"
+  else if c_type = "size_t" || c_type = "long"
+    "i64"
+  else
+    nil
+
+
+if envir.args.count != 2
+  say "usage: "
+  say "fz fzextract.fz some_header_file.h"
+  exit 1
+
+match (clang.parse_header envir.args[1] f_decl->
+    valid := (f_decl.args ∀ (arg -> !(to_fuzion_type arg.arg_type).is_nil)) && !(to_fuzion_type f_decl.return_type).is_nil
+    args_str := f_decl
+      .args
+      .map arg->
+        "{arg.name} {to_fuzion_type arg.arg_type}"
+      .as_string ", "
+    say "{if valid then "" else "# "}{f_decl.name}($args_str) {to_fuzion_type f_decl.return_type} => native")
+  unit =>
+  e error =>
+    say e
+    exit 1

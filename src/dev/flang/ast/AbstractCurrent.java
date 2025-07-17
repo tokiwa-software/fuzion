@@ -56,7 +56,8 @@ public abstract class AbstractCurrent extends Expr
   public AbstractCurrent(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null && (Types.resolved == null || !t.isVoid()));
+      (t != null,
+       Types.resolved == null || !t.isVoid());
 
     this._type = t;
   }
@@ -89,10 +90,13 @@ public abstract class AbstractCurrent extends Expr
    *
    * @return this.
    */
+  @Override
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _type = _type.visit(v, outer);
-    return v.action(this, outer);
+    if (CHECKS) check
+      (_type != null);
+    return v.action(this);
   }
 
 
@@ -107,15 +111,15 @@ public abstract class AbstractCurrent extends Expr
    * @param context the source code context where this Call is used
    *
    * @return this in case outer is what it was when this was created, or a new
-   * Expr `Current.outer_ref. .. .outer_ref` to access the same current instance
+   * Expr {@code Current.outer_ref. .. .outer_ref} to access the same current instance
    * from within a new, nested outer feature.
    */
-  public Expr resolveTypes(Resolution res, Context context)
+  Expr resolveTypes(Resolution res, Context context)
   {
     var of = _type.feature();
     return of == Types.f_ERROR || of == context.outerFeature()
       ? this
-      : new This(pos(), context.outerFeature(), of).resolveTypes(res, context);
+      : This.thiz(res, pos(), context, of);
   }
 
 

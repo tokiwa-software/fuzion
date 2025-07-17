@@ -25,18 +25,18 @@
 
 choicetest is
 
-  // object-oriented style using subclasses
+  # object-oriented style using subclasses
   Light ref is
   Red    ref : Light is
   Yellow ref : Light is
   Green  ref : Light is
 
-  _ Light := Red
-  _ Light := Green
+  l1 Light := Red
+  l2 Light := Green
 
-  say "l1 is Red, l2 is Green"
+  say "l1 is $l1, l2 is $l2"
 
-  // using choice-type
+  # using choice-type
   Penny   is
   Nickel  is
   Dime    is
@@ -64,18 +64,18 @@ choicetest is
   say "creating array:"
   mi : mutate is
   a := mi ! ()->
-    a := (mutate.array Coin).new mi 10 Penny
-    a[0] := Penny
-    a[1] := Penny
-    a[2] := Penny
-    a[3] := Penny
-    a[4] := Nickel
-    a[5] := Dime
-    a[6] := Dime
-    a[7] := Quarter
-    a[8] := Quarter
-    a[9] := Quarter
-    a.as_array
+    ma := (mutate.array Coin).new mi 10 Penny
+    ma[0] := Penny
+    ma[1] := Penny
+    ma[2] := Penny
+    ma[3] := Penny
+    ma[4] := Nickel
+    ma[5] := Dime
+    ma[6] := Dime
+    ma[7] := Quarter
+    ma[8] := Quarter
+    ma[9] := Quarter
+    ma.as_array
 
 
   sum_loop =>

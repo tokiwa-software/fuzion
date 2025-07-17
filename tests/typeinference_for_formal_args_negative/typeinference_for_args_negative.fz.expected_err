@@ -1,5 +1,117 @@
 
---CURDIR--/typeinference_for_args_negative.fz:30:6: error 1: Type inference from actual arguments failed due to incompatible types of actual arguments
+--CURDIR--/typeinference_for_args_negative.fz:66:8: error 1: Type inference from actual arguments failed since no actual call was found
+    m2(y) is
+-------^
+For the formal argument 'typeinference_for_args_negative.scenario4.m2.y' the type can only be derived if there is a call to 'typeinference_for_args_negative.scenario4.m2'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:88:8: error 2: Type inference from actual arguments failed since no actual call was found
+    m2(y) is
+-------^
+For the formal argument 'typeinference_for_args_negative.scenario5.m2.y' the type can only be derived if there is a call to 'typeinference_for_args_negative.scenario5.m2'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:59:26: error 3: Could not find called feature
+      t(p Sequence T) => test "scenario4: type of m2.y is " $T "Type of 'void'"
+-------------------------^^^^
+Feature not found: 'test' (3 arguments)
+Target feature: 'typeinference_for_args_negative.scenario4.f.t'
+In call: 'test "scenario4: type of m2.y is " $T "Type of 'void'"'
+
+
+--CURDIR--/typeinference_for_args_negative.fz:32:6: error 4: Type inference from actual arguments failed since no actual call was found
+  a5(a, b) => a+b    # *** error ***, never called
+-----^
+For the formal argument 'typeinference_for_args_negative.a5.a' the type can only be derived if there is a call to 'typeinference_for_args_negative.a5'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:32:9: error 5: Type inference from actual arguments failed since no actual call was found
+  a5(a, b) => a+b    # *** error ***, never called
+--------^
+For the formal argument 'typeinference_for_args_negative.a5.b' the type can only be derived if there is a call to 'typeinference_for_args_negative.a5'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:42:11: error 6: Incompatible types when passing argument in a call
+  say (a3 1.0         " world!")
+----------^^^
+Actual type for argument #1 'a' does not match expected type.
+In call to          : 'typeinference_for_args_negative.a3'
+expected formal type: 'String'
+actual type found   : 'f64'
+assignable to       : 'f64'
+for value assigned  : '1.0'
+To solve this, you could change the type of the target 'a' to 'f64' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:43:14: error 7: Incompatible types when passing argument in a call
+  say (a3 10.as_f64   " world!")
+-------------^^^^^^
+Actual type for argument #1 'a' does not match expected type.
+In call to          : 'typeinference_for_args_negative.a3'
+expected formal type: 'String'
+actual type found   : 'f64'
+assignable to       : 'f64'
+for value assigned  : '10.as_f64'
+To solve this, you could change the type of the target 'a' to 'f64' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:44:11: error 8: Incompatible types when passing argument in a call
+  say (a3 1.1         " world!")
+----------^^^
+Actual type for argument #1 'a' does not match expected type.
+In call to          : 'typeinference_for_args_negative.a3'
+expected formal type: 'String'
+actual type found   : 'f64'
+assignable to       : 'f64'
+for value assigned  : '1.1'
+To solve this, you could change the type of the target 'a' to 'f64' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:47:33: error 9: Incompatible types when passing argument in a call
+  say (a4 "1.0"       " world!".byte_length)
+--------------------------------^^^^^^^^^^^
+Actual type for argument #2 'b' does not match expected type.
+In call to          : 'typeinference_for_args_negative.a4'
+expected formal type: 'String'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '" world!".byte_length'
+To solve this, you could change the type of the target 'b' to 'i32' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:48:23: error 10: Incompatible types when passing argument in a call
+  say (a4 "10.as_f64" 3.14)
+----------------------^^^^
+Actual type for argument #2 'b' does not match expected type.
+In call to          : 'typeinference_for_args_negative.a4'
+expected formal type: 'String'
+actual type found   : 'f64'
+assignable to       : 'f64'
+for value assigned  : '3.14'
+To solve this, you could change the type of the target 'b' to 'f64' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:49:32: error 11: Incompatible types when passing argument in a call
+  say (a4 "1.1"       " world!"=" monde!")
+-------------------------------^
+Actual type for argument #2 'b' does not match expected type.
+In call to          : 'typeinference_for_args_negative.a4'
+expected formal type: 'String'
+actual type found   : 'bool'
+assignable to       : 'bool'
+for value assigned  : '" world!"=" monde!"'
+To solve this, you could change the type of the target 'b' to 'bool' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/typeinference_for_args_negative.fz:80:9: error 12: Could not find called feature
+        test "scenario4: type of m2.y is " $T "Type of 'void'"
+--------^^^^
+Feature not found: 'test' (3 arguments)
+Target feature: 'typeinference_for_args_negative.scenario5.f.t'
+In call: 'test "scenario4: type of m2.y is " $T "Type of 'void'"'
+
+
+--CURDIR--/typeinference_for_args_negative.fz:30:6: error 13: Type inference from actual arguments failed due to incompatible types of actual arguments
   a3(a, b) => a+b    # *** error ***, mixes String and f64 in arg `a`
 -----^
 For the formal argument 'typeinference_for_args_negative.a3.a' the following incompatible actual arguments where found for type inference:
@@ -17,7 +129,7 @@ and at --CURDIR--/typeinference_for_args_negative.fz:44:11:
 ----------^^^
 
 
---CURDIR--/typeinference_for_args_negative.fz:31:9: error 2: Type inference from actual arguments failed due to incompatible types of actual arguments
+--CURDIR--/typeinference_for_args_negative.fz:31:9: error 14: Type inference from actual arguments failed due to incompatible types of actual arguments
   a4(a, b) => a+b    # *** error ***, mixes String, i32, f64 and bool in arg `b`
 --------^
 For the formal argument 'typeinference_for_args_negative.a4.b' the following incompatible actual arguments where found for type inference:
@@ -34,16 +146,4 @@ actual is value of type 'bool' at --CURDIR--/typeinference_for_args_negative.fz:
   say (a4 "1.1"       " world!"=" monde!")
 -------------------------------^
 
-
---CURDIR--/typeinference_for_args_negative.fz:32:6: error 3: Type inference from actual arguments failed since no actual call was found
-  a5(a, b) => a+b    # *** error ***, never called
------^
-For the formal argument 'typeinference_for_args_negative.a5.a' the type can only be derived if there is a call to 'typeinference_for_args_negative.a5'.
-
-
---CURDIR--/typeinference_for_args_negative.fz:32:9: error 4: Type inference from actual arguments failed since no actual call was found
-  a5(a, b) => a+b    # *** error ***, never called
---------^
-For the formal argument 'typeinference_for_args_negative.a5.b' the type can only be derived if there is a call to 'typeinference_for_args_negative.a5'.
-
-4 errors.
+14 errors.

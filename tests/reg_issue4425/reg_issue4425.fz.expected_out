@@ -1,0 +1,12 @@
+hi using {}
+false
+hi using ()
+false
+should be empty tuple: Type of 'tuple'
+should be tuple String 42: Type of 'tuple codepoint i32'
+should be Binary i32 i32 i32: Type of 'Binary i32 i32 i32'
+should be unit: Type of 'unit'
+this should run 1
+should be result form code block 1: result from code block 1
+this should run 2
+should be result form code block 2: result from code block 2

@@ -28,10 +28,10 @@ test_this_type_negative is
   a is
     x is
       _       := a.this
-      _ a     := a.this  //  1. should flag an error: a.this not compatible to 'a'
+      _ a     := a.this  #  1. should flag an error: a.this not compatible to 'a'
 
     _       := a.this
-    _ a     := a.this  //  2. should flag an error: a.this not compatible to 'a'
+    _ a     := a.this  #  2. should flag an error: a.this not compatible to 'a'
 
   b ref is
     x is

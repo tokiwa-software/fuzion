@@ -27,36 +27,53 @@
 # required errors are shown, and then as a simple test to make sure that the
 # error output is correct.
 #
-# Even though the negative variante could not fail if the simple variant fails,
+# Even though the negative variant could not fail if the simple variant fails,
 # running both ensures that an update of error output cannot accidentally
 # introduce some missing errors.
 #
 
 FUZION_OPTIONS ?=
+FUZION_JVM_BACKEND_OPTIONS ?=
+FUZION_C_BACKEND_OPTIONS ?=
+FUZION_DEPENDENCIES ?=
+FUZION ?= ../../bin/fz
+FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
+FILE = $(NAME).fz
+ENV = \
+  $(if $(FUZION_HOME)               , FUZION_HOME="$(FUZION_HOME)"                              ,) \
+  $(if $(FUZION_JAVA)               , FUZION_JAVA="$(FUZION_JAVA)"                              ,) \
+  $(if $(FUZION_JAVA_STACK_SIZE)    , FUZION_JAVA_STACK_SIZE="$(FUZION_JAVA_STACK_SIZE)"        ,) \
+  $(if $(FUZION_JAVA_OPTIONS)       , FUZION_JAVA_OPTIONS="$(FUZION_JAVA_OPTIONS)"              ,) \
+  $(if $(FUZION_OPTIONS)            , FUZION_OPTIONS="$(FUZION_OPTIONS)"                        ,) \
+  $(if $(FUZION_JVM_BACKEND_OPTIONS), FUZION_JVM_BACKEND_OPTIONS="$(FUZION_JVM_BACKEND_OPTIONS)",) \
+  $(if $(FUZION_C_BACKEND_OPTIONS)  , FUZION_C_BACKEND_OPTIONS="$(FUZION_C_BACKEND_OPTIONS)"    ,) \
+  $(if $(FUZION_DEPENDENCIES)       , FUZION_OPTIONS="$(FUZION_DEPENDENCIES)"                   ,) \
 
 all: jvm int c
 
 jvm:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk jvm
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk jvm
+	NAME=$(NAME) $(ENV) make -f ../negative.mk jvm
+	NAME=$(NAME) $(ENV) make -f ../simple.mk jvm
 c:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk c
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk c
+	NAME=$(NAME) $(ENV) make -f ../negative.mk c
+	NAME=$(NAME) $(ENV) make -f ../simple.mk c
 int:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk int
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk int
+	NAME=$(NAME) $(ENV) make -f ../negative.mk int
+	NAME=$(NAME) $(ENV) make -f ../simple.mk int
 
 show:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../negative.mk show
+	NAME=$(NAME) $(ENV) make -f ../negative.mk show
 
 record:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record
 
 record_jvm:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_jvm
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record_jvm
 
 record_c:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_c
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record_c
 
 record_int:
-	NAME=$(NAME) FUZION_OPTIONS=$(FUZION_OPTIONS) make -f ../simple.mk record_int
+	NAME=$(NAME) $(ENV) make -f ../simple.mk record_int
+
+effect:

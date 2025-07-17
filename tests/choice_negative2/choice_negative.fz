@@ -27,14 +27,14 @@ choice_negative is
 
   cyclic7 is
     A is
-      x A | i32 | String := "Hello"  // 4. should flag an error: cyclic choice
+      x A | i32 | String := "Hello"  # 4. should flag an error: cyclic choice
       s =>
         match x
           A      => say "A.x is A"
           i32    => say "A.x is i32"
           String => say "A.x is String"
 
-  cyclic7.A.s // NYI: would be nice if this was detected w/o a call to x
+  cyclic7.A.s # NYI: would be nice if this was detected w/o a call to x
 
   cyclic8 is
     rA ref is
@@ -50,14 +50,14 @@ choice_negative is
 
   cyclic9 is
     A is
-      x i32 | A | String := "Hello"  // 5. should flag an error: cyclic choice
+      x i32 | A | String := "Hello"  # 5. should flag an error: cyclic choice
       s =>
         match x
           A      => say "A.x is A"
           i32    => say "A.x is i32"
           String => say "A.x is String"
 
-  cyclic9.A.s // NYI: would be nice if this was detected w/o a call to x
+  cyclic9.A.s # NYI: would be nice if this was detected w/o a call to x
 
   cyclic10 is
     rA ref is
@@ -73,14 +73,14 @@ choice_negative is
 
   cyclic11 is
     A is
-      x i32 | String | A := "Hello"  // 6. should flag an error: cyclic choice
+      x i32 | String | A := "Hello"  # 6. should flag an error: cyclic choice
       s =>
         match x
           A      => say "A.x is A"
           i32    => say "A.x is i32"
           String => say "A.x is String"
 
-  cyclic11.A.s // NYI: would be nice if this was detected w/o a call to x
+  cyclic11.A.s # NYI: would be nice if this was detected w/o a call to x
 
   cyclic12 is
     rA ref is

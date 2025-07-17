@@ -26,5 +26,4 @@ s is
   o q
   q is
 
-_ := ref : s
-
+_ := ref : s is

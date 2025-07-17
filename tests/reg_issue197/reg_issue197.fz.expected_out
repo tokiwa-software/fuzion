@@ -1,0 +1,8 @@
+r's type is Type of 'reg_issue197.ex.my_array u64' (expecting ex.my_array u64)
+a.v: Type of 'reg_issue197.a f32' (expecting a f32)
+a0.v: Type of 'i16' expecting (i16)
+q.b: Type of 'tuple unit u128 (option unit) (Sequence u128)' (expecting (unit, u128, option unit, Sequence u128)
+type is Type of 'tuple u8 codepoint (option u8) (Sequence codepoint)'
+type is Type of 'tuple bool unit (option bool) (Sequence unit)'
+type is Type of 'tuple u8 codepoint (option u8) (Sequence codepoint)'
+type is Type of 'tuple f32 i64 (option f32) (Sequence i64)'

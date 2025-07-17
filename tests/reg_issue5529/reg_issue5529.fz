@@ -1,0 +1,33 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5529
+#
+# -----------------------------------------------------------------------
+
+# test that left hand side of lambda expression must not contain garbage
+# expressions
+#
+reg_issue5529 =>
+
+  # the negative example from #5529 that should cause 7 errors
+  (id i32->unit (1,"bla",[io.Out.env],(47,11),3+4,5,x,say << "hi")->(say x)).call 42
+
+  # the positive example from #5529 that should work
+  (id i32->unit (                                   x            )->(say x)).call 42

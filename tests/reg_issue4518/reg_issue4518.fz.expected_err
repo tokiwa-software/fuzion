@@ -1,0 +1,14 @@
+
+--CURDIR--/reg_issue4518.fz:24:3: error 1: Type inference from actual arguments failed since no actual call was found
+a(p) => _, x := p; $x
+--^
+For the formal argument 'a.p' the type can only be derived if there is a call to 'a'.
+
+
+--CURDIR--/reg_issue4518.fz:24:14: error 2: Destructuring mismatch between number of visible fields and number of target variables.
+a(p) => _, x := p; $x
+-------------^
+Found no visible argument fields
+while there are 2 destructuring variables.
+
+2 errors.

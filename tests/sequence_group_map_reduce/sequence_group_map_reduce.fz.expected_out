@@ -1,0 +1,3 @@
+{(even => 30), (odd => 25)}
+{(digit => 2), (letter => 3), (other => 1)}
+{(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}

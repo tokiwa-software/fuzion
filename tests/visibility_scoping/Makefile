@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = visibility_scoping
-include ../simple.mk
+include ../simple_and_negative.mk

@@ -1,0 +1,119 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.sync
+#
+# -----------------------------------------------------------------------
+
+# concur.sync -- synchronization primitives
+# NYI: sync should probably be an effect
+#
+public sync is
+
+  mtx_init outcome Mutex => intrinsic
+  mtx_lock(mtx Mutex) bool => intrinsic
+  # NYI: mtx_timedlock
+  mtx_trylock(mtx Mutex) bool => intrinsic
+  mtx_unlock(mtx Mutex) bool => intrinsic
+  mtx_destroy(mtx Mutex) unit => intrinsic
+
+  cnd_init(mtx Mutex) outcome Condition => intrinsic
+  cnd_signal(cnd Condition) bool => intrinsic
+  cnd_broadcast(cnd Condition) bool => intrinsic
+  cnd_wait(cnd Condition, mtx Mutex) bool => intrinsic
+  # NYI: cnd_timedwait
+  cnd_destroy(cnd Condition) unit => intrinsic
+
+
+  # NYI: tie life of mutex/condition to thread pool?
+
+
+
+  # a mutex is a synchronization primitive
+  # that allows threads to wait for one another.
+  #
+  private:public mutex(module mtx Mutex) is
+
+    # run code synchronized across all threads
+    # that also use this mutex
+    #
+    public synchronized(T type, code ()->T) T =>
+      check mtx_lock mtx
+      res := code.call
+      check mtx_unlock mtx
+      res
+
+
+    # initialize a new mutex
+    #
+    public type.new outcome concur.sync.mutex =>
+      concur.sync.mtx_init.bind mtx->
+        concur.sync.mutex mtx
+
+    # NYI: UNDER DEVELOPMENT: destroy
+
+
+  # a condition is synchronization primitive
+  # that allows threads to signal and wait for one another.
+  #
+  private:public condition(mtx Mutex, cnd Condition) is
+
+    public is_locked concur.atomic bool := concur.atomic false
+
+    # run code synchronized across all threads
+    # that also use this condition
+    #
+    public synchronized(T type, code ()->T) T =>
+      check mtx_lock mtx
+      is_locked.write true
+      res := code.call
+      is_locked.write false
+      check mtx_unlock mtx
+      res
+
+
+    # signal one waiting thread to wake up
+    #
+    public signal bool
+      pre is_locked.read
+    => cnd_signal cnd
+
+
+    # signal all waiting thread to wake up
+    #
+    public broadcast bool
+      pre is_locked.read
+    => cnd_broadcast cnd
+
+
+    # make this thread wait for signal
+    #
+    public wait bool
+      pre is_locked.read
+    => cnd_wait cnd mtx
+
+
+    # initialize a new condition
+    #
+    public type.new outcome concur.sync.condition =>
+      concur.sync.mtx_init.bind mtx->
+        (concur.sync.cnd_init mtx).bind cnd->
+          concur.sync.condition mtx cnd
+
+    # NYI: UNDER DEVELOPMENT: destroy

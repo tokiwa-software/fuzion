@@ -175,7 +175,7 @@ public abstract class Tool extends ANY
    * Return the full version information of this tool, including build date, git
    * hash, built by.
    */
-  public String fullVersion()
+  public static String fullVersion()
   {
     var result = Version.VERSION + " (";
 
@@ -251,9 +251,13 @@ public abstract class Tool extends ANY
       {
         var file = a.substring(a.indexOf("=")+1);
         if (file.equals(""))
-          { fatal("Please provide a file name to option '-XjavaProf=<file>'."); }
+          {
+            fatal("Please provide a file name to option '-XjavaProf=<file>'.");
+          }
         else
-          { Profiler.start(); }
+          {
+            Profiler.start(file);
+          }
       }
     else if (a.equals(Errors.MAX_ERROR_MESSAGES_OPTION) || a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
       {
@@ -319,7 +323,7 @@ public abstract class Tool extends ANY
 
 
   /**
-   * Parse argument of the form "-xyz" or "-xyz=123".
+   * Parse argument of the form {@code -xyz} or {@code -xyz=123}.
    *
    * @param a the argument
    *
@@ -352,7 +356,7 @@ public abstract class Tool extends ANY
 
 
   /**
-   * Parse argument of the form "-xyz=<string>"
+   * Parse argument of the form {@code -xyz=<string>}
    *
    * @param a the argument
    *
@@ -368,7 +372,7 @@ public abstract class Tool extends ANY
 
 
   /**
-   * Parse argument of the form "-xyz=<path>"
+   * Parse argument of the form {@code -xyz=<path>}
    *
    * @param a the argument
    *
@@ -384,7 +388,7 @@ public abstract class Tool extends ANY
 
 
   /**
-   * Parse argument of the form "-xyz=on" or "-xyz=off".
+   * Parse argument of the form {@code -xyz=on} or {@code -xyz=off}.
    *
    * @param a the argument
    *
@@ -412,11 +416,11 @@ public abstract class Tool extends ANY
 
 
   /**
-   * Parse argument of the form "-xyz=abc,def,ghi".
+   * Parse argument of the form {@code -xyz=abc,def,ghi}.
    *
    * @param a the argument
    *
-   * @return the list containing the single elements, e.g. ["abc","def","ghi"]
+   * @return the list containing the single elements, e.g. {@code ["abc","def","ghi"]}
    */
   protected static List<String> parseStringListArg(String a)
   {

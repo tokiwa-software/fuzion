@@ -21,12 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-open, closed.
+open is
+closed is
 door : choice open closed is
   toggle door => match door.this
     open   => closed
     closed => open
-  redef as_string =>  match door.this
+  public redef as_string =>  match door.this
     open   => "open"
     closed => "closed"
 

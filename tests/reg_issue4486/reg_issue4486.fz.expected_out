@@ -1,0 +1,34 @@
+input: ''
+
+
+input: ' '
+  using read_line:  1: ' '
+
+  using read_lines: 1: ' '
+
+input: '\n'
+  using read_line:  1: ''
+
+  using read_lines: 1: ''
+
+input: '\n\n'
+  using read_line:  1: ''
+  using read_line:  2: ''
+
+  using read_lines: 1: ''
+  using read_lines: 2: ''
+
+input: 'abc\ndef'
+  using read_line:  1: 'abc'
+  using read_line:  2: 'def'
+
+  using read_lines: 1: 'abc'
+  using read_lines: 2: 'def'
+
+input: 'abc\ndef\n'
+  using read_line:  1: 'abc'
+  using read_line:  2: 'def'
+
+  using read_lines: 1: 'abc'
+  using read_lines: 2: 'def'
+

@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test function_argument_visibility
+#
+# -----------------------------------------------------------------------
+
+function_argument_visibility =>
+
+  # POSITIVE TEST
+
+  # constructor features can have visibility for arguments
+  constr(public a i32, module b String, private c Any, d i64) is
+
+  # no visibility specified
+  f0(x i32) =>
+
+
+
+  # NEGATIVE TESTS
+  # specifying a visibility for arguments of non constructor features should cause an error
+
+  f1(public a i32) =>    # 1. should flag an error: Argument features of non-constructors must not have visibility modifier.
+
+  f2(module b String) => # 2. should flag an error: Argument features of non-constructors must not have visibility modifier.
+
+  f3(private c Any) =>   # 3. should flag an error: Argument features of non-constructors must not have visibility modifier.
+
+  f4(x1 i32, public a i32, module b String, x2 i32, private c Any) => # 4. 5. 6. should flag an error: Argument features of non-constructors must not have visibility modifier.
+
+  f5(public a i32) Any => abstract  # 7. should flag an error: Argument features of non-constructors must not have visibility modifier.
+
+  f6(public a i32) Any => intrinsic # 8. should flag an error: Argument features of non-constructors must not have visibility modifier.
+
+  f7(public a i32) i32 => native    # 9. should flag an error: Argument features of non-constructors must not have visibility modifier.

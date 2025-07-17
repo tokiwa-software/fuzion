@@ -1,17 +1,17 @@
 
 --CURDIR--/strings_multiline_negative.fz:28:8: error 1: Expected multiline string to start in first line following fat quotation '"""'
-  _ := """"""    //  1. should flag an error: Expected multiline string to start in first line following fat quotation
+  _ := """"""    #  1. should flag an error: Expected multiline string to start in first line following fat quotation
 -------^
 Found start at --CURDIR--/strings_multiline_negative.fz:28:11:
-  _ := """"""    //  1. should flag an error: Expected multiline string to start in first line following fat quotation
+  _ := """"""    #  1. should flag an error: Expected multiline string to start in first line following fat quotation
 ----------^ instead.
 
 
 --CURDIR--/strings_multiline_negative.fz:29:8: error 2: Expected multiline string to start in first line following fat quotation '"""'
-  _ := """ """   //  2. should flag an error: Expected multiline string to start in first line following fat quotation
+  _ := """ """   #  2. should flag an error: Expected multiline string to start in first line following fat quotation
 -------^
 Found start at --CURDIR--/strings_multiline_negative.fz:29:12:
-  _ := """ """   //  2. should flag an error: Expected multiline string to start in first line following fat quotation
+  _ := """ """   #  2. should flag an error: Expected multiline string to start in first line following fat quotation
 -----------^ instead.
 
 
@@ -19,12 +19,12 @@ Found start at --CURDIR--/strings_multiline_negative.fz:29:12:
   _ := """
 -------^
 Found start at --CURDIR--/strings_multiline_negative.fz:34:3:
-  c              //  3. should flag an error: Expected multiline string to start in first line following fat quotation
+  c              #  3. should flag an error: Expected multiline string to start in first line following fat quotation
 --^ instead.
 
 
 --CURDIR--/strings_multiline_negative.fz:39:2: error 4: Found codepoint at less indentation than expected in multiline string.
- d              //  4. should flag an error: Found codepoint at less indentation than expected in multiline string.
+ d              #  4. should flag an error: Found codepoint at less indentation than expected in multiline string.
 -^
 To solve this, indent offending line by at least 2 spaces.
 Alternatively decrease indentation of first line. One way to do this is by using the \s escape code which equals a space.
@@ -36,11 +36,11 @@ Alternatively decrease indentation of first line. One way to do this is by using
 To solve this, remove this whitespace or replace it by escape codes.
 
 
---CURDIR--/strings_multiline_negative.fz:49:76: error 6: Unexpected control sequence in constant string.
-  """"  // 6. should flag an error: Found unexpected control sequence 'LF '
----------------------------------------------------------------------------^
+--CURDIR--/strings_multiline_negative.fz:49:75: error 6: Unexpected control sequence in constant string.
+  """"  # 6. should flag an error: Found unexpected control sequence 'LF '
+--------------------------------------------------------------------------^
 Found unexpected control sequence 'LF ' (0xa) in constant string starting at --CURDIR--/strings_multiline_negative.fz:49:6:
-  """"  // 6. should flag an error: Found unexpected control sequence 'LF '
+  """"  # 6. should flag an error: Found unexpected control sequence 'LF '
 -----^
 
 6 errors.

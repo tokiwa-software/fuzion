@@ -1,6 +1,6 @@
 
 --CURDIR--/illegal_assignment.fz:64:3: error 1: Incompatible types in assignment
-  ci Q.C := C  // 1. should flag an error: illegal assignment
+  ci Q.C := C  # 1. should flag an error: illegal assignment
 --^^
 assignment to field : 'illegal_assignment.ci'
 expected formal type: 'illegal_assignment.this.Q.C'
@@ -13,7 +13,7 @@ To solve this, you could change the type of the target 'illegal_assignment.ci' t
 
 
 --CURDIR--/illegal_assignment.fz:65:3: error 2: Incompatible types in assignment
-  aa Q.A := bi // 2. should flag an error: illegal assignment
+  aa Q.A := bi # 2. should flag an error: illegal assignment
 --^^
 assignment to field : 'illegal_assignment.aa'
 expected formal type: 'illegal_assignment.this.Q.A'
@@ -26,7 +26,7 @@ To solve this, you could change the type of the target 'illegal_assignment.aa' t
 
 
 --CURDIR--/illegal_assignment.fz:69:10: error 3: Incompatible types in assignment
-  set aa := ci // 3. should flag an error: illegal assignment
+  set aa := ci # 3. should flag an error: illegal assignment
 ---------^
 assignment to field : 'illegal_assignment.aa'
 expected formal type: 'illegal_assignment.this.Q.A'
@@ -38,7 +38,7 @@ To solve this, you could change the type of the target 'illegal_assignment.aa' t
 
 
 --CURDIR--/illegal_assignment.fz:71:3: error 4: Incompatible types in assignment
-  di Q.D := D // 4. should flag an error: illegal assignment
+  di Q.D := D # 4. should flag an error: illegal assignment
 --^^
 assignment to field : 'illegal_assignment.di'
 expected formal type: 'illegal_assignment.this.Q.D'
@@ -53,7 +53,7 @@ To solve this, you could change the type of the target 'illegal_assignment.di' t
 
 
 --CURDIR--/illegal_assignment.fz:72:3: error 5: Incompatible types in assignment
-  ei Q.E := E // 5. should flag an error: illegal assignment
+  ei Q.E := E # 5. should flag an error: illegal assignment
 --^^
 assignment to field : 'illegal_assignment.ei'
 expected formal type: 'illegal_assignment.this.Q.E'
@@ -69,7 +69,7 @@ To solve this, you could change the type of the target 'illegal_assignment.ei' t
 
 
 --CURDIR--/illegal_assignment.fz:82:10: error 6: Incompatible types in assignment
-  set di := ei  // 6. should flag an error: illegal assignment
+  set di := ei  # 6. should flag an error: illegal assignment
 ---------^
 assignment to field : 'illegal_assignment.di'
 expected formal type: 'illegal_assignment.this.Q.D'
@@ -81,7 +81,7 @@ To solve this, you could change the type of the target 'illegal_assignment.di' t
 
 
 --CURDIR--/illegal_assignment.fz:86:10: error 7: Incompatible types in assignment
-  set bi := di  // 7. should flag an error: illegal assignment
+  set bi := di  # 7. should flag an error: illegal assignment
 ---------^
 assignment to field : 'illegal_assignment.bi'
 expected formal type: 'illegal_assignment.this.B'
@@ -93,7 +93,7 @@ To solve this, you could change the type of the target 'illegal_assignment.bi' t
 
 
 --CURDIR--/illegal_assignment.fz:87:10: error 8: Incompatible types in assignment
-  set ci := di  // 8. should flag an error: illegal assignment
+  set ci := di  # 8. should flag an error: illegal assignment
 ---------^
 assignment to field : 'illegal_assignment.ci'
 expected formal type: 'illegal_assignment.this.Q.C'
@@ -105,7 +105,7 @@ To solve this, you could change the type of the target 'illegal_assignment.ci' t
 
 
 --CURDIR--/illegal_assignment.fz:92:10: error 9: Incompatible types in assignment
-  set aa := ei  // 9. should flag an error: illegal assignment
+  set aa := ei  # 9. should flag an error: illegal assignment
 ---------^
 assignment to field : 'illegal_assignment.aa'
 expected formal type: 'illegal_assignment.this.Q.A'

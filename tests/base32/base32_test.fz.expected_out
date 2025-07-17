@@ -1,14 +1,14 @@
-Testing base32 encoding...
+Testing base32 encoding:
 RFC 4648 test vectors are encoded correctly
 Additional test vectors are encoded correctly
 
 
-Testing base32 decoding...
+Testing base32 decoding:
 RFC 4648 test vectors are decoded correctly
 Additional test vectors are decoded correctly
 
 
-Test error messages when decoding broken base32...
+Test error messages when decoding broken base32:
 
 MZXW
 6===: error: line breaks are not allowed within encoded data, as required by RFC464, found LF at position 4

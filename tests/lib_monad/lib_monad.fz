@@ -1,0 +1,72 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_monad
+#
+# -----------------------------------------------------------------------
+
+wrap(T type : integer, val T) : monad T (wrap T) is
+
+  # monadic operator within the same monad
+  #
+  # Apply f to elements of type A and re-wrap them in this monad.
+  #
+  public redef infix >>= (f T -> wrap T) wrap T =>
+    f val
+
+
+  # monadic operator to another monad
+  #
+  # Apply f to elements of type A and wrap them in MB.
+  #
+  public redef infix >>=~ (B type, MB type : monad B MB, f T -> MB) MB =>
+    f val
+
+
+  # join operator
+  #
+  public redef join(MMA type : monad (wrap T) MMA, a MMA) (wrap T) =>
+    a.infix >>=~ T (wrap T) x->
+      wrap x.val+val
+
+
+  # return function
+  #
+  public redef type.return (a T) (wrap T) =>
+    wrap a
+
+
+  public redef as_string =>
+    "wrapped: " + val + " " + T.name
+
+
+say (wrap 42)
+say ((wrap i32).return 42)
+say ((wrap 42) >>= (x -> wrap x))
+say ((wrap 42).infix >>=~ i64 (wrap i64) (x -> wrap x.as_i64))
+
+# NYI: BUG:
+#
+# Incompatible type parameter
+# say ((wrap 42).join (wrap (wrap i32)) (wrap (wrap 42)))
+#
+# formal type parameter 'MMA' with constraint 'monad (wrap wrap.T) (wrap (wrap i32))'
+# actual type parameter 'wrap (wrap i32)'
+#
+# say ((wrap 42).join (wrap (wrap 42)))

@@ -48,11 +48,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.ast.Contract;
-import dev.flang.ast.Expr;
-import dev.flang.ast.HasGlobalIndex;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -70,22 +66,10 @@ import dev.flang.util.SourceDir;
  */
 public class FrontEnd extends ANY
 {
-
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
    * Offset added to global indices to detect false usage of these early on.
    */
   static final int GLOBAL_INDEX_OFFSET = 0x40000000;
-  static
-  {
-    // NYI: CLEANUP: #2411: Temporary solution to give global indices to the AST
-    // parts created by parser
-    HasGlobalIndex.FIRST_GLOBAL_INDEX = 0x10000000;
-    HasGlobalIndex.LAST_GLOBAL_INDEX = GLOBAL_INDEX_OFFSET-1;
-  }
-
 
   /*-----------------------------  classes  -----------------------------*/
 
@@ -122,7 +106,7 @@ public class FrontEnd extends ANY
    * The library modules loaded so far.  Maps the module name, e.g. "base" to
    * the corresponding LibraryModule instance.
    */
-  private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
+  private final TreeMap<String, LibraryModule> _modules = new TreeMap<>();
 
 
   /**
@@ -197,7 +181,7 @@ public class FrontEnd extends ANY
    */
   private LibraryModule[] loadModules(AbstractFeature universe)
   {
-    if (_options._loadBaseLib)
+    if (_options._loadBaseMod)
       {
         module(FuzionConstants.BASE_MODULE_NAME, modulePath(FuzionConstants.BASE_MODULE_NAME), universe);
       }
@@ -209,7 +193,7 @@ public class FrontEnd extends ANY
       .stream()
       .filter(kv -> {
         var moduleName = kv.getKey();
-        return _options._loadBaseLib && moduleName.equals(FuzionConstants.BASE_MODULE_NAME)
+        return _options._loadBaseMod && moduleName.equals(FuzionConstants.BASE_MODULE_NAME)
           || _options._modules.contains(moduleName);
       })
       .map(x -> x.getValue())
@@ -226,13 +210,9 @@ public class FrontEnd extends ANY
   {
     _totalModuleData = 0;
     Types.reset(_options);
-    FeatureAndOuter.reset();
     Errors.reset();
     FeatureName.reset();
-    Expr.reset();
     Call.reset();
-    Contract.reset();
-    HasGlobalIndex.reset();
     _sourceModule = null;
     _modules.clear();
     _mainModule = null;
@@ -250,7 +230,7 @@ public class FrontEnd extends ANY
 
   /**
    * Determine the path to load module 'name' from.  E.g., for module 'base',
-   * this returns the path '<fuzionHome>/modules/base.fum'.
+   * this returns the path {@code <fuzionHome>/modules/base.fum}.
    *
    * @param name module name, without path or suffix
    *
@@ -258,7 +238,7 @@ public class FrontEnd extends ANY
    */
   private Path modulePath(String name)
   {
-    var n = name + ".fum";
+    var n = name + FuzionConstants.MODULE_FILE_SUFFIX;
     var p = baseModuleDir().resolve(n);
     var i = 0;
     var mds = _options._moduleDirs;
@@ -298,7 +278,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * create a new LibraryModule from `data`
+   * create a new LibraryModule from {@code data}
    */
   private LibraryModule libModule(ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
   {
@@ -333,7 +313,7 @@ public class FrontEnd extends ANY
           }
         else
           {
-            Errors.error("Module file '"+(m + ".fum")+"' for module '"+m+"' not found, "+
+            Errors.error("Module file '"+(m + FuzionConstants.MODULE_FILE_SUFFIX)+"' for module '"+m+"' not found, "+
                          "module directories checked are '" + baseModuleDir() + "' and " +
                          _options._moduleDirs.toString("'","', '", "'") + ".");
           }
@@ -388,7 +368,7 @@ public class FrontEnd extends ANY
         _sourceModule.checkMain();
         Errors.showAndExit();
 
-        var data = _sourceModule.data("main");
+        var data = _sourceModule.data();
         reset();
         _mainModule = libModule(data, af -> loadModules(af), null /* use universe of module */);
         var ignore = new Types.Resolved(_mainModule, _mainModule.libraryUniverse(), false);
@@ -402,7 +382,7 @@ public class FrontEnd extends ANY
    */
   public LibraryModule baseModule()
   {
-    return _modules.get("base");
+    return _modules.get(FuzionConstants.BASE_MODULE_NAME);
   }
 
 
@@ -416,7 +396,7 @@ public class FrontEnd extends ANY
     if (Types.resolved == null)
       {
         _feUniverse.setState(State.RESOLVED);
-        new Types.Resolved(_modules.get("base"), _feUniverse, true);
+        new Types.Resolved(_modules.get(FuzionConstants.BASE_MODULE_NAME), _feUniverse, true);
       }
     return new Module(_dependsOn) {
       @Override

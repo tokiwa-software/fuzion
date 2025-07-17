@@ -51,13 +51,13 @@ public class FuzionHome extends ANY
    * Value of property with name FUZION_HOME_PROPERTY.  Used only to initialize
    * _fuzionHome.
    */
-  private String _fuzionHomeProperty = FuzionOptions.propertyOrEnv(FuzionConstants.FUZION_HOME_PROPERTY);
+  private static final String _fuzionHomeProperty = FuzionOptions.propertyOrEnv(FuzionConstants.FUZION_HOME_PROPERTY);
 
 
   /**
    * Home directory of the Fuzion installation.
    */
-  public Path _fuzionHome = _fuzionHomeProperty != null ? Path.of(_fuzionHomeProperty) : null;
+  public static final Path _fuzionHome = _fuzionHomeProperty != null ? Path.of(_fuzionHomeProperty) : null;
 
 }
 

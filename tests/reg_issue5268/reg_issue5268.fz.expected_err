@@ -1,0 +1,114 @@
+
+--CURDIR--/reg_issue5268.fz:45:3: error 1: Unused, non public field 'v'
+  v  (i32)->bool := %%2                   # should work
+--^
+To solve this, do either of the following
+  - use the field
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 'v'
+
+
+--CURDIR--/reg_issue5268.fz:37:3: error 2: Unused, non public field 'r'
+  r  ()->bool := *2                       # 3. should flag an error: 0 actual args, expected 1
+--^
+To solve this, do either of the following
+  - use the field
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 'r'
+
+
+--CURDIR--/reg_issue5268.fz:41:3: error 3: Unused, non public field 't'
+  t  (unit, f64, String)->bool := *2      # 7. should flag an error: 3 actual args, expected 1
+--^
+To solve this, do either of the following
+  - use the field
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 't'
+
+
+--CURDIR--/reg_issue5268.fz:50:3: error 4: Unused, non public field 'x'
+  x  ()->i32 := !0x5555_aaaa              # should work
+--^
+To solve this, do either of the following
+  - use the field
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 'x'
+
+
+--CURDIR--/reg_issue5268.fz:55:3: error 5: Unused, non public field 'z'
+  z  (unit,f64,String)->i32 := !?!4711    # should work
+--^
+To solve this, do either of the following
+  - use the field
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 'z'
+
+
+--CURDIR--/reg_issue5268.fz:37:18: error 6: Could not find called feature
+  r  ()->bool := *2                       # 3. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*2'
+
+
+--CURDIR--/reg_issue5268.fz:38:18: error 7: Could not find called feature
+  r1 ()->bool := *2                       # 4. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*2'
+
+
+--CURDIR--/reg_issue5268.fz:41:35: error 8: Could not find called feature
+  t  (unit, f64, String)->bool := *2      # 7. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
+
+
+--CURDIR--/reg_issue5268.fz:42:35: error 9: Could not find called feature
+  t1 (unit, f64, String)->bool := *2      # 8. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
+
+
+--CURDIR--/reg_issue5268.fz:36:18: error 10: Could not find called feature
+  q1 ()->bool => *2                       # 2. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*2'
+
+
+--CURDIR--/reg_issue5268.fz:40:35: error 11: Could not find called feature
+  s1 (unit, f64, String)->bool => *2      # 6. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
+
+
+--CURDIR--/reg_issue5268.fz:35:18: error 12: Could not find called feature
+  q  ()->bool => *2                       # 1. should flag an error: 0 actual args, expected 1
+-----------------^
+Feature not found: 'prefix *' (no arguments)
+Target feature: 'i32'
+In call: '*2'
+
+
+--CURDIR--/reg_issue5268.fz:39:35: error 13: Could not find called feature
+  s  (unit, f64, String)->bool => *2      # 5. should flag an error: 3 actual args, expected 1
+----------------------------------^
+Feature not found: 'prefix *' (3 arguments)
+Target feature: 'i32'
+In call: '*2'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1,a2 -> ..code using a0,a1,a2..)'.
+
+13 errors.

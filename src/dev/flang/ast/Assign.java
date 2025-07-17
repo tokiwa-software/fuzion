@@ -71,21 +71,6 @@ public class Assign extends AbstractAssign
    */
   public Assign(SourcePosition pos, ParsedName n, Expr v)
   {
-    this(pos, n._name, v);
-  }
-
-
-  /**
-   * Constructor used be the parser
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param n the name of the assigned field
-   *
-   * @param v the value assigned to field with name n
-   */
-  Assign(SourcePosition pos, String n, Expr v)
-  {
     super(v);
 
     if (CHECKS) check
@@ -93,8 +78,8 @@ public class Assign extends AbstractAssign
        n != null,
        v != null);
 
-    this._name = n;
     this._pos = pos;
+    this._name = n._name;
   }
 
 
@@ -111,9 +96,9 @@ public class Assign extends AbstractAssign
    *
    * @param v
    *
-   * @param outer the root feature that contains this expression.
+   * @param context the source code context where this assignment is used
    */
-  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
+  Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, Context context)
   {
     super(f, This.thiz(res, pos, context, f.outer()), v);
 
@@ -154,19 +139,16 @@ public class Assign extends AbstractAssign
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
-   *
-   * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure expression.
    */
   @Override
-  public void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Resolution res, Context context)
   {
     var f = _assignedField;
     if (f == null)
       {
         var fo = FeatureAndOuter.filter(res._module.lookup(context.outerFeature(),
                                                            _name,
-                                                           destructure == null ? this : destructure,
+                                                           this,
                                                            true,
                                                            false),
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);
@@ -178,7 +160,7 @@ public class Assign extends AbstractAssign
         else
           {
             AstErrors.assignmentTargetNotFound(this, context.outerFeature());
-            _target = AbstractCall.ERROR_VALUE;
+            _target = Call.ERROR;
             f = Types.f_ERROR;
           }
         _assignedField = f;

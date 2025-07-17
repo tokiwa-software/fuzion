@@ -45,12 +45,10 @@ public nom is
     #
     public map(OM type, mapper O -> outcome OM) Parser I R OM =>
       parser I R OM i->
-        match Parser.this.call i
-          s success =>
-            match mapper s.out
-              o OM => success s.rest o
-              e2 error => e2
-          e1 error => e1
+        Parser.this.call i .bind s->
+          id (parse_result R OM) (match mapper s.out
+                                    o OM => success s.rest o
+                                    e2 error => e2)
 
 
     # map input to parser p
@@ -60,8 +58,8 @@ public nom is
     # to the parsers input type `I1`.
     #
     public map_input(I2 type, map_fn I2 -> I) Parser I2 R O =>
-      ref : Parser I2 R O
-        redef call(input I2) => Parser.this.call (map_fn input)
+      ref : Parser I2 R O is
+        public redef call(input I2) => Parser.this.call (map_fn input)
 
 
 
@@ -69,8 +67,8 @@ public nom is
   # given function `f`.
   #
   public parser(I, R, O type, f I -> parse_result R O) =>
-    ref : Parser I R O
-      redef call(i I) => f i
+    ref : Parser I R O is
+      public redef call(i I) => f i
 
 
 
@@ -80,10 +78,13 @@ public nom is
   # out  = the result of parsing, e.g. a concrete syntax tree
   #
   public success(R, O type, public rest R, public out O) is
-    redef as_string => $out
+    public redef as_string String => $out
 
 
 
   # the result of Parser.call()
   #
   public parse_result(I, O type) : outcome (success I O) is
+    public fixed bind(f (success I O) -> parse_result I2 O2) parse_result I2 O2 =>
+      parse_result.this ? v (success I O) => f v
+                        | e error => e

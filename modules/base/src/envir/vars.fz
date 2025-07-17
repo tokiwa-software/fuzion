@@ -1,0 +1,66 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature envir.vars
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# envir.vars -- effect providing access to environment variables
+#
+public vars (p Vars_Handler) : effect is
+
+  # If set, get the environment variable corresponding to v.
+  #
+  public get(v String) option String =>
+    vars.this.env.replace
+    p.get v
+
+
+  # install default instance of vars
+  #
+  type.install_default =>
+    (envir.vars default_vars_handler).default
+
+
+  # default handler using fuzion.sys.env_vars
+  #
+  type.default_vars_handler =>
+    ref : envir.Vars_Handler is
+      public redef get(v String) option String => fuzion.sys.env_vars.get v
+
+
+# short-hand for accessing envir.vars effect in current environment
+#
+public vars envir.vars =>
+  vars.install_default
+  envir.vars.env
+
+
+# Vars_Handler -- abstract source of environment vars
+#
+# Different heirs of this feature may provided different sources for environment
+# variables
+#
+public Vars_Handler ref is
+
+  # If set, get the environment variable corresponding to v
+  #
+  public get(v String) option String => abstract

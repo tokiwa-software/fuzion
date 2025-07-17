@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue4529.fz:27:9: error 1: Could not find called feature
+  (c q).x.y
+--------^
+Feature not found: 'x' (no arguments)
+Target feature: 'bool'
+In call: 'x'
+
+one error.

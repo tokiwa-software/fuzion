@@ -37,10 +37,8 @@ import java.util.stream.Collectors;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.fe.LibraryFeature;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.SourcePosition;
 
 public class Util
 {
@@ -69,7 +67,7 @@ public class Util
   {
     if (af.isUniverse())
       {
-        return Html.processComment("universe", universeComment());
+        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
       }
     // arguments that are defined on same line as feature have no comments.
     if (af.isArgument() && af.pos().line() == af.outer().pos().line())
@@ -78,17 +76,14 @@ public class Util
       }
     var line = af.pos().line() - 1;
     var commentLines = new ArrayList<String>();
-    while (true)
+
+    // NYI: OPTIMIZATION: use lexer to retrieve comments
+    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
       {
-        var pos = new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.lineStartPos(line));
-        var strline = Util.lineAt((LibraryFeature) af, pos);
-        if (line < 1 || !strline.matches("^\\s*#.*"))
-          {
-            break;
-          }
-        commentLines.add(strline);
+        commentLines.add(af.pos()._sourceFile.line(line));
         line = line - 1;
       }
+
     Collections.reverse(commentLines);
 
     var result = Html.processComment(af.qualifiedName(), commentLines
@@ -104,7 +99,7 @@ public class Util
 
   private static String universeComment()
   {
-    var uri = (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
+    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
@@ -113,24 +108,6 @@ public class Util
           .map(l -> l.replaceAll("^#", "").trim())
           .collect(Collectors.joining(System.lineSeparator()))
           .trim();
-      }
-    catch (IOException e)
-      {
-        return "";
-      }
-  }
-
-
-  /**
-   * get line as string of source position pos
-   */
-  private static String lineAt(LibraryFeature lf, SourcePosition pos)
-  {
-    var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), lf._libModule.srcPath())).toUri();
-    try
-      {
-        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
       }
     catch (IOException e)
       {
@@ -165,7 +142,7 @@ public class Util
         (af.outer().compareTo(Types.resolved.f_Type) == 0)                    ? Kind.Cotype
         : !af.definesType()                                                   ? Kind.Other
         : af.isChoice() || af.visibility().eraseTypeVisibility() != Visi.PUB  ? Kind.Type
-        : af.isRef()                                                      ? Kind.RefConstructor
+        : af.isRef()                                                          ? Kind.RefConstructor
                                                                               : Kind.ValConstructor);
     }
   }

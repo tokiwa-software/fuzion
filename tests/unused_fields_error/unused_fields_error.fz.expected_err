@@ -2,30 +2,43 @@
 --CURDIR--/unused_fields_error.fz:30:10: error 1: Unused, non public field 'x'
   module x := 0  # unused, not public, not ignored
 ---------^
-To solve this, either
+To solve this, do either of the following
   - use the field
-  - make it 'public'
-or
-  - explicitly ignore the result '_ := …'
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 'x'
 
 
 --CURDIR--/unused_fields_error.fz:31:3: error 2: Unused, non public field 'y'
   y := 1         # unused, not public, not ignored
 --^
-To solve this, either
+To solve this, do either of the following
   - use the field
-  - make it 'public'
-or
-  - explicitly ignore the result '_ := …'
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 'y'
 
 
---CURDIR--/unused_fields_error.fz:48:5: error 3: Unused, non public field 'inner2'
+--CURDIR--/unused_fields_error.fz:57:5: error 3: Unused, non public field 'e'
+    e := 42
+----^
+To solve this, do either of the following
+  - use the field
+  - explicitly ignore the result by using '_' instead of 'e'
+
+
+--CURDIR--/unused_fields_error.fz:49:5: error 4: Unused, non public field 'inner2'
     inner2 := 3
 ----^^^^^^
-To solve this, either
+To solve this, do either of the following
   - use the field
-  - make it 'public'
-or
-  - explicitly ignore the result '_ := …'
+  - set it to 'public'
+  - explicitly ignore the result by using '_' instead of 'inner2'
 
-3 errors.
+
+--CURDIR--/unused_fields_error.fz:54:7: error 5: Unused, non public field 'i'
+      i i32    => "'i' is a i32"
+------^
+To solve this, do either of the following
+  - use the field
+  - explicitly ignore the result by using '_' instead of 'i'
+
+5 errors.

@@ -25,18 +25,18 @@ strings_multiline_negative is
 
   x := 1
 
-  _ := """"""    //  1. should flag an error: Expected multiline string to start in first line following fat quotation
-  _ := """ """   //  2. should flag an error: Expected multiline string to start in first line following fat quotation
+  _ := """"""    #  1. should flag an error: Expected multiline string to start in first line following fat quotation
+  _ := """ """   #  2. should flag an error: Expected multiline string to start in first line following fat quotation
 
 
   _ := """
 
-  c              //  3. should flag an error: Expected multiline string to start in first line following fat quotation
+  c              #  3. should flag an error: Expected multiline string to start in first line following fat quotation
   """
 
   _ := """
   $x
- d              //  4. should flag an error: Found codepoint at less indentation than expected in multiline string.
+ d              #  4. should flag an error: Found codepoint at less indentation than expected in multiline string.
   """
 
   _ := """
@@ -46,4 +46,4 @@ strings_multiline_negative is
   _ := """
   A string 'ending' in four quotes, essentially ending the multiline
   string and immediately starting a new string.
-  """"  // 6. should flag an error: Found unexpected control sequence 'LF '
+  """"  # 6. should flag an error: Found unexpected control sequence 'LF '

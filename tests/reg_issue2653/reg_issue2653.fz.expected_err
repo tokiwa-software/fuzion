@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue2653.fz:28:8: error 1: This call is ambiguous.
+say ex.a    # should cause an error, ambiguous!
+-------^
+Called feature could be: 'ex.a' defined at --CURDIR--/reg_issue2653.fz:25:3:
+  a => 3
+--^
+or                     : 'ex.type.a' defined at --CURDIR--/reg_issue2653.fz:26:8:
+  type.a => 4
+-------^
+To solve this, rename one of the called features.
+
+one error.

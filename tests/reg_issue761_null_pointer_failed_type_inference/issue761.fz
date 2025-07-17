@@ -27,6 +27,6 @@ issue761 is
   place_queen =>
     if true
       loop0 =>
-        if place_queen // 1. should flag an error: If condition must be assignable to type 'bool'. Actual type is 'unit'.
+        if place_queen # 1. should flag an error: If condition must be assignable to type 'bool'. Actual type is 'unit'.
           unit
       loop0

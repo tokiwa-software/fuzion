@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -39,6 +41,49 @@ import dev.flang.util.SourcePosition;
  */
 public class Partial extends AbstractLambda
 {
+
+
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Call used to access automatically generated arguments in partial call, i.e,
+   * if you do
+   *
+   *   f (i32,i32)->i32 => (+)
+   *
+   * this will be converted into
+   *
+   *   f (i32,i32)->i32 => pa1,pa2 -> pa1 + pa2
+   *
+   * Then the two calls `pa1` and `pa2` on the right hand side will be done
+   * using `PartialArg`. This is used in AstErrors to decide if a call is an
+   * automatically generated partial call.
+   */
+  static class PartialArg extends ParsedCall
+  {
+    PartialArg(SourcePosition pos)
+    {
+      super(new ParsedName(pos, argName()));
+    }
+
+    @Override
+    public AbstractType asType()
+    {
+      return null;
+    }
+
+    /**
+     * The source text produced by Expr.sourceText would be the original call,
+     * i.e., `+`, which is very confusing, so we create a verbose text with the
+     * actual argument name here.
+     */
+    @Override
+    public String sourceText()
+    {
+      return "partial application argument " + argName();
+    }
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -75,9 +120,9 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Constructor for a partially applied operator expression like `+` or
-   * `**`. This can expand to a lambda of the form `x -> +x`, `x -> x+`, or `x,y
-   * -> x+y`.
+   * Constructor for a partially applied operator expression like {@code +} or
+   * {@code **}. This can expand to a lambda of the form {@code x -> +x}, {@code x -> x+}, or
+   * {@code x,y -> x+y}.
    *
    * @param pos the source code position of the operator
    *
@@ -110,12 +155,12 @@ public class Partial extends AbstractLambda
    */
   static ParsedCall argName(SourcePosition pos)
   {
-    return new ParsedCall(new ParsedName(pos, argName()));
+    return new PartialArg(pos);
   }
 
 
   /**
-   * Create a partial call of the form `.f` that will be turned into a lambda `x -> x.f`.
+   * Create a partial call of the form {@code .f} that will be turned into a lambda {@code x -> x.f}.
    *
    * @param pos the source position of the call
    *
@@ -125,7 +170,7 @@ public class Partial extends AbstractLambda
    *
    * @return the corresponding lambda expression.
    */
-  public static Function dotCall(SourcePosition pos, java.util.function.Function<Call,Call> call)
+  public static Function dotCall(SourcePosition pos, java.util.function.Function<Expr,Expr> call)
   {
     var a = argName(pos);
     var c = call.apply(a);
@@ -151,19 +196,22 @@ public class Partial extends AbstractLambda
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
   @Override
-  public Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
     t = t.functionTypeFromChoice(context);
-    var type = propagateTypeAndInferResult(res, context, t, false);
+    var type = propagateTypeAndInferResult(res, context, t, false, from);
     if (_function != null)
       {
-        result = _function.propagateExpectedType(res, context, type);
+        result = _function.propagateExpectedType(res, context, type, from);
       }
     return result;
   }
@@ -183,12 +231,15 @@ public class Partial extends AbstractLambda
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return if inferResultType, the result type inferred from this lambda or
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
   @Override
-  public AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -202,7 +253,7 @@ public class Partial extends AbstractLambda
             var b = argName(pos());
             args.add(b);
             actuals.add(b);
-            op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
+            op = FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _op;
           }
         _function = new Function(pos(),
                                  args,
@@ -212,7 +263,7 @@ public class Partial extends AbstractLambda
       }
     if (_function != null)
       {
-        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType);
+        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType, from);
       }
     return result;
   }
@@ -237,19 +288,6 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * type returns the type of this expression or Types.t_ERROR if the type is
-   * still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or t_ERROR in case it is not known yet.
-   */
-  public AbstractType type()
-  {
-    return _function == null ? Types.t_UNDEFINED
-                             : _function.type();
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -267,18 +305,23 @@ public class Partial extends AbstractLambda
 
 
   /**
-   * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
-   * declaration of corresponding inner features. Add (f,<>) to the list of
-   * features to be searched for runtime types to be layouted.
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
    *
-   * @param res the resolution instance.
-   *
-   * @param outer the root feature that contains this expression.
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
    */
-  public Expr resolveSyntacticSugar2X(Resolution res)
+  @Override
+  public AbstractType type()
   {
-    return _function == null ? this
-                             : _function.resolveSyntacticSugar2(res);
+    var result = typeForInferencing();
+    if (result  == null)
+      {
+        AstErrors.noTypeInferenceFromLambda(_range);
+      }
+    return result == null
+      ? Types.t_ERROR
+      : result;
   }
 
 

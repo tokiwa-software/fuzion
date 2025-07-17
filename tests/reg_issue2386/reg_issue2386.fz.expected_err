@@ -3,15 +3,4 @@
 say 4abc
 -----^
 
-
---CURDIR--/reg_issue2386.fz:24:1: error 2: Different count of arguments needed when calling feature
-say 4abc
-^^^
-Feature not found: 'say' (2 arguments)
-Target feature: 'universe'
-In call: 'say 4abc'
-To solve this, you might change the actual number of arguments to match the feature 'say' (one argument) at $MODULE/say.fz:31:8:
-public say(s Any) => io.out.println s
--------^^^
-
-2 errors.
+one error.

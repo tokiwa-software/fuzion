@@ -1,0 +1,8 @@
+PASSED: nil! = nil!
+PASSED: val: 132 = val: 132
+PASSED: nil! = nil!
+PASSED: val: --nil-- = val: --nil--
+PASSED: nil! = nil!
+PASSED: val: 132 = val: 132
+PASSED: nil! = nil!
+PASSED: val: --nil-- = val: --nil--

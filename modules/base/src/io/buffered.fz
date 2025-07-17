@@ -1,0 +1,41 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature buffered
+#
+# -----------------------------------------------------------------------
+
+
+# unit type to group buffered io
+#
+# since a buffer requires mutation you must provide a (local) mutate
+# effect that is instated to use any features working with buffers.
+#
+# Additionally, the mutate effect provides a means to distinguish
+# different instances. Say you want to use buffered readers to read
+# from two files simultaneously: You can create two different
+# local mutate types `lm1` and `lm2` to distinguish the two
+# readers.
+#
+public buffered (# the type of the (local) mutate instance
+                 # to be used for this buffered i/o
+                 #
+                 module LM type : mutate
+                )
+is

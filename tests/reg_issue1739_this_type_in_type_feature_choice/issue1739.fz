@@ -25,7 +25,7 @@ issue1739 is
 
   a : choice nil unit is
     public fixed type.empty a.this =>
-      nil  // should flag an error: Incompatible types in assignment
+      nil  # should flag an error: Incompatible types in assignment
 
   match a.empty
     nil => say "nil"

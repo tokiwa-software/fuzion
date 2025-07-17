@@ -1,0 +1,76 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test process_utf8
+#
+# -----------------------------------------------------------------------
+
+process_utf8 =>
+
+
+  lm : mutate is
+
+
+  # create string of given byte size
+  get_str(byte_size i32) =>
+    ref : String is
+      public redef utf8 Sequence u8 =>
+        (1..byte_size)
+          .map u8 (x -> codepoint.type.zero_char)
+
+
+  test(str String, f () -> outcome unit) =>
+    say "===  Test: $str  ==="
+    match f()
+      e error => say e
+      * =>
+
+  test "unicode argument" ()->
+    (os.process.start "echo" ["👋🌏️‼️"]).bind p->
+      _ := lm ! ()->
+        _ := p.with_out unit lm ()->
+          say ((io.buffered lm).read_string 1E9).val
+      check p.wait.val=0
+
+  test "unicode environment variable 1" ()->
+    (os.process.start "printenv" ["TESTVAR"] (container.ordered_map ["TESTVAR"] ["👨‍💻☯️"])).bind p->
+      _ := lm ! ()->
+        _ := p.with_out unit lm ()->
+          say ((io.buffered lm).read_string 1E9).val
+      check p.wait.val=0
+
+    /* NYI: BUG: #5095 this should trigger failing precondition
+  test "unicode environment variable 2" ()->
+    (fuzion.runtime.pre_fault.try ()->
+      (os.process.start "printenv" ["äöü"] (container.ordered_map ["äöü"] ["👨‍💻☯️"])).bind p->
+        _ := lm ! ()->
+          _ := p.with_out unit lm ()->
+            say ((io.buffered lm).read_string 1E9).val
+        check p.wait.val=0)
+      .catch msg->
+        say msg
+    */
+
+  test "unicode in executable name" ()->
+    # on windows PATH needs to be set, because exe needs to load some dll
+    (os.process.start "./😀" [] (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])).bind p->
+      _ := lm ! ()->
+        _ := p.with_out unit lm ()->
+          say ((io.buffered lm).read_string 1E9).val
+      check p.wait.val=0

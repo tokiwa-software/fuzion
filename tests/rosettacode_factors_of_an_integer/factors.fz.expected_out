@@ -3,7 +3,7 @@ factors iterating over an interval: 1 2 3 6 7 14 21 42
 factors consuming a Sequence: 1 2 3 6 7 14 21 42
 factors filtering and consuming a Sequence: 1 2 3 6 7 14 21 42
 factors filtering and printing a Sequence: [1, 2, 3, 6, 7, 14, 21, 42]
-factors using pipes to filter and print a Sequence:  1 2 3 6 7 14 21 42
+factors using filter and print a Sequence:  1 2 3 6 7 14 21 42
 factors embedded in String: [1, 2, 3, 6, 7, 14, 21, 42]
 factors of 1: [1]
 factors of 2: [1, 2]

@@ -24,9 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = mmap_test
-
-# NYI: JVM backend requires a deep recursion for `list.drop 65536`, need
-# to check why tail recursion optimization is not used here
-FUZION_JAVA_STACK_SIZE=25m
-
 include ../simple.mk

@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * StrConst <description>
+ * StrConst
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -95,21 +95,6 @@ public class StrConst extends Constant
     return isCodepointLiteral()
       ? Types.resolved.t_codepoint
       : Types.resolved.t_String;
-  }
-
-
-  /**
-   * The type of the constant that is created is not `String`, but
-   * `Const_String`.
-   *
-   * @return Types.resolved.t_Const_String
-   */
-  @Override
-  public AbstractType typeOfConstant()
-  {
-    return isCodepointLiteral()
-      ? Types.resolved.t_codepoint
-      : Types.resolved.t_Const_String;
   }
 
 

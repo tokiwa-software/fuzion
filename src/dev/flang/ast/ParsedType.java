@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
 
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -74,10 +75,8 @@ public class ParsedType extends UnresolvedType
    * @param generics list of type parameters
    *
    * @param outer outer type or null if unqualified.
-   *
-   * @param rov UnresolvedType.RefOrVal.Boxed or UnresolvedType.RefOrVal.LikeUnderlyingFeature
    */
-  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, RefOrVal rov)
+  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, Optional<TypeKind> rov)
   {
     super(pos, name, generics, outer, rov);
   }
@@ -99,24 +98,6 @@ public class ParsedType extends UnresolvedType
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * For a type that is not a type parameter, create a new variant using given
-   * actual generics and outer type.
-   *
-   * @param g2 the new actual generics to be used
-   *
-   * @param o2 the new outer type to be used (which may also differ in its
-   * actual generics).
-   *
-   * @return a new type with same feature(), but using g2/o2 as generics
-   * and outer type.
-   */
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
-  {
-    return new ParsedType(_pos, name(), g2, o2, _refOrVal);
-  }
 
 
   /**
@@ -145,22 +126,22 @@ public class ParsedType extends UnresolvedType
 
   /**
    * May this unresolved type be a free type. This is the case for explicit free
-   * types such as `X : Any`, and for all normal types like `XYZ` that are not
-   * qualified by an outer type `outer.XYZ` and that do not have actual type
-   * parameters `XYZ T1 T2` and that are not boxed.
+   * types such as {@code X : Any}, and for all normal types like {@code XYZ} that are not
+   * qualified by an outer type {@code outer.XYZ} and that do not have actual type
+   * parameters {@code XYZ T1 T2} and that are not boxed.
    */
   public boolean mayBeFreeType()
   {
     return
       outer() == null      &&
       generics().isEmpty() &&
-      _refOrVal == RefOrVal.LikeUnderlyingFeature;
+      _typeKind.isEmpty();
   }
 
 
   /**
-   * For a type `XYZ` with mayBeFreeType() returning true, this gives the name
-   * of the free type, which would be `"XYZ"` in this example.
+   * For a type {@code XYZ} with mayBeFreeType() returning true, this gives the name
+   * of the free type, which would be {@code "XYZ"} in this example.
    *
    * @return the name of the free type, which becomes the name of the type
    * parameter created for it.

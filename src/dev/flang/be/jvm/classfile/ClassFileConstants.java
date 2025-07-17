@@ -635,13 +635,10 @@ public interface ClassFileConstants
     {
       return "ClassType('" + _descriptor + "')";
     }
-    public int cpIndex(ClassFile cf)
-    {
-      return cf.cpClass(this).index();
-    }
+
     public VerificationType vti()
     {
-      return new VerificationType(className(), (cf)->cpIndex(cf));
+      return new VerificationType(className(), (cf)->cf.cpClass(this).index());
     }
 
   }
@@ -680,6 +677,7 @@ public interface ClassFileConstants
   static ClassType JAVA_LANG_CLASS  = new ClassType("java/lang/Class");
   static ClassType JAVA_LANG_OBJECT = new ClassType("java/lang/Object");
   static ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
+  static ClassType JAVA_LANG_ERROR  = new ClassType("java/lang/Error");
 
   static ClassType NULL_TYPE = new ClassType("java/lang/Object");
   static ClassType ERROR_TYPE = new ClassType("dev/flang/be/jvm/runtime/JavaError");
@@ -1097,7 +1095,7 @@ public interface ClassFileConstants
 
 
   /**
-   * min / max offset in a branching bytecode instruction such as `ifeq`.
+   * min / max offset in a branching bytecode instruction such as {@code ifeq}.
    */
   public static final int MIN_BRANCH_OFFSET = -0x8000;
   public static final int MAX_BRANCH_OFFSET =  0x7fff;

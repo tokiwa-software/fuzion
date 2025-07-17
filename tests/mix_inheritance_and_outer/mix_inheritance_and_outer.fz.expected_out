@@ -1,0 +1,11 @@
+Hello
+42
+Hello
+42
+42
+Hello
+42
+PASSED: (x String).v
+PASSED: (x String).y.v
+PASSED: (x String).y.getXThisV
+PASSED: (x String).y.getInheritedV

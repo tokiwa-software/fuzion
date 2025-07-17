@@ -36,6 +36,7 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Universe;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -110,7 +111,7 @@ public abstract class LibraryCall extends AbstractCall
     var f = lib.libraryFeature(feat);
     if (f.outer().isUniverse())
       {
-        target = new Universe();
+        target = Universe.instance;
       }
     else
       {
@@ -118,7 +119,7 @@ public abstract class LibraryCall extends AbstractCall
       }
     _target = target;
     _calledFeature = f;
-    _select = f.resultType().isOpenGeneric() ? lib.callSelect(index) : -1;
+    _select = f.resultType().isOpenGeneric() ? lib.callSelect(index) : FuzionConstants.NO_SELECT;
   }
 
 
@@ -135,6 +136,7 @@ public abstract class LibraryCall extends AbstractCall
    *
    * @return this.
    */
+  @Override
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var j = actuals().listIterator();
@@ -154,20 +156,14 @@ public abstract class LibraryCall extends AbstractCall
 
 
 
-  public List<AbstractType> actualTypeParameters() { return _generics; }
-  public AbstractFeature calledFeature() { return _calledFeature; }
-  public Expr target() { return _target; }
-  public List<Expr> actuals() { return _actuals; }
-  public int select() { return _select; }
+  @Override public List<AbstractType> actualTypeParameters() { return _generics; }
+  @Override public AbstractFeature calledFeature() { return _calledFeature; }
+  @Override public Expr target() { return _target; }
+  @Override public List<Expr> actuals() { return _actuals; }
+  @Override public int select() { return _select; }
   boolean _isInheritanceCall = false;
-  public boolean isInheritanceCall()
-  {
-    return _isInheritanceCall;
-  }
-  public AbstractType type()
-  {
-    return _type;
-  }
+  @Override public boolean isInheritanceCall() { return _isInheritanceCall; }
+  @Override public AbstractType type() { return _type; }
 
 
   /**
@@ -177,28 +173,6 @@ public abstract class LibraryCall extends AbstractCall
   {
     return _libModule.globalIndex(_index);
   }
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  // NYI move this to AbstractCall
-  public String toString()
-  {
-    var t = target();
-    return (t == null //||
-             //t instanceof Universe
-            ? ""
-            : t.toString() + ".")
-      + calledFeature().featureName().baseNameHuman()
-      + actualTypeParameters().toString(" ", " ", "", at -> at.toStringWrapped())
-      + actuals().toString(" ", " ", "", e -> e.toStringWrapped())
-      //+ (select() < 0        ? "" : " ." + select())
-      ;
-  }
-
 
 }
 

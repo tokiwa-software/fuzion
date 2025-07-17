@@ -93,7 +93,7 @@ class CheckIntrinsics extends ANY
    *
    * @param all set of names of required intrinsics
    *
-   * @param complete true if `implemented` should cover all intrinsics, false if
+   * @param complete true if {@code implemented} should cover all intrinsics, false if
    * some might be missing.
    *
    * @param implemented set of names of implemented intrinsics

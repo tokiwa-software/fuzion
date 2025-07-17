@@ -28,7 +28,6 @@ package dev.flang.opt;
 
 import dev.flang.fe.FrontEnd;
 
-import dev.flang.fuir.FUIR;
 import dev.flang.fuir.GeneratingFUIR;
 
 import dev.flang.mir.MIR;
@@ -73,7 +72,7 @@ public class Optimizer extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public FUIR fuir()
+  public GeneratingFUIR fuir()
   {
     return new GeneratingFUIR(_fe, _mir);
   }

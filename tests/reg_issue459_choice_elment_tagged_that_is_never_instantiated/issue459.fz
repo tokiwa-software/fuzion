@@ -24,6 +24,6 @@
 issue459 =>
   t1 is
   t2 is
-  say (try t1 unit (()->))
-  say (try t1 unit ()->
-    say (try t2 unit (()->)))
+  say (exception t1 unit (()->))
+  say (exception t1 unit ()->
+    say (exception t2 unit (()->)))

@@ -1,0 +1,121 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5435
+#
+# -----------------------------------------------------------------------
+
+# tests for redefining features while changing type constraints or
+# changing arguments from type parameters into open type parameters or
+# vice versa
+#
+reg_issue5435 =>
+
+  h is
+    f(A type : integer, v A) unit =>
+    g(A type ...) => unit
+    i(A type) => unit
+
+  # original example from #5435 with incompatible type constraint
+  g : h is
+    redef f(B type : String, v B) =>       # 1. should flag an error: wrong type constraint for `B`
+      say "type $B value $v"
+
+  # original example from #5435 with compatible type constraint
+  i : h is
+    redef f(C type : Any, v C) =>          # ok, type constraint is relaxed
+      say "type $C value $v"
+
+  # original example from #5435 with compatible type constraint
+  j : h is
+    redef f(D type, v D) =>                # ok, type constraint is relaxed
+      say "type $D value $v"
+
+  # original example from #5435 with same type constraint
+  k : h is
+    redef f(F type : integer, v F) =>      # ok, type constraint is the same
+      say "type $F value $v"
+
+  # changing type parameter into value argument results in a type parameter count mismatch
+  l : h is
+    redef f(F i32, v i32) =>               # 2. should flag an error: type parameter count changed
+      say "type $F value $v"
+
+  # change type parameter into open type parameters
+  m : h is
+    redef f(G type ..., v G...) =>         # 3. should flag an error: type par redefined as open type par
+      say "type G... value v..."
+
+  # changing value argument into type parameter into results in a type parameter count mismatch
+  n : h is
+    redef f(H, I type) =>                  # 4. should flag an error: type parameter count changed
+      say "type $H $I value --"
+
+  # changing value argument into open type parameter into results in a type parameter count mismatch
+  o : h is
+    redef f(J type, K type ...) =>         # 5. should flag an error: type parameter count changed
+      say "type $J K... value --"
+
+  p : h is
+
+    # redefining open type parameter is fine
+    redef g(A type ... ) => say "hi"       # ok
+
+    # redefining type parameter is fine
+    redef i(A type     ) => say "hi"       # ok
+
+  q : h is
+
+    # redefining open type parameter as a value argument results in type parameter count changed
+    redef g(v i32)       => say "hi"       # 6. should flag an error, type parameter count changed
+
+    # redefining type parameter as a value argument results in type parameter count changed
+    redef i(v i32)       => say "hi"       # 7. should flag an error, type parameter count changed
+
+  r : h is
+
+    # redefining open type parameter as type parameter
+    redef g(L type)      => say "hi"       # 8. should flag an error, cannot redefine open type parameter as      type parameter
+
+    # redefining type parameter as open type parameter
+    redef i(M type ...)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
+
+
+  x(P type...) is
+    g(x P...) =>
+
+  y : x i32 bool unit is
+
+    # redefining argument types specified by open type parameter
+    redef g(x1 i32, x2 bool, x3 unit) =>   # ok
+
+  z1 : x i32 bool unit is
+
+    # redefining argument types specified by open type parameter using wrong type
+    redef g(x1 i64, x2 bool, x3 unit) =>   # 10. should flag an error for x1
+
+  z2 : x i32 bool unit is
+
+    # redefining argument types specified by open type parameter using wrong type
+    redef g(x1 i32, x2 u8  , x3 unit) =>   # 11. should flag an error for x2
+
+  z3 : x i32 bool unit is
+
+    # redefining argument types specified by open type parameter using wrong type
+    redef g(x1 i32, x2 bool, x3 bool) =>   # 12. should flag an error for x3

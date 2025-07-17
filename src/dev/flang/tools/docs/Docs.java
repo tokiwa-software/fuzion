@@ -40,17 +40,18 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
@@ -60,9 +61,9 @@ public class Docs extends ANY
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
-    /* fuzionHome              */ new FuzionHome()._fuzionHome,
-    /* loadBaseLib             */ true,
-    /* eraseInternalNamesInLib */ false,
+    /* fuzionHome              */ FuzionHome._fuzionHome,
+    /* loadBaseMod             */ true,
+    /* eraseInternalNamesInMod */ false,
     /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
     /* moduleDirs              */ new List<>(),
     /* dumpModules             */ new List<>(),
@@ -73,8 +74,10 @@ public class Docs extends ANY
     /* readStdin               */ false,
     /* executeCode             */ null,
     /* main                    */ null,
+    /* moduleName              */ null,
     /* loadSources             */ false,
     /* needsEscapeAnalysis     */ false,
+    /* serializeFuir           */ false,
     /* timer                   */ s->{});
 
   /**
@@ -85,11 +88,11 @@ public class Docs extends ANY
     List<String> modules = new List<>();
 
     try {
-      modules.addAll((Files.list(new FuzionHome()._fuzionHome.resolve("modules"))
+      modules.addAll((Files.list(FuzionHome._fuzionHome.resolve("modules"))
                             .filter(Files::isRegularFile)
                             .map(Path::getFileName)
                             .map(Path::toString)
-                            .filter(name -> name.endsWith(".fum"))
+                            .filter(name -> name.endsWith(FuzionConstants.MODULE_FILE_SUFFIX))
                             // exclude Java Modules from API docs
                             // (they also caused an endless recursion when using the docs generation on them)
                             .filter(name -> !name.startsWith("java."))
@@ -104,6 +107,9 @@ public class Docs extends ANY
   private final FrontEnd fe = new FrontEnd(frontEndOptions);
 
   private final AbstractFeature universe = fe._feUniverse;
+
+  public final static Pattern nonAsciiPattern = Pattern
+    .compile("[^\\x00-\\x7F]");
 
 
   /**
@@ -177,20 +183,33 @@ public class Docs extends ANY
   {
     if (args.length < 1)
       {
-        say_err(usage());
-        System.exit(1);
+        Errors.fatal(usage());
       }
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
       {
-        return new DocsOptions(null, false, true, false);
+        return new DocsOptions(null, null, false, true, false);
+      }
+
+    String apiSrcDir = null;
+    var apiSrcDirArg = Stream.of(args).filter(s->s.startsWith("-api-src=")).collect(Collectors.toList());
+    if (apiSrcDirArg.size() >= 1)
+      {
+        if (apiSrcDirArg.size() == 1)
+          {
+            apiSrcDir = apiSrcDirArg.getFirst().replace("-api-src=", "");
+          }
+        else
+          {
+            Errors.fatal("option '-api-src' specified multiple times");
+          }
       }
 
     var destination = parseDestination(args);
 
     var bare = Stream.of(args).anyMatch(arg -> arg.equals("-bare"));
     var ignoreVisibility = Stream.of(args).anyMatch(arg -> arg.equals("-ignoreVisibility"));
-    return new DocsOptions(destination, bare, false, ignoreVisibility);
+    return new DocsOptions(destination, apiSrcDir, bare, false, ignoreVisibility);
   }
 
 
@@ -233,7 +252,7 @@ public class Docs extends ANY
   private static String usage()
   {
     return """
-      Usage: fzdoc [-bare] <destination>
+      Usage: fzdoc [-bare] [-api-src=<path>] <destination>
       or     fzdoc -styles
       """;
   }
@@ -244,7 +263,7 @@ public class Docs extends ANY
    * @param af
    * @return
    */
-  // NYI we want to ignore most but not all fields
+  // NYI: UNDER DEVELOPMENT: we want to ignore most but not all fields
   // but how to distinguish?
   private static boolean ignoreFeature(AbstractFeature af, boolean ignoreVisibility)
   {
@@ -253,8 +272,7 @@ public class Docs extends ANY
         return false;
       }
 
-    return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().isInternal()
+    return af.featureName().isInternal()
       || af.featureName().isNameless()
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()
@@ -272,7 +290,9 @@ public class Docs extends ANY
    */
   private static String featurePath(AbstractFeature f, LibraryModule module)
   {
-    return featurePath(f, module, true);
+    return nonAsciiPattern
+      .matcher(featurePath(f, module, true))
+      .replaceAll(match ->String.format("U+%04X", match.group().codePointAt(0)));
   }
 
 
@@ -318,7 +338,7 @@ public class Docs extends ANY
     var all_modules = allInnerAndInheritedFeatures(universe)
               .map(af->lf(af)._libModule)
               .distinct()
-              .filter(m->!m.name().equals("main")) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
+              .filter(m->!m.name().equals(FuzionConstants.MAIN_MODULE_NAME)) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
               .collect(Collectors.toCollection(List::new));
 
     // collect all features for all modules

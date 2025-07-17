@@ -120,19 +120,19 @@ catch_precondition is
   _ := q.f 3
 
 
-  // we consider seven different preconditions:
-  //
-  //   1. none
-  //   2. x > 0
-  //   3. empty `pre`
-  //   4. true
-  //   5. false
-  //   6. x > 0; true
-  //   7. x > 0; false
-  //
-  // and then we define 7 parents p1..p7 that each define f1..f7 with these preconditions,
-  // but in rotating order:
-  //
+  # we consider seven different preconditions:
+  #
+  #   1. none
+  #   2. x > 0
+  #   3. empty `pre`
+  #   4. true
+  #   5. false
+  #   6. x > 0; true
+  #   7. x > 0; false
+  #
+  # and then we define 7 parents p1..p7 that each define f1..f7 with these preconditions,
+  # but in rotating order:
+  #
   p1 is
     f1(x i32)
     => x
@@ -378,11 +378,11 @@ catch_precondition is
       true
     => x
 
-  // now we inherit from all combinations and add a new precondition as follows:
-  //
-  // feature `c<n><m><k>` inherits from `p<n>` and `p<m>` and redefines `f1`..`f7`
-  // using variang `<k>`
-  //
+  # now we inherit from all combinations and add a new precondition as follows:
+  #
+  # feature `c<n><m><k>` inherits from `p<n>` and `p<m>` and redefines `f1`..`f7`
+  # using variang `<k>`
+  #
   c111 : p1, p1 is
     redef f1(x i32)
     => x
@@ -824,21 +824,21 @@ catch_precondition is
       .try   ()->(say " OK {f.call}")
       .catch s->(say " FAILED $s")
 
-                                                          #  inherted 1    inherited 2   pre else
+                                                          #  inherited 1    inherited 2   pre else
   yak "c111.f1 1: should be ok "; tst (()->(c111.f1 1))   #  none          none          none
   yak "c111.f1 0: should be ok "; tst (()->(c111.f1 0))   #  none          none          none
   yak "c111.f2 1: should be ok "; tst (()->(c111.f2 1))   #  x > 0         x > 0         none
-  yak "c111.f2 0: should be ok "; tst (()->(c111.f2 0))   #  x > 0         x > 0         none
+  yak "c111.f2 0: should fail  "; tst (()->(c111.f2 0))   #  x > 0         x > 0         none
   yak "c111.f3 1: should be ok "; tst (()->(c111.f3 1))   #  pre           pre           none
   yak "c111.f3 0: should be ok "; tst (()->(c111.f3 0))   #  pre           pre           none
   yak "c111.f4 1: should be ok "; tst (()->(c111.f4 1))   #  pre true      pre true      none
   yak "c111.f4 0: should be ok "; tst (()->(c111.f4 0))   #  pre true      pre true      none
-  yak "c111.f5 1: should be ok "; tst (()->(c111.f5 1))   #  pre false     pre false     none
-  yak "c111.f5 0: should be ok "; tst (()->(c111.f5 0))   #  pre false     pre false     none
+  yak "c111.f5 1: should fail  "; tst (()->(c111.f5 1))   #  pre false     pre false     none
+  yak "c111.f5 0: should fail  "; tst (()->(c111.f5 0))   #  pre false     pre false     none
   yak "c111.f6 1: should be ok "; tst (()->(c111.f6 1))   #  x > 0; true   x > 0; true   none
-  yak "c111.f6 0: should be ok "; tst (()->(c111.f6 0))   #  x > 0; true   x > 0; true   none
-  yak "c111.f7 1: should be ok "; tst (()->(c111.f7 1))   #  x > 0; false  x > 0; false  none
-  yak "c111.f7 0: should be ok "; tst (()->(c111.f7 0))   #  x > 0; false  x > 0; false  none
+  yak "c111.f6 0: should fail  "; tst (()->(c111.f6 0))   #  x > 0; true   x > 0; true   none
+  yak "c111.f7 1: should fail  "; tst (()->(c111.f7 1))   #  x > 0; false  x > 0; false  none
+  yak "c111.f7 0: should fail  "; tst (()->(c111.f7 0))   #  x > 0; false  x > 0; false  none
 
   yak "c121.f1 1: should be ok "; tst (()->(c121.f1 1))   #  none          x > 0         none
   yak "c121.f1 0: should be ok "; tst (()->(c121.f1 0))   #  none          x > 0         none
@@ -849,9 +849,9 @@ catch_precondition is
   yak "c121.f4 1: should be ok "; tst (()->(c121.f4 1))   #  pre true      pre false     none
   yak "c121.f4 0: should be ok "; tst (()->(c121.f4 0))   #  pre true      pre false     none
   yak "c121.f5 1: should be ok "; tst (()->(c121.f5 1))   #  pre false     x > 0; true   none
-  yak "c121.f5 0: should be ok "; tst (()->(c121.f5 0))   #  pre false     x > 0; true   none
+  yak "c121.f5 0: should fail  "; tst (()->(c121.f5 0))   #  pre false     x > 0; true   none
   yak "c121.f6 1: should be ok "; tst (()->(c121.f6 1))   #  x > 0; true   x > 0; false  none
-  yak "c121.f6 0: should be ok "; tst (()->(c121.f6 0))   #  x > 0; true   x > 0; false  none
+  yak "c121.f6 0: should fail  "; tst (()->(c121.f6 0))   #  x > 0; true   x > 0; false  none
   yak "c121.f7 1: should be ok "; tst (()->(c121.f7 1))   #  x > 0; false  none          none
   yak "c121.f7 0: should be ok "; tst (()->(c121.f7 0))   #  x > 0; false  none          none
 
@@ -863,17 +863,17 @@ catch_precondition is
   yak "c131.f3 0: should be ok "; tst (()->(c131.f3 0))   #  pre           pre false     none
   yak "c131.f4 1: should be ok "; tst (()->(c131.f4 1))   #  pre true      x > 0; true   none
   yak "c131.f4 0: should be ok "; tst (()->(c131.f4 0))   #  pre true      x > 0; true   none
-  yak "c131.f5 1: should be ok "; tst (()->(c131.f5 1))   #  pre false     x > 0; false  none
-  yak "c131.f5 0: should be ok "; tst (()->(c131.f5 0))   #  pre false     x > 0; false  none
+  yak "c131.f5 1: should fail  "; tst (()->(c131.f5 1))   #  pre false     x > 0; false  none
+  yak "c131.f5 0: should fail  "; tst (()->(c131.f5 0))   #  pre false     x > 0; false  none
   yak "c131.f6 1: should be ok "; tst (()->(c131.f6 1))   #  x > 0; true   none          none
   yak "c131.f6 0: should be ok "; tst (()->(c131.f6 0))   #  x > 0; true   none          none
   yak "c131.f7 1: should be ok "; tst (()->(c131.f7 1))   #  x > 0; false  x > 0         none
-  yak "c131.f7 0: should be ok "; tst (()->(c131.f7 0))   #  x > 0; false  x > 0         none
+  yak "c131.f7 0: should fail  "; tst (()->(c131.f7 0))   #  x > 0; false  x > 0         none
 
   yak "c141.f1 1: should be ok "; tst (()->(c141.f1 1))   #  none          pre true      none
   yak "c141.f1 0: should be ok "; tst (()->(c141.f1 0))   #  none          pre true      none
   yak "c141.f2 1: should be ok "; tst (()->(c141.f2 1))   #  x > 0         pre false     none
-  yak "c141.f2 0: should be ok "; tst (()->(c141.f2 0))   #  x > 0         pre false     none
+  yak "c141.f2 0: should fail  "; tst (()->(c141.f2 0))   #  x > 0         pre false     none
   yak "c141.f3 1: should be ok "; tst (()->(c141.f3 1))   #  pre           x > 0; true   none
   yak "c141.f3 0: should be ok "; tst (()->(c141.f3 0))   #  pre           x > 0; true   none
   yak "c141.f4 1: should be ok "; tst (()->(c141.f4 1))   #  pre true      x > 0; false  none
@@ -881,20 +881,20 @@ catch_precondition is
   yak "c141.f5 1: should be ok "; tst (()->(c141.f5 1))   #  pre false     none          none
   yak "c141.f5 0: should be ok "; tst (()->(c141.f5 0))   #  pre false     none          none
   yak "c141.f6 1: should be ok "; tst (()->(c141.f6 1))   #  x > 0; true   x > 0         none
-  yak "c141.f6 0: should be ok "; tst (()->(c141.f6 0))   #  x > 0; true   x > 0         none
+  yak "c141.f6 0: should fail  "; tst (()->(c141.f6 0))   #  x > 0; true   x > 0         none
   yak "c141.f7 1: should be ok "; tst (()->(c141.f7 1))   #  x > 0; false  pre           none
   yak "c141.f7 0: should be ok "; tst (()->(c141.f7 0))   #  x > 0; false  pre           none
 
   yak "c151.f1 1: should be ok "; tst (()->(c151.f1 1))   #  none          pre false     none
   yak "c151.f1 0: should be ok "; tst (()->(c151.f1 0))   #  none          pre false     none
   yak "c151.f2 1: should be ok "; tst (()->(c151.f2 1))   #  x > 0         x > 0; true   none
-  yak "c151.f2 0: should be ok "; tst (()->(c151.f2 0))   #  x > 0         x > 0; true   none
+  yak "c151.f2 0: should fail  "; tst (()->(c151.f2 0))   #  x > 0         x > 0; true   none
   yak "c151.f3 1: should be ok "; tst (()->(c151.f3 1))   #  pre           x > 0; false  none
   yak "c151.f3 0: should be ok "; tst (()->(c151.f3 0))   #  pre           x > 0; false  none
   yak "c151.f4 1: should be ok "; tst (()->(c151.f4 1))   #  pre true      none          none
   yak "c151.f4 0: should be ok "; tst (()->(c151.f4 0))   #  pre true      none          none
   yak "c151.f5 1: should be ok "; tst (()->(c151.f5 1))   #  pre false     x > 0         none
-  yak "c151.f5 0: should be ok "; tst (()->(c151.f5 0))   #  pre false     x > 0         none
+  yak "c151.f5 0: should fail  "; tst (()->(c151.f5 0))   #  pre false     x > 0         none
   yak "c151.f6 1: should be ok "; tst (()->(c151.f6 1))   #  x > 0; true   pre           none
   yak "c151.f6 0: should be ok "; tst (()->(c151.f6 0))   #  x > 0; true   pre           none
   yak "c151.f7 1: should be ok "; tst (()->(c151.f7 1))   #  x > 0; false  pre true      none
@@ -903,7 +903,7 @@ catch_precondition is
   yak "c161.f1 1: should be ok "; tst (()->(c161.f1 1))   #  none          x > 0; true   none
   yak "c161.f1 0: should be ok "; tst (()->(c161.f1 0))   #  none          x > 0; true   none
   yak "c161.f2 1: should be ok "; tst (()->(c161.f2 1))   #  x > 0         x > 0; false  none
-  yak "c161.f2 0: should be ok "; tst (()->(c161.f2 0))   #  x > 0         x > 0; false  none
+  yak "c161.f2 0: should fail  "; tst (()->(c161.f2 0))   #  x > 0         x > 0; false  none
   yak "c161.f3 1: should be ok "; tst (()->(c161.f3 1))   #  pre           none          none
   yak "c161.f3 0: should be ok "; tst (()->(c161.f3 0))   #  pre           none          none
   yak "c161.f4 1: should be ok "; tst (()->(c161.f4 1))   #  pre true      x > 0         none
@@ -912,8 +912,8 @@ catch_precondition is
   yak "c161.f5 0: should be ok "; tst (()->(c161.f5 0))   #  pre false     pre           none
   yak "c161.f6 1: should be ok "; tst (()->(c161.f6 1))   #  x > 0; true   pre true      none
   yak "c161.f6 0: should be ok "; tst (()->(c161.f6 0))   #  x > 0; true   pre true      none
-  yak "c161.f7 1: should be ok "; tst (()->(c161.f7 1))   #  x > 0; false  pre false     none
-  yak "c161.f7 0: should be ok "; tst (()->(c161.f7 0))   #  x > 0; false  pre false     none
+  yak "c161.f7 1: should fail  "; tst (()->(c161.f7 1))   #  x > 0; false  pre false     none
+  yak "c161.f7 0: should fail  "; tst (()->(c161.f7 0))   #  x > 0; false  pre false     none
 
   yak "c171.f1 1: should be ok "; tst (()->(c171.f1 1))   #  none          x > 0; false  none
   yak "c171.f1 0: should be ok "; tst (()->(c171.f1 0))   #  none          x > 0; false  none
@@ -926,11 +926,11 @@ catch_precondition is
   yak "c171.f5 1: should be ok "; tst (()->(c171.f5 1))   #  pre false     pre true      none
   yak "c171.f5 0: should be ok "; tst (()->(c171.f5 0))   #  pre false     pre true      none
   yak "c171.f6 1: should be ok "; tst (()->(c171.f6 1))   #  x > 0; true   pre false     none
-  yak "c171.f6 0: should be ok "; tst (()->(c171.f6 0))   #  x > 0; true   pre false     none
+  yak "c171.f6 0: should fail  "; tst (()->(c171.f6 0))   #  x > 0; true   pre false     none
   yak "c171.f7 1: should be ok "; tst (()->(c171.f7 1))   #  x > 0; false  x > 0; true   none
-  yak "c171.f7 0: should be ok "; tst (()->(c171.f7 0))   #  x > 0; false  x > 0; true   none
+  yak "c171.f7 0: should fail  "; tst (()->(c171.f7 0))   #  x > 0; false  x > 0; true   none
 
-                                                          #  inherted 1    inherited 2   pre else
+                                                          #  inherited 1    inherited 2   pre else
   yak "c112.f1 1: should be ok "; tst (()->(c112.f1 1))   #  none          none          x > 0
   yak "c112.f1 0: should be ok "; tst (()->(c112.f1 0))   #  none          none          x > 0
   yak "c112.f2 1: should be ok "; tst (()->(c112.f2 1))   #  x > 0         x > 0         x > 0
@@ -1036,7 +1036,7 @@ catch_precondition is
   yak "c172.f7 1: should be ok "; tst (()->(c172.f7 1))   #  x > 0; false  x > 0; true   x > 0
   yak "c172.f7 0: should fail  "; tst (()->(c172.f7 0))   #  x > 0; false  x > 0; true   x > 0
 
-                                                          #  inherted 1    inherited 2   pre else
+                                                          #  inherited 1    inherited 2   pre else
   yak "c115.f1 1: should be ok "; tst (()->(c115.f1 1))   #  none          none          false
   yak "c115.f1 0: should be ok "; tst (()->(c115.f1 0))   #  none          none          false
   yak "c115.f2 1: should be ok "; tst (()->(c115.f2 1))   #  x > 0         x > 0         false

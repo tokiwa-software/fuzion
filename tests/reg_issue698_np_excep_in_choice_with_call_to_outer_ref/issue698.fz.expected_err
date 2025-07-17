@@ -1,15 +1,23 @@
 
---CURDIR--/issue698.fz:31:3: error 1: Choice type must not access fields of surrounding scope.
+--CURDIR--/issue698.fz:31:3: error 1: Choice type must not access features of surrounding scope.
   tree(A type : property.orderable) : choice nil (Node A (tree A) (tree A)) is
 --^^^^
 A closure cannot be built for a choice type. Forbidden accesses occur at 
 --CURDIR--/issue698.fz:38:13:
-      ref : Node A (tree A) (tree A)
+      ref : Node A (tree A) (tree A) is
 ------------^^^^
 --CURDIR--/issue698.fz:38:7:
-      ref : Node A (tree A) (tree A)
-------^
+      ref : Node A (tree A) (tree A) is
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        redef datum A => smart.this.datum
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        redef count i32 => (1 + smart.this.left.size + smart.this.right.size)
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        redef left tree A => smart.this.left
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        redef right tree A => smart.this.right
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To solve this, you might move the accessed fields outside of the common outer feature.
+To solve this, you might move the accessed features outside of the common outer feature.
 
 one error.

@@ -21,7 +21,7 @@ module string_parsers is
   public tag(str String) =>
     parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       if (String.type.from_codepoints input).starts_with str
-        success (input.drop str.codepoint_length).as_seq str.as_codepoints
+        success (input.drop str.codepoint_length) str.as_codepoints
       else
         error "tag ($str) not found"
 
@@ -30,7 +30,7 @@ module string_parsers is
   public whitespace0 =>
     parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       ws := input.take_while (x -> x.is_blank)
-      success (input.drop ws.count).as_seq ws.as_seq
+      success (input.drop ws.count) ws
 
 
   # match one or more digits

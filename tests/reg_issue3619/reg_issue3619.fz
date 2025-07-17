@@ -35,7 +35,7 @@ reg_issue3619 =>
     f(p r A.this) b => b
 
   b : A is
-    redef fixed f(p r b) => p.v
+    fixed redef f(p r b) => p.v
 
   a A := b
   _ b := a.f (r A)

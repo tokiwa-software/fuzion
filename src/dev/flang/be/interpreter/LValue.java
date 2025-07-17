@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.fuir.FUIR;
+import dev.flang.fuir.SpecialClazzes;
 
 
 /**
@@ -316,7 +316,7 @@ public class LValue extends ValueWithClazz
   public int tag()
   {
     if (PRECONDITIONS) require
-      (fuir().clazzIsChoice(_clazz) & !fuir().clazzIsChoiceOfOnlyRefs(_clazz));
+      (fuir().clazzIsChoice(_clazz) && !fuir().clazzIsChoiceOfOnlyRefs(_clazz));
 
     var tag = container.nonrefs[offset];
     if (POSTCONDITIONS) ensure
@@ -334,17 +334,17 @@ public class LValue extends ValueWithClazz
   public String toString()
   {
     return "lvalue[" + container + "@" + offset + "(" + fuir().clazzAsString(_clazz) + ")]" +
-      (_clazz == fuir().clazz(FUIR.SpecialClazzes.c_i8  ) ? " (" + i8Value()   + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u8  ) ? " (" + u8Value()   + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i16 ) ? " (" + i16Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u16 ) ? " (" + u16Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i32 ) ? " (" + i32Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u32 ) ? " (" + u32Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_i64 ) ? " (" + i64Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_u64 ) ? " (" + u64Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_f32 ) ? " (" + f32Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_f64 ) ? " (" + f64Value()  + ")" :
-       _clazz == fuir().clazz(FUIR.SpecialClazzes.c_bool) ? " (" + boolValue() + ")" : "");
+      (_clazz == fuir().clazz(SpecialClazzes.c_i8  ) ? " (" + i8Value()   + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_u8  ) ? " (" + u8Value()   + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_i16 ) ? " (" + i16Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_u16 ) ? " (" + u16Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_i32 ) ? " (" + i32Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_u32 ) ? " (" + u32Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_i64 ) ? " (" + i64Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_u64 ) ? " (" + u64Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_f32 ) ? " (" + f32Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_f64 ) ? " (" + f64Value()  + ")" :
+       _clazz == fuir().clazz(SpecialClazzes.c_bool) ? " (" + boolValue() + ")" : "");
   }
 
 }

@@ -54,7 +54,7 @@ public class StackMapFullFrame extends ANY implements Comparable<StackMapFullFra
 
 
   /**
-   * Write the bytes of this frame to write `o`.
+   * Write the bytes of this frame to write {@code o}.
    */
   void write(Kaku o)
   {
@@ -90,7 +90,7 @@ public class StackMapFullFrame extends ANY implements Comparable<StackMapFullFra
 
 
   /**
-   * Remove duplicate entries of longs and doubles from `locals`.
+   * Remove duplicate entries of longs and doubles from {@code locals}.
    */
   private static List<VerificationType> thinOutTwoSlotTypes(List<VerificationType> locals)
   {

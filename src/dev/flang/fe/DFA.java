@@ -88,7 +88,6 @@ public class DFA extends ANY
       case Routine:
         var c = _mir.featureCode(f);
         var lastWasCurrent = false;
-        var show = _mir.featureAsString(f).equals("uninitialized");
         var initialized = new TreeSet<Integer>();
         for (int i = 0; i < _mir.featureArgCount(f); i++)
           {

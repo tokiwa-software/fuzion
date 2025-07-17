@@ -268,10 +268,10 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
       n.startsWith(FuzionConstants.REC_LOOP_PREFIX)                    ? (n.contains("else") ? "else" : "loop") :
       n.startsWith(FuzionConstants.EXPRESSION_RESULT_PREFIX) ||
       n.startsWith(FuzionConstants.INTERNAL_RESULT_NAME)               ? "result"     :
-      n.startsWith(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX   ) ? n.replaceFirst(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX    + "[0-9]+_", "pre "    ) :
-      n.startsWith(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX) ? n.replaceFirst(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "[0-9]+_", "precall ") :
-      n.startsWith(FuzionConstants.PRECONDITION_FEATURE_PREFIX       ) ? n.replaceFirst(FuzionConstants.PRECONDITION_FEATURE_PREFIX        + "[0-9]+_", "pre "    ) :
-      n.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX      ) ? n.replaceFirst(FuzionConstants.POSTCONDITION_FEATURE_PREFIX       + "[0-9]+_", "post "   ) :
+      n.startsWith(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX   ) ? n.replaceFirst(FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX    + ".*#", "pre "    ) :
+      n.startsWith(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX) ? n.replaceFirst(FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + ".*#", "precall ") :
+      n.startsWith(FuzionConstants.PRECONDITION_FEATURE_PREFIX       ) ? n.replaceFirst(FuzionConstants.PRECONDITION_FEATURE_PREFIX        + ".*#", "pre "    ) :
+      n.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX      ) ? n.replaceFirst(FuzionConstants.POSTCONDITION_FEATURE_PREFIX       + ".*#", "post "   ) :
       n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace("." + FuzionConstants.TYPE_NAME, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_INIT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_INIT, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_NEXT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_NEXT, "") :
