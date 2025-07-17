@@ -1942,10 +1942,10 @@ klammer     : LPAREN block RPAREN
             //
             // in particular:
             //
-            //   _ := l.zip m (a,b -> unit)         # as block, would be parsed as declaration of `a` and `b` and not lambda
+            //   _ := l.zip m (a,b -> unit) # NYI: BUG: #5542: as block, would be parsed as declaration of `a` and `b` and not lambda
             //   _ := ("bla"
-            //          + "blub")                   # as block, causes indentation error
-            //   _ := (a).this                      # as block, causes qualifier expected for '.this' expression.
+            //          + "blub")           # NYI: BUG: #5543: as block, causes indentation error
+            //   _ := (a).this              # as block, causes qualifier expected for '.this' expression.
             //
             // I suggest the cases `(a,b -> unit)` and `(a).this` should be
             // supported when parsing a block in parentheses, while the indentation
