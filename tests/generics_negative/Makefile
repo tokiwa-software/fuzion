@@ -24,6 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = generics_negative
-override FILE =
-FUZION_OPTIONS = -XenableSetKeyword -sourceDirs=. $(NAME)
+FUZION_OPTIONS = -XenableSetKeyword -sourceDirs=.
 include ../simple_and_negative.mk
