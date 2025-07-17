@@ -1404,24 +1404,18 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_DECLARATIONS;
 
-        if (CHECKS) check
-          (_state == State.RESOLVING_DECLARATIONS);
-
         this._returnType = _impl.checkReturnType(this);
         res._module.findDeclaredOrInheritedFeatures(this);
 
-        if (CHECKS) check
-          (_state.atLeast(State.RESOLVING_DECLARATIONS));
 
-        if (_state == State.RESOLVING_DECLARATIONS)
-          {
-            /**
-             * Find all the types used in this that refer to formal generic arguments of
-             * this or any of this' outer classes.
-             */
-            resolveArgumentTypes(res);
-            visit(res.resolveTypesOnly(this));
-          }
+        if (CHECKS) check
+          (_state == State.RESOLVING_DECLARATIONS);
+        /**
+         * Find all the types used in this that refer to formal generic arguments of
+         * this or any of this' outer classes.
+         */
+        resolveArgumentTypes(res);
+        visit(res.resolveTypesOnly(this));
 
         _state = State.RESOLVED_DECLARATIONS;
         while (!whenResolvedDeclarations.isEmpty())
