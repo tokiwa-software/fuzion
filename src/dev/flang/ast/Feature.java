@@ -2274,22 +2274,20 @@ A ((Choice)) declaration must not contain a result type.
       (ta.isFreeType());
 
     // A call to generics() has the side effects of setting _generics,
-    // _arguments and _typeArguments
+    // _arguments
     var ignore = generics();
 
-    // Now we patch the new type parameter ta into _arguments, _typeArguments
+    // Now we patch the new type parameter ta into _arguments,
     // and _generics:
     var a = _arguments;
     _arguments = new List<>(a);
     var tas = typeArguments();
     _arguments.add(tas.size(), ta);
-    tas.add(ta);
 
     checkDuplicateFeature(res);
 
     res._module.findDeclarations(ta, this);
 
-    _generics = _generics.addTypeParameter(ta);
     res._module.addTypeParameter(this, ta);
     this.whenResolvedTypes(()->res.resolveTypes(ta));
 

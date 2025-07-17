@@ -327,7 +327,7 @@ public class SourceModule extends Module implements SrcModule
               case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
               case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
               case Routine  :
-                if (!main.generics().list.isEmpty())
+                if (!main.typeArguments().isEmpty())
                   {
                     FeErrors.mainFeatureMustNotHaveTypeArguments(main);
                   }
@@ -1640,7 +1640,7 @@ A redefined feature must have the same total number of formal arguments (type pa
             */
             AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
           }
-        else if (o.generics().list.size() != f.generics().list.size())
+        else if (o.typeArguments().size() != f.typeArguments().size())
           {
             /*
     // tag::fuzion_rule_REDEF_TYPE_PAR_COUNT[]
