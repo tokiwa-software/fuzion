@@ -89,11 +89,6 @@ public abstract class Module extends ANY implements FeatureLookup
     Set<AbstractFeature> _heirs = new TreeSet<>();
 
     /**
-     * Cached result of SourceModule.allInnerAndInheritedFeatures().
-     */
-    Set<AbstractFeature> _allInnerAndInheritedFeatures = null;
-
-    /**
      * offset of this feature's data in .mir file.
      */
     int _mirOffset = -1;
@@ -533,52 +528,6 @@ public abstract class Module extends ANY implements FeatureLookup
       {
         l.forEach(fun);
       }
-  }
-
-
-  /**
-   * Are {@code a} and {@code b} defined in the same module?
-   */
-  private boolean sameModule(AbstractFeature a, AbstractFeature b)
-  {
-    return a instanceof Feature && b instanceof Feature
-     || (a instanceof LibraryFeature lf && b instanceof LibraryFeature olf && lf._libModule == olf._libModule);
-  }
-
-
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * NYI: UNDER DEVELOPMENT: result includes features that are redefined and thus not relevant.
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
-  {
-    var d = data(f);
-    var result = d._allInnerAndInheritedFeatures;
-
-    if (result == null)
-      {
-        result = new TreeSet<>();
-        for (var s : declaredOrInheritedFeatures(f).values())
-          {
-            result.addAll(s);
-          }
-
-        for (var p : f.inherits())
-          {
-            var cf = p.calledFeature();
-            if (CHECKS) check
-              (Errors.any() || cf != null);
-
-            if (cf != null)
-              {
-                result.addAll(allInnerAndInheritedFeatures(cf));
-              }
-          }
-        d._allInnerAndInheritedFeatures = result;
-      }
-    return result;
   }
 
 
