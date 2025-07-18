@@ -2860,7 +2860,7 @@ nextValue   : COMMA exprInLine
   /**
    * Parse ifexpr
    */
-  Match ifexpr()
+  Expr ifexpr()
   {
     return ifexpr(false);
   }
@@ -2873,7 +2873,7 @@ nextValue   : COMMA exprInLine
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  Match ifexpr(boolean elif)
+  Expr ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
