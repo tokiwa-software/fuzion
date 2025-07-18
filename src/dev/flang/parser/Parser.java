@@ -367,14 +367,14 @@ field       : returnType
    */
   boolean skipFeaturePrefix()
   {
-    if (!skipQual())
+    do
       {
-        return false;
+        if (!skipQual())
+          {
+            return false;
+          }
       }
-    if (skipComma())
-      {
-        return true;
-      }
+    while (skipComma());
     switch (skipFormArgsNotActualArgs())
       {
       case formal: return true;
@@ -1942,7 +1942,6 @@ klammer     : LPAREN block RPAREN
             //
             // in particular:
             //
-            //   _ := l.zip m (a,b -> unit) # NYI: BUG: #5542: as block, would be parsed as declaration of `a` and `b` and not lambda
             //   _ := ("bla"
             //          + "blub")           # NYI: BUG: #5543: as block, causes indentation error
             //   _ := (a).this              # as block, causes qualifier expected for '.this' expression.

@@ -1,0 +1,193 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5542
+#
+# -----------------------------------------------------------------------
+
+# This issue was that nullary or unary lambdas like
+#
+#     {()->unit}
+#
+# or
+#
+#     {_->unit}
+#
+# works if declared in a block, but binary ones like
+#
+#     {_,_->unit}
+#
+# fails.
+#
+reg_issue5542 =>
+
+  say "using (\{\}) and _,_,_,..:"
+
+  # the original, working examples from #5542
+  #
+  say (id (()->unit) ({()->unit}))
+  say (id (i32->unit) ({_->unit}))
+
+  # the original failing example from #5542
+  #
+  say (id (i32,i32->unit) ({_,_->unit}))
+
+  # some more failing examples using `_`
+  #
+  say (id (i32,i32,i32->unit)             ({_,_,_->unit}))
+  say (id (i32,i32,i32,i32->unit)         ({_,_,_,_->unit}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({_,_,_,_,_->unit}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({_,_,_,_,_,_->unit}))
+
+  # examples using only ()
+  say "using () and _,_,_,..:"
+  say (id (()->unit)                      (()->unit))
+  say (id (i32->unit)                     (_->unit))
+  say (id (i32,i32->unit)                 (_,_->unit))
+  say (id (i32,i32,i32->unit)             (_,_,_->unit))
+  say (id (i32,i32,i32,i32->unit)         (_,_,_,_->unit))
+  say (id (i32,i32,i32,i32,i32->unit)     (_,_,_,_,_->unit))
+  say (id (i32,i32,i32,i32,i32,i32->unit) (_,_,_,_,_,_->unit))
+
+  # examples using (())
+  say "using (()) and _,_,_,..:"
+  say (id (()->unit)                      ((()->unit)))
+  say (id (i32->unit)                     ((_->unit)))
+  say (id (i32,i32->unit)                 ((_,_->unit)))
+  say (id (i32,i32,i32->unit)             ((_,_,_->unit)))
+  say (id (i32,i32,i32,i32->unit)         ((_,_,_,_->unit)))
+  say (id (i32,i32,i32,i32,i32->unit)     ((_,_,_,_,_->unit)))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ((_,_,_,_,_,_->unit)))
+
+  # examples using ({{}})
+  say "using (\{\{\}\}) and _,_,_,..:"
+  say (id (()->unit)                      ({{()->unit}}))
+  say (id (i32->unit)                     ({{_->unit}}))
+  say (id (i32,i32->unit)                 ({{_,_->unit}}))
+  say (id (i32,i32,i32->unit)             ({{_,_,_->unit}}))
+  say (id (i32,i32,i32,i32->unit)         ({{_,_,_,_->unit}}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({{_,_,_,_,_->unit}}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({{_,_,_,_,_,_->unit}}))
+
+  # examples using ({{(())}})
+  say "using (\{\{(())\}\}) and _,_,_,..:"
+  say (id (()->unit)                      ({{((()->unit))}}))
+  say (id (i32->unit)                     ({{((_->unit))}}))
+  say (id (i32,i32->unit)                 ({{((_,_->unit))}}))
+  say (id (i32,i32,i32->unit)             ({{((_,_,_->unit))}}))
+  say (id (i32,i32,i32,i32->unit)         ({{((_,_,_,_->unit))}}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({{((_,_,_,_,_->unit))}}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({{((_,_,_,_,_,_->unit))}}))
+
+  # examples using nothing
+  say "using plain _,_,_,..:"
+  say (id (()->unit)                      ()->unit)
+  say (id (i32->unit)                     _->unit)
+  say (id (i32,i32->unit)                 _,_->unit)
+  say (id (i32,i32,i32->unit)             _,_,_->unit)
+  say (id (i32,i32,i32,i32->unit)         _,_,_,_->unit)
+  say (id (i32,i32,i32,i32,i32->unit)     _,_,_,_,_->unit)
+  say (id (i32,i32,i32,i32,i32,i32->unit) _,_,_,_,_,_->unit)
+
+  # examples using really nothing
+  say "using no parentheses at all and _,_,_,..:"
+  say <| id ()->unit                      ()->unit
+  say <| id i32->unit                     _->unit
+  say <| id i32,i32->unit                 _,_->unit
+  say <| id i32,i32,i32->unit             _,_,_->unit
+  say <| id i32,i32,i32,i32->unit         _,_,_,_->unit
+  say <| id i32,i32,i32,i32,i32->unit     _,_,_,_,_->unit
+  say <| id i32,i32,i32,i32,i32,i32->unit _,_,_,_,_,_->unit
+
+  # all the examples using real names a,b,c,... for lambda arguments
+  #
+  say "using (\{\}) and a,b,c,..:"
+  say (id (()->unit)                      ({()->unit}))
+  say (id (i32->unit)                     ({a->unit}))
+  say (id (i32,i32->unit)                 ({a,b->unit}))
+  say (id (i32,i32,i32->unit)             ({a,b,c->unit}))
+  say (id (i32,i32,i32,i32->unit)         ({a,b,c,d->unit}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({a,b,c,d,e->unit}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({a,b,c,d,e,f->unit}))
+  say "using {} and a,b,c,..:"
+  say (id (()->unit)                      (()->unit))
+  say (id (i32->unit)                     (a->unit))
+  say (id (i32,i32->unit)                 (a,b->unit))
+  say (id (i32,i32,i32->unit)             (a,b,c->unit))
+  say (id (i32,i32,i32,i32->unit)         (a,b,c,d->unit))
+  say (id (i32,i32,i32,i32,i32->unit)     (a,b,c,d,e->unit))
+  say (id (i32,i32,i32,i32,i32,i32->unit) (a,b,c,d,e,f->unit))
+  say "using (()) and a,b,c,..:"
+  say (id (()->unit)                      ((()->unit)))
+  say (id (i32->unit)                     ((a->unit)))
+  say (id (i32,i32->unit)                 ((a,b->unit)))
+  say (id (i32,i32,i32->unit)             ((a,b,c->unit)))
+  say (id (i32,i32,i32,i32->unit)         ((a,b,c,d->unit)))
+  say (id (i32,i32,i32,i32,i32->unit)     ((a,b,c,d,e->unit)))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ((a,b,c,d,e,f->unit)))
+  say "using (\{\{\}\}) and a,b,c,..:"
+  say (id (()->unit)                      ({{()->unit}}))
+  say (id (i32->unit)                     ({{a->unit}}))
+  say (id (i32,i32->unit)                 ({{a,b->unit}}))
+  say (id (i32,i32,i32->unit)             ({{a,b,c->unit}}))
+  say (id (i32,i32,i32,i32->unit)         ({{a,b,c,d->unit}}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({{a,b,c,d,e->unit}}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({{a,b,c,d,e,f->unit}}))
+  say "using (\{\{(())\}\}) and a,b,c,..:"
+  say (id (()->unit)                      ({{((()->unit))}}))
+  say (id (i32->unit)                     ({{((a->unit))}}))
+  say (id (i32,i32->unit)                 ({{((a,b->unit))}}))
+  say (id (i32,i32,i32->unit)             ({{((a,b,c->unit))}}))
+  say (id (i32,i32,i32,i32->unit)         ({{((a,b,c,d->unit))}}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({{((a,b,c,d,e->unit))}}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({{((a,b,c,d,e,f->unit))}}))
+  say "using plain a,b,c,..:"
+  say (id (()->unit)                      ()->unit)
+  say (id (i32->unit)                     a->unit)
+  say (id (i32,i32->unit)                 a,b->unit)
+  say (id (i32,i32,i32->unit)             a,b,c->unit)
+  say (id (i32,i32,i32,i32->unit)         a,b,c,d->unit)
+  say (id (i32,i32,i32,i32,i32->unit)     a,b,c,d,e->unit)
+  say (id (i32,i32,i32,i32,i32,i32->unit) a,b,c,d,e,f->unit)
+  say "using no parentheses at all and a,b,c,..:"
+  say <| id ()->unit                      ()->unit
+  say <| id i32->unit                     a->unit
+  say <| id i32,i32->unit                 a,b->unit
+  say <| id i32,i32,i32->unit             a,b,c->unit
+  say <| id i32,i32,i32,i32->unit         a,b,c,d->unit
+  say <| id i32,i32,i32,i32,i32->unit     a,b,c,d,e->unit
+  say <| id i32,i32,i32,i32,i32,i32->unit a,b,c,d,e,f->unit
+
+  # function declaratiosn returning lambdas directly
+  say "lambdas as function resutls:"
+  f0 ()->i32                        => ()          -> 42
+  f1 (i32)->i32                     => x           -> x
+  f2 (i32,i32)->i32                 => x,y         -> x+y
+  f3 (i32,i32,i32)->i32             => x,y,z       -> x+y+z
+  f4 (i32,i32,i32,i32)->i32         => x,y,z,p     -> x+y+z+p
+  f5 (i32,i32,i32,i32,i32)->i32     => x,y,z,p,q   -> x+y+z+p+q
+  f6 (i32,i32,i32,i32,i32,i32)->i32 => x,y,z,p,q,r -> x+y+z+p+q+r
+
+  say <| f0()
+  say <| f1 1
+  say <| f2 1 2
+  say <| f3 1 2 3
+  say <| f4 1 2 3 4
+  say <| f5 1 2 3 4 5
+  say <| f6 1 2 3 4 5 6
