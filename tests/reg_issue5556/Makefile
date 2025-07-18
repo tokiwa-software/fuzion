@@ -19,9 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
-override NAME = test_free_types_negative
-include ../simple_and_negative.mk
+override NAME = reg_issue5556
+include ../simple.mk

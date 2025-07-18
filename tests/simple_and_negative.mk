@@ -38,7 +38,6 @@ FUZION_C_BACKEND_OPTIONS ?=
 FUZION_DEPENDENCIES ?=
 FUZION ?= ../../bin/fz
 FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
-FILE = $(NAME).fz
 ENV = \
   $(if $(FUZION_HOME)               , FUZION_HOME="$(FUZION_HOME)"                              ,) \
   $(if $(FUZION_JAVA)               , FUZION_JAVA="$(FUZION_JAVA)"                              ,) \
