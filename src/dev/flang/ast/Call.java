@@ -1149,7 +1149,7 @@ public class Call extends AbstractCall
     var result = typeForInferencing();
     if (result == null)
       {
-        if (hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR))
+        if (hasPendingError || errorInActuals())
           {
             result = Types.t_ERROR;
           }
@@ -1633,8 +1633,8 @@ public class Call extends AbstractCall
   {
     return (rt == null ||
         !rt.isGenericArgument() ||
-         rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
-         _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
+         rt.genericArgument().outer().outer() != _calledFeature.outer()) &&
+      !errorInActuals();
   }
 
 
@@ -1706,6 +1706,18 @@ public class Call extends AbstractCall
 
 
   /**
+   * Was there an error in any of the actual arguments and was this (or some
+   * other) error reported already?
+   */
+  boolean errorInActuals()
+  {
+    return
+      Errors.any() &&
+      _actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR);
+  }
+
+
+  /**
    * report that generics in missing could not be inferred.
    *
    * @param missing the list of generics that could not be inferred
@@ -1717,8 +1729,7 @@ public class Call extends AbstractCall
     if (!missing.isEmpty() &&
         !_calledFeature.isCotype() &&
         _calledFeature != Types.f_ERROR &&
-        (!Errors.any() ||
-         _actuals.stream().allMatch(x -> x.type() != Types.t_ERROR)))
+        !errorInActuals())
       {
         AstErrors.failedToInferActualGeneric(pos(), _calledFeature, missing);
         setToErrorState();
@@ -2782,7 +2793,7 @@ public class Call extends AbstractCall
             AstErrors.mustNotCallOpenTypeParameter(this);
           }
 
-        if ( !(Errors.any() && _actuals.stream().anyMatch(a->a.typeForInferencing() == Types.t_ERROR)) )
+        if (!errorInActuals())
           {
             // Check that generics match formal generic constraints
             AbstractType.checkActualTypePars(context, _calledFeature, _generics, _originalGenerics, this);
