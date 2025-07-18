@@ -2171,7 +2171,7 @@ public class AstErrors extends ANY
               "\n"+
               "To solve this, create a helper feature " + sqn("lazy_value") + " that calculates the value as follows:\n" +
               "\n" +
-              "  lazy_value => " + lazy + "\n" +
+              "  lazy_value => " + s(lazy) + "\n" +
               "\n" +
               "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
       }
