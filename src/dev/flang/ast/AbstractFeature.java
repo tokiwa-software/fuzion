@@ -1643,15 +1643,21 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String toString()
   {
-    return visibility() + " " +
+    return (visibility() + " " +
       FuzionConstants.modifierToString(modifiers()) +
       (isCotype() ? "type." : "") +
       featureName().baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
-      (state().atLeast(State.TYPES_INFERENCED) ? resultType() : "***not yet known***") + " " +
+      (state().atLeast(State.TYPES_INFERENCED) ? resultType() : "#unknown") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
-      ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
-       +  "is " + kind();
+      ((contract() == Contract.EMPTY_CONTRACT) ? "" : "<contract> ") +
+      (switch (kind())
+        {
+          case Abstract,Intrinsic,Native -> "=> " + kind();
+          case Choice, Routine -> "is";
+          case Field -> isArgument() ? "" : ":= ...";
+          case OpenTypeParameter, TypeParameter -> "(type parameter)";
+        })).trim();
 
   }
 
