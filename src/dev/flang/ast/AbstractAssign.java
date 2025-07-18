@@ -136,7 +136,7 @@ public abstract class AbstractAssign extends Expr
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(ExpressionVisitor v)
+  void visitExpressions(ExpressionVisitor v)
   {
     _value.visitExpressions(v);
     _target.visitExpressions(v);

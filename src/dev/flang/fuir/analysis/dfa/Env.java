@@ -26,15 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Env represents the set of effects installed in a given environment

@@ -44,7 +44,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.ResolvedType;

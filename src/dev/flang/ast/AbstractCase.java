@@ -133,7 +133,7 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(AbstractMatch m, ExpressionVisitor v)
+  void visitExpressions(AbstractMatch m, ExpressionVisitor v)
   {
     if (v.action(m, this))
       {

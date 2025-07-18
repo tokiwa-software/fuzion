@@ -29,7 +29,6 @@ package dev.flang.ir;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.ExpressionVisitor;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.util.SourcePosition;
 
@@ -50,7 +49,7 @@ public class Box extends Expr
   /**
    * the original value instance.
    */
-  public Expr _value;
+  public final Expr _value;
 
 
   /**
@@ -106,19 +105,6 @@ public class Box extends Expr
   {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'visit'");
-  }
-
-
-  /**
-   * visit all the expressions within this Box.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    _value.visitExpressions(v);
   }
 
 

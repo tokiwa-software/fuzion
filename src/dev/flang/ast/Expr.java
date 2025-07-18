@@ -325,7 +325,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(ExpressionVisitor v)
+  void visitExpressions(ExpressionVisitor v)
   {
     v.action(this);
   }
