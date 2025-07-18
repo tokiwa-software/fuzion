@@ -1328,7 +1328,7 @@ public class AstErrors extends ANY
                                     List<FeatureAndOuter> candidatesArgCountMismatch,
                                     List<FeatureAndOuter> candidatesHidden)
   {
-    if (!any() || !errorInOuterFeatures(targetFeature) && noErrorInArguments(call))
+    if (!any() || !errorInOuterFeatures(targetFeature) && !call.errorInActuals())
       {
         var msg = !candidatesHidden.isEmpty()
           ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
@@ -1353,11 +1353,6 @@ public class AstErrors extends ANY
                solution4 != "" ? solution4 :
                solution5 != "" ? solution5 : ""));
       }
-  }
-
-  private static boolean noErrorInArguments(Call call)
-  {
-    return call.actuals().stream().allMatch(x -> x != Call.ERROR);
   }
 
   private static String solutionLambda(Call call)

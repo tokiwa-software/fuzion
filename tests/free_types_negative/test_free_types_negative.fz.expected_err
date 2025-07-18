@@ -56,22 +56,20 @@ To solve this, you might replace the free type 'test_free_type_negative.neg.i33'
 --------^^^
 
 
---CURDIR--/test_free_types_negative.fz:142:28: error 6: No type information can be inferred from a lambda expression
+--CURDIR--/test_free_types_negative.fz:142:9: error 6: Failed to infer actual type parameters
   say ((apply2             a,b->"$a $b").call true 3.14)   # 10. should flag an error, unable to infer actual type parameters
----------------------------^^^^^^^^^^^^
-A lambda expression can only be used if assigned to a field or argument of type 'Function'
-with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
-assigned field must be given explicitly.
-To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+--------^^^^^^
+In call to 'test_free_type_negative.apply2', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, B'
+Type inference failed for 2 type parameters 'A', 'B'
 
 
---CURDIR--/test_free_types_negative.fz:150:25: error 7: No type information can be inferred from a lambda expression
+--CURDIR--/test_free_types_negative.fz:150:9: error 7: Failed to infer actual type parameters
   say ((apply3a         a,b->"$a $b").call true (u8 127))  # 11. should flag an error, unable to infer actual type parameters
-------------------------^^^^^^^^^^^^
-A lambda expression can only be used if assigned to a field or argument of type 'Function'
-with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
-assigned field must be given explicitly.
-To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+--------^^^^^^^
+In call to 'test_free_type_negative.apply3a', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, B'
+Type inference failed for 2 type parameters 'A', 'B'
 
 
 --CURDIR--/test_free_types_negative.fz:35:3: error 8: Incompatible type parameter
