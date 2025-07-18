@@ -2712,6 +2712,11 @@ public class Call extends AbstractCall
     if (CHECKS) check
       (res._options.isLanguageServer() || Errors.any() || _type != null);
 
+    if (_calledFeature instanceof Feature cf && !cf.state().atLeast(State.CHECKING_TYPES))
+      { // make sure argument types, if inferred from actual calls, are all known
+        cf.checkTypes(res);
+      }
+
     if (_calledFeature != null &&
         context.outerFeature() != Types.resolved.f_effect_static_finally &&
         (_calledFeature == Types.resolved.f_effect_finally ||

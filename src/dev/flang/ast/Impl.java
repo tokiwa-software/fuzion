@@ -577,6 +577,10 @@ public class Impl extends ANY
             AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
           }
       }
+    else if (result == Types.t_ERROR)
+      {
+        result = null; // not urgent, we will report an error during CHECKING_TYPES phase.
+      }
     if (POSTCONDITIONS) ensure
       (!urgent || result != null);
 
