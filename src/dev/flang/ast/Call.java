@@ -2355,6 +2355,7 @@ public class Call extends AbstractCall
       if (tt != null && tt != Types.t_ERROR)
         {
           var tf = tt.feature();
+          res.resolveDeclarations(tf);
           var ttf = tf.isUniverse() ? tf : res.cotype(tf);
           res.resolveDeclarations(tf);
           var fo = findOnTarget(res, tf, false).v1();
