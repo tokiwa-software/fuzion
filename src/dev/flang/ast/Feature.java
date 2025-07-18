@@ -1978,7 +1978,7 @@ A ((Choice)) declaration must not contain a result type.
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  void checkTypes(Resolution res)
+  private void checkTypes0(Resolution res)
   {
     if (PRECONDITIONS) require
       (_state == State.RESOLVED_SUGAR2);
@@ -2019,6 +2019,30 @@ A ((Choice)) declaration must not contain a result type.
     checkNative(res);
 
     _state = State.RESOLVED;
+  }
+
+
+  /**
+   * Perform static type checking, i.e., make sure, that for all assignments from
+   * actual to formal arguments or from values to fields, the types match.
+   *
+   * checkTypes also has the side-effect of collecting feature reault types, so
+   * this might be called repeatedly, in particular for kind FieldActual where
+   * this depends on all the call sites, even those that might have been added
+   * during RESOLVING_SUGAR2.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   */
+  void checkTypes(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (_state.atLeast(State.RESOLVED_SUGAR2));
+
+    if (!_state.atLeast(State.CHECKING_TYPES)) // make sure we check types only once
+      {
+        checkTypes0(res);
+      }
   }
 
 
@@ -2375,7 +2399,10 @@ A ((Choice)) declaration must not contain a result type.
         result = result.resolve(res, outer().context());
       }
 
-    if (result != null)
+    if (result != null &&
+        // do not remember the result for an argument field whose type is
+        // derived from the actual argument since we might still encounter more calls.
+        (_impl._kind != Impl.Kind.FieldActual || state().atLeast(State.CHECKING_TYPES)))
       {
         // FORWARD_CYCLIC should be returned only once.
         // We then want to return t_ERROR.
