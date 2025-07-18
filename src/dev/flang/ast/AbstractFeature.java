@@ -1345,7 +1345,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param v the action to be performed on the expressions.
    */
-  public void visitExpressions(ExpressionVisitor v)
+  void visitExpressions(ExpressionVisitor v)
   {
     for (var c: inherits())
       {

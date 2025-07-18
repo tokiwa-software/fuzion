@@ -33,7 +33,7 @@ package dev.flang.ast;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface ExpressionVisitor
+interface ExpressionVisitor
 {
 
 

@@ -109,7 +109,7 @@ public abstract class AbstractCall extends Expr
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(ExpressionVisitor v)
+  void visitExpressions(ExpressionVisitor v)
   {
     for (var a : actuals())
       {

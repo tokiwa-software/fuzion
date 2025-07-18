@@ -91,7 +91,7 @@ public abstract class AbstractBlock extends Expr
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(ExpressionVisitor v)
+  void visitExpressions(ExpressionVisitor v)
   {
     var e = _expressions;
     for (int i = 0; i < e.size(); i++)

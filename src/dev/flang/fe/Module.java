@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -43,7 +42,6 @@ import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -87,11 +85,6 @@ public abstract class Module extends ANY implements FeatureLookup
      * is collected during RESOLVING_DECLARATIONS.
      */
     Set<AbstractFeature> _heirs = new TreeSet<>();
-
-    /**
-     * offset of this feature's data in .mir file.
-     */
-    int _mirOffset = -1;
 
   }
 

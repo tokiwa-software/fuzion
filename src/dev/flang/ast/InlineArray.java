@@ -287,7 +287,7 @@ public class InlineArray extends ExprWithPos
    * @param v the visitor instance that defines an action to be performed on
    * visited expressions
    */
-  public void visitExpressions(ExpressionVisitor v)
+  void visitExpressions(ExpressionVisitor v)
   {
     super.visitExpressions(v);
     for (var e : _elements)
