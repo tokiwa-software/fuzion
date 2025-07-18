@@ -1149,7 +1149,8 @@ public class Call extends AbstractCall
     var result = typeForInferencing();
     if (result == null)
       {
-        if (hasPendingError || errorInActuals())
+        // NYI: CLEANUP: Why can't we use `errorInActuals()` in the following condition?
+        if (hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR))
           {
             result = Types.t_ERROR;
           }
@@ -1633,8 +1634,9 @@ public class Call extends AbstractCall
   {
     return (rt == null ||
         !rt.isGenericArgument() ||
-         rt.genericArgument().outer().outer() != _calledFeature.outer()) &&
-      !errorInActuals();
+         rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
+         // NYI: CLEANUP: why true, i.e., must report errors, in case of previous errors in the actuals?
+         _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
   }
 
 
