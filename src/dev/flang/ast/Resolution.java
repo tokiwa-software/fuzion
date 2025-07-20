@@ -370,33 +370,20 @@ public class Resolution extends ANY
 
 
   /**
-   * Resolve all entries in the lists for resolution (forInheritance, etc.) up
-   * to state RESOLVED_TYPES.
-   */
-  void resolveTypes()
-  {
-    while (resolveOne(false));
-  }
-
-
-  /**
    * Resolve all entries in the lists for resolution (forInheritance, etc.)
    */
   public void resolve()
   {
-    while (resolveOne(true));
+    while (resolveOne());
   }
 
 
   /**
    * Resolve one entry in the lists for resolution (forInheritance, etc.)
    *
-   * @param moreThanTypes true to fully resolve everything, false to resolve
-   * everything to be at least type resolved.
-   *
    * @return true if one such entry was found.
    */
-  private boolean resolveOne(boolean moreThanTypes)
+  private boolean resolveOne()
   {
     boolean result = true;
     if (!forInheritance.isEmpty())
@@ -425,10 +412,6 @@ public class Resolution extends ANY
             resolveTypes(f.cotypeOrigin());
           }
         f.internalResolveTypes(this);
-      }
-    else if (!moreThanTypes)
-      {
-        result = false;
       }
     else if (!forSyntacticSugar1.isEmpty())
       {
