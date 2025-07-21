@@ -140,7 +140,7 @@ String.excecute(
   # feed .stdin file to executed process?
   feed_stdin bool
 ) =>
-  ((fields_func (=" ")).map (.replace protected_space " ")).excecute feed_stdin
+  ((split_if (=" ")).map (.replace protected_space " ")).excecute feed_stdin
 
 # execute this string by splitting at all whitespaces
 #
