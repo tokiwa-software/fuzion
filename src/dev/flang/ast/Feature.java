@@ -1417,6 +1417,8 @@ public class Feature extends AbstractFeature
         resolveArgumentTypes(res);
         visit(res.resolveTypesOnly(this));
 
+        addOuterRef(res);
+
         _state = State.RESOLVED_DECLARATIONS;
         while (!whenResolvedDeclarations.isEmpty())
           {
@@ -1564,6 +1566,12 @@ public class Feature extends AbstractFeature
         }
 
         _state = State.RESOLVED_TYPES;
+
+        if (_outerRef != null)
+          {
+            _outerRef.scheduleForResolution(res);
+          }
+
         while (!whenResolvedTypes.isEmpty())
           {
             whenResolvedTypes.removeFirst().run();
@@ -2513,8 +2521,6 @@ A ((Choice)) declaration must not contain a result type.
                                 outerRefType,
                                 outerRefName(),
                                 this);
-
-        whenResolvedTypes(()->_outerRef.scheduleForResolution(res));
       }
   }
 
