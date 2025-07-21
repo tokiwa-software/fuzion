@@ -269,8 +269,7 @@ public class Match extends AbstractMatch
                                 t,
                                 FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
                                 context.outerFeature());
-        r.scheduleForResolution(res);
-        res.resolveTypes();
+        res.resolveTypes(r);
         result = new Block(new List<>(assignToField(res, context, r),
                                       new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
       }
