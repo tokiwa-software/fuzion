@@ -10,10 +10,7 @@ This is an implementation restriction that should be removed in a future version
 
 To solve this, create a helper feature 'lazy_value' that calculates the value as follows:
 
-  lazy_value => {
-  private loop #unknown : Any is
-  f.this.loop
-}
+  lazy_value => '(do)'
 
 and then use 'lazy_value' as instead of the original expression.
 
