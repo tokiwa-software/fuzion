@@ -28,7 +28,7 @@ module:public instant (val u64) : property.orderable is
   # which instant will be after the time specified by the duration
   # has passed after this instant?
   #
-  public fixed infix + (d duration) instant =>
+  public fixed infix + (d time.duration) instant =>
     instant (val + d.nanos)
 
 
@@ -39,6 +39,11 @@ module:public instant (val u64) : property.orderable is
     debug: other <= instant.this
   =>
     time.duration (val - other.val)
+
+
+  public redef as_string
+  =>
+    time.duration val .as_string
 
 
   # do two given instants represent the same moment in time?

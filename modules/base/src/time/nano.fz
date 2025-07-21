@@ -34,11 +34,11 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-public nano (p Nano_Time_Handler) : effect is
+public nano (p Nano_Time_Handler) : Clock is
 
   # no guarantee can be given for precision nor resolution
   #
-  public read instant =>
+  public redef read instant =>
     res := p.read
     replace
     instant res
@@ -46,13 +46,35 @@ public nano (p Nano_Time_Handler) : effect is
 
   # no guarantee can be given for precision nor resolution
   #
-  public sleep(d time.duration) unit =>
+  public redef sleep(d time.duration) unit =>
     res := p.sleep d
     replace
     res
 
 
-  type.default_nano_time =>
+  public redef one_shot(t instant, code ()->unit)
+  =>
+    ima := read   # `ima` (jap.) is `now` (engl.)
+    if t >= ima
+      sleep t-ima
+      code()
+
+  public redef periodic_shot(first instant,
+                             period time.duration,
+                             last instant,
+                             code ()->unit)
+  =>
+    for
+      ima := read
+      t := first, first + period * ((ima-t) / period + 1)
+    while t <= last
+      sleep t-ima
+      code()
+    else
+      unit
+
+
+  module type.default_nano_time =>
 
     ref : time.Nano_Time_Handler is
 

@@ -84,6 +84,11 @@ is
   public infix * (n u64) duration => (duration nanos*n)
 
 
+  # this duration multiplied by duration d, rounding down
+  #
+  public infix / (other duration) u64 => nanos / other.nanos
+
+
   # create a string representation of this duration. The string
   # representation is not accurate, it consists of at least two
   # and at most 4 decimal digits followed by a time unit string.
