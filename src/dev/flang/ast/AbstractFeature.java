@@ -489,10 +489,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Return the state of this feature.
    *
    * This is only relevant for ast.Feature to document the resolution state.
-   *
-   * NYI: Remove, replace by Resolution.state(Feature).
    */
-  public State state()
+  State state()
   {
     return State.RESOLVED;
   }
