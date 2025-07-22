@@ -422,9 +422,6 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   private SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer, Module[] modules)
   {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
-
     var d = data(outer);
     var s = d._declaredOrInheritedFeatures;
     if (s == null)
@@ -532,9 +529,6 @@ public abstract class Module extends ANY implements FeatureLookup
   @Override
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVED_DECLARATIONS));
-
     return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
   }
 
