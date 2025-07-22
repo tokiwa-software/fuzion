@@ -1101,7 +1101,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use)
   {
-    if (!_res.state(outer).atLeast(State.RESOLVING_DECLARATIONS))
+    if (outer != Types.f_ERROR && !_res.state(outer).atLeast(State.RESOLVING_DECLARATIONS))
       {
         _res.resolveDeclarations(outer);
       }
