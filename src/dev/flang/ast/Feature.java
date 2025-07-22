@@ -2283,7 +2283,6 @@ A ((Choice)) declaration must not contain a result type.
     res._module.findDeclarations(ta, this);
 
     res._module.addTypeParameter(this, ta);
-    this.whenResolvedTypes(()->res.resolveTypes(ta));
 
     return ta;
   }
