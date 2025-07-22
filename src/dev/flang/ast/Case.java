@@ -207,14 +207,6 @@ public class Case extends AbstractCase
       {
         _field.visit(v, outer);
       }
-    if (_types != null)
-      {
-        var i = _types.listIterator();
-        while (i.hasNext())
-          {
-            i.set(i.next().visit(v, outer));
-          }
-      }
     _code = _code.visit(v, outer);
     v.actionAfter(this, m);
   }
