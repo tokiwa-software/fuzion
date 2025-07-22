@@ -566,7 +566,7 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !af.isUniverse(),
-       Errors.any() || state(af).atLeast(State.FINDING_DECLARATIONS),
+       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS),
        !af.isCotype());
 
     if (af._cotype == null)
@@ -667,7 +667,8 @@ public class Resolution extends ANY
   private void existingOrNewCotype(AbstractFeature af, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
-      (!af.isUniverse());
+      (!af.isUniverse(),
+       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS));
 
     var outerType = af.outer().isUniverse() ? universe :
                     af.outer().isCotype()   ? af.outer()
