@@ -1468,14 +1468,21 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * List of arguments that are types, i.e., not type parameters or effects.
    */
+  private List<AbstractFeature> _typeArguments;
+  private int taCachedSize = -1;
   public List<AbstractFeature> typeArguments()
   {
-    var ta = arguments()
-      .stream()
-      .filter(a -> a.isTypeParameter())
-      .collect(List.collector());
-    ta.freeze();
-    return ta;
+    // need to update when arguments change (free types)
+    if (arguments().size() != taCachedSize)
+      {
+        taCachedSize = arguments().size();
+        _typeArguments = arguments()
+          .stream()
+          .filter(a -> a.isTypeParameter())
+          .collect(List.collector());
+        _typeArguments.freeze();
+      }
+    return _typeArguments;
   }
 
 
