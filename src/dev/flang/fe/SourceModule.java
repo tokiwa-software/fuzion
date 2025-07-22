@@ -616,7 +616,7 @@ part of the (((inner features))) declarations of the corresponding
         // fixes issue #1787
         // We need to wait until `inner` has its final type parameters.
         // This may include type parameters received via free types.
-        // (Creating outer ref uses `createThisType()` which calls `generics()`.)
+        // (Creating outer ref uses `outer.selfType()` which calls `generics()`.)
         outer.whenResolvedDeclarations(() -> {
           inner.addOuterRef(_res);
         });
