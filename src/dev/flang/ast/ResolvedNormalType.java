@@ -265,15 +265,6 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Instantiate a new ResolvedNormalType.
-   */
-  public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
-  {
-    return new ResolvedNormalType(original, originalOuterFeature);
-  }
-
-
-  /**
    * create resolved type for feature in universe and generics
    *
    * @param feature the feature that is defined in universe
