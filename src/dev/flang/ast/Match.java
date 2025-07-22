@@ -426,7 +426,8 @@ public class Match extends AbstractMatch
   {
     if (PRECONDITIONS) require
       (c != null,
-       b != null);
+       b != null,
+       !(c instanceof BoolConst && elseB == null));
 
     Expr result;
     if (c instanceof BoolConst bc)
