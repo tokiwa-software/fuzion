@@ -876,6 +876,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         public boolean isFreeType() { return true; }
       };
     var g = outer.outer().addTypeParameter(res, tp);
+    tp.scheduleForResolution(res);
     return g.asGenericType();
   }
 
