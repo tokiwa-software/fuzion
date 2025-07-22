@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Optional;
 import java.util.Set;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -183,27 +182,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o)
   {
     this(pos, n, g, o, Optional.empty());
-  }
-
-
-  /**
-   * Constructor to create a type from an existing type after formal generics
-   * have been replaced in the generics arguments and in the outer type.
-   *
-   * @param t the original type
-   *
-   * @param g the actual generic arguments that replace t.generics
-   *
-   * @param o the actual outer type, or null, that replaces t.outer
-   */
-  public UnresolvedType(UnresolvedType t, List<AbstractType> g, AbstractType o)
-  {
-    this(t.pos(), t._name, g, o, t._typeKind);
-
-    if (PRECONDITIONS) require
-      (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       Errors.any() || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
-       (t.outer() == null) == (o == null));
   }
 
 
@@ -930,7 +908,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   public TypeKind kind()
   {
     return _typeKind
-      // NYI: UNDER DEVELOPMENT: always correct?
       .orElse(TypeKind.ValueType);
   }
 
