@@ -644,7 +644,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @return an instance of ResolvedNormalType representing the given type.
    */
-  static ResolvedType finishResolve(Resolution res,
+  static AbstractType finishResolve(Resolution res,
                                     Context context,
                                     AbstractType thiz,
                                     HasSourcePosition pos,
@@ -692,13 +692,24 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         generics.freeze();
       }
 
+    var f0 = f;
     return typeKind == TypeKind.ThisType
       ? new ThisType(f)
+      : !f.generics().sizeMatches(generics) && ignoreActualTypePars
+      ? // incomplete type, will be replaced in Case.resolveType
+        new AbstractType() {
+          @Override protected AbstractFeature backingFeature() { return f0; }
+          @Override public List<AbstractType> generics() { return AbstractCall.NO_GENERICS; }
+          @Override public AbstractType outer() { check(false); return null; }
+          @Override public TypeKind kind() { return typeKind; }
+        }
+      : !f.generics().sizeMatches(generics)
+      ? (tolerant ? null : Types.t_ERROR)
       : ResolvedNormalType.create(generics,
-                                     unresolvedGenerics,
-                                     o,
-                                     f,
-                                     typeKind);
+                                  unresolvedGenerics,
+                                  o,
+                                  f,
+                                  typeKind);
   }
 
 

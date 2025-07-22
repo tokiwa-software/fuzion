@@ -145,8 +145,7 @@ public class ResolvedNormalType extends ResolvedType
                             TypeKind typeKind)
   {
     if (PRECONDITIONS) require
-      (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
+      (Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
        typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
        /* NYI: Types.resolved == null
          || f.compareTo(Types.resolved.f_void) != 0*/);
@@ -429,9 +428,10 @@ public class ResolvedNormalType extends ResolvedType
         {
           return originalOuterFeature;
         }
-        ResolvedType _resolved = null;
+        AbstractType _resolved = null;
 
         /**
+         * NYI: CLEANUP:
          * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
         @Override
