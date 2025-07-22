@@ -2500,7 +2500,8 @@ A ((Choice)) declaration must not contain a result type.
   public void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
-      (_state.atLeast(State.FINDING_DECLARATIONS));
+      (_state.atLeast(State.FINDING_DECLARATIONS),
+       isUniverse() || _outer.state().atLeast(State.RESOLVED_DECLARATIONS));
 
     if (hasOuterRef())
       {

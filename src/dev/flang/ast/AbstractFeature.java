@@ -874,7 +874,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   protected AbstractType createSelfType()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.FINDING_DECLARATIONS));
+      (state().atLeast(State.RESOLVED_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : outer().selfType();
     var g = generics().asActuals();

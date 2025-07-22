@@ -212,6 +212,9 @@ public class FormalGenerics extends ANY
    */
   public List<AbstractType> asActuals()
   {
+    if (PRECONDITIONS) require
+      (_feature.state().atLeast(State.RESOLVING_DECLARATIONS));
+
     // NYI: UNDER DEVELOPMENT: re-add caching?
     return new AsActuals();
   }
