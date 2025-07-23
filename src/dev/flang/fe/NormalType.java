@@ -99,6 +99,24 @@ class NormalType extends LibraryType
 
 
   /**
+   * `this` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  @Override
+  public AbstractType asValue()
+  {
+    return switch (kind())
+      {
+      case ValueType -> this;
+      case RefType   -> new NormalType(_libModule, _at, _feature, TypeKind.ValueType, generics(), outer());
+      default        -> throw new Error("unexpected kind "+kind()+" for NormalType");
+      };
+  }
+
+
+
+  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *

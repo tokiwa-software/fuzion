@@ -135,6 +135,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * `this` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  public AbstractType asValue()
+  {
+    if (PRECONDITIONS) require
+      (isNormalType());
+
+    throw new Error("asValue() not supported for "+getClass());
+  }
+
+
+  /**
    * This type as a reference.
    *
    * Requires that this is resolved, !isGenericArgument().
