@@ -1163,11 +1163,41 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType applyTypeParsLocally(AbstractFeature f, List<AbstractType> actualGenerics, int select)
+  public AbstractType applyTypeParsLocally(AbstractFeature f,
+                                            List<AbstractType> actualGenerics,
+                                            int select)
   {
-    return applyTypeParsLocally(null, f, actualGenerics, select);
+    return applyTypeParsLocally(f, actualGenerics, select, null);
   }
-  public AbstractType applyTypeParsLocally(AbstractFeature of, AbstractFeature f, List<AbstractType> actualGenerics, int select)
+
+
+  /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @param forOuter in case we replace an outer type that is a type parameter
+   * as in `T.i`, forOuter gives the original outer feature  of `i` such that `T`
+   * can be replaced with the corresponding actual type that inherits from that
+   * outer type. `null` in case we are not handling an outer type.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  private AbstractType applyTypeParsLocally(AbstractFeature f,
+                                            List<AbstractType> actualGenerics,
+                                            int select,
+                                            AbstractFeature forOuter)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -1203,15 +1233,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     result = g.replace(actualGenerics);
                   }
-              }
-            while (of != null && !result.isGenericArgument() && !result.feature().inheritsFrom(of))
-              {
-                result = result.outer();
-                if (CHECKS) check
-                  (Errors.any() || result != null);
-                if (result == null)
+                while (forOuter != null && !result.isGenericArgument() && !result.feature().inheritsFrom(forOuter))
                   {
-                    result = Types.t_ERROR;
+                    result = result.outer();
+                    if (CHECKS) check
+                      (Errors.any() || result != null);
+                    if (result == null)
+                      {
+                        result = Types.t_ERROR;
+                      }
                   }
               }
             yield result;
@@ -1223,7 +1253,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
               ? actualGenerics
               : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
-            var o2 = (result.outer() == null) ? null : result.outer().applyTypeParsLocally(result.feature().outer(), f, actualGenerics, select);
+            var ro = result.outer();
+            var o2 = ro != null ? ro.applyTypeParsLocally(f, actualGenerics, select, feature().outer())
+                                : null;
 
             g2 = cotypeActualGenerics(g2);
 
