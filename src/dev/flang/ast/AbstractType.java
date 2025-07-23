@@ -1165,6 +1165,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public AbstractType applyTypeParsLocally(AbstractFeature f, List<AbstractType> actualGenerics, int select)
   {
+    return applyTypeParsLocally(null, f, actualGenerics, select);
+  }
+  public AbstractType applyTypeParsLocally(AbstractFeature of, AbstractFeature f, List<AbstractType> actualGenerics, int select)
+  {
     if (PRECONDITIONS) require
       (f != null,
        actualGenerics != null);
@@ -1200,6 +1204,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                     result = g.replace(actualGenerics);
                   }
               }
+            while (of != null && !result.isGenericArgument() && !result.feature().inheritsFrom(of))
+              {
+                result = result.outer();
+                if (CHECKS) check
+                  (Errors.any() || result != null);
+                if (result == null)
+                  {
+                    result = Types.t_ERROR;
+                  }
+              }
             yield result;
           }
         case RefType, ValueType ->
@@ -1209,7 +1223,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
               ? actualGenerics
               : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
-            var o2 = (result.outer() == null) ? null : result.outer().applyTypeParsLocally(f, actualGenerics, select);
+            var o2 = (result.outer() == null) ? null : result.outer().applyTypeParsLocally(result.feature().outer(), f, actualGenerics, select);
 
             g2 = cotypeActualGenerics(g2);
 
@@ -1707,6 +1721,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  boolean anyOuterInheritsFrom(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument());
+
+    var tf = feature();
+    while (tf != null && !tf.inheritsFrom(f))
+      {
+        tf = tf.outer();
+      }
+    return tf != null;
+  }
+
   /**
    * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
    * exactly tt, ignoring tt.outer().
@@ -1724,7 +1751,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var att = tt.selfOrConstraint(context);
     if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
-        isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
+        isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
+                         ||
+                          tt.isGenericArgument() && tt.genericArgument().constraint(context).anyOuterInheritsFrom(feature())
+                         )
         )
       {
         if (foundRef != null && tt.isRef())

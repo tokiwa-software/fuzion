@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5569
+#
+# -----------------------------------------------------------------------
+
+# This issue creates a situation where an type parameter with a constraint is
+# used to produce a type that depends on the outer type of the actual type
+# parameter.
+#
+reg_issue5569 =>
+
+  # the orginal example from #5569:
+  #
+  #   - the result type of t.e.r is `t.this.i`
+  #   - so the result type of `E.c.r` for `E`=`t.e` must be `t.i`
+  #
+  t is
+    e : effect is
+      r => i
+      type.c => e.this.env
+    i is
+  u(E type : t.e) => _ := E.c.r
+  t.e ! (u t.e)
+
+  # the original example change to output the type
+  v(E type : t.e) =>
+    E.c.r |> type_of |> say
+
+  yak "expecting t.i : "; t.e ! (v t.e)
+
+  # using a different outer type `t2`
+  t2 : t is
+  yak "expecting t2.i: "; t2.e ! v t2.e
+
+  # using a different inner type `e2`
+  t.e2 : t.e is
+  yak "expecting t.i : "; t.e2 ! v t.e2
+
+  # using a different outer and inner type `t2.e2`
+  yak "expecting t2.i: "; t2.e2 ! v t2.e2
+
+  t.e.j is
+  t.e.q => j
+
+  w(E type : t.e) =>
+    x := E.c.r
+    y := E.c.q
+    say "{type_of x} {type_of y}"
+
+  yak "expecting t.i /t.e.j  : "; t.e   ! w t.e
+  yak "expecting t2.i/t2.e.j : "; t2.e  ! w t2.e
+  yak "expecting t.i /t.e2.j : "; t.e2  ! w t.e2
+  yak "expecting t2.i/t2.e2.j: "; t2.e2 ! w t2.e2

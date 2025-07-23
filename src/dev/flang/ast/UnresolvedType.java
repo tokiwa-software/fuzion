@@ -934,6 +934,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       .orElse(TypeKind.ValueType);
   }
 
+  public AbstractType applyTypeParsLocally(AbstractFeature f, List<AbstractType> actualGenerics, int select)
+  {
+    return this;
+  }
 
 }
 
