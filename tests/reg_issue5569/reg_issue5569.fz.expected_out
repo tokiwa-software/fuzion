@@ -6,3 +6,7 @@ expecting t.i /t.e.j  : Type of 'reg_issue5569.t.i' Type of 'reg_issue5569.t.e.j
 expecting t2.i/t2.e.j : Type of 'reg_issue5569.t2.i' Type of 'reg_issue5569.t2.e.j'
 expecting t.i /t.e2.j : Type of 'reg_issue5569.t.i' Type of 'reg_issue5569.t.e2.j'
 expecting t2.i/t2.e2.j: Type of 'reg_issue5569.t2.i' Type of 'reg_issue5569.t2.e2.j'
+expecting option (array t.i /t.e.j  ): Type of 'option (array reg_issue5569.t.i)' Type of 'option (array reg_issue5569.t.e.j)'
+expecting option (array t2.i/t2.e.j ): Type of 'option (array reg_issue5569.t2.i)' Type of 'option (array reg_issue5569.t2.e.j)'
+expecting option (array t.i /t.e2.j ): Type of 'option (array reg_issue5569.t.i)' Type of 'option (array reg_issue5569.t.e2.j)'
+expecting option (array t2.i/t2.e2.j): Type of 'option (array reg_issue5569.t2.i)' Type of 'option (array reg_issue5569.t2.e2.j)'

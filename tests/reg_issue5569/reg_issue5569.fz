@@ -69,3 +69,17 @@ reg_issue5569 =>
   yak "expecting t2.i/t2.e.j : "; t2.e  ! w t2.e
   yak "expecting t.i /t.e2.j : "; t.e2  ! w t.e2
   yak "expecting t2.i/t2.e2.j: "; t2.e2 ! w t2.e2
+
+  # check if this still works for types that are generic arguments
+  t.e.r2() option (array i) => option [i]
+  t.e.q2() option (array j) => option [j]
+
+  w2(E type : t.e) =>
+    x := E.c.r2
+    y := E.c.q2
+    say "{type_of x} {type_of y}"
+
+  yak "expecting option (array t.i /t.e.j  ): "; t.e   ! w2 t.e
+  yak "expecting option (array t2.i/t2.e.j ): "; t2.e  ! w2 t2.e
+  yak "expecting option (array t.i /t.e2.j ): "; t.e2  ! w2 t.e2
+  yak "expecting option (array t2.i/t2.e2.j): "; t2.e2 ! w2 t2.e2
