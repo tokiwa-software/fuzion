@@ -99,26 +99,6 @@ class NormalType extends LibraryType
 
 
   /**
-   * For a type that is not a type parameter, create a new variant using given
-   * actual generics and outer type.
-   *
-   * @param g2 the new actual generics to be used
-   *
-   * @param o2 the new outer type to be used (which may also differ in its
-   * actual generics).
-   *
-   * @return a new type with same feature(), but using g2/o2 as generics
-   * and outer type.
-   */
-  // NYI: CLEANUP: remove, why does this behave differently from super.replaceGenericsAndOuter?
-  @Override
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
-  {
-    return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
-  }
-
-
-  /**
    * For a resolved normal type, return the underlying feature.
    *
    * @return the underlying feature.
