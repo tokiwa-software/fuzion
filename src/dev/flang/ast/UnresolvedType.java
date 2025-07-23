@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Optional;
 import java.util.Set;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -700,7 +701,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         new AbstractType() {
           @Override protected AbstractFeature backingFeature() { return f0; }
           @Override public List<AbstractType> generics() { return AbstractCall.NO_GENERICS; }
-          @Override public AbstractType outer() { check(false); return null; }
+          @Override public AbstractType outer() { if (CHECKS) check(Errors.any()); return null; }
           @Override public TypeKind kind() { return typeKind; }
         }
       : !f.generics().sizeMatches(generics)
