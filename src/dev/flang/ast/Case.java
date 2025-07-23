@@ -232,7 +232,7 @@ public class Case extends AbstractCase
     boolean result = true;
     if (_field != null)  // matching 'x type'
       {
-        var t = _field.returnType().functionReturnType();
+        var t = _field.returnType().functionReturnType(true);
         var rt = resolveType(res, t, cgs, context, matched);
         _field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
