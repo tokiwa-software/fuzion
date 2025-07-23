@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5560
+#
+# -----------------------------------------------------------------------
+
+# Failure to infer arguments types from call site results in too many errors
+#
+reg_issue5560 =>
+
+  # Original example from #5560: This should produce onle one error
+  #
+  # This is supposed to infer the type of argument v from the calls to f.
+  #
+  #
+  # This should fail since the argument types in both calls are different
+  # (String vs i32), but before #5560 was fixed, it first reports an error
+  # in call `f 1` that is actually correct for itself, only the second
+  # error clarifies why there is a problem:
+  #
+  f(v) => say v
+  f "a"
+  f 1
+
+  # a second example with more call sites. This should currently produce one error.
+  #
+  # NYI: UNDER DEVELOPMENT: once #5561 is fixed, this might actually work and not
+  # produce any error
+  #
+  g(v) => say v
+  g "aa"
+  g nil
+  g (option "")
+  g Any
