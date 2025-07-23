@@ -380,6 +380,26 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
+   * `this` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  @Override
+  public AbstractType asValue()
+  {
+    if (PRECONDITIONS) require
+      (isNormalType());
+
+    return switch (kind())
+      {
+      case ValueType -> this;
+      case RefType   -> create(generics(), Call.NO_GENERICS, outer(), feature(), TypeKind.ValueType);
+      default        -> throw new Error("unexpected kind "+kind()+" for ResolvedNormalType");
+    };
+  }
+
+
+  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -391,7 +411,6 @@ public class ResolvedNormalType extends ResolvedType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
-  // NYI: CLEANUP: remove, why does this behave differently from super.replaceGenericsAndOuter?
   @Override
   public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
