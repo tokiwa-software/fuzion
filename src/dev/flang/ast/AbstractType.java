@@ -1721,17 +1721,38 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-  boolean anyOuterInheritsFrom(AbstractFeature f)
+  /**
+   * For checking if a type constraint or any of the outer types of the
+   * constraint corresponds to a `this` type.
+   *
+   * This is used in a call `E.x` were `E` has a constraint `E : a.b` and `x`
+   * has a result type `a.this.p` or `a.b.this.q` to replace the `this` type by
+   * the constraint to bet `E.p` (alternatively `E.outer(1).p`,
+   * see @replace_this_type_by_actual_outer2) or `E.q`, respectively.
+   *
+   * @param f the feature this might be inheriting from (or from f.outer()...).
+   *
+   * @return the outer level that inherits from f, i.e.,
+   *         <ul>
+   *           <li>-1 if no inheritance from `f` was found,</li>
+   *           <li> 0 if this type's feature inherits from f,</li>
+   *           <li> 1 if the next outer feature inherits from `f , etc.</li>
+   *         </ul>
+   */
+  int whichOuterInheritsFrom(AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
+    var result = 0;
     var tf = feature();
     while (tf != null && !tf.inheritsFrom(f))
       {
         tf = tf.outer();
+        result++;
       }
-    return tf != null;
+
+    return tf != null ? result : -1;
   }
 
   /**
@@ -1748,12 +1769,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
     var result = this;
-    var att = tt.selfOrConstraint(context);
     if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
         ||
-        isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
+        isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
                          ||
-                          tt.isGenericArgument() && tt.genericArgument().constraint(context).anyOuterInheritsFrom(feature())
+                         // we have a,b,c.this.type ann tt is type parameter with constraing x.y.z: So replace it if
+                         // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
+                         // parameter will be replaced, we will find that actual outer type that fits here.
+                         //
+                         // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
+                         // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
+                         // case `a` inherits from this.
+                          tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0
                          )
         )
       {
