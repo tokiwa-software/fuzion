@@ -2562,6 +2562,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   }
 
+
+  /**
+   * Is this is an incomplete type,
+   * a resolve type where generics sizes do not match, yet.
+   */
+  public boolean isIncompleteType()
+  {
+    return this instanceof IncompleteType;
+  }
+
 }
 
 /* end of file */

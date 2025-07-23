@@ -693,17 +693,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         generics.freeze();
       }
 
-    var f0 = f;
     return typeKind == TypeKind.ThisType
       ? new ThisType(f)
       : !f.generics().sizeMatches(generics) && ignoreActualTypePars
-      ? // incomplete type, will be replaced in Case.resolveType
-        new AbstractType() {
-          @Override protected AbstractFeature backingFeature() { return f0; }
-          @Override public List<AbstractType> generics() { return AbstractCall.NO_GENERICS; }
-          @Override public AbstractType outer() { if (CHECKS) check(Errors.any()); return null; }
-          @Override public TypeKind kind() { return typeKind; }
-        }
+      ? new IncompleteType(f, typeKind)
       : !f.generics().sizeMatches(generics)
       ? (tolerant ? null : Types.t_ERROR)
       : ResolvedNormalType.create(generics,

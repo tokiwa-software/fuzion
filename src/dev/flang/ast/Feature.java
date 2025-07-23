@@ -2366,6 +2366,13 @@ A ((Choice)) declaration must not contain a result type.
       }
     else
       {
+        result = _returnType.functionReturnType(true);
+        if (result != null && result.isIncompleteType())
+          {
+            // we need to resolve _outer which contains
+            // this case field before having a usable functionReturnType
+            res.resolveTypes(_outer);
+          }
         result = _returnType.functionReturnType();
         result = urgent && result == null ? Types.t_ERROR : result;
       }
@@ -2384,7 +2391,8 @@ A ((Choice)) declaration must not contain a result type.
     if (POSTCONDITIONS) ensure
       (!urgent || result != null,
        result != Types.t_UNDEFINED,
-       Errors.any() || result != Types.t_ERROR);
+       Errors.any() || result != Types.t_ERROR,
+       result == null || result instanceof ResolvedType);
 
     return result;
   }

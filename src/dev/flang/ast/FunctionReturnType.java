@@ -87,9 +87,10 @@ public class FunctionReturnType extends ReturnType
    *
    * @return the function return type.
    */
-  public AbstractType functionReturnType()
+  @Override
+  public AbstractType functionReturnType(boolean allowIncomplete)
   {
-    return _type == Types.t_UNDEFINED
+    return _type == Types.t_UNDEFINED || _type.isIncompleteType() && !allowIncomplete
       ? null
       : _type;
   }
