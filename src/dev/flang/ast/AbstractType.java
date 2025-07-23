@@ -1246,7 +1246,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (isNormalType(),
-       this instanceof ResolvedType);
+       this instanceof ResolvedType,
+       feature().generics().sizeMatches(g));
 
     var g2 = new List<>(g);
     g2.freeze();
