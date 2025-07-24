@@ -1339,24 +1339,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Call v.action(s) on all expressions s within this feature.
-   *
-   * @param v the action to be performed on the expressions.
-   */
-  void visitExpressions(ExpressionVisitor v)
-  {
-    for (var c: inherits())
-      {
-        c.visitExpressions(v);
-      }
-    if (isRoutine())
-      {
-        code().visitExpressions(v);
-      }
-  }
-
-
-  /**
    * Is this feature marked with the {@code fixed} modifier. If so, this feature is
    * not inherited, i.e., we know that at runtime, the outer feature's type is
    * outer().selfType() and not a heir of outer().  However, outer().outer()
