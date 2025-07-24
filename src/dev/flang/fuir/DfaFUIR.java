@@ -183,7 +183,6 @@ public class DfaFUIR extends GeneratingFUIR {
                 clazzFields(cl),
                 needsCode ? clazzCode(cl) : NO_SITE,
                 clazzResultField(cl),
-                clazzTypeParameterActualType(cl),
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),
                 lookupCall(cl),

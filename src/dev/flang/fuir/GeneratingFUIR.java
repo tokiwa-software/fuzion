@@ -968,7 +968,8 @@ public class GeneratingFUIR extends FUIR
                  yield res;
                }
         case Field,
-             Choice -> NO_ARGS;
+             Choice,
+             TypeParameter -> NO_ARGS;
         };
   }
 
@@ -1031,7 +1032,8 @@ public class GeneratingFUIR extends FUIR
                  Abstract,
                  Native -> c.argumentFields().length;
             case Field,
-                 Choice -> 0;
+                 Choice,
+                 TypeParameter -> 0;
             };
       }
   }
@@ -1391,27 +1393,6 @@ public class GeneratingFUIR extends FUIR
       ? c.typeName()
       : "-- clazzTypeName called on none cotype --")
         .getBytes(StandardCharsets.UTF_8);
-  }
-
-
-  /**
-   * If cl is a type parameter, return the type parameter's actual type.
-   *
-   * @param cl a clazz id
-   *
-   * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
-   * is not a type parameter.
-   */
-  @Override
-  public int clazzTypeParameterActualType(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.feature().isTypeParameter() ? cc.typeParameterActualType()._id
-                                          : NO_CLAZZ;
   }
 
 
@@ -2456,7 +2437,7 @@ public class GeneratingFUIR extends FUIR
       {
         innerClazz = switch (clazzKind(innerClazz))
           {
-          case Routine, Intrinsic, Native, Field -> innerClazz;
+          case Routine, Intrinsic, Native, Field, TypeParameter -> innerClazz;
           case Abstract, Choice -> NO_CLAZZ;
           };
       }

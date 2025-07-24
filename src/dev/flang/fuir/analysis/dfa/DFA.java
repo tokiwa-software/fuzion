@@ -377,6 +377,12 @@ public class DFA extends ANY
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
                        "Found call to  " + _fuir.clazzAsString(cc));
+        case TypeParameter     :
+          {
+            var rc = _fuir.clazzResultClazz(cc);
+            res = newInstance(rc, s, _call);
+            break;
+          }
         case Routine  :
         case Intrinsic:
         case Native   :

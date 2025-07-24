@@ -582,13 +582,11 @@ class CodeGen
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
+      case TypeParameter:
+        return new Pair<>(Expr.UNIT, tvalue.drop());
       case Intrinsic:
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-            {
-              return new Pair<>(Expr.UNIT, tvalue.drop());
-            }
-          else if (!Intrinsix.inRuntime(_jvm, cc))
+          if (!Intrinsix.inRuntime(_jvm, cc))
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }

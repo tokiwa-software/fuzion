@@ -280,10 +280,10 @@ public class Executor extends ProcessExpression<Value, Object>
           check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
 
         yield fres;
+      case TypeParameter :
+        yield pair(unitValue());
       case Intrinsic :
-        yield _fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-          ? pair(unitValue())
-          : pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
+        yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Abstract:
         throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
       case Choice :

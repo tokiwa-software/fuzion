@@ -1693,6 +1693,8 @@ public class C extends ANY
         Errors.error("Call to abstract feature encountered.",
                      "Found call to  " + _fuir.clazzAsString(cc));
         break;
+      case TypeParameter:
+        break;
       case Routine  :
       case Intrinsic:
       case Native   :
@@ -1908,6 +1910,7 @@ public class C extends ANY
           {
           case Routine   -> cFunctionDecl(cl, codeForRoutine(cl));
           case Intrinsic -> cFunctionDecl(cl, _intrinsics.code(this, cl));
+          case TypeParameter -> cFunctionDecl(cl, CStmnt.EMPTY);
           case Native    -> CStmnt.seq(functionWrapperForNative(cl),
                                        cFunctionDecl(cl, codeForNative(cl)));
           default -> null;

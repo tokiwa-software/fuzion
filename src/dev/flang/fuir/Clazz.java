@@ -711,7 +711,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
       case Routine           -> IR.FeatureKind.Routine;
       case Field             -> IR.FeatureKind.Field;
-      case TypeParameter     -> IR.FeatureKind.Intrinsic; // NYI: strange, currently needed for type_as_value arg
+      case TypeParameter     -> IR.FeatureKind.TypeParameter;
       case Intrinsic         -> IR.FeatureKind.Intrinsic;
       case Abstract          -> IR.FeatureKind.Abstract;
       case Choice            -> IR.FeatureKind.Choice;
@@ -1396,7 +1396,8 @@ class Clazz extends ANY implements Comparable<Clazz>
                       Abstract,
                       Field,
                       Native -> true;
-                 case Choice -> false;
+                 case Choice,
+                      TypeParameter -> false;
                });
 
     return _argumentFields;
