@@ -131,20 +131,6 @@ public abstract class AbstractAssign extends Expr
 
 
   /**
-   * visit all the expressions within this Assign.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  void visitExpressions(ExpressionVisitor v)
-  {
-    _value.visitExpressions(v);
-    _target.visitExpressions(v);
-    super.visitExpressions(v);
-  }
-
-
-  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.

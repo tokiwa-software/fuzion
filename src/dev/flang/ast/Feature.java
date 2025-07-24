@@ -1653,17 +1653,24 @@ public class Feature extends AbstractFeature
    * Find list of all accesses to this feature's closure by any of its inner
    * features.
    */
-  private List<AbstractCall> closureAccesses(Resolution res)
+  List<AbstractCall> closureAccesses(Resolution res)
   {
     List<AbstractCall> result = new List<>();
-    res._module.forEachDeclaredOrInheritedFeature(this,
-                                                  af -> af.visitExpressions(s -> {
-          if (s instanceof AbstractCall c && dependsOnOuterRef(c))
-            {
-              result.add(c);
-            }
-        })
-      );
+    var v = new FeatureVisitor() {
+      @Override public void action(AbstractCall c)
+      {
+        if (dependsOnOuterRef(c))
+          {
+            result.add(c);
+          }
+      }
+      @Override public Expr action(Feature f, AbstractFeature outer)
+      {
+        f.visit(this);
+        return super.action(f, outer);
+      }
+    };
+    res._module.forEachDeclaredOrInheritedFeature(this, af -> { if (af instanceof Feature f) { f.visit(v); }; } );
     return result;
   }
 
