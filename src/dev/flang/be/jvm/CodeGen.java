@@ -582,8 +582,6 @@ class CodeGen
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
-      case TypeParameter:
-        return new Pair<>(Expr.UNIT, tvalue.drop());
       case Intrinsic:
         {
           if (!Intrinsix.inRuntime(_jvm, cc))

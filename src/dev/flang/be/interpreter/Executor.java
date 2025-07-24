@@ -280,14 +280,8 @@ public class Executor extends ProcessExpression<Value, Object>
           check(fres != null, AbstractInterpreter.clazzHasUnitValue(_fuir, rt) || fres.v0() != unitValue());
 
         yield fres;
-      case TypeParameter :
-        yield pair(unitValue());
       case Intrinsic :
         yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
-      case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
-      case Choice :
-        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
       case Native:
         var mh = Linker.nativeLinker()
           .downcallHandle(
@@ -318,6 +312,8 @@ public class Executor extends ProcessExpression<Value, Object>
               }
           }
         yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
+      default:
+        throw new Error("Calling " + _fuir.clazzKind(cc) + " not possible: " + _fuir.codeAtAsString(s));
       };
 
     return result;

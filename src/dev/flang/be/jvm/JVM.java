@@ -457,10 +457,10 @@ should be avoided as much as possible.
         var k = jvm._fuir.clazzKind(cl);
         switch (k)
           {
-          case TypeParameter:
           case Routine      : jvm.code(cl); break;
           case Choice       : jvm._types._choices.createCode(cl); break;
           case Native       : jvm.native0(cl); break;
+          case TypeParameter:
           case Abstract     :
           case Intrinsic    :
           case Field        : break;
@@ -979,7 +979,6 @@ should be avoided as much as possible.
         switch (ck)
           {
           case Routine:
-          case TypeParameter:
             {
               codeForRoutine(cl);
             }
@@ -1477,8 +1476,7 @@ should be avoided as much as possible.
   void codeForRoutine(int cl)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
-       _fuir.clazzKind(cl) == FUIR.FeatureKind.TypeParameter);
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine);
 
     var cf = _types.classFile(cl);
     if (cf == null) return;
