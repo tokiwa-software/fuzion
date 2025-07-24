@@ -1805,7 +1805,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         ||
         isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
                          ||
-                         // we have a,b,c.this.type ann tt is type parameter with constraing x.y.z: So replace it if
+                         // we have a,b,c.this.type and tt is type parameter with constraing x.y.z: So replace it if
                          // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
                          // parameter will be replaced, we will find that actual outer type that fits here.
                          //
