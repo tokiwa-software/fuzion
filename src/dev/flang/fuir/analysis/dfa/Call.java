@@ -288,20 +288,9 @@ public class Call extends ANY implements Comparable<Call>, Context
           }
         else
           {
-            var at = _dfa._fuir.clazzTypeParameterActualType(calledClazz());
-            if (at >= 0)
-              {
-                var rc = _dfa._fuir.clazzResultClazz(calledClazz());
-                var t = _dfa.newInstance(rc, site(), this);
-                // NYI: DFA missing support for Type instance, need to set field t.name to tname.
-                result = t;
-              }
-            else
-              {
-                var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
-                Errors.warning(msg);
-                result = genericResult();
-              }
+            var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
+            Errors.warning(msg);
+            result = genericResult();
           }
       }
     else if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Native)

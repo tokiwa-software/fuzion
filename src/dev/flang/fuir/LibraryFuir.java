@@ -227,12 +227,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazzTypeParameterActualType(int cl)
-  {
-    return _clazzes[clazzId2num(cl)].clazzTypeParameterActualType();
-  }
-
-  @Override
   public SpecialClazzes getSpecialClazz(int cl)
   {
     for (int i = 0; i < _specialClazzes.length; i++)

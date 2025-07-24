@@ -546,17 +546,6 @@ public abstract class FUIR extends IR
   public abstract byte[] clazzTypeName(int cl);
 
 
-  /**
-   * If cl is a type parameter, return the type parameter's actual type.
-   *
-   * @param cl a clazz id
-   *
-   * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
-   * is not a type parameter.
-   */
-  public abstract int clazzTypeParameterActualType(int cl);
-
-
   /*----------------------  special clazzes  ---------------------*/
 
 
