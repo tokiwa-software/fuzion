@@ -83,3 +83,37 @@ reg_issue5569 =>
   yak "expecting option (array t2.i/t2.e.j ): "; t2.e  ! w2 t2.e
   yak "expecting option (array t.i /t.e2.j ): "; t.e2  ! w2 t.e2
   yak "expecting option (array t2.i/t2.e2.j): "; t2.e2 ! w2 t2.e2
+
+  # check if this still works for types that are generic arguments
+  t.e.ee() e.this => e.this
+  t.e.tt() t.this => t.this
+
+/* NYI: BUG: The following does not work yet, the type of `y` is `t.e.this` and not `t.this`:
+
+  w3(E type : t.e) =>
+    x := E.c.ee
+    y := E.c.tt
+    _ := x.j
+    _ := y.i
+    say "{type_of x} {type_of y}"
+
+  yak "expecting t.e /t  : "; t.e   ! w3 t.e
+  yak "expecting t2.e/t2 : "; t2.e  ! w3 t2.e
+  yak "expecting t.e2/t  : "; t.e2  ! w3 t.e2
+  yak "expecting t2.e2/t2: "; t2.e2 ! w3 t2.e2
+
+*/
+
+/* NYI: BUG: The following results in a crash of `fz` during momnorphization:
+
+  e3 : t.e is
+
+  w4(E type : t.e) =>
+    y := E.c.tt
+    say (type_of y)
+    say y
+
+  t.e ! w4 t.e
+  e3 ! w4 e3
+
+*/
