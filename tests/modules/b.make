@@ -23,8 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-override MAKEFILE_DIR = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-override TEST_DIR = $(realpath $(MAKEFILE_DIR)/modules)
-override NAME = $(TEST_DIR)/src/test_modules
-override FUZION_OPTIONS = -sourceDirs=$(TEST_DIR)/src -modules=b -moduleDirs=$(TEST_DIR)/modules
+override NAME = src/test_modules
+override FUZION_OPTIONS = -sourceDirs=src -modules=b -moduleDirs=modules
 include ../simple.mk
