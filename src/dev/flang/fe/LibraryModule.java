@@ -1606,12 +1606,10 @@ Expression
     return switch (k)
       {
       case Assign      -> assignNextPos(eAt);
-      case Box         -> boxNextPos  (eAt);
       case Const       -> constNextPos(eAt);
       case Current     -> eAt;
       case Match       -> matchNextPos(eAt);
       case Call        -> callNextPos (eAt);
-      case Tag         -> tagNextPos  (eAt);
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
@@ -1666,55 +1664,6 @@ Assign
 
     return assignFieldPos(at) + 4;
   }
-
-
-  /*
---asciidoc--
-
-Box
-^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | box result type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Box                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | box result type                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int boxTypePos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return at;
-  }
-  AbstractType boxType(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return type(boxTypePos(at));
-  }
-  int boxNextPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return typeNextPos(boxTypePos(at));
-  }
-
 
   /*
 --asciidoc--
@@ -2135,44 +2084,6 @@ Case
   {
     return codeNextPos(caseCodePos(at));
   }
-
-
-  /*
-
---asciidoc--
-
-Tag
-^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | resulting tagged union type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Tag                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | resulting tagged union type                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int tagTypePos(int at)
-  {
-    return at;
-  }
-  AbstractType tagType(int at)
-  {
-    return type(tagTypePos(at));
-  }
-  int tagNextPos(int at)
-  {
-    return typeNextPos(tagTypePos(at));
-  }
-
 
 
   /*
