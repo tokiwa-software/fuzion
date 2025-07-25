@@ -406,11 +406,9 @@ public class Docs extends ANY
       var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
 
       var file = new File(path.toFile(), "index.html");
-      try
+      try(FileWriter writer = new FileWriter(file))
         {
-          FileWriter writer = new FileWriter(file);
           writer.write(htmlTool.modulePage());
-          writer.close();
         }
       catch (IOException e)
         {
