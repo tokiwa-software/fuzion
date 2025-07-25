@@ -613,6 +613,15 @@ public abstract class AbstractCall extends Expr
 
 
   /**
+   * Is this Expr a call to an outer ref?
+   */
+  public boolean isCallToOuterRef()
+  {
+    return calledFeature().isOuterRef();
+  }
+
+
+  /**
    * This call as a human readable string
    */
   public String toString()
