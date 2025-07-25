@@ -1164,8 +1164,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * of this in t by the corresponding type from actualGenerics.
    */
   public AbstractType applyTypeParsLocally(AbstractFeature f,
-                                            List<AbstractType> actualGenerics,
-                                            int select)
+                                           List<AbstractType> actualGenerics,
+                                           int select)
   {
     return applyTypeParsLocally(f, actualGenerics, select, null);
   }
@@ -1787,6 +1787,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return tf != null ? result : -1;
   }
 
+
   /**
    * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
    * exactly tt, ignoring tt.outer().
@@ -1800,21 +1801,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
-    var result = this;
-    if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
-        ||
-        isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
-                         ||
-                         // we have a,b,c.this.type and tt is type parameter with constraing x.y.z: So replace it if
-                         // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
-                         // parameter will be replaced, we will find that actual outer type that fits here.
-                         //
-                         // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
-                         // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
-                         // case `a` inherits from this.
-                          tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0
-                         )
-        )
+    AbstractType result;
+    if (replacesThisType(tt, context))
       {
         if (foundRef != null && tt.isRef())
           {
@@ -1827,6 +1815,32 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
       }
     return result;
+  }
+
+
+  /**
+   * Is this a `.this` type that should be replaced by `tt`?
+   *
+   * @param tt the type feature we are calling
+   *
+   * @param context the source code context where this Type is used
+   */
+  private boolean replacesThisType(AbstractType tt, Context context)
+  {
+    return
+      isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+      ||
+      isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
+                       ||
+                       // we have a,b,c.this.type and tt is type parameter with constraing x.y.z: So replace it if
+                       // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
+                       // parameter will be replaced, we will find that actual outer type that fits here.
+                       //
+                       // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
+                       // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
+                       // case `a` inherits from this.
+                       tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0
+                       );
   }
 
 

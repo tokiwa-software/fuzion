@@ -2032,11 +2032,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     AbstractFeature parent = feature();
     while (child != null)
       {
-        while (!child.feature().inheritsFrom(parent))
-          {
-            child = child.outerRef() != null ? child.outerRef().resultClazz()
-                                             : child._outer;
-          }
         var childf = child.feature();
         // find outer that inherits this clazz, e.g.
         //
