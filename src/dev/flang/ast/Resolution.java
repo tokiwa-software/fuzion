@@ -566,7 +566,7 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (Errors.any() || !af.isUniverse(),
-       Errors.any() || state(af).atLeast(State.FINDING_DECLARATIONS),
+       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS),
        !af.isCotype());
 
     if (af._cotype == null)
@@ -612,7 +612,8 @@ public class Resolution extends ANY
               {
                 var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
                                                 : Impl.TYPE_PARAMETER;
-                var constraint0 = t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType();
+                var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
+                  .resolve(this, af.context());
                 var constraint = af.rebaseTypeForCotype(constraint0);
                 var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
                                      Contract.EMPTY_CONTRACT,
@@ -667,7 +668,8 @@ public class Resolution extends ANY
   private void existingOrNewCotype(AbstractFeature af, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
-      (!af.isUniverse());
+      (!af.isUniverse(),
+       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS));
 
     var outerType = af.outer().isUniverse() ? universe :
                     af.outer().isCotype()   ? af.outer()

@@ -1163,7 +1163,41 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType applyTypeParsLocally(AbstractFeature f, List<AbstractType> actualGenerics, int select)
+  public AbstractType applyTypeParsLocally(AbstractFeature f,
+                                           List<AbstractType> actualGenerics,
+                                           int select)
+  {
+    return applyTypeParsLocally(f, actualGenerics, select, null);
+  }
+
+
+  /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Unlike applyTypePars(), this does not traverse outer types.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @param select true iff this is an open generic type and we select a given
+   * actual generic.
+   *
+   * @param forOuter in case we replace an outer type that is a type parameter
+   * as in `T.i`, forOuter gives the original outer feature  of `i` such that `T`
+   * can be replaced with the corresponding actual type that inherits from that
+   * outer type. `null` in case we are not handling an outer type.
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  private AbstractType applyTypeParsLocally(AbstractFeature f,
+                                            List<AbstractType> actualGenerics,
+                                            int select,
+                                            AbstractFeature forOuter)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -1199,6 +1233,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     result = g.replace(actualGenerics);
                   }
+                while (forOuter != null && !result.isGenericArgument() && !result.feature().inheritsFrom(forOuter))
+                  {
+                    result = result.outer();
+                    if (CHECKS) check
+                      (Errors.any() || result != null);
+                    if (result == null)
+                      {
+                        result = Types.t_ERROR;
+                      }
+                  }
               }
             yield result;
           }
@@ -1209,7 +1253,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
               ? actualGenerics
               : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
-            var o2 = (result.outer() == null) ? null : result.outer().applyTypeParsLocally(f, actualGenerics, select);
+            var ro = result.outer();
+            var o2 = ro != null ? ro.applyTypeParsLocally(f, actualGenerics, select, feature().outer())
+                                : null;
 
             g2 = cotypeActualGenerics(g2);
 
@@ -1708,6 +1754,41 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * For checking if a type constraint or any of the outer types of the
+   * constraint corresponds to a `this` type.
+   *
+   * This is used in a call `E.x` were `E` has a constraint `E : a.b` and `x`
+   * has a result type `a.this.p` or `a.b.this.q` to replace the `this` type by
+   * the constraint to bet `E.p` (alternatively `E.outer(1).p`,
+   * see @replace_this_type_by_actual_outer2) or `E.q`, respectively.
+   *
+   * @param f the feature this might be inheriting from (or from f.outer()...).
+   *
+   * @return the outer level that inherits from f, i.e.,
+   *         <ul>
+   *           <li>-1 if no inheritance from `f` was found,</li>
+   *           <li> 0 if this type's feature inherits from f,</li>
+   *           <li> 1 if the next outer feature inherits from `f , etc.</li>
+   *         </ul>
+   */
+  int whichOuterInheritsFrom(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument());
+
+    var result = 0;
+    var tf = feature();
+    while (tf != null && !tf.inheritsFrom(f))
+      {
+        tf = tf.outer();
+        result++;
+      }
+
+    return tf != null ? result : -1;
+  }
+
+
+  /**
    * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
    * exactly tt, ignoring tt.outer().
    *
@@ -1720,12 +1801,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   AbstractType replace_this_type_by_actual_outer2(AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef, Context context)
   {
-    var result = this;
-    var att = tt.selfOrConstraint(context);
-    if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
-        ||
-        isThisType() && att.feature().inheritsFrom(feature())  // we have abc.this.type with att inheriting from abc, so use tt
-        )
+    AbstractType result;
+    if (replacesThisType(tt, context))
       {
         if (foundRef != null && tt.isRef())
           {
@@ -1738,6 +1815,32 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
       }
     return result;
+  }
+
+
+  /**
+   * Is this a `.this` type that should be replaced by `tt`?
+   *
+   * @param tt the type feature we are calling
+   *
+   * @param context the source code context where this Type is used
+   */
+  private boolean replacesThisType(AbstractType tt, Context context)
+  {
+    return
+      isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+      ||
+      isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
+                       ||
+                       // we have a,b,c.this.type and tt is type parameter with constraing x.y.z: So replace it if
+                       // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
+                       // parameter will be replaced, we will find that actual outer type that fits here.
+                       //
+                       // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
+                       // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
+                       // case `a` inherits from this.
+                       tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0
+                       );
   }
 
 

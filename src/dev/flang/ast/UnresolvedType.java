@@ -934,7 +934,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       .orElse(TypeKind.ValueType);
   }
 
-
 }
 
 /* end of file */
