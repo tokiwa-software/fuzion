@@ -633,7 +633,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  boolean isCallToOuterRef()
   {
     return false;
   }
@@ -767,7 +767,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
          */
         return frmlT;
       }
-    else if (t.isRef() && !isCallToOuterRef())
+    else if (t.isRef())
       {
         return null;
       }

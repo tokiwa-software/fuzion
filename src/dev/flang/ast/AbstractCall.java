@@ -615,7 +615,8 @@ public abstract class AbstractCall extends Expr
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  @Override
+  boolean isCallToOuterRef()
   {
     return calledFeature().isOuterRef();
   }
