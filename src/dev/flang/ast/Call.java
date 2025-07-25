@@ -2358,7 +2358,7 @@ public class Call extends AbstractCall
     if (_calledFeature == null && _target != null && outer.state().atLeast(State.RESOLVED_INHERITANCE))
     {
       AbstractType tt = _target.asParsedType();
-      if (tt != null && tt instanceof UnresolvedType ut)
+      if (tt instanceof UnresolvedType ut)
         {
           // check if this might be a
           // left hand side of dot-type-call

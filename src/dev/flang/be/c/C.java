@@ -2176,6 +2176,7 @@ public class C extends ANY
       {
         var at = _fuir.clazzArgClazz(cl, i);
         var c = _fuir.lookupCall(at);
+        // NYI: CLEANUP: simplify ternary with &&/||
         var isComplexValue = c != NO_CLAZZ
           // 1. pass as function pointer
           ? false

@@ -29,7 +29,6 @@ package dev.flang.ast;
 import java.util.Optional;
 import java.util.Set;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;

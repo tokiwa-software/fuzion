@@ -28,7 +28,6 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
