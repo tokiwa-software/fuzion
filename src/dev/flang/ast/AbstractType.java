@@ -135,6 +135,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * `this` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  public AbstractType asValue()
+  {
+    if (PRECONDITIONS) require
+      (isNormalType());
+
+    throw new Error("asValue() not supported for "+getClass());
+  }
+
+
+  /**
    * This type as a reference.
    *
    * Requires that this is resolved, !isGenericArgument().
@@ -1292,17 +1306,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (isNormalType(),
-       this instanceof ResolvedType);
+       this instanceof ResolvedType,
+       feature().generics().sizeMatches(g));
 
-    var g2 = new List<>(g);
-    g2.freeze();
-
-    return new ResolvedType() {
-      @Override protected AbstractFeature backingFeature() { return AbstractType.this.backingFeature(); }
-      @Override public List<AbstractType> generics() { return g2; }
-      @Override public AbstractType outer() { return o == null ? feature().outer().selfType() : o; }
-      @Override public TypeKind kind() { return AbstractType.this.kind(); }
-    };
+    throw new Error("replaceGenericsAndOuter not supported for "+getClass());
   }
 
 
@@ -2663,6 +2670,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   void usedFeatures(Set<AbstractFeature> s)
   {
 
+  }
+
+
+  /**
+   * Is this is an incomplete type,
+   * a resolve type where generics sizes do not match, yet.
+   */
+  public boolean isIncompleteType()
+  {
+    return this instanceof IncompleteType;
   }
 
 }

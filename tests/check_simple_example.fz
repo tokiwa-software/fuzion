@@ -65,7 +65,10 @@ envir_var_kv := [
   "DYLD_FALLBACK_LIBRARY_PATH",
   "C_INCLUDE_PATH",
   "LANGUAGE",
-  "dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS"
+  "dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS",
+  # without this test/socket fails on windows,
+  # winsock2 seems to need this to properly load the dlls
+  "SYSTEMROOT"
 ].map k->
   if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
     (envir.vars.get k)
@@ -229,7 +232,7 @@ delete_tmp_files =>
 
 be     := envir.args[1]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.args[2].replace "../../bin/fz" "java --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {(envir.vars.get "FUZION_JAVA_OPTIONS").or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
+fz_run := envir.args[2].replace "../../bin/fz" "java {is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : ""} --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {(envir.vars.get "FUZION_JAVA_OPTIONS").or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
 file   := envir.args[3]
 exp_out := if be = "effect"
              "$file.effect"

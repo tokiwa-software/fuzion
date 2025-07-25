@@ -187,27 +187,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Constructor to create a type from an existing type after formal generics
-   * have been replaced in the generics arguments and in the outer type.
-   *
-   * @param t the original type
-   *
-   * @param g the actual generic arguments that replace t.generics
-   *
-   * @param o the actual outer type, or null, that replaces t.outer
-   */
-  public UnresolvedType(UnresolvedType t, List<AbstractType> g, AbstractType o)
-  {
-    this(t.pos(), t._name, g, o, t._typeKind);
-
-    if (PRECONDITIONS) require
-      (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       Errors.any() || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
-       (t.outer() == null) == (o == null));
-  }
-
-
-  /**
    * Constructor
    *
    * @param n
@@ -666,7 +645,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @return an instance of ResolvedNormalType representing the given type.
    */
-  static ResolvedType finishResolve(Resolution res,
+  static AbstractType finishResolve(Resolution res,
                                     Context context,
                                     AbstractType thiz,
                                     HasSourcePosition pos,
@@ -716,11 +695,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     return typeKind == TypeKind.ThisType
       ? new ThisType(f)
+      : !f.generics().sizeMatches(generics) && ignoreActualTypePars
+      ? new IncompleteType(f, typeKind)
+      : !f.generics().sizeMatches(generics)
+      ? (tolerant ? null : Types.t_ERROR)
       : ResolvedNormalType.create(generics,
-                                     unresolvedGenerics,
-                                     o,
-                                     f,
-                                     typeKind);
+                                  unresolvedGenerics,
+                                  o,
+                                  f,
+                                  typeKind);
   }
 
 
@@ -898,6 +881,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         public boolean isFreeType() { return true; }
       };
     var g = outer.outer().addTypeParameter(res, tp);
+    tp.scheduleForResolution(res);
     return g.asGenericType();
   }
 
@@ -930,7 +914,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   public TypeKind kind()
   {
     return _typeKind
-      // NYI: UNDER DEVELOPMENT: always correct?
       .orElse(TypeKind.ValueType);
   }
 

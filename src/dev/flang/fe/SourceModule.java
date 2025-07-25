@@ -826,7 +826,7 @@ part of the (((inner features))) declarations of the corresponding
   public void findDeclaredOrInheritedFeatures(Feature outer)
   {
     if (PRECONDITIONS) require
-      (outer.state() == State.RESOLVING_DECLARATIONS);
+      (_res.state(outer) == State.RESOLVING_DECLARATIONS);
 
     findInheritedFeatures(declaredOrInheritedFeatures(outer), outer, _dependsOn);
     loadInnerFeatures(outer);
@@ -996,7 +996,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(State.LOADING));
+      (_res.state(outer).atLeast(State.LOADING));
 
     var fn = f.featureName();
     var df = declaredFeatures(outer);
@@ -1028,7 +1028,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
       }
     df.put(fn, f);
-    if (outer.state().atLeast(State.RESOLVED_DECLARATIONS))
+    if (_res.state(outer).atLeast(State.RESOLVED_DECLARATIONS))
       {
         addToDeclaredOrInheritedFeatures(outer, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
@@ -1101,7 +1101,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use)
   {
-    if (!outer.state().atLeast(State.RESOLVING_DECLARATIONS))
+    if (outer != Types.f_ERROR && !_res.state(outer).atLeast(State.RESOLVING_DECLARATIONS))
       {
         _res.resolveDeclarations(outer);
       }
@@ -1203,14 +1203,14 @@ A post-condition of a feature that does not redefine an inherited feature must s
   private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVED_INHERITANCE) || outer.isUniverse());
+      (_res.state(outer).atLeast(State.RESOLVED_INHERITANCE) || outer.isUniverse());
 
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
     AbstractFeature inner = null;
     do
       {
-        if (!curOuter.state().atLeast(State.RESOLVING_DECLARATIONS))
+        if (!_res.state(curOuter).atLeast(State.RESOLVING_DECLARATIONS))
           {
             _res.resolveDeclarations(curOuter);
           }
@@ -1792,7 +1792,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     for (var frml : args)
       {
         if (CHECKS) check
-          (Errors.any() || frml.state().atLeast(State.RESOLVED_DECLARATIONS));
+          (Errors.any() || _res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
 
         var frmlT = frml.resultType();
 

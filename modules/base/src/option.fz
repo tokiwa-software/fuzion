@@ -59,8 +59,6 @@ is
   # monadic operator for bool result, false for nil
   #
   public infix >>? (f T -> bool) bool
-  pre
-    T : numeric
   =>
     option.this ? v T => f v
                 | nil => false

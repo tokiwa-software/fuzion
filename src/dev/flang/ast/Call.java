@@ -2579,7 +2579,6 @@ public class Call extends AbstractCall
   private void resolveGenerics(Resolution res, Context context)
   {
     _generics = res.resolveTypes(_generics, context);
-    _generics = _generics.map(g -> g.resolve(res, _calledFeature.outer().context()));
   }
 
 

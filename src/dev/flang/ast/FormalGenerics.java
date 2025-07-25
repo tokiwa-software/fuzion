@@ -47,25 +47,10 @@ public class FormalGenerics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  private static final List<AbstractFeature> NO_FEATURES = new List<>();
-  // NYI: UNDER DEVELOPMENT: { NO_FEATURES.freeze(); }
-
-  private final AbstractFeature _feature;
-
-
   /**
-   * Field with type from this.type created in case fieldName != null.
-   *
-   * This is private to prevent direct access that does not take care about
-   * isOpen.
+   * The feature that this is the formal generics of.
    */
-  // NYI: CLEANUP: remove this method
-  public final List<AbstractFeature> list()
-  {
-    return _feature == null
-      ? NO_FEATURES
-      : _feature.typeArguments();
-  };
+  final AbstractFeature _feature;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -90,7 +75,7 @@ public class FormalGenerics extends ANY
    */
   public boolean isOpen()
   {
-    return !list().isEmpty() && list().getLast().isOpenTypeParameter();
+    return !_feature.typeArguments().isEmpty() && _feature.typeArguments().getLast().isOpenTypeParameter();
   }
 
 
@@ -108,8 +93,8 @@ public class FormalGenerics extends ANY
   public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
     return isOpen()
-      ? (list().size()-1) <= actualGenerics.size()
-      : list().size() == actualGenerics.size();
+      ? (_feature.typeArguments().size()-1) <= actualGenerics.size()
+      : _feature.typeArguments().size() == actualGenerics.size();
   }
 
 
@@ -166,7 +151,7 @@ public class FormalGenerics extends ANY
       // NYI: This is a bit ugly, can we avoid adding all these types
       // here?  They should never be used since AsActuals is only a
       // placeholder for the actual generics.
-      for (var g : list())
+      for (var g : _feature.typeArguments())
         {
           add(g.asGenericType());
         }
@@ -210,10 +195,14 @@ public class FormalGenerics extends ANY
    *
    * @return actual generics that match these formal generics.
    */
+  private AsActuals _asActuals = null;
   public List<AbstractType> asActuals()
   {
-    // NYI: UNDER DEVELOPMENT: re-add caching?
-    return new AsActuals();
+    if (_asActuals == null || !_feature.state().atLeast(State.RESOLVED_DECLARATIONS))
+      {
+        _asActuals = new AsActuals();
+      }
+    return _asActuals;
   }
 
 
@@ -225,8 +214,8 @@ public class FormalGenerics extends ANY
    */
   public String sizeText()
   {
-    int sz = isOpen() ? list().size() - 1
-                      : list().size();
+    int sz = isOpen() ? _feature.typeArguments().size() - 1
+                      : _feature.typeArguments().size();
     return
       isOpen()    && (sz == 0) ? "any number of generic arguments"
       :  isOpen() && (sz == 1) ? "at least one generic argument"
@@ -244,9 +233,9 @@ public class FormalGenerics extends ANY
    */
   public String toString()
   {
-    return !isOpen() && list().isEmpty()
+    return !isOpen() && _feature.typeArguments().isEmpty()
       ? ""
-      : list().map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
+      : _feature.typeArguments().map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
   }
 
 }

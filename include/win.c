@@ -246,6 +246,7 @@ int fzE_close(int sockfd)
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
   WSADATA wsaData;
+  // NYI: CLEANUP: call only once
   return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
     ? -1
     : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
@@ -274,7 +275,7 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
-    result[0] = fzE_net_error();
+    last_error = fzE_net_error();
     return -1;
   }
   struct addrinfo *addr_info = NULL;
@@ -289,8 +290,8 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
 
   if(bind_res == -1)
   {
+    last_error = fzE_net_error();
     fzE_close(result[0]);
-    result[0] = fzE_net_error();
     return -1;
   }
   freeaddrinfo(addr_info);
