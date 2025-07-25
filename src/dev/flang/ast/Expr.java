@@ -633,7 +633,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  boolean isCallToOuterRef()
   {
     return false;
   }
@@ -760,19 +760,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public AbstractType needsBoxing(AbstractType frmlT)
   {
     var t = type();
-    if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
-      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
-         * could be a ref) or frmlT is this type and the underlying feature is by
-         * default a ref?
-         */
-        return frmlT;
-      }
-    else if (t.isRef() && !isCallToOuterRef())
+    if (t.isRef())
       {
         return null;
       }
-    else if (frmlT.isRef())
+    else if (frmlT.isRef() || frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
       {
+        /* Boxing needed when we assign to generic argument (so it
+         * could be a ref) or frmlT is this type and the underlying feature is by
+         * default a ref?
+         */
         return frmlT;
       }
     else

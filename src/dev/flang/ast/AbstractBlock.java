@@ -244,7 +244,8 @@ public abstract class AbstractBlock extends Expr
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  @Override
+  boolean isCallToOuterRef()
   {
     return resultExpression() != null && resultExpression().isCallToOuterRef();
   }
