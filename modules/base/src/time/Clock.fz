@@ -60,24 +60,42 @@ public Clock ref : effect is
   # In case the instant is in the past, do not run the code. In case the instant is
   # in the future, wait until this clock reached the time specified by instant.
   #
-  # return normally
+  # return true if the code was actually run, false if the given time `t` is already
+  # in the past.
   #
-  public one_shot(t instant,
-                  code ()->unit) unit
-  => abstract
+  public run_once(t instant,
+                  code ()->unit) bool
+  =>
+    abstract
 
 
   # run the given code periodically at time `first`, `first+p`, `first+p*2`, etc.
   # until this clock has reached `last`.
   #
   # In case any of the instants `first`, `first+p`, `first+p*2`, etc. happen to
-  # be in the past at the time given, do not run code for that instant.
+  # be in the past when this is called or after the previous execution of code,
+  # respectively, do not run code for that instant.
   #
-  # return normally
+  # return the number of times the code was run
   #
-  public periodic_shot(first instant,
-                       p time.duration,
-                       last instant,
-                       code ()->unit)
-                       unit
-  => abstract
+  public run_periodic(first instant,
+                      period time.duration,
+                      last instant,
+                      code ()->unit) u64
+  pre
+    debug: period > time.duration.ns 0
+  post
+    debug: ((last >= first): result <= ((last- first) / period) + 1)
+    debug: ((last <  first): result = 0)
+  =>
+    for
+      cnt := u64 0, cnt + 1
+      ima := read
+      next1 := first, next + period
+      skip := if ima > next1 then (ima - next1) / period else 0
+      next := next1 + period * skip
+    while next <= last
+      sleep next-ima
+      code()
+    else
+      cnt

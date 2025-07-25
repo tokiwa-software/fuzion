@@ -46,6 +46,13 @@ module:public instant (val u64) : property.orderable is
     time.duration val .as_string
 
 
+  # create a string representation of this instant using the given unit.
+  #
+  public as_string(u time.time_unit) String
+  =>
+    time.duration val .as_string u
+
+
   # do two given instants represent the same moment in time?
   #
   public fixed redef type.equality(a, b time.instant) bool => a.val = b.val
