@@ -612,7 +612,8 @@ public class Resolution extends ANY
               {
                 var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
                                                 : Impl.TYPE_PARAMETER;
-                var constraint0 = t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType();
+                var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
+                  .resolve(this, af.context());
                 var constraint = af.rebaseTypeForCotype(constraint0);
                 var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
                                      Contract.EMPTY_CONTRACT,
