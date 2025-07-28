@@ -2210,8 +2210,7 @@ public class GeneratingFUIR extends FUIR
 
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
-    var callToOuterRef = c.target().isCallToOuterRef();
-    var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     // NYI: HACK

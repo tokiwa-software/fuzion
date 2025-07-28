@@ -1105,15 +1105,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Is this Expr a call to an outer ref?
-   */
-  public boolean isCallToOuterRef()
-  {
-    return calledFeature().isOuterRef();
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
