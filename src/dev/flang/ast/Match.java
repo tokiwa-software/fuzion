@@ -421,48 +421,60 @@ public class Match extends AbstractMatch
    *
    * @param fromContract is this an if generated from a contract? (for error messages)
    */
-  public static Match createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
+  public static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
   {
     if (PRECONDITIONS) require
       (c != null,
-       b != null);
+       b != null,
+       !(c instanceof BoolConst && elseB == null));
 
-    /**
-     * If there is no else / elseif, create a default else
-     * branch returning unit.
-     */
-    if (elseB == null)
+    Expr result;
+    if (c instanceof BoolConst bc)
       {
-        var unit = new Call(pos, FuzionConstants.UNIT_NAME);
-        elseB = new Block(new List<>(unit));
+        result = bc.getCompileTimeConstBool()
+          ? b
+          : elseB;
       }
-
-    // Types.resolved may still be null, so we have to
-    // create these cases in a lazy fashion.
-    var cases = new List<AbstractCase>(
-          new Case(b.pos(), null, b)
-          {
-            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
-            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
-            {
-              matched[1] = SourcePosition.notAvailable;
-              return true;
-            }
-          },
-          new Case(elseB.pos(), null, elseB)
-          {
-            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
-            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
-            {
-              matched[0] = SourcePosition.notAvailable;
-              return true;
-            }
-          });
-
-    return new Match(pos, c, cases)
+    else
       {
-        @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
-      };
+        /**
+         * If there is no else / elseif, create a default else
+         * branch returning unit.
+         */
+        if (elseB == null)
+          {
+            var unit = new Call(pos, FuzionConstants.UNIT_NAME);
+            elseB = new Block(new List<>(unit));
+          }
+
+        // Types.resolved may still be null, so we have to
+        // create these cases in a lazy fashion.
+        var cases = new List<AbstractCase>(
+              new Case(b.pos(), null, b)
+              {
+                @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
+                @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+                {
+                  matched[1] = SourcePosition.notAvailable;
+                  return true;
+                }
+              },
+              new Case(elseB.pos(), null, elseB)
+              {
+                @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
+                @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+                {
+                  matched[0] = SourcePosition.notAvailable;
+                  return true;
+                }
+              });
+
+        result = new Match(pos, c, cases)
+          {
+            @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
+          };
+      }
+    return result;
   }
 
 
