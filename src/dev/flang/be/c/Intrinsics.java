@@ -1074,22 +1074,13 @@ public class Intrinsics extends ANY
       }
     else
       {
-        var at = c._fuir.clazzTypeParameterActualType(cl);
-        if (at >= 0)
-          {
-            // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-            result = CStmnt.EMPTY;
-          }
-        else
-          {
-            var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
-            Errors.warning(msg);
-            result = CStmnt.seq(CExpr.call("fprintf",
-                                           new List<>(new CIdent("stderr"),
-                                                      CExpr.string("*** error: NYI: %s\n"),
-                                                      CExpr.string(msg))),
-                                CExpr.call("exit", new List<>(CExpr.int32const(1))));
-          }
+        var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
+        Errors.warning(msg);
+        result = CStmnt.seq(CExpr.call("fprintf",
+                                        new List<>(new CIdent("stderr"),
+                                                  CExpr.string("*** error: NYI: %s\n"),
+                                                  CExpr.string(msg))),
+                            CExpr.call("exit", new List<>(CExpr.int32const(1))));
       }
 
     return result;

@@ -29,6 +29,7 @@ package dev.flang.fuir.analysis;
 import java.util.Stack;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_SITE;
 
@@ -598,7 +599,9 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var args = args(cc0, stack, _fuir.clazzArgCount(cc0));
           var tc = _fuir.accessTargetClazz(s);
           var tvalue = pop(stack, tc);
-          var r = _processor.call(s, tvalue, args);
+          var r = _fuir.clazzKind(cc0) == FeatureKind.TypeParameter
+            ? new Pair<>(_processor.unitValue(), _processor.drop(tvalue, tc))
+            : _processor.call(s, tvalue, args);
           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
             {
               stack.push(null);

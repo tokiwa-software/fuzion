@@ -281,13 +281,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
         yield fres;
       case Intrinsic :
-        yield _fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-          ? pair(unitValue())
-          : pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
-      case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
-      case Choice :
-        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
+        yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Native:
         var mh = Linker.nativeLinker()
           .downcallHandle(
@@ -318,6 +312,8 @@ public class Executor extends ProcessExpression<Value, Object>
               }
           }
         yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
+      default:
+        throw new Error("Calling " + _fuir.clazzKind(cc) + " not possible: " + _fuir.codeAtAsString(s));
       };
 
     return result;
