@@ -611,7 +611,7 @@ public class List<T>
    * @return this (if the predicate holds for all elements) or a new list with
    * only those elements that tested true.
    */
-  public List filter(Predicate<T> f)
+  public List<T> filter(Predicate<T> f)
   {
     var result = this;
     for (var i = 0; i < size(); i++)

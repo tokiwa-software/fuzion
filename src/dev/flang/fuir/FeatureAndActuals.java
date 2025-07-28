@@ -137,7 +137,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    */
   public int compareTo(FeatureAndActuals oo)
   {
-    var o = (FeatureAndActuals) oo;
+    var o = oo;
     var r = _f.compareTo(o._f);
     if (r == 0 && (_tp == null || o._tp == null))
       { // special handling for min / max:

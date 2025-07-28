@@ -558,10 +558,10 @@ public class Lexer extends SourceFile
          else if (x.equals("-stringLiteralEscapes"))
            {
              say("""
-[options=\"header\",cols=\"1,1\"]
-|====
-   | escape sequence | resulting code point
-                                """);
+                 [options=\"header\",cols=\"1,1\"]
+                 |====
+                    | escape sequence | resulting code point
+                 """);
              for (int i = 0; i < StringLexer.escapeChars.length; i++)
                {
                  var c      = StringLexer.escapeChars[i][0];
@@ -3131,13 +3131,13 @@ PIPE        : "|"
               if (escaped)
                 {
                   var i = 0;
-                  while (i < escapeChars.length && p != (int) escapeChars[i][0])
+                  while (i < escapeChars.length && p != escapeChars[i][0])
                     {
                       i++;
                     }
                   if (i < escapeChars.length)
                     {
-                      c = (int) escapeChars[i][1];
+                      c = escapeChars[i][1];
                     }
                   else
                     {
