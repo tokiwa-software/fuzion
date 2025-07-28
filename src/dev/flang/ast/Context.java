@@ -118,7 +118,9 @@ abstract class Context extends ANY
         @Override
         AbstractType constraintFor(AbstractFeature typeParameter)
         {
-          if (f instanceof Feature ff)
+          if (f instanceof Feature ff &&
+              // pre else must not be used for type constraint, see #3888
+              ff.originalContract()._hasPreElse == null)
             {
               for (var c : ff.originalContract()._declared_preconditions)
                 {
@@ -143,6 +145,7 @@ abstract class Context extends ANY
                               .stream()
                               .filter(y ->
                                   y.outer().origin() == rpt.genericArgument().outer().origin() &&
+                                  // NYI: CLEANUP: ugly string comparison
                                   y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
                                 )
                               .findFirst()
