@@ -23,12 +23,19 @@
 
 # time.instant -- abstract moment in time used for measuring durations
 #
+# An instant is an absolute time relative to some fixed start of an epoch
+# that depends on the clock that created this instant.
+#
+# NYI: UNDER DEVELOPMENT: we might want to add a reference to the clock that
+# created this instant and verify that `infix -` is called only on `instant`s
+# created by the same clock.
+#
 module:public instant (val u64) : property.orderable is
 
   # which instant will be after the time specified by the duration
   # has passed after this instant?
   #
-  public fixed infix + (d duration) instant =>
+  public fixed infix + (d time.duration) instant =>
     instant (val + d.nanos)
 
 
@@ -39,6 +46,20 @@ module:public instant (val u64) : property.orderable is
     debug: other <= instant.this
   =>
     time.duration (val - other.val)
+
+
+  # create a string representation of this instant.
+  #
+  public redef as_string
+  =>
+    time.duration val .as_string
+
+
+  # create a string representation of this instant using the given unit.
+  #
+  public as_string(u time.time_unit) String
+  =>
+    time.duration val .as_string u
 
 
   # do two given instants represent the same moment in time?
