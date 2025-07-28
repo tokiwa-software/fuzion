@@ -104,26 +104,6 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * visit all the expressions within this Call.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  void visitExpressions(ExpressionVisitor v)
-  {
-    for (var a : actuals())
-      {
-        a.visitExpressions(v);
-      }
-    if (target() != null)
-      {
-        target().visitExpressions(v);
-      }
-    super.visitExpressions(v);
-  }
-
-
-  /**
    * Does this call use dynamic binding.  Dynamic binding is used if the target
    * is not Current (either explicitly or in an inheritance call).  In case the
    * target is current, this call will be specialized to avoid dynamic binding.

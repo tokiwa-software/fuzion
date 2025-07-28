@@ -86,23 +86,6 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * visit all the expressions within this Block.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  void visitExpressions(ExpressionVisitor v)
-  {
-    var e = _expressions;
-    for (int i = 0; i < e.size(); i++)
-      {
-        e.get(i).visitExpressions(v);
-      }
-    super.visitExpressions(v);
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
