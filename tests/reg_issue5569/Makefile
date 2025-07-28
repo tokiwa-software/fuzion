@@ -19,10 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
-override NAME = src/test_modules
-override FUZION_OPTIONS = -sourceDirs=src -modules=b -moduleDirs=modules
+override NAME = reg_issue5569
 include ../simple.mk

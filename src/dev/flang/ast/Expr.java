@@ -320,18 +320,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * visit all the expressions within this Expr.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  void visitExpressions(ExpressionVisitor v)
-  {
-    v.action(this);
-  }
-
-
-  /**
    * Convert this Expression into an assignment to the given field.  In case
    * this is a expression with several branches such as an "if" or a "match"
    * expression, add corresponding assignments in each branch and convert this

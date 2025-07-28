@@ -1094,7 +1094,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         if (CHECKS) check
           (Errors.any() || iCs == null || iCs instanceof Clazz[]);
-        if (iCs == null || !(iCs instanceof Clazz[] iCA))
+        if (!(iCs instanceof Clazz[] iCA))
           {
             innerClazzes = new Clazz[replaceOpenCount(fa._f)];
             _innerFromFuir.put(fa, innerClazzes);
