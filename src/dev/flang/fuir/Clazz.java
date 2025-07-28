@@ -654,7 +654,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
          (t.isGenericArgument() && t.genericArgument().outer().isCotype() ||
-         !t.isGenericArgument() && t.feature() == _type.generics().get(0).actualType(t).feature()))
+          t.isThisType() && _type.generics().get(0).actualType(t).feature().inheritsFrom(t.feature())))
       {
         t = _type.generics().get(0).actualType(t);
       }
