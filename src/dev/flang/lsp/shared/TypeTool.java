@@ -30,7 +30,6 @@ package dev.flang.lsp.shared;
 import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Types;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.util.ANY;

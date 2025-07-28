@@ -1274,9 +1274,8 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   private boolean skipInheritanceCall()
   {
-    return call0() instanceof AbstractCall
-      ? true
-      : expr() instanceof AbstractCall;
+    return call0() instanceof AbstractCall ||
+           expr()  instanceof AbstractCall;
   }
 
 
