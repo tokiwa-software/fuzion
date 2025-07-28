@@ -1842,7 +1842,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         res = res.outer();
         i = res == null
           ? null
-          : (LibraryFeature) res.feature();
+          : res.feature();
       }
 
     // NYI: BUG: inh that is passed to handDown is incorrectly empty
