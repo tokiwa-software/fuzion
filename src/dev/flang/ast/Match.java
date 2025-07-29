@@ -126,6 +126,8 @@ public class Match extends AbstractMatch
     var os = _subject;
     var ns = _subject.visit(v, outer);
     if (CHECKS) check
+      // subject must not change while visiting
+      // while okay for it to change after a visit
       (os == _subject);
     _subject = ns;
     v.action(this);
