@@ -43,7 +43,11 @@ module:public connection(desc i32) is
       read_handler : io.Read_Handler is
         public redef read(count i32) choice (array u8) io.end_of_file error =>
           match fuzion.sys.net.read desc count.as_i64
-            a array => a
+            a array =>
+              if a.is_empty && count != 0
+                io.end_of_file
+              else
+                a
             e error => e
       (io.buffered LM)
         .reader read_handler 1024
