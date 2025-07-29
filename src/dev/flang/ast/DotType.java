@@ -46,12 +46,7 @@ public class DotType extends ExprWithPos
   /**
    * actual generic arguments, set by parser
    */
-  public AbstractType _lhs;
-
-  /**
-   * the lhs expr, as parsed by parser.
-   */
-  private Expr _lhsExpr;
+  private final UnresolvedType _lhs;
 
 
   /*-------------------------- constructors ---------------------------*/
@@ -71,7 +66,6 @@ public class DotType extends ExprWithPos
     if (CHECKS) check
       (lhs != null, lhs.asParsedType() != null);
 
-    _lhsExpr = lhs;
     _lhs = lhs.asParsedType();
   }
 
@@ -91,7 +85,6 @@ public class DotType extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _lhs = _lhs.visit(v, outer);
     return v.action(this);
   }
 
@@ -115,6 +108,22 @@ public class DotType extends ExprWithPos
 
 
   /**
+   * Return this expression as an (unresolved) type.
+   * This is null by default except for calls/this-expressions
+   * that can be used as the left hand side in a dot-type-call.
+   *
+   * The type is returned as produced by the parser and needs
+   * to be resolved with the context it is used in to be of
+   * any use.
+   */
+  @Override
+  public UnresolvedType asParsedType()
+  {
+    return _lhs;
+  }
+
+
+  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.
@@ -123,15 +132,13 @@ public class DotType extends ExprWithPos
    */
   Expr resolveTypes(Resolution res, Context context)
   {
-    return _lhs.isGenericArgument() && !_lhs.genericArgument().isThisTypeInCotype()
-      ? _lhsExpr
-      : new Call(pos(),
-                Universe.instance,
-                "type_as_value",
-                FuzionConstants.NO_SELECT,
-                new List<>(_lhs),
-                new List<>(),
-                null).resolveTypes(res, context);
+    return new Call(pos(),
+                    Universe.instance,
+                    "type_as_value",
+                    FuzionConstants.NO_SELECT,
+                    new List<>(_lhs),
+                    new List<>(),
+                    null).resolveTypes(res, context);
   }
 
 
