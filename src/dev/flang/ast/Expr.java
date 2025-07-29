@@ -487,18 +487,27 @@ public abstract class Expr extends ANY implements HasSourcePosition
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
-    if (t.isFunctionTypeExcludingLazy()         &&
-        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
-        typeForInferencing() != Types.t_ERROR     &&
-        (typeForInferencing() == null || !typeForInferencing().isFunctionType()))
+    if (mayBePartial(t))
       {
         result = propagateExpectedTypeForPartial(res, context, t);
-        if (result != this)
-          {
-            result = result.propagateExpectedType(res, context, t, from);
-          }
+      }
+    if (result != this)
+      {
+        result = result.propagateExpectedType(res, context, t, from);
       }
     return result;
+  }
+
+
+  /**
+   * Is this type applicable for partial application?
+   */
+  private boolean mayBePartial(AbstractType t)
+  {
+    return t.isFunctionTypeExcludingLazy()         &&
+        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
+        typeForInferencing() != Types.t_ERROR     &&
+        (typeForInferencing() == null || !typeForInferencing().isFunctionType());
   }
 
 

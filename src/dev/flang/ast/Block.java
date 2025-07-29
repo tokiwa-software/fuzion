@@ -349,22 +349,27 @@ public class Block extends AbstractBlock
         _expressions.add(new Block(new List<>()));
       }
 
-    // we must not remove result expression just yet.
-    // we rely on it being present in SourceModule.inScope()
-    var idx = resultExpressionIndex();
     Expr resExpr = resultExpression();
-
+    Expr result = this;
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, context, type, from);
-        _expressions.remove(idx);
-        _expressions.add(x);
+        // this may do partial application for the whole block
+        result = super.propagateExpectedType(res, context, type, from);
+        if (result == this)
+          {
+            // we must not remove result expression just yet.
+            // we rely on it being present in SourceModule.inScope()
+            var idx = resultExpressionIndex();
+            var x = resExpr.propagateExpectedType(res, context, type, from);
+            _expressions.remove(idx);
+            _expressions.add(x);
+          }
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
         _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
-    return this;
+    return result;
   }
 
 
