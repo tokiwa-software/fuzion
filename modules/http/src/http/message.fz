@@ -107,18 +107,16 @@ module:public body_reader(
       if remaining.get = 0
         io.end_of_file
       else
-        # read content
-        # NYI use lower level feature read when calling to the buffered reader
-        # as read_bytes falls into an infinite loop if reading more data than
-        # the socket can provide
-        content Sequence u8 := (io.buffered LM).read_bytes (min count remaining.get)
-
-        # check if read result is smaller than expected when remaining length should have been sufficient
-        res choice (array u8) io.end_of_file error :=
-          if content.count != count && reader_size >= 0 && remaining.get - count >= 0
-            error "input closed after {content.count} bytes, but specified content-length: $reader_size"
-          else
-            content.count > 0 ? content.as_array : io.end_of_file
+        res choice (array u8) io.end_of_file error := match (io.buffered LM).reader.env.read count
+          c array u8 => c
+          o outcome io.end_of_file =>
+            match o
+              io.end_of_file =>
+                if remaining.get > 0
+                  error "input closed after {reader_size - remaining.get} bytes, but specified content-length: {reader_size}"
+                else
+                  io.end_of_file
+              e error => e
 
         # decrease remaining
         if reader_size >= 0
