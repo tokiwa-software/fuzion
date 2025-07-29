@@ -29,35 +29,7 @@
 public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
 pre
   debug: 1 ≤ month ≤ 12
-  debug: {
-    # is the given year a leap year?
-    #
-    is_leap_year =>
-      (year % 4 = 0 & year % 100 != 0) |
-        ((year % 100 = 0) & (year % 400 = 0))
-
-
-    # how many days does february have in the given year?
-    #
-    days_in_february =>
-      if is_leap_year then 29 else 28
-
-
-    # the days in the months of the year
-    # starting at january, february, ..., december
-    #
-    days_in_months =>
-      [31, days_in_february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
-
-    # how many days does a given month of a given year have
-    #
-    days_in_month =>
-      days_in_months[month - 1]
-
-
-    1 ≤ day ≤ days_in_month
-  }
+  debug: is_valid_day year month day
   debug: 0 ≤ hour ≤ 23
   debug: 0 ≤ minute ≤ 59
   debug: 0 ≤ second ≤ 60 # possible leap seconds
@@ -137,3 +109,39 @@ is
            abort trit.no
 
     ternary_compare != trit.no
+
+
+
+# is the given day valid?
+#
+public is_valid_day(year, month, day i32) bool
+  pre
+    debug: 1 ≤ month ≤ 12
+=>
+  # is the given year a leap year?
+  #
+  is_leap_year =>
+    (year % 4 = 0 & year % 100 != 0) |
+      ((year % 100 = 0) & (year % 400 = 0))
+
+
+  # how many days does february have in the given year?
+  #
+  days_in_february =>
+    if is_leap_year then 29 else 28
+
+
+  # the days in the months of the year
+  # starting at january, february, ..., december
+  #
+  days_in_months =>
+    [31, days_in_february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+
+  # how many days does a given month of a given year have
+  #
+  days_in_month =>
+    days_in_months[month - 1]
+
+
+  1 ≤ day ≤ days_in_month
