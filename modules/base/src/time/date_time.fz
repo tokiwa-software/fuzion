@@ -29,7 +29,7 @@
 public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
 pre
   debug: 1 ≤ month ≤ 12
-  debug: is_valid_day year month day
+  debug: is_valid_date year month day
   debug: 0 ≤ hour ≤ 23
   debug: 0 ≤ minute ≤ 59
   debug: 0 ≤ second ≤ 60 # possible leap seconds
@@ -112,9 +112,9 @@ is
 
 
 
-# is the given day valid?
+# is the given date valid?
 #
-public is_valid_day(year, month, day i32) bool
+public is_valid_date(year, month, day i32) bool
   pre
     debug: 1 ≤ month ≤ 12
 =>
