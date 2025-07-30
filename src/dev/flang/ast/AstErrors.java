@@ -874,9 +874,11 @@ public class AstErrors extends ANY
       }
     else
       {
+        var n = missingMatches.size();
         error(pos,
               "" + skw("match") + " expression does not cover all of the subject's types",
-              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              "Missing " + StringHelpers.plural(n,"case") +
+              " for "    + StringHelpers.plural(n,"type") + ": " + typeListConjunction(missingMatches) + "\n" +
               subjectTypes(choiceGenerics));
       }
   }
