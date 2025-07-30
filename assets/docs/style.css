@@ -115,7 +115,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-type{
-  color: #267f99;
+  color: #1b5a6c;
   font-style: italic;
 }
 
@@ -185,7 +185,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-parent{
-  color: grey;
+  color: #535353;
   font-size: 0.7em;
   display: flex;
   justify-content: center;
@@ -205,7 +205,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 /* Version hash at the bottom of api docs */
 .version-hash{
   text-align: center;
-  color:grey;
+  color: #535353;
   font-size:0.7em;
 }
 
