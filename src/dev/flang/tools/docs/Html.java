@@ -500,7 +500,7 @@ public class Html extends ANY
   {
     if (set == null) { return ""; }
 
-    heading = "<h4>" + heading + "</h4>\n";
+    heading = "<h2 class=\"f-category\">" + heading + "</h2>\n";
     var features = set.stream();
 
     // e.g. don't filter or sort type parameters and fields
@@ -535,14 +535,12 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "$0<h1 class='$1'>$2</h1><h2>$3</h2><div class='heading-summary'>$4</div><div class='fd-comment'>$5</div>$6"
-      .replace("$0", f.isUniverse() ? "<h1 hidden>" + lm.name() + "</h1>" : "") // short version of title for navtitle
-      .replace("$1", f.isUniverse() ? "": "d-none")
-      .replace("$2", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
-      .replace("$3", anchorTags(f))
-      .replace("$4", f.isUniverse() ? "": summary(f))
-      .replace("$5", Util.commentOf(f))
-      .replace("$6", redefines(f, f));
+    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div>$4"
+      .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for navtitle
+      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
+      .replace("$2", f.isUniverse() ? "": summary(f))
+      .replace("$3", Util.commentOf(f))
+      .replace("$4", redefines(f, f));
   }
 
   /**

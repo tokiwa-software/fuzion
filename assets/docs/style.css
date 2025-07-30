@@ -254,3 +254,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   font-size: 1.2em;
   padding: 0.5em;
 }
+
+.f-category {
+  font-size: 1em;
+}
