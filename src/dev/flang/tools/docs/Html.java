@@ -1175,7 +1175,7 @@ public class Html extends ANY
       {
         modPage.append("""
     <div class="cursor_pointer">
-      <details id='"$2"'$0>
+      <details id="$2" $0>
         <summary>
           <div class="d-grid" style="grid-template-columns: 1fr min-content;">
             <div class="d-flex flex-wrap word-break-break-word">
