@@ -87,17 +87,22 @@ is
   #
   public fixed infix - (other duration) duration
   pre
-    safety: duration.this > other
+    safety: duration.this >= other
   =>
     duration (nanos - other.nanos)
 
 
-  # this duration multiplied by n
+  # this duration multiplied by factor n
   #
-  public infix * (n u64) duration => (duration nanos*n)
+  public infix *(n u64) duration => duration nanos*n
 
 
-  # this duration multiplied by duration d, rounding down
+  # this duration multiplied by factor f
+  #
+  public times(f f64) duration => duration (nanos.as_f64 * f).as_i64.as_u64
+
+
+  # this duration divided by duration d, rounding down
   #
   public infix / (other duration) u64 => nanos / other.nanos
 
@@ -107,12 +112,7 @@ is
   # and at most 4 decimal digits followed by a time unit string.
   #
   public redef as_string String =>
-    for
-      x := time_unit.ns, nx.get
-      nx := x.larger
-    while nx >>? (u -> nanos / u.in_ns >= 10)
-    else
-      as_string x
+    as_string unit_for_as_string
 
 
   # create a string representation of this duration using the given unit.
@@ -120,6 +120,18 @@ is
   public as_string(u time.time_unit) String =>
     n := $(nanos / u.in_ns)
     " "*(max 0 4-n.byte_length) + n + u.short_name
+
+
+  # create a string representation of this duration. The string
+  # representation is not accurate, it consists of at least two
+  # and at most 4 decimal digits followed by a time unit string.
+  #
+  public unit_for_as_string time.time_unit =>
+    for
+      x := time.time_unit.ns, nx.get
+      nx := x.larger
+    while nx >>? (u -> nanos / u.in_ns >= 10) else
+      x
 
 
   # total order
@@ -284,3 +296,13 @@ is
   pre
     debug: n ≤ max_duration_years
   => a n
+
+
+  # the empty duration
+  #
+  public type.zero => time.duration 0
+
+
+  # the maximum duration
+  #
+  public type.max => time.duration.ns time.duration.max_duration_nanos
