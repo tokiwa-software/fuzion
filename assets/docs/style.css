@@ -247,3 +247,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-bottom: 0.5em;
   font-weight: 700;
 }
+
+.toggle-nav {
+  all: unset; /* removes default button styles */
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0.5em;
+}
