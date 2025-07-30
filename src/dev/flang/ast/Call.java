@@ -632,11 +632,6 @@ public class Call extends AbstractCall
         var ignore = loadCalledFeatureUnlessTargetVoid(res, context);
       }
 
-    if (needsPendingError(targetFeature))
-      {
-        addPendingError(res, targetFeature);
-      }
-
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
         resolveTypesOfActuals(res, context);
@@ -647,6 +642,11 @@ public class Call extends AbstractCall
     if (_calledFeature == null && !isInheritanceCall())
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
         findOperatorOnOuter(res, context);
+      }
+
+    if (needsPendingError(targetFeature))
+      {
+        addPendingError(res, targetFeature);
       }
 
     resolveTypesOfActuals(res, context);
