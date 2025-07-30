@@ -42,16 +42,10 @@ public class DotType extends ExprWithPos
 
   /*----------------------------  variables  ----------------------------*/
 
-
-  /**
-   * actual generic arguments, set by parser
-   */
-  public AbstractType _lhs;
-
   /**
    * the lhs expr, as parsed by parser.
    */
-  private Expr _lhsExpr;
+  final Expr _lhsExpr;
 
 
   /*-------------------------- constructors ---------------------------*/
@@ -72,7 +66,6 @@ public class DotType extends ExprWithPos
       (lhs != null, lhs.asParsedType() != null);
 
     _lhsExpr = lhs;
-    _lhs = lhs.asParsedType();
   }
 
 
@@ -91,7 +84,6 @@ public class DotType extends ExprWithPos
    */
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
-    _lhs = _lhs.visit(v, outer);
     return v.action(this);
   }
 
@@ -110,7 +102,7 @@ public class DotType extends ExprWithPos
     // we can't be sure if feature of type
     // is already resolved, which would lead
     // to precondition failures.
-    return null;
+    throw new Error("not implemented DotType.typeForInferencing");
   }
 
 
@@ -123,13 +115,14 @@ public class DotType extends ExprWithPos
    */
   Expr resolveTypes(Resolution res, Context context)
   {
-    return _lhs.isGenericArgument() && !_lhs.genericArgument().isThisTypeInCotype()
+    var lhs = _lhsExpr.asParsedType();
+    return lhs.isGenericArgument() && !lhs.genericArgument().isThisTypeInCotype()
       ? _lhsExpr
       : new Call(pos(),
                 Universe.instance,
                 "type_as_value",
                 FuzionConstants.NO_SELECT,
-                new List<>(_lhs),
+                new List<>(lhs),
                 new List<>(),
                 null).resolveTypes(res, context);
   }
