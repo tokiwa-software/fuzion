@@ -2382,7 +2382,7 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _pendingError = null;
-                  _target = new DotType(_pos, _target).resolveTypes(res, context);
+                  _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
                 }
             }
           if (_calledFeature != null &&
@@ -2940,6 +2940,27 @@ public class Call extends AbstractCall
         return this;
       }
     };
+  }
+
+
+  /**
+   * Create a call to {@code type_as_value} with {@code t} as
+   * the argument.
+   *
+   * @param pos the source position of the call
+   *
+   * @param t the actual type
+   *
+   */
+  public static Call typeAsValue(SourcePosition pos, AbstractType t)
+  {
+    return new Call(pos,
+                    Universe.instance,
+                    "type_as_value",
+                    FuzionConstants.NO_SELECT,
+                    new List<>(t),
+                    new List<>(),
+                    null);
   }
 
 

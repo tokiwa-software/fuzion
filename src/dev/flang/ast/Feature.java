@@ -1462,7 +1462,6 @@ public class Feature extends AbstractFeature
     @Override public void         action      (AbstractAssign  a) {        a.resolveTypes      (res,   _context); }
     @Override public void         actionBefore(Call            c) {        c.tryResolveTypeCall(res,   _context); }
     @Override public Call         action      (Call            c) { return c.resolveTypes      (res,   _context); }
-    @Override public Expr         action      (DotType         d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
       if (f.isExtensionFeature() && f.outer() != null)
