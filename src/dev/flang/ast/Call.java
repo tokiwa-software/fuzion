@@ -455,6 +455,42 @@ public class Call extends AbstractCall
 
 
   /**
+   * Get the type of the target feature.
+   *
+   * NYI: can we merge targetFeatureType/targetType?
+   *
+   * @return the type of the targetFeature or null if unknown.
+   */
+  private AbstractType targetFeatureType(Resolution res, Context context)
+  {
+    if (PRECONDITIONS) require
+      (target() != null);
+
+    var result = res == null
+      ? target().type()
+      : target().typeForInferencing();
+
+    result = result == null
+      ? null
+      : res == null
+      ? result.selfOrConstraint(context)
+      : result.selfOrConstraint(res, context);
+
+    // NYI: CLEANUP:
+    if (target().isTypeAsValueCall() && !result.feature().isCotype())
+      {
+        result = (res != null
+          ? res.cotype(result.feature())
+          : result.feature().cotype()).selfType();
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result == null || !result.isGenericArgument());
+    return result;
+  }
+
+
+  /**
    * Get the feature of the target of this call.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -493,7 +529,7 @@ public class Call extends AbstractCall
       {
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
-        var tt = targetTypeOrConstraint(res, context);
+        var tt = targetFeatureType(res, context);
 
         if (tt == null && _target instanceof Call c)
           {

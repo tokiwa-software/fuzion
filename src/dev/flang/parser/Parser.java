@@ -1429,12 +1429,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            // NYI: CLEANUP:
-            // should be
-            // result = callTail(false, new ParsedCall(Call.typeAsValue(sourceRange(target.pos()), t), new ParsedName(sourceRange(target.pos()), "from_env")));
-            // but it is not possible currently to extract LM from type_as_value:
-            // `type_as_value LM`
-            result = callTail(false, new ParsedCall(target, new ParsedName(sourceRange(target.pos()), "from_env")));
+            result = callTail(false, new ParsedCall(Call.typeAsValue(sourceRange(target.pos()), t), new ParsedName(sourceRange(target.pos()), "from_env")));
           }
       }
     else if (skip(Token.t_type))

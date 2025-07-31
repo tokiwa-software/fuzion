@@ -253,7 +253,7 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    return adjustResultType(res, context, targetTypeOrConstraint(res, context), frmlT,
+    return adjustResultType(res, context, target().type(), frmlT,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
   }
 
@@ -285,33 +285,6 @@ public abstract class AbstractCall extends Expr
       (t5 != null);
 
     return t5;
-  }
-
-
-  /**
-   * Get the type of the target.  In case the target's type is a generic type
-   * parameter, return its constraint.
-   *
-   * @return the type of the target or null if unknown.
-   */
-  AbstractType targetTypeOrConstraint(Resolution res, Context context)
-  {
-    if (PRECONDITIONS) require
-      (target() != null);
-
-    var result = res == null
-      ? target().type()
-      : target().typeForInferencing();
-
-    result = result == null
-      ? null
-      : res == null
-      ? result.selfOrConstraint(context)
-      : result.selfOrConstraint(res, context);
-
-    if (POSTCONDITIONS) ensure
-      (result == null || !result.isGenericArgument());
-    return result;
   }
 
 
