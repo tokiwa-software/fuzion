@@ -137,6 +137,18 @@ public terminal is
     public background_bright_cyan            => "106"
     public background_bright_white           => "107"
 
+    public clear_line                        => "2K"
+    public erase_end_of_line                 => "K"
+    public clear_screen                      => "2J"
+    public put_cursor(line, column i32)      => "{line};{column}" # or "$line;$columnf"
+    public cursor_up(n i32)                  => "{n}A"
+    public cursor_down(n i32)                => "{n}B"
+    public cursor_forward(n i32)             => "{n}C"
+    public cursor_backward(n i32)            => "{n}D"
+    public save_cursor_pos                   => "s"
+    public restore_cursor_pos                => "u"
+
+
   public reset                             => csi + raw.reset + "m"
   public bold                              => csi + raw.bold + "m"
   public dime                              => csi + raw.dime + "m"
@@ -225,6 +237,19 @@ public terminal is
   public background_bright_purple          => csi + raw.background_bright_purple + "m"
   public background_bright_cyan            => csi + raw.background_bright_cyan + "m"
   public background_bright_white           => csi + raw.background_bright_white + "m"
+
+  public reset_color                       => regular_color + background_regular_color
+
+  public clear_line                        => csi + raw.clear_line
+  public erase_end_of_line                 => csi + raw.erase_end_of_line
+  public clear_screen                      => csi + raw.clear_screen
+  public put_cursor(line, column i32)      => csi + raw.put_cursor line column
+  public cursor_up(n i32)                  => csi + raw.cursor_up n
+  public cursor_down(n i32)                => csi + raw.cursor_down n
+  public cursor_forward(n i32)             => csi + raw.cursor_forward n
+  public cursor_backward(n i32)            => csi + raw.cursor_backward n
+  public save_cursor_pos                   => csi + raw.save_cursor_pos
+  public restore_cursor_pos                => csi + raw.restore_cursor_pos
 
 public String.bold                              => terminal.bold + String.this + terminal.reset
 public String.dime                              => terminal.dime + String.this + terminal.reset
