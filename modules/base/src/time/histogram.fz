@@ -23,10 +23,10 @@
 #
 # -----------------------------------------------------------------------
 
-# time.histogram -- feature to collect and output timeing data
+# time.histogram -- feature to collect and output timing data
 #
 # This is particularly useful to analyse variations in release or
-# execution times of tasks or events
+# execution times of repeatedly executed tasks or events.
 #
 # For this, it distributes time.duration values into a list of
 # buckets that correspond to different ranges of durations.  These
