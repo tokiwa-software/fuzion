@@ -809,6 +809,10 @@ public class Call extends AbstractCall
   {
     var calledName = FeatureName.get(_name, _actuals.size());
     var fos = res._module.lookup(target, _name, this, _target == null, false);
+    if (allowHidden())
+      {
+        fos.addAll(res._module.lookup(target, _name, this, _target == null, true));
+      }
     for (var fo : fos)
       {
         if (fo._feature instanceof Feature ff && ff.state().atLeast(State.RESOLVED_DECLARATIONS))
@@ -824,6 +828,12 @@ public class Call extends AbstractCall
           FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> isSpecialWrtArgs(ff));
       }
     return new Pair<>(fos, fo);
+  }
+
+
+  protected boolean allowHidden()
+  {
+    return false;
   }
 
 
@@ -2996,7 +3006,10 @@ public class Call extends AbstractCall
                     FuzionConstants.NO_SELECT,
                     new List<>(t),
                     new List<>(),
-                    null);
+                    null)
+      {
+        @Override protected boolean allowHidden() { return true; }
+      };
   }
 
 

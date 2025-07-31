@@ -1913,6 +1913,8 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
               && !(c.target() instanceof Current)
               // type param is known by caller
               && !c.calledFeature().isTypeParameter()
+              // internal type_as_value call
+              && !c.isTypeAsValueCall()
               // the called feature must be at least as visible as the feature.
               && c.calledFeature().visibility().eraseTypeVisibility().ordinal() < f.visibility().eraseTypeVisibility().ordinal())
             {

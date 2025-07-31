@@ -226,7 +226,7 @@ public abstract class AbstractCall extends Expr
    * Is this expression a call to `type_as_value`?
    */
   @Override
-  boolean isTypeAsValueCall()
+  public boolean isTypeAsValueCall()
   {
     return calledFeature() == Types.resolved.f_type_as_value;
   }
