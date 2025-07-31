@@ -79,6 +79,6 @@ private:public canonical_header_map(internal_map container.Map String String) : 
   module type.from_map(m container.Map String String) http.canonical_header_map =>
     map_of m.items
 
-  module type.map_of(kvs Sequence (tuple String String)) http.canonical_header_map =>
+  public type.map_of(kvs Sequence (tuple String String)) http.canonical_header_map =>
 
     http.canonical_header_map (container.ordered_map (kvs.map (.0.canonical_header_key)) (kvs.map (.1)))
