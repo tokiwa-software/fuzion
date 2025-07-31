@@ -143,13 +143,31 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-anchor-sign{
-  color: rgba(0,0,0,0.3);
-  opacity: 0;
-  margin-left: .3em;
+  color: #535353;
+  margin-left: 0.3em;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  white-space: nowrap;
+  border: 0;
 }
 
-.fd summary:hover .fd-anchor-sign{
-  opacity: 1;
+.fd summary:hover .fd-anchor-sign,
+.fd summary:focus-within .fd-anchor-sign {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 0 0 0.3em;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  border: none;
 }
 
 .fd-inherited{
