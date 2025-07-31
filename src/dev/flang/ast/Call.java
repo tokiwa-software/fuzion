@@ -477,7 +477,7 @@ public class Call extends AbstractCall
       : result.selfOrConstraint(res, context);
 
     // NYI: CLEANUP:
-    if (target().isTypeAsValueCall() && !result.feature().isCotype())
+    if (result != null && target().isTypeAsValueCall() && !result.feature().isCotype())
       {
         result = (res != null
           ? res.cotype(result.feature())
