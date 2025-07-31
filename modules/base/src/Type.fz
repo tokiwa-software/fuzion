@@ -130,6 +130,7 @@ module:public Type ref is
 # Internally, Fuzion's front end implements `x.type` using
 # `type_as_value x`. The middle end then replaces calls to
 # `type_as_value` by `T`'s type clazz.
+# The type clazz is then used to call the correct type feature.
 #
 public type_as_value(T type) Type => T
 
