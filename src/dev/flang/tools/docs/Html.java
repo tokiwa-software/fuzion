@@ -81,6 +81,7 @@ public class Html extends ANY
       <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
         <div class="position-relative">
           <form id="##ID##">
+            <label for="##ID##.code" class="visually-hidden">Code input</label>
             <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
             <div class="position-absolute runbuttons">
               <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
