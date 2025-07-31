@@ -1460,7 +1460,6 @@ public class Feature extends AbstractFeature
       res = r;
     }
     @Override public void         action      (AbstractAssign  a) {        a.resolveTypes      (res,   _context); }
-    @Override public void         actionBefore(Call            c) {        c.tryResolveTypeCall(res,   _context); }
     @Override public Call         action      (Call            c) { return c.resolveTypes      (res,   _context); }
     @Override public Expr         action      (DotType         d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
@@ -1547,6 +1546,14 @@ public class Feature extends AbstractFeature
           }
 
         resolveArgumentTypes(res);
+
+        // resolveTypesFully does not visit actuals
+        // so we do try resolve type calls here
+        visit(new FeatureVisitor() {
+          @Override public void actionBefore(Call c) { c.tryResolveTypeCall(res,   context()); }
+          @Override public boolean visitActualsLate() { return true; }
+        });
+
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)

@@ -248,7 +248,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
       else parse_error "non-digit found"
 
     d.bind b->
-      t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
+      # NYI: BUG: does not work
+      # t := parse_integer.this.T.from_u32 b.as_u32
+      t := T.from_u32 b.as_u32  # i converted to T
       if t ≥ base
         parse_error "invalid integer digit for base $base"
       else

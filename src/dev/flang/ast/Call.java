@@ -771,7 +771,26 @@ public class Call extends AbstractCall
    */
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs)
   {
-    var calledName = FeatureName.get(_name, _actuals.size());
+    return findOnTarget(res, target, mayBeSpecialWrtArgs, _actuals.size());
+  }
+
+
+  /**
+   * Find the feature that may be called on the given target
+   *
+   * @param res the resolution instance
+   *
+   * @param target the - assumed - target of the call
+   *
+   * @param actualCount assume this actual count
+   *
+   * @return a pair of
+   *          1) all found features matching the name
+   *          2) the matching feature or null if none was found
+   */
+  private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs, int actualCount)
+  {
+    var calledName = FeatureName.get(_name, actualCount);
     var fos = res._module.lookup(target, _name, this, _target == null, false);
     for (var fo : fos)
       {
@@ -863,17 +882,23 @@ public class Call extends AbstractCall
     FeatureAndOuter result = null;
     var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
 
-    // if loadCalledFeatureUnlessTargetVoid has found a suitable called
-    // feature in an outer feature, it will have replaced a null _target, so
-    // we check _originalTarget here to not check all outer features:
-    var traverseOuter = _originalTarget == null;
-    var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
-    if (targetFeature != null)
+    result = tryResolveTypeCall(res, context, n);
+
+    if (result == null)
       {
-        var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
-        var calledName = FeatureName.get(_name, n);
-        result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
+        // if loadCalledFeatureUnlessTargetVoid has found a suitable called
+        // feature in an outer feature, it will have replaced a null _target, so
+        // we check _originalTarget here to not check all outer features:
+        var traverseOuter = _originalTarget == null;
+        var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
+        if (targetFeature != null)
+          {
+            var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+            var calledName = FeatureName.get(_name, n);
+            result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
+          }
       }
+
     return result;
   }
 
@@ -1299,19 +1324,9 @@ public class Call extends AbstractCall
     else
       {
         _recursiveResolveType = true;
-        /**
-         * The following enables
-         * calling type feature on type parameter:
-         *
-         *  Sequence.is_sorted bool
-         *    pre
-         *      T : property.orderable
-         *  =>
-         *    zip (drop 1) (T.lteq)
-         *      .fold bool.all
-         */
-        result = _calledFeature.isTypeParameter() && context.constraintFor(_calledFeature) != null
-          ?  context.constraintFor(_calledFeature)
+        // NYI: CLEANUP: logic should probably be in resultType
+        result = _calledFeature.isTypeParameter()
+          ? Types.resolved.f_Type.selfType()
           : _calledFeature.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
@@ -2345,25 +2360,58 @@ public class Call extends AbstractCall
    */
   void tryResolveTypeCall(Resolution res, Context context)
   {
+    var ignore = tryResolveTypeCall(res, context, _actuals.size());
+  }
+
+
+  /**
+   * try resolving this call as dot-type-call
+   *
+   * On success _calledFeature and _target will be set.
+   * No errors are raised if this is not successful
+   * since then we are probably dealing with a normal call.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param actualCount
+   *
+   */
+  FeatureAndOuter tryResolveTypeCall(Resolution res, Context context, int actualCount)
+  {
+    FeatureAndOuter result = null;
     var outer = context.outerFeature();
     if (_calledFeature == null && _target != null && outer.state().atLeast(State.RESOLVED_INHERITANCE))
     {
-      AbstractType tt = _target.asParsedType();
+      AbstractType tt = (_target instanceof DotType dt ? dt._lhsExpr : _target).asParsedType();
       if (tt instanceof UnresolvedType ut)
         {
           // check if this might be a
           // left hand side of dot-type-call
           tt = ut.resolve(res, context, true);
-          tt = tt != null && tt != Types.t_ERROR ? tt.selfOrConstraint(res, context) : tt;
         }
       if (tt != null && tt != Types.t_ERROR)
         {
+          /* Replace T by numeric:
+           *      sum T
+           *        pre
+           *          T : numeric
+           *      => fold T.sum
+           */
+          if (tt.isGenericArgument())
+            {
+              tt = context.constraintFor(tt.genericArgument()) != null
+                ? context.constraintFor(tt.genericArgument())
+                : tt;
+            }
+          tt = tt.selfOrConstraint(res, context);
           var tf = tt.feature();
           res.resolveDeclarations(tf);
           var ttf = tf.isUniverse() ? tf : res.cotype(tf);
           res.resolveDeclarations(tf);
-          var fo = findOnTarget(res, tf, false).v1();
-          var tfo = findOnTarget(res, ttf, false).v1();
+          var fo = findOnTarget(res, tf, false, actualCount).v1();
+          var tfo = findOnTarget(res, ttf, false, actualCount).v1();
           var f = tfo == null ? null : tfo._feature;
           if (f != null
               && f.outer() != null
@@ -2372,7 +2420,7 @@ public class Call extends AbstractCall
                would always have an ambiguity when calling `as_string` */
               && f.outer().isCotype())
             {
-              if (fo != null)
+              if (fo != null && !(_target instanceof DotType))
                 {
                   AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
                   setToErrorState();
@@ -2382,8 +2430,11 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _pendingError = null;
-                  _target = new DotType(_pos, _target).resolveTypes(res, context);
+                  _target = _target instanceof DotType
+                    ? _target
+                    : new DotType(_pos, _target).resolveTypes(res, context);
                 }
+              result = tfo;
             }
           if (_calledFeature != null &&
               _generics.isEmpty() &&
@@ -2394,6 +2445,7 @@ public class Call extends AbstractCall
             }
         }
     }
+    return result;
   }
 
 

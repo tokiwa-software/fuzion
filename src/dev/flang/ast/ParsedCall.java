@@ -580,7 +580,11 @@ public class ParsedCall extends Call
               ? /* -v ==> x->x-v */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.PREFIX_OPERATOR_PREFIX .length())
               : /* v- ==> x->v-x */ FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _name.substring(FuzionConstants.POSTFIX_OPERATOR_PREFIX.length());
           }
-        _calledFeature = null;
+        // NYI: CLEANUP:
+        if (_calledFeature != null && !_calledFeature.isTypeFeature())
+          {
+            _calledFeature = null;
+          }
         _pendingError = null;
         var fn = new Function(pos(),
                               pns,
