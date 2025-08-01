@@ -54,8 +54,14 @@ is
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
+  # NYI: this seems same as monads infix >>=~
+  #
   public bind (B type, f T -> state B S) state B S =>
     f val
+
+
+  # NYI: UNDER DEVELOPMENT: return, map, bind do not instate the returned state
+  # Is this okay? What do we want here?
 
 
   # return function
@@ -72,13 +78,17 @@ is
   # modify the state, leaving the contents unchanged
   #
   public modify (f S -> S) state T S =>
-    state val (f get) mode.next
+    res := state val (f get) mode.next
+    res.replace
+    res
 
 
   # set state to new, leaving the contents unchanged
   #
   public put (new S) state T S =>
-    state val new mode.next
+    res := state val new mode.next
+    res.replace
+    res
 
 
   # converts option to a string
@@ -110,6 +120,8 @@ public state(S, R type, initial_value S, r ()->R) R =>
 #
 public state_of(S type) state unit S => (state unit S).env
 
+
+# NYI: CLEANUP these should be type features, IMHO
 
 # short-hand for getting state monad for given type in current environment
 #
