@@ -30,7 +30,7 @@
 #
 # use as follows to store data of type `u8` for purpose `demo`:
 #
-#      # first, declare a type that holds a value pf `u8` that describes the purpose
+#      # first, declare a type that holds a value of `u8` that describes the purpose
 #      #
 #      demo(contents u8) is
 #
