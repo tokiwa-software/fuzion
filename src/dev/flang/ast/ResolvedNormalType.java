@@ -154,6 +154,7 @@ public class ResolvedNormalType extends ResolvedType
     this._generics.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
 
+    // NYI: CLEANUP: surprising hack
     if (o == null && f != null)
       {
         var of = f.outer();
