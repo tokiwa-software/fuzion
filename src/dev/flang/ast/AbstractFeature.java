@@ -1310,7 +1310,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       !isField() &&
       !isChoice() &&
       !isUniverse() &&
-      !outer().isUniverse();
+      !outer().isUniverse() &&
+      !isTypeParameter();
   }
 
 
