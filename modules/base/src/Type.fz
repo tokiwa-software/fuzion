@@ -132,7 +132,7 @@ module:public Type ref is
 # `type_as_value` by `T`'s type clazz.
 # The type clazz is then used to call the correct type feature.
 #
-public type_as_value(T type) Type => T
+type_as_value(T type) Type => T
 
 
 # universe feature to determine the compile-time type of an expression.

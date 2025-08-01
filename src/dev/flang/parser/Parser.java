@@ -1429,7 +1429,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), target), new ParsedName(sourceRange(target.pos()), "from_env")));
+            result = callTail(false, new ParsedCall(Call.typeAsValue(sourceRange(target.pos()), t), new ParsedName(sourceRange(target.pos()), "from_env")));
           }
       }
     else if (skip(Token.t_type))
@@ -1443,7 +1443,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new DotType(sourceRange(target.pos()), target));
+            result = callTail(false, Call.typeAsValue(sourceRange(target.pos()), t));
           }
       }
     else if (skip(Token.t_this))
