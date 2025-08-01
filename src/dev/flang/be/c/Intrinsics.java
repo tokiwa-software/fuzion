@@ -1160,7 +1160,7 @@ public class Intrinsics extends ANY
       }
     else if (c._fuir.clazzIsUnitType(rt))
       { // unit-type values are always equal:
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
       }
     else if (isIntegerOrRef(c, rt))
       {
@@ -1192,7 +1192,7 @@ public class Intrinsics extends ANY
           {
             var tc = c._fuir.clazzChoice(rt, i);
             var fld = c._fuir.clazzIsRef(tc) ? CNames.CHOICE_REF_ENTRY_NAME
-                                             : new CIdent(CNames.CHOICE_ENTRY_NAME + i);
+                                             : CIdent.choiceEntry(i);
             var entry1  = union1.field(fld);
             var entry2  = union2.field(fld);
             var cmp = compareValues(c, entry1, entry2, tc, tmp);
@@ -1204,11 +1204,11 @@ public class Intrinsics extends ANY
                             CStmnt.suitch(value1.field(CNames.TAG_NAME),
                                           cazes,
                                           null),
-                            tmp.assign(new CIdent("false")));
+                            tmp.assign(CIdent.FALSE));
       }
     else // not a choice, so a 'normal' product type
       {
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
         for (var i = 0; i < c._fuir.clazzFieldCount(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);

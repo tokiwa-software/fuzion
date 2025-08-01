@@ -431,6 +431,7 @@ public class C extends ANY
           var ctags = new List<CExpr>();
           var rtags = new List<CExpr>();
           var tags = _fuir.matchCaseTags(s, mc);
+          var cTagNum = -1;
           for (var tagNum : tags)
             {
               var tc = _fuir.clazzChoice(subjClazz, tagNum);
@@ -446,32 +447,33 @@ public class C extends ANY
                   ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
                   if (CHECKS) check
                     (hasTag || !_fuir.hasData(tc));
+                  cTagNum = tagNum;
                 }
             }
           if (tags.length > 0)
-             {
-               var sl = new List<CStmnt>();
-               var field = _fuir.matchCaseField(s, mc);
-               if (field != NO_CLAZZ)
-                 {
-                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-                   var cl     = _fuir.clazzAt(s);
-                   var f      = field(cl, C.this.current(s), field);
-                   var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
-                                _fuir.hasData(fclazz)   ? uniyon.field(new CIdent(CNames.CHOICE_ENTRY_NAME + tags[0]))
-                                                         : CExpr.UNIT;
-                   sl.add(C.this.assign(f, entry, fclazz));
-                 }
-               sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
-               sl.add(CStmnt.BREAK);
-               var cazecode = CStmnt.seq(sl);
-               tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
-               if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
-                 {
-                   rcases.add(CStmnt.caze(rtags, cazecode));
-                   tdefault = cazecode;
-                 }
-             }
+            {
+              var sl = new List<CStmnt>();
+              var field = _fuir.matchCaseField(s, mc);
+              if (field != NO_CLAZZ)
+                {
+                  var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+                  var cl     = _fuir.clazzAt(s);
+                  var f      = field(cl, C.this.current(s), field);
+                  var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
+                               _fuir.hasData(fclazz)    ? uniyon.field(CIdent.choiceEntry(cTagNum))
+                                                        : CExpr.UNIT;
+                  sl.add(C.this.assign(f, entry, fclazz));
+                }
+              sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
+              sl.add(CStmnt.BREAK);
+              var cazecode = CStmnt.seq(sl);
+              tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
+              if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
+                {
+                  rcases.add(CStmnt.caze(rtags, cazecode));
+                  tdefault = cazecode;
+                }
+            }
         }
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
@@ -480,6 +482,28 @@ public class C extends ANY
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
       return CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault));
+    }
+
+
+    /**
+     * Find first non-void, non-ref tag
+     * @param cl
+     * @return
+     */
+    private int firstNonVoidChoiceTag(int cl)
+    {
+      if (PRECONDITIONS) require
+        (_fuir.clazzIsChoice(cl));
+
+      for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
+        {
+          var cc = _fuir.clazzChoice(cl, i);
+          if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
+            {
+              return i;
+            }
+        }
+      throw new Error("JAVA_HOME");
     }
 
 
@@ -498,6 +522,7 @@ public class C extends ANY
         {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
           if (CHECKS) check
             (value == CExpr.UNIT);
+          // NYI: BUG: this should be an assert in fz_init
           if (tagNum >= CConstants.PAGE_SIZE)
             {
               Errors.error("Number of tags for choice type exceeds page size.",
@@ -1259,7 +1284,7 @@ public class C extends ANY
             .filter(cl -> _fuir.clazzNeedsCode(cl) && _fuir.isEffectIntrinsic(cl))
             .mapToInt(cl -> _fuir.effectTypeFromIntrinsic(cl))
             .distinct()
-            .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(new CIdent("false")))
+            .<CStmnt>mapToObj(ecl -> CNames.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl)).assign(CIdent.FALSE))
             .iterator()))
     );
   }
@@ -2357,7 +2382,7 @@ public class C extends ANY
     var jv = complexResult
                            ? expr
                              .field(CNames.CHOICE_UNION_NAME)
-                             .field(new CIdent("v0"))
+                             .field(CIdent.choiceEntry(0))
                            : expr;
 
     /*
@@ -2415,7 +2440,7 @@ public class C extends ANY
                     jStringToError(
                       tmp
                         .field(CNames.CHOICE_UNION_NAME)
-                        .field(new CIdent("v1"))
+                        .field(CIdent.choiceEntry(1))
                     ),
                   cl,
                   1))
@@ -2446,7 +2471,7 @@ public class C extends ANY
    */
   private CExpr javaValue2Fuzion(boolean complexResult, CLocal tmp, int cl)
   {
-    var successResult = (complexResult ? tmp.field(CNames.CHOICE_UNION_NAME).field(new CIdent("v0")) : tmp);
+    var successResult = (complexResult ? tmp.field(CNames.CHOICE_UNION_NAME).field(CIdent.choiceEntry(0)) : tmp);
     return switch (_fuir.getSpecialClazz(cl))
       {
         case c_i8 -> successResult.field(new CIdent("b")).castTo(_types.scalar(cl));
@@ -2540,7 +2565,7 @@ public class C extends ANY
     return _fuir.clazzIsRef(valuecl) ||
       _fuir.clazzIsChoiceOfOnlyRefs(choiceCl)
                                               ? CNames.CHOICE_REF_ENTRY_NAME
-                                              : new CIdent(CNames.CHOICE_ENTRY_NAME + tagNum);
+                                              : CIdent.choiceEntry(tagNum);
   }
 
 
