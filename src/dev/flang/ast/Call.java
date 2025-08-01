@@ -457,7 +457,7 @@ public class Call extends AbstractCall
   /**
    * Get the type of the target feature.
    *
-   * NYI: can we merge targetFeatureType/targetType?
+   * NYI: CLEANUP: can we merge targetFeatureType/targetType?
    *
    * @return the type of the targetFeature or null if unknown.
    */
