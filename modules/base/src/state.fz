@@ -59,7 +59,7 @@
 # just `u8` instead.  However, this would permit unrelated code to read and modify
 # the value using `state_get u8`, while the wrapper type `demo` restricts this to
 # code for which `demo` is visible.  To avoid accidental and intentional (malicious)
-# acceses to state effects, we need our own local type!
+# accesses to state effects, we need our own local type!
 #
 public state(
 
