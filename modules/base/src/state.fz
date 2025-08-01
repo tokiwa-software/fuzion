@@ -52,7 +52,7 @@
 # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
 #
 # note that access to the state value is possible in any code executed while the state
-# is instated, also, e.g., in lambdas that that are passed to a call and then called
+# is instated, also, e.g., in lambdas that are passed to a call and then called
 # further down the call chain.
 #
 # The wrapper type, `demo` in the example, is not strictly required, we could use
