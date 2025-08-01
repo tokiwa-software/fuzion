@@ -1622,10 +1622,15 @@ public class Feature extends AbstractFeature
           {
             res.cotype(this);
           }
-        visit(new ContextVisitor(context())
+        var context = context();
+        // we can not use ContextVisitor here, because we
+        // - want to visit actuals of Calls
+        // - they may not be resolved yet
+        // - ContextVisitor relies on actuals being resolved because it calls {@code calledFeature}
+        visit(new FeatureVisitor()
           {
-            @Override public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(res, _context, this); }
-            @Override public Expr action(Call    c) { return c.resolveSyntacticSugar1(res, _context      ); }
+            @Override public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(res, context, this); }
+            @Override public Expr action(Call    c) { return c.resolveSyntacticSugar1(res, context      ); }
           });
 
 
@@ -2216,7 +2221,7 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
    */
-  Expr resolveSyntacticSugar1(Resolution res, Context context, ContextVisitor rss1)
+  Expr resolveSyntacticSugar1(Resolution res, Context context, FeatureVisitor rss1)
   {
     var outer = context.outerFeature();
 

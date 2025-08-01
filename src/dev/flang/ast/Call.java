@@ -632,11 +632,6 @@ public class Call extends AbstractCall
         var ignore = loadCalledFeatureUnlessTargetVoid(res, context);
       }
 
-    if (needsPendingError(targetFeature))
-      {
-        addPendingError(res, targetFeature);
-      }
-
     if (_calledFeature == null)
       { // nothing found, try if we can build a chained bool: `a < b < c` => `(a < b) && (a < c)`
         resolveTypesOfActuals(res, context);
@@ -647,6 +642,11 @@ public class Call extends AbstractCall
     if (_calledFeature == null && !isInheritanceCall())
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
         findOperatorOnOuter(res, context);
+      }
+
+    if (needsPendingError(targetFeature))
+      {
+        addPendingError(res, targetFeature);
       }
 
     resolveTypesOfActuals(res, context);
@@ -2796,22 +2796,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper function for resolveSyntacticSugar: Create "if cc block else
-   * elseBlock" and handle the case that cc is a compile time constant.
-   *
-   * NYI: move this to If.resolveSyntacticSugar!
-   */
-  private Expr newIf(Expr cc, Expr block, Expr elseBlock)
-  {
-    return !(cc instanceof BoolConst bc)
-      ? Match.createIf(pos(), cc, block, elseBlock, false)
-      : bc.getCompileTimeConstBool()
-      ? block
-      : elseBlock;
-  }
-
-
-  /**
    * Syntactic sugar resolution: This does the following:<p>
    *
    *  - convert boolean operations {@code &&}, {@code ||} and {@code :} into if-expressions
@@ -2841,17 +2825,25 @@ public class Call extends AbstractCall
         var cf = _calledFeature;
         // need to do a propagateExpectedType since this might add a result field
         // example where this results in an issue: `_ := [false: true]`
-        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(_target, _actuals.get(0), BoolConst.FALSE).propagateExpectedType(res, context, Types.resolved.t_bool, null); }
-        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(_target, BoolConst.TRUE , _actuals.get(0)).propagateExpectedType(res, context, Types.resolved.t_bool, null); }
-        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(_target, _actuals.get(0), BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool, null); }
-        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(_target, BoolConst.FALSE, BoolConst.TRUE ).propagateExpectedType(res, context, Types.resolved.t_bool, null); }
+        if      (cf == Types.resolved.f_bool_AND    )
+          {
+            result = createIf(res, context, _actuals.get(0), BoolConst.FALSE, Types.resolved.t_bool);
+          }
+        else if (cf == Types.resolved.f_bool_OR     )
+          {
+            result = createIf(res, context, BoolConst.TRUE , _actuals.get(0), Types.resolved.t_bool);
+          }
+        else if (cf == Types.resolved.f_bool_IMPLIES)
+          {
+            result = createIf(res, context, _actuals.get(0), BoolConst.TRUE, Types.resolved.t_bool);
+          }
+        else if (cf == Types.resolved.f_bool_NOT    )
+          {
+            result = createIf(res, context, BoolConst.FALSE, BoolConst.TRUE , Types.resolved.t_bool);
+          }
         else if (cf == Types.resolved.f_bool_TERNARY)
           {
-            result = newIf(_target, _actuals.get(0), _actuals.get(1));
-            if (!_generics.get(0).containsUndefined(false))
-              {
-                result = result.propagateExpectedType(res, context, _generics.get(0), null);
-              }
+            result = createIf(res, context, _actuals.get(0), _actuals.get(1) , _generics.get(0));
           }
 
         // replace e.g. i16 7 by just the NumLiteral 7. This is necessary for syntaxSugar2 of InlineArray to work correctly.
@@ -2869,6 +2861,22 @@ public class Call extends AbstractCall
           {
             _calledFeature = cf.preAndCallFeature();
           }
+      }
+    return result;
+  }
+
+
+  /**
+   * Create an {@code if} from this call using the target as the condition.
+   *
+   * @param rt the type we expect/want the expression to return
+   */
+  private Expr createIf(Resolution res, Context context, Expr true_, Expr false_, AbstractType rt)
+  {
+    var result = Match.createIf(pos(), _target, true_, false_, false);
+    if (!rt.containsUndefined(false))
+      {
+        result = result.propagateExpectedType(res, context, rt, null);;
       }
     return result;
   }

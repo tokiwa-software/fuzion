@@ -40,7 +40,7 @@ public exception (# type parameter used only to distinguish different
                   ) : eff.fallible error h
 is
 
-  # type feature that to create an instance of `exception` with the given error handler.
+  # type feature to create an instance of `exception` with the given error handler.
   #
   public fixed redef type.new(h error->void) exception T =>
     exception T h
