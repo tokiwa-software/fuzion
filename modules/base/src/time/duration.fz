@@ -298,7 +298,7 @@ is
   => a n
 
 
-  # the empty duration
+  # the zero duration, representing a time span of zero
   #
   public type.zero => time.duration 0
 
