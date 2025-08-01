@@ -455,6 +455,42 @@ public class Call extends AbstractCall
 
 
   /**
+   * Get the type of the target feature.
+   *
+   * NYI: CLEANUP: can we merge targetFeatureType/targetType?
+   *
+   * @return the type of the targetFeature or null if unknown.
+   */
+  private AbstractType targetFeatureType(Resolution res, Context context)
+  {
+    if (PRECONDITIONS) require
+      (target() != null);
+
+    var result = res == null
+      ? target().type()
+      : target().typeForInferencing();
+
+    result = result == null
+      ? null
+      : res == null
+      ? result.selfOrConstraint(context)
+      : result.selfOrConstraint(res, context);
+
+    // NYI: CLEANUP: the whole method should proably be moved to sth. like Expr.effectiveType
+    if (result != null && result != Types.t_ERROR && target().isTypeAsValueCall() && !result.feature().isCotype())
+      {
+        result = (res != null
+          ? res.cotype(result.feature())
+          : result.feature().cotype()).selfType();
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result == null || !result.isGenericArgument());
+    return result;
+  }
+
+
+  /**
    * Get the feature of the target of this call.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -493,7 +529,7 @@ public class Call extends AbstractCall
       {
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
-        var tt = targetTypeOrConstraint(res, context);
+        var tt = targetFeatureType(res, context);
 
         if (tt == null && _target instanceof Call c)
           {
@@ -2382,7 +2418,7 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _pendingError = null;
-                  _target = new DotType(_pos, _target).resolveTypes(res, context);
+                  _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
                 }
             }
           if (_calledFeature != null &&
@@ -2940,6 +2976,27 @@ public class Call extends AbstractCall
         return this;
       }
     };
+  }
+
+
+  /**
+   * Create a call to {@code type_as_value} with {@code t} as
+   * the argument.
+   *
+   * @param pos the source position of the call
+   *
+   * @param t the actual type
+   *
+   */
+  public static Call typeAsValue(SourcePosition pos, AbstractType t)
+  {
+    return new Call(pos,
+                    Universe.instance,
+                    "type_as_value",
+                    FuzionConstants.NO_SELECT,
+                    new List<>(t),
+                    new List<>(),
+                    null);
   }
 
 
