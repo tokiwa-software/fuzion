@@ -486,28 +486,6 @@ public class C extends ANY
 
 
     /**
-     * Find first non-void, non-ref tag
-     * @param cl
-     * @return
-     */
-    private int firstNonVoidChoiceTag(int cl)
-    {
-      if (PRECONDITIONS) require
-        (_fuir.clazzIsChoice(cl));
-
-      for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
-        {
-          var cc = _fuir.clazzChoice(cl, i);
-          if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
-            {
-              return i;
-            }
-        }
-      throw new Error("JAVA_HOME");
-    }
-
-
-    /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
      */
     @Override
