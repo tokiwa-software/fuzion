@@ -1373,7 +1373,7 @@ spellcheck:
 	bin/spell_check_java.sh
 
 # target to do a syntax check of fz files.
-# currently only examples/ are checked.
+# currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
 	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
