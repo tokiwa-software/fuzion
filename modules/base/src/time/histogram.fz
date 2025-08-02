@@ -56,23 +56,23 @@ public histogram(# title to be printed for this histogram
                  # the maximum duration that will be recorded in this histogram
                  #
                  # if specified, the histogram will use a linear time scale from
-                 # 0 up to maxRecorded
+                 # 0 up to max_recorded
                  #
                  # if `nil`, the histogram will use a generic logarithmic time scale
                  # from 1ns up to about 1day.
                  #
-                 public maxRecorded option time.duration,
+                 public max_recorded option time.duration,
 
                  # number of initial recordings that should be ignored (i.e.,
                  # that are considered to be part of a _warm up_ phase).
                  #
-                 public ignoreFirst u64,
+                 public ignore_first u64,
 
                  # number of final recordings that should be ignored. This permits
                  # errors introduces by starting of the shutdown process to be
                  # ignored.
                  #
-                 public ignoreLast u64
+                 public ignore_last u64
                  )
 is
 
@@ -94,22 +94,22 @@ is
 
   # total number of measurements, including ignored ones.
   #
-  totalNumber := lm.new (u64 0)
+  total_number := lm.new (u64 0)
 
 
   # buffer of measurements at the end that should be ignored.
   #
-  ignoreLastBuffer := lm.new_array ignoreLast.as_i64 (option time.duration nil)
+  ignore_last_buffer := lm.new_array ignore_last.as_i64 (option time.duration nil)
 
 
-  # current index to add new data to ignoreLastBuffer
+  # current index to add new data to ignore_last_buffer
   #
-  ignoreLastBufferIndex := lm.new (i64 0)
+  ignore_last_buffer_index := lm.new (i64 0)
 
 
   # Number of distinct buckets that are recorded
   #
-  N => i64 66
+  num_buckets => i64 66
 
 
   # Total number of samples recorded.  The values are not stored, only
@@ -137,7 +137,7 @@ is
 
   # time of first sample
   #
-  startTime := lm.new (option time.instant) nil
+  start_time := lm.new (option time.instant) nil
 
 
   # table of durations in each bucket, each entry gives the maximum duration for that index
@@ -145,26 +145,28 @@ is
   # the last entry is always time.duration.max
   #
   table array time.duration :=
-           match maxRecorded
-             mr time.duration => array N.as_i32 (i -> if i<N.as_i32-1 then mr.times ((i+1).as_f64 / (N.as_f64-1))
-                                                                      else time.duration.max                     )
-             nil              => logTable
+    match max_recorded
+      mr time.duration => n := num_buckets.as_i32
+                          array n i->
+                            if i<n-1 then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
+                                     else time.duration.max
+      nil              => log_table
 
   check
-    debug: table.length = N.as_i32
-    debug: table[N.as_i32-1] = time.duration.max
+    debug: table.length = num_buckets.as_i32
+    debug: table[num_buckets.as_i32-1] = time.duration.max
 
 
   # table of durations for logarithmic histogram
   #
-  logTable
+  log_table
   post
-    debug: result.length = N.as_i32
+    debug: result.length = num_buckets.as_i32
   =>
     step := 1.65  # step factor determined via trial and error
     (1.0 :: *step).map f->(time.duration.ns 1 .times f)
                   .dedup     # some lower values might be duplicates like 1ns*1.65=1ns
-                  .take N.as_i32-1
+                  .take num_buckets.as_i32-1
                   .concat [time.duration.max]
                   .as_array
 
@@ -177,10 +179,10 @@ is
   # create an empty histogram
   #
   public type.new(title String,
-           maxRecorded option time.duration,
-           ignoreFirst, ignoreLast u64)
+                  max_recorded option time.duration,
+                  ignore_first, ignore_last u64)
   =>
-    time.histogram title nil maxRecorded ignoreFirst ignoreLast
+    time.histogram title nil max_recorded ignore_first ignore_last
 
 
 
@@ -188,18 +190,18 @@ is
   #
   public type.new(title String,
                   period option time.duration,
-                  maxRecorded option time.duration,
-                  ignoreFirst, ignoreLast u64)
+                  max_recorded option time.duration,
+                  ignore_first, ignore_last u64)
   =>
-    time.histogram title period maxRecorded ignoreFirst ignoreLast
+    time.histogram title period max_recorded ignore_first ignore_last
 
 
   # Construct a new empty histogram for jitter
   #
   public type.new(title String,
-                  maxRecorded option time.duration)
+                  max_recorded option time.duration)
   =>
-    time.histogram title nil maxRecorded 0 0
+    time.histogram title nil max_recorded 0 0
 
 
   u64.log2
@@ -212,33 +214,28 @@ is
 
   # search for index in table, i.e., the smallest index for which l <= table[result].
   #
-  searchIndex(l time.duration)
+  indx(l time.duration)
+  post
+    debug: result.as_i32 ∈ table.indices
+    debug: l <= table[result.as_i32]
+    debug: result = 0 || table[result.as_i32-1] < l
   =>
     # binary search in range s..e:
     for
       m := i64 0, (s+e)/2
       v := l, table[m.as_i32]
-      s := i64 0, l >  v ? m+1 : s
-      e := N    , l <= v ? m   : e
+      s := i64 0      , l >  v ? m+1 : s
+      e := num_buckets, l <= v ? m   : e
     while s < e
     else
       l <= v ? m : m+1
-
-
-  # index of time l in buckets array, i.e., in the range 0..N
-  #
-  indx(l time.duration)
-  =>
-    match maxRecorded
-      _ time.duration => searchIndex l # min (l.nanos.as_f64 * N.as_f64 / mr.nanos.as_f64).as_i64 N
-      nil              => searchIndex l
 
 
   # for given index, what is the smallest duration
   #
   smallest(i i64) time.duration
   pre
-    debug: i64 0 <= i < N
+    debug: i64 0 <= i < num_buckets
   post
     debug: indx result = i
     debug: i = 0 || indx (result - time.duration.ns 1) = i-1
@@ -253,7 +250,7 @@ is
   #
   largest(i i64) time.duration
   pre
-    debug: i64 0 <= i < N
+    debug: i64 0 <= i < num_buckets
   post
     debug: indx result = i
     debug: indx (result + time.duration.ns 1) = i+1
@@ -266,38 +263,38 @@ is
   #
   public add_instant(t time.instant)
   =>
-    totalNumber <- totalNumber + 1
-    if totalNumber.get > ignoreFirst
-      match startTime.get
-        nil             => startTime <- t
+    total_number <- total_number + 1
+    if total_number.get > ignore_first
+      match start_time.get
+        nil             => start_time <- t
         st time.instant =>
           match period
             p time.duration => add (t - st - p*size)
-            nil             => startTime <- t
+            nil             => start_time <- t
                                add t-st
 
 
   # record the given duration
   #
-  # if `ignoreFirst` or `ignoreLast` are non-zero, this will ignore the
+  # if `ignore_first` or `ignore_last` are non-zero, this will ignore the
   # first or last records accordingly
   #
   public add(d time.duration)
   =>
-    totalNumber <- totalNumber + 1
-    if totalNumber.get > ignoreFirst
-      if ignoreLast > 0
-        ld := ignoreLastBuffer[ignoreLastBufferIndex]
-        ignoreLastBuffer[ignoreLastBufferIndex] := d
-        ignoreLastBufferIndex <- (ignoreLastBufferIndex.get = 0 ? ignoreLastBuffer.length
-                                                                : ignoreLastBufferIndex.get)- 1
+    total_number <- total_number + 1
+    if total_number.get > ignore_first
+      if ignore_last > 0
+        ld := ignore_last_buffer[ignore_last_buffer_index]
+        ignore_last_buffer[ignore_last_buffer_index] := d
+        ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
+                                                                      : ignore_last_buffer_index.get)- 1
         ld.bind add0 |> ignore
       else
         add0 d
 
   # internal feature to record the given duration in its bucket
   #
-  # this is called by `add` after handing `ignoreFirst` and `ignoreLast`
+  # this is called by `add` after handing `ignore_first` and `ignore_last`
   #
   private add0(d time.duration)
   =>
@@ -398,27 +395,11 @@ is
         str := for
                  str1 := "{($cnt).pad_left 3}{units.substring unit0 unit0+1} ", str1 + str2 + str3
                  i in buckets.indices
-                 str2 := i = N ? "       " : ""
+                 str2 := i = num_buckets ? "       " : ""
                  str3 := buckets[i].log2 < c ? " " : "*"
                else
                  str1 + "\n"
       else
-      /*
-        bot := match maxRecorded
-                 mr time.duration =>
-                   t := (0..4).map (i -> i.as_f64/4)
-                              .map (f -> (if f=0 then time.duration.zero.as_string (mr.times 0.25 .unit_for_as_string)
-                                                 else mr.times f        .as_string
-                                         ).pad_center 9)
-                   ("     |       |       |       |       |       |       |       |       |       |\n" +
-                    " "+t[0] +"       "+t[1] +"       "+t[2] +"       "+t[3] +"       "+t[4] +"   >\n")
-                 nil =>
-                   t := (i64 0 .. 64 : 8).map i->"{((largest i).as_string.trim.pad_center 8)}"
-                                      .as_string ""
-                   ("     |       |       |       |       |       |       |       |       |       |\n" +
-                    "  "+t+"   >\n")
-        ignore bot
-        */
         t2 := (i64 0 .. 64 : 8).map (i-> largest i .as_string.trim.pad_center 8)
                                .as_string ""
         bot :=    ("     |       |       |       |       |       |       |       |       |       |\n" +
