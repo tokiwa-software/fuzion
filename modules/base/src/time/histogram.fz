@@ -180,7 +180,8 @@ is
   #
   public type.new(title String,
                   max_recorded option time.duration,
-                  ignore_first, ignore_last u64)
+                  ignore_first, ignore_last u64
+                  ) time.histogram
   =>
     time.histogram title nil max_recorded ignore_first ignore_last
 
@@ -191,7 +192,8 @@ is
   public type.new(title String,
                   period option time.duration,
                   max_recorded option time.duration,
-                  ignore_first, ignore_last u64)
+                  ignore_first, ignore_last u64
+                  ) time.histogram
   =>
     time.histogram title period max_recorded ignore_first ignore_last
 
@@ -199,7 +201,8 @@ is
   # Construct a new empty histogram for jitter
   #
   public type.new(title String,
-                  max_recorded option time.duration)
+                  max_recorded option time.duration
+                  ) time.histogram
   =>
     time.histogram title nil max_recorded 0 0
 
@@ -261,7 +264,7 @@ is
   # record the given time instant, i.e., create the difference to the previous instant
   # and record that
   #
-  public add_instant(t time.instant)
+  public add_instant(t time.instant) unit
   =>
     total_number <- total_number + 1
     if total_number.get > ignore_first
@@ -279,7 +282,7 @@ is
   # if `ignore_first` or `ignore_last` are non-zero, this will ignore the
   # first or last records accordingly
   #
-  public add(d time.duration)
+  public add(d time.duration) unit
   =>
     total_number <- total_number + 1
     if total_number.get > ignore_first
@@ -310,17 +313,17 @@ is
 
   # number of measurements in this histogram.
   #
-  public count => size.get
+  public count u64 => size.get
 
 
   # Determine the minimum value in this histogram.
   #
-  public min => min_.get
+  public min option time.duration => min_.get
 
 
   # Determine the maximum value in this histogram.
   #
-  public max => max_.get
+  public max option time.duration => max_.get
 
 
   # Determine the average value in this histogram or 0 in case there are
