@@ -87,9 +87,7 @@ public read_response(
         # Any 2xx (Successful) response to a CONNECT request implies that the connection will become a tunnel immediately after the empty line that concludes the header fields. A client MUST ignore any Content-Length or Transfer-Encoding header fields received in such a message.
         # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.2
 
-        # NYI: BUG: what does "become a tunnel" mean
-        # option (Sequence u8) (io.buffered LM).read_fully
-        body_reader LM -1
+        cause "NYI: Implementation restriction: CONNECT as in rfc9110 §9.3.6 is unsupported"
 
       else
         body_helper LM false header_fields .or_cause unit id

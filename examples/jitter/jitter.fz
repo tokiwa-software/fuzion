@@ -1,0 +1,154 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example jitter
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# jitter -- demo measuring periodic task jitter using time.histogram
+#
+# See Makefile for how to start fuzion to run this example.
+#
+# NYI: UNDER DEVELOPMENT: Currently, this supports only one single test using
+# `time.nano.run_periodic`.  Once we have support for periodic tasks run by dedicated
+# threads, we should add jitter tests for those.
+#
+jitter =>
+
+  # the period to start with
+  #
+  period_default => time.duration.ms  500
+
+
+  # the time to spend with each period
+  #
+  test_duration  => time.duration.ms 2100
+
+
+  # the time to wait before first release
+  #
+  start_delay    => time.duration.ms  500
+
+
+  # should the linear histogram be output?
+  #
+  show_lin_histogram => true
+
+
+  # should the log histogram be output?
+  #
+  show_log_histogram => true
+
+
+  # should the linear csv be output?
+  #
+  show_lin_csv => false
+
+
+  # should the log csv be output?
+  #
+  show_log_csv => false
+
+
+
+  # run jitter test using C.clock.run_periodic
+  #
+  test_jitter(# the clock used to schedule the releases
+              C type : time.Clock,
+
+              # the clock used to measure the times
+              TIMER type : time.Clock)
+  =>
+
+    # type used to identify exception to stop in case jitter is too high
+    #
+    jitter_too_high is
+
+    # test payload, just some dummy code requiring a moderate amount of calculation
+    #
+    payload =>
+      for
+        i := 0, i+1
+        s := i, s +° i
+      while i < 1000
+      else
+        if s = s +° 1   # make sure the compiler does not optimize this aways
+          say "$s (never called)"
+
+    # perform jitter test for given period
+    #
+    run_for_period(period time.duration)
+    =>
+
+      # time for next release used by state effect
+      next_release(t time.instant) is
+
+      # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
+      state next_release unit (next_release TIMER.clock.read+start_delay) ()->
+
+        start := C.clock.read + start_delay
+        end := start + test_duration
+        yak "testing period $period for $test_duration..."
+
+        # record jitter using linear and log histograms
+        h  := time.histogram.new "period $period, log count / linear time" period period*2 1 0
+        h2 := time.histogram.new "period $period, log count / log time"    nil nil 1 0
+
+        # run test
+        _ := C.clock.run_periodic start period end run_one_release
+
+        # output results
+        say terminal.clear_line
+        if show_lin_histogram then say h
+        if show_log_histogram then say h2
+        if show_lin_csv       then say h.csv
+        if show_log_csv       then say h2.csv
+        say ""
+
+        # run one single release: record the actual release and run the payload
+        #
+        # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
+        #
+        run_one_release ! exception jitter_too_high =>
+          actual_release := TIMER.clock.read
+          h .add_instant actual_release
+          h2.add_instant actual_release
+          expected_rel := state_get next_release .t
+          next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
+          if actual_release >= next_rel
+            (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+          else
+            payload
+            actual_finish := TIMER.clock.read
+            if actual_finish >= next_rel
+              e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+              (exception jitter_too_high).env.cause e
+
+    match exception jitter_too_high .on unit /* NYI: CLEANUP: remove `unit` when #5636 is fixed */ ()->
+
+         for p := period_default, p.times 0.5 do
+           run_for_period p
+
+      e error => say $e
+      unit    => # will not happen
+
+  time.nano ! ()->
+    test_jitter time.nano time.nano
