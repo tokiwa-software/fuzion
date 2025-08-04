@@ -23,9 +23,11 @@
 
 test_callany is
 
-  type_as_value(T type) Type => T
+  Any.f =>
 
-  Any.f => say "called {type_as_value Any.this}.f"
+    type_as_value(T type) Type => T
+
+    say "called {type_as_value Any.this}.f"
 
   unit.f
   "hi".f
