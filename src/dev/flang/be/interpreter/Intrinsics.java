@@ -390,7 +390,7 @@ public class Intrinsics extends ANY
             ._array;
           return new JavaRef(res);
         });
-    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
     putUnsafe("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
         {

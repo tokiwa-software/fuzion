@@ -261,7 +261,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put("fuzion.jvm.create_jvm",
-        (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.UNIT, Expr.UNIT));
+        (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.iconst(0), Expr.UNIT));
     put("fuzion.jvm.destroy_jvm",
         (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.UNIT, Expr.UNIT));
 
