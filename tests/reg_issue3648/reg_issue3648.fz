@@ -23,6 +23,8 @@
 
 reg_issue3648 =>
 
+  type_as_value(T type) Type => T
+
   b (T type, c choice (Node T) i32) is
   Node(T type) ref : b T is
 

@@ -26,6 +26,9 @@
 test_type_of is
 
 
+  type_as_value(T type) Type => T
+
+
   chck(b bool, msg String) =>
     s := if b
            "PASSED: "

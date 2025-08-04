@@ -23,6 +23,8 @@
 
 reg_issue3608 =>
 
+  type_as_value(T type) Type => T
+
   a is
 
     b => type_as_value a.this

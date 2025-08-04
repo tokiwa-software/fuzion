@@ -23,6 +23,8 @@
 
 reg_issue3647 =>
 
+  type_as_value(T type) Type => T
+
   Node(T Type, a Node T) ref is
 
   say (type_as_value (Node i32))
