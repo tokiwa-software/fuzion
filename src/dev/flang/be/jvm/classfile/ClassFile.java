@@ -1209,7 +1209,7 @@ public class ClassFile extends ANY implements ClassFileConstants
       // is only valid if there actually is bytecode after endless_loop.
       var byteCodeSize = byteCodeSize();
       var smfs = stackMapFrames.stream().filter(x -> x.byteCodePos < byteCodeSize).toList();
-      o.writeU2((int)smfs.size());
+      o.writeU2(smfs.size());
       // NYI: PERFORMANCE: optimization potential
       // currently we write full frames only
       // we could use the other frame types as well:

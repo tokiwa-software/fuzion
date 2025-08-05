@@ -1228,7 +1228,7 @@ public class DFA extends ANY
   {
     dfa();
     _options.timer("dfa");
-    var res = new DfaFUIR((GeneratingFUIR) _fuir)
+    var res = new DfaFUIR(_fuir)
       {
         /**
          * Determine the lifetime of the instance of a call to clazz cl.
