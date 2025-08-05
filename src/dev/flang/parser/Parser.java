@@ -871,7 +871,12 @@ argType     : type
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
-                                        t = type();
+                                        var ut = type();
+                                        if (skip("..."))
+                                          {
+                                            ut.setFollowedByDots();
+                                          }
+                                        t = ut;
                                       }
                                     else
                                       {
@@ -3435,10 +3440,6 @@ freeType    : name ":" type
         skipColon())
       {
         result = new FreeType(result.pos(), result.freeTypeName(), type());
-      }
-    if (skip("..."))
-      {
-        result.setFollowedByDots();
       }
     return result;
   }
