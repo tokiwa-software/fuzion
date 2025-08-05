@@ -1930,13 +1930,14 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     // error handling for replacing {@code .this} types of {@code ref} types in a call result, see #4273
     var err = new List<Consumer<AbstractCall>>();
-    var ft = t; // final variant of t to be used in lambda
-    BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
-      { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
-
-    t = handDown(t, select, foundRef, inh);
-
-    var res = _fuir.type2clazz(t);
+    var t0 = handDown(
+      t,
+      select,
+      (from,to) -> {
+        err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), t, from, to));
+      },
+      inh);
+    var res = _fuir.type2clazz(t0);
     if (res.feature().isCotype())
       {
         var ac = handDown(res._type.generics().get(0), inh);
@@ -1961,8 +1962,10 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that is to be chosen. NO_SELECT otherwise.
    *
    */
-  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh0)
-  {
+  private AbstractType handDown(AbstractType t,
+                                int select,
+                                BiConsumer<AbstractType, AbstractType> foundRef,
+                                List<AbstractCall> inh0) {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
@@ -1973,41 +1976,62 @@ class Clazz extends ANY implements Comparable<Clazz>
         t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
 
-    // iterate using {@code child} and {@code parent} over outer clazzes starting at
-    // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
-    // parent feature the previous inner clazz' feature was inherited from.
-    var child = this;
-    AbstractFeature parent = feature();
-    while (child != null)
+    /**
+     * starting at {@code this} where {@code child} is the current outer clazz
+     * and {@code parent} is the parent feature the previous inner clazz'
+     * feature was inherited from.
+     */
+    return handDown(this, feature(), t, select, foundRef);
+  }
+
+
+  /**
+   * iterate using {@code child} and {@code parent} over outer clazzes
+   *
+   * @param thiz the current clazz were we are in the hand down process
+   *
+   * @param parent the feature that thiz.feature() inherits from
+   *
+   * @param t the type we are handing down
+   *
+   * @param select in case t is an open generic, the variant of the actual type
+   * that is to be chosen. NO_SELECT otherwise.
+   *
+   */
+  private static AbstractType handDown(Clazz thiz,
+                                       AbstractFeature parent,
+                                       AbstractType t,
+                                       int select,
+                                       BiConsumer<AbstractType, AbstractType> foundRef)
+  {
+    if (thiz == null)
       {
-        var childf = child.feature();
-        // find outer that inherits this clazz, e.g.
-        //
-        //   Any.me =>
-        //     res := Any.this
-        //     res
-        //   x : Any is
-        //
-        // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
-        // inheritance is two features out when {@code x} ({@code childf}) inherits
-        // form {@code Any} ({@code parent}).
-        t = t.replace_inherited_this_type(parent, childf, foundRef);
-        var inh = childf.tryFindInheritanceChain(parent);
         if (CHECKS) check
-          (Errors.any() || inh != null);
-        if (inh != null)
-          {
-            t = handDownThroughInheritsCalls(t, select, inh);
-          }
-        t = t.applyTypeParsLocally(child._type, select);
-        t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
-        child = child.outerRef() != null ? child.outerRef().resultClazz()
-                                         : child._outer;
-        parent = childf.outer();
+          (Errors.any() || parent == null);
+        return t;
       }
+
+    var childf = thiz.feature();
+
+    // find outer that inherits this clazz, e.g.
+    //
+    //   Any.me =>
+    //     res := Any.this
+    //     res
+    //   x : Any is
+    //
+    // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
+    // inheritance is two features out when {@code x} ({@code childf}) inherits
+    // form {@code Any} ({@code parent}).
+    var t0 = t.replace_inherited_this_type(parent, childf, foundRef);
+    var inh = childf.tryFindInheritanceChain(parent);
     if (CHECKS) check
-      (Errors.any() || (child == null) == (parent == null));
-    return t;
+      (Errors.any() || inh != null);
+    var t1 = inh == null ? t0 : handDownThroughInheritsCalls(t0, select, inh);
+    var t2 = t1.applyTypeParsLocally(thiz._type, select);
+    var t3 = t2.replace_this_type_by_actual_outer_locally(thiz._type, foundRef);
+
+    return handDown(thiz.outer(), childf.outer(), t3, select, foundRef);
   }
 
 
