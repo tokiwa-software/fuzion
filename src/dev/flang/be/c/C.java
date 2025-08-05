@@ -428,10 +428,9 @@ public class C extends ANY
       CStmnt tdefault = null;
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
-          var ctags = new List<CExpr>();
+          var ctagNums = new List<Integer>();
           var rtags = new List<CExpr>();
           var tags = _fuir.matchCaseTags(s, mc);
-          var cTagNum = -1;
           for (var tagNum : tags)
             {
               var tc = _fuir.clazzChoice(subjClazz, tagNum);
@@ -444,10 +443,9 @@ public class C extends ANY
                 }
               else if (!_fuir.clazzIsVoidType(tc))
                 {
-                  ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
+                   ctagNums.add(tagNum);
                   if (CHECKS) check
                     (hasTag || !_fuir.hasData(tc));
-                  cTagNum = tagNum;
                 }
             }
           if (tags.length > 0)
@@ -457,16 +455,23 @@ public class C extends ANY
               if (field != NO_CLAZZ)
                 {
                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+
+                  if (CHECKS) check
+                    (_fuir.clazzIsRef(fclazz) || ctagNums.size() == 1); // for a field, there can only be one tag
+
                   var cl     = _fuir.clazzAt(s);
                   var f      = field(cl, C.this.current(s), field);
                   var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
-                               _fuir.hasData(fclazz)    ? uniyon.field(CIdent.choiceEntry(cTagNum))
+                               _fuir.hasData(fclazz)    ? uniyon.field(CIdent.choiceEntry(ctagNums.get(0)))
                                                         : CExpr.UNIT;
                   sl.add(C.this.assign(f, entry, fclazz));
                 }
               sl.add(ai.processCode(_fuir.matchCaseCode(s, mc)).v1());
               sl.add(CStmnt.BREAK);
               var cazecode = CStmnt.seq(sl);
+              var ctags = ctagNums.map2(i -> CExpr
+                .int32const(i)
+                .comment(_fuir.clazzAsString(_fuir.clazzChoice(subjClazz,i))));
               tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
               if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
                 {
