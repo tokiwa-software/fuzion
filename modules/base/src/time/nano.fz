@@ -38,10 +38,10 @@ public nano (p Nano_Time_Handler) : Clock is
 
   # no guarantee can be given for precision nor resolution
   #
-  public redef read instant =>
+  public redef read time.instant =>
     res := p.read
     replace
-    instant res
+    time.instant res
 
 
   # no guarantee can be given for precision nor resolution

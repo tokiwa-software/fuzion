@@ -163,7 +163,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64) : pro
     os.processes.wait (os.process pid std_in std_out std_err)
 
 
-  # send signal to processm
+  # send signal to process
   #
   public send_signal(sig signal) outcome unit=>
     fzE_send_signal pid sig.as_i32 = 0 ? unit : error "error sending signal to process $pid: $fzE_last_error"

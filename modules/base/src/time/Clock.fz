@@ -34,7 +34,7 @@ public Clock ref : effect is
 
   # read the time of this clock
   #
-  public read instant => abstract
+  public read time.instant => abstract
 
 
   # halt the current thread during the given period of time
@@ -78,9 +78,9 @@ public Clock ref : effect is
   #
   # return the number of times the code was run
   #
-  public run_periodic(first instant,
+  public run_periodic(first time.instant,
                       period time.duration,
-                      last instant,
+                      last time.instant,
                       code ()->unit) u64
   pre
     debug: period > time.duration.ns 0
@@ -92,10 +92,11 @@ public Clock ref : effect is
       cnt := u64 0, cnt + 1
       ima := read
       next1 := first, next + period
-      skip := if ima > next1 then (ima - next1) / period else 0
+      skip := if ima > next1 then (ima - next1 + period - time.duration.ns 1) / period else 0
       next := next1 + period * skip
     while next <= last
-      sleep next-ima
+      if ima < next
+        sleep next-ima
       code()
     else
       cnt

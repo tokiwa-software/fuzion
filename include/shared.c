@@ -228,9 +228,12 @@ JNIEnv * getJNIEnv()
   return fzE_jni_env;
 }
 
+
+
+static_assert(JNI_OK == 0, "assume JNI_OK to be zero.");
 // initialize the JVM
 // executed once at the start of the application
-void fzE_create_jvm(char * option_string) {
+int32_t fzE_create_jvm(char * option_string) {
   JavaVMInitArgs vm_args;
 
   JavaVMOption options[1];
@@ -239,9 +242,10 @@ void fzE_create_jvm(char * option_string) {
   vm_args.version = JNI_VERSION_10;
   vm_args.options = options;
   vm_args.nOptions = 1;
-  if (JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args) != JNI_OK) {
-    printf("Failed to start Java VM");
-    exit(EXIT_FAILURE);
+
+  int result = JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args);
+  if (result != JNI_OK) {
+    return result;
   }
 
   jvm_running = true;
@@ -272,6 +276,8 @@ void fzE_create_jvm(char * option_string) {
   fzE_integer_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_integer, "intValue", "()I");
   fzE_long_value      = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_long, "longValue", "()J");
   fzE_boolean_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_boolean, "booleanValue", "()Z");
+
+  return 0;
 }
 
 // close the JVM.
