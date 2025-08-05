@@ -313,7 +313,7 @@ public class CTypes extends ANY
                 var cc = _fuir.clazzChoice(cl, i);
                 if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
                   {
-                    uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
+                    uls.add(CStmnt.decl(clazz(cc), CIdent.choiceEntry(i)));
                   }
               }
             if (_fuir.clazzIsChoiceWithRefs(cl))
