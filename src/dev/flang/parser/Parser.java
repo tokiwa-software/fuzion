@@ -1077,28 +1077,16 @@ argNames    : name ( COMMA argNames
    * Parse returnType
    *
 returnType  : boundType
-            | "value"
             | "ref"
             |
             ;
    */
   ReturnType returnType()
   {
-    ReturnType result;
-    if (isType())
-      {
-        result = new FunctionReturnType(boundType());
-      }
-    else
-      {
-        switch (current())
-          {
-          case t_value : next(); result = ValueType .INSTANCE; break;
-          case t_ref   : next(); result = RefType   .INSTANCE; break;
-          default      :         result = NoType    .INSTANCE; break;
-          }
-      }
-    return result;
+    return
+      isType()          ? new FunctionReturnType(boundType()) :
+      skip(Token.t_ref) ? RefType.INSTANCE
+                        : NoType .INSTANCE;
   }
 
 
@@ -1143,12 +1131,7 @@ EXCLAMATION : "!"
    */
   boolean isNonFuncReturnTypePrefix()
   {
-    switch (current())
-      {
-      case t_value :
-      case t_ref   : return true;
-      default      : return false;
-      }
+    return current() == Token.t_ref;
   }
 
 
@@ -1162,9 +1145,7 @@ EXCLAMATION : "!"
    */
   boolean skipNonFuncReturnType()
   {
-    return
-      skip(Token.t_value ) ||
-      skip(Token.t_ref   );
+    return skip(Token.t_ref);
   }
 
 
