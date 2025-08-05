@@ -270,76 +270,28 @@ public class TokenInfo extends ANY
 
   private Optional<TokenType> tokenType()
   {
-    if (_token.isKeyword())
+    return switch (_token)
       {
-        switch (_token)
-          {
-          case t_const :
-          case t_leaf :
-          case t_infix :
-          case t_prefix :
-          case t_postfix :
-          case t_private :
-          case t_module :
-          case t_public :
-            return Optional.of(TokenType.Modifier);
-          default:
-            return Optional.of(TokenType.Keyword);
-          }
-      }
-    switch (_token)
-      {
-      case t_comment :
-        return Optional.of(TokenType.Comment);
-      case t_numliteral :
-        return Optional.of(TokenType.Number);
-      case t_stringQQ :
-      case t_StringDQ :
-        return Optional.of(TokenType.String);
-      case t_stringQD :
-      case t_stringQB :
-      case t_StringDD :
-      case t_StringDB :
-      case t_stringBQ :
-      case t_stringBD :
-      case t_stringBB :
-        if (ANY.PRECONDITIONS)
-          ANY.check(false);
-        return Optional.empty();
-      case t_question :
-        return Optional.of(TokenType.Keyword);
-      case t_op :
-        if (_text.equals("=>")
-          || _text.equals("->")
-          || _text.equals(":=")
-          || _text.equals("|"))
-          {
-            return Optional.of(TokenType.Keyword);
-          }
-        return Optional.of(TokenType.Operator);
-      case t_ident :
-        return getItem()
+      case t_comment -> Optional.of(TokenType.Comment);
+      case t_numliteral -> Optional.of(TokenType.Number);
+      case t_stringQQ, t_StringDQ -> Optional.of(TokenType.String);
+      case t_stringQD, t_stringQB, t_StringDD, t_StringDB, t_stringBQ, t_stringBD, t_stringBB -> Optional.empty();
+      case t_question -> Optional.of(TokenType.Keyword);
+      case t_op ->
+           (_text.equals("=>")
+             || _text.equals("->")
+             || _text.equals(":=")
+             || _text.equals("|"))
+             ? Optional.of(TokenType.Keyword)
+             : Optional.of(TokenType.Operator);
+      case t_ident -> getItem()
           .map(TokenInfo::tokenType)
           // NYI: UNDER DEVELOPMENT: check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
-      case t_error :
-      case t_ws :
-      case t_comma :
-      case t_lparen :
-      case t_rparen :
-      case t_lbrace :
-      case t_rbrace :
-      case t_lbracket :
-      case t_rbracket :
-      case t_semicolon :
-      case t_eof :
-      case t_indentationLimit :
-      case t_lineLimit :
-      case t_undefined :
-        return Optional.empty();
-      default:
-        throw new RuntimeException("not implemented.");
-      }
+      case t_const, t_leaf, t_infix, t_infix_right, t_prefix, t_postfix, t_private, t_module, t_public -> Optional.of(TokenType.Modifier);
+      case t_abstract,  t_check, t_do, t_else, t_env, t_fixed, t_for, t_if, t_in, t_index, t_intrinsic, t_inv, t_is, t_loop, t_match, t_native, t_period, t_post, t_pre, t_redef, t_ref, t_set, t_ternary, t_then, t_this, t_type, t_universe, t_until, t_value, t_var, t_variant, t_while -> Optional.of(TokenType.Keyword);
+      default -> Optional.empty();
+      };
   }
 
   private static Optional<TokenType> tokenType(HasSourcePosition item)
@@ -390,6 +342,8 @@ public class TokenInfo extends ANY
                 return Optional.of(TokenType.Function);
               }
             return Optional.of(TokenType.Method);
+        case Native :
+          return Optional.of(TokenType.Method);
           }
       }
     var ac = (AbstractCall) item;
