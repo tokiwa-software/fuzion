@@ -24,7 +24,7 @@
 
 JAVA_FILES_LSP               = $(shell find $(SRC)/dev/flang/lsp -name '*.java' )
 JAVA_FILES_LSP_SHARED        = $(shell find $(SRC)/dev/flang/lsp/shared -name '*.java' )
-CLASSES_DIR_LSP = ./build/classes_lsp
+CLASSES_DIR_LSP              = ./build/classes_lsp
 CLASS_FILES_LSP              = $(CLASSES_DIR_LSP)/dev/flang/lsp/__marker_for_make__
 
 LSP_LSP4J_URL            = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.23.1/org.eclipse.lsp4j-0.23.1.jar
@@ -61,7 +61,7 @@ $(BUILD_DIR)/jars/lsp.sha256: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JA
 
 
 
-$(CLASS_FILES_LSP): $(BUILD_DIR)/jars/lsp.sha256 $(CLASS_FILES_BE_JVM)
+$(CLASS_FILES_LSP): $(BUILD_DIR)/jars/lsp.sha256 $(CLASS_FILES_BE_JVM) $(JAVA_FILES_LSP) $(JAVA_FILES_LSP_SHARED)
 	mkdir -p $(CLASSES_DIR_LSP)
 	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
 	$(JAVAC) -cp $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP_SHARED)
@@ -77,14 +77,8 @@ LSP_JAVA_ARGS = -Dfuzion.home=$(BUILD_DIR) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_
 lsp/debug/stdio: lsp/compile
 	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) -cp  $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -stdio
 
-.SILENT:
-.PHONY: lsp/classes
-lsp/classes: $(BUILD_DIR)/jars/lsp.sha256 no-java
-	rm -Rf $@
-	mkdir -p $@
-	$(JAVAC) -classpath $(CLASSPATH) -d $@ $(JAVA_FILES)
 
-
+# this is normally set by vscode-fuzion in debug mode
 LANGUAGE_SERVER_PORT ?= 3000
 
 
