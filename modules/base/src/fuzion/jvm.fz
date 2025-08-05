@@ -34,7 +34,7 @@ private:public jvm : effect is
   # short-hand to for jvm with no additional class path
   #
   public type.use(T type, code ()->T) T =>
-    fuzion.jvm.use T "" code
+    fuzion.jvm.use T "-Djava.class.path=" code
 
 
   # - start jvm (or use an exisiting jvm)
@@ -42,7 +42,22 @@ private:public jvm : effect is
   # - run code on the jvm
   # - destroy jvm (if jvm had to be started)
   #
-  public type.use(T type, option_string String, code ()->T) T =>
+  public type.use(T type, option_string String, code ()->T) T
+    #
+    # AI claims the following:
+    #
+    # On Linux, the JVM often does not automatically infer the classpath,
+    # especially when launched via JNI_CreateJavaVM, so you must explicitly
+    # provide it via -Djava.class.path= — otherwise your Java code may not
+    # be found or load properly.
+    #
+    # Best Practice:
+    #
+    # Always set -Djava.class.path= explicitly when using JNI_CreateJavaVM,
+    # even if it seems to work on your system.
+    #
+    pre option_string.contains "-Djava.class.path="
+  =>
     fuzion.jvm ! ()->
       # NYI: UNDER DEVELOPMENT: return error code
       res := fuzion.jvm.env.create_jvm (fuzion.sys.c_string option_string)
