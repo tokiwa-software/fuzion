@@ -115,7 +115,7 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
 
   public redef as_string String =>
     for res := "", res + "{n.val} (Visited: {n.val.visited.read})" + (if n.val.next.read?? then " -> " else "")
-        n := head.read, n.val.next
+        n := head.read, n.val.next.read
     while n??
     else
       res
