@@ -29,6 +29,7 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
@@ -582,16 +583,12 @@ class CodeGen
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
-      case Intrinsic:
+      case Routine, Intrinsic  :
         {
-          if (!Intrinsix.inRuntime(_jvm, cc))
+          if (_fuir.clazzKind(cc) == FeatureKind.Intrinsic && !Intrinsix.inRuntime(_jvm, cc))
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
-          // fall through!
-        }
-      case Routine  :
-        {
           if (_types.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? FUIR.NO_CLAZZ

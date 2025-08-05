@@ -377,8 +377,9 @@ public class DFA extends ANY
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
                        "Found call to  " + _fuir.clazzAsString(cc));
-        case Routine  :
-        case Intrinsic:
+          break;
+        case Routine  : 
+        case Intrinsic: 
         case Native   :
           {
             if (_fuir.clazzNeedsCode(cc))
