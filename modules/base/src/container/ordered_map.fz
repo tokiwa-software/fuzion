@@ -63,7 +63,7 @@ is
 
   # a sorted array of entries of this map
   #
-  public sorted_entries :=
+  public sorted_entries container.sorted_array entry :=
     ks.indices.map (i -> entry i)
       .sort
 

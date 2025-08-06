@@ -842,6 +842,8 @@ public class Feature extends AbstractFeature
                         (p._kind != Impl.Kind.FieldDef   ) &&
                         (p._kind != Impl.Kind.FieldInit  ) &&
                         (p._kind != Impl.Kind.Field      ) &&
+                        (p._kind != Impl.Kind.TypeParameter ) &&
+                        (p._kind != Impl.Kind.TypeParameterOpen ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.ANY_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
       ? new List<>(new Call(_pos, FuzionConstants.ANY_NAME))
