@@ -291,7 +291,7 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         executor.callStack(executor.fuir()));
+                         Executor.callStack(executor.fuir()));
           return Value.EMPTY_VALUE;
         });
 
