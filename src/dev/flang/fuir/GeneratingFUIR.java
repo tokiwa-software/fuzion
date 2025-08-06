@@ -1944,6 +1944,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
+  @SuppressWarnings("unchecked")
   private Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -2043,6 +2044,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
+  @SuppressWarnings("unchecked")
   private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
