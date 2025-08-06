@@ -17,33 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
+#  Source code of Fuzion pythagorean_triple example Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# simple regression test for issues #455, #456 and #457 using '.type'
-# expressions
-#
+all: jvm
 
-# example from issue #455
-testType0 is
-  t is
-  say testType0.t.type
+jvm:
+	../../bin/fz -modules=terminal jitter.fz
 
-# example from issue #457
-testType1 is
-  t is
-  say (testType1.t.type)
+c: jitter
+	./$^
 
-# example from issue #456
-testTypes is
-  t is
-  say (testTypes.t.type)     # works
-  x := testTypes.t.type
-  say x                      # works as well
-
-_ := testType0
-_ := testType1
-_ := testTypes
+jitter:
+	../../bin/fz -modules=terminal -c -o=$@ jitter.fz

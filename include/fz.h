@@ -591,7 +591,7 @@ struct fzE_jvm_result
 
 // initialize the JVM
 // executed once at the start of the application
-void fzE_create_jvm(char * option_string);
+int32_t fzE_create_jvm(char * option_string);
 
 // close the JVM.
 void fzE_destroy_jvm(void);

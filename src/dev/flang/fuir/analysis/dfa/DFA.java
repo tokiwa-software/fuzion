@@ -2182,7 +2182,7 @@ public class DFA extends ANY
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
           var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
-          return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl.calledClazz()), NO_SITE, cl._context);
+          return genericResult(cl);
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
@@ -2369,10 +2369,21 @@ public class DFA extends ANY
         return Value.UNIT;
       });
     put("fuzion.jvm.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.jvm.create_jvm", cl -> Value.UNIT);
+    put("fuzion.jvm.create_jvm", cl -> genericResult(cl));
     put("fuzion.jvm.destroy_jvm", cl -> Value.UNIT);
     put("fuzion.jvm.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
     put("fuzion.jvm.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
+  }
+
+
+  /**
+   * create generic result base on calls result clazz
+   *
+   * @param cl
+   */
+  private static Value genericResult(Call cl)
+  {
+    return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl.calledClazz()), NO_SITE, cl._context);
   }
 
 

@@ -1869,31 +1869,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Hand down a list of types along a given inheritance chain.
-   *
-   * @param tl the original list of types to be handed down
-   *
-   * @param inh the inheritance chain from the parent down to the child
-   *
-   * @return a new list of types as they are appear after inheritance. The
-   * length might be different due to open type parameters being replaced by a
-   * list of types.
-   */
-  List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
-  {
-    for (AbstractCall c : inh)
-      {
-        var f = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.isOpenGeneric()
-                             ? t.genericArgument().replaceOpen(actualTypes)
-                             : new List<>(t.applyTypePars(f, actualTypes)));
-      }
-    return tl;
-  }
-
-
-  /**
    * Helper for {@code handDown}: Change type {@code t}'s type parameters along the
    * inheritance chain {@code inh}.
    *
@@ -1924,7 +1899,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the type {@code t} as seen after inheritance
    */
-  private AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
+  private static AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (t != null,
