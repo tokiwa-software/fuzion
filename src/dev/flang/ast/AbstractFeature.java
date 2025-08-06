@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -200,6 +201,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Cached result of selfType();
    */
   private AbstractType _selfType = null;
+
+
+  /**
+   * Cached result of effects
+   */
+  private Set<AbstractType> _foundEffects;
+
 
 
   /*----------------------------  abstract methods  ----------------------------*/
@@ -1823,6 +1831,40 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       && typeParameterIndex() == 0;
   }
 
+
+  /**
+   * Determines which effects this feature may access.
+   */
+  public Set<AbstractType> effects()
+  {
+    if(PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_SUGAR2));
+
+     if (_foundEffects == null)
+      {
+        _foundEffects = new TreeSet<>();
+        // NYI: fields?, abstract?
+        if (isRoutine())
+          {
+            code().visitExpressions(new ExpressionVisitor() {
+              @Override
+              public void action(Expr e)
+              {
+                if (e instanceof AbstractCall c)
+                  {
+                    if (c.calledFeature() == Types.resolved.f_effect_from_env ||
+                        c.calledFeature() == Types.resolved.f_effect_unsafe_from_env)
+                      {
+                        _foundEffects.add(c.type());
+                      }
+                    _foundEffects.addAll(c.calledFeature().effects());
+                  }
+              }
+            });
+          }
+      }
+    return _foundEffects;
+  }
 
 
 

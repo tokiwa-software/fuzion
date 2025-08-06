@@ -447,6 +447,8 @@ class LibraryOut extends ANY
    */
   void feature(Feature f)
   {
+    // NYI: UNDER DEVELOPMENT: write effects of abstract features.
+
     if (PRECONDITIONS) require
       (f.state().atLeast(State.RESOLVED));
 

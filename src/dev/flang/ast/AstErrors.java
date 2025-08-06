@@ -2450,6 +2450,13 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void specifiedEffectUneeded(Feature f, TreeSet<AbstractType> unneededEffects)
+  {
+    error(f.pos(), "The following effects are not needed by feature " + s(f) + ".",
+     "Unneeded effects: " + s(new List<>(unneededEffects.iterator())) + "\n"+
+     "Effects found to be used: " + s(new List<>(f.effects().iterator())));
+  }
+
 }
 
 /* end of file */

@@ -1973,6 +1973,11 @@ A ((Choice)) declaration must not contain a result type.
             _impl.propagateExpectedType(res, context(), Types.resolved.t_unit);
           }
 
+        if (_effects != null)
+          {
+            _effects = _effects.map(x -> x.resolve(res, context()));
+          }
+
         _state = State.TYPES_INFERENCED;
         res.scheduleForSyntacticSugar2Resolution(this);
       }
@@ -2029,7 +2034,31 @@ A ((Choice)) declaration must not contain a result type.
 
     checkNative(res);
 
+    checkEffects();
+
     _state = State.RESOLVED;
+  }
+
+
+  private void checkEffects()
+  {
+    if (_effects != null && !isAbstract() /* NYI: abstract */)
+      {
+        var unneededEffects = new TreeSet<>(_effects);
+        unneededEffects.removeAll(effects());
+        if (!unneededEffects.isEmpty())
+          {
+            AstErrors.specifiedEffectUneeded(this, unneededEffects);
+          }
+      }
+  }
+
+  @Override
+  public Set<AbstractType> effects()
+  {
+    return isAbstract()
+      ? new TreeSet<>(_effects)
+      : super.effects();
   }
 
 
