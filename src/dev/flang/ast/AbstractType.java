@@ -31,6 +31,7 @@ import static dev.flang.util.FuzionConstants.NO_SELECT;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,7 +39,6 @@ import java.util.stream.Stream;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
@@ -2409,7 +2409,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = this;
     if (result != Types.t_ERROR && isNormalType())
       {
-        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null))
+        if (!checkActualTypePars(context, feature(), generics(), unresolvedGenerics(), null, null))
           {
             result = Types.t_ERROR;
           }
@@ -2424,7 +2424,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    *
-   * @param called the feature that has formal type parameters
+   * @param af the feature whose formal type parameters we are checking against
    *
    * @param actuals the actual type parameters
    *
@@ -2433,12 +2433,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param pos source position of the call we are checking or null, for error messages
    *
+   * @param adjustConstraint for adjusting a constraint to the call whose generics we are checking, null if not checking generics of call.
+   *
    * @return true iff check was ok, false iff an error was found and reported
    */
-  static boolean checkActualTypePars(Context context, AbstractFeature called, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition pos)
+  static boolean checkActualTypePars(Context context, AbstractFeature af, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition pos, Function<AbstractType, AbstractType> adjustConstraint)
   {
     var result = true;
-    var fi = called.typeArguments().iterator();
+    var fi = af.typeArguments().iterator();
     var ai = actuals.iterator();
     var ui = unresolvedActuals.iterator();
     while (fi.hasNext() &&
@@ -2447,17 +2449,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var f = fi.next();
         var a = ai.next();
         var u = ui.hasNext() ? ui.next() : null;
-        var c = f.constraint(context).applyTypePars(called, actuals);
+        var c = adjustConstraint == null
+          ? f.constraint(context)
+          : adjustConstraint.apply(f.constraint(context));
         if (CHECKS) check
           (Errors.any() || f != null && a != null);
 
         var p = u instanceof UnresolvedType ut ? ut.pos() :
                 pos != null                    ? pos
-                                               : called.pos();
+                                               : af.pos();
 
         if (a == Types.t_UNDEFINED)
           {
-            AstErrors.failedToInferActualGeneric(p, called, new List<>(f));
+            AstErrors.failedToInferActualGeneric(p, af, new List<>(f));
           }
         else
           {

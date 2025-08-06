@@ -1974,9 +1974,7 @@ public class Call extends AbstractCall
             actualType = Types.resolved.f_Type.selfType();
           }
       }
-    return actualType == null
-      ? actualType
-      : targetTypeOrConstraint(res, context).actualType(actualType, context);
+    return actualType;
   }
 
 
@@ -2830,7 +2828,13 @@ public class Call extends AbstractCall
         if (!errorInActuals())
           {
             // Check that generics match formal generic constraints
-            AbstractType.checkActualTypePars(context, _calledFeature, _generics, _originalGenerics, pos());
+            AbstractType.checkActualTypePars(
+              context,
+              _calledFeature,
+              _generics,
+              _originalGenerics,
+              pos(),
+              constraint -> adjustResultType(res, context, targetType(context), constraint, null, false));
           }
       }
   }
