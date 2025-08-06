@@ -2029,7 +2029,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
-       res != null || feature().state().atLeast(State.RESOLVED));
+       res != null || feature().state().atLeast(State.RESOLVED),
+       !feature().isCotype());
 
     AbstractType result = null;
     var fot = feature();
@@ -2040,7 +2041,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var g = new List<AbstractType>(
-            // THIS#TYPE
+            // THIS#TYPE, the _payload_ of this typetype
             this,
             // all other generics
             actualGenerics()
@@ -2049,26 +2050,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var tf = res != null ? res.cotype(fot) : fot.cotype();
         if (CHECKS) check
           (tf != null);
-        result = ResolvedNormalType.create(g,
-                                           outerTypeType(res),
-                                           tf);
+        result = ResolvedNormalType.create(g, Types.resolved.universe.selfType(), tf);
       }
     return result;
-  }
-
-
-  /**
-   * Create typeType of the outer of this type.
-   * In case this is a this-type, the typeType of the features outer.
-   *
-   * @param res Resolution instance used to resolve the type feature that might
-   * need to be created.
-   */
-  private AbstractType outerTypeType(Resolution res)
-  {
-    return isThisType()
-      ? feature().outer().selfType().typeType(res)
-      : outer().typeType(res);
   }
 
 
