@@ -52,7 +52,7 @@ wrap(T type : integer, val T) : monad T (wrap T) is
     wrap a
 
 
-  public redef as_string =>
+  public redef as_string String =>
     "wrapped: " + val + " " + T.name
 
 
