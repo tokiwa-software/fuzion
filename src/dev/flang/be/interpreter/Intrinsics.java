@@ -291,7 +291,7 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         executor.callStack(executor.fuir()));
+                         Executor.callStack(executor.fuir()));
           return Value.EMPTY_VALUE;
         });
 
@@ -847,6 +847,7 @@ public class Intrinsics extends ANY
                   ignore = executor.callOnNewInstance(NO_SITE, call_def, args.get(3), new List<>(final_ev));
                 }
             }
+            break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
           case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");

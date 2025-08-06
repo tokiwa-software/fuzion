@@ -897,6 +897,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             }
           _layouting = LayoutStatus.After;
         }
+        break;
       case After: break;
       }
     return result;

@@ -124,7 +124,7 @@ public class Intrinsics extends ANY
                 {
                   var res = c._names.newTemp();
                   code = CStmnt.seq(locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.seq(res.decl("bool", res),
+                                                      CStmnt.seq(CLocal.decl("bool", res),
                                                                  compareValues(c, tmp, expected, rc, res),
                                                                  CStmnt.iff(res,
                                                                             f.assign(new_value))))),

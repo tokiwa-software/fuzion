@@ -377,8 +377,9 @@ public class DFA extends ANY
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
                        "Found call to  " + _fuir.clazzAsString(cc));
-        case Routine  :
-        case Intrinsic:
+          break;
+        case Routine  : 
+        case Intrinsic: 
         case Native   :
           {
             if (_fuir.clazzNeedsCode(cc))
@@ -1227,7 +1228,7 @@ public class DFA extends ANY
   {
     dfa();
     _options.timer("dfa");
-    var res = new DfaFUIR((GeneratingFUIR) _fuir)
+    var res = new DfaFUIR(_fuir)
       {
         /**
          * Determine the lifetime of the instance of a call to clazz cl.

@@ -2030,6 +2030,7 @@ public abstract class Expr extends ByteCode
    * trick the classfile verifier not to report errors after a call to, e.g.,
    * Runtime.fatal.
    */
+  @SuppressWarnings("unchecked")
   public static Expr endless_loop()
   {
     Label l = new Label();
