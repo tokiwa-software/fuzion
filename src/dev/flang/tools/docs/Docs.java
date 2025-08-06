@@ -132,9 +132,9 @@ public class Docs extends ANY
 
 
   /**
-   * Get the declared features of f as stream
+   * Get the declared features of f as collection
    * @param f the feature for which the declared features are to be returned
-   * @return a stream of the declared features of f
+   * @return a collection of the declared features of f
    */
   private Collection<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
