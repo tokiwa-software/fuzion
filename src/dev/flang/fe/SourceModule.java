@@ -996,7 +996,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
-      (_res.state(outer).atLeast(State.LOADING));
+      (_res.state(outer).atLeast(State.FINDING_DECLARATIONS));
 
     var fn = f.featureName();
     var df = declaredFeatures(outer);
