@@ -34,6 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -125,22 +126,21 @@ public class Docs extends ANY
       }
     var head = queue.remove();
     c.accept(head);
-    queue.addAll(declaredFeatures(head).collect(Collectors.toList()));
+    queue.addAll(declaredFeatures(head));
     breadthFirstTraverse0(c, queue);
   }
 
 
   /**
-   * Get the declared features of f as stream
+   * Get the declared features of f as collection
    * @param f the feature for which the declared features are to be returned
-   * @return a stream of the declared features of f
+   * @return a collection of the declared features of f
    */
-  private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
+  private Collection<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
     return fe.feModule()
       .declaredFeatures(f)
-      .values()
-      .stream();
+      .values();
   }
 
 
