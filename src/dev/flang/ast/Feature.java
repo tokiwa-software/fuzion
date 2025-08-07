@@ -1547,7 +1547,6 @@ public class Feature extends AbstractFeature
             Contract.addPreFeature(res, this, context(), false);
           }
 
-        resolveArgumentTypes(res);
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)
