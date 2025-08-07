@@ -345,8 +345,6 @@ public class Call extends AbstractCall
    * @param actuals
    *
    * @param calledFeature
-   *
-   * @param type
    */
   Call(SourcePosition pos,
        Expr target,
@@ -1192,6 +1190,10 @@ public class Call extends AbstractCall
           }
         setToErrorState0();
       }
+
+    if (POSTCONDITIONS)
+      ensure(result != null);
+
     return result;
   }
 
@@ -2559,7 +2561,8 @@ public class Call extends AbstractCall
   {
     Call result = this;
     // NYI: Separate pass? This currently does not work if type was inferred
-    if (_type != null && _type != Types.t_ERROR)
+    var t = typeForInferencing();
+    if (t != null && t != Types.t_ERROR)
       {
         // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
         // arguments and returns a Function or Routine
@@ -2714,7 +2717,7 @@ public class Call extends AbstractCall
    */
   void applyToActualsAndFormalTypes(AbstractType[] resolvedFormalArgumentTypes, java.util.function.BiFunction<Expr, AbstractType, Expr> f)
   {
-    if (_type != Types.t_ERROR &&
+    if (typeForInferencing() != Types.t_ERROR &&
         _actuals.size() == resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
         int count = 0;
@@ -2749,8 +2752,7 @@ public class Call extends AbstractCall
   {
     reportPendingError();
 
-    if (CHECKS) check
-      (res._options.isLanguageServer() || Errors.any() || _type != null);
+    var t = type();
 
     if (_calledFeature != null &&
         context.outerFeature() != Types.resolved.f_effect_static_finally &&
@@ -2761,15 +2763,15 @@ public class Call extends AbstractCall
         AstErrors.mustNotCallEffectFinally(this);
       }
 
-    if (_type != null && _type != Types.t_ERROR)
+    if (t != Types.t_ERROR)
       {
-        var o = _type;
+        var o = t;
         while (o != null && o.isNormalType())
           {
             o = o.outer();
             if (o != null && o.isRef() && !o.feature().isRef())
               {
-                AstErrors.illegalCallResultType(this, _type, o);
+                AstErrors.illegalCallResultType(this, t, o);
                 o = null;
               }
           }
