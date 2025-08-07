@@ -117,6 +117,24 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of OpenType feature.
+   */
+  public static final String OPEN_TYPE_FEAT = "OpenType";
+
+
+  /**
+   * Name of TypedAplicator feature.
+   */
+  public static final String TYPED_APPLICATOR_FEAT = "TypedApplicator";
+
+
+  /**
+   * Name of TypedAplicator.apply feature.
+   */
+  public static final String TYPED_APPLICATOR_APPLY_FEAT = "apply";
+
+
+  /**
    * Name of String feature.
    */
   public static final String STRING_NAME = "String";
@@ -489,6 +507,12 @@ public class FuzionConstants extends ANY
    * Flag OR'ed to kind for features with postcondition feature
    */
   public static final int MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE = 0x800;
+
+
+  /**
+   * Flag OR'ed to kind for features with open type feature
+   */
+  public static final int MIR_FILE_KIND_HAS_OPEN_TYPE_FEATURE = 0x1000;
 
 
   /**

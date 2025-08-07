@@ -127,7 +127,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Map from offset in _data to LibraryType for types in this module.
    */
-  private final TreeMap<Integer, LibraryType> _libraryTypes = new TreeMap<>();
+  private final TreeMap<Integer, AbstractType> _libraryTypes = new TreeMap<>();
 
 
   /**
@@ -480,7 +480,7 @@ public class LibraryModule extends Module implements MirModule
    */
   AbstractType type(int at)
   {
-    var result = _libraryTypes.get(at);
+    AbstractType result = _libraryTypes.get(at);
     if (result == null)
       {
         var k = typeKind(at);
@@ -493,13 +493,18 @@ public class LibraryModule extends Module implements MirModule
             var at2 = typeIndex(at);
             var k2 = typeKind(at2);
             if (CHECKS) check
-              (k2 == -1 || k2 >= 0);
+              (k2 == -1 || k2 >= 0 || k2 == -4);
             return type(at2);
             // we do not cache references to types, so don't add this to _libraryTypes for at.
           }
         else if (k == -1)
           {
             result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
+          }
+        else if (k == -4)
+          {
+            var feature = libraryFeature(typeSelfTypeFeature(at));
+            result = feature.selfType();
           }
         else
           {
@@ -520,9 +525,17 @@ public class LibraryModule extends Module implements MirModule
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, feature,
-                                    TypeMode.fromInt(typeValRefOrThis(at)),
-                                    generics, outer);
+            switch (TypeMode.fromInt(typeValRefOrThis(at)))
+              {
+              case ThisType:
+                result = feature.thisType();
+                break;
+              default:
+                result = new NormalType(this, at, feature,
+                                        TypeMode.fromInt(typeValRefOrThis(at)),
+                                        generics, outer);
+                break;
+              }
           }
         _libraryTypes.put(at, result);
       }
@@ -869,7 +882,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
+.6+| true  .6+| 1      | short         | 000OREvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature, O = has open type feature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -878,7 +891,10 @@ Feature
    | Y=1      | 1      | Feature       | the cotype
    | C=1      | 1      | Feature       | the cotype origin
    | hasRT    | 1      | Type          | optional result type,
-                                       hasRT = !isConstructor && !isChoice
+                                         hasRT = !isConstructor && !isChoice && !isTypeParameter
+   | O        | 1      | int           | open type Feature index,
+                                         O = hasRT && resultType.isOpenGeneric()
+   | isTypeParameter | 1 | Type        | constraint of (open) type parameters
 .2+| true NYI! !isField? !isIntrinsc
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
@@ -899,7 +915,7 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -907,6 +923,7 @@ Feature
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = has open type feature           |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -918,12 +935,20 @@ Feature
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | Y=1    | 1      | int           | type feature index                            |
+   *   | Y=1    | 1      | int           | cotype index                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | C=1    | 1      | int           | cotype index                                  |
+   *   | C=1    | 1      | int           | cotypeorigin index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O      | 1      | int           | open type Feature index                       |
+   *   |        |        |               | O = hasRT && resultType.isOpenGeneric()       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -1003,6 +1028,14 @@ Feature
   boolean featureIsFixed(int at)
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_FIXED) != 0);
+  }
+  boolean featureHasOpenTypeFeature(int at)
+  {
+    var res = ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_OPEN_TYPE_FEATURE) != 0);
+    if (CHECKS) check
+      (true ||  // checking this would cause endless recursion
+       res == featureHasResultType(at) && libraryFeature(at).resultType().isOpenGeneric());
+    return res;
   }
   int featureNamePos(int at)
   {
@@ -1109,9 +1142,13 @@ Feature
     return
       (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
        k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
-       k != AbstractFeature.Kind.Choice.ordinal());
+       k != AbstractFeature.Kind.Choice.ordinal()
+       // NYI: && k != AbstractFeature.Kind.TypeParameter.ordinal()
+       //      && k != AbstractFeature.Kind.OpenTypeParameter.ordinal()
+       );
+
   }
-  int featureInheritsCountPos(int at)
+  int featureOpenTypeFeaturePos(int at)
   {
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
@@ -1119,6 +1156,14 @@ Feature
         i = typeNextPos(i);
       }
     return i;
+  }
+  AbstractFeature featureOpenTypeFeature(int at)
+  {
+    return feature(data().getInt(featureOpenTypeFeaturePos(at)));
+  }
+  int featureInheritsCountPos(int at)
+  {
+    return featureOpenTypeFeaturePos(at) + (featureHasOpenTypeFeature(at) ? 4 : 0);
   }
   int featureInheritsCount(int at)
   {
@@ -1300,6 +1345,7 @@ Type
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
+   | tk==-4   | 1      | int           | index of feature f, type is f.selfType()
 .4+| tk>=0    | 1      | int           | index of feature of type
               | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType
               | tk     | Type          | actual generics
@@ -1320,6 +1366,8 @@ Type
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-1 | 1      | int           | index of type parameter feature               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-4 | 1      | int           | index of feature f, type is f.selfType()      |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType           |
@@ -1333,13 +1381,6 @@ Type
   int typeKind(int at)
   {
     return data().getInt(at);
-  }
-  int typeAddressPos(int at)
-  {
-    if (PRECONDITIONS) require
-      (typeKind(at) == -4);
-
-    return at+4;
   }
   int typeUniversePos(int at)
   {
@@ -1375,6 +1416,20 @@ Type
       (typeKind(at) == -1);
 
     return data().getInt(typeTypeParameterPos(at));
+  }
+  int typeSelfTypeFeaturePos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -4);
+
+    return at+4;
+  }
+  int typeSelfTypeFeature(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -4);
+
+    return data().getInt(typeSelfTypeFeaturePos(at));
   }
   int CotypePos(int at)
   {
@@ -1430,7 +1485,7 @@ Type
     var k = typeKind(at);
     if (k == -4)
       {
-        return typeAddressPos(at) + 0;
+        return typeSelfTypeFeaturePos(at) + 4;
       }
     else if (k == -3)
       {

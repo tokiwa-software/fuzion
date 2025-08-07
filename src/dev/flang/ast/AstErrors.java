@@ -1737,15 +1737,6 @@ public class AstErrors extends ANY
           "Failed to parse integer " + ss(select) + ".");
   }
 
-  static void cannotAccessValueOfOpenGeneric(SourcePosition pos, AbstractFeature f, AbstractType t)
-  {
-    error(pos,
-          "Must not access value of open type parameter",
-          "When calling " + s(f) + " result type " + s(t) + " is open type parameter, " +
-          "which cannot be accessed directly.  You might try to access one specific type parameter parameter " +
-          "by adding '.0', '.1', etc.");
-  }
-
   static void useOfSelectorRequiresCallWithOpenGeneric(SourcePosition pos, AbstractFeature f, String name, int select, AbstractType t)
   {
     if (!any() || t != Types.t_ERROR)

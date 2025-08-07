@@ -1919,14 +1919,14 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-       if (outer() instanceof Feature o)
+        if (outer() instanceof Feature o)
           {
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresentUrgent(res, true);
+        var rt = resultTypeIfPresentUrgent(res, true);
 
-        if (_resultType.isThisType() && _resultType.feature() == this)
+        if (rt.isThisType() && rt.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this
@@ -2406,6 +2406,11 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = outer().outer().thisType(outer().isFixed());
       }
+    else if (isOpenTypeParameter())
+      {
+        result = Types.resolved != null ? Types.resolved.f_OpenType.resultTypeIfPresentUrgent(res, urgent)
+                                        : null;
+      }
     else
       {
         result = _returnType.functionReturnType();
@@ -2421,6 +2426,11 @@ A ((Choice)) declaration must not contain a result type.
         // FORWARD_CYCLIC should be returned only once.
         // We then want to return t_ERROR.
         _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+
+        if (_resultType.isOpenGeneric())
+          {
+            var ignore = openTypeFeature(res);
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -2452,6 +2462,28 @@ A ((Choice)) declaration must not contain a result type.
     if (POSTCONDITIONS) ensure
       (Errors.any() || result != Types.t_ERROR,
        Errors.any() || !result.containsUndefined(false));
+
+    return result;
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_TYPES),
+       isTypeParameter());
+
+    var result = _returnType.functionReturnType();
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
 
     return result;
   }

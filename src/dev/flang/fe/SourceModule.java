@@ -1120,7 +1120,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
 
 
   /**
-   * check if feature af is a feasible open type parameter candiadate
+   * check if feature af is a feasible open type parameter candidate
    */
   private boolean isOpenTypeParameterCandiate(Expr use, AbstractFeature af)
   {

@@ -273,7 +273,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * resultType returns the result type of this feature using.
+   * resultType returns the result type of this feature, i.e., the type of the
+   * value returned when calling this feature.
    *
    * @return the result type, t_ERROR in case of an error.
    * Never null.
@@ -691,7 +692,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Create '.this.type' for this feature.
    */
-  AbstractType thisType()
+  public AbstractType thisType()
   {
     return thisType(false);
   }
@@ -1038,6 +1039,67 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     return result;
   }
+
+
+  /**
+   * Return `OpenType` corresponding to this open type parameter.  An instance of
+   # `OpenType` is returned as the result of a call to a field whose type is
+   # an open type parameter auch as `tuple.values`.
+   */
+  public AbstractFeature openTypeFeature0()
+  {
+    if (PRECONDITIONS) require
+     (isOpenTypeParameter());
+
+    if (_openType == null)
+      {
+        //        System.out.println("OpenType for "+qualifiedName());
+        var name = "OpenType #"+(_opentype_id++);
+        _openType = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+                                new List(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
+                                Contract.EMPTY_CONTRACT,
+                                new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
+      }
+    var result = _openType;
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+  public AbstractFeature openTypeFeature()
+  {
+    if (_openType == null) throw new Error("No openTypeFeature in "+getClass());
+    return _openType;
+  }
+  public AbstractFeature openTypeFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (resultType().isOpenGeneric());
+
+    if (_openType == null) // NYI: Move to Feature.java!
+      {
+        //        System.out.println("OpenType for "+qualifiedName());
+        var name = "OpenType #"+(_opentype_id++);
+        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+                              new List(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
+                              Contract.EMPTY_CONTRACT,
+                              new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
+
+        res._module.findDeclarations(otf, outer());
+        res.resolveTypes(otf);
+        //        System.out.println("resolved, new state "+f.state());
+        _openType = otf;
+      }
+    var result = _openType;
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+  AbstractFeature _openType = null;
+  static int _opentype_id = 0;
 
 
   /**
@@ -1903,13 +1965,32 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var result = context.constraintFor(this);
     if (result == null)
       {
-        result = resultType();
+        result = constraint();
       }
 
     if (POSTCONDITIONS) ensure
       (result != null);
 
     return result;
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_TYPES),
+       isTypeParameter());
+
+    throw new Error("constraint() not redefined for "+getClass());
+
+    // if (POSTCONDITIONS) ensure
+    //   (result != null);
   }
 
 

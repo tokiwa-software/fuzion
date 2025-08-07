@@ -825,8 +825,8 @@ argument    : visibility
               argNames
               argType
             ;
-argType     : type
-            | type "..."
+argType     : "type"
+            | "type" "..."
             | typeType
             | typeType COLON type
             |
@@ -1063,7 +1063,6 @@ argNames    : name ( COMMA argNames
    * Parse returnType
    *
 returnType  : boundType
-            | "value"
             | "ref"
             |
             ;
@@ -1079,7 +1078,6 @@ returnType  : boundType
       {
         switch (current())
           {
-          case t_value : next(); result = ValueType .INSTANCE; break;
           case t_ref   : next(); result = RefType   .INSTANCE; break;
           default      :         result = NoType    .INSTANCE; break;
           }

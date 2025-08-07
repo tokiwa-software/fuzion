@@ -395,7 +395,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -403,6 +403,7 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = has open type feature           |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -420,6 +421,14 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O      | 1      | int           | open type Feature index                       |
+   *   |        |        |               | O = hasRT && resultType.isOpenGeneric()       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -489,6 +498,12 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
+    var hasRT = !f.isConstructor() && !f.isChoice() && !f.isTypeParameter();
+    var hasOpenType = hasRT && f.resultType().isOpenGeneric();
+    if (hasOpenType)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_OPEN_TYPE_FEATURE;
+      }
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
@@ -514,9 +529,18 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (!f.isConstructor() && !f.isChoice())
+    if (hasRT)
       {
-        type(f.resultType());
+        var rt = f.resultType();
+        type(rt);
+        if (rt.isOpenGeneric())
+          {
+            _data.writeOffset(f.openTypeFeature());
+          }
+      }
+    if (f.isTypeParameter())
+      {
+        type(f.constraint());
       }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();
@@ -563,6 +587,8 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-1 | 1      | int           | index of type parameter feature               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-4 | 1      | int           | index of feature f, type is f.selfType()      |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType           |
@@ -587,6 +613,12 @@ class LibraryOut extends ANY
     else if (!t.isGenericArgument() && t.feature().isUniverse())
       {
         _data.writeInt(-3);
+      }
+    else if (!t.isGenericArgument() && t.feature().selfType() == t)
+      {
+        _data.addOffset(t, _data.offset());
+        _data.writeInt(-4);
+        _data.writeOffset(t.feature());
       }
     else
       {

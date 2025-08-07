@@ -1505,7 +1505,8 @@ public class Call extends AbstractCall
          *    zip (drop 1) (T.lteq)
          *      .fold bool.all
          */
-        result = _calledFeature.isTypeParameter() && context.constraintFor(_calledFeature) != null
+        result =
+          _calledFeature.isTypeParameter() && context.constraintFor(_calledFeature) != null
           ?  context.constraintFor(_calledFeature)
           : _calledFeature.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
@@ -1558,7 +1559,7 @@ public class Call extends AbstractCall
     // Call.actualArgType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
-    var t0 = tt == Types.t_ERROR ? tt : resolveSelect(rt, tt);
+    var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
     var t1 = t0 == Types.t_ERROR ? t0 : t0.applyTypePars(tt);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(_calledFeature, _generics);
     var t3 = t2 == Types.t_ERROR ? t2 : tt.isGenericArgument() ? t2 : t2.resolve(res, tt.feature().context());
@@ -1592,6 +1593,8 @@ public class Call extends AbstractCall
    * and t is not open generic, or else _select chooses the actual open generic
    * type.
    *
+   * @param res the resolution instance.
+   *
    * @param t the result type of the called feature, might be open generic.
    *
    * @param tt target type or constraint.
@@ -1599,14 +1602,19 @@ public class Call extends AbstractCall
    * @return the actual, non open generic result type to Types.t_ERROR in case
    * of an error.
    */
-  private AbstractType resolveSelect(AbstractType t, AbstractType tt)
+  private AbstractType resolveSelect(Resolution res, AbstractType t, AbstractType tt)
   {
     if (t.isOpenGeneric())
       {
         if (_select < 0)
           {
-            AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
-            t = Types.t_ERROR;
+            if (CHECKS) check
+              (Errors.any() || _calledFeature.isField());
+
+            var otf = _calledFeature.openTypeFeature(res);
+            res.resolveTypes(otf);
+            _calledFeature = otf;
+            t = otf.resultType();
           }
         else if(tt.generics().stream().anyMatch(g -> g.isOpenGeneric()))
           {
@@ -1626,11 +1634,6 @@ public class Call extends AbstractCall
             else
               {
                 t = types.get(_select);
-                if (t.isOpenGeneric())
-                  {
-                    t = Types.t_ERROR;
-                    AstErrors.cannotAccessValueOfOpenGeneric(pos(), _calledFeature, t);
-                  }
               }
           }
       }

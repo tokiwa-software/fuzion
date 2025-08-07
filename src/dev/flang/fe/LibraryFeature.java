@@ -372,6 +372,11 @@ public class LibraryFeature extends AbstractFeature
     return _libModule.featureIsCotype(_index) ? _libModule.featureCotypeOrigin(_index) : null;
   }
 
+  @Override
+  public AbstractFeature openTypeFeature()
+  {
+    return _libModule.featureHasOpenTypeFeature(_index) ? _libModule.featureOpenTypeFeature(_index) : null;
+  }
 
   /**
    * Get inner feature with given name, ignoring the argument count.
@@ -468,6 +473,27 @@ public class LibraryFeature extends AbstractFeature
       {
         return _libModule.type(_libModule.featureResultTypePos(_index));
       }
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = _libModule.type(_libModule.featureResultTypePos(_index));
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
