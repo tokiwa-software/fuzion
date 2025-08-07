@@ -884,3 +884,8 @@ extern inline int fzE_is_null(void * p)
     : -1;
 }
 
+char * fzE_get_env(const char *name)
+{
+  return getenv(name);
+}
+

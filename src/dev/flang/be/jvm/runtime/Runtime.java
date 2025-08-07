@@ -807,12 +807,6 @@ public class Runtime extends ANY
   }
 
 
-  public static byte[] fuzion_sys_env_vars_get0(Object d)
-  {
-    return stringToUtf8ByteArray(System.getenv(utf8ByteArrayDataToString((byte[]) d)));
-  }
-
-
   /**
    * Helper method called by the fuzion.jvm.env.string_to_java_object0 intrinsic.
    *

@@ -406,3 +406,10 @@ module fzE_is_null(p Native_Ref) i32 => native
 
 
 module fzE_send_signal(pid i64, signal i32) i32 => native
+
+
+# get env var with given name
+#
+# NOTE: parameter s must be 0-terminated char *
+#
+module fzE_get_env(s Array u8) Native_Ref => native

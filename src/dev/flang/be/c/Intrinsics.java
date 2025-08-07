@@ -560,21 +560,7 @@ public class Intrinsics extends ANY
         {
           return CStmnt.EMPTY;
         });
-    put("fuzion.sys.env_vars.has0", (c,cl,outer,in) ->
-        {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("getenv",new List<>(A0.castTo("char*"))).ne(CNames.NULL),
-                                       c._names.FZ_TRUE.ret()),
-                            c._names.FZ_FALSE.ret());
-        });
-    put("fuzion.sys.env_vars.get0", (c,cl,outer,in) ->
-        {
-          var str = new CIdent("str");
-          var rc = c._fuir.clazzResultClazz(cl);
-          return CStmnt.seq(CStmnt.decl("char *", str),
-                            str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
-                            c.boxedConstString(str, CExpr.call("strlen",new List<>(str))).ret());
-        });
-     put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
+    put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
           var call = c._fuir.lookupCall(oc);

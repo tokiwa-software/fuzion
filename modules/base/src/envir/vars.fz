@@ -44,7 +44,12 @@ public vars (p Vars_Handler) : effect is
   #
   type.default_vars_handler =>
     ref : envir.Vars_Handler is
-      public redef get(v String) option String => fuzion.sys.env_vars.get v
+      public redef get(v String) option String =>
+        a := fzE_get_env (fuzion.sys.c_string v)
+        if ffi.is_null a
+          nil
+        else
+          ffi.from_native_string a
 
 
 # short-hand for accessing envir.vars effect in current environment
