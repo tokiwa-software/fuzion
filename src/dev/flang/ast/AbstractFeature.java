@@ -1305,13 +1305,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       // !isAbstract() &&
 
       // outer is required for backend code generator
+      // currently needed by, e.g. mod (other u32) u32 => intrinsic
       // !isIntrinsic() &&
 
       !isField() &&
       !isChoice() &&
       !isUniverse() &&
       !outer().isUniverse() &&
-      !isTypeParameter();
+      !isTypeParameter() &&
+      !isNative() &&
+      !isCotype();
   }
 
 
