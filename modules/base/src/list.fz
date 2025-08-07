@@ -720,7 +720,7 @@ public list(T type, h T, t Lazy (list T)) list T =>
 #
 #     ones => 1 : ones
 #
-public infix_right : (A type, h A, t Lazy (list A)) list A=>
+public infix_right : (A type, h A, t Lazy (list A)) list A =>
   list h t
 
 
