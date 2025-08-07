@@ -879,7 +879,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         //        System.out.println("OpenType for "+qualifiedName());
         var name = "OpenType #"+(_opentype_id++);
         _openType = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
-                                new List(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
+                                new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
                                 Contract.EMPTY_CONTRACT,
                                 new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
       }
@@ -905,7 +905,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         //        System.out.println("OpenType for "+qualifiedName());
         var name = "OpenType #"+(_opentype_id++);
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
-                              new List(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
+                              new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
                               Contract.EMPTY_CONTRACT,
                               new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
 
