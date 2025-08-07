@@ -246,11 +246,6 @@ public class Intrinsics extends ANY
     System.exit(code);
   }
 
-  public static boolean fuzion_sys_env_vars_has0(Object s)
-  {
-    return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
-  }
-
   public static void fuzion_sys_thread_join0(Object thread)
   {
     var result = false;
