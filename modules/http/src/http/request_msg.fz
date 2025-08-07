@@ -45,9 +45,9 @@ is
   # request line of the message
   public request_line String => "$method $target {version_str version_major version_minor}" + crlf
 
-  public redef start_line => request_line
+  public redef start_line String => request_line
 
-  public redef header := http.canonical_header_map.from_map header_fields
+  public redef header http.canonical_header_map := http.canonical_header_map.from_map header_fields
 
 
 
@@ -94,7 +94,7 @@ public req_method : choice http.get http.head http.post_r http.put http.delete
       http.trace   => b ? http.trace   => true | * => false
       http.patch   => b ? http.patch   => true | * => false
 
-  public redef as_string =>
+  public redef as_string String =>
     match req_method.this
       http.get     => "GET"
       http.head    => "HEAD"

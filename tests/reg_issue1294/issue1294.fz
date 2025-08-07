@@ -315,7 +315,7 @@ scenario8 is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    public redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
+    public redef as_string String => "num0.this {to_u32} {to_u32_loop} '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -324,8 +324,8 @@ scenario8 is
 
     type.sum =>
       ref : Monoid num0.this is
-        public redef infix ∙ (a, b num0.this) => a.plus b
-        public redef e => zero
+        public redef infix ∙ (a, b num0.this) scenario8.num0.this => a.plus b
+        public redef e scenario8.num0.this => zero
 
 
   # integer mod 2 implementation of num0

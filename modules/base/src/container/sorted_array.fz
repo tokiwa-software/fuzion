@@ -191,4 +191,4 @@ is
 
   # is this Sequence sorted?
   #
-  public redef is_sorted => true
+  public redef is_sorted bool => true

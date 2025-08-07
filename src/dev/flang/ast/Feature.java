@@ -2031,6 +2031,11 @@ A ((Choice)) declaration must not contain a result type.
 
     checkNative(res);
 
+    if (explicitTypeRequired() && (_returnType == NoType.INSTANCE))
+      {
+        AstErrors.explicitTypeRequired(this, resultType());
+      }
+
     _state = State.RESOLVED;
   }
 

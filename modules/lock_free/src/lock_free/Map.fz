@@ -193,7 +193,7 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 
   id := unique_id
 
-  public fixed redef type.equality(a, b Indirection_Node.this) =>
+  public fixed redef type.equality(a, b Indirection_Node.this) bool =>
     a.id = b.id
 
   # compare and update
@@ -211,14 +211,14 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (tuple CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
 is
-  public redef as_list => from
+  public redef as_list list (tuple CTK CTV) => from
     .map sn->(sn.k, sn.v)
     .as_list
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite => trit.yes
+  public redef finite trit => trit.yes
 
   public redef as_string String => "list_node({from.as_string ", "})"
 
@@ -656,13 +656,13 @@ is
 
 
   # the size of the ctrie
-  public redef size =>
+  public redef size i32 =>
     items.count
 
 
 
   # take a snapshot of the ctrie
-  public snapshot(read_only bool) =>
+  public snapshot(read_only bool) Map CTK CTV =>
     r := read_root
     expmain := gcas_read r
     new_gen => unique_id
@@ -690,17 +690,17 @@ is
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
     ref : container.Persistent_Map CTK CTV is
-      public redef size => s.size
-      public redef index [] (k CTK) => s[k]
-      public redef items => s.items
-      public redef put(k CTK, v CTV) =>
+      public redef size i32 => s.size
+      public redef index [] (k CTK) option CTV => s[k]
+      public redef items Sequence (tuple CTK CTV) => s.items
+      public redef put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
         sp := s.snapshot false
         sp.put k v
         sp.as_persistent_map
 
 
   # initialize a new ctrie
-  public fixed redef type.empty =>
+  public fixed redef type.empty lock_free.Map CTK CTV =>
 
     initial_gen => unique_id
 

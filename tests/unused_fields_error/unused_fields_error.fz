@@ -26,7 +26,7 @@
 #
 unused_fields_error =>
 
-  public w := 0  # unused but public
+  public w i32 := 0  # unused but public
   module x := 0  # unused, not public, not ignored
   y := 1         # unused, not public, not ignored
   z := 2         # is used

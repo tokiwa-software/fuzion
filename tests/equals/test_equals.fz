@@ -119,7 +119,7 @@ test_equals_types is
 
     # equality relation comparing the value produced by 'col'
     #
-    public fixed redef type.equality(a, b test_equals_types.Has_color) =>
+    public fixed redef type.equality(a, b test_equals_types.Has_color) bool =>
 
       # NYI: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
@@ -150,6 +150,6 @@ test_equals_types is
 
     # equality relation comparing color and strings
     #
-    public fixed redef type.equality(a, b test_equals_types.colored_text) =>
+    public fixed redef type.equality(a, b test_equals_types.colored_text) bool =>
       (test_equals_types.eq_color a b &&
        String.equality       a b   )

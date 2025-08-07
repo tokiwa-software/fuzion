@@ -165,19 +165,19 @@ module:public process(public pid i64, module std_in, std_out, std_err i64) : pro
 
   # send signal to process
   #
-  public send_signal(sig signal) outcome unit=>
+  public send_signal(sig signal) outcome unit =>
     fzE_send_signal pid sig.as_i32 = 0 ? unit : error "error sending signal to process $pid: $fzE_last_error"
 
 
   # start a process with name, arguments and environment variables
   #
-  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process=>
+  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process =>
     os.processes.start n args env_vars
 
 
   # start a process with name and arguments
   #
-  public type.start(n String, args Sequence String) outcome os.process=>
+  public type.start(n String, args Sequence String) outcome os.process =>
     start n args (container.ps_map String String).empty
 
 

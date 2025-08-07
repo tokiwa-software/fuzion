@@ -34,7 +34,7 @@
 scenario1 =>
 
   u : Unary unit i32 is
-    public redef call(i i32) =>
+    public redef call(i i32) unit =>
   _ := (a i32).m u
 
   a(T type) is

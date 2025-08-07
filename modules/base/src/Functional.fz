@@ -31,7 +31,7 @@ public Functional(R type) ref : Unary R (Function R) is
 
   # infix variant of call
   #
-  public infix ! (code ()->R) =>
+  public infix ! (code ()->R) R =>
     call code
 
 
@@ -41,12 +41,12 @@ public Functional(R type) ref : Unary R (Function R) is
   #
   public compose(other Functional R) Functional R =>
     ref : Functional R is
-      public redef call(code Function R) =>
+      public redef call(code Function R) R =>
         Functional.this.call ()->
           other.call code
 
 
   # fluent interface for using multiple effects together
   #
-  public and(E type: effect, e Lazy E) =>
+  public and(E type: effect, e Lazy E) Functional R =>
     compose (e.as_functional R)

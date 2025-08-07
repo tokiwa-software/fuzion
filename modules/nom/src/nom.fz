@@ -59,16 +59,16 @@ public nom is
     #
     public map_input(I2 type, map_fn I2 -> I) Parser I2 R O =>
       ref : Parser I2 R O is
-        public redef call(input I2) => Parser.this.call (map_fn input)
+        public redef call(input I2) parse_result R O => Parser.this.call (map_fn input)
 
 
 
   # short hand for creating a Parser via
   # given function `f`.
   #
-  public parser(I, R, O type, f I -> parse_result R O) =>
+  public parser(I, R, O type, f I -> parse_result R O) Parser I R O =>
     ref : Parser I R O is
-      public redef call(i I) => f i
+      public redef call(i I) parse_result R O => f i
 
 
 

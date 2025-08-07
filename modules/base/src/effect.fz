@@ -227,7 +227,7 @@ public effect is
 
   # fluent interface for using multiple effects together
   #
-  public and(R type, E type : effect, e Lazy E) =>
+  public and(R type, E type : effect, e Lazy E) Functional R =>
     as_functional R
       .compose (e.as_functional R)
 
@@ -241,7 +241,7 @@ public effect is
     # code -> instate_self code
 
     ref : Functional R is
-      public redef call(code Function R) =>
+      public redef call(code Function R) R =>
         instate_self code
 
 

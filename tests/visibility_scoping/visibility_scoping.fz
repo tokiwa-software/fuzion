@@ -45,7 +45,7 @@ visibility_scoping is
          while false
 
     ref : Function unit is
-      public redef call =>
+      public redef call unit =>
         say ar  #  2. should flag an error: feature not found
 
 

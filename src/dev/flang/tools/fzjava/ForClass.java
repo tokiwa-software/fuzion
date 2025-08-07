@@ -344,11 +344,11 @@ class ForClass extends ANY
     StringBuilder data_static  = new StringBuilder(header(fzj, "Fuzion interface to static members of Java class '" + cn + "'") +
                                                    "public " + jtn + STATIC_SUFFIX + " is\n");
     StringBuilder data_unit    = new StringBuilder(header(fzj, "Fuzion unit feature to call static members of Java class '" + cn + "'") +
-                                                   "public " + jtn + " => " + jtn + STATIC_SUFFIX + "\n");
+                                                   "public " + jtn + " " + jtn + STATIC_SUFFIX + " => " + jtn + STATIC_SUFFIX + "\n");
 
     data_dynamic.append("\n");
     data_dynamic.append("\n");
-    data_dynamic.append("  public " + (sc==null ? "" : "redef ") +  "type.get_java_class => (Java.java.lang.Class.forName " + fuzionString(cn) + ").val");
+    data_dynamic.append("  public " + (sc==null ? "" : "redef ") +  "type.get_java_class Java.java.lang.Class => (Java.java.lang.Class.forName " + fuzionString(cn) + ").val");
     data_dynamic.append("\n");
     data_dynamic.append("\n");
 
@@ -584,7 +584,7 @@ class ForClass extends ANY
     data.append("\n" +
                 "  # short-hand to call Java method '" + me + "':\n" +
                 "  #\n" +
-                "  public " + fn0 + fp + " =>\n" +
+                "  public " + fn0 + fp + " " + outcomeResultType(me,resultType(me)) + " =>\n" +
                 "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
   }
 
@@ -610,7 +610,7 @@ class ForClass extends ANY
     data_static.append("\n" +
                        "  # short-hand to call Java constructor '" + co + "':\n" +
                        "  #\n" +
-                       "  public " + fn0 + fp + " =>\n" +
+                       "  public " + fn0 + fp + " " + outcomeResultType(co, plainResultType(co.getDeclaringClass())) + " =>\n" +
                        "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
   }
 

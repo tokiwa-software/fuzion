@@ -21,4 +21,4 @@
 #
 # -----------------------------------------------------------------------
 
-public y => "a.y defined in module A"
+public y String => "a.y defined in module A"

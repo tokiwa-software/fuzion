@@ -64,7 +64,7 @@ Also make sure that the feature to be redefined is visible where it is redefined
 
 
 --CURDIR--/argumentcount_negative.fz:56:3: error 9: Incompatible types in assignment
-  _ Function unit          := opengenerics21  # 9. should flag an error: incompatible number of generic arguments
+  _ Function unit          := opengenerics21  #  9. should flag an error: incompatible number of generic arguments
 --^
 assignment to field : 'argumentcount_negative._'
 expected formal type: 'Function unit'

@@ -271,7 +271,7 @@ public class FZJava extends Tool
     try
       {
         var str = new StringBuilder(
-                    "public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) =>\n");
+                    "public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) fuzion.java.Array T =>\n");
         str.append("  res := (Java.java.lang.reflect.Array.newInstance_Ljava_7_lang_7_Class_s_I T.get_java_class seq.count).val\n");
         str.append("  for idx := 0, idx+1\n");
         str.append("      el in seq\n");

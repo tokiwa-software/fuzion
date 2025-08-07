@@ -50,7 +50,7 @@ module:public instant (val u64) : property.orderable is
 
   # create a string representation of this instant.
   #
-  public redef as_string
+  public redef as_string String
   =>
     time.duration val .as_string
 
