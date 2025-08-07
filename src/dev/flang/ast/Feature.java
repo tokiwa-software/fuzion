@@ -2351,63 +2351,66 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = _resultType;
       }
-    else if (outer() != null && this == outer().resultField())
-      {
-        result = outer().resultTypeIfPresent(res);
-      }
-    else if (_impl.typeInferable())
-      {
-        if (CHECKS) check
-          (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, urgent);
-      }
-    else if (_returnType.isConstructorType())
-      {
-        result = selfType();
-      }
-    else if (_returnType == NoType.INSTANCE)
-      {
-        if (urgent)
-          {
-            AstErrors.failedToInferResultType(this);
-          }
-        result = urgent ? Types.t_ERROR : null;
-      }
-    else if (isOuterRef())
-      {
-        result = outer().outer().thisType(outer().isFixed());
-      }
-    else if (isOpenTypeParameter())
-      {
-        result = Types.resolved != null ? Types.resolved.f_OpenType.resultTypeIfPresentUrgent(res, urgent)
-                                        : null;
-      }
     else
       {
-        result = _returnType.functionReturnType(true);
-        if (result != null && result.isIncompleteType())
+        if (outer() != null && this == outer().resultField())
           {
-            // we need to resolve _outer which contains
-            // this case field before having a usable functionReturnType
-            res.resolveTypes(_outer);
+            result = outer().resultTypeIfPresent(res);
           }
-        result = _returnType.functionReturnType();
-        result = urgent && result == null ? Types.t_ERROR : result;
-      }
-    if (res != null && result != null && outer() != null)
-      {
-        result = result.resolve(res, outer().context());
-      }
-
-    if (result != null)
-      {
-        // FORWARD_CYCLIC should be returned only once.
-        // We then want to return t_ERROR.
-        _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
-
-        if (_resultType.isOpenGeneric())
+        else if (_impl.typeInferable())
           {
-            var ignore = openTypeFeature(res);
+            if (CHECKS) check
+              (!state().atLeast(State.TYPES_INFERENCED));
+            result = _impl.inferredType(res, this, urgent);
+          }
+        else if (_returnType.isConstructorType())
+          {
+            result = selfType();
+          }
+        else if (_returnType == NoType.INSTANCE)
+          {
+            if (urgent)
+              {
+                AstErrors.failedToInferResultType(this);
+              }
+            result = urgent ? Types.t_ERROR : null;
+          }
+        else if (isOuterRef())
+          {
+            result = outer().outer().thisType(outer().isFixed());
+          }
+        else if (isOpenTypeParameter())
+          {
+            result = Types.resolved != null ? Types.resolved.f_OpenType.resultTypeIfPresentUrgent(res, urgent)
+                                            : null;
+          }
+        else
+          {
+            result = _returnType.functionReturnType(true);
+            if (result != null && result.isIncompleteType())
+              {
+                // we need to resolve _outer which contains
+                // this case field before having a usable functionReturnType
+                res.resolveTypes(_outer);
+              }
+            result = _returnType.functionReturnType();
+            result = urgent && result == null ? Types.t_ERROR : result;
+          }
+        if (res != null && result != null && outer() != null)
+          {
+            result = result.resolve(res, outer().context());
+          }
+
+        if (result != null)
+          {
+            // FORWARD_CYCLIC should be returned only once.
+            // We then want to return t_ERROR.
+            _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+
+            if (_resultType.isOpenGeneric())
+              {
+                var ignore = openTypeFeature(res);
+              }
           }
       }
 
